@@ -96,8 +96,27 @@
                 </tr>
                 
                 <tr>
-					<th><label for="iban">IBAN :</label></th>
-                    <td colspan="3"><input type="text" name="iban" id="iban" style="width: 620px;" class="input_big" value="<?=$this->companies->iban?>" onKeyUp="verif(this.id,2);"/></td>
+		<th><label for="iban">IBAN :</label></th>
+                    <td colspan="3">
+                        <script>
+                        function jumpIBAN(field){
+                            if(field.id == "iban7")
+                            {field.value = field.value.substring(0,3);}
+                            if(field.value.length == 4)
+                            {
+                                field.nextElementSibling.value = '';                    
+                                field.nextElementSibling .focus();
+                            }
+                        }
+                        </script>
+                        <input type="text" name="iban1" id="iban1" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?=substr($this->companies->iban,0,4)?>" />
+                        <input type="text" name="iban2" id="iban2" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?=substr($this->companies->iban,4,4)?>" />
+                        <input type="text" name="iban3" id="iban3" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?=substr($this->companies->iban,8,4)?>" />
+                        <input type="text" name="iban4" id="iban4" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?=substr($this->companies->iban,12,4)?>" />
+                        <input type="text" name="iban5" id="iban5" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?=substr($this->companies->iban,16,4)?>" />
+                        <input type="text" name="iban6" id="iban6" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?=substr($this->companies->iban,20,4)?>" />
+                        <input type="text" name="iban7" id="iban7" onkeyup="jumpIBAN(this)" style="width: 53px;" size="4" class="input_big" value="<?=substr($this->companies->iban,24,3)?>" />
+                    </td>
                 </tr>
                 <tr>
 					<th><label for="bic">BIC :</label></th>
@@ -140,13 +159,29 @@
                     
                 	<th colspan="4">
                         <input type="hidden" name="form_edit_emprunteur" id="form_edit_emprunteur" />
-                        <input type="submit" value="Valider" title="Valider" name="send_edit_emprunteur" id="send_edit_emprunteur" class="btn" />
+                        <input type="submit" value="Valider" title="Valider" name="send_edit_emprunteur" onclick="return RIBediting();" id="send_edit_emprunteur" class="btn" />
                     </th>
                 </tr>
         	</table>
     </form>
     
     <br /><br />
+    
+    <? if($this->clients->history != '')
+    { ?>
+    
+        <a onclick="document.getElementById('edit_history').style.display = 'block';this.style.display = 'none';" class="btn" style="float:right;" >Afficher l'historique</a>
+        <div id="edit_history" style="display:none;" >
+        <h2>Historique :</h2>
+        <table class="histo_status_client tablesorter">
+            <tbody>
+                <?=$this->clients->history?>
+            </tbody>
+        </table>
+        </div>
+        <br /><br />
+        <?     
+    } ?>
     
     <h2>Liste des projets</h2>
     <?
@@ -232,9 +267,33 @@
 </div>
 
 <script type="application/javascript">
+    
+function RIBediting()
+{
+    var iban = document.getElementById('iban1').value + document.getElementById('iban2').value + document.getElementById('iban3').value + document.getElementById('iban4').value + document.getElementById('iban5').value + document.getElementById('iban6').value + document.getElementById('iban7').value;
+
+   if(iban == "<?=$this->companies->iban?>" && document.getElementById('bic').value == "<?=$this->companies->bic?>" )
+        return true;
+   if(<?=count($this->loadData('prelevements')->select('date_echeance_emprunteur > CURRENT_DATE AND id_client = '.$this->bdd->escape_string($this->params[0])));?> == 0)
+        return true;
+    
+   $.colorbox({href:'<?=$this->lurl?>/emprunteurs/RIBlightbox/<?=$this->clients->id_client?>'});
+   return false
+}
 
 function verif(id,champ)
 {
+	// Bic
+	if(champ == 1)
+	{
+		
+		if(check_bic($("#"+id).val()) == false)
+		//if($("#"+id).val().length < 8 || $("#"+id).val().length > 11)
+		{
+			$("#"+id).css('border','1px solid #E3BCBC').css('color','#C84747').css('background-color','#FFE8E8');
+		}
+		else{$("#"+id).css('border','1px solid #A1A5A7').css('color','#B10366').css('background-color','#ECECEC');}
+	}
 	// IBAN
 	if(champ == 2)
 	{
@@ -245,54 +304,39 @@ function verif(id,champ)
 		}
 		else{$("#"+id).css('border','1px solid #A1A5A7').css('color','#B10366').css('background-color','#ECECEC');}
 	}
-	// Bic
-	else
-	{
-		if(check_bic($("#"+id).val()) == false)
-		//if($("#"+id).val().length < 8 || $("#"+id).val().length > 11)
-		{
-			$("#"+id).css('border','1px solid #E3BCBC').css('color','#C84747').css('background-color','#FFE8E8');
-		}
-		else{$("#"+id).css('border','1px solid #A1A5A7').css('color','#B10366').css('background-color','#ECECEC');}
-	}
 }
 	
 $( "#edit_emprunteur" ).submit(function( event ) {
 	var form_ok = true;
 	
-	if($("#bic").val().length != 0 && check_bic($("#bic").val()) == false)
+	if(check_bic($("#bic").val()) == false)
 	//if($("#bic").val().length < 8 || $("#bic").val().length > 11)
 	{
-		form_ok = false;
+		form_ok = false
 		$("#bic").css('border','1px solid #E3BCBC').css('color','#C84747').css('background-color','#FFE8E8');
 		
 	}
-	if($("#iban").val().length != 0 && validateIban($("#iban").val()) == false)
+        
+        var iban = document.getElementById('iban1').value + document.getElementById('iban2').value + document.getElementById('iban3').value + document.getElementById('iban4').value + document.getElementById('iban5').value + document.getElementById('iban6').value + document.getElementById('iban7').value;
+        
+	if(validateIban(iban) == false)
 	//if($("#iban").val().length != 27)
 	{
-		form_ok = false;
-		$("#iban").css('border','1px solid #E3BCBC').css('color','#C84747').css('background-color','#FFE8E8');//FR7630004004300001004492527
+		form_ok = false
+		$("#iban1").css('border','1px solid #E3BCBC').css('color','#C84747').css('background-color','#FFE8E8');
+                $("#iban2").css('border','1px solid #E3BCBC').css('color','#C84747').css('background-color','#FFE8E8');
+                $("#iban3").css('border','1px solid #E3BCBC').css('color','#C84747').css('background-color','#FFE8E8');
+                $("#iban4").css('border','1px solid #E3BCBC').css('color','#C84747').css('background-color','#FFE8E8');
+                $("#iban5").css('border','1px solid #E3BCBC').css('color','#C84747').css('background-color','#FFE8E8');
+                $("#iban6").css('border','1px solid #E3BCBC').css('color','#C84747').css('background-color','#FFE8E8');
+                $("#iban7").css('border','1px solid #E3BCBC').css('color','#C84747').css('background-color','#FFE8E8');
+                
 	}
 	
-	if(form_ok)
-	{	$.post( "<?=$this->lurl?>/ajax/ibanExist", { id: "<?=$this->params[0]?>", iban: $("#iban").val()})
-  		.done(function( data ) {
-			console.log(data);
-    	if(data != 'none' && iban: $("#iban").val().length != 0 ){
-  			if(!confirm("Attention, cet IBAN est le même que celui de l’entreprise ["+data+"] : valider tout de même ?")){
-				$("#iban").css('border','1px solid #E3BCBC').css('color','#C84747').css('background-color','#FFE8E8');
-			}
-			else{
-				document.getElementById('edit_emprunteur').submit();
-			}
-		}
-		else{
-				document.getElementById('edit_emprunteur').submit();
-		}
-	});}
-	
-	
+	if(form_ok == false)
+	{
 		event.preventDefault();
+	}
 });
 		
 </script>
