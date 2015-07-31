@@ -1,0 +1,1788 @@
+<?php 
+
+class preteursController extends bootstrap
+{
+	var $Command;
+	
+	function preteursController(&$command,$config,$app)
+	{
+		parent::__construct(&$command,$config,$app);
+		
+		$this->catchAll = true;
+		
+		// Controle d'acces à la rubrique
+		$this->users->checkAccess('preteurs');
+		
+		// Activation du menu
+		$this->menu_admin = 'preteurs';
+	}
+	
+	function _default()
+	{
+		// On remonte la page dans l'arborescence
+		if(isset($this->params[0]) && $this->params[0] == 'up')
+		{
+			$this->tree->moveUp($this->params[1]);
+			
+			header('Location:'.$this->lurl.'/preteurs');
+			die;
+		}
+		
+		// On descend la page dans l'arborescence
+		if(isset($this->params[0]) && $this->params[0] == 'down')
+		{
+			$this->tree->moveDown($this->params[1]);
+			
+			header('Location:'.$this->lurl.'/preteurs');
+			die;
+		}
+		
+		// On supprime la page et ses dependances
+		if(isset($this->params[0]) && $this->params[0] == 'delete')
+		{
+			$this->tree->deleteCascade($this->params[1]);
+			
+			// Mise en session du message
+			$_SESSION['freeow']['title'] = 'Suppression d\'une page';
+			$_SESSION['freeow']['message'] = 'La page et ses enfants ont bien &eacute;t&eacute; supprim&eacute;s !';
+			
+			header('Location:'.$this->lurl.'/preteurs');
+			die;
+		}
+	}
+	
+	function _gestion()
+	{
+		
+		// Chargement du data
+		$this->clients = $this->loadData('clients');
+		$this->clients_adresses = $this->loadData('clients');
+		$this->lenders_accounts = $this->loadData('lenders_accounts');
+		$this->transactions = $this->loadData('transactions');
+		$this->loans = $this->loadData('loans');
+		$this->bids = $this->loadData('bids');
+		$this->companies = $this->loadData('companies');
+		
+		// Partie delete
+		if(isset($this->params[0]) && $this->params[0] == 'delete')
+		{
+			// client a delete
+			if($this->clients->get($this->params[1],'id_client') && $this->clients->status == 0)
+			{
+				// on verif si y a des infos lender
+				if($this->lenders_accounts->get($this->clients->id_client,'id_client_owner'));
+				{
+					
+				}
+				// on verif dans companie
+				if($this->companies->get($this->clients->id_client,'id_client_owner'))
+				{
+					// on verif les autres table comapnie
+					$companies_actif_passif = $this->loadData('companies_actif_passif');
+					$companies_bilans = $this->loadData('companies_bilans');
+					$companies_details = $this->loadData('companies_details');
+					
+					if($companies_actif_passif->get($this->companies->id_company,'id_company'))
+					{
+						// On supp
+						$companies_actif_passif->delete($this->companies->id_company,'id_company');
+					}
+					if($companies_bilans->get($this->companies->id_company,'id_company'))
+					{
+						// On supp
+						$companies_bilans->delete($this->companies->id_company,'id_company');
+					}
+					if($companies_details->get($this->companies->id_company,'id_company'))
+					{
+						// On supp
+						$companies_details->delete($this->companies->id_company,'id_company');
+					}
+					// On supp
+					$this->companies->delete($this->clients->id_client,'id_client_owner');
+					
+				}
+				
+				// On supp
+				$this->lenders_accounts->delete($this->clients->id_client,'id_client_owner');
+				
+				// ON verif si il est dans adresses
+				if($this->clients_adresses->get($this->clients->id_client,'id_client'));
+				{
+					// On supp
+					$this->clients_adresses->delete($this->clients->id_client,'id_client');
+				}
+				
+				
+				// Histo user //
+				$serialize = serialize(array('id_client' => $this->clients->id_client));
+				$this->users_history->histo(2,'delete preteur inactif',$_SESSION['user']['id_user'],$serialize);
+				////////////////
+				
+				$this->clients->delete($this->clients->id_client,'id_client');
+				
+				if(isset($this->params[2]) && $this->params[2] == 'activation'){
+					header('location:'.$this->lurl.'/preteurs/activation');
+					die;
+				}
+				else{
+					header('location:'.$this->lurl.'/preteurs/gestion/delete');
+					die;
+				}
+			}
+			
+			// Si on delete on met une session pour raffichier la liste avec les nonvalides
+			$_SESSION['deletePreteur'] = 1;
+		}
+		// si pas en mode suppression on vire la session
+		else
+		{
+			unset($_SESSION['deletePreteur']);
+		}
+		
+		
+		if(isset($_POST['form_search_preteur']))
+		{
+			// check si on affcihe les preteurs non valides
+			if(isset($_POST['nonValide']) && $_POST['nonValide'] != false)$nonValide = 1;
+			else $nonValide = '';
+			
+			// Recuperation de la liste des clients searchPreteurs
+			$this->lPreteurs = $this->clients->searchPreteursV2($_POST['id'],$_POST['nom'],$_POST['email'],$_POST['prenom'],$_POST['raison_sociale'],$nonValide);
+			
+			// Mise en session du message
+			$_SESSION['freeow']['title'] = 'Recherche d\'un prêteur';
+			$_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
+		}
+		else
+		{
+			if(isset($_SESSION['deletePreteur']) && $_SESSION['deletePreteur'] == 1) $nonValide = 1;
+			else $nonValide = '';
+			
+			// On recupera les 10 derniers clients
+			$this->lPreteurs = $this->clients->searchPreteursV2('','','','','',$nonValide,'','0','300');
+		}
+		
+		if(isset($this->params[0]) && $this->params[0] == 'status')
+		{	
+			$this->clients->get($this->params[1],'id_client');	
+			$this->clients->status = ($this->params[2] == 0?1:0);					
+			$this->clients->update();
+			
+			
+			// Histo user //
+			$serialize = serialize(array('id_client' => $this->params[1],'status' => $this->clients->status));
+			$this->users_history->histo(1,'status preteur',$_SESSION['user']['id_user'],$serialize);
+			////////////////
+			
+			// Mise en session du message
+			$_SESSION['freeow']['title'] = 'Statut du preteur';
+			$_SESSION['freeow']['message'] = 'Le statut du preteur a bien &eacute;t&eacute; modifi&eacute; !';
+			
+			header('location:'.$this->lurl.'/preteurs/gestion');
+			die;
+		}
+		
+		$a = count($this->clients->selectPreteursByStatus('60','c.status = 1 AND status_inscription_preteur = 1 AND (SELECT COUNT(t.id_transaction) FROM transactions t WHERE t.type_transaction IN (1,3,4,5,7,8,14) AND t.status = 1 AND t.etat = 1 AND t.id_client = c.id_client) < 1'));
+		
+		$this->z = $a;
+		//$this->z = count($this->clients->selectPreteursByStatus('60','c.status = 1 AND status_inscription_preteur = 1'));
+		//$this->babla = count($this->clients->selectPreteursByStatus('10,20,30,40,50','c.status = 1 AND status_inscription_preteur = 1'));
+		
+		//$this->z = $this->clients->counter('status = 1 AND status_inscription_preteur= 1');
+		$this->y = $this->clients->counter('status = 0 AND status_inscription_preteur = 1 AND status_pre_emp IN(1,3)');
+		$this->x = $this->clients->counter('status_inscription_preteur = 1  AND status_pre_emp IN(1,3)');
+		//echo '<br> preteurs offline : '.$nb_offline = count($this->clients->selectPreteursByStatus('10,20,30,40,50,60','c.status = 0'));
+		
+	}
+	
+	function _search()
+	{
+		// On masque les Head, header et footer originaux plus le debug
+		$this->autoFireHeader = false;
+		$this->autoFireHead = false;
+		$this->autoFireFooter = false;
+		$this->autoFireDebug = false;
+		
+		// On place le redirect sur la home
+		$_SESSION['request_url'] = $this->url;
+	}
+
+	function _search_non_inscripts()
+	{
+		// On masque les Head, header et footer originaux plus le debug
+		$this->autoFireHeader = false;
+		$this->autoFireHead = false;
+		$this->autoFireFooter = false;
+		$this->autoFireDebug = false;
+		
+		// On place le redirect sur la home
+		$_SESSION['request_url'] = $this->url;
+	}
+	
+	function _edit()
+	{
+		// Chargement du data
+		$this->clients = $this->loadData('clients');
+		$this->clients_adresses = $this->loadData('clients_adresses');
+		$this->lenders_accounts = $this->loadData('lenders_accounts');
+		$this->projects = $this->loadData('projects');
+		$this->companies = $this->loadData('companies');
+		$this->loans = $this->loadData('loans');
+		$this->transactions = $this->loadData('transactions');
+		$this->wallets_lines = $this->loadData('wallets_lines');
+		$this->echeanciers = $this->loadData('echeanciers');
+		$this->bids = $this->loadData('bids');
+		$this->clients_mandats = $this->loadData('clients_mandats');
+		$this->favoris = $this->loadData('favoris');
+		$this->clients_status = $this->loadData('clients_status');
+		$this->clients_status_history = $this->loadData('clients_status_history');
+		
+		// On recup les infos du client
+		$this->lenders_accounts->get($this->params[0],'id_lender_account');
+
+		// On recup les infos du client
+		$this->clients->get($this->lenders_accounts->id_client_owner,'id_client');
+		
+		$this->clients_adresses->get($this->clients->id_client,'id_client');
+		
+		if(in_array($this->clients->type,array(2,4)))
+		{
+			$this->companies->get($this->lenders_accounts->id_company_owner,'id_company');
+		}
+		
+		// le nombre de prets effectué
+		$this->nb_pret = $this->loans->counter('id_lender = "'.$this->lenders_accounts->id_lender_account.'" AND status = 0');
+		
+		$this->txMoyen = $this->loans->getAvgPrets('id_lender = "'.$this->lenders_accounts->id_lender_account.'" AND status = 0');
+		
+		// Solde du compte preteur
+		$this->solde = $this->transactions->getSolde($this->clients->id_client);
+		
+		$this->SumDepot = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account,'10,30');
+		
+		$this->SumInscription = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account,'10');
+		
+		$this->sumPrets = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
+		
+		$this->sumRembInte = $this->echeanciers->getSumRemb($this->lenders_accounts->id_lender_account,'interets');
+		
+		//$this->sumRembMontant = $this->echeanciers->getSumRemb($this->lenders_accounts->id_lender_account,'montant');
+		$sumRembMontant = $this->echeanciers->getSumRembV2($this->lenders_accounts->id_lender_account);
+		$this->sumRembMontant = $sumRembMontant['montant'];
+		
+		// moyenne montant des enchere ok et nok
+		$this->avgPreteur = $this->bids->getAvgPreteur($this->lenders_accounts->id_lender_account,'amount','1,2');
+	
+		$this->nextRemb = $this->echeanciers->getNextRemb($this->lenders_accounts->id_lender_account);
+		
+		// Suivi encheres
+		if(isset($this->params[1]))
+		{
+			$this->lEncheres = $this->loans->select('id_lender = '.$this->lenders_accounts->id_lender_account.' AND YEAR(added) = '.$this->params[1].' AND status = 0');
+		}
+		else
+		{
+			$this->lEncheres = $this->loans->select('id_lender = '.$this->lenders_accounts->id_lender_account.' AND YEAR(added) = YEAR(CURDATE()) AND status = 0');
+		}
+		
+
+		$this->clients_mandats->get($this->clients->id_client,'id_client');
+		
+		// liste des bids en cour
+		$this->lBids = $this->bids->select('id_lender_account = '.$this->lenders_accounts->id_lender_account.' AND status = 0','added DESC');
+		
+		$this->NbBids = count($this->lBids);
+		
+		// somme des bids en cours
+		$this->sumBidsEncours = $this->bids->sumBidsEncours($this->lenders_accounts->id_lender_account);
+		
+		
+		$this->soldeRetrait = $this->transactions->sum('status = 1 AND etat = 1 AND transaction = 1 AND type_transaction = 8 AND id_client = '.$this->clients->id_client,'montant');
+		$this->soldeRetrait = str_replace('-','',$this->soldeRetrait/100);
+		
+		//// transactions mouvements ////
+		$this->lng['profile'] = $this->ln->selectFront('preteur-profile',$this->language,$this->App);
+		
+		$year = date('Y');
+		
+		//$this->lLoans = $this->loans->select('id_lender = '.$this->lenders_accounts->id_lender_account.' AND YEAR(added) = '.$year.' AND status = 0','added DESC');
+		
+		//$this->lTrans = $this->transactions->select('transaction = 1 AND status = 1 AND etat = 1 AND id_client = '.$this->clients->id_client.' AND YEAR(date_transaction) = '.$year,'added DESC');
+		
+		$this->lTrans = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14) AND status = 1 AND etat = 1 AND id_client = '.$this->clients->id_client.' AND YEAR(date_transaction) = '.$year,'added DESC');
+		
+
+		$this->lesStatuts = array(1 => $this->lng['profile']['versement-initial'],3 => $this->lng['profile']['alimentation-cb'],4 => $this->lng['profile']['alimentation-virement'],5 => 'Remboursement',7 => $this->lng['profile']['alimentation-prelevement'],8 => $this->lng['profile']['retrait'],14 => 'Régularisation prêteur');
+		
+		
+		// projets favoris
+		
+		// On recupere les projets favoris
+		$lesFav = $this->favoris->projetsFavorisPreteur($this->clients->id_client);
+		
+		// Liste des projets favoris
+		if($lesFav == false)$this->lProjetsFav = 0;
+		else $this->lProjetsFav = $this->projects->select('id_project IN ('.$lesFav.')');
+		
+		// statut client
+		$this->clients_status->getLastStatut($this->clients->id_client);
+		
+		// histo actions
+		$this->lActions = $this->clients_status_history->select('id_client = '.$this->clients->id_client,'added DESC');
+		if($this->lActions[0]['added'] != false) $timeCreate = strtotime($this->lActions[0]['added']);
+		else $timeCreate = strtotime($this->clients->added);
+		$this->timeCreate = $timeCreate;
+		
+	}
+	
+	function _edit_preteur()
+	{
+		// Chargement du data
+		$this->clients = $this->loadData('clients');
+		$this->clients_adresses = $this->loadData('clients_adresses');
+		$this->lenders_accounts = $this->loadData('lenders_accounts');
+		$this->companies = $this->loadData('companies');
+		$this->clients_mandats = $this->loadData('clients_mandats');
+		$this->clients_status = $this->loadData('clients_status');
+		$this->clients_status_history = $this->loadData('clients_status_history');
+		$this->nationalites = $this->loadData('nationalites_v2');
+		$this->pays = $this->loadData('pays_v2');
+		$this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
+		
+		// liste nationalites
+		$this->lNatio = $this->nationalites->select();
+		
+		// liste pays
+		$this->lPays = $this->pays->select();
+		
+		// wording completude		
+		$lElements = $this->blocs_elements->select('id_bloc = 9 AND id_langue = "'.$this->language.'"');
+		foreach($lElements as $b_elt)
+		{
+			$this->elements->get($b_elt['id_element']);
+			$this->completude_wording[$this->elements->slug] = $b_elt['value'];		
+		}
+		$this->nbWordingCompletude = count($this->completude_wording);
+				
+		// Liste deroulante conseil externe de l'entreprise
+		$this->settings->get("Liste deroulante conseil externe de l'entreprise",'type');
+		$this->conseil_externe = $this->ficelle->explodeStr2array($this->settings->value);
+		
+		// Liste deroulante origine des fonds
+		$this->settings->get("Liste deroulante origine des fonds",'status = 1 AND type');
+		$this->origine_fonds = $this->settings->value;
+		$this->origine_fonds = explode(';',$this->origine_fonds);
+		
+		// On recup les infos du client
+		$this->lenders_accounts->get($this->params[0],'id_lender_account');
+
+		// On recup les infos du client
+		$this->clients->get($this->lenders_accounts->id_client_owner,'id_client');
+		
+		$this->clients_adresses->get($this->clients->id_client,'id_client');
+		
+		// Societe
+		if(in_array($this->clients->type,array(2,4))){
+			
+			$this->companies->get($this->lenders_accounts->id_company_owner,'id_company');
+			
+			// Adresse fiscal
+			$this->meme_adresse_fiscal = $this->companies->status_adresse_correspondance;
+			$this->adresse_fiscal = $this->companies->adresse1;
+			$this->city_fiscal = $this->companies->city;
+			$this->zip_fiscal = $this->companies->zip;
+			
+			
+		}
+		// Particulier
+		else
+		{
+			// Adresse fiscal
+			$this->meme_adresse_fiscal = $this->clients_adresses->meme_adresse_fiscal;
+			$this->adresse_fiscal = $this->clients_adresses->adresse_fiscal;
+			$this->city_fiscal = $this->clients_adresses->ville_fiscal;
+			$this->zip_fiscal = $this->clients_adresses->cp_fiscal;
+			
+		}
+		
+		$naiss = explode('-',$this->clients->naissance);
+		$j = $naiss['2'];
+		$m = $naiss['1']; 
+		$y = $naiss['0'];
+		$this->naissance = $j.'/'.$m.'/'.$y;
+		
+		if($this->lenders_accounts->iban != '')
+		{
+			$this->iban1 = substr($this->lenders_accounts->iban,0,4);
+			$this->iban2 = substr($this->lenders_accounts->iban,4,4);
+			$this->iban3 = substr($this->lenders_accounts->iban,8,4);
+			$this->iban4 = substr($this->lenders_accounts->iban,12,4);
+			$this->iban5 = substr($this->lenders_accounts->iban,16,4);
+			$this->iban6 = substr($this->lenders_accounts->iban,20,4);
+			$this->iban7 = substr($this->lenders_accounts->iban,24,3);
+		}
+		
+		if($this->clients->telephone != '')$this->clients->telephone = trim(chunk_split($this->clients->telephone, 2,' '));
+		if($this->companies->phone != '')$this->companies->phone = trim(chunk_split($this->companies->phone, 2,' '));
+		if($this->companies->phone_dirigeant != '') $this->companies->phone_dirigeant = trim(chunk_split($this->companies->phone_dirigeant, 2,' '));
+		
+		// statut client
+		$this->clients_status->getLastStatut($this->clients->id_client);
+		
+		// histo actions
+		$this->lActions = $this->clients_status_history->select('id_client = '.$this->clients->id_client,'added DESC');
+		if($this->lActions[0]['added'] != false) $timeCreate = strtotime($this->lActions[0]['added']);
+		else $timeCreate = strtotime($this->clients->added);
+		$this->timeCreate = $timeCreate;
+		
+		// liste des cvg signé
+		$this->lAcceptCGV = $this->acceptations_legal_docs->select('id_client = '.$this->clients->id_client);
+		
+		
+		if(isset($_POST['send_completude']))
+		{
+			// Recuperation du modele de mail
+			$this->mails_text->get('completude','lang = "'.$this->language.'" AND type');
+			
+			// Variables du mailing
+			$surl = $this->surl;
+			$url = $this->lurl;
+			
+			// FB
+			$this->settings->get('Facebook','type');
+			$lien_fb = $this->settings->value;
+			
+			// Twitter
+			$this->settings->get('Twitter','type');
+			$lien_tw = $this->settings->value;
+			
+			if(in_array($this->clients->type,array(1,3))) $lapage = 'particulier_doc';
+			else $lapage = 'societe_doc';
+			
+			$month = $this->dates->tableauMois['fr'][date('n',$timeCreate)];
+	
+			// Variables du mailing
+			$varMail = array(
+			'surl' => $surl,
+			'url' => $url,
+			'prenom_p' => $this->clients->prenom,
+			'date_creation' => date('d',$timeCreate).' '.$month.' '.date('Y',$timeCreate),
+			'content' => utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]),
+			'lien_upload' => $this->furl.'/profile/'.$lapage,
+			'lien_fb' => $lien_fb,
+			'lien_tw' => $lien_tw);		
+			// Construction du tableau avec les balises EMV
+			$tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+			
+			// Attribution des données aux variables
+			$sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);				
+			$texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
+			$exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
+			
+			// Envoi du mail
+			$this->email = $this->loadLib('email',array());
+			$this->email->setFrom($this->mails_text->exp_email,$exp_name);
+			$this->email->setSubject(stripslashes($sujetMail));
+			$this->email->setHTMLBody(stripslashes($texteMail));
+			
+			if($this->Config['env'] == 'prod') // nmp
+			{
+				Mailer::sendNMP($this->email,$this->mails_filer,$this->mails_text->id_textemail,$this->clients->email,$tabFiler);			
+				// Injection du mail NMP dans la queue
+				$this->tnmp->sendMailNMP($tabFiler,$varMail,$this->mails_text->nmp_secure,$this->mails_text->id_nmp,$this->mails_text->nmp_unique,$this->mails_text->mode);
+			}
+			else // non nmp
+			{
+				$this->email->addRecipient(trim($this->clients->email));
+				Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);	
+			}
+			
+
+			$this->clients_status_history->addStatus($_SESSION['user']['id_user'],'20',$this->clients->id_client,utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]));
+			
+			// On vide la session
+			unset($_SESSION['content_email_completude'][$this->clients->id_client]);
+			
+			
+			$_SESSION['email_completude_confirm'] = true;
+			
+			header('location:'.$this->lurl.'/preteurs/edit_preteur/'.$this->lenders_accounts->id_lender_account);
+			die;
+			
+			
+		}
+		elseif(isset($_POST['send_edit_preteur']))
+		{
+			
+			
+			// particulier
+			if(in_array($this->clients->type,array(1,3)))
+			{
+				////////////////////////////////////
+				// On verifie meme adresse ou pas //
+				////////////////////////////////////
+				if($_POST['meme-adresse'] != false)
+				$this->clients_adresses->meme_adresse_fiscal = 1; // la meme
+				else
+				$this->clients_adresses->meme_adresse_fiscal = 0; // pas la meme
+				
+				// adresse fiscal
+				$this->clients_adresses->adresse_fiscal = $_POST['adresse'];
+				$this->clients_adresses->ville_fiscal = $_POST['ville'];
+				$this->clients_adresses->cp_fiscal = $_POST['cp'];
+				$this->clients_adresses->id_pays_fiscal = $_POST['id_pays_fiscal'];
+				
+				// pas la meme
+				if($this->clients_adresses->meme_adresse_fiscal == 0)
+				{
+					// adresse client
+					$this->clients_adresses->adresse1 = $_POST['adresse2'];
+					$this->clients_adresses->ville = $_POST['ville2'];
+					$this->clients_adresses->cp = $_POST['cp2'];
+					$this->clients_adresses->id_pays = $_POST['id_pays'];
+				}
+				// la meme
+				else
+				{
+					// adresse client
+					$this->clients_adresses->adresse1 = $_POST['adresse'];
+					$this->clients_adresses->ville = $_POST['ville'];
+					$this->clients_adresses->cp = $_POST['cp'];
+					$this->clients_adresses->id_pays = $_POST['id_pays_fiscal'];
+				}
+				////////////////////////////////////////
+				
+				$this->clients->civilite = $_POST['civilite'];
+				$this->clients->nom = $this->ficelle->majNom($_POST['nom-famille']);
+				$this->clients->nom_usage = $this->ficelle->majNom($_POST['nom-usage']);
+				$this->clients->prenom = $this->ficelle->majNom($_POST['prenom']);
+				$this->clients->email = $_POST['email'];
+				
+				$this->clients->telephone = str_replace(' ','',$_POST['phone']);
+				$this->clients->ville_naissance = $_POST['com-naissance'];
+				
+				// Naissance
+				$naissance = explode('/',$_POST['naissance']);
+				$j = $naissance[0];
+				$m = $naissance[1];
+				$y = $naissance[2];
+				$this->clients->naissance = $y.'-'.$m.'-'.$j;
+				$this->clients->id_pays_naissance = $_POST['id_pays_naissance'];
+				
+				// id nationalite
+				$this->clients->id_nationalite = $_POST['nationalite'];
+				
+				// On créer le client
+				$this->clients->id_langue = 'fr';
+				$this->clients->type = 1;
+				$this->clients->fonction = '';
+				
+				$this->lenders_accounts->id_company_owner = 0;
+				
+				
+				$this->lenders_accounts->bic = str_replace(' ','',strtoupper($_POST['bic']));
+				
+				$iban = '';
+				for($i=1;$i<=7;$i++)
+				{
+					$iban .= strtoupper($_POST['iban'.$i]);
+				}
+				$this->lenders_accounts->iban = str_replace(' ','',$iban);
+				
+				$this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
+				if($this->lenders_accounts->origine_des_fonds == '1000000') $this->lenders_accounts->precision = $_POST['preciser'];
+				else $this->lenders_accounts->precision = '';
+				
+				// debut fichiers //
+				
+				// carte-nationale-didentite-passeport
+				if(isset($_FILES['fichier1']) && $_FILES['fichier1']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport/');
+					if($this->upload->doUpload('fichier1'))
+					{
+						if($this->lenders_accounts->fichier_cni_passeport != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_cni_passeport);
+						$this->lenders_accounts->fichier_cni_passeport = $this->upload->getName();
+					}
+				}
+				// autre
+				if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/autre/');
+					if($this->upload->doUpload('fichier7'))
+					{
+						if($this->lenders_accounts->fichier_autre != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_autre);
+						$this->lenders_accounts->fichier_autre = $this->upload->getName();
+					}
+				}
+				
+				// CNI/Passeport dirigeants
+				if(isset($_FILES['fichier2']) && $_FILES['fichier2']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport_dirigent/');
+					if($this->upload->doUpload('fichier2'))
+					{
+						if($this->lenders_accounts->fichier_cni_passeport_dirigent != '')@unlink($this->path.'protected/lenders/cni_passeport_dirigent/'.$this->lenders_accounts->fichier_cni_passeport_dirigent);
+						$this->lenders_accounts->fichier_cni_passeport_dirigent = $this->upload->getName();
+					}
+				}
+				// Délégation de pouvoir
+				if(isset($_FILES['fichier3']) && $_FILES['fichier3']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/delegation_pouvoir/');
+					if($this->upload->doUpload('fichier3'))
+					{
+						if($this->lenders_accounts->fichier_delegation_pouvoir != '')@unlink($this->path.'protected/companies/delegation_pouvoir/'.$this->lenders_accounts->fichier_delegation_pouvoir);
+						$this->lenders_accounts->fichier_delegation_pouvoir = $this->upload->getName();
+					}
+				}
+				// Extrait Kbis
+				if(isset($_FILES['fichier4']) && $_FILES['fichier4']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/extrait_kbis/');
+					if($this->upload->doUpload('fichier4'))
+					{
+						if($this->lenders_accounts->fichier_extrait_kbis != '')@unlink($this->path.'protected/lenders/extrait_kbis/'.$this->lenders_accounts->fichier_extrait_kbis);
+						$this->lenders_accounts->fichier_extrait_kbis = $this->upload->getName();
+					}
+				}
+				// justificatif-de-domicile
+				if(isset($_FILES['fichier5']) && $_FILES['fichier5']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/justificatif_domicile/');
+					if($this->upload->doUpload('fichier5'))
+					{
+						if($this->lenders_accounts->fichier_justificatif_domicile != '')@unlink($this->path.'protected/companies/justificatif_domicile/'.$this->lenders_accounts->fichier_justificatif_domicile);
+						$this->lenders_accounts->fichier_justificatif_domicile = $this->upload->getName();
+					}
+				}
+				// RIB
+				if(isset($_FILES['fichier6']) && $_FILES['fichier6']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/rib/');
+					if($this->upload->doUpload('fichier6'))
+					{
+						if($this->lenders_accounts->fichier_rib != '')@unlink($this->path.'protected/lenders/rib/'.$this->lenders_accounts->fichier_rib);
+						$this->lenders_accounts->fichier_rib = $this->upload->getName();
+					}
+				}
+				// Statuts
+				/*if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/statuts/');
+					if($this->upload->doUpload('fichier7'))
+					{
+						if($this->lenders_accounts->fichier_statuts != '')@unlink($this->path.'protected/lenders/statuts/'.$this->lenders_accounts->fichier_statuts);
+						$this->lenders_accounts->fichier_statuts = $this->upload->getName();
+					}
+				}*/
+				// fin fichier //
+				
+				// Mandat
+				if(isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '')
+				{
+					if($this->clients_mandats->get($this->clients->id_client,'id_client'))$create = false;
+					else $create = true;
+					
+					$this->upload->setUploadDir($this->path,'protected/pdf/mandat/');
+					if($this->upload->doUpload('mandat'))
+					{
+						if($this->clients_mandats->name != '')@unlink($this->path.'protected/pdf/mandat/'.$this->clients_mandats->name);
+						$this->clients_mandats->name = $this->upload->getName();
+						$this->clients_mandats->id_client = $this->clients->id_client;
+						$this->clients_mandats->id_universign = 'no_universign';
+						$this->clients_mandats->url_pdf = '/pdf/mandat/'.$this->clients->hash.'/';
+						$this->clients_mandats->status = 1;
+						
+						if($create == true)$this->clients_mandats->create();
+						else $this->clients_mandats->update();
+						
+					}
+				}
+				
+					// document_fiscal
+				if(isset($_FILES['document_fiscal']) && $_FILES['document_fiscal']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/document_fiscal/');
+					if($this->upload->doUpload('document_fiscal'))
+					{
+						if($this->lenders_accounts->fichier_document_fiscal != '')@unlink($this->path.'protected/lenders/document_fiscal/'.$this->lenders_accounts->fichier_document_fiscal);
+						$this->lenders_accounts->fichier_document_fiscal = $this->upload->getName();
+					}
+				}
+				
+				
+				
+				$old_exonere = $this->lenders_accounts->exonere;
+				$this->lenders_accounts->exonere = $_POST['exonere'];
+				$new_exonere = $this->lenders_accounts->exonere;
+				
+				/////////////////////////// EXONERATION MISE A JOUR SUR LES ECHEANCES ////////////////////////////////////////	
+				if($old_exonere != $new_exonere){
+				
+					$this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
+					$this->echeanciers = $this->loadData('echeanciers');
+					
+					// EQ-Acompte d'impôt sur le revenu
+					$this->settings->get("EQ-Acompte d'impôt sur le revenu",'type');
+					$prelevements_obligatoires = $this->settings->value;
+			
+					$this->etranger = 0;
+					// fr/resident etranger
+					if($this->clients->id_nationalite <= 1 && $this->clients_adresses->id_pays_fiscal > 1){
+						$this->etranger = 1;
+					}
+					// no fr/resident etranger
+					elseif($this->clients->id_nationalite > 1 && $this->clients_adresses->id_pays_fiscal > 1){
+						$this->etranger = 2;
+					}
+					
+					// On garde une trace de l'action
+					$this->lenders_imposition_history->id_lender = $this->lenders_accounts->id_lender_account;
+					$this->lenders_imposition_history->exonere = $new_exonere;
+					$this->lenders_imposition_history->id_user = $_SESSION['user']['id_user'];
+					$this->lenders_imposition_history->create();
+					
+					if($this->etranger == 0){
+						// on retire les prelevements sur les futures echeances
+						if($old_exonere == 0 && $new_exonere == 1){
+							$this->echeanciers->update_prelevements_obligatoires($this->lenders_accounts->id_lender_account,1);
+						}
+						// on ajoute les prelevements sur les futures echeances
+						elseif($old_exonere == 1 && $new_exonere == 0){
+							$this->echeanciers->update_prelevements_obligatoires($this->lenders_accounts->id_lender_account,0,$prelevements_obligatoires);
+						}
+					}
+				}
+				///////////////////////////////////////////////////////////////////	
+				
+				
+				
+				$this->lenders_accounts->exonere = $_POST['exonere'];
+				
+				// mise a jour
+				$this->clients->update();
+				$this->clients_adresses->update();
+				$this->lenders_accounts->update();
+				
+				// Si on a une entreprise reliée, on la supprime car elle n'a plus rien a faire ici. on est un particulier.
+				if($this->companies->get($this->clients->id_client,'id_client_owner'))
+				{
+					$this->companies->delete($this->companies->id_company,'id_company');
+				}
+				
+				// On recup le client
+				$this->clients->get($this->clients->id_client,'id_client');
+				
+				
+				// Histo user //
+				$serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST,'files' => $_FILES));
+				$this->users_history->histo(3,'modif info preteur',$_SESSION['user']['id_user'],$serialize);
+				////////////////
+				
+				if(isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1)
+				{
+					$this->clients_status_history->addStatus($_SESSION['user']['id_user'],'60',$this->clients->id_client);
+					
+					// Mail au client particulier //
+					// Recuperation du modele de mail
+					if($this->clients_status_history->counter('id_client = '.$this->clients->id_client.' AND id_client_status = 5') > 0)
+					$this->mails_text->get('preteur-validation-modification-compte','lang = "'.$this->language.'" AND type');
+					else
+					$this->mails_text->get('preteur-confirmation-activation','lang = "'.$this->language.'" AND type');
+					
+					// Variables du mailing
+					$surl = $this->surl;
+					$url = $this->furl;
+					
+					// FB
+					$this->settings->get('Facebook','type');
+					$lien_fb = $this->settings->value;
+					
+					// Twitter
+					$this->settings->get('Twitter','type');
+					$lien_tw = $this->settings->value;
+					
+					if(in_array($this->clients->type,array(1,3))) $lapage = 'particulier_doc';
+					else $lapage = 'societe_doc';
+					
+					$month = $this->dates->tableauMois['fr'][date('n',$timeCreate)];
+			
+					// Variables du mailing
+					$varMail = array(
+					'surl' => $surl,
+					'url' => $url,
+					'prenom' => $this->clients->prenom,
+					'projets' => $this->furl.'/projets-a-financer',
+					'lien_fb' => $lien_fb,
+					'lien_tw' => $lien_tw);		
+					// Construction du tableau avec les balises EMV
+					$tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+					
+					// Attribution des données aux variables
+					$sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);				
+					$texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
+					$exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
+					
+					// Envoi du mail
+					$this->email = $this->loadLib('email',array());
+					$this->email->setFrom($this->mails_text->exp_email,$exp_name);
+					$this->email->setSubject(stripslashes($sujetMail));
+					$this->email->setHTMLBody(stripslashes($texteMail));
+					
+					if($this->Config['env'] == 'prod') // nmp
+					{
+						Mailer::sendNMP($this->email,$this->mails_filer,$this->mails_text->id_textemail,$this->clients->email,$tabFiler);			
+						// Injection du mail NMP dans la queue
+						$this->tnmp->sendMailNMP($tabFiler,$varMail,$this->mails_text->nmp_secure,$this->mails_text->id_nmp,$this->mails_text->nmp_unique,$this->mails_text->mode);
+					}
+					else // non nmp
+					{
+						$this->email->addRecipient(trim($this->clients->email));
+						Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);	
+					}
+					////////////////////
+					
+						
+					/////////////////// IMPOSITION ETRANGER ////////////////////
+					
+					// datas
+					$this->echeanciers = $this->loadData('echeanciers');
+					$this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
+					
+					// EQ-Acompte d'impôt sur le revenu
+					$this->settings->get("EQ-Acompte d'impôt sur le revenu",'type');
+					$prelevements_obligatoires = $this->settings->value;
+					
+					// EQ-Contribution additionnelle au Prélèvement Social
+					$this->settings->get('EQ-Contribution additionnelle au Prélèvement Social','type');
+					$contributions_additionnelles = $this->settings->value;
+					
+					// EQ-CRDS
+					$this->settings->get('EQ-CRDS','type');
+					$crds = $this->settings->value;
+					
+					// EQ-CSG
+					$this->settings->get('EQ-CSG','type');
+					$csg = $this->settings->value;
+					
+					// EQ-Prélèvement de Solidarité
+					$this->settings->get('EQ-Prélèvement de Solidarité','type');
+					$prelevements_solidarite = $this->settings->value;
+					
+					// EQ-Prélèvement social
+					$this->settings->get('EQ-Prélèvement social','type');
+					$prelevements_sociaux = $this->settings->value;
+					
+					// EQ-Retenue à la source
+					$this->settings->get('EQ-Retenue à la source','type');
+					$retenues_source = $this->settings->value;
+					
+					$this->etranger = 0;
+					// fr/resident etranger
+					if($this->clients->id_nationalite <= 1 && $this->clients_adresses->id_pays_fiscal > 1){
+						$this->etranger = 1;
+					}
+					// no fr/resident etranger
+					elseif($this->clients->id_nationalite > 1 && $this->clients_adresses->id_pays_fiscal > 1){
+						$this->etranger = 2;
+					}
+					
+					// On garde une trace de l'action
+					$this->lenders_imposition_history->id_lender = $this->lenders_accounts->id_lender_account;
+					$this->lenders_imposition_history->exonere = $this->lenders_accounts->exonere;
+					$this->lenders_imposition_history->resident_etranger = $this->etranger;
+					$this->lenders_imposition_history->id_user = $_SESSION['user']['id_user'];
+					$this->lenders_imposition_history->create();
+					
+					$tabImpo = array(
+					'prelevements_obligatoires' => $prelevements_obligatoires,
+					'contributions_additionnelles' => $contributions_additionnelles,
+					'crds' => $crds,
+					'csg' => $csg,
+					'prelevements_solidarite' => $prelevements_solidarite,
+					'prelevements_sociaux' => $prelevements_sociaux,
+					'retenues_source' => $retenues_source);
+					
+					$this->echeanciers->update_imposition_etranger($this->lenders_accounts->id_lender_account,$this->etranger,$tabImpo,$this->lenders_accounts->exonere);
+					
+					////////////////////////////////////////////////////////////
+					
+					$_SESSION['compte_valide'] = true;
+				}
+				
+				
+				
+				header('location:'.$this->lurl.'/preteurs/edit_preteur/'.$this->lenders_accounts->id_lender_account);
+				die;
+			}
+			// societe
+			elseif(in_array($this->clients->type,array(2,4)))
+			{
+				$this->companies->name = $_POST['raison-sociale'];
+				$this->companies->forme = $_POST['form-juridique'];
+				$this->companies->capital = str_replace(' ','',$_POST['capital-sociale']);
+				$this->companies->siren = $_POST['siren'];
+				$this->companies->phone = str_replace(' ','',$_POST['phone-societe']);
+				
+				$this->companies->rcs = $_POST['rcs'];
+				$this->companies->tribunal_com = $_POST['tribunal_com'];
+				
+				////////////////////////////////////
+				// On verifie meme adresse ou pas //
+				////////////////////////////////////
+				if($_POST['meme-adresse'] != false)
+				$this->companies->status_adresse_correspondance = '1'; // la meme
+				else
+				$this->companies->status_adresse_correspondance = '0'; // pas la meme
+				
+				// adresse fiscal (siege de l'entreprise)
+				$this->companies->adresse1 = $_POST['adresse'];
+				$this->companies->city = $_POST['ville'];
+				$this->companies->zip = $_POST['cp'];
+				
+				// adresse fiscal (dans client entreprise) on vide car c'est pour les particulier ca
+				$this->clients_adresses->adresse_fiscal = '';
+				$this->clients_adresses->ville_fiscal = '';
+				$this->clients_adresses->cp_fiscal = '';
+				
+				// pas la meme
+				if($this->companies->status_adresse_correspondance == 0)
+				{
+					// adresse client
+					$this->clients_adresses->adresse1 = $_POST['adresse2'];
+					$this->clients_adresses->ville = $_POST['ville2'];
+					$this->clients_adresses->cp = $_POST['cp2'];
+				}
+				// la meme
+				else
+				{
+					// adresse client
+					$this->clients_adresses->adresse1 = $_POST['adresse'];
+					$this->clients_adresses->ville = $_POST['ville'];
+					$this->clients_adresses->cp = $_POST['cp'];
+				}
+				////////////////////////////////////////
+				
+				$this->companies->status_client = $_POST['enterprise']; // radio 1 dirigeant 2 pas dirigeant 3 externe
+				
+				$this->clients->civilite = $_POST['civilite_e'];
+				$this->clients->nom = $this->ficelle->majNom($_POST['nom_e']);
+				$this->clients->prenom = $this->ficelle->majNom($_POST['prenom_e']);
+				$this->clients->fonction = $_POST['fonction_e'];
+				$this->clients->email = $_POST['email_e'];
+				$this->clients->telephone = str_replace(' ','',$_POST['phone_e']);
+				
+				//extern ou non dirigeant
+				if($this->companies->status_client == 2 || $this->companies->status_client == 3)
+				{
+					$this->companies->civilite_dirigeant = $_POST['civilite2_e'];
+					$this->companies->nom_dirigeant = $this->ficelle->majNom($_POST['nom2_e']);
+					$this->companies->prenom_dirigeant = $this->ficelle->majNom($_POST['prenom2_e']);
+					$this->companies->fonction_dirigeant = $_POST['fonction2_e'];
+					$this->companies->email_dirigeant = $_POST['email2_e'];
+					$this->companies->phone_dirigeant = str_replace(' ','',$_POST['phone2_e']);
+					
+					// externe
+					if($this->companies->status_client == 3)
+					{
+						$this->companies->status_conseil_externe_entreprise = $_POST['status_conseil_externe_entreprise'];
+						$this->companies->preciser_conseil_externe_entreprise = $_POST['preciser_conseil_externe_entreprise'];
+					}
+				}
+				else
+				{
+					$this->companies->civilite_dirigeant = '';
+					$this->companies->nom_dirigeant = '';
+					$this->companies->prenom_dirigeant = '';
+					$this->companies->fonction_dirigeant = '';
+					$this->companies->email_dirigeant = '';
+					$this->companies->phone_dirigeant = '';
+				}
+				
+				// Si form societe ok
+				
+				$this->clients->id_langue = 'fr';
+				$this->clients->type = 2;
+				$this->clients->nom_usage = '';
+				$this->clients->naissance = '0000-00-00';
+				$this->clients->ville_naissance = '';
+				//$this->clients->secrete_question = '';
+				//$this->clients->secrete_reponse = '';
+					
+					
+				// On crée la l'entreprise si existe pas
+				if($this->companies->exist($this->clients->id_client,'id_client_owner'))
+				{
+					$this->companies->update();
+				}
+				else
+				{
+					$this->companies->id_client_owner = $this->clients->id_client;
+					$this->companies->id_company = $this->companies->create();
+				}
+				
+				$this->lenders_accounts->bic = str_replace(' ','',strtoupper($_POST['bic']));
+				
+				$iban = '';
+				for($i=1;$i<=7;$i++)
+				{
+					$iban .= strtoupper($_POST['iban'.$i]);
+				}
+				$this->lenders_accounts->iban = str_replace(' ','',$iban);		
+				
+				$this->lenders_accounts->origine_des_fonds = 0;
+				$this->lenders_accounts->precision = '';
+				
+				// debut fichiers //
+				
+				// carte-nationale-didentite-passeport
+				if(isset($_FILES['fichier1']) && $_FILES['fichier1']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport/');
+					if($this->upload->doUpload('fichier1'))
+					{
+						if($this->lenders_accounts->fichier_cni_passeport != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_cni_passeport);
+						$this->lenders_accounts->fichier_cni_passeport = $this->upload->getName();
+					}
+				}
+				// autre
+				if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/autre/');
+					if($this->upload->doUpload('fichier7'))
+					{
+						if($this->lenders_accounts->fichier_autre != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_autre);
+						$this->lenders_accounts->fichier_autre = $this->upload->getName();
+					}
+				}
+				// CNI/Passeport dirigeants
+				if(isset($_FILES['fichier2']) && $_FILES['fichier2']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport_dirigent/');
+					if($this->upload->doUpload('fichier2'))
+					{
+						if($this->lenders_accounts->fichier_cni_passeport_dirigent != '')@unlink($this->path.'protected/lenders/cni_passeport_dirigent/'.$this->lenders_accounts->fichier_cni_passeport_dirigent);
+						$this->lenders_accounts->fichier_cni_passeport_dirigent = $this->upload->getName();
+					}
+				}
+				// Délégation de pouvoir
+				if(isset($_FILES['fichier3']) && $_FILES['fichier3']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/delegation_pouvoir/');
+					if($this->upload->doUpload('fichier3'))
+					{
+						if($this->lenders_accounts->fichier_delegation_pouvoir != '')@unlink($this->path.'protected/companies/delegation_pouvoir/'.$this->lenders_accounts->fichier_delegation_pouvoir);
+						$this->lenders_accounts->fichier_delegation_pouvoir = $this->upload->getName();
+					}
+				}
+				// Extrait Kbis
+				if(isset($_FILES['fichier4']) && $_FILES['fichier4']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/extrait_kbis/');
+					if($this->upload->doUpload('fichier4'))
+					{
+						if($this->lenders_accounts->fichier_extrait_kbis != '')@unlink($this->path.'protected/lenders/extrait_kbis/'.$this->lenders_accounts->fichier_extrait_kbis);
+						$this->lenders_accounts->fichier_extrait_kbis = $this->upload->getName();
+					}
+				}
+				// justificatif-de-domicile
+				if(isset($_FILES['fichier5']) && $_FILES['fichier5']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/justificatif_domicile/');
+					if($this->upload->doUpload('fichier5'))
+					{
+						if($this->lenders_accounts->fichier_justificatif_domicile != '')@unlink($this->path.'protected/companies/justificatif_domicile/'.$this->lenders_accounts->fichier_justificatif_domicile);
+						$this->lenders_accounts->fichier_justificatif_domicile = $this->upload->getName();
+					}
+				}
+				// RIB
+				if(isset($_FILES['fichier6']) && $_FILES['fichier6']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/rib/');
+					if($this->upload->doUpload('fichier6'))
+					{
+						if($this->lenders_accounts->fichier_rib != '')@unlink($this->path.'protected/lenders/rib/'.$this->lenders_accounts->fichier_rib);
+						$this->lenders_accounts->fichier_rib = $this->upload->getName();
+					}
+				}
+				// Statuts
+				/*if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/statuts/');
+					if($this->upload->doUpload('fichier7'))
+					{
+						if($this->lenders_accounts->fichier_statuts != '')@unlink($this->path.'protected/lenders/statuts/'.$this->lenders_accounts->fichier_statuts);
+						$this->lenders_accounts->fichier_statuts = $this->upload->getName();
+					}
+				}*/
+				// fin fichier //
+						
+				// On met a jour le lender
+				$this->lenders_accounts->id_company_owner = $this->companies->id_company;
+				$this->lenders_accounts->update();
+				
+				// On met a jour le client
+				$this->clients->update();
+				// On met a jour l'adresse client
+				$this->clients_adresses->update();
+				
+				
+				if(isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1)
+				{
+					$this->clients_status_history->addStatus($_SESSION['user']['id_user'],'60',$this->clients->id_client);
+					
+					
+					// Mail au client  societe//
+					
+					// Mail au client //
+					// Recuperation du modele de mail
+					if($this->clients_status_history->counter('id_client = '.$this->clients->id_client.' AND id_client_status = 5') > 0)
+					$this->mails_text->get('preteur-validation-modification-compte','lang = "'.$this->language.'" AND type');
+					else
+					$this->mails_text->get('preteur-confirmation-activation','lang = "'.$this->language.'" AND type');
+					
+					// Variables du mailing
+					$surl = $this->surl;
+					$url = $this->furl;
+					
+					// FB
+					$this->settings->get('Facebook','type');
+					$lien_fb = $this->settings->value;
+					
+					// Twitter
+					$this->settings->get('Twitter','type');
+					$lien_tw = $this->settings->value;
+					
+					if(in_array($this->clients->type,array(1,3))) $lapage = 'particulier_doc';
+					else $lapage = 'societe_doc';
+					
+					$month = $this->dates->tableauMois['fr'][date('n',$timeCreate)];
+			
+					// Variables du mailing
+					$varMail = array(
+					'surl' => $surl,
+					'url' => $url,
+					'prenom' => $this->clients->prenom,
+					'projets' => $this->furl.'/projets-a-financer',
+					'lien_fb' => $lien_fb,
+					'lien_tw' => $lien_tw);		
+					// Construction du tableau avec les balises EMV
+					$tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+					
+					// Attribution des données aux variables
+					$sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);				
+					$texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
+					$exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
+					
+					// Envoi du mail
+					$this->email = $this->loadLib('email',array());
+					$this->email->setFrom($this->mails_text->exp_email,$exp_name);
+					$this->email->setSubject(stripslashes($sujetMail));
+					$this->email->setHTMLBody(stripslashes($texteMail));
+					
+					if($this->Config['env'] == 'prod') // nmp
+					{
+						Mailer::sendNMP($this->email,$this->mails_filer,$this->mails_text->id_textemail,$this->clients->email,$tabFiler);			
+						// Injection du mail NMP dans la queue
+						$this->tnmp->sendMailNMP($tabFiler,$varMail,$this->mails_text->nmp_secure,$this->mails_text->id_nmp,$this->mails_text->nmp_unique,$this->mails_text->mode);
+					}
+					else // non nmp
+					{
+						$this->email->addRecipient(trim($this->clients->email));
+						Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);	
+					}
+					////////////////////
+					
+					$_SESSION['compte_valide'] = true;
+					
+				}
+					
+				// On recup le client
+				//$this->clients->get($this->clients->id_client,'id_client');
+				
+				header('location:'.$this->lurl.'/preteurs/edit_preteur/'.$this->lenders_accounts->id_lender_account);
+				die;
+			}
+		}
+		
+	}
+	
+	function _liste_preteurs_non_inscrits()
+	{
+		// Chargement du data
+		$this->clients = $this->loadData('clients');
+		$this->clients_adresses = $this->loadData('clients');
+		$this->lenders_accounts = $this->loadData('lenders_accounts');
+		$this->transactions = $this->loadData('transactions');
+		$this->loans = $this->loadData('loans');
+		$this->bids = $this->loadData('bids');
+		$this->companies = $this->loadData('companies');
+		
+		// Partie delete
+		if(isset($this->params[0]) && $this->params[0] == 'delete')
+		{
+			// client a delete
+			if($this->clients->get($this->params[1],'id_client') && $this->clients->status == 0)
+			{
+				// on verif si y a des infos lender
+				if($this->lenders_accounts->get($this->clients->id_client,'id_client_owner'));
+				{
+					
+				}
+				// on verif dans companie
+				if($this->companies->get($this->clients->id_client,'id_client_owner'))
+				{
+					// on verif les autres table comapnie
+					$companies_actif_passif = $this->loadData('companies_actif_passif');
+					$companies_bilans = $this->loadData('companies_bilans');
+					$companies_details = $this->loadData('companies_details');
+					
+					if($companies_actif_passif->get($this->companies->id_company,'id_company'))
+					{
+						// On supp
+						$companies_actif_passif->delete($this->companies->id_company,'id_company');
+					}
+					if($companies_bilans->get($this->companies->id_company,'id_company'))
+					{
+						// On supp
+						$companies_bilans->delete($this->companies->id_company,'id_company');
+					}
+					if($companies_details->get($this->companies->id_company,'id_company'))
+					{
+						// On supp
+						$companies_details->delete($this->companies->id_company,'id_company');
+					}
+					// On supp
+					$this->companies->delete($this->clients->id_client,'id_client_owner');
+					
+				}
+				
+				// On supp
+				$this->lenders_accounts->delete($this->clients->id_client,'id_client_owner');
+				
+				// ON verif si il est dans adresses
+				if($this->clients_adresses->get($this->clients->id_client,'id_client'));
+				{
+					// On supp
+					$this->clients_adresses->delete($this->clients->id_client,'id_client');
+				}
+				
+				
+				// Histo user //
+				$serialize = serialize(array('id_client' => $this->clients->id_client));
+				$this->users_history->histo(11,'delete preteur inactif non inscrit',$_SESSION['user']['id_user'],$serialize);
+				////////////////
+				
+				$this->clients->delete($this->clients->id_client,'id_client');
+				
+				
+				header('location:'.$this->lurl.'/preteurs/liste_preteurs_non_inscrits');
+				die;
+			}
+			
+			
+		}
+		
+		// non inscrit = 2
+		// offline = 1
+		$nonValide = 2;
+
+		if(isset($_POST['form_search_preteur']))
+		{
+			// Recuperation de la liste des clients searchPreteurs
+			$this->lPreteurs = $this->clients->searchPreteursV2($_POST['id'],$_POST['nom'],$_POST['email'],$_POST['prenom'],$_POST['raison_sociale'],$nonValide);
+			
+			// Mise en session du message
+			$_SESSION['freeow']['title'] = 'Recherche d\'un prêteur non inscript';
+			$_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
+		}
+		else
+		{
+			// On recupera les 10 derniers clients
+			$this->lPreteurs = $this->clients->searchPreteursV2('','','','','',$nonValide,'','0','300');
+		}
+		
+		
+		if(isset($this->params[0]) && $this->params[0] == 'status')
+		{	
+			$this->clients->get($this->params[1],'id_client');	
+			$this->clients->status = ($this->params[2] == 0?1:0);					
+			$this->clients->update();
+			
+			
+			// Histo user //
+			$serialize = serialize(array('id_client' => $this->params[1],'status' => $this->clients->status));
+			$this->users_history->histo(12,'status offline-online preteur non inscrit',$_SESSION['user']['id_user'],$serialize);
+			////////////////
+			
+			// Mise en session du message
+			$_SESSION['freeow']['title'] = 'Statut du preteur non inscrit';
+			$_SESSION['freeow']['message'] = 'Le statut du preteur non inscrit a bien &eacute;t&eacute; modifi&eacute; !';
+			
+			header('location:'.$this->lurl.'/preteurs/gestion');
+			die;
+		}
+	}
+	
+	// Activation des comptes prêteurs
+	function _activation()
+	{
+		// Chargement du data
+		$this->clients = $this->loadData('clients');
+		$this->clients_adresses = $this->loadData('clients_adresses');
+		$this->clients_status_history = $this->loadData('clients_status_history');
+		$this->lenders_accounts = $this->loadData('lenders_accounts');
+		$this->clients_status = $this->loadData('clients_status');
+		$this->companies = $this->loadData('companies');
+		$this->transactions = $this->loadData('transactions');
+		$this->bids = $this->loadData('bids');
+		
+		
+		// Partie delete
+		if(isset($this->params[0]) && $this->params[0] == 'delete')
+		{
+			// client a delete
+			if($this->clients->get($this->params[1],'id_client'))
+			{
+				
+				$backup_delete = false;
+				// on verif si y a des infos lender
+				if($this->lenders_accounts->get($this->clients->id_client,'id_client_owner'));
+				{
+					
+					// On verifie si on a deja une enchere d'effectué par ce compte
+					$nb = $this->bids->counter('id_lender_account = '.$this->lenders_accounts->id_lender_account);
+					if($nb > 0){
+						
+						$backup_delete = true;
+						
+						$backup_clients = $this->loadData('backup_delete_clients');
+						$backup_clients_addr = $this->loadData('backup_delete_clients_adresses');
+						$backup_compa_act_pa = $this->loadData('backup_delete_companies_actif_passif');
+						$backup_companies = $this->loadData('backup_delete_companies');
+						$backup_comp_b = $this->loadData('backup_delete_companies_bilans');
+						$backup_comp_det = $this->loadData('backup_delete_companies_details');
+						$backup_lenders = $this->loadData('backup_delete_lenders_accounts');
+					}
+				}
+				// on verif dans companie
+				if($this->companies->get($this->clients->id_client,'id_client_owner'))
+				{
+					
+					// on verif les autres table comapnie
+					$companies_actif_passif = $this->loadData('companies_actif_passif');
+					$companies_bilans = $this->loadData('companies_bilans');
+					$companies_details = $this->loadData('companies_details');
+					
+					
+					$actif_passif = $companies_actif_passif->select('id_company = '.$this->companies->id_company);
+					
+					if(count($actif_passif) > 0){
+						foreach($actif_passif as $a){
+							if($backup_delete==true){
+								$backup_compa_act_pa->id_actif_passif = $a['id_actif_passif'];
+								$backup_compa_act_pa->id_company = $a['id_company'];
+								$backup_compa_act_pa->ordre = $a['ordre'];
+								$backup_compa_act_pa->annee = $a['annee'];
+								$backup_compa_act_pa->immobilisations_corporelles = $a['immobilisations_corporelles'];
+								$backup_compa_act_pa->immobilisations_incorporelles = $a['immobilisations_incorporelles'];
+								$backup_compa_act_pa->immobilisations_financieres = $a['immobilisations_financieres'];
+								$backup_compa_act_pa->stocks = $a['stocks'];
+								$backup_compa_act_pa->creances_clients = $a['creances_clients'];
+								$backup_compa_act_pa->disponibilites = $a['disponibilites'];
+								$backup_compa_act_pa->valeurs_mobilieres_de_placement = $a['valeurs_mobilieres_de_placement'];
+								$backup_compa_act_pa->capitaux_propres = $a['capitaux_propres'];
+								$backup_compa_act_pa->provisions_pour_risques_et_charges = $a['provisions_pour_risques_et_charges'];
+								$backup_compa_act_pa->amortissement_sur_immo = $a['amortissement_sur_immo'];
+								$backup_compa_act_pa->dettes_financieres = $a['dettes_financieres'];
+								$backup_compa_act_pa->dettes_fournisseurs = $a['dettes_fournisseurs'];
+								$backup_compa_act_pa->autres_dettes = $a['autres_dettes'];
+								$backup_compa_act_pa->added_backup = $a['added'];
+								$backup_compa_act_pa->updated_backup = $a['updated'];
+								$backup_compa_act_pa->create();
+							}
+						
+						// On supp
+						$companies_actif_passif->delete($backup_compa_act_pa->id_actif_passif,'id_actif_passif');
+						}
+					}
+
+					$comp_b = $companies_bilans->select('id_company = '.$this->companies->id_company);
+					
+					if(count($comp_b) > 0){
+						foreach($comp_b as $a){
+						
+							if($backup_delete==true){
+								$backup_comp_b->id_actif_passif = $a['id_actif_passif'];
+								$backup_comp_b->id_company = $a['id_company'];
+								$backup_comp_b->ca = $a['ca'];
+								$backup_comp_b->resultat_brute_exploitation = $a['resultat_brute_exploitation'];
+								$backup_comp_b->resultat_exploitation = $a['resultat_exploitation'];
+								$backup_comp_b->investissements = $a['investissements'];
+								$backup_comp_b->date = $a['date'];
+								$backup_comp_b->added_backup = $a['added'];
+								$backup_comp_b->updated = $a['updated'];
+								$backup_comp_b->create();
+							}
+						}
+						
+						// On supp
+						$companies_bilans->delete($this->companies->id_company,'id_company');
+					}
+					
+					
+					if($companies_details->get($this->companies->id_company,'id_company'))
+					{
+						if($backup_delete==true){
+							$backup_comp_det->id_company_detail = $companies_details->id_company_detail;
+							$backup_comp_det->id_company = $companies_details->id_company;
+							$backup_comp_det->date_dernier_bilan = $companies_details->date_dernier_bilan;
+							$backup_comp_det->date_dernier_bilan_mois = $companies_details->date_dernier_bilan_mois;
+							$backup_comp_det->date_dernier_bilan_annee = $companies_details->date_dernier_bilan_annee;
+							$backup_comp_det->encours_actuel_dette_fianciere = $companies_details->encours_actuel_dette_fianciere;
+							$backup_comp_det->remb_a_venir_cette_annee = $companies_details->remb_a_venir_cette_annee;
+							$backup_comp_det->remb_a_venir_annee_prochaine = $companies_details->remb_a_venir_annee_prochaine;
+							$backup_comp_det->tresorie_dispo_actuellement = $companies_details->tresorie_dispo_actuellement;
+							$backup_comp_det->autre_demandes_financements_prevues = $companies_details->autre_demandes_financements_prevues;
+							$backup_comp_det->precisions = $companies_details->precisions;
+							$backup_comp_det->decouverts_bancaires = $companies_details->decouverts_bancaires;
+							$backup_comp_det->lignes_de_tresorerie = $companies_details->lignes_de_tresorerie;
+							$backup_comp_det->affacturage = $companies_details->affacturage;
+							$backup_comp_det->escompte = $companies_details->escompte;
+							$backup_comp_det->financement_dailly = $companies_details->financement_dailly;
+							$backup_comp_det->credit_de_tresorerie = $companies_details->credit_de_tresorerie;
+							$backup_comp_det->credit_bancaire_investissements_materiels = $companies_details->credit_bancaire_investissements_materiels;
+							$backup_comp_det->credit_bancaire_investissements_immateriels = $companies_details->credit_bancaire_investissements_immateriels;
+							$backup_comp_det->rachat_entreprise_ou_titres = $companies_details->rachat_entreprise_ou_titres;
+							$backup_comp_det->credit_immobilier = $companies_details->credit_immobilier;
+							$backup_comp_det->credit_bail_immobilier = $companies_details->credit_bail_immobilier;
+							$backup_comp_det->credit_bail = $companies_details->credit_bail;
+							$backup_comp_det->location_avec_option_achat = $companies_details->location_avec_option_achat;
+							$backup_comp_det->location_financiere = $companies_details->location_financiere;
+							$backup_comp_det->location_longue_duree = $companies_details->location_longue_duree;
+							$backup_comp_det->pret_oseo = $companies_details->pret_oseo;
+							$backup_comp_det->pret_participatif = $companies_details->pret_participatif;
+							$backup_comp_det->fichier_extrait_kbis = $companies_details->fichier_extrait_kbis;
+							$backup_comp_det->fichier_rib = $companies_details->fichier_rib;
+							$backup_comp_det->fichier_delegation_pouvoir = $companies_details->fichier_delegation_pouvoir;
+							$backup_comp_det->fichier_logo_societe = $companies_details->fichier_logo_societe;
+							$backup_comp_det->fichier_photo_dirigeant = $companies_details->fichier_photo_dirigeant;
+							$backup_comp_det->fichier_dernier_bilan_certifie = $companies_details->fichier_dernier_bilan_certifie;
+							$backup_comp_det->fichier_cni_passeport = $companies_details->fichier_cni_passeport;
+							$backup_comp_det->fichier_derniere_liasse_fiscale = $companies_details->fichier_derniere_liasse_fiscale;
+							$backup_comp_det->fichier_derniers_comptes_approuves = $companies_details->fichier_derniers_comptes_approuves;
+							$backup_comp_det->fichier_derniers_comptes_consolides_groupe = $companies_details->fichier_derniers_comptes_consolides_groupe;
+							$backup_comp_det->fichier_annexes_rapport_special_commissaire_compte = $companies_details->fichier_annexes_rapport_special_commissaire_compte;
+							$backup_comp_det->fichier_arret_comptable_recent = $companies_details->fichier_arret_comptable_recent;
+							$backup_comp_det->fichier_budget_exercice_en_cours_a_venir = $companies_details->fichier_budget_exercice_en_cours_a_venir;
+							$backup_comp_det->fichier_notation_banque_france = $companies_details->fichier_notation_banque_france;
+							$backup_comp_det->fichier_autre_1 = $companies_details->fichier_autre_1;
+							$backup_comp_det->fichier_autre_2 = $companies_details->fichier_autre_2;
+							$backup_comp_det->fichier_autre_3 = $companies_details->fichier_autre_3;
+							$backup_comp_det->added_backup = $companies_details->added;
+							$backup_comp_det->updated_backup = $companies_details->updated;
+							$backup_comp_det->create();
+						}
+						// On supp
+						$companies_details->delete($this->companies->id_company,'id_company');
+					}
+					
+					if($backup_delete==true){
+						
+						$backup_companies->id_company = $this->companies->id_company;
+						$backup_companies->id_client_owner = $this->companies->id_client_owner;
+						$backup_companies->id_partenaire = $this->companies->id_partenaire;
+						$backup_companies->id_partenaire_subcode = $this->companies->id_partenaire_subcode;
+						$backup_companies->email_facture = $this->companies->email_facture;
+						$backup_companies->name = $this->companies->name;
+						$backup_companies->forme = $this->companies->forme;
+						$backup_companies->siren = $this->companies->siren;
+						$backup_companies->iban = $this->companies->iban;
+						$backup_companies->bic = $this->companies->bic;
+						$backup_companies->execices_comptables = $this->companies->execices_comptables;
+						$backup_companies->rcs = $this->companies->rcs;
+						$backup_companies->tribunal_com = $this->companies->tribunal_com;
+						$backup_companies->activite = $this->companies->activite;
+						$backup_companies->lieu_exploi = $this->companies->lieu_exploi;
+						$backup_companies->tva = $this->companies->tva;
+						$backup_companies->capital = $this->companies->capital;
+						$backup_companies->date_creation = $this->companies->date_creation;
+						$backup_companies->adresse1 = $this->companies->adresse1;
+						$backup_companies->adresse2 = $this->companies->adresse2;
+						$backup_companies->zip = $this->companies->zip;
+						$backup_companies->city = $this->companies->city;
+						$backup_companies->id_pays = $this->companies->id_pays;
+						$backup_companies->phone = $this->companies->phone;
+						$backup_companies->status_adresse_correspondance = $this->companies->status_adresse_correspondance;
+						$backup_companies->status_client = $this->companies->status_client;
+						$backup_companies->status_conseil_externe_entreprise = $this->companies->status_conseil_externe_entreprise;
+						$backup_companies->preciser_conseil_externe_entreprise = $this->companies->preciser_conseil_externe_entreprise;
+						$backup_companies->civilite_dirigeant = $this->companies->civilite_dirigeant;
+						$backup_companies->nom_dirigeant = $this->companies->nom_dirigeant;
+						$backup_companies->prenom_dirigeant = $this->companies->prenom_dirigeant;
+						$backup_companies->fonction_dirigeant = $this->companies->fonction_dirigeant;
+						$backup_companies->email_dirigeant = $this->companies->email_dirigeant;
+						$backup_companies->phone_dirigeant = $this->companies->phone_dirigeant;
+						$backup_companies->sector = $this->companies->sector;
+						$backup_companies->risk = $this->companies->risk;
+						$backup_companies->altares_eligibility = $this->companies->altares_eligibility;
+						$backup_companies->altares_dateValeur = $this->companies->altares_dateValeur;
+						$backup_companies->altares_niveauRisque = $this->companies->altares_niveauRisque;
+						$backup_companies->altares_scoreVingt = $this->companies->altares_scoreVingt;
+						$backup_companies->added_backup = $this->companies->added;
+						$backup_companies->updated_backup = $this->companies->updated;
+						$backup_companies->create();
+						
+					}
+					// On supp
+					$this->companies->delete($this->clients->id_client,'id_client_owner');
+					
+				}
+				
+				
+				if($backup_delete==true){
+					
+					$backup_lenders->id_lender_account = $this->lenders_accounts->id_lender_account;
+					$backup_lenders->id_client_owner = $this->lenders_accounts->id_client_owner;
+					$backup_lenders->id_company_owner = $this->lenders_accounts->id_company_owner;
+					$backup_lenders->exonere = $this->lenders_accounts->exonere;
+					$backup_lenders->iban = $this->lenders_accounts->iban;
+					$backup_lenders->bic = $this->lenders_accounts->bic;
+					$backup_lenders->origine_des_fonds = $this->lenders_accounts->origine_des_fonds;
+					$backup_lenders->precision = $this->lenders_accounts->precision;
+					$backup_lenders->id_partenaire = $this->lenders_accounts->id_partenaire;
+					$backup_lenders->id_partenaire_subcode = $this->lenders_accounts->id_partenaire_subcode;
+					$backup_lenders->status = $this->lenders_accounts->status;
+					$backup_lenders->type_transfert = $this->lenders_accounts->type_transfert;
+					$backup_lenders->motif = $this->lenders_accounts->motif;
+					$backup_lenders->fonds = $this->lenders_accounts->fonds;
+					$backup_lenders->cni_passeport = $this->lenders_accounts->cni_passeport;
+					$backup_lenders->fichier_cni_passeport = $this->lenders_accounts->fichier_cni_passeport;
+					$backup_lenders->fichier_justificatif_domicile = $this->lenders_accounts->fichier_justificatif_domicile;
+					$backup_lenders->fichier_rib = $this->lenders_accounts->fichier_rib;
+					$backup_lenders->fichier_cni_passeport_dirigent = $this->lenders_accounts->fichier_cni_passeport_dirigent;
+					$backup_lenders->fichier_extrait_kbis = $this->lenders_accounts->fichier_extrait_kbis;
+					$backup_lenders->fichier_delegation_pouvoir = $this->lenders_accounts->fichier_delegation_pouvoir;
+					$backup_lenders->fichier_statuts = $this->lenders_accounts->fichier_statuts;
+					$backup_lenders->fichier_autre = $this->lenders_accounts->fichier_autre;
+					$backup_lenders->added_backup = $this->lenders_accounts->added;
+					$backup_lenders->updated_backup = $this->lenders_accounts->updated;
+					$backup_lenders->create();	
+				}
+				// On supp
+				$this->lenders_accounts->delete($this->clients->id_client,'id_client_owner');
+				
+				// ON verif si il est dans adresses
+				if($this->clients_adresses->get($this->clients->id_client,'id_client'));
+				{
+					if($backup_delete==true){
+						$backup_clients_addr->id_adresse = $this->clients_adresses->id_adresse;
+						$backup_clients_addr->id_client = $this->clients_adresses->id_client;
+						$backup_clients_addr->defaut = $this->clients_adresses->defaut;
+						$backup_clients_addr->type = $this->clients_adresses->type;
+						$backup_clients_addr->nom_adresse = $this->clients_adresses->nom_adresse;
+						$backup_clients_addr->civilite = $this->clients_adresses->civilite;
+						$backup_clients_addr->nom = $this->clients_adresses->nom;
+						$backup_clients_addr->prenom = $this->clients_adresses->prenom;
+						$backup_clients_addr->societe = $this->clients_adresses->societe;
+						$backup_clients_addr->adresse1 = $this->clients_adresses->adresse1;
+						$backup_clients_addr->adresse2 = $this->clients_adresses->adresse2;
+						$backup_clients_addr->adresse3 = $this->clients_adresses->adresse3;
+						$backup_clients_addr->cp = $this->clients_adresses->cp;
+						$backup_clients_addr->ville = $this->clients_adresses->ville;
+						$backup_clients_addr->id_pays = $this->clients_adresses->id_pays;
+						$backup_clients_addr->telephone = $this->clients_adresses->telephone;
+						$backup_clients_addr->mobile = $this->clients_adresses->mobile;
+						$backup_clients_addr->commentaire = $this->clients_adresses->commentaire;
+						$backup_clients_addr->meme_adresse_fiscal = $this->clients_adresses->meme_adresse_fiscal;
+						$backup_clients_addr->adresse_fiscal = $this->clients_adresses->adresse_fiscal;
+						$backup_clients_addr->ville_fiscal = $this->clients_adresses->ville_fiscal;
+						$backup_clients_addr->cp_fiscal = $this->clients_adresses->cp_fiscal;
+						$backup_clients_addr->id_pays_fiscal = $this->clients_adresses->id_pays_fiscal;
+						$backup_clients_addr->status = $this->clients_adresses->status;
+						$backup_clients_addr->added_backup = $this->clients_adresses->added;
+						$backup_clients_addr->updated_backup = $this->clients_adresses->updated;
+						$backup_clients_addr->create();
+					}
+					// On supp
+					$this->clients_adresses->delete($this->clients->id_client,'id_client');
+				}
+				
+				// Histo user //
+				$serialize = serialize(array('id_client' => $this->clients->id_client));
+				$this->users_history->histo(12,'delete preteur activation',$_SESSION['user']['id_user'],$serialize);
+				////////////////
+				
+				if($backup_delete==true){
+					$backup_clients->id_client = $this->clients->id_client; 
+					$backup_clients->hash_client = $this->clients->hash; 
+					$backup_clients->id_langue = $this->clients->id_langue; 
+					$backup_clients->id_partenaire = $this->clients->id_partenaire; 
+					$backup_clients->id_partenaire_subcode = $this->clients->id_partenaire_subcode; 
+					$backup_clients->id_facebook = $this->clients->id_facebook; 
+					$backup_clients->id_linkedin = $this->clients->id_linkedin; 
+					$backup_clients->id_viadeo = $this->clients->id_viadeo; 
+					$backup_clients->id_twitter = $this->clients->id_twitter; 
+					$backup_clients->civilite = $this->clients->civilite; 
+					$backup_clients->nom = $this->clients->nom; 
+					$backup_clients->nom_usage = $this->clients->nom_usage; 
+					$backup_clients->prenom = $this->clients->prenom; 
+					$backup_clients->slug = $this->clients->slug; 
+					$backup_clients->fonction = $this->clients->fonction;
+					$backup_clients->naissance = $this->clients->naissance; 
+					$backup_clients->ville_naissance = $this->clients->ville_naissance; 
+					$backup_clients->id_pays_naissance = $this->clients->id_pays_naissance; 
+					$backup_clients->id_nationalite = $this->clients->id_nationalite; 
+					$backup_clients->telephone = $this->clients->telephone; 
+					$backup_clients->mobile = $this->clients->mobile; 
+					$backup_clients->email = $this->clients->email; 
+					$backup_clients->password = $this->clients->password; 
+					$backup_clients->secrete_question = $this->clients->secrete_question; 
+					$backup_clients->secrete_reponse = $this->clients->secrete_reponse; 
+					$backup_clients->type = $this->clients->type; 
+					$backup_clients->status_depot_dossier = $this->clients->status_depot_dossier;
+					$backup_clients->etape_inscription_preteur = $this->clients->etape_inscription_preteur; 
+					$backup_clients->status_inscription_preteur = $this->clients->status_inscription_preteur; 
+					$backup_clients->status_pre_emp = $this->clients->status_pre_emp; 
+					$backup_clients->status_transition = $this->clients->status_transition; 
+					$backup_clients->cni_passeport = $this->clients->cni_passeport; 
+					$backup_clients->signature = $this->clients->signature; 
+					$backup_clients->optin1 = $this->clients->optin1; 
+					$backup_clients->optin2 = $this->clients->optin2; 
+					$backup_clients->status = $this->clients->status; 
+					$backup_clients->added_backup = $this->clients->added; 
+					$backup_clients->updated_backup = $this->clients->updated;
+					$backup_clients->lastlogin = $this->clients->lastlogin; 
+					$backup_clients->create();
+					
+					mail('unilend@equinoa.fr','[ALERTE] Compte supprime','Un compte ('.$this->clients->id_client.') avec des encheres a ete supprime.');
+				}
+				
+				$this->clients->delete($this->clients->id_client,'id_client');
+				
+				header('location:'.$this->lurl.'/preteurs/activation');
+				die;
+			}
+		}
+		$this->lPreteurs = $this->clients->selectPreteursByStatus('10,20,30,40,50','','added_status DESC');
+		
+	}
+	
+	function _completude()
+	{
+		// On masque les Head, header et footer originaux plus le debug
+		$this->autoFireHeader = false;
+		$this->autoFireHead = false;
+		$this->autoFireFooter = false;
+		$this->autoFireDebug = false;
+		
+		// On place le redirect sur la home
+		$_SESSION['request_url'] = $this->url;
+	}
+	
+	function _completude_preview()
+	{
+		// On masque les Head, header et footer originaux plus le debug
+		$this->autoFireHeader = false;
+		$this->autoFireHead = false;
+		$this->autoFireFooter = false;
+		$this->autoFireDebug = false;
+		
+		// On place le redirect sur la home
+		$_SESSION['request_url'] = $this->url;
+		
+		$this->clients = $this->loadData('clients');
+		$this->lenders_accounts = $this->loadData('lenders_accounts');
+		
+		// Recuperation du modele de mail
+		$this->mails_text->get('completude','lang = "'.$this->language.'" AND type');
+
+		$this->clients->get($this->params[0],'id_client');
+		$this->lenders_accounts->get($this->params[0],'id_client_owner');
+		
+	}
+	
+	function _completude_preview_iframe()
+	{
+		// On masque les Head, header et footer originaux plus le debug
+		$this->autoFireHeader = false;
+		$this->autoFireHead = false;
+		$this->autoFireFooter = false;
+		$this->autoFireDebug = false;
+		
+		// On place le redirect sur la home
+		$_SESSION['request_url'] = $this->url;
+		
+		$this->clients = $this->loadData('clients');
+		$this->clients_status_history = $this->loadData('clients_status_history');
+		
+		$this->clients->get($this->params[0],'id_client');
+		
+		// Recuperation du modele de mail
+		$this->mails_text->get('completude','lang = "'.$this->language.'" AND type');
+		
+		// Variables du mailing
+		$surl = $this->surl;
+		$url = $this->lurl;
+		
+		// FB
+		$this->settings->get('Facebook','type');
+		$lien_fb = $this->settings->value;
+		
+		// Twitter
+		$this->settings->get('Twitter','type');
+		$lien_tw = $this->settings->value;
+		
+		if(in_array($this->clients->type,array(1,3))) $lapage = 'particulier_doc';
+		else $lapage = 'societe_doc';
+		
+		// histo actions
+		$this->lActions = $this->clients_status_history->select('id_client = '.$this->clients->id_client,'added DESC');
+		
+		if($this->lActions[0]['added'] != false) $timeCreate = strtotime($this->lActions[0]['added']);
+		else $timeCreate = strtotime($this->clients->added);
+		$month = $this->dates->tableauMois['fr'][date('n',$timeCreate)];
+
+		// Variables du mailing
+		$varMail = array(
+			'surl' => $surl,
+			'url' => $url,
+			'prenom_p' => $this->clients->prenom,
+			'date_creation' => date('d',$timeCreate).' '.$month.' '.date('Y',$timeCreate),
+			'content' => utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]),
+			'lien_upload' => $this->furl.'/profile/'.$lapage,
+			'lien_fb' => $lien_fb,
+			'lien_tw' => $lien_tw);	
+
+		// Construction du tableau avec les balises EMV
+		$tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+		
+		echo $texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
+		die;
+	}
+	
+	function _offres_de_bienvenues()
+	{
+		// form send offres de Bienvenues
+		if(isset($_POST['form_send_offres'])){
+			$debut = $_POST['debut'];
+			$fin = $_POST['fin'];
+			$montant = $_POST['montant'];
+			
+			$form_ok = true;
+			
+			if(!isset($debut) || strlen($debut) == 0){
+				$form_ok = false;
+			}
+			if(!isset($fin) || strlen($fin) == 0){
+				$form_ok = false;
+			}
+			if(!isset($montant) || strlen($montant) == 0){
+				$form_ok = false;
+			}
+			
+		}
+	}
+	
+}

@@ -1,0 +1,223 @@
+/* ==========================================================================
+	#Three Steps Registration Form Pages
+========================================================================== */
+
+.form-page .proccess { padding: 15px 0 45px; position: relative; }
+.form-page .proccess .popup-link { font-size: 0; line-height: 0; text-indent: -4000px; width: 26px; height: 109px; display: block; position: absolute; top: -15px; right: 0; background: url(images/button-contact.png) no-repeat 0 0; }
+.form-page-last .proccess .popup-link { top: -105px; }
+.form-page .field,
+.popup-contact .field { line-height: 18px; text-align: left; height: 18px; padding: 5px 24px 5px 12px; /*background-color: #fff;*/ }
+.form-page .field-small { width: 226px; }
+.form-page .field-medium { width: 377px; }
+.form-page select.field-medium { width: 489px; }
+.form-page .field.LV_invalid_field { background-color: #ffe8e8; background-position: right -3px; }
+.form-page .field.LV_valid_field { background-position: right -2px; }
+.form-page .form-header { padding-bottom: 25px; }
+.form-page .field-holder { float: left; }
+.form-page form .row { padding-bottom: 28px; }
+/*.form-page form .row .pass-field-holder { width: 472px; }*/
+.form-page form .row .pass-field-holder .fake-field { text-align: left; top: 7px; right: 13px;height: 18px; line-height: 18px; }
+.form-page form .row .pass-field-holder em,
+.form-page .field-holder em { font-size: 14px; line-height: 14px; color: #b10366; display: block; margin-top:0px; }
+.form-page .field-holder em { display: inline; }
+.form-page .les_deux p { padding-bottom: 5px; }
+.form-page .c2-sb-inner-wrap { height: 27px; /*background-color: #fff;*/ }
+.form-page .c2-sb-button { height: 16px; }
+.form-page .c2-sb-text { line-height: 27px; text-align: left; height: 27px; /*background-color: #fff;*/ }
+.form-page .c2-sb-focused,
+.form-page .c2-sb-open { z-index: 999; }
+.form-page .c2-sb-list { border-top-color: #f4f4f4; /*background-color: #fff;*/ }
+.form-page .c2-sb-list-wrap { /*background-color: #fff;*/ }
+.form-page .c2-sb-button .icon-arrow-down { position: relative; top: -2px; }
+/*.form-page form .row-triple-fields .field,
+.form-page form .row-triple-fields .field ~ .field,
+.form-page form .row-triple-fields .field ~ .c2-sb-wrap,
+.form-page form .row-triple-fields .c2-sb-wrap { margin: 0 0 0 75px; }*/
+.form-page form .row-triple-fields .ui-helper-hidden-accessible:first-child + .field,
+.form-page form .row-triple-fields select:first-child + .c2-sb-wrap { margin: 0; }
+.form-page form .row-triple-fields select { width: 260px; }
+.form-page form .row-triple-fields select:first-child { width: 262px; }
+.form-page form .form-caption { font-size: 12px; color: #a7a7a7; margin: 0; }
+.form-page form .row-bank label.inline-text { width: 75px; padding: 3px 0 0 0; }
+.form-page form .row-upload label { width: 290px; padding: 3px 0 0 0; }
+.form-page form .row-bank label.inline-text .icon-help,
+.form-page form .row-upload label .icon-help { position: relative; top: -1px; }
+
+
+.form-page form .row-upload .field { color: #6d6d6d; text-align: left; width: 378px; padding: 5px 24px 5px 12px; margin-right: 3px; margin-top: -3px; /*background-color: #fff;*/ background-position: right 0; }
+.form-page form .row-upload .uploader,
+.form-page form .row-upload .file-holder { float: left; }
+.form-page form .row-upload .file-holder .btn { line-height: 35px; }
+.form-page form .row-upload .file-holder .btn small { font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 18px; /*color: #413f3f;*/ color:#727272; text-transform: none; text-align: left; letter-spacing: 0; width: 220px; position: absolute; top: 0; left: 50px; }
+.form-page form .row-upload .btn-add-new-row,
+.form-page form .row-upload.file-uploaded .btn { display: none; }
+.form-page form .row-upload.file-uploaded .btn-add-new-row { display: inline; }
+
+.form-page .leftaligned .field,
+.form-page .leftaligned .c2-sb-text { text-align: left; }
+
+.form-page .form-cols { font-size: 14px; line-height: 20px; color: #808080; }
+.form-page .form-cols h5 { font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 20px; color: #808080; font-weight: bold; letter-spacing: 0; text-transform: none; padding-bottom: 12px; }
+
+.form-page .form-col { width: 470px; }
+.form-page .form-col .printimg { display: none; }
+.form-page .form-col-inner { padding: 30px 30px 38px; border: 1px solid #e0e1e2; border-radius: 5px; }
+/*.form-page .form-col-pink .form-col-inner { border-bottom: 0; background: #fbf2f7; }*/
+.form-page .form-col label { width: 129px; float: left; padding: 3px 0 0 0; }
+.form-page .form-col .row-cards { padding-bottom: 56px;/*88px*/; }
+.form-page .form-col .row-cards label { padding: 14px 0; }
+.form-page .form-col .row-cards img { float: left; }
+.form-page .form-col .field-small { text-align: left; width: 103px; padding: 5px; }
+.form-page .form-col .form-actions { text-align: center; }
+.form-page .form-col .btn-print { width: 27px; height: 27px; margin: 5px 0 0 20px; background: url(images/icon-print.png) no-repeat 0 0; background-size:27px;}
+.form-page .form-col p span { font-size: 11px; color: #b10366; }
+.form-page .form-col ul { color: #808080; list-style: none outside none; padding: 0 0 20px 0; }
+.form-page .form-col ul li span { width: 120px; float: left; padding-right: 9px; }
+.form-page .form-col ul li em { font-size: 9px; color: #b10366; display: inline-block; position: relative; top: -5px; margin-bottom: 10px; }
+.form-page .form-col ul li p { color: #808080; padding: 0; overflow: hidden; }
+.form-page .form-col-inner > .btn { width: 100%; display: block; }
+.form-page .form-col-bottom { padding: 12px 38px; border: 1px solid #e0e1e2; border-top: 0; border-radius: 0 0 5px 5px; margin-top: -3px; }
+.form-page .form-col-bottom h4 { font-family: Arial, Helvetica, sans-serif; font-size: 14px; line-height: 20px; color: #b10366; font-weight: bold; letter-spacing: 0; padding: 0; }
+.form-page .form-col-bottom p { padding-bottom: 0; }
+
+/* ==========================================================================
+	#Contact Form Modal
+========================================================================== */
+
+.popup-contact .btn { height: 41px; }
+.popup-contact .field { width: 198px; padding: 5px 12px; float: left; }
+.popup-contact textarea.field { width: 439px; height: 163px; padding-top: 5px; float: none; }
+/*.popup-contact textarea.field:focus,
+.popup-contact textarea.field.populated { height: 92px; padding-top: 5px; }*/
+.popup-contact .row-security .field { text-align: left; width: 289px; padding: 5px 22px; }
+.popup-contact .row-security .security-code { font-size: 14px; line-height: 29px; color: #808080; width: 130px; float: left; margin-top: -8px;height:60px;}
+.popup-contact .LV_invalid_field,
+.popup-contact .LV_valid_field { background-position: right -3px; }
+.popup-contact .LV_invalid_field { background-color: #ffe8e8; }
+
+/* ==========================================================================
+	#Account Pages
+========================================================================== */
+
+.account-panel { padding-top: 10px; }
+.account-panel a { font-size: 14px; line-height: 20px; color: #a1a5a7; text-transform: uppercase; font-weight: bold; text-align: right; display: block; position: relative; padding-right: 47px; }
+.account-panel a img { width: 35px; height: 35px; display: block; border: 1px solid #919396; position: absolute; top: 0; right: 0; z-index: 1; border-radius: 2px; }
+.account-panel a span { color: #40b34f; }
+.account-panel a .notifications { color: #fff; text-align: center; width: 22px; height: 20px; display: block; position: absolute; top: -10px; right: -10px; z-index: 2; padding: 1px 0; background: #b10366; border-radius: 3px; }
+
+.navigation-account ul { width: 809px; background: #a1a5a7; border-radius: 3px; }
+.navigation-account ul li { padding: 0 0 0 38px; }
+.navigation-account .shell > ul > li > a { color: #fff; line-height: 33px; padding: 2px 0 0 0; border: 0; position: relative; }
+.navigation-account .shell > ul > li.current > a:after { content: ""; height: 4px; display: block; position: absolute; bottom: 0; left: 0; right: 0; background: #b10366; opacity: 1; filter: none;p }
+
+.account-settings { width: 139px; float: right; }
+.account-settings a { font-family: 'TrendSansOne', sans-serif; font-size: 18px; line-height: 33px; color: #fff; text-align: center; text-transform: uppercase; display: block; padding: 2px 0 0 0; background: #b10366; border-radius: 3px; }
+.account-settings a img { position: relative; top: 2px; }
+
+.account-data h2 { font-family: Arial, Helvetica, sans-serif; font-size: 26px; line-height: 30px; color: #b10366; font-weight: bold; text-transform: none; letter-spacing: 0; padding: 0 0 10px 0; border-bottom: 1px solid #e3e4e4; margin-bottom: 14px; }
+.account-data h2 + p { font-size: 15px; line-height: 18px; color: #a1a5a7; }
+.account-data form .row .field,
+.account-data form .row .c2-sb-text { text-align: left; }
+.account-data form p em { font-size: 14px; color: #b10366; }
+.account-data form .field-mega { width: 921px; }
+
+.account-page-personal .account-data form .row .field,
+.account-page-personal .account-data form .row .c2-sb-text { text-align: left; }
+.account-page-personal .account-data form .row .uploader .field { text-align: left; }
+
+.form-page .account-data form .form-foot .btn { min-width: 325px; height: 53px; padding-top: 7px; margin: 40px 0 0 0; }
+.form-page .account-data form .row em { width: 100%; float: left; font-size: 14px;line-height:14px; color: #b10366; margin-top: 0px; }
+
+.account-data form .row input.field ~ input.field, 
+.account-data form .row input.field ~ .c2-sb-wrap, 
+.account-data form .row input.field ~ .pass-field-holder, 
+.account-data form .row .c2-sb-wrap ~ .field, 
+.account-data form .row .c2-sb-wrap ~ .c2-sb-wrap, 
+.account-data form .row .c2-sb-wrap ~ .pass-field-holder, 
+.account-data form .row .pass-field-holder ~ .field, 
+.account-data form .row .pass-field-holder ~ .c2-sb-wrap, 
+.account-data form .row .pass-field-holder ~ .pass-field-holder { margin-left: 40px; }
+
+.form-page .account-data form .row-triple-fields .field,
+.form-page .account-data form .row-triple-fields .field ~ .field,
+.form-page .account-data form .row-triple-fields .field ~ .c2-sb-wrap,
+.form-page .account-data form .row-triple-fields .c2-sb-wrap { margin: 0 0 0 76px; }
+
+
+/* ------------------ */
+
+#content_type_personne{margin-bottom:30px;}
+
+.euro-field.field-large{padding-left:34px;}
+.ui-autocomplete{background-color:#f4f4f4;color:#a1a5a7;}
+.ui-widget-content a {
+    color: #a1a5a7;
+	font-size: 14px;
+    font-style: italic;
+    line-height: 1.2;
+}
+.ui-widget-content a:hover {
+   color:#b10366;
+}
+
+.field-holder em.error_bic, .field-holder em.error_iban{ display: none; font-size:14px;line-height:14px;}
+
+.change_identite{color: #b10366; float: left; font-size: 14px; line-height: 14px; margin-top: 0; width: 100%;}
+.change_identite, .change_addr_fiscale, .change_bank, .form-page .account-data form .row em.change_bank{display:none;}
+
+.reponseProfile{color:green;font-weight:bold;text-align:center;}
+
+em.error_age{ font-size: 14px; line-height: 14px; color: #b10366; display: none; margin-top:0px; margin-left: 206px;}
+em.error_fichier { color: #b10366;display: block;font-size: 14px;display: none; line-height: 14px;margin-bottom: 15px;margin-top: 0;}
+
+
+.row_amount{padding-top:30px;padding-bottom: 28px;}
+
+.euro-field.field-large {
+    width: 400px;
+}
+
+.popup-cnt{padding: 25px 69px;}
+
+.message_check_etranger{display:none;margin-left:559px;color:#b10366;font-size:14px;line-height:14px;}
+
+/* ------- add ----------- */
+
+.register-form {/* width: 890px;*/ } 
+.tooltip { background:#f4f4f4 !important; color:#808080; max-width:205px; box-shadow:0 0 3px rgba(0,0,0,0.4); border-radius:4px; }
+.inline-text-alt { width: 207px; padding: 7px 0 0 0 !important; }
+.inline-text-alt ~ .inline-text-alt { width: /*119px*/ 135px; padding-left: 38px !important; }
+.inline-text-alt ~ .inline-text-alt-small { padding-left: 38px !important; width: /*149px*/ 161px; }
+.field-large { width: /*387px*/ 421px  }
+form .row input.field ~ input.field,
+form .row .pass-field-holder ~ .pass-field-holder { margin-left: 38px !important; }
+.form-page form .row .pass-field-holder { width: /*425px*/ 461px !important; }
+/*.field-mega { width: 850px !important; }*/
+.form-page .field-small { width: /*202px*/ 242px !important; }
+.form-page form .row-triple-fields .field ~ .c2-sb-wrap, 
+.form-page form .row-triple-fields .c2-sb-wrap  { width: /*250px*/ 274px !important; margin: 0 0 0 75px; }
+.form-page form .row-triple-fields .field, 
+.form-page form .row-triple-fields .field ~ .field { margin: 0 0 0 /*75px*/ 50px !important; }
+.form-page form .row-triple-fields .ui-helper-hidden-accessible:first-child + .field { margin: 0 !important; }
+
+.c2-sb-button { float: right; }
+.inline-text-alt ~ .inline-text-alt ~ .c2-sb-wrap { width: 153px !important; }
+
+.row-triple-fields-alt .field,
+.row-triple-fields-alt .c2-sb-wrap { width: 242px !important; }
+
+.form-page form .row-triple-fields-alt .field, 
+.form-page form .row-triple-fields-alt .field ~ .field,
+.form-page form .row-triple-fields-alt .field ~ .c2-sb-wrap, 
+.form-page form .row-triple-fields-alt .c2-sb-wrap { margin-left: 0px !important; }
+
+.form-page form .row-triple-fields-alt .field ~ .c2-sb-wrap, 
+.form-page form .row-triple-fields-alt .c2-sb-wrap,
+.row-alt .inline-text-alt ~ .inline-text-alt ~ .c2-sb-wrap { width: 274px !important; margin-left: 26px; }
+
+.small-select .c2-sb-wrap { width: /*100px;*/ 121px }
+.small-select .c2-sb-wrap .c2-sb-text { width: 48px !important; }
+
+form .row.small-select .c2-sb-wrap ~ .c2-sb-wrap { margin-left: 38px !important; }
+
+.form-page form .row-triple-fields-alt .field-alt { margin: 0 !important; width: 202px !important; }

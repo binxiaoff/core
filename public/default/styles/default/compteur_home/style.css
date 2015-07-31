@@ -1,0 +1,20 @@
+@font-face {
+	font-family: 'din_blackregular';
+	src: url('fonts/din-black-webfont.eot');
+	src: url('fonts/din-black-webfont.eot?#iefix') format('embedded-opentype'),
+		 url('fonts/din-black-webfont.woff') format('woff'),
+		 url('fonts/din-black-webfont.ttf') format('truetype'),
+		 url('fonts/din-black-webfont.svg#din_blackregular') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.hp-counter { background-color: #fafafa; padding: 30px 0 18px; text-align:center; margin-top: -34px; }
+/*.hp-counter .shell{text-align:right;width:900px;}*/
+.hp-counter .hp { display: inline-block; }
+.hp-counter .counter-holder { display: inline-block; margin: 0 5px; text-align:center;}
+.hp-counter .char-group { display: inline-block; }
+
+.hp-counter .char-group { margin-left: 2px; }
+.hp-counter .hp { position:relative; top: -17px; font-size: 22px; color: #727272; font-family: 'TrendSansOne',sans-serif; padding: 0; }
+.counter-char { height: 47px; width: 27px; background: url(images/char.png) no-repeat 0 0; float:left; line-height: 42px; font-size: 35px; color: #fff; font-family: 'din_blackregular', arial, serif; margin-left: 1px; }

@@ -1,0 +1,81 @@
+/* ==========================================================================
+	#Reset
+========================================================================== */
+* { padding: 0; margin: 0; outline: 0; }
+
+/* ==========================================================================
+	#Base
+========================================================================== */
+html,
+body { height: 100%; }
+
+html { overflow-y: scroll; }
+body { font-family: Arial, sans-serif; font-size: 14px; line-height: 1.2; color: #A1A5A7; }
+
+a { color: #fff; cursor: pointer; text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+img { border: 0; vertical-align: middle; }
+
+h2,
+h3 { font-size: 14px; }
+
+h2 { color: #B10366; letter-spacing: 0.4px; }
+h2 strong { color: #f00; font-weight: bold; }
+
+h3 { color: #808080; }
+
+/* ==========================================================================
+	#Helpers 
+========================================================================== */
+.clearfix:before,
+.clearfix:after { display: table; content: " "; }
+.clearfix:after { clear: both; }
+.clearfix { *zoom: 1; }
+
+/* ==========================================================================
+	#Containers 
+========================================================================== */
+.container { position: relative; min-height: 100%; }
+.shell { width: 615px; margin: 0 auto; }
+
+/* ==========================================================================
+	#Header
+========================================================================== */
+.header { padding-top: 93px; }
+.logo img { width: 130px; height: 35px; }
+.address {  padding: 10px 40px 0; }
+.address p { float: right; line-height: 1.4; }
+.welcome { padding: 15px 0 25px; }
+
+/* ==========================================================================
+	#Table
+========================================================================== */
+.table ~ .table { padding-top: 40px; }
+.table table { border-collapse: collapse; }
+.table th,
+.table td { border-width: 1px 0; border-style: solid; border-color: #7f7f7f transparent; font-size: 12px; }
+
+.table td { letter-spacing: 0.5px; }
+
+.table th,
+.table .total td { color: #B10366; }
+.table .total td { font-weight: bold; }
+
+.table th + th,
+.table td + td,
+.table-big td + td + td,
+.table-big th + th + th { text-align: right; padding-right: 8px; }
+
+.table th,
+.table td,
+.table-big td + td,
+.table-big th + th { text-align: left; padding-left: 7px; }
+
+.table-big th + th,
+.table-big td + td { border-left: 1px solid #7f7f7f; }
+
+/* ==========================================================================
+	#Footer
+========================================================================== */
+.footer { /*position: absolute;*/ bottom: 0; left: 0; width: 100%; padding-bottom: 15px;  color: #B10366; font-weight: bold; font-size: 11px; letter-spacing: -0.5px; }

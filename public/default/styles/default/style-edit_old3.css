@@ -1,0 +1,259 @@
+.logo .lelogo{
+    background: url("images/logo.png") no-repeat scroll 0 0 transparent;
+    float: left;
+    height: 61px;
+    overflow: hidden;
+    text-indent: 100%;
+    white-space: nowrap;
+    width: 252px;
+}
+
+.navigation ul ul li {list-style:none;white-space: nowrap;}
+.navigation ul ul{width: auto; padding: 10px 13px 10px 18px;}
+.testimonials .slides li{height:100px;}
+.testimonials .slides li a{
+	text-decoration:none;
+}
+.captcha-holder {
+    padding: 5px 55px 0 0;
+}
+
+.c2-sb-wrap, .c2-sb-wrap .c2-sb-inner-wrap, .c2-sb-wrap .c2-sb-text, .c2-sb-wrap .c2-sb-button{z-index:2;}
+
+.field-error .c2-sb-text{color: #C84747;}
+
+.content-columns ul,.content-columns ol {color: #A1A5A7;list-style: none outside none; padding: 0;}
+
+
+.content-columns li { padding-bottom: 14px; }
+
+.footer-nav > li{width: 160px;}
+
+.content_sitemap ul,.content_sitemap ol {padding-left: 20px;}
+
+blockquote{padding: 23px 40px 0;}
+
+
+.footer-social{width: 235px;}
+
+form .row input.field ~ input.field, form .row input.field ~ .c2-sb-wrap, form .row input.field ~ .pass-field-holder, form .row .c2-sb-wrap ~ .field, form .row .c2-sb-wrap ~ .c2-sb-wrap, form .row .c2-sb-wrap ~ .pass-field-holder, form .row .pass-field-holder ~ .field, form .row .pass-field-holder ~ .c2-sb-wrap, form .row .pass-field-holder ~ .pass-field-holder{margin-left:16px;}
+
+.euro-field.field-tiny{width: 85px;}
+
+.graphic-box .bottom-link {
+    background: url("images/bullet_02.png") no-repeat scroll 0 center rgba(0, 0, 0, 0);
+    color: #A1A5A7;
+    float: right;
+    font: 13px/18px 'TrendSansOne',sans-serif;
+    padding-left: 15px;
+    text-transform: uppercase;
+}
+
+.graphic-box{ margin-bottom: 40px;}
+
+.logedin-panel{width: 350px;}
+
+.logedin-panel .dd{right:0;left:auto;}
+
+.stat-list li .i-holder{height:25px;padding-top:9px;}
+
+.statistic-tables.year-nav .annee{ height: 41px; padding: 0 15px; line-height: 41px; font-size: 14px; font-weight:bold; }
+.year-nav li .annee{ display:block; width: 60px; height: 22px; border-radius: 3px; background: #a1a5a7; box-shadow: 0 0 1px #c7c9ca; font-size: 11px; line-height: 22px; color: #fff; text-align:center; font-weight:bold; }
+
+.sidebar{width:285px;}
+
+.sidebar-fixed{ position:fixed;z-index:9999;top:60px;margin-left:45px; left: 50%; margin-left: 195px; }
+
+.sidebar-fixed2{position:absolute;z-index:9997;margin-left:45px; bottom:590px;}
+.widget-price .widget-cat{padding:20px;}
+
+#triNum,#triTx,#triAmount,#triStatuts{cursor:pointer;}
+
+.info-table .btnAlimentation{font-size: 18px;height: 47px;display:block;margin:auto;}
+/*.year-place-holder{overflow: hidden;height: 252px;min-height:inherit;}*/
+.error_login{font-size:10px;color: #C84747; font-size: 12px;text-align: right;height:4px;}
+.login-panel{padding-top:0}
+
+.navigation .shell > ul.styled-nav > li{padding: 0 25px;}
+.widget-price .widget-cat span.price strong{font-size: 18px;}
+
+.block-twitter:hover{color:#00b0ed;}
+.block-twitter:hover .icon-big-twitter { background-position:0 -80px;  }
+
+
+.block-facebook small{color:#A1A5A7;}
+.block-facebook:hover small{color:#34579C;}
+.block-facebook:hover .icon-big-facebook { background-position:-60px -90px;  }
+a.header_account_name{color:#919396;text-decoration:none;}
+
+.tabs-nav li{padding: 0 /*5px*/ 2px;} /* modif 19/09/2014 offres en cours */
+.tabs-nav li a{padding: 0 /*7px*/4px 1px;} /* modif 19/09/2014 offres en cours */
+.tabs-nav li a:hover , .tabs-nav li.active a {padding: 0 /*6px*/3px 0;} /* modif 19/09/2014 offres en cours */
+
+.tabs-nav .navProfile li{padding: 0 5px;padding-left:0px;}
+.tabs-nav .navProfile li a{padding: 0 4px 1px;}
+.tabs-nav .navProfile li a:hover , .tabs-nav .navProfile li.active a {padding: 0 3px 0;}
+
+.form-choose.fixed .radio-holder{width:155px;}
+
+.form-table .field-holder{display:inline-block;}
+
+.section-c p{padding-bottom: 10px;}
+
+.field-mini{width:150px;}
+
+.tr{text-align:center;}
+
+.nav-fixed .active .icon-home, a:hover > .icon-home{background-position:top;background:url(images/favicon.png) no-repeat}
+
+.bank-data .line-content .label{width:160px;}
+
+.table .description h5, .table .description h6{text-transform:none;}
+
+.section-c h2,.logedin-panel .dd li a,.project-c h3,.post-schedule .post-box h3{text-transform:none;}
+
+
+.dashboard .col{width:465px;}
+.graphic-box{background-color:#FAFAFA;margin-bottom:20px;}
+.le-bar-chart{padding-bottom: 40px}
+.graphic-box header{margin-left:20px;width:90%;padding-top:15px;}
+.graphic-box .bottom-link,.post-schedule .bottom-link{margin-right:10px;}
+#pie-chart{margin-left:0;}
+
+.post-schedule{background-color:#FAFAFA;padding-left:21px;padding-bottom:20px;}
+.post-schedule h2{width:95%;}
+.post-schedule h2 span{padding-top:14px;cursor:pointer;}
+.post-schedule .post-box .img-holder{background-color:transparent;height:73px;}
+
+
+.project-c .top p{margin-top:-34px;min-width:/*470px*/460px;height:80px;}/* modif 19/09/2014 offres en cours */
+.project-c .top p em{min-height:40px;line-height:20px;width:410px;}
+
+.intitule{width:175px;}
+.sameSize{width:100px;}
+.statistic-table table table td:first-child{padding-left:18px;}
+.year-nav li{padding-left:39px;}
+
+form p{padding-left:0px;}
+
+.pass-field-holder .fake-field{color:#A1A5A7;}
+
+.cadreEtoiles{overflow:hidden;height:17px;width:62px;position:relative;top:10px;left:4px;}
+.etoile{
+	background: url("images/stars.png") no-repeat scroll 0 0 transparent;
+	height:9px;width:691px;position:relative;top:1px;
+}
+
+.etoile10{right:-3px;}
+.etoile9{right:68px;}
+.etoile8{right:139px;}
+.etoile7{right:210px;}
+.etoile6{right:280px;}
+
+.etoile5{right:350px;}
+.etoile4{right:419px;}
+.etoile3{right:489px;}
+.etoile2{right:558px;}
+.etoile1{right:629px;}
+
+.enchereVousColor{color:#B10366;}
+.enchereVous{position:relative;left:-58px;}
+
+.register-form .pass-field-holder em{
+	color: #b10366;
+    display: block;
+    font-size: 9px;
+    line-height: 11px;
+    margin-top: 30px;}
+
+
+/* ------- alignement ----------- */
+#content_type_personne, .register-form{padding: 0;}
+.field-large {width: 434px;}
+.form-page form .row .pass-field-holder {width: 472px;}
+.field-mega {width: 922px;}
+
+.form-page form .row-triple-fields .field, .form-page form .row-triple-fields .field ~ .field, .form-page form .row-triple-fields .field ~ .c2-sb-wrap, .form-page form .row-triple-fields .c2-sb-wrap {margin: 0 0 0 85px;}
+
+
+.login-panel a.lienHeader{font-size:11px;float:right;}
+.login-panel a.lienHeader.pwd{margin-right:75px;}
+.login-panel a.lienHeader.open{margin-right:65px;}
+
+
+.headConnect{float:left;font-family:'TrendSansOne',sans-serif;font-size:15px;height:35px;line-height:35px;margin-right:10px;text-transform:uppercase;}
+
+h1.inscription{letter-spacing: -0.12em;}
+
+.proccess {padding: 0 0 27px;}
+
+.project-c .info{width:325px;}
+.stat-list .tooltip { background:#f4f4f4; color:#808080; max-width:205px; box-shadow:0 0 3px rgba(0,0,0,0.4); border-radius:4px; }
+
+.ui-autocomplete { max-height: 200px; overflow-y: scroll; overflow-x: hidden;}
+
+.fonds{height:30x;margin-bottom:17px;text-align:center;background-color:#DBDCDD; color:white;font-family:'TrendSansOne',sans-serif;font-size:16px;}
+.fonds .valeur{color:#B10366;font-weight:bold;font-size:20px;vertical-align:bottom;line-height:29px;}
+
+
+
+.error_wait{display:none;}
+.captcha_login{float:right;margin-top:-7px;}
+.reload_captcha_login{float:right;cursor:pointer;}
+.content_captcha_login{width:133px;display:inline-block;float:right;}
+
+.login-panel .field.input_captcha_login{margin-top:-12px;float:right;margin-right:0px;}
+
+.banner{margin-top:-26px;}
+
+.project-c .fav-btn{margin-right:50px;}/* modif 19/09/2014 offres en cours */
+
+/* add 30/09/2014 sidebar project */
+.sinscrire_cta.btn{background:#1a8aa3; width:210px; display:block;margin:auto;}
+.sinscrire_cta.btn:before{background:#145a68;}
+.sinscrire_cta.btn:after {background:#1a8aa3;}
+
+.widget-price .field.field-medium { width:220px; padding:5px 13px;}
+.widget-price .pass-field-holder{float:left;}
+
+.widget-price .pass-field-holder .fake-field{ color:#4d4d4d;}
+
+
+.widget-price a.mdpoublie { float:right; font-size:12px; font-family:'TrendSansOne', sans-serif; color:#a1a5a7; line-height:30px; letter-spacing:-0.18em; text-transform: uppercase;}
+
+.seconnecter, .sinscrire{display:none;}
+
+
+.widget-price .field.LV_invalid_field { background:#ffe8e8 url(images/field-error.png) no-repeat right 0; border-color:#e3bcbc; color:#c84747; }
+.widget-price .field.LV_valid_field { background-image:url(images/field-ok.png); background-repeat:no-repeat; background-position:right 0; }
+.widget-price .field.LV_validation_message { display:none; }
+
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+	.field-mini {
+	  width:131px;
+	}
+	.banner h2{
+		font-size: 33px;
+	}
+	.login-panel a.lienHeader{
+		font-size: 10px;
+	}
+	.login-panel a.lienHeader.open {
+		margin-right: 37px;
+	}
+	.login-panel a.lienHeader.pwd {
+		margin-right: 53px;
+	}
+}
+
+
+@media \0screen {
+    .header { height: 73px; }
+    .tabs-nav { display: block; }
+    .multi.btn-small { font-size: 13px;}
+    .navigation .shell > ul.styled-nav > li { padding: 0; display: block; width: auto; padding: 0 20px; text-align: center;}
+    .navigation .shell > ul.styled-nav > li a { display: inline; margin: 0 auto; text-align: center; float: none; }
+    .tabs-nav li { padding: 0 2px; }
+    .project-c .tab { width: 100%;}
+}

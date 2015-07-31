@@ -1,0 +1,83 @@
+
+/* ==========================================================================
+	#Dashboard
+========================================================================== */
+.notification-primary {
+    border: 1px solid #b10366;
+    margin-bottom: 24px;
+	font-size:15px;
+}
+.notification-primary .notification-head {
+    background: none repeat scroll 0 0 #b10366;
+    padding: 8px 30px;
+}
+
+.notification-primary .notification-title {
+    color: #fff;
+    font-size: 17px;
+    font-weight: normal;
+    letter-spacing: 0;
+    margin: 0;
+    padding: 0;
+    text-transform: uppercase;
+}
+.notification-primary .notification-body {
+    background: none repeat scroll 0 0 #fbf2f7;
+    padding: 22px 0 22px 45px;
+}
+.notification-primary h4 {
+    color: #b30764;
+    font-family: Arial,Helvetica,sans-serif;
+    font-size: 17px;
+    font-weight: bold;
+    letter-spacing: 0;
+    padding: 0 0 7px;
+    text-transform: none;
+}
+.notification-primary ul {
+    color: #727272;
+    font-size: 15px;
+    list-style: none outside none;
+    padding: 0;
+}
+.notification-primary ul li {
+    background: url("images/bull.png") no-repeat scroll 0 9px rgba(0, 0, 0, 0);
+    padding-left: 20px;
+}
+
+.notification-primary .list-bulls li + li {
+    padding-top: 1px;
+}
+.notification-primary .form-terms {
+    overflow: hidden;
+    padding-top: 22px;
+}
+.notification-primary .form-terms { overflow: hidden; padding-top: 22px; }
+.notification-primary .form-terms .checkbox { float: left; }
+.notification-primary .form-terms .form-actions { float: right; padding-right: 38px; }
+.notification-primary .form-terms .form-btn { position: relative; padding: 11px 17px 8px; font-family: 'TrendSansOne', arial; font-size: 14px; text-transform: uppercase; letter-spacing: 0; box-shadow: inset 0 -5px #6b013d; margin: 0; height: auto; line-height: 1; }
+.notification-primary .form-terms .ico-arrow { background: url(images/sprite2.png) no-repeat 0 0; display: inline-block; vertical-align: middle; width: 10px; height: 14px; margin: 0 -8px 0 8px; }
+
+.notification-primary .checkbox input {
+    left: 0;
+    opacity: 0;
+    position: absolute;
+    top: 0;
+    visibility: hidden;
+}
+.notification-primary .checkbox input:checked ~ label:before {
+    background-position: 0 -50px;
+}
+
+.notification-primary .checkbox input { position: absolute; top: 0; left: 0; opacity: 0; visibility: hidden; }
+.notification-primary .checkbox label { cursor: pointer; font-size: 15px; padding-top: 5px; display: block; }
+.notification-primary .checkbox label:before { display: inline-block; vertical-align: middle; content: ''; background: url(images/sprite2.png) no-repeat 0 -18px;  width: 25px; height: 26px; margin: -7px 8px 0 0; }
+.notification-primary .checkbox input:checked ~ label:before { background-position: 0 -50px; }
+
+
+.notification-primary a{color:#727272; text-decoration: underline;}
+
+
+.notification-primary .checkbox label:before {
+	border:1px solid black;
+}

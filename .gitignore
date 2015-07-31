@@ -1,0 +1,31 @@
+nbproject/*
+!nbproject/project.properties
+!nbproject/project.xml
+
+### NetBeans ###
+build/
+nbbuild/
+dist/
+nbdist/
+nbactions.xml
+nb-configuration.xml
+.nb-gradle/
+
+### Izinoa ###
+protected/
+log/
+backup2/
+backup3/
+tmp/
+public/admin/.htaccess
+public/default/var
+public/default/.htaccess
+config.php
+
+
+
+#sauf
+!public/default/styles/default/*
+!public/default/scripts/default/*
+!/dev/public/
+/route.php

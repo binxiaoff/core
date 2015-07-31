@@ -1,0 +1,15 @@
+@media print {
+	body { width: 450px; margin: 150px auto; height:300px; }
+	.header,
+	h1.inscription,
+	.form-page .proccess,
+	.form-page .form-col-pink,
+	.form-page .form-col-bottom,
+	.form-page .form-col-inner > .btn,
+	.form-page .form-cols h5,
+	.footer { display: none; }
+
+	.form-page .form-col { width: auto; float: none; }
+	.form-page .form-col-inner { width: 380px; float: none; border: 0; margin: 0 auto; }
+	.form-page .form-col .printimg { display: block; margin: 0 auto 50px; }
+}

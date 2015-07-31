@@ -1,0 +1,51 @@
+AddDefaultCharset UTF-8
+
+Options -Indexes
+
+# CACHING
+<ifmodule mod_expires.c>
+	# 1 YEAR
+	<FilesMatch "\.(ico|pdf|flv)$">
+		Header set Cache-Control "max-age=29030400, public"
+	</FilesMatch>
+	# 1 WEEK
+	<FilesMatch "\.(jpg|jpeg|png|gif|swf)$">
+		Header set Cache-Control "max-age=604800, public"
+	</FilesMatch>
+	# 2 DAYS
+	<FilesMatch "\.(xml|txt|css|js)$">
+		Header set Cache-Control "max-age=172800, proxy-revalidate"
+	</FilesMatch>
+	# 1 MIN
+	<FilesMatch "\.(html|htm|php)$">
+		Header set Cache-Control "max-age=60, private, proxy-revalidate"
+	</FilesMatch>
+	
+	# Apache config
+	<FilesMatch ".(eot|ttf|otf|woff)">
+		Header set Access-Control-Allow-Origin "*"
+	</FilesMatch>
+	
+</ifmodule>
+
+FileETag None
+
+# COMPRESSION
+AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/x-javascript
+
+# MASQUAGE
+IndexIgnore */*
+
+# REWRITE
+RewriteEngine On
+
+#RewriteCond %{HTTP:X-Forwarded-Proto} !https$
+#RewriteRule /?(.*) https://www.unilend.fr/$1 [R=301,L]
+
+RewriteCond %{HTTP_HOST} !financementparticipatifpme.lefigaro.fr$
+RewriteRule /?(.*) http://financementparticipatifpme.lefigaro.fr/$1 [R=301,L]
+
+# RULES
+RewriteCond %{REQUEST_FILENAME} !-f 
+RewriteCond %{REQUEST_FILENAME} !-d 
+RewriteRule . index.php

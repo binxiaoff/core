@@ -1,0 +1,50 @@
+/**************************/
+/**** FICHIER CSS FRONT ***/
+/**************************/
+
+/****************************/
+/* RESET DE TOUS LES STYLES */
+/****************************/
+
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td { margin: 0; padding: 0; border: 0; outline: 0; font-size: 100%; vertical-align: baseline; background: transparent; }
+body { line-height: 1; }
+/*ol, ul { list-style: none; }*/
+blockquote, q { quotes: none; }
+blockquote:before, blockquote:after, q:before, q:after { content: ''; content: none; }
+:focus { outline: 0; }
+ins { text-decoration: none; }
+del { text-decoration: line-through; }
+table { border-collapse: collapse; border-spacing: 0; }
+
+/***********************/
+/* STRUCTURE DES BLOCS */
+/***********************/
+
+body { background: #FFF; }
+
+/* Page d'erreur */
+/*#contenerError { position: absolute;  top: 50%; left: 50%; margin: -252px 0 0 -300px; padding: 0; width:600px; height:504px; text-align: center; }*/
+#contenerError {
+    height: 504px;
+    margin: auto;
+    padding: 0;
+    text-align: center;
+    width: 600px;
+}
+#contenerError img { margin: 0 auto; display:block; }
+
+/* Traductions */
+trad { background-color:#2F86B2; color:#FFF; cursor:pointer; }
+
+.blocAdminIzI { position:absolute; bottom:20px; right:10px; padding:0; margin:0;z-index:9999;}
+.blocAdminIzI a.boutonAdm img { border:0; cursor:pointer; }
+
+.popupTrad { background-color: #FFF; padding: 10px 15px 10px 10px; border: 2px solid #2F86B2; -moz-border-radius: 10px; -webkit-border-radius: 10px; -khtml-border-radius: 10px; border-radius: 10px; }
+.popupTrad .closeBtn { position:absolute; top: 8px; right: 8px; }
+.popupTrad h2 { font-weight: bold; color: #2F86B2; }
+.popupTrad table { margin: 0; }
+.popupTrad table td { padding: 20px 0 0; }
+.popupTrad table td.imgDrap { width: 50px; text-align:center; }
+.popupTrad table td.textTrad { width: 410px; text-align:center; }
+.popupTrad .textarea_lng { width: 400px; height: 50px; background: #ECECEC; border: 1px solid #2F86B2; margin: 0; padding: 4px; font: 12px Arial, Helvetica, sans-serif; color: #2F86B2; }
+.popupTrad .btn { background: #2F86B2; border: 1px solid #2F86B2; color: #FFF; margin: 0; padding: 5px; text-align: center; font: bold 14px Verdana, Geneva, sans-serif; cursor: pointer; -moz-border-radius: 5px; -webkit-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; }
