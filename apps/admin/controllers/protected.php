@@ -4,7 +4,7 @@ class protectedController extends bootstrap
 {
 	var $Command;
 	
-	function protectedController(&$command,$config,$app)
+	function protectedController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

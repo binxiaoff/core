@@ -5,7 +5,7 @@ class depot_de_dossierController extends bootstrap
 
     var $Command;
 
-    function depot_de_dossierController(&$command, $config, $app)
+    function depot_de_dossierController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 

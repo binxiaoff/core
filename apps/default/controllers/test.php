@@ -4,7 +4,7 @@ class testController extends bootstrap
 {
 	var $Command;
 	
-	function testController(&$command,$config,$app)
+	function testController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

@@ -4,7 +4,7 @@ class societe_emprunteurController extends bootstrap
 {
 	var $Command;
 	
-	function societe_emprunteurController(&$command,$config,$app)
+	function societe_emprunteurController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

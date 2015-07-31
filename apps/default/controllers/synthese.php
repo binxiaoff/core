@@ -4,7 +4,7 @@ class syntheseController extends bootstrap
 {
 	var $Command;
 	
-	function syntheseController(&$command,$config,$app)
+	function syntheseController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

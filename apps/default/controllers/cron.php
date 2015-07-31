@@ -5,7 +5,7 @@ class cronController extends bootstrap
 
     var $Command;
 
-    function cronController(&$command, $config)
+    function cronController($command, $config)
     {
         parent::__construct($command, $config, 'default');
 

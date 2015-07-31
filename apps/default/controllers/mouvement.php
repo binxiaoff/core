@@ -4,7 +4,7 @@ class mouvementController extends bootstrap
 {
 	var $Command;
 	
-	function mouvementController(&$command,$config,$app)
+	function mouvementController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

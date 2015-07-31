@@ -4,7 +4,7 @@ class profileController extends bootstrap
 {
 	var $Command;
 	
-	function profileController(&$command,$config,$app)
+	function profileController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

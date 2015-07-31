@@ -4,7 +4,7 @@ class synthese_emprunteurController extends bootstrap
 {
 	var $Command;
 	
-	function synthese_emprunteurController(&$command,$config,$app)
+	function synthese_emprunteurController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

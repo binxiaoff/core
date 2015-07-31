@@ -1,16 +1,16 @@
 <?php
-
 class bootstrap extends Controller
 {
 	var $Command;
-	
-	function bootstrap(&$command,$config,$app)
+
+	function bootstrap($command,$config,$app)
 	{
-		parent::__construct(&$command,$config,$app);
+		parent::__construct($command,$config,$app);
 		
 		// Mise en session de l'url demandée pour un retour si deconnecté sauf pour la fonction login du controller root
 		if($this->current_function != 'login') { $_SESSION['request_url'] = $_SERVER['REQUEST_URI']; }
 		
+                
 		// Chargements des librairies
 		$this->dates = $this->loadLib('dates');
 		$this->ficelle = $this->loadLib('ficelle');
@@ -26,7 +26,7 @@ class bootstrap extends Controller
 		$this->blocs_elements = $this->loadData('blocs_elements');
 		$this->elements = $this->loadData('elements');
 		$this->tree = $this->loadData('tree',array('url'=>$this->lurl,'front'=>$this->Config['url'][$this->Config['env']]['default'],'surl'=>$this->surl,'tree_elements'=>$this->tree_elements,'blocs_elements'=>$this->blocs_elements,'upload'=>$this->upload,'spath'=>$this->spath,'path'=>$this->path));
-		$this->users = $this->loadData('users',array('config'=>$this->Config));
+		$this->users = $this->loadData('users',array('config'=>$this->Config, 'lurl'=>$this->lurl));
 		$this->users_zones = $this->loadData('users_zones');
 		$this->routages = $this->loadData('routages',array('url'=>$this->lurl));
 		$this->users_history = $this->loadData('users_history');
@@ -96,8 +96,17 @@ class bootstrap extends Controller
 					$this->loggin_connection_admin->email = $user['email'];
 					$this->loggin_connection_admin->date_connexion = date('Y-m-d H:i:s');
 					$this->loggin_connection_admin->ip = $_SERVER["REMOTE_ADDR"];
-					$country_code = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
-					$this->loggin_connection_admin->pays = $country_code;
+                                        
+                                        if (function_exists('geoip_country_code_by_name'))                                         
+                                        {
+                                            $country_code = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
+                                        }
+                                        else
+                                        {
+                                            $country_code = "fr";
+                                        }
+					
+                                        $this->loggin_connection_admin->pays = $country_code;
 					//$this->loggin_connection_admin->statut = 0;
 					$this->loggin_connection_admin->create();	
 					
@@ -167,7 +176,14 @@ class bootstrap extends Controller
 					$this->loggin_connection_admin = $this->loadData('loggin_connection_admin');
 					$this->loggin_connection_admin->email = $_POST["login"];
 					$this->loggin_connection_admin->ip = $_SERVER["REMOTE_ADDR"];
-					$country_code = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
+					if (function_exists('geoip_country_code_by_name'))                                         
+                                        {
+                                            $country_code = strtolower(geoip_country_code_by_name($_SERVER['REMOTE_ADDR']));
+                                        }
+                                        else
+                                        {
+                                            $country_code = "fr";
+                                        }
 					$this->loggin_connection_admin->pays = $country_code;
 					$this->loggin_connection_admin->date_connexion = date('Y-m-d H:i:s');
 					$this->loggin_connection_admin->statut = 1;
@@ -233,7 +249,7 @@ class bootstrap extends Controller
 			$this->lZonesHeader = $this->users_zones->selectZonesUser($_SESSION['user']['id_user']);
 		}
 		
-		if($_SERVER['REMOTE_ADDR'] == '93.26.42.99')
+		if($_SERVER['REMOTE_ADDR'] == '93.26.42.99' or $_SESSION['user']['id_user'] == 1)
 		{
 			$this->equinoa = true;
 		}

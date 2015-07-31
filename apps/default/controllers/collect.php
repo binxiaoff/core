@@ -4,7 +4,7 @@ class collectController extends bootstrap
 {
 	var $Command;
 	
-	function collectController(&$command,$config,$app)
+	function collectController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

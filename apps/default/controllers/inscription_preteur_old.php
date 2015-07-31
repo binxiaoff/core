@@ -4,7 +4,7 @@ class inscription_preteurController extends bootstrap
 {
 	var $Command;
 	
-	function inscription_preteurController(&$command,$config,$app)
+	function inscription_preteurController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

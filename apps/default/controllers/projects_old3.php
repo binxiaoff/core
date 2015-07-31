@@ -4,7 +4,7 @@ class projectsController extends bootstrap
 {
 	var $Command;
 	
-	function projectsController(&$command,$config,$app)
+	function projectsController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

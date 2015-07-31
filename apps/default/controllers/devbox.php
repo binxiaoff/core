@@ -4,7 +4,7 @@ class devboxController extends bootstrap
 {
 	var $Command;
 	
-	function devboxController(&$command,$config,$app)
+	function devboxController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

@@ -94,8 +94,8 @@ class users extends users_crud
 	//**************************************** AJOUTS ******************************************//
 	//******************************************************************************************//
 	
-	var $loginPage = '/login';
-	var $connectedPage = '/';
+	//var $loginPage = $this->params['lurl'].'/login';
+	//var $connectedPage = $this->params['lurl'].'/';
 	var $userTable = 'users';
 	var $securityKey = 'users';
 	var $userMail = 'email';
@@ -153,14 +153,14 @@ class users extends users_crud
 				$this->bdd->query($sql);
 				
 				// Renvoi sur la page apres connexion
-				if(isset($_SESSION['request_url']) && $_SESSION['request_url'] != '' && $_SESSION['request_url'] != 'login')
+				if(isset($_SESSION['request_url']) && $_SESSION['request_url'] != '' && $_SESSION['request_url'] != 'login' && $_SESSION['request_url'] != 'captcha')
 				{
 					header('location:'.$_SESSION['request_url']);
 					die;
 				}
 				else
 				{
-					header('location:'.$this->connectedPage);
+					header('location:'.$this->params['lurl'].'/');
 					die;
 				}
 			}
@@ -169,7 +169,7 @@ class users extends users_crud
 				// Mise en session du message
 				$_SESSION['msgErreur'] = 'loginError';
 				
-				header('location:'.$this->loginPage);
+				header('location:'.$this->params['lurl'].'/login');
 				die;
 			}
 		}
@@ -182,7 +182,7 @@ class users extends users_crud
 		unset($_SESSION['user']);
 		unset($_SESSION['request_url']);
 		
-		header('location:'.$this->loginPage);
+		header('location:'.$this->params['lurl'].'/login');
 	}
 	
 	public function login($email,$pass)
@@ -243,7 +243,7 @@ class users extends users_crud
 					// Mise en session du message
 					$_SESSION['msgErreur'] = 'loginError';
 				
-					header('location:'.$this->loginPage);
+					header('location:'.$this->params['lurl'].'/login');
 					die;
 				}
 			}
@@ -252,13 +252,13 @@ class users extends users_crud
 		{
 			if($_SESSION['auth'] != true)
 			{
-				header('location:'.$this->loginPage);
+				header('location:'.$this->params['lurl'].'/login');
 				die;
 			}
 			
 			if(trim($_SESSION['token']) == '')
 			{
-				header('location:'.$this->loginPage);
+				header('location:'.$this->params['lurl'].'/login');
 				die;
 			}
 			
@@ -270,7 +270,7 @@ class users extends users_crud
 				// Mise en session du message
 				$_SESSION['msgErreur'] = 'loginError';
 						
-				header('location:'.$this->loginPage);
+				header('location:'.$this->params['lurl'].'/login');
 				die;
 			}
 			else
@@ -298,7 +298,7 @@ class users extends users_crud
 						// Mise en session du message
 						$_SESSION['msgErreur'] = 'loginInterdit';
 				
-						header('location:'.$this->loginPage);
+						header('location:'.$this->params['lurl'].'/login');
 						die;
 					}
 				}

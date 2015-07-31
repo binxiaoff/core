@@ -4,7 +4,7 @@ class unilend_emprunteurController extends bootstrap
 {
 	var $Command;
 	
-	function unilend_emprunteurController(&$command,$config,$app)
+	function unilend_emprunteurController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

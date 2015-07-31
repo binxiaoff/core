@@ -4,7 +4,7 @@ class thickboxController extends bootstrap
 {
 	var $Command;
 	
-	function thickboxController(&$command,$config,$app)
+	function thickboxController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

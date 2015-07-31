@@ -3,9 +3,9 @@ class dossiersController extends bootstrap
 {
 	var $Command;
 	
-	function dossiersController(&$command,$config,$app)
+	function dossiersController($command,$config,$app)
 	{
-		parent::__construct(&$command,$config,$app);
+		parent::__construct($command,$config,$app);
 		
 		$this->catchAll = true;
 		

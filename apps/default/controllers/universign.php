@@ -4,7 +4,7 @@ class universignController extends bootstrap
 {
 	var $Command;
 	
-	function universignController(&$command,$config,$app)
+	function universignController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

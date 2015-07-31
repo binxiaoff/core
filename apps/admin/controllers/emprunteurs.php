@@ -4,9 +4,9 @@ class emprunteursController extends bootstrap
 {
 	var $Command;
 	
-	function emprunteursController(&$command,$config,$app)
+	function emprunteursController($command,$config,$app)
 	{
-		parent::__construct(&$command,$config,$app);
+		parent::__construct($command,$config,$app);
 		
 		$this->catchAll = true;
 		

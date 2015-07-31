@@ -4,7 +4,7 @@ class create_project_emprunteurController extends bootstrap
 {
 	var $Command;
 	
-	function create_project_emprunteurController(&$command,$config,$app)
+	function create_project_emprunteurController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

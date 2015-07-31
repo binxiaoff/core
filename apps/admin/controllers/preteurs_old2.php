@@ -4,9 +4,9 @@ class preteursController extends bootstrap
 {
 	var $Command;
 	
-	function preteursController(&$command,$config,$app)
+	function preteursController($command,$config,$app)
 	{
-		parent::__construct(&$command,$config,$app);
+		parent::__construct($command,$config,$app);
 		
 		$this->catchAll = true;
 		

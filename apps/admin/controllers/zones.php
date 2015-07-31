@@ -4,7 +4,7 @@ class zonesController extends bootstrap
 {
 	var $Command;
 	
-	function zonesController(&$command,$config,$app)
+	function zonesController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

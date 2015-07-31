@@ -3,7 +3,7 @@ class operationsController extends bootstrap
 {
 	var $Command;
 	
-	function operationsController(&$command,$config,$app)
+	function operationsController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

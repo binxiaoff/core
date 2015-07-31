@@ -3,7 +3,7 @@ class ajaxController extends bootstrap
 {	
 	var $Command;
 	
-	function ajaxController(&$command,$config,$app)
+	function ajaxController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

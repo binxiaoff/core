@@ -47,7 +47,7 @@ $PMA_String = new PMA_String();
  *
  * @see     PMA_isValid()
  */
-function PMA_ifSetOr(&$var, $default = null, $type = 'similar')
+function PMA_ifSetOr($var, $default = null, $type = 'similar')
 {
     if (! PMA_isValid($var, $type, $default)) {
         return $default;
@@ -98,7 +98,7 @@ function PMA_ifSetOr(&$var, $default = null, $type = 'similar')
  * @todo add some more var types like hex, bin, ...?
  * @see     http://php.net/gettype
  */
-function PMA_isValid(&$var, $type = 'length', $compare = null)
+function PMA_isValid($var, $type = 'length', $compare = null)
 {
     if (! isset($var)) {
         // var is not even set
@@ -468,7 +468,7 @@ function PMA_arrayMergeRecursive()
  * @see http://www.php-security.org/MOPB/MOPB-02-2007.html
  * @see http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2006-1549
  */
-function PMA_arrayWalkRecursive(&$array, $function, $apply_to_keys_also = false)
+function PMA_arrayWalkRecursive($array, $function, $apply_to_keys_also = false)
 {
     static $recursive_counter = 0;
     $walked_keys = array();
@@ -511,7 +511,7 @@ function PMA_arrayWalkRecursive(&$array, $function, $apply_to_keys_also = false)
  *
  * @return boolean whether $page is valid or not (in $whitelist or not)
  */
-function PMA_checkPageValidity(&$page, $whitelist)
+function PMA_checkPageValidity($page, $whitelist)
 {
     if (! isset($page) || !is_string($page)) {
         return false;
@@ -965,7 +965,7 @@ function PMA_emptyRecursive($value)
     if (is_array($value)) {
         PMA_arrayWalkRecursive(
             $value,
-            function ($item) use (&$empty) {
+            function ($item) use ($empty) {
                 $empty = $empty && empty($item);
             }
         );

@@ -3,7 +3,7 @@ class transfertsController extends bootstrap
 {
 	var $Command;
 	
-	function transfertsController(&$command,$config,$app)
+	function transfertsController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

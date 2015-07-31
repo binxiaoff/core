@@ -4,7 +4,7 @@ class pdfController extends bootstrap
 {
 	var $Command;
 	
-	function pdfController(&$command,$config,$app)
+	function pdfController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

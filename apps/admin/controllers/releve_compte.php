@@ -4,7 +4,7 @@ class releve_compteController extends bootstrap
 {
 	var $Command;
 	
-	function releve_compteController(&$command,$config,$app)
+	function releve_compteController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		

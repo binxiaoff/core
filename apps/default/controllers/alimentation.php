@@ -4,7 +4,7 @@ class alimentationController extends bootstrap
 {
 	var $Command;
 	
-	function alimentationController(&$command,$config,$app)
+	function alimentationController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		
