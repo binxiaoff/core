@@ -1,17 +1,17 @@
 ﻿<?php
 
 
-//if(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443){
-//        $currentCookieParams = session_get_cookie_params(); 
-//
-//        session_set_cookie_params( 
-//                $currentCookieParams["lifetime"], 
-//                $currentCookieParams["path"], 
-//                $currentCookieParams["domain"], 
-//                true, 
-//                true 
-//        );	
-//}
+if(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443){
+        $currentCookieParams = session_get_cookie_params(); 
+
+        session_set_cookie_params( 
+                $currentCookieParams["lifetime"], 
+                $currentCookieParams["path"], 
+                $currentCookieParams["domain"], 
+                true, 
+                true 
+        );	
+}
 
 
 
@@ -23,7 +23,7 @@ ini_set('session.gc_maxlifetime',3600); // 1h la session
 //if($_SERVER['REMOTE_ADDR'] == '93.26.42.99' || $_SERVER['REMOTE_ADDR'] == '90.62.110.115' )
 //if($_SERVER['REMOTE_ADDR'] != '93.26.42.99')
 
-//require('prepend.php');
+require('prepend.php');
 
 
 
@@ -65,7 +65,7 @@ $dispatcher = new Dispatcher($config,$app);
 //if($_SERVER['REMOTE_ADDR'] == '93.26.42.99' || $_SERVER['REMOTE_ADDR'] == '90.62.110.115')
 //if($_SERVER['REMOTE_ADDR'] != '93.26.42.99')
 
-//require('append.php');
+require('append.php');
 
 
 ?>
