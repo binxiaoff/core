@@ -704,6 +704,7 @@ class echeanciers extends echeanciers_crud
 		LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
 		LEFT JOIN clients c ON l.id_client_owner = c.id_client
 		WHERE e.status_emprunteur = 1 
+                AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
 		'.($morale != ''?' AND c.type = '.$morale:'');
 		if($exonere == 1){
 			$sql .= '
@@ -747,6 +748,7 @@ class echeanciers extends echeanciers_crud
 			LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
 			LEFT JOIN clients c ON l.id_client_owner = c.id_client
 			WHERE e.status_emprunteur = 1 
+                        AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
 			AND c.type = 1 
 			AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = l.id_lender_account AND LEFT(lih.added,10) <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0 
 			AND LEFT(date_echeance_reel,10) BETWEEN "'.$date1.'" AND "'.$date2.'"';
@@ -784,6 +786,7 @@ class echeanciers extends echeanciers_crud
 			LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
 			LEFT JOIN clients c ON l.id_client_owner = c.id_client
 			WHERE e.status_emprunteur = 1 
+                        AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
 			'.($morale != ''?' AND c.type = '.$morale:'');
 			
 			if($exonere != ''){

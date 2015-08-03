@@ -7186,7 +7186,10 @@ class cronController extends bootstrap
 		LEFT JOIN clients_adresses ca ON ca.id_client = c.id_client
 		
 		LEFT JOIN pays_v2 p ON p.id_pays = ca.id_pays_fiscal
-		WHERE LEFT(e.date_echeance_reel,7) = "' . $dateMoins1Mois . '" AND e.status = 1 ORDER BY e.date_echeance ASC';
+		WHERE LEFT(e.date_echeance_reel,7) = "' . $dateMoins1Mois . '" 
+                AND e.status = 1 
+                AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
+                ORDER BY e.date_echeance ASC';
 
 
         $resultat = $this->bdd->query($sql);
@@ -12530,12 +12533,18 @@ class cronController extends bootstrap
 
                     $getsolde = $this->transactions->getSolde($this->clients->id_client);
 
+                    if ($this->Config['env'] != 'prod') // nmp
+                    {
+                        $liste_remb = utf8_decode($liste_remb);
+                    } 
+                    
+                    
                     // Variables du mailing
                     $varMail = array(
                         'surl' => $this->surl,
                         'url' => $this->furl,
                         'prenom_p' => $this->clients->prenom,
-                        'liste_offres' => utf8_decode($liste_remb),
+                        'liste_offres' => $liste_remb,
                         'motif_virement' => $motif,
                         'gestion_alertes' => $this->lurl . '/profile',
                         'montant_dispo' => number_format($getsolde, 2, ',', ' '),
