@@ -147,7 +147,7 @@ class cronController extends bootstrap
             echo 'today : ' . $today . '<br><br>';
 
             ////////// test ////////////
-            $today = '2015-08-04 15:35'; // mettre la date de publication du projet
+            //$today = '2015-08-04 15:35'; // mettre la date de publication du projet
             //$this->heureDebutFunding = '07:00';
             ////////////////////////////
             //if($datePublication.' '.$this->heureDebutFunding == $today ) // on lance le matin a 7h00
