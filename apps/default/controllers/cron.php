@@ -7310,8 +7310,8 @@ class cronController extends bootstrap
 
         $jour = date("d");
         $mois = date("m");
-        // test //////
-        //$mois = 06;
+        // test ////// - Ne pas mettre de "0" pour 08 par exemple
+        //$mois = 8;
         // fin test //
         $annee = date("Y");
 
