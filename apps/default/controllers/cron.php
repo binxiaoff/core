@@ -10078,7 +10078,7 @@ class cronController extends bootstrap
 
 
         // Nouveau projet
-        if (time() >= $dateDebutNewProject && time() < $dateFinNewProject || 5 == 5)
+        if (time() >= $dateDebutNewProject && time() < $dateFinNewProject)
         {
             $id_notif = 1;
 
