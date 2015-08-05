@@ -3402,21 +3402,40 @@ if ($lEcheances == false)
                                                     $timeAdd = strtotime($dateDernierStatut);
                                                     $month = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
-
-                                                    // Variables du mailing
-                                                    $varMail = array(
-                                                        'surl' => $surl,
-                                                        'url' => $url,
-                                                        'prenom_p' => $this->clients->prenom,
-                                                        'mensualite_p' => $rembNetEmail,
-                                                        'mensualite_avantfisca' => ($e['montant'] / 100),
-                                                        'nom_entreprise' => $this->companies->name,
-                                                        'date_bid_accepte' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                                                        'nbre_prets' => $nbpret,
-                                                        'solde_p' => $solde,
-                                                        'motif_virement' => $motif,
-                                                        'lien_fb' => $lien_fb,
-                                                        'lien_tw' => $lien_tw);
+                                                    if ($this->Config['env'] == 'prod')
+                                                    {
+                                                        // Variables du mailing
+                                                        $varMail = array(
+                                                            'surl' => $surl,
+                                                            'url' => $url,
+                                                            'prenom_p' => $this->clients->prenom,
+                                                            'mensualite_p' => $rembNetEmail,
+                                                            'mensualite_avantfisca' => ($e['montant'] / 100),
+                                                            'nom_entreprise' => $this->companies->name,
+                                                            'date_bid_accepte' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
+                                                            'nbre_prets' => $nbpret,
+                                                            'solde_p' => $solde,
+                                                            'motif_virement' => $motif,
+                                                            'lien_fb' => $lien_fb,
+                                                            'lien_tw' => $lien_tw);
+                                                    }
+                                                    else{
+                                                       // Variables du mailing
+                                                        $varMail = array(
+                                                            'surl' => $surl,
+                                                            'url' => $url,
+                                                            'prenom_p' => utf8_decode($this->clients->prenom),
+                                                            'mensualite_p' => $rembNetEmail,
+                                                            'mensualite_avantfisca' => ($e['montant'] / 100),
+                                                            'nom_entreprise' => utf8_decode($this->companies->name),
+                                                            'date_bid_accepte' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
+                                                            'nbre_prets' => $nbpret,
+                                                            'solde_p' => $solde,
+                                                            'motif_virement' => $motif,
+                                                            'lien_fb' => $lien_fb,
+                                                            'lien_tw' => $lien_tw);
+                                                         
+                                                    }
 
                                                     // Construction du tableau avec les balises EMV
                                                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
