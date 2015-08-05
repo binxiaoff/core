@@ -3407,10 +3407,10 @@ if ($lEcheances == false)
                                                     $varMail = array(
                                                         'surl' => $surl,
                                                         'url' => $url,
-                                                        'prenom_p' => utf8_decode($this->clients->prenom),
+                                                        'prenom_p' => $this->clients->prenom,
                                                         'mensualite_p' => $rembNetEmail,
                                                         'mensualite_avantfisca' => ($e['montant'] / 100),
-                                                        'nom_entreprise' => utf8_decode($this->companies->name),
+                                                        'nom_entreprise' => $this->companies->name,
                                                         'date_bid_accepte' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
                                                         'nbre_prets' => $nbpret,
                                                         'solde_p' => $solde,
