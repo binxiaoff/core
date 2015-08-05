@@ -153,7 +153,7 @@ class cronController extends bootstrap
             echo 'today : ' . $today . '<br><br>';
 
             ////////// test ////////////
-            //$today = '2013-11-13 07:00'; // mettre la date de publication du projet
+            //$today = '2015-08-04 15:35'; // mettre la date de publication du projet
             //$this->heureDebutFunding = '07:00';
             ////////////////////////////
             //if($datePublication.' '.$this->heureDebutFunding == $today ) // on lance le matin a 7h00
@@ -10048,7 +10048,7 @@ class cronController extends bootstrap
     // Cron une fois par jour a 19h30 (* 18-20 * * *) 
     function _alertes_quotidienne()
     {
-        mail('d.courtier@relance.fr', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee - ' . date('Y-m-d H:i:e'));
+        //mail('d.courtier@relance.fr', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee - ' . date('Y-m-d H:i:e'));
 
         $timeDebut = time();
 
@@ -11271,7 +11271,7 @@ class cronController extends bootstrap
             // On check dans la gestion des alertes immediatement ou pas
             if ($this->clients_gestion_notifications->getNotif($preteur['id_client'], 1, 'immediatement') == true)
             {
-
+                //echo 'test : '.$preteur['id_client'].'<br>';
                 //////// GESTION ALERTES //////////
                 $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                 $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
@@ -11392,16 +11392,14 @@ class cronController extends bootstrap
                     $nom = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
                     $le_id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
                     $motif = mb_strtoupper($le_id_client . $p . $nom, 'UTF-8');
-
-                    if (count($mails_notif) > 1 || $type != 'quotidienne')
+                    $nb_arrayoffres = count($mails_notif); // (BT 18180 04/08/2015)
+                    $goMail = true; // (BT 18180 04/08/2015)
+                    
+                    if(5 == 5) // (BT 18180 04/08/2015)
+                    //if (count($mails_notif) > 1 || $type != 'quotidienne')
                     {
 
                         //////// MAIL avec plusieurs projets ////////
-
-                        if ($type == 'quotidienne')
-                            $this->mails_text->get('nouveaux-projets-du-jour', 'lang = "' . $this->language . '" AND type');
-                        else
-                            $this->mails_text->get('nouveaux-projets-de-la-semaine', 'lang = "' . $this->language . '" AND type');
 
                         $liste_projets = '';
                         foreach ($mails_notif as $n)
@@ -11415,7 +11413,12 @@ class cronController extends bootstrap
                             $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
                             if ($type == 'quotidienne')
                             {
-                                $this->clients_gestion_mails_notif->quotidienne = 1;
+                                if($nb_arrayoffres <= 1 && $this->clients_gestion_mails_notif->immediatement == 1){
+                                    $goMail = false;
+                                }
+                                else{
+                                    $this->clients_gestion_mails_notif->quotidienne = 1;
+                                }
                                 $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
                             }
                             elseif ($type == 'hebdomadaire')
@@ -11440,51 +11443,56 @@ class cronController extends bootstrap
 								</tr>';
                         }
 
-
-
-
-                        // Variables du mailing
-                        $varMail = array(
-                            'surl' => $this->surl,
-                            'url' => $this->furl,
-                            'prenom_p' => $this->clients->prenom,
-                            'liste_projets' => $liste_projets,
-                            'projet-p' => $this->lurl . '/projets-a-financer',
-                            'motif_virement' => $motif,
-                            'gestion_alertes' => $this->lurl . '/profile',
-                            'lien_fb' => $lien_fb,
-                            'lien_tw' => $lien_tw);
-                        // Construction du tableau avec les balises EMV
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                        // Attribution des données aux variables
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        // Pas de mail si le compte est desactivé
-                        if ($this->clients->status == 1)
+                        if($goMail == true) // (BT 18180 04/08/2015)
                         {
-                            if ($this->Config['env'] == 'prod') // nmp
+                            if ($type == 'quotidienne')
+                                $this->mails_text->get('nouveaux-projets-du-jour', 'lang = "' . $this->language . '" AND type');
+                            else
+                                $this->mails_text->get('nouveaux-projets-de-la-semaine', 'lang = "' . $this->language . '" AND type');
+
+                            // Variables du mailing
+                            $varMail = array(
+                                'surl' => $this->surl,
+                                'url' => $this->furl,
+                                'prenom_p' => $this->clients->prenom,
+                                'liste_projets' => $liste_projets,
+                                'projet-p' => $this->lurl . '/projets-a-financer',
+                                'motif_virement' => $motif,
+                                'gestion_alertes' => $this->lurl . '/profile',
+                                'lien_fb' => $lien_fb,
+                                'lien_tw' => $lien_tw);
+                            // Construction du tableau avec les balises EMV
+                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                            // Attribution des données aux variables
+                            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                            $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                            // Envoi du mail
+                            $this->email = $this->loadLib('email', array());
+                            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                            $this->email->setSubject(stripslashes($sujetMail));
+                            $this->email->setHTMLBody(stripslashes($texteMail));
+
+                            // Pas de mail si le compte est desactivé
+                            if ($this->clients->status == 1)
                             {
-                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                // Injection du mail NMP dans la queue
-                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                            }
-                            else // non nmp
-                            {
-                                $this->email->addRecipient($this->clients->email);
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                if ($this->Config['env'] == 'prod') // nmp
+                                {
+                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                                    // Injection du mail NMP dans la queue
+                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                }
+                                else // non nmp
+                                {
+                                    $this->email->addRecipient($this->clients->email);
+                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                }
                             }
                         }
                     }
-                    else
+                    else // on passe plus ici (BT 18180 04/08/2015)
                     {
                         ////// EMAIL avec un seul projet ////////
 
@@ -11500,9 +11508,15 @@ class cronController extends bootstrap
 
                         //////// GESTION ALERTES //////////
                         $this->clients_gestion_mails_notif->get($mail['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
+                        $goMail = true;
                         if ($type == 'quotidienne')
                         {
-                            $this->clients_gestion_mails_notif->quotidienne = 1;
+                            if($this->clients_gestion_mails_notif->immediatement == 1){
+                                $goMail = false;
+                            }
+                            else{
+                                $this->clients_gestion_mails_notif->quotidienne = 1;
+                            }
                             $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
                         }
                         elseif ($type == 'hebdomadaire')
@@ -11518,50 +11532,51 @@ class cronController extends bootstrap
                         $this->clients_gestion_mails_notif->update();
                         //////// FIN GESTION ALERTES //////////
 
+                        if($goMail == true){
+                            $this->mails_text->get('nouveau-projet', 'lang = "' . $this->language . '" AND type');
 
-                        $this->mails_text->get('nouveau-projet', 'lang = "' . $this->language . '" AND type');
 
+                            // Variables du mailing
+                            $varMail = array(
+                                'surl' => $this->surl,
+                                'url' => $this->furl,
+                                'prenom_p' => $this->clients->prenom,
+                                'nom_entreprise' => $this->companies->name,
+                                'projet-p' => $this->furl . '/projets-a-financer',
+                                'montant' => number_format($this->projects->amount, 0, ',', ' '),
+                                'duree' => $this->projects->period,
+                                'motif_virement' => $motif,
+                                'gestion_alertes' => $this->lurl . '/profile',
+                                'lien_fb' => $lien_fb,
+                                'lien_tw' => $lien_tw);
+                            // Construction du tableau avec les balises EMV
+                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                        // Variables du mailing
-                        $varMail = array(
-                            'surl' => $this->surl,
-                            'url' => $this->furl,
-                            'prenom_p' => $this->clients->prenom,
-                            'nom_entreprise' => $this->companies->name,
-                            'projet-p' => $this->furl . '/projets-a-financer',
-                            'montant' => number_format($this->projects->amount, 0, ',', ' '),
-                            'duree' => $this->projects->period,
-                            'motif_virement' => $motif,
-                            'gestion_alertes' => $this->lurl . '/profile',
-                            'lien_fb' => $lien_fb,
-                            'lien_tw' => $lien_tw);
-                        // Construction du tableau avec les balises EMV
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                            // Attribution des données aux variables
+                            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                            $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                        // Attribution des données aux variables
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                            // Envoi du mail
+                            $this->email = $this->loadLib('email', array());
+                            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                            $this->email->setSubject(stripslashes($sujetMail));
+                            $this->email->setHTMLBody(stripslashes($texteMail));
 
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        // Pas de mail si le compte est desactivé
-                        if ($this->clients->status == 1)
-                        {
-                            if ($this->Config['env'] == 'prod') // nmp
+                            // Pas de mail si le compte est desactivé
+                            if ($this->clients->status == 1)
                             {
-                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                // Injection du mail NMP dans la queue
-                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                            }
-                            else // non nmp
-                            {
-                                $this->email->addRecipient(trim($this->clients->email));
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                if ($this->Config['env'] == 'prod') // nmp
+                                {
+                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                                    // Injection du mail NMP dans la queue
+                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                }
+                                else // non nmp
+                                {
+                                    $this->email->addRecipient(trim($this->clients->email));
+                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                }
                             }
                         }
                     }
@@ -11646,18 +11661,14 @@ class cronController extends bootstrap
                     // slug liste des projets
                     $pageProjets = $this->tree->getSlug(4, $this->language);
 
+                    //if(5 == 5) // (BT 18180 04/08/2015)
                     if (count($mails_notif) > 1 || $type != 'quotidienne')
                     {
-
-                        if ($type == 'quotidienne')
-                            $this->mails_text->get('vos-offres-du-jour', 'lang = "' . $this->language . '" AND type');
-                        //else
-                        //$this->mails_text->get('vos-offres-de-la-semaine','lang = "'.$this->language.'" AND type');
-
                         $liste_offres = '';
                         $i = 1;
                         $total = 0;
                         $nb_arrayoffres = count($mails_notif);
+                        $goMail = true;
                         foreach ($mails_notif as $n)
                         {
 
@@ -11670,7 +11681,12 @@ class cronController extends bootstrap
                             $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
                             if ($type == 'quotidienne')
                             {
-                                $this->clients_gestion_mails_notif->quotidienne = 1;
+                                //if($nb_arrayoffres <= 1 && $this->clients_gestion_mails_notif->immediatement == 1){
+                                //    $goMail = false;
+                                //}
+                                //else{
+                                    $this->clients_gestion_mails_notif->quotidienne = 1;
+                                //}
                                 $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
                             }
                             elseif ($type == 'hebdomadaire')
@@ -11714,49 +11730,57 @@ class cronController extends bootstrap
                             }
                             $i++;
                         }
+                        
+                        if($goMail == true){
+                        
+                            if ($type == 'quotidienne')
+                                $this->mails_text->get('vos-offres-du-jour', 'lang = "' . $this->language . '" AND type');
+                            //else
+                            //$this->mails_text->get('vos-offres-de-la-semaine','lang = "'.$this->language.'" AND type');
 
-                        // Variables du mailing
-                        $varMail = array(
-                            'surl' => $this->surl,
-                            'url' => $this->furl,
-                            'prenom_p' => $this->clients->prenom,
-                            'liste_offres' => $liste_offres,
-                            'motif_virement' => $motif,
-                            'gestion_alertes' => $this->lurl . '/profile',
-                            'lien_fb' => $lien_fb,
-                            'lien_tw' => $lien_tw);
-                        // Construction du tableau avec les balises EMV
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                            // Variables du mailing
+                            $varMail = array(
+                                'surl' => $this->surl,
+                                'url' => $this->furl,
+                                'prenom_p' => $this->clients->prenom,
+                                'liste_offres' => $liste_offres,
+                                'motif_virement' => $motif,
+                                'gestion_alertes' => $this->lurl . '/profile',
+                                'lien_fb' => $lien_fb,
+                                'lien_tw' => $lien_tw);
+                            // Construction du tableau avec les balises EMV
+                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                        // Attribution des données aux variables
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                            // Attribution des données aux variables
+                            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                            $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
+                            // Envoi du mail
+                            $this->email = $this->loadLib('email', array());
+                            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                            $this->email->setSubject(stripslashes($sujetMail));
+                            $this->email->setHTMLBody(stripslashes($texteMail));
 
 
-                        // Pas de mail si le compte est desactivé
-                        if ($this->clients->status == 1)
-                        {
-                            if ($this->Config['env'] == 'prod') // nmp
+                            // Pas de mail si le compte est desactivé
+                            if ($this->clients->status == 1)
                             {
-                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                // Injection du mail NMP dans la queue
-                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                            }
-                            else // non nmp
-                            {
-                                $this->email->addRecipient($this->clients->email);
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                if ($this->Config['env'] == 'prod') // nmp
+                                {
+                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                                    // Injection du mail NMP dans la queue
+                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                }
+                                else // non nmp
+                                {
+                                    $this->email->addRecipient($this->clients->email);
+                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                }
                             }
                         }
                     }
-                    else
+                    else // on passe plus ici (BT : 18180 04/08/2015)
                     {
                         ////// EMAIL avec un seul bid ////////
 
@@ -11773,9 +11797,15 @@ class cronController extends bootstrap
 
                         //////// GESTION ALERTES //////////
                         $this->clients_gestion_mails_notif->get($mail['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
+                        $goMail = true;
                         if ($type == 'quotidienne')
                         {
-                            $this->clients_gestion_mails_notif->quotidienne = 1;
+                            if($this->clients_gestion_mails_notif->immediatement == 1){
+                                $goMail = false;
+                            }
+                            else{
+                                $this->clients_gestion_mails_notif->quotidienne = 1;
+                            }
                             $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
                         }
                         elseif ($type == 'hebdomadaire')
@@ -11790,64 +11820,67 @@ class cronController extends bootstrap
                         }
                         $this->clients_gestion_mails_notif->update();
                         //////// FIN GESTION ALERTES //////////
-                        //*********************************//
-                        //*** ENVOI DU MAIL CONFIRM BID ***//
-                        //*********************************//
-                        // Recuperation du modele de mail
-                        $this->mails_text->get('confirmation-bid', 'lang = "' . $this->language . '" AND type');
+                        
+                        if($goMail == true){
+                            ////*********************************//
+                            //*** ENVOI DU MAIL CONFIRM BID ***//
+                            //*********************************//
+                            // Recuperation du modele de mail
+                            $this->mails_text->get('confirmation-bid', 'lang = "' . $this->language . '" AND type');
 
 
-                        $timeAdd = strtotime($this->bids->added);
-                        $month = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
+                            $timeAdd = strtotime($this->bids->added);
+                            $month = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
 
 
-                        // Variables du mailing
-                        $varMail = array(
-                            'surl' => $this->surl,
-                            'url' => $this->lurl,
-                            'prenom_p' => $this->clients->prenom,
-                            'nom_entreprise' => $this->companies->name,
-                            'valeur_bid' => number_format(($this->bids->amount / 100), 0, ',', ' '),
-                            'taux_bid' => number_format($this->bids->rate, 2, ',', ' '),
-                            'date_bid' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                            'heure_bid' => date('H:i:s', strtotime($this->bids->added)),
-                            'projet-p' => $this->lurl . '/' . $pageProjets,
-                            'motif_virement' => $motif,
-                            'lien_fb' => $lien_fb,
-                            'lien_tw' => $lien_tw);
+                            // Variables du mailing
+                            $varMail = array(
+                                'surl' => $this->surl,
+                                'url' => $this->lurl,
+                                'prenom_p' => $this->clients->prenom,
+                                'nom_entreprise' => $this->companies->name,
+                                'valeur_bid' => number_format(($this->bids->amount / 100), 0, ',', ' '),
+                                'taux_bid' => number_format($this->bids->rate, 2, ',', ' '),
+                                'date_bid' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
+                                'heure_bid' => date('H:i:s', strtotime($this->bids->added)),
+                                'projet-p' => $this->lurl . '/' . $pageProjets,
+                                'motif_virement' => $motif,
+                                'lien_fb' => $lien_fb,
+                                'lien_tw' => $lien_tw);
 
 
-                        // Construction du tableau avec les balises EMV
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                            // Construction du tableau avec les balises EMV
+                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                        // Attribution des données aux variables
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                            // Attribution des données aux variables
+                            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                            $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
+                            // Envoi du mail
+                            $this->email = $this->loadLib('email', array());
+                            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                            $this->email->setSubject(stripslashes($sujetMail));
+                            $this->email->setHTMLBody(stripslashes($texteMail));
 
-                        // Pas de mail si le compte est desactivé
-                        if ($this->clients->status == 1)
-                        {
-                            if ($this->Config['env'] == 'prod') // nmp
+                            // Pas de mail si le compte est desactivé
+                            if ($this->clients->status == 1)
                             {
-                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                // Injection du mail NMP dans la queue
-                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                if ($this->Config['env'] == 'prod') // nmp
+                                {
+                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                                    // Injection du mail NMP dans la queue
+                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                }
+                                else // non nmp
+                                {
+                                    $this->email->addRecipient(trim($this->clients->email));
+                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                }
                             }
-                            else // non nmp
-                            {
-                                $this->email->addRecipient(trim($this->clients->email));
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                            }
+                            // fin mail confirmation bid //
                         }
-                        // fin mail confirmation bid //
                     }
                 }
                 // Si il veut pas de mail
@@ -12111,21 +12144,15 @@ class cronController extends bootstrap
                     $le_id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
                     $motif = mb_strtoupper($le_id_client . $p . $nom, 'UTF-8');
 
+                    //if(5 == 5) // on passe ici meme si on qu'une notification car on veut le mail de synthese tout le temps (BT : 18180 04/08/2015)
                     if (count($mails_notif) > 1 || $type != 'quotidienne')
                     {
-
-
-                        if ($type == 'quotidienne')
-                            $this->mails_text->get('synthese-quotidienne-offres-acceptees', 'lang = "' . $this->language . '" AND type');
-                        elseif ($type == 'hebdomadaire')
-                            $this->mails_text->get('synthese-hebdomadaire-offres-acceptees', 'lang = "' . $this->language . '" AND type');
-                        else
-                            $this->mails_text->get('synthese-mensuelle-offres-acceptees', 'lang = "' . $this->language . '" AND type');
 
                         $liste_offres = '';
                         $i = 1;
                         $total = 0;
                         $nb_arrayoffres = count($mails_notif);
+                        $goMail = true;
                         foreach ($mails_notif as $n)
                         {
 
@@ -12138,7 +12165,12 @@ class cronController extends bootstrap
                             $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
                             if ($type == 'quotidienne')
                             {
-                                $this->clients_gestion_mails_notif->quotidienne = 1;
+                                //if($nb_arrayoffres <= 1 && $this->clients_gestion_mails_notif->immediatement == 1){
+                                  //  $goMail = false;
+                                //}
+                                //else{
+                                    $this->clients_gestion_mails_notif->quotidienne = 1;
+                                //}
                                 $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
                             }
                             elseif ($type == 'hebdomadaire')
@@ -12153,7 +12185,7 @@ class cronController extends bootstrap
                             }
                             $this->clients_gestion_mails_notif->update();
                             //////// FIN GESTION ALERTES //////////
-
+                            
                             $total += ($this->loans->amount / 100);
 
                             if ($i == $nb_arrayoffres)
@@ -12182,48 +12214,58 @@ class cronController extends bootstrap
                             }
                             $i++;
                         }
-
-                        // Variables du mailing
-                        $varMail = array(
-                            'surl' => $this->surl,
-                            'url' => $this->furl,
-                            'prenom_p' => $this->clients->prenom,
-                            'liste_offres' => $liste_offres,
-                            'motif_virement' => $motif,
-                            'gestion_alertes' => $this->lurl . '/profile',
-                            'lien_fb' => $lien_fb,
-                            'lien_tw' => $lien_tw);
-                        // Construction du tableau avec les balises EMV
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                        // Attribution des données aux variables
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        // Pas de mail si le compte est desactivé
-                        if ($this->clients->status == 1)
+                        
+                        if($goMail == true) // (BT : 18180 04/08/2015)
                         {
-                            if ($this->Config['env'] == 'prod') // nmp
+                            if ($type == 'quotidienne')
+                                $this->mails_text->get('synthese-quotidienne-offres-acceptees', 'lang = "' . $this->language . '" AND type');
+                            elseif ($type == 'hebdomadaire')
+                                $this->mails_text->get('synthese-hebdomadaire-offres-acceptees', 'lang = "' . $this->language . '" AND type');
+                            else
+                                $this->mails_text->get('synthese-mensuelle-offres-acceptees', 'lang = "' . $this->language . '" AND type');
+
+                            // Variables du mailing
+                            $varMail = array(
+                                'surl' => $this->surl,
+                                'url' => $this->furl,
+                                'prenom_p' => $this->clients->prenom,
+                                'liste_offres' => $liste_offres,
+                                'motif_virement' => $motif,
+                                'gestion_alertes' => $this->lurl . '/profile',
+                                'lien_fb' => $lien_fb,
+                                'lien_tw' => $lien_tw);
+                            // Construction du tableau avec les balises EMV
+                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                            // Attribution des données aux variables
+                            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                            $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                            // Envoi du mail
+                            $this->email = $this->loadLib('email', array());
+                            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                            $this->email->setSubject(stripslashes($sujetMail));
+                            $this->email->setHTMLBody(stripslashes($texteMail));
+
+                            // Pas de mail si le compte est desactivé
+                            if ($this->clients->status == 1)
                             {
-                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                // Injection du mail NMP dans la queue
-                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                            }
-                            else // non nmp
-                            {
-                                $this->email->addRecipient($this->clients->email);
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                if ($this->Config['env'] == 'prod') // nmp
+                                {
+                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                                    // Injection du mail NMP dans la queue
+                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                }
+                                else // non nmp
+                                {
+                                    $this->email->addRecipient($this->clients->email);
+                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                }
                             }
                         }
                     }
-                    else
+                    else // On passe plus ici (BT : 18180 04/08/2015)
                     {
                         foreach ($mails_notif as $n)
                         {
@@ -12238,9 +12280,15 @@ class cronController extends bootstrap
 
                         //////// GESTION ALERTES //////////
                         $this->clients_gestion_mails_notif->get($mail['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
+                        $goMail = true;
                         if ($type == 'quotidienne')
                         {
-                            $this->clients_gestion_mails_notif->quotidienne = 1;
+                            if($this->clients_gestion_mails_notif->immediatement == 1){
+                                $goMail = false;
+                            }
+                            else{
+                                $this->clients_gestion_mails_notif->quotidienne = 1;
+                            }
                             $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
                         }
                         elseif ($type == 'hebdomadaire')
@@ -12255,66 +12303,69 @@ class cronController extends bootstrap
                         }
                         $this->clients_gestion_mails_notif->update();
                         //////// FIN GESTION ALERTES //////////
-                        //*********************************//
-                        //*** ENVOI DU MAIL BID OK 100% ***//
-                        //*********************************//
-                        // Recuperation du modele de mail
-                        $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
+                        
+                        if($goMail == true){
+                            ////*********************************//
+                            //*** ENVOI DU MAIL BID OK 100% ***//
+                            //*********************************//
+                            // Recuperation du modele de mail
+                            $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
 
-                        // on recup la premiere echeance
-                        $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($this->projects->id_project, $this->loans->id_lender, $thid->loans->id_loan);
+                            // on recup la premiere echeance
+                            $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($this->projects->id_project, $this->loans->id_lender, $thid->loans->id_loan);
 
-                        // Variables du mailing
+                            // Variables du mailing
 
-                        $timeAdd = strtotime($lecheancier['date_echeance']);
-                        $month = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
+                            $timeAdd = strtotime($lecheancier['date_echeance']);
+                            $month = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
-                        // Variables du mailing
-                        $varMail = array(
-                            'surl' => $this->surl,
-                            'url' => $this->lurl,
-                            'prenom_p' => $this->clients->prenom,
-                            'valeur_bid' => number_format($this->loans->amount / 100, 0, ',', ' '),
-                            'taux_bid' => number_format($this->loans->rate, 2, ',', ' '),
-                            'nom_entreprise' => $this->companies->name,
-                            'nbre_echeance' => $this->projects->period,
-                            'mensualite_p' => number_format($lecheancier['montant'] / 100, 2, ',', ' '),
-                            'date_debut' => date('d', $timeAdd) . ' ' . strtolower($month) . ' ' . date('Y', $timeAdd),
-                            'compte-p' => $this->lurl,
-                            'projet-p' => $this->lurl . '/projects/detail/' . $this->projects->slug,
-                            'motif_virement' => $motif,
-                            'lien_fb' => $lien_fb,
-                            'lien_tw' => $lien_tw);
+                            // Variables du mailing
+                            $varMail = array(
+                                'surl' => $this->surl,
+                                'url' => $this->lurl,
+                                'prenom_p' => $this->clients->prenom,
+                                'valeur_bid' => number_format($this->loans->amount / 100, 0, ',', ' '),
+                                'taux_bid' => number_format($this->loans->rate, 2, ',', ' '),
+                                'nom_entreprise' => $this->companies->name,
+                                'nbre_echeance' => $this->projects->period,
+                                'mensualite_p' => number_format($lecheancier['montant'] / 100, 2, ',', ' '),
+                                'date_debut' => date('d', $timeAdd) . ' ' . strtolower($month) . ' ' . date('Y', $timeAdd),
+                                'compte-p' => $this->lurl,
+                                'projet-p' => $this->lurl . '/projects/detail/' . $this->projects->slug,
+                                'motif_virement' => $motif,
+                                'lien_fb' => $lien_fb,
+                                'lien_tw' => $lien_tw);
 
-                        // Construction du tableau avec les balises EMV
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                            // Construction du tableau avec les balises EMV
+                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                        // Attribution des données aux variables
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                            // Attribution des données aux variables
+                            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                            $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                            // Envoi du mail
+                            $this->email = $this->loadLib('email', array());
+                            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
 
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
+                            $this->email->setSubject(stripslashes($sujetMail));
+                            $this->email->setHTMLBody(stripslashes($texteMail));
 
-                        // Pas de mail si le compte est desactivé
-                        if ($this->clients->status == 1)
-                        {
-                            if ($this->Config['env'] == 'prod') // nmp
+                            // Pas de mail si le compte est desactivé
+                            if ($this->clients->status == 1)
                             {
-                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                                if ($this->Config['env'] == 'prod') // nmp
+                                {
+                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
 
-                                // Injection du mail NMP dans la queue
-                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                            }
-                            else // non nmp
-                            {
-                                $this->email->addRecipient(trim($preteur->email));
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                    // Injection du mail NMP dans la queue
+                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                }
+                                else // non nmp
+                                {
+                                    $this->email->addRecipient(trim($preteur->email));
+                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                }
                             }
                         }
                     }
