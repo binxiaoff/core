@@ -3402,6 +3402,7 @@ if ($lEcheances == false)
                                                     $timeAdd = strtotime($dateDernierStatut);
                                                     $month = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
+                                                    // prod
                                                     if ($this->Config['env'] == 'prod')
                                                     {
                                                         // Variables du mailing
@@ -3419,6 +3420,7 @@ if ($lEcheances == false)
                                                             'lien_fb' => $lien_fb,
                                                             'lien_tw' => $lien_tw);
                                                     }
+                                                    // dev
                                                     else{
                                                        // Variables du mailing
                                                         $varMail = array(
