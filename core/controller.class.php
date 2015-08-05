@@ -45,7 +45,7 @@ class Controller
 	var $included_js;
 	var $included_css;
 	
-	function __construct($command,$config,$app)
+	function __construct(&$command,$config,$app)
 	{
 		//Variables de session pour la fenetre de debug
 		unset($_SESSION['error']);
@@ -60,7 +60,7 @@ class Controller
 		$this->included_css = array();
 		$this->bdd = new bdd($this->Config['bdd_config'][$this->Config['env']],$this->Config['bdd_option'][$this->Config['env']]);
 		
-		// Initialisation des propriï¿½tï¿½s nï¿½cessaires au cache
+		// Initialisation des propriétés nécessaires au cache
 		$this->enableCache = $this->Config['cache'][$this->Config['env']];
 		$this->cacheDuration = $this->Config['cacheDuration'][$this->Config['env']];
 		$this->cacheCurrentPage = false;
@@ -76,7 +76,6 @@ class Controller
 		$this->surl = $this->Config['static_url'][$this->Config['env']];
 		$this->url = $this->Config['url'][$this->Config['env']][$this->App];
 		$this->lurl = $this->Config['url'][$this->Config['env']][$this->App].($this->Config['multilanguage']['enabled']?'/'.$this->language:'');
-                $this->bp_url = $this->Config['bypass_htaccess_url'][$this->Config['env']];
 		
 		//admin 
 		$this->aurl = $this->Config['url'][$this->Config['env']]['admin'];
@@ -146,7 +145,7 @@ class Controller
 		$this->params = $this->Command->getParameters();
 		call_user_func(array(&$this,'_'.$FunctionToCall));
 		
-		// Si la page courante doit ï¿½tre cachï¿½e, on cherche la page en cache ou on initie le processus de crï¿½ation de la version en cache
+		// Si la page courante doit être cachée, on cherche la page en cache ou on initie le processus de création de la version en cache
 		if($this->cacheCurrentPage)
 			$this->initCache();
 			
@@ -174,11 +173,11 @@ class Controller
 				$this->fireFooter();
 		}
 		
-		// Si la page courante doit ï¿½tre cachï¿½e, termine le boulot de crï¿½ation du cache
+		// Si la page courante doit être cachée, termine le boulot de création du cache
 		if($this->cacheCurrentPage)
 			$this->completeCache();
 			
-		//Affiche une fentre de debug/error si l'option est activï¿½e dans le config.php
+		//Affiche une fentre de debug/error si l'option est activée dans le config.php
 		if(($this->Config['bdd_option'][$this->Config['env']]['DEBUG_DISPLAY'] || $this->Config['bdd_option'][$this->Config['env']]['DISPLAY_ERREUR']) && in_array($_SERVER['REMOTE_ADDR'],$this->Config['ip_admin'][$this->Config['env']]) && $this->autoFireDebug)
 			$this->fireDebug();
 	}
@@ -581,7 +580,7 @@ class Controller
 				$remplissage .= "\t\t\t\$this->".$record['Field']." = \$record['".$record['Field']."'];\r\n";
 				$escapestring .= "\t\t\$this->".$record['Field']." = \$this->bdd->escape_string(\$this->".$record['Field'].");\r\n";
 	
-				//On stock les clï¿½ primaire dans un tableau
+				//On stock les clé primaire dans un tableau
 				if($record['Key'] == 'PRI')
 					$id[] = $record['Field'];
 							
@@ -594,7 +593,7 @@ class Controller
 				if($record['Field'] == 'slug')
 					$slug = true;
 					
-				//Si la clï¿½ primaire est unique, c'est un autoincrï¿½mente donc on l'exclus de la liste
+				//Si la clé primaire est unique, c'est un autoincrémente donc on l'exclus de la liste
 				if($nb_cle==1)
 				{
 					if($record['Key'] != 'PRI')	
@@ -693,7 +692,7 @@ class Controller
 					$id[] = $record['Field'];
 			}
 	
-			//si la clï¿½ primaire est unique
+			//si la clé primaire est unique
 			if(count($id)==1)
 			{
 				$dao = file_get_contents($this->path.'core/data.sample.php');
@@ -761,7 +760,7 @@ class Controller
 		}
 	}
 	
-	// Fonction qui dï¿½clenche le caching d'une page
+	// Fonction qui déclenche le caching d'une page
 	function fireCache()
 	{
 		if($this->enableCache)
@@ -772,7 +771,7 @@ class Controller
 	function initCache()
 	{
 		$this->cacheFile = $this->path.'tmp/cache/'.md5($_SERVER['REQUEST_URI']);
-		// On recherche un fichier de cache suffisament rï¿½cent
+		// On recherche un fichier de cache suffisament récent
 		if (file_exists($this->cacheFile) && (time() - $this->cacheDuration*60 < filemtime($this->cacheFile))) 
         {
 			// Si on le trouve, on l'output
@@ -793,7 +792,7 @@ class Controller
 
 		fclose($fp);
 		
-		// Output ï¿½cran
+		// Output écran
 		ob_end_flush();
 		
 		// Cassos
