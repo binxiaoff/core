@@ -32,7 +32,7 @@ class pdfController extends bootstrap
 	
 	function _default()
 	{
-		
+            
 	}
 	
 	function _mandat_preteur()
@@ -42,8 +42,9 @@ class pdfController extends bootstrap
 		$clients->get($this->params[0],'hash');
 		
 		$vraisNom = 'MANDAT-UNILEND-'.$clients->id_client;
-		
-		$this->Web2Pdf->convert($this->path.'protected/pdf/mandat/',$this->params[0],$this->lurl.'/pdf/mandat_html/'.$this->params[0],'mandat_preteur',$vraisNom);
+		print_r($this->lurl.'/pdf/mandat_html/'.$this->params[0]);
+                die;
+		$this->Web2Pdf->convert($this->path.'protected/pdf/mandat/',$this->params[0],$this->bp_url.'/pdf/mandat_html/'.$this->params[0],'mandat_preteur',$vraisNom);
 	}
 	
 	// mandat emprunteur
@@ -68,7 +69,7 @@ class pdfController extends bootstrap
 				
 				$path = $this->path.'protected/pdf/mandat/';
 				$slug = $this->params[0];
-				$urlsite = $this->lurl.'/pdf/mandat_html/'.$this->params[0].'/'.(isset($this->params[1])?$this->params[1].'/':'');
+				$urlsite = $this->bp_url.'/pdf/mandat_html/'.$this->params[0].'/'.(isset($this->params[1])?$this->params[1].'/':'');
 				$name = 'mandat';
 				$param = $this->params[1];
 				$sign = '';
@@ -256,7 +257,7 @@ class pdfController extends bootstrap
 
 				$path 		= $this->path.'protected/pdf/pouvoir/'; // path d'enregistrement
 				$slug 		= $this->params[0]; // hash client
-				$urlsite 	= $this->lurl.'/pdf/pouvoir_html/'.$this->params[0].'/'.$this->params[1].'/'; // URL page HTML
+				$urlsite 	= $this->bp_url.'/pdf/pouvoir_html/'.$this->params[0].'/'.$this->params[1].'/'; // URL page HTML
 				$name 		= 'pouvoir'; // nom du pdf (type PDF)
 				$param 		= $this->params[1]; // id_project
 				$entete 	= $this->lurl.'/pdf/entete/'; // URL page entete du PDF 
@@ -507,7 +508,7 @@ class pdfController extends bootstrap
 		
 		$vraisNom = 'CONTRAT-UNILEND-'.$projects->slug.'-'.$loans->id_loan;
 		
-		$this->Web2Pdf->convert($this->path.'protected/pdf/contrat/',$this->params[0],$this->lurl.'/pdf/contrat_html/'.$this->params[0].'/'.$this->params[1].'/','contrat',$vraisNom,$this->params[1]);
+		$this->Web2Pdf->convert($this->path.'protected/pdf/contrat/',$this->params[0],$this->bp_url.'/pdf/contrat_html/'.$this->params[0].'/'.$this->params[1].'/','contrat',$vraisNom,$this->params[1]);
 	}
 	function _contrat_html()
 	{
@@ -737,7 +738,7 @@ class pdfController extends bootstrap
 				// fonction pdf
 				
 				//if($_SERVER['REMOTE_ADDR'] == '93.26.42.99'){
-					$this->Web2Pdf->convert_factures($this->path.'protected/pdf/facture/',$this->params[0],$this->lurl.'/pdf/facture_EF_html/'.$this->params[0].'/'.$this->params[1].'/','facture_EF',$vraisNom,$this->params[1],'','',$this->lurl.'/pdf/footer_facture/');
+					$this->Web2Pdf->convert_factures($this->path.'protected/pdf/facture/',$this->params[0],$this->bp_url.'/pdf/facture_EF_html/'.$this->params[0].'/'.$this->params[1].'/','facture_EF',$vraisNom,$this->params[1],'','',$this->lurl.'/pdf/footer_facture/');
 				//}
 				/*else{
 					$this->Web2Pdf->convert($this->path.'protected/pdf/facture/',$this->params[0],$this->lurl.'/pdf/facture_EF_html/'.$this->params[0].'/'.$this->params[1].'/','facture_EF',$vraisNom,$this->params[1],'','',$this->lurl.'/pdf/footer_facture/');
@@ -874,7 +875,7 @@ class pdfController extends bootstrap
 					$vraisNom = 'FACTURE-UNILEND-'.$this->projects->slug.'-'.$this->params[2];
 					
 					// fonction pdf
-					$this->Web2Pdf->convert_factures($this->path.'protected/pdf/facture/',$this->params[0],$this->lurl.'/pdf/facture_ER_html/'.$this->params[0].'/'.$this->params[1].'/'.$this->params[2].'/','facture_ER',$vraisNom,$this->params[1].'-'.$this->params[2],'','',$this->lurl.'/pdf/footer_facture/');
+					$this->Web2Pdf->convert_factures($this->path.'protected/pdf/facture/',$this->params[0],$this->bp_url.'/pdf/facture_ER_html/'.$this->params[0].'/'.$this->params[1].'/'.$this->params[2].'/','facture_ER',$vraisNom,$this->params[1].'-'.$this->params[2],'','',$this->lurl.'/pdf/footer_facture/');
 					//$this->Web2Pdf->convert($this->path.'protected/pdf/facture/',$this->params[0],$this->lurl.'/pdf/facture_ER_html/'.$this->params[0].'/'.$this->params[1].'/'.$this->params[2].'/','facture_ER',$vraisNom,$this->params[1].'-'.$this->params[2],'','',$this->lurl.'/pdf/footer_facture/');
 				}
 			}
@@ -1042,7 +1043,7 @@ class pdfController extends bootstrap
 			{
 				$vraisNom = 'DECLARATION-DE-CREANCES-UNILEND-'.$this->clients->hash.'-'.$this->loans->id_loan;
 				
-				$this->Web2Pdf->convert($this->path.'protected/pdf/declaration_de_creances/',$this->params[0],$this->lurl.'/pdf/declaration_de_creances_html/'.$this->params[0].'/'.$this->params[1].'/','declaration-de-creances',$vraisNom,$this->params[1]);
+				$this->Web2Pdf->convert($this->path.'protected/pdf/declaration_de_creances/',$this->params[0],$this->bp_url.'/pdf/declaration_de_creances_html/'.$this->params[0].'/'.$this->params[1].'/','declaration-de-creances',$vraisNom,$this->params[1]);
 			}
 		}
 		die;
@@ -1147,7 +1148,7 @@ class pdfController extends bootstrap
 					$newpath = $path.$this->clients->id_client.'/';
 				}
 				
-				$this->Web2Pdf->convert($newpath,$this->params[0],$this->lurl.'/pdf/declaration_de_creances_html/'.$this->params[0].'/'.$this->params[1].'/','declaration-de-creances',$vraisNom,$this->params[1]);
+				$this->Web2Pdf->convert($newpath,$this->params[0],$this->bp_url.'/pdf/declaration_de_creances_html/'.$this->params[0].'/'.$this->params[1].'/','declaration-de-creances',$vraisNom,$this->params[1]);
 				
 			}
 		}
@@ -1297,7 +1298,7 @@ class pdfController extends bootstrap
 		$nom 	= 'vos_operations_'.date('Y-m-d').'.pdf';
 		
 		// URL PDF a générer
-		$url 	= $this->lurl.'/pdf/vos_operations_pdf_html_indexation/'.$filtre_vos_operations;
+		$url 	= $this->bp_url.'/pdf/vos_operations_pdf_html_indexation/'.$filtre_vos_operations;
 		/*if($_SERVER['REMOTE_ADDR']=='93.26.42.99' or $_SERVER["HTTP_X_FORWARDED_FOR"] == "93.26.42.99")
 		{
 			mail('k1@david.equinoa.net','DEBUG pdf url',$url);	

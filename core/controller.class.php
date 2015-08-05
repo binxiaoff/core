@@ -60,7 +60,7 @@ class Controller
 		$this->included_css = array();
 		$this->bdd = new bdd($this->Config['bdd_config'][$this->Config['env']],$this->Config['bdd_option'][$this->Config['env']]);
 		
-		// Initialisation des propriétés nécessaires au cache
+		// Initialisation des propriï¿½tï¿½s nï¿½cessaires au cache
 		$this->enableCache = $this->Config['cache'][$this->Config['env']];
 		$this->cacheDuration = $this->Config['cacheDuration'][$this->Config['env']];
 		$this->cacheCurrentPage = false;
@@ -82,6 +82,9 @@ class Controller
 		//fo 
 		$this->furl = $this->Config['url'][$this->Config['env']]['default'];
 		
+                // Bypass le htaccess
+                $this->bp_url = $this->Config['bypass_htaccess_url'][$this->Config['env']];
+                
 		// Recuperation du type de plateforme
 		$this->cms = $this->Config['cms'];
 		
@@ -145,7 +148,7 @@ class Controller
 		$this->params = $this->Command->getParameters();
 		call_user_func(array(&$this,'_'.$FunctionToCall));
 		
-		// Si la page courante doit être cachée, on cherche la page en cache ou on initie le processus de création de la version en cache
+		// Si la page courante doit ï¿½tre cachï¿½e, on cherche la page en cache ou on initie le processus de crï¿½ation de la version en cache
 		if($this->cacheCurrentPage)
 			$this->initCache();
 			
@@ -173,11 +176,11 @@ class Controller
 				$this->fireFooter();
 		}
 		
-		// Si la page courante doit être cachée, termine le boulot de création du cache
+		// Si la page courante doit ï¿½tre cachï¿½e, termine le boulot de crï¿½ation du cache
 		if($this->cacheCurrentPage)
 			$this->completeCache();
 			
-		//Affiche une fentre de debug/error si l'option est activée dans le config.php
+		//Affiche une fentre de debug/error si l'option est activï¿½e dans le config.php
 		if(($this->Config['bdd_option'][$this->Config['env']]['DEBUG_DISPLAY'] || $this->Config['bdd_option'][$this->Config['env']]['DISPLAY_ERREUR']) && in_array($_SERVER['REMOTE_ADDR'],$this->Config['ip_admin'][$this->Config['env']]) && $this->autoFireDebug)
 			$this->fireDebug();
 	}
@@ -580,7 +583,7 @@ class Controller
 				$remplissage .= "\t\t\t\$this->".$record['Field']." = \$record['".$record['Field']."'];\r\n";
 				$escapestring .= "\t\t\$this->".$record['Field']." = \$this->bdd->escape_string(\$this->".$record['Field'].");\r\n";
 	
-				//On stock les clé primaire dans un tableau
+				//On stock les clï¿½ primaire dans un tableau
 				if($record['Key'] == 'PRI')
 					$id[] = $record['Field'];
 							
@@ -593,7 +596,7 @@ class Controller
 				if($record['Field'] == 'slug')
 					$slug = true;
 					
-				//Si la clé primaire est unique, c'est un autoincrémente donc on l'exclus de la liste
+				//Si la clï¿½ primaire est unique, c'est un autoincrï¿½mente donc on l'exclus de la liste
 				if($nb_cle==1)
 				{
 					if($record['Key'] != 'PRI')	
@@ -692,7 +695,7 @@ class Controller
 					$id[] = $record['Field'];
 			}
 	
-			//si la clé primaire est unique
+			//si la clï¿½ primaire est unique
 			if(count($id)==1)
 			{
 				$dao = file_get_contents($this->path.'core/data.sample.php');
@@ -760,7 +763,7 @@ class Controller
 		}
 	}
 	
-	// Fonction qui déclenche le caching d'une page
+	// Fonction qui dï¿½clenche le caching d'une page
 	function fireCache()
 	{
 		if($this->enableCache)
@@ -771,7 +774,7 @@ class Controller
 	function initCache()
 	{
 		$this->cacheFile = $this->path.'tmp/cache/'.md5($_SERVER['REQUEST_URI']);
-		// On recherche un fichier de cache suffisament récent
+		// On recherche un fichier de cache suffisament rï¿½cent
 		if (file_exists($this->cacheFile) && (time() - $this->cacheDuration*60 < filemtime($this->cacheFile))) 
         {
 			// Si on le trouve, on l'output
@@ -792,7 +795,7 @@ class Controller
 
 		fclose($fp);
 		
-		// Output écran
+		// Output ï¿½cran
 		ob_end_flush();
 		
 		// Cassos
