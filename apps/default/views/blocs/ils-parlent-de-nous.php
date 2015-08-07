@@ -29,6 +29,7 @@
 <script type="text/javascript">
 $('.testimonials .slides').carouFredSel({
 	width: '100%',
+        responsive: true,
 	auto: 7000,
 	prev: '.testimonials .slide-prev',
 	next: '.testimonials .slide-next',

@@ -26,21 +26,19 @@
 	<!--[if IE]><script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
     
     
+    <!-- Google Tag Manager -->
+    <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-MB66VL');</script>
+    <!-- End Google Tag Manager -->
     
 </head>
 
 <body>
-    
-    <!-- Google Tag Manager -->
-<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-MB66VL');</script>
-<!-- End Google Tag Manager -->
-    
     <?php
 
     if(!empty($_GET["utm_source"])) $source = $_GET["utm_source"];
@@ -57,19 +55,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     else $civilite = "";
 	
 	//$source3 = str_replace('/','',$_SERVER['REQUEST_URI']);
-	$slug_origine = "Lp-2015-web";
-	
+	$slug_origine = "2015";
 	
 	//$url = 'http://unilend.demo2.equinoa.net'; 	// Demo
 	$url = 'https://www.unilend.fr'; 			// Prod
-	
+
+
 	$page = (isset($_GET['page']) && $_GET['page'] == 'lexpress'?$_GET['page']:'');
 	
 	if($page == 'lexpress'){
 		
-		$slug_origine = 'Lp-2015-web_lexpress';	
+		$slug_origine = '2015_lexpress';	
 	}
-	
+
     ?>
     <div id="form">
         <section class="wrapper">
@@ -90,6 +88,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <input type="text" id="inscription_nom" name="nom" placeholder="Nom*" maxlength="255" value="<?php echo $nom; ?>">
                     <input type="text" id="inscription_prenom" name="prenom" placeholder="Prénom*" maxlength="255" value="<?php echo $prenom; ?>">
                     <input type="email" id="inscription_email" name="email" placeholder="E-mail*" maxlength="255" value="<?php echo $email; ?>">
+                    <p class="source3">Comment nous avez-vous connu ?</p>
+                    <select id="inscription_utm_source3" name="utm_source3" class="custom-select">
+                        <option value="">Choisir</option>
+                        <option value="1">Conférence</option>
+                        <option value="2">Presse, radio, tv</option>
+                        <option value="3">Recherche Internet</option>
+                        <option value="4">Bouche-à-oreille</option>
+                        <option value="5">Autre, préciser : champ libre</option>
+                    </select>
+                    <input type="text" name="utm_source3_autre" id="inscription_utm_source3_autre" placeholder="Précisez..." maxlength="255">
                     <button type="submit" id="inscription_submit" name="valider">S'inscrire</button>
                     <p class="champs_obligatoires">* Champs obligatoires</p>
                 </div>
@@ -760,21 +768,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             </form>
         </section>
     </div>
-    <!--<div class="macaron">
-    	<div class="wrapper">
-    		<a href="#bloc_mentions"><img src="img/macaron"/></a>
-    	</div>
-    </div>-->
     <div id="home" class="wrapper100">
         <section class="wrapper">
         	<div class="logo disp_0">
         		<div class="disp_1">
         			<a href="#" id="logo"><!--<img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60">--></a>
-        		</div>
-        		<div class="disp_2 t_right">
-        			<div class="">
-        				<!--<img src="img/partner.png"/>-->
-        			</div>
         		</div>
         	</div>
             
@@ -784,9 +782,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 				<div class="center">
 					<a href="#bloc_mentions" class="macaron"><img src="img/macaron.png"/></a>
 				</div>
-				<!--<div class="disp_4">
-					<h2 class="titre_1">Recevez chaque mois vos intérêts</h2>
-				</div>-->
 			</div>
             
             <ul>
@@ -814,15 +809,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             </ul>
 			<div class="conditions" id="bloc_mentions">Conditions de l'offre</div>
             <div class="mentions">
-            	Offre valable jusqu’au 31/07/2015 réservée aux personnes physiques, capables, majeures.
-
-L’offre est réservée aux nouveaux inscrits dont l’inscription est validée par Unilend. Seules les personnes physiques de nationalité française, ou possédant une nationalité d’un pays de l’Espace Economique Européen, et disposant d’un compte bancaire en euros en France pourront bénéficier de l’offre.
-
-Les 20 € seront versés sur le compte Unilend du client dans le mois suivant la validation du compte et ne pourront servir qu’à prêter sur Unilend. Le client pourra prêter cette somme à l’entreprise de son choix parmi les entreprises présentées sur le site et ce dans un délai de 3 mois suivant la validation de son inscription. En cas de non utilisation de cette somme dans ce délai pour un prêt, Unilend se réserve le droit de reprendre ce montant non utilisé.
-
-Une seule prime de 20 € par personne et par compte Unilend est octroyée. Offre non cumulable avec toute offre commerciale ou de parrainage en cours. Cette offre est régie par la loi française.
-
-Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à tester !
+            	Offre valable jusqu’au 31/08/2015 réservée aux personnes physiques, capables, majeures.
+                L’offre est réservée aux nouveaux inscrits dont l’inscription est validée par Unilend. Seules les personnes physiques de nationalité française, ou possédant une nationalité d’un pays de l’Espace Economique Européen, et disposant d’un compte bancaire en euros en France pourront bénéficier de l’offre.
+                Les 20 € seront versés sur le compte Unilend du client dans le mois suivant la validation du compte et ne pourront servir qu’à prêter sur Unilend. Le client pourra prêter cette somme à l’entreprise de son choix parmi les entreprises présentées sur le site et ce dans un délai de 3 mois suivant la validation de son inscription. En cas de non utilisation de cette somme dans ce délai pour un prêt, Unilend se réserve le droit de reprendre ce montant non utilisé.
+                Une seule prime de 20 € par personne et par compte Unilend est octroyée. Offre non cumulable avec toute offre commerciale ou de parrainage en cours. Cette offre est régie par la loi française.
+                Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à tester !
             </div>
             <div class="scroll2"><a href="#pourquoi_unilend"></a></div>
         </section>
@@ -1056,94 +1047,12 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
         </section>
     </div><!-- simulez_vos_interets -->
 
-    <!--<div id="chiffres" class="wrapper100 bg_gris">
-        <section class="wrapper">
-            <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60"></a>
-            <h1>Unilend <span>en chiffres</span></h1>
-            <p>Depuis le lancement d’Unilend jusqu’à fin octobre 2014</p>
-            <div id="chiffres_left">
-                <ul>
-                    <li>
-                        <p>67</p>
-                        <p>Projets<br/>financés</p>
-                    </li>
-                    <li>
-                        Record de financement<br/>d'un projet :
-                        <p>312 €/min</p>
-                    </li>
-                    <li>
-                        Record du dossier<br/>100% financé :
-                        <p>45 min</p>
-                    </li>
-                </ul>
-            </div>
-            <div id="chiffres_right">
-                <ul>
-                    <li>
-                        <p id="tooltip1" data-toggle="tooltip" data-placement="top" title="Montants prêtés par la communauté Unilend aux entreprises françaises">Montants prêtés</p>
-                        <div class="chiffres">
-                            <p class="m5">5</p>
-                            <p>4</p>
-                            <p>7</p>
-                            <p class="m5">0</p>
-                            <p>1</p>
-                            <p>5</p>
-                            <p>0</p>
-                            <div class="clear"></div>
-                        </div>
-                        <div class="clear"></div>
-                    </li>
-                    <li>
-                        <p id="tooltip2" data-toggle="tooltip" data-placement="top" title="Cumul des versements (capital et intérêts bruts) remboursés aux prêteurs">Remboursements<br/>aux prêteurs</p>
-                        <div class="chiffres">
-                            <p>4</p>
-                            <p>9</p>
-                            <p class="m5">8</p>
-                            <p>1</p>
-                            <p>8</p>
-                            <p>8</p>
-                            <div class="clear"></div>
-                        </div>
-                        <div class="clear"></div>
-                    </li>
-                    <li>
-                        <p id="tooltip3" data-toggle="tooltip" data-placement="top" title="Cumul des intérêts bruts reversés aux prêteurs">Intérêts bruts<br/>reversés aux prêteurs</p>
-                        <div class="chiffres">
-                            <p>1</p>
-                            <p>4</p>
-                            <p class="m5">9</p>
-                            <p>3</p>
-                            <p>6</p>
-                            <p>1</p>
-                            <div class="clear"></div>
-                        </div>
-                        <div class="clear"></div>
-                    </li>
-                </ul>
-            </div>
-            <div class="clear"></div>
-            <p class="fleche">Inscrivez-vous et prêtez à partir de 20 € jusqu’à 1 000 000 €</p>
-            <div class="scroll2"><a href="#presse"></a></div>
-        </section>
-    </div> chiffres -->
-
     <div id="presse" class="wrapper100">
         <section class="wrapper">
             <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60"></a>
             <h1>La presse parle <span>d'Unilend</span></h1>
             <img id="presse_logos" src="img/presse.jpg" alt="BFM Business - Le Monde - Capital - Le Point - Le Nouvel Observateur - L'Express - Oiuest France - 01net. - Le Figaro Economie" width="354" height="199">
-            <!-- <a id="video" href="http://video.lefigaro.fr/figaro/video/unilend-est-une-alternative-aux-banques-nicolas-lesur-dans-gmb/3026157026001/" target="_blank"><img src="img/video.jpg" alt="Vidéo - Le Figaro - Unilend est une alternative aux banques" width="354" height="200"></a> -->
-            <!-- <object id="flashObj" width="354" height="200" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,47,0">
-                <param name="movie" value="http://c.brightcove.com/services/viewer/federated_f9?isVid=1&isUI=1" />
-                <param name="bgcolor" value="#FFFFFF" />
-                <param name="flashVars" value="videoId=3026157026001&playerID=1330248265001&playerKey=AQ~~,AAAAjgltpmk~,3G6d8W41NOQ19IiTezZ7ZLKgEaJIflU4&domain=embed&dynamicStreaming=true" />
-                <param name="base" value="http://admin.brightcove.com" />
-                <param name="seamlesstabbing" value="false" />
-                <param name="allowFullScreen" value="true" />
-                <param name="swLiveConnect" value="true" />
-                <param name="allowScriptAccess" value="always" />
-                <embed src="http://c.brightcove.com/services/viewer/federated_f9?isVid=1&isUI=1" bgcolor="#FFFFFF" flashVars="playerSrcId=BCLeFigaro&widgetId=VP0&useRefId=undefined&videoId=3026157026001&playerID=1330248265001&playerKey=AQ~~,AAAAjgltpmk~,3G6d8W41NOQ19IiTezZ7ZLKgEaJIflU4&domain=embed&dynamicStreaming=true" base="http://admin.brightcove.com" name="flashObj" width="354" height="200" seamlesstabbing="false" type="application/x-shockwave-flash" allowFullScreen="true" allowScriptAccess="always" swLiveConnect="true" pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash"></embed>
-            </object> -->
+            
             <div class="clear"></div>
             <div class="presse_liste">
                 <section>
@@ -1206,6 +1115,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
             <p><span>Unilend</span> est édité par la Société française pour le financement des PME, SAS au capital de 515 350 euros - RCS Paris 790 766 034, agent prestataire de services de paiement mandaté par la SFPMEI et enregistré auprès de l'Autorité de contrôle prudentiel et de résolution (ACPR) sous le numéro 790 766 034.             
             </p>
 			<br/>
+			<br/>
 			<p class="cadre_1">
 			<strong>Prêter présente un risque de non-remboursement : répartissez bien vos prêts et ne prêtez que de l'argent dont vous n'avez pas besoin immédiatement.</strong>
 			</p>
@@ -1238,6 +1148,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
     <script src="js/global.js" type="text/javascript"></script>
     <script>
         $(function () {
+            $('#inscription_utm_source3_autre').hide();
 			// promo mentions
 			$('.macaron').click(function () { 
 				if (!$('.mentions').is(':visible')) $(".mentions").slideToggle( 300, function() {});
@@ -1252,6 +1163,9 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
 				//
 				});
 			});
+            $('input').keydown(function(){
+                $(this).removeClass('error');
+            });
 			//
 			$('a[href^="#bloc_mentions"]').click(function(){ // console.log("test")
 				var id = $(this).attr("href");
@@ -1260,9 +1174,6 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
 				//return false; 
 			});
 			//
-            $('input').keydown(function(){
-                $(this).removeClass('error');
-            });
             $('#inscription_date_naissance').keydown(function(){
                 $('#errorAge').html('');
             });
@@ -1291,9 +1202,9 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
             $('#form_inscription').submit(function(event) {
                 event.preventDefault();
 
-                /*$('html, body').animate({
+                $('html, body').animate({
                     scrollTop: 0
-                }, 1000, 'swing');*/
+                }, 1000, 'swing');
 
                 var inscription_civilite = $('#inscription_civilite').val();
                 var inscription_nom = $.trim($('#inscription_nom').val());
@@ -1321,6 +1232,8 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                 var inscription_cgv = $('#inscription_cgv');
                 var utm_source = '<?php echo $source; ?>';
                 var utm_source2 = '<?php echo $source2; ?>';
+                var utm_source3 = $('#inscription_utm_source3').val();
+                var utm_source3_autre = '';
 				var slug_origine = '<?php echo $slug_origine; ?>';
 
                 if($('#form_inscription').hasClass('etape1')) {
@@ -1347,16 +1260,13 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                         $('#inscription_email').addClass('error');
                         var erreur = 1;
                     }
+                    if(utm_source3 == 5) {
+                        utm_source3_autre = $('#inscription_utm_source3_autre').val();
+                    }
                     if (erreur == 1) { 
-                        // ajout du scroll uniquement si erreur
-                        $('html, body').animate({
-                    scrollTop: 0
-                }, 1000, 'swing');
-                        
                         if($('#form_header').hasClass('formlight')) {
                             if( $('#form_inscription').prop('scrollHeight') + $('.form_content').prop('scrollHeight') > $(window).height()) {
                                 $('.form_content.etape1').stop().animate({ scrollTop: $('.error:visible:first').position().top + 120}, 700, 'swing');
-                                // $('.form_content.etape1').stop().animate({ scrollTop: $('.form_content.etape1').offset().top - 108 }, 700, 'swing');
                             }
                         }
                         return false; 
@@ -1396,12 +1306,13 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                             data: DATA,
                             success: function(data){
                                 var parsedDate = jQuery.parseJSON(data);
-                                
-                               
-                                
+
                                 if(parsedDate.reponse == 'OK') {
-                                    
-                                    
+                                    if(utm_source3) { 
+                                        var source3 = $('#inscription_utm_source3 option:selected').text();
+                                        set_source3(email, source3, utm_source3_autre);
+                                    }
+
                                     $('#form_inscription').removeClass('etape1');
                                     $('#form_inscription').addClass('etape2');
 
@@ -1425,6 +1336,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                             $('#form_inscription.etape2').css({bottom:"auto",top:"0"});
                                         }
 										
+										
 										var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
 										
 										var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
@@ -1432,8 +1344,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
 
 										$("#tracking").html(tracking1+tracking2);
 										
-										
-                                       /* $("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');*/
+                                        /*$("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');*/
                                         $('#form_inscription > .form_content.etape2').fadeIn();
                                     });
                                 }
@@ -1455,7 +1366,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                         if(intituleErreur == "Email" || intituleErreur == "Format email") {
                                             $('#inscription_email').addClass('error');
                                         }
-                                        if(intituleErreur == "Email existant") {
+                                        if(intituleErreur == "Email existant" && parsedDate.reponse.length > 1) {
                                             $('#inscription_email').addClass('error');
                                         }
                                         else {
@@ -1477,16 +1388,15 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                                     $('#form > .wrapper').addClass('etape2');
                                                     $('#form_inscription.etape2').css({bottom:"auto",top:"0"});
                                                 }
-                                                
+												
+												
 												var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
 										
 												var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
 										
-												var tracking3 = '<iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track='+parsedDate.uniqueid+'" [^] width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>';
-										
-												$("#tracking").html(tracking1+tracking2+tracking3);
+												$("#tracking").html(tracking1+tracking2);
 												
-												/*$("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');*/
+                                               /* $("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');*/
                                                 $('#form_inscription > .form_content.etape2').fadeIn();
                                             });
                                         }
@@ -1663,10 +1573,6 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                     }
                     // if(erreur == 1) { return false; }
                     if (erreur == 1) { 
-                        // ajout du scroll uniquement si erreur
-                        $('html, body').animate({
-                    scrollTop: 0
-                }, 1000, 'swing');
                         if($('#form_header').hasClass('formlight')) {
                             if( $('#form_inscription').prop('scrollHeight') + $('.form_content').prop('scrollHeight') > $(window).height()) {
                                 $('html, body').stop().animate({ scrollTop: $('.error:visible:first').offset().top - 20}, 700, 'swing');
@@ -1716,23 +1622,33 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                             success: function(data){
                                 var parsedDate = jQuery.parseJSON(data);
 
+                                // console.log(parsedDate);
 
                                 if(parsedDate.reponse == 'OK') {
                                     var url = parsedDate.URL;
-                                    // ajout code google tag manager (push email pour tracking Lead);
-                                    
-                                    dataLayer.push({
-                                            'email_lead':email,
-                                            'source1_lead':utm_source,
-											'source2_lead':utm_source2,
-                                            'event':'signupPreteurStep2OK'});
-                                    console.log('email_lead:'+email+' source1_lead:'+utm_source+' source2_lead:'+utm_source2+' event:signupPreteurStep2OK');
-                                    
-                                    setTimeout(function(){
-                                    
-                                        if(idSubmit == "inscription_submit2") { $(location).attr('href', url); }
-                                        else if(idSubmit == "voir_projets") { $(location).attr('href',    'https://www.unilend.fr/projets-a-financer'); }
-                                        },3000);return false;
+									var uniqueid = parsedDate.uniqueid;
+									
+									
+                                    if(idSubmit == "inscription_submit2") 
+									{ 
+										// add kle tracking 19/02/15
+										var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=14&uniqueid='+uniqueid+'"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';									
+																
+										$("#tracking").html(tracking2);	
+										//end tracking
+									
+										$(location).attr('href', url); 
+									}
+                                    else if(idSubmit == "voir_projets") 
+									{ 
+										// add kle tracking 19/02/15
+										var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=13&uniqueid='+uniqueid+'"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';									
+																
+										$("#tracking").html(tracking2);	
+										//end tracking									
+									
+										$(location).attr('href', 'https://www.unilend.fr/projets-a-financer'); 
+									}
                                 }
                                 else {
                                     var key = 'unilend';
@@ -1827,6 +1743,16 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                     return false;
                 } else
                     return true;
+            }
+
+            function set_source3(email, source3, utm_source3_autre) {
+                var DATA = '&email=' + email + '&source3=' + source3 + '&utm_source3_autre=' + utm_source3_autre;
+
+                $.ajax({
+                    type: "POST",
+                    url: "https://www.unilend.fr/Landing-Pages-Externes/2015/source3.php",
+                    data: DATA
+                });
             }
         });
     </script>

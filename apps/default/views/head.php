@@ -29,6 +29,27 @@
             <?php $this->callCss(); ?>
             <?php $this->callJs(); ?>	
 
+            <!-- NEW INCLUDES -->
+
+            <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+
+            <script>
+                if (screen.width > 767 ){
+                    var mvp = document.getElementById('viewport');
+                    mvp.setAttribute('content', 'width=1024');
+                }
+            </script>
+            
+            
+            <link rel="stylesheet" href="<?= $this->surl ?>/styles/default/responsive/fonts.css" type="text/css" media="all" />
+
+            <link rel="stylesheet" href="<?= $this->surl ?>/styles/default/responsive/responsive.css" type="text/css" media="all" />
+
+            <script type="text/javascript" src="<?= $this->surl ?>/scripts/default/responsive/responsive.js"></script>
+
+            <!-- END NEW INCLUDES -->
+
+
             <?
             // partenaire challanges
             if ($this->lurl == 'http://partenaire.unilend.challenges.fr')
@@ -57,46 +78,46 @@
         if ($this->Config['env'] == 'prod')
         {
             // HOME
-            /*if ($this->tree->id_template == 8)
-            {
-                ?><iframe src="https://secure.img-cdn.mediaplex.com/0/27518/universal.html?page_name=landing_page&visite=1&mpuid=<?= $this->clients->id_client ?>" HEIGHT=1 WIDTH=1 FRAMEBORDER=0></iframe><?
-            }
-            // Validation inscription preteur (template de confirmation)
-            if (in_array($this->tree->id_tree, array(16, 130)))
-            {
+            /* if ($this->tree->id_template == 8)
+              {
+              ?><iframe src="https://secure.img-cdn.mediaplex.com/0/27518/universal.html?page_name=landing_page&visite=1&mpuid=<?= $this->clients->id_client ?>" HEIGHT=1 WIDTH=1 FRAMEBORDER=0></iframe><?
+              }
+              // Validation inscription preteur (template de confirmation)
+              if (in_array($this->tree->id_tree, array(16, 130)))
+              {
 
-                if (isset($this->params[1]))
-                {
-                    $this->clients->get($this->params[1], 'hash');
-                }
-                ?><iframe src="https://secure.img-cdn.mediaplex.com/0/27518/universal.html?page_name=conversion_complete&complete=1&mpuid=<?= $this->clients->id_client ?>" HEIGHT=1 WIDTH=1 FRAMEBORDER=0></iframe><?
-                    // ajout kle, BT 17471
-                    ?>
-                <iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track=<?= $this->clients->id_client ?>" width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>
-                <?php
-            }
-            // Confirmation inscription preteur virement
-            if (in_array($this->tree->id_tree, array(16)))
-            {
-                ?>
-                <iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=12&uniqueid=<?= $this->clients->id_client ?>"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>
-                <?
-            }
-            // Confirmation inscription preteur CB
-            if (in_array($this->tree->id_tree, array(130)))
-            {
-                ?>
-                <iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=11&uniqueid=<?= $this->clients->id_client ?>"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>
-                <?
-            }
-            */
+              if (isset($this->params[1]))
+              {
+              $this->clients->get($this->params[1], 'hash');
+              }
+              ?><iframe src="https://secure.img-cdn.mediaplex.com/0/27518/universal.html?page_name=conversion_complete&complete=1&mpuid=<?= $this->clients->id_client ?>" HEIGHT=1 WIDTH=1 FRAMEBORDER=0></iframe><?
+              // ajout kle, BT 17471
+              ?>
+              <iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track=<?= $this->clients->id_client ?>" width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>
+              <?php
+              }
+              // Confirmation inscription preteur virement
+              if (in_array($this->tree->id_tree, array(16)))
+              {
+              ?>
+              <iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=12&uniqueid=<?= $this->clients->id_client ?>"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>
+              <?
+              }
+              // Confirmation inscription preteur CB
+              if (in_array($this->tree->id_tree, array(130)))
+              {
+              ?>
+              <iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=11&uniqueid=<?= $this->clients->id_client ?>"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>
+              <?
+              }
+             */
             // Etape 2 inscription preteur
             if ($this->page_preteur == 2)
             {
                 ?>
-<!--                <iframe src="https://secure.img-cdn.mediaplex.com/0/27518/universal.html?page_name=conversion&inscription=1&mpuid=<?= $this->clients->id_client ?>" HEIGHT=1 WIDTH=1 FRAMEBORDER=0></iframe>
+                                <!--                <iframe src="https://secure.img-cdn.mediaplex.com/0/27518/universal.html?page_name=conversion&inscription=1&mpuid=<?= $this->clients->id_client ?>" HEIGHT=1 WIDTH=1 FRAMEBORDER=0></iframe>
 
-                <iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=14&uniqueid=<?= $this->clients->id_client ?>"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>-->
+                                                <iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=14&uniqueid=<?= $this->clients->id_client ?>"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>-->
 
                 <?php
                 // ajout kle, BT 17471
@@ -212,14 +233,14 @@
                 {
                     ?>
                     <script>
-                        <!--
+                <!--
                             xtnv = document;
-                        xtsd = "http://logi150";
-                        xtsite = " 350533";
-                        xtn2 = "46";
-                        xtpage = "Unilend::Global";
-                        xtdi = "";
-                        //-->
+                xtsd = "http://logi150";
+                xtsite = " 350533";
+                xtn2 = "46";
+                xtpage = "Unilend::Global";
+                xtdi = "";
+                //-->
                     </script>
                     <script type="text/javascript" src="http://referentiel.nouvelobs.com/scripts/xiti/challenges.fr/xtcore.js"></script>
                     <noscript>
@@ -261,16 +282,16 @@
             <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
                               height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <script>(function (w, d, s, l, i) {
-                            w[l] = w[l] || [];
-                            w[l].push({'gtm.start':
-                                        new Date().getTime(), event: 'gtm.js'});
-                            var f = d.getElementsByTagName(s)[0],
-                                    j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
-                            j.async = true;
-                            j.src =
-                                    '//www.googletagmanager.com/gtm.js?id=' + i + dl;
-                            f.parentNode.insertBefore(j, f);
-                        })(window, document, 'script', 'dataLayer', 'GTM-MB66VL');</script>
+                    w[l] = w[l] || [];
+                    w[l].push({'gtm.start':
+                                new Date().getTime(), event: 'gtm.js'});
+                    var f = d.getElementsByTagName(s)[0],
+                            j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+                    j.async = true;
+                    j.src =
+                            '//www.googletagmanager.com/gtm.js?id=' + i + dl;
+                    f.parentNode.insertBefore(j, f);
+                })(window, document, 'script', 'dataLayer', 'GTM-MB66VL');</script>
             <!-- End Google Tag Manager -->
 
 

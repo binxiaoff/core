@@ -483,7 +483,15 @@ class ajaxController extends bootstrap
 						if(strlen($mess) > 9)
 						{
 							//mail('courtier.damien@gmail.com','test alert mail info manquantes','test alert mail info manquantes projet : '.$this->projects->id_project);
-							$to  = 'unilend@equinoa.fr , nicolas.lesur@unilend.fr';
+							if($this->Config['env'] == 'prod')
+                                                        {
+                                                    
+                                                            $to  = 'unilend@equinoa.fr , nicolas.lesur@unilend.fr';
+                                                        }
+                                                        else
+                                                        {
+                                                            $to  = 'unilend@equinoa.fr';
+                                                        }
 							//$to  = 'courtier.damien@gmail.com , d.courtier@equinoa.com';
 							
 						

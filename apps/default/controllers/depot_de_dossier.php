@@ -1817,7 +1817,7 @@ class depot_de_dossierController extends bootstrap
                 $this->companies->status_client = $_POST['radio1-about'];
 
                 $this->conf_email_representative = $_POST['conf_email_representative'];
-
+             
                 // si conseil externe
                 if (isset($_POST['radio1-about']) && $_POST['radio1-about'] == 3)
                 {
@@ -1890,7 +1890,8 @@ class depot_de_dossierController extends bootstrap
                         $this->companies_details->fichier_derniere_liasse_fiscale = $this->upload->getName();
                     }
                 }
-                if ($this->companies_details->fichier_derniere_liasse_fiscale == '')
+                
+                if ($this->companies_details->fichier_derniere_liasse_fiscale == '' && $_POST['is_responsive']!= "true")
                 {
                     $form_ok = false;
                 }
@@ -2099,10 +2100,28 @@ class depot_de_dossierController extends bootstrap
                     // On fait une mise à jour
                     $this->clients->update();
                     $this->clients_adresses->update();
-                    $this->companies->update();
+                    $this->companies->id_compagny = $this->companies->update();
                     $this->companies_details->update();
                     $this->projects->update();
 
+                    
+                    //Si on est en responsive on ajoute l'emprunteur dans la table prospect ([Masquage champs + nouvelle entrée dans la table prospect emprunteur]Aucune autre action, conversation avec DN 06-08-15)
+                    if($_POST['is_responsive']== "true")
+                    {
+                        $this->prospects_emprunteurs = $this->loadData('prospects_emprunteurs');                       
+                        $this->prospects_emprunteurs->prenom = $this->clients->prenom;
+                        $this->prospects_emprunteurs->nom = $this->clients->nom;
+                        $this->prospects_emprunteurs->email = $this->clients->email;
+                        $this->prospects_emprunteurs->source = $this->clients->source;
+                        $this->prospects_emprunteurs->id_compagny = $this->companies->id_compagny;
+                        $this->prospects_emprunteurs->id_project = $this->projects->id_project;
+                        $this->prospects_emprunteurs->id_client = $this->clients->id_client;
+                        $this->prospects_emprunteurs->create();                             
+                        
+                    }
+                    
+                    
+                    
 
                     // -- acceptation des cgu -- // 
                     if ($this->acceptations_legal_docs->get($this->lienConditionsGenerales, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc'))

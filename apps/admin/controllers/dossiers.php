@@ -857,8 +857,15 @@ class dossiersController extends bootstrap
                             {
                                 //mail('courtier.damien@gmail.com','alert change statut 2','statut : '.$_POST['status'].' projet : '.$this->projects->id_project .' strlen : '.strlen($mess).' mess : '.$mess);
 
-                                $to = 'unilend@equinoa.fr' . ', ';
-                                $to .= 'nicolas.lesur@unilend.fr';
+                                if($this->Config['env'] == 'prod')
+                                {
+
+                                    $to  = 'unilend@equinoa.fr , nicolas.lesur@unilend.fr';
+                                }
+                                else
+                                {
+                                    $to  = 'unilend@equinoa.fr';
+                                }
                                 //$to  = 'courtier.damien@gmail.com';
                                 // subject
                                 $subject = '[Rappel] Donnees projet manquantes';
