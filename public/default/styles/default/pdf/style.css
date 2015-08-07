@@ -17,7 +17,7 @@ body {
     font-size: 12px;
     line-height: 16px;
     font-family: 'Calibri', arial, sans-serif;
-    color: #808080;
+    color: black;
     background: #fff;
     min-width: 960px;
 }
@@ -48,7 +48,7 @@ textarea { overflow: auto; }
 
 .doc-wrapper .list { padding: 0 6px 20px 6px; }
 .doc-wrapper .list ul { list-style: none outside none; }
-.doc-wrapper .list li { color: #808080; display: block; font-size: 12px; line-height: 20px; }
+.doc-wrapper .list li { color: black; display: block; font-size: 12px; line-height: 20px; }
 .doc-wrapper .list li h5 { position: relative; margin: 0 -6px; }
 .doc-wrapper .list li.bl { color: #000000; }
 .doc-wrapper .list li .col-long { width: 365px; float: left; display: inline; }
@@ -66,7 +66,7 @@ textarea { overflow: auto; }
 .doc-wrapper .dates-table { padding: 0 0 20px 0; }
 .doc-wrapper .dates-table table { border-top: solid 1px #c0c0c0; border-left: solid 1px #c0c0c0; }
 .doc-wrapper .dates-table table th { font-size: 12px; line-height: 16px; color: #000000; padding: 45px 5px 0 5px; background: #c0c0c0; text-transform: uppercase; border-right: solid 1px #c0c0c0; font-weight: normal; text-align: left; }
-.doc-wrapper .dates-table table td { font-size: 12px; line-height: 16px; color: #808080; padding: 25px 5px 0 5px; border-bottom: dotted 1px #c0c0c0; border-right: solid 1px #c0c0c0; }
+.doc-wrapper .dates-table table td { font-size: 12px; line-height: 16px; color: black; padding: 25px 5px 0 5px; border-bottom: dotted 1px #c0c0c0; border-right: solid 1px #c0c0c0; }
 .doc-wrapper .dates-table table.table-2 th { padding-top: 5px; }
 .doc-wrapper .dates-table table.table-2 td { padding-top: 5px; }
 .doc-wrapper .dates-table table.table-3 th { padding-top: 15px; padding-bottom: 15px; vertical-align: center; }
@@ -94,7 +94,7 @@ textarea { overflow: auto; }
 .pdf-wrapper .logo { padding: 0 0 50px 0; }
 .pdf-wrapper h2 { text-align: center; font-size: 14px; line-height: 18px; display: block; color: #000000; padding: 0 0 5px 0; font-family: 'TrendSansOne', arial, sans-serif; }
 
-.pdf-wrapper .container { width: 716px; border: solid 1px #a1a5a7; margin: 0 auto; font-size: 13px; line-height: 16px; color: #848484; }
+.pdf-wrapper .container { width: 716px; border: solid 1px #a1a5a7; margin: 0 auto; font-size: 13px; line-height: 16px; color: black; }
 .pdf-wrapper .container .case-1 { border-bottom: solid 1px #a1a5a7; }
 .pdf-wrapper .container .case-1 .col-1 { width: 162px; border-right: solid 1px #a1a5a7; }
 .pdf-wrapper .container .case-1 .col-2 { width: 434px; padding: 0 0 0 18px; border-right: solid 1px #a1a5a7; }
