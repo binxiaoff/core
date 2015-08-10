@@ -194,6 +194,33 @@
 				}
 
 		});
+                
+                
+                $('.popup-linkM').colorbox({
+				opacity: 0.5,
+				scrolling: false,
+				onComplete: function(){
+					$('.popup .custom-select').c2Selectbox();
+
+					$('input.file-field').on('change', function(){
+						var $self = $(this),
+							val = $self.val()
+						if( val.length != 0 || val != '' ){
+							$self.closest('.uploader').find('input.field').val(val);
+							
+							var idx = $('#rule-selector').val();
+							$('.rules-list li[data-rule="'+idx+'"]').addClass('valid');
+							
+						}
+					})
+
+					$('#rule-selector').on('change', function(){
+						var idx = $(this).val();
+						$('.uploader[data-file="'+idx+'"]').slideDown().siblings('.uploader:visible').slideUp();
+					})
+				}
+
+		});
 		
 		
 		Highcharts.setOptions({

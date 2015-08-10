@@ -1428,7 +1428,7 @@ class ajaxController extends bootstrap
 			
 		}
 	}
-	
+        
 	function _verifEmail()
 	{
 		$this->autoFireView = false;

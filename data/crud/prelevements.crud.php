@@ -29,23 +29,41 @@ class prelevements_crud
 {
 	
 	public $id_prelevement;
+
 	public $id_client;
+
 	public $id_transaction;
+
 	public $id_project;
+
 	public $motif;
+
 	public $montant;
+
 	public $bic;
+
 	public $iban;
+
 	public $type_prelevement;
+
 	public $jour_prelevement;
+
 	public $type;
+
 	public $num_prelevement;
+
 	public $status;
+
 	public $date_execution_demande_prelevement;
+
 	public $date_echeance_emprunteur;
+
 	public $added_xml;
+
 	public $added;
+
 	public $updated;
+
 
 	
 	function prelevements($bdd,$params='')
@@ -55,23 +73,41 @@ class prelevements_crud
 			$params = array();
 		$this->params = $params;
 		$this->id_prelevement = '';
+
 		$this->id_client = '';
+
 		$this->id_transaction = '';
+
 		$this->id_project = '';
+
 		$this->motif = '';
+
 		$this->montant = '';
+
 		$this->bic = '';
+
 		$this->iban = '';
+
 		$this->type_prelevement = '';
+
 		$this->jour_prelevement = '';
+
 		$this->type = '';
+
 		$this->num_prelevement = '';
+
 		$this->status = '';
+
 		$this->date_execution_demande_prelevement = '';
+
 		$this->date_echeance_emprunteur = '';
+
 		$this->added_xml = '';
+
 		$this->added = '';
+
 		$this->updated = '';
+
 
 	}
 	
@@ -85,23 +121,41 @@ class prelevements_crud
 			$record = $this->bdd->fetch_array($result);
 		
 				$this->id_prelevement = $record['id_prelevement'];
+
 			$this->id_client = $record['id_client'];
+
 			$this->id_transaction = $record['id_transaction'];
+
 			$this->id_project = $record['id_project'];
+
 			$this->motif = $record['motif'];
+
 			$this->montant = $record['montant'];
+
 			$this->bic = $record['bic'];
+
 			$this->iban = $record['iban'];
+
 			$this->type_prelevement = $record['type_prelevement'];
+
 			$this->jour_prelevement = $record['jour_prelevement'];
+
 			$this->type = $record['type'];
+
 			$this->num_prelevement = $record['num_prelevement'];
+
 			$this->status = $record['status'];
+
 			$this->date_execution_demande_prelevement = $record['date_execution_demande_prelevement'];
+
 			$this->date_echeance_emprunteur = $record['date_echeance_emprunteur'];
+
 			$this->added_xml = $record['added_xml'];
+
 			$this->added = $record['added'];
+
 			$this->updated = $record['updated'];
+
 
 			return true;
 		}
@@ -115,23 +169,41 @@ class prelevements_crud
 	function update($cs='')
 	{
 		$this->id_prelevement = $this->bdd->escape_string($this->id_prelevement);
+
 		$this->id_client = $this->bdd->escape_string($this->id_client);
+
 		$this->id_transaction = $this->bdd->escape_string($this->id_transaction);
+
 		$this->id_project = $this->bdd->escape_string($this->id_project);
+
 		$this->motif = $this->bdd->escape_string($this->motif);
+
 		$this->montant = $this->bdd->escape_string($this->montant);
+
 		$this->bic = $this->bdd->escape_string($this->bic);
+
 		$this->iban = $this->bdd->escape_string($this->iban);
+
 		$this->type_prelevement = $this->bdd->escape_string($this->type_prelevement);
+
 		$this->jour_prelevement = $this->bdd->escape_string($this->jour_prelevement);
+
 		$this->type = $this->bdd->escape_string($this->type);
+
 		$this->num_prelevement = $this->bdd->escape_string($this->num_prelevement);
+
 		$this->status = $this->bdd->escape_string($this->status);
+
 		$this->date_execution_demande_prelevement = $this->bdd->escape_string($this->date_execution_demande_prelevement);
+
 		$this->date_echeance_emprunteur = $this->bdd->escape_string($this->date_echeance_emprunteur);
+
 		$this->added_xml = $this->bdd->escape_string($this->added_xml);
+
 		$this->added = $this->bdd->escape_string($this->added);
+
 		$this->updated = $this->bdd->escape_string($this->updated);
+
 
 		
 		$sql = 'UPDATE `prelevements` SET `id_client`="'.$this->id_client.'",`id_transaction`="'.$this->id_transaction.'",`id_project`="'.$this->id_project.'",`motif`="'.$this->motif.'",`montant`="'.$this->montant.'",`bic`="'.$this->bic.'",`iban`="'.$this->iban.'",`type_prelevement`="'.$this->type_prelevement.'",`jour_prelevement`="'.$this->jour_prelevement.'",`type`="'.$this->type.'",`num_prelevement`="'.$this->num_prelevement.'",`status`="'.$this->status.'",`date_execution_demande_prelevement`="'.$this->date_execution_demande_prelevement.'",`date_echeance_emprunteur`="'.$this->date_echeance_emprunteur.'",`added_xml`="'.$this->added_xml.'",`added`="'.$this->added.'",`updated`=NOW() WHERE id_prelevement="'.$this->id_prelevement.'"';
@@ -160,23 +232,41 @@ class prelevements_crud
 	function create($cs='')
 	{
 		$this->id_prelevement = $this->bdd->escape_string($this->id_prelevement);
+
 		$this->id_client = $this->bdd->escape_string($this->id_client);
+
 		$this->id_transaction = $this->bdd->escape_string($this->id_transaction);
+
 		$this->id_project = $this->bdd->escape_string($this->id_project);
+
 		$this->motif = $this->bdd->escape_string($this->motif);
+
 		$this->montant = $this->bdd->escape_string($this->montant);
+
 		$this->bic = $this->bdd->escape_string($this->bic);
+
 		$this->iban = $this->bdd->escape_string($this->iban);
+
 		$this->type_prelevement = $this->bdd->escape_string($this->type_prelevement);
+
 		$this->jour_prelevement = $this->bdd->escape_string($this->jour_prelevement);
+
 		$this->type = $this->bdd->escape_string($this->type);
+
 		$this->num_prelevement = $this->bdd->escape_string($this->num_prelevement);
+
 		$this->status = $this->bdd->escape_string($this->status);
+
 		$this->date_execution_demande_prelevement = $this->bdd->escape_string($this->date_execution_demande_prelevement);
+
 		$this->date_echeance_emprunteur = $this->bdd->escape_string($this->date_echeance_emprunteur);
+
 		$this->added_xml = $this->bdd->escape_string($this->added_xml);
+
 		$this->added = $this->bdd->escape_string($this->added);
+
 		$this->updated = $this->bdd->escape_string($this->updated);
+
 
 		
 		$sql = 'INSERT INTO `prelevements`(`id_client`,`id_transaction`,`id_project`,`motif`,`montant`,`bic`,`iban`,`type_prelevement`,`jour_prelevement`,`type`,`num_prelevement`,`status`,`date_execution_demande_prelevement`,`date_echeance_emprunteur`,`added_xml`,`added`,`updated`) VALUES("'.$this->id_client.'","'.$this->id_transaction.'","'.$this->id_project.'","'.$this->motif.'","'.$this->montant.'","'.$this->bic.'","'.$this->iban.'","'.$this->type_prelevement.'","'.$this->jour_prelevement.'","'.$this->type.'","'.$this->num_prelevement.'","'.$this->status.'","'.$this->date_execution_demande_prelevement.'","'.$this->date_echeance_emprunteur.'","'.$this->added_xml.'",NOW(),NOW())';
@@ -201,23 +291,41 @@ class prelevements_crud
 	function unsetData()
 	{
 		$this->id_prelevement = '';
+
 		$this->id_client = '';
+
 		$this->id_transaction = '';
+
 		$this->id_project = '';
+
 		$this->motif = '';
+
 		$this->montant = '';
+
 		$this->bic = '';
+
 		$this->iban = '';
+
 		$this->type_prelevement = '';
+
 		$this->jour_prelevement = '';
+
 		$this->type = '';
+
 		$this->num_prelevement = '';
+
 		$this->status = '';
+
 		$this->date_execution_demande_prelevement = '';
+
 		$this->date_echeance_emprunteur = '';
+
 		$this->added_xml = '';
+
 		$this->added = '';
+
 		$this->updated = '';
+
 
 	}
 }
