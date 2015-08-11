@@ -67,6 +67,22 @@ class universignController extends bootstrap
 					file_put_contents($doc['name'],$doc['content']);
 					$clients_mandats->status = 1;
 					$clients_mandats->update();
+                                        
+                                        
+                                        // on ajoute une ligne d'historique au BO (emprunteurs/edit/ID_CLIENT)
+                                        $clients_histo = $this->loadData('clients');
+                                        $clients_histo->get($clients_mandats->id_client,'id_client');
+                                        
+                                        // recup du RIB
+                                        // Companies
+                                        $this->companies->get($clients_histo->id_client,'id_client_owner');
+                                        
+                                        $ligne_historique = "<tr><td><b>Signature du mandat</b> pour l’IBAN ".$this->companies->iban." / ".$this->companies->bic." le ".date('d/m/Y')." &agrave; ".date('H:i')."</td></tr>";                                        
+                                        
+                                        $clients_histo->history = $ligne_historique;
+                                        $clients_histo->update();
+                                        
+                                        
 					// redirection sur page confirmation : mandat signé
 					
 					
