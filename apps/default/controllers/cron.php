@@ -15312,5 +15312,4 @@ class cronController extends bootstrap
             }
         }
     }
-
 }
