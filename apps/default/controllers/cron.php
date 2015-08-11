@@ -24,7 +24,7 @@ class cronController extends bootstrap
         //blocage sur dev
         if($this->Config['env'] == "dev")
         {
-            die;
+            //die;
         }
     }
 
