@@ -68,7 +68,7 @@ class transfertsController extends bootstrap
                         $this->receptions->motif = $_POST['motif'];
                         $this->receptions->id_project = $_POST['id'];
                         $this->receptions->remb_anticipe = 1;
-                        $this->receptions->statut_bo = 1;
+                        $this->receptions->status_bo = 1;
                         $this->receptions->update();
                     }           
                 }
