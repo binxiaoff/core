@@ -123,7 +123,7 @@ class cronController extends bootstrap
     // on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
     function _check_projet_a_funder()
     {
-        mail('k1@david.equinoa.net', '_check_projet_a_funder dev-local-corp', 'DEBUG !');
+        //mail('k1@david.equinoa.net', '_check_projet_a_funder dev-local-corp', 'DEBUG !');
 
         // chargement des datas
         $this->projects = $this->loadData('projects');
