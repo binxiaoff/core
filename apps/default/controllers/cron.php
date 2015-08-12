@@ -18,7 +18,7 @@ class cronController extends bootstrap
         // Securisation des acces
         if (isset($_SERVER['REMOTE_ADDR']) && !in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']]))
         {
-            //die;
+            die;
         }
         
         //blocage sur dev
@@ -26,7 +26,7 @@ class cronController extends bootstrap
         {
             //die;
         }
-        mail('k1@david.equinoa.net', 'construct', 'DEBUG !');
+        
     }
 
     //********************//
