@@ -26,6 +26,7 @@ class cronController extends bootstrap
         {
             //die;
         }
+        mail('k1@david.equinoa.net', 'construct', 'DEBUG !');
     }
 
     //********************//
