@@ -15404,8 +15404,10 @@ class cronController extends bootstrap
                     $nbpret = $loans->counter('id_lender = ' . $preteur['id_lender'] . ' AND id_project = ' . $this->projects->id_project);
 
                     // Récupération de la sommes des intérets deja versé au lender                        
-                    $sum_interet = $this->echeanciers->sum('interets','id_project = ' . $this->projects->id_project . ' AND id_loan = '.$preteur['id_loan'].' AND status_ra = 0 AND status = 1 AND id_lender ='.$preteur['id_lender']);  
+                    //$sum_interet = $this->echeanciers->sum('interets','id_project = ' . $this->projects->id_project . ' AND id_loan = '.$preteur['id_loan'].' AND status_ra = 0 AND status = 1 AND id_lender ='.$preteur['id_lender']);  
+                    $sum_interet = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND id_loan = '.$preteur['id_loan'].' AND status_ra = 0 AND status = 1 AND id_lender ='.$preteur['id_lender'],'interets');  
 
+                    
 
                     // Remb net email
                     if ($reste_a_payer_pour_preteur >= 2)
