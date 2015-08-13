@@ -15320,6 +15320,7 @@ class cronController extends bootstrap
      *  */
     function _RA_email()
     {
+        
         $this->projects = $this->loadData('projects');
         $this->echeanciers = $this->loadData('echeanciers');
         $this->receptions = $this->loadData('receptions');
@@ -15376,7 +15377,10 @@ class cronController extends bootstrap
 
 
                 // on veut recup le nb d'echeances restantes
-                $sum_ech_restant = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');                        
+                $sum_ech_restant = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');                                    
+                
+                print_r($L_preteur_on_projet);
+        die;
 
                 // par loan
                 foreach($L_preteur_on_projet as $preteur)
