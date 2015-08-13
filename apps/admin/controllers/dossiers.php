@@ -3794,7 +3794,12 @@ class dossiersController extends bootstrap
                     $this->prelevements = $this->loadData('prelevements');
                     $this->prelevements->delete($this->projects->id_project, 'type_prelevement = 1 AND type = 2 AND status = 0 AND id_project');
 
-
+                    // on ajoute ici le projet dans la file d'attente des mails de RA a envoyer 
+                    $remboursement_anticipe_mail_a_envoyer = $this->loadData('remboursement_anticipe_mail_a_envoyer');
+                    $remboursement_anticipe_mail_a_envoyer->id_reception = $id_reception;    
+                    $remboursement_anticipe_mail_a_envoyer->statut = 0; 
+                    $remboursement_anticipe_mail_a_envoyer->create();
+                    
                     //on change le statut du projet
                     $this->projects_status_history->addStatus(-1, 130, $this->projects->id_project);
 
@@ -4034,11 +4039,7 @@ class dossiersController extends bootstrap
                         $this->bank_unilend->create();
                         
                         
-                        // on ajoute ici le projet dans la file d'attente des mails de RA a envoyer 
-                        $remboursement_anticipe_mail_a_envoyer = $this->loadData('remboursement_anticipe_mail_a_envoyer');
-                        $remboursement_anticipe_mail_a_envoyer->id_reception = $id_reception;    
-                        $remboursement_anticipe_mail_a_envoyer->statut = 0; 
-                        $remboursement_anticipe_mail_a_envoyer->create();
+                        
                         
                     }
 
