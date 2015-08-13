@@ -737,6 +737,10 @@ if (isset($_SESSION['freeow']))
                         if ($("#status").val() == 40) {
                             $(".change_statut").hide();
                         }
+                        elseif ($("#status").val() == 80) {
+                            /* dans le cas d'un changement vers probleme, on affiche une box de conf */
+                            
+                        }
                         else {
                             $(".change_statut").show();
                         }
