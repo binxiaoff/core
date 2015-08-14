@@ -1007,7 +1007,7 @@ class depot_de_dossierController extends bootstrap
                 // debrayage statut 3 : altares desactivé
                 else
                 {
-                    $exception = '';
+                    $exception = '';                    
                 }
                 // si altares ok
                 if ($exception == '')
@@ -1128,23 +1128,27 @@ class depot_de_dossierController extends bootstrap
                     $syntheseFinanciereList = array();
                     $derniersBilans = array();
                     $i = 0;
-                    foreach ($result->myInfo->bilans as $b)
+                    
+                    if(count($result->myInfo->bilans)> 0)
                     {
-                        $annee = substr($b->bilan->dateClotureN, 0, 4);
-                        $posteActifList[$annee] = $b->bilanRetraiteInfo->posteActifList;
-                        $postePassifList[$annee] = $b->bilanRetraiteInfo->postePassifList;
-                        $syntheseFinanciereInfo[$annee] = $b->syntheseFinanciereInfo;
-                        $syntheseFinanciereList[$annee] = $b->syntheseFinanciereInfo->syntheseFinanciereList;
+                        foreach ($result->myInfo->bilans as $b)
+                        {
+                            $annee = substr($b->bilan->dateClotureN, 0, 4);
+                            $posteActifList[$annee] = $b->bilanRetraiteInfo->posteActifList;
+                            $postePassifList[$annee] = $b->bilanRetraiteInfo->postePassifList;
+                            $syntheseFinanciereInfo[$annee] = $b->syntheseFinanciereInfo;
+                            $syntheseFinanciereList[$annee] = $b->syntheseFinanciereInfo->syntheseFinanciereList;
 
-                        $soldeIntermediaireGestionInfo[$annee] = $b->soldeIntermediaireGestionInfo->SIGList;
-                        $investissement[$annee] = $b->bilan->posteList[0]->valeur;
+                            $soldeIntermediaireGestionInfo[$annee] = $b->soldeIntermediaireGestionInfo->SIGList;
+                            $investissement[$annee] = $b->bilan->posteList[0]->valeur;
 
-                        // date des derniers bilans
-                        $derniersBilans[$i] = $annee;
+                            // date des derniers bilans
+                            $derniersBilans[$i] = $annee;
 
-                        $i++;
+                            $i++;
+                        }
                     }
-
+                    
                     $ldate = $lesdates;
                     // on génère un tableau avec les données
                     for ($i = 0; $i < 5; $i++) // on parcourt les 5 années
