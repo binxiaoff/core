@@ -731,11 +731,12 @@ $this->lng['etape1'] = $this->ln->selectFront('inscription-preteur-etape-1',$thi
 							elseif($this->demande_contact->demande == 3)$this->settings->get('Adresse emprunteur','type');
 							elseif($this->demande_contact->demande == 4)$this->settings->get('Adresse recrutement','type');
 							elseif($this->demande_contact->demande == 5)$this->settings->get('Adresse autre','type');
+							elseif($this->demande_contact->demande == 6)$this->settings->get('Adresse partenariat','type');
 							
 							$destinataire = $this->settings->value;
 							
 							// Liste des objets
-							$objets = array('','Relation presse','Demande preteur','Demande Emprunteur','Recrutement','Autre');
+							$objets = array('','Relation presse','Demande preteur','Demande Emprunteur','Recrutement','Autre','Partenariat');
 							
 							
 							//*****************************//
@@ -856,7 +857,7 @@ $this->lng['etape1'] = $this->ln->selectFront('inscription-preteur-etape-1',$thi
 							$this->email = $this->loadLib('email',array());
 							$this->email->setFrom($this->mails_text->exp_email,$exp_name);
 							$this->email->addRecipient(trim($destinataire));
-							$this->email->addBCCRecipient('k1@david.equinoa.net');
+							//$this->email->addBCCRecipient('k1@david.equinoa.net');
 						
 							$this->email->setSubject('=?UTF-8?B?'.base64_encode($sujetMail).'?=');
 							$this->email->setHTMLBody($texteMail);

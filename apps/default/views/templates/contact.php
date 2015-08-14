@@ -20,6 +20,7 @@
 									<option <?=($this->demande_contact->demande == 3?'selected':'')?> value="3"><?=$this->lng['contact']['demande-emprunteur']?></option>
 									<option <?=($this->demande_contact->demande == 4?'selected':'')?> value="4"><?=$this->lng['contact']['recrutement']?></option>
                                     <option <?=($this->demande_contact->demande == 5?'selected':'')?> value="5"><?=$this->lng['contact']['autre']?></option>
+									<option <?=($this->demande_contact->demande == 6?'selected':'')?> value="6"><?=$this->lng['contact']['partenariat']?></option>
 								</select>
 							</div><!-- /.row -->
 
