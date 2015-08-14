@@ -1,13 +1,9 @@
 <?php
-$env = "prod";
+$url_site = "http://".$_SERVER['HTTP_HOST'];
 
-if ($env == "dev")
+if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
 {
     $url_site = "http://192.168.0.175/unilend-local";
-}
-else
-{
-    $url_site = "https://www.unilend.fr";
 }
 ?>
 
@@ -1297,7 +1293,7 @@ else
                 var slug_origine = '<?php echo $slug_origine; ?>';
 
                 if ($('#form_inscription').hasClass('etape1')) {
-
+                    
                     var erreur = 0;
 
                     if (!inscription_civilite) {
@@ -1369,13 +1365,14 @@ else
                         civilite = inscription_civilite;
 
                         var DATA = '&token=' + token + '&utm_source=' + utm_source + '&utm_source2=' + utm_source2 + '&slug_origine=' + slug_origine + '&date=' + date + '&email=' + email + '&nom=' + nom + '&prenom=' + prenom + '&civilite=' + civilite;
-
+                        
+                        alert("<?= $url_site ?>/collect/prospect");
                         $.ajax({
                             type: "POST",
                             url: "<?= $url_site ?>/collect/prospect",
                             data: DATA,
                             success: function (data) {
-                                var parsedDate = jQuery.parseJSON(data);
+                                var parsedDate = jQuery.parseJSON(data);                                 
 
                                 if (parsedDate.reponse == 'OK') {
                                     if (utm_source3) {
