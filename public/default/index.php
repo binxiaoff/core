@@ -1,7 +1,5 @@
 <?php
 
-
-
 if(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443){
 	$currentCookieParams = session_get_cookie_params(); 
 
@@ -22,9 +20,9 @@ ini_set('session.gc_maxlifetime',3600); // 1h la session
 // CACHE
 //if($_SERVER['REMOTE_ADDR'] == '93.26.42.99' || $_SERVER['REMOTE_ADDR'] == '90.62.110.115' )
 //if($_SERVER['REMOTE_ADDR'] != '93.26.42.99')
-if(1)
-{
-    require('prepend.php');
+if($_SERVER['SERVER_NAME'] == "www.unilend.fr")
+{	
+	require('prepend.php');
 }
 
 
@@ -65,9 +63,9 @@ $dispatcher = new Dispatcher($config,$app);
 // CACHE
 //if($_SERVER['REMOTE_ADDR'] == '93.26.42.99' || $_SERVER['REMOTE_ADDR'] == '90.62.110.115')
 //if($_SERVER['REMOTE_ADDR'] != '93.26.42.99')
-if(1)
+if($_SERVER['SERVER_NAME'] == "www.unilend.fr")
 {
-    require('append.php');
+	require('append.php');
 }
 
 ?>
