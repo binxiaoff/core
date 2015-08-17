@@ -80,7 +80,7 @@ class universignController extends bootstrap
                                         
                                         $ligne_historique = "<tr><td><b>Signature du mandat</b> pour l’IBAN ".$compagnie_histo->iban." / ".$compagnie_histo->bic." le ".date('d/m/Y')." &agrave; ".date('H:i')."</td></tr>";                                        
                                         
-                                        $clients_histo->history = $ligne_historique;
+                                        $clients_histo->history = $clients_histo->history." ".$ligne_historique;
                                         $clients_histo->update();
                                         
                                         
