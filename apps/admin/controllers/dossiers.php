@@ -3401,42 +3401,21 @@ class dossiersController extends bootstrap
                                                 $timeAdd = strtotime($dateDernierStatut);
                                                 $month = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
-                                                // Env prod
-                                                if ($this->Config['env'] == 'prod')
-                                                {
-                                                    // Variables du mailing
-                                                    $varMail = array(
-                                                        'surl' => $surl,
-                                                        'url' => $url,
-                                                        'prenom_p' => $this->clients->prenom,
-                                                        'mensualite_p' => $rembNetEmail,
-                                                        'mensualite_avantfisca' => ($e['montant'] / 100),
-                                                        'nom_entreprise' => $this->companies->name,
-                                                        'date_bid_accepte' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                                                        'nbre_prets' => $nbpret,
-                                                        'solde_p' => $solde,
-                                                        'motif_virement' => $motif,
-                                                        'lien_fb' => $lien_fb,
-                                                        'lien_tw' => $lien_tw);
-                                                }
-                                                // Env dev
-                                                else
-                                                {
-                                                    // Variables du mailing
-                                                    $varMail = array(
-                                                        'surl' => $surl,
-                                                        'url' => $url,
-                                                        'prenom_p' => utf8_decode($this->clients->prenom),
-                                                        'mensualite_p' => $rembNetEmail,
-                                                        'mensualite_avantfisca' => ($e['montant'] / 100),
-                                                        'nom_entreprise' => utf8_decode($this->companies->name),
-                                                        'date_bid_accepte' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                                                        'nbre_prets' => $nbpret,
-                                                        'solde_p' => $solde,
-                                                        'motif_virement' => $motif,
-                                                        'lien_fb' => $lien_fb,
-                                                        'lien_tw' => $lien_tw);
-                                                }
+
+                                                // Variables du mailing
+                                                $varMail = array(
+                                                    'surl' => $surl,
+                                                    'url' => $url,
+                                                    'prenom_p' => utf8_decode($this->clients->prenom),
+                                                    'mensualite_p' => $rembNetEmail,
+                                                    'mensualite_avantfisca' => ($e['montant'] / 100),
+                                                    'nom_entreprise' => utf8_decode($this->companies->name),
+                                                    'date_bid_accepte' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
+                                                    'nbre_prets' => $nbpret,
+                                                    'solde_p' => $solde,
+                                                    'motif_virement' => $motif,
+                                                    'lien_fb' => $lien_fb,
+                                                    'lien_tw' => $lien_tw);
 
                                                 // Construction du tableau avec les balises EMV
                                                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
@@ -3794,12 +3773,7 @@ class dossiersController extends bootstrap
                     $this->prelevements = $this->loadData('prelevements');
                     $this->prelevements->delete($this->projects->id_project, 'type_prelevement = 1 AND type = 2 AND status = 0 AND id_project');
 
-                    // on ajoute ici le projet dans la file d'attente des mails de RA a envoyer 
-                    $remboursement_anticipe_mail_a_envoyer = $this->loadData('remboursement_anticipe_mail_a_envoyer');
-                    $remboursement_anticipe_mail_a_envoyer->id_reception = $id_reception;    
-                    $remboursement_anticipe_mail_a_envoyer->statut = 0; 
-                    $remboursement_anticipe_mail_a_envoyer->create();
-                    
+
                     //on change le statut du projet
                     $this->projects_status_history->addStatus(-1, 130, $this->projects->id_project);
 
@@ -3819,7 +3793,7 @@ class dossiersController extends bootstrap
                     $reste_a_payer_pour_preteur = 0;
                     $montant_total = 0;
 
-                    
+
                     // on veut recup le nb d'echeances restantes
                     $sum_ech_restant = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');
 
@@ -3863,17 +3837,13 @@ class dossiersController extends bootstrap
                         $this->wallets_lines->amount = ($reste_a_payer_pour_preteur * 100);
                         $this->wallets_lines->id_wallet_line = $this->wallets_lines->create();
 
-                        
-                        
-                        // L'envoi du mail est deporté, car script trop lourd et plantage ! Deporté dans le default/cron --> _RA_email()
-                        
 
                         /////////////////// EMAIL PRETEURS REMBOURSEMENTS //////////////////
                         //*******************************************//
                         //*** ENVOI DU MAIL REMBOURSEMENT PRETEUR ***//
                         //*******************************************//
                         // Recuperation du modele de mail
-                        /*$this->mails_text->get('preteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
+                        $this->mails_text->get('preteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
 
                         $nbpret = $loans->counter('id_lender = ' . $preteur['id_lender'] . ' AND id_project = ' . $this->projects->id_project);
 
@@ -3989,8 +3959,6 @@ class dossiersController extends bootstrap
 //                        }//End si notif ok
                         // fin mail pour preteur //
                         //////////////////// FIN EMAIL PRETEURS REMBOURSEMENTS /////////////////////////////
-                        
-
                         //////// FIN GESTION ALERTES //////////                                        
                         //on ajoute la somme pour le total plus bas
                         $montant_total += $reste_a_payer_pour_preteur;
@@ -4037,10 +4005,6 @@ class dossiersController extends bootstrap
                         $this->bank_unilend->id_echeance_emprunteur = 0; // pas d'echeance emprunteur
                         $this->bank_unilend->status = 1;
                         $this->bank_unilend->create();
-                        
-                        
-                        
-                        
                     }
 
 
@@ -4157,6 +4121,7 @@ class dossiersController extends bootstrap
         $this->projects = $this->loadData('projects');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->receptions = $this->loadData('receptions');
+        $this->prelevements = $this->loadData('prelevements');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project'))
         {
