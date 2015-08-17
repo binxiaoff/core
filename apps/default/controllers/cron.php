@@ -12674,6 +12674,41 @@ class cronController extends bootstrap
                         $liste_remb = utf8_decode($liste_remb);
                     } 
                     
+                    // contenu
+                    $lecontenu = '';
+                     // on gère ici le cas du singulier/pluriel
+                    if($nb_arrayRemb <= 1)
+                    {
+                        if ($type == 'quotidienne')
+                        {
+                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
+                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
+                        }
+                        elseif ($type == 'hebdomadaire')
+                        {
+                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
+                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
+                        }
+                        elseif ($type == 'mensuelle')
+                        {
+                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
+                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
+                        }
+                    }
+                    else{
+                        if ($type == 'quotidienne')
+                        {
+                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-pluriel'];
+                        }
+                        elseif ($type == 'hebdomadaire')
+                        {
+                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-pluriel'];
+                        }
+                        elseif ($type == 'mensuelle')
+                        {
+                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-mensuelle-pluriel'];
+                        }
+                    }
                     
                     // Variables du mailing
                     $varMail = array(
@@ -12685,29 +12720,11 @@ class cronController extends bootstrap
                         'gestion_alertes' => $this->lurl . '/profile',
                         'montant_dispo' => number_format($getsolde, 2, ',', ' '),
                         'remboursement_anticipe' => $contenu_remboursement_anticipe,
+                        'contenu' => $lecontenu,
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw);
                     // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    // Attribution des données aux variables
-                    
-                    // on gère ici le cas du singulier/pluriel
-                    if($nb_arrayRemb <= 1)
-                    {
-                        if ($type == 'quotidienne')
-                        {
-                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
-                        }
-                        elseif ($type == 'hebdomadaire')
-                        {
-                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
-                        }
-                        elseif ($type == 'mensuelle')
-                        {
-                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
-                        }
-                    }
                     
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
