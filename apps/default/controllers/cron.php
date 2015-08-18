@@ -10127,206 +10127,221 @@ class cronController extends bootstrap
     function _alertes_quotidienne()
     {
         //mail('d.courtier@relance.fr', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee - ' . date('Y-m-d H:i:e'));
+        
+        // On recup le param
+        $settingsControleQuotidiennne = $this->loadData('settings');
+        $settingsControleQuotidiennne->get('Controle notification quotidienne', 'type');
 
-        $timeDebut = time();
-
-        $clients = $this->loadData('clients');
-        $lenders_accounts = $this->loadData('lenders_accounts');
-        $clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
-        $clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $notifications = $this->loadData('notifications');
-        $projects = $this->loadData('projects');
-
-        // Remboursement - // A REMETTRE a 18H 19h30
-        $dateDebutRemboursement = mktime(18, 0, 0, date('m'), date('d'), date('Y'));
-        $dateFinRemboursement = mktime(19, 30, 0, date('m'), date('d'), date('Y'));
-
-        // Nouveau projet
-        $dateDebutNewProject = mktime(19, 30, 0, date('m'), date('d'), date('Y'));
-        //$dateDebutNewProject 		= mktime(19,41,0,date('m'),date('d'),date('Y')); // a retirer à partir du 25/04/2015
-        $dateFinNewProject = mktime(20, 0, 0, date('m'), date('d'), date('Y'));
-
-        // Offre realisée
-        $dateDebutOffreRealisee = mktime(20, 0, 0, date('m'), date('d'), date('Y'));
-        $dateFinOffreRealisee = mktime(20, 15, 0, date('m'), date('d'), date('Y'));
-
-        // Offre refusée
-        $dateDebutOffreRefusee = mktime(20, 15, 0, date('m'), date('d'), date('Y'));
-        $dateFinOffreRefusee = mktime(20, 30, 0, date('m'), date('d'), date('Y'));
-
-        // Offre Acceptee
-        $dateDebutOffreAcceptee = mktime(20, 30, 0, date('m'), date('d'), date('Y'));
-        $dateFinOffreAcceptee = mktime(21, 0, 0, date('m'), date('d'), date('Y'));
-
-
-
-
-        // Nouveau projet
-        if (time() >= $dateDebutNewProject && time() < $dateFinNewProject)
+        // on rentre dans le cron si statut égale 1 
+        if ($settingsControleQuotidiennne->value == 1)
         {
-            $id_notif = 1;
 
-            //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
+            // On passe le statut a zero pour signaler qu'on est en cours de traitement
+            $settingsControleQuotidiennne->value = 0;
+            $settingsControleQuotidiennne->update();
+        
+            $timeDebut = time();
 
-            $lPreteurs = $clients->selectPreteursByStatusSlim(60);
-            //$lPreteurs = $clients->selectPreteursByStatus(60,"c.id_client IN (2015,1,12)"); // mode test <------------------
-            //$lPreteurs = $clients->selectPreteursByStatus(60,"c.id_client IN (12)"); // mode test <------------------
-            // Liste des projets
-            $lProjects = $projects->selectProjectsByStatusSlim(50);
+            $clients = $this->loadData('clients');
+            $lenders_accounts = $this->loadData('lenders_accounts');
+            $clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
+            $clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+            $notifications = $this->loadData('notifications');
+            $projects = $this->loadData('projects');
 
-            // on check tous les preteurs
-            foreach ($lPreteurs as $preteur)
+            // Remboursement - // A REMETTRE a 18H 19h30
+            $dateDebutRemboursement = mktime(18, 0, 0, date('m'), date('d'), date('Y'));
+            $dateFinRemboursement = mktime(19, 30, 0, date('m'), date('d'), date('Y'));
+
+            // Nouveau projet
+            $dateDebutNewProject = mktime(19, 30, 0, date('m'), date('d'), date('Y'));
+            //$dateDebutNewProject 		= mktime(19,41,0,date('m'),date('d'),date('Y')); // a retirer à partir du 25/04/2015
+            $dateFinNewProject = mktime(20, 0, 0, date('m'), date('d'), date('Y'));
+
+            // Offre realisée
+            $dateDebutOffreRealisee = mktime(20, 0, 0, date('m'), date('d'), date('Y'));
+            $dateFinOffreRealisee = mktime(20, 15, 0, date('m'), date('d'), date('Y'));
+
+            // Offre refusée
+            $dateDebutOffreRefusee = mktime(20, 15, 0, date('m'), date('d'), date('Y'));
+            $dateFinOffreRefusee = mktime(20, 30, 0, date('m'), date('d'), date('Y'));
+
+            // Offre Acceptee
+            $dateDebutOffreAcceptee = mktime(20, 30, 0, date('m'), date('d'), date('Y'));
+            $dateFinOffreAcceptee = mktime(21, 0, 0, date('m'), date('d'), date('Y'));
+
+
+
+
+            // Nouveau projet
+            if (time() >= $dateDebutNewProject && time() < $dateFinNewProject)
             {
+                $id_notif = 1;
 
+                //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
 
-                // on regarde les projets concernés
-                foreach ($lProjects as $projet)
+                $lPreteurs = $clients->selectPreteursByStatusSlim(60);
+                //$lPreteurs = $clients->selectPreteursByStatus(60,"c.id_client IN (2015,1,12)"); // mode test <------------------
+                //$lPreteurs = $clients->selectPreteursByStatus(60,"c.id_client IN (12)"); // mode test <------------------
+                // Liste des projets
+                $lProjects = $projects->selectProjectsByStatusSlim(50);
+
+                // on check tous les preteurs
+                foreach ($lPreteurs as $preteur)
                 {
 
 
-                    // si existe pas on crée
-                    if ($clients_gestion_mails_notif->counter('id_client = ' . $preteur['id_client'] . ' AND id_project = ' . $projet['id_project']) <= 0)
+                    // on regarde les projets concernés
+                    foreach ($lProjects as $projet)
                     {
 
-                        //$clients_gestion_mails_notif->get($projet['id_project'],'id_client = '.$preteur['id_client'].' AND id_project');
 
-                        $notifications->type = 8; // nouveau projet
-                        $notifications->id_lender = $preteur['id_lender'];
-                        $notifications->id_project = $projet['id_project'];
-                        $notifications->status = 1; // on le fait passé en deja lu car pas forcement du jour meme
-                        $notifications->id_notification = $notifications->create();
+                        // si existe pas on crée
+                        if ($clients_gestion_mails_notif->counter('id_client = ' . $preteur['id_client'] . ' AND id_project = ' . $projet['id_project']) <= 0)
+                        {
 
-                        //////// GESTION ALERTES //////////
-                        $clients_gestion_mails_notif->id_client = $preteur['id_client'];
-                        $clients_gestion_mails_notif->id_notif = 1; // type nouveau projet
-                        $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
-                        $clients_gestion_mails_notif->id_project = $projet['id_project'];
-                        $clients_gestion_mails_notif->date_notif = $projet['date_publication_full'];
-                        $clients_gestion_mails_notif->id_clients_gestion_mails_notif = $clients_gestion_mails_notif->create();
+                            //$clients_gestion_mails_notif->get($projet['id_project'],'id_client = '.$preteur['id_client'].' AND id_project');
 
-                        //////// FIN GESTION ALERTES //////////	
+                            $notifications->type = 8; // nouveau projet
+                            $notifications->id_lender = $preteur['id_lender'];
+                            $notifications->id_project = $projet['id_project'];
+                            $notifications->status = 1; // on le fait passé en deja lu car pas forcement du jour meme
+                            $notifications->id_notification = $notifications->create();
+
+                            //////// GESTION ALERTES //////////
+                            $clients_gestion_mails_notif->id_client = $preteur['id_client'];
+                            $clients_gestion_mails_notif->id_notif = 1; // type nouveau projet
+                            $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
+                            $clients_gestion_mails_notif->id_project = $projet['id_project'];
+                            $clients_gestion_mails_notif->date_notif = $projet['date_publication_full'];
+                            $clients_gestion_mails_notif->id_clients_gestion_mails_notif = $clients_gestion_mails_notif->create();
+
+                            //////// FIN GESTION ALERTES //////////	
+                        }
+                    }
+                }
+                ///////////////////////////////////////////////////////////////////////////////////////////////
+            }
+            // Offre realisée
+            elseif (time() >= $dateDebutOffreRealisee && time() < $dateFinOffreRealisee)
+            {
+                $id_notif = 2;
+            }
+            // Offre refusée
+            elseif (time() >= $dateDebutOffreRefusee && time() < $dateFinOffreRefusee)
+            {
+                $id_notif = 3;
+            }
+            // Offre Acceptée
+            elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee)
+            {
+                $id_notif = 4;
+            }
+            // Remboursement
+            elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement)
+            {
+                $id_notif = 5;
+            }
+            else
+            {
+                die;
+            }
+
+            // On recup les mails non envoyés aujourd'hui
+            //$mails_notif = $clients_gestion_notifications->selectNotifs('quotidienne',$id_notif,0,50);
+            // On recupere les clients qui ont des notifs a recevoir
+            $list_id_client = $clients_gestion_notifications->selectIdclientNotifs('quotidienne', $id_notif, 0, 50);
+
+
+            //echo '/////////// EMAILS NOTIF ////////////<br>';
+
+            /* echo '<pre>';
+              print_r($list_id_client);
+              echo '</pre>';
+              die; */
+
+            $array_mail_nouveaux_projects = false;
+            $array_offres_placees = false;
+            $array_offres_refusees = false;
+            $array_offres_acceptees = false;
+            $array_remb = false;
+
+            foreach ($list_id_client as $id_client)
+            {
+                // On récupère les notifs du client
+                $mails_notif = $clients_gestion_notifications->selectNotifsByClient($id_client, 'quotidienne', $id_notif);
+
+                foreach ($mails_notif as $mail)
+                {
+                    // Nouveaux projets
+                    if ($id_notif == 1)
+                    {
+                        $array_mail_nouveaux_projects[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
+                    }
+                    // Offres placées
+                    elseif ($id_notif == 2)
+                    {
+                        $array_offres_placees[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
+                    }
+                    // Offres refusées
+                    elseif ($id_notif == 3)
+                    {
+                        $array_offres_refusees[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
+                    }
+                    // Offres accpectées
+                    elseif ($id_notif == 4)
+                    {
+                        $array_offres_acceptees[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
+                    }
+                    // remb
+                    elseif ($id_notif == 5)
+                    {
+                        $array_remb[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
                     }
                 }
             }
-            ///////////////////////////////////////////////////////////////////////////////////////////////
-        }
-        // Offre realisée
-        elseif (time() >= $dateDebutOffreRealisee && time() < $dateFinOffreRealisee)
-        {
-            $id_notif = 2;
-        }
-        // Offre refusée
-        elseif (time() >= $dateDebutOffreRefusee && time() < $dateFinOffreRefusee)
-        {
-            $id_notif = 3;
-        }
-        // Offre Acceptée
-        elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee)
-        {
-            $id_notif = 4;
-        }
-        // Remboursement
-        elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement)
-        {
-            $id_notif = 5;
-        }
-        else
-        {
-            die;
-        }
 
-        // On recup les mails non envoyés aujourd'hui
-        //$mails_notif = $clients_gestion_notifications->selectNotifs('quotidienne',$id_notif,0,50);
-        // On recupere les clients qui ont des notifs a recevoir
-        $list_id_client = $clients_gestion_notifications->selectIdclientNotifs('quotidienne', $id_notif, 0, 50);
+            /* 		echo '<pre>';
+              print_r($array_offres_placees);
+              echo '</pre>';
+              die; */
 
-
-        //echo '/////////// EMAILS NOTIF ////////////<br>';
-
-        /* echo '<pre>';
-          print_r($list_id_client);
-          echo '</pre>';
-          die; */
-
-        $array_mail_nouveaux_projects = false;
-        $array_offres_placees = false;
-        $array_offres_refusees = false;
-        $array_offres_acceptees = false;
-        $array_remb = false;
-
-        foreach ($list_id_client as $id_client)
-        {
-            // On récupère les notifs du client
-            $mails_notif = $clients_gestion_notifications->selectNotifsByClient($id_client, 'quotidienne', $id_notif);
-
-            foreach ($mails_notif as $mail)
+            //// ON RECUPERE LES TABLEAUX ////
+            // On a regroupé les notifs nouveaux projet dans une table
+            if ($array_mail_nouveaux_projects != false)
             {
-                // Nouveaux projets
-                if ($id_notif == 1)
-                {
-                    $array_mail_nouveaux_projects[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                }
-                // Offres placées
-                elseif ($id_notif == 2)
-                {
-                    $array_offres_placees[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                }
-                // Offres refusées
-                elseif ($id_notif == 3)
-                {
-                    $array_offres_refusees[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                }
-                // Offres accpectées
-                elseif ($id_notif == 4)
-                {
-                    $array_offres_acceptees[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                }
-                // remb
-                elseif ($id_notif == 5)
-                {
-                    $array_remb[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                }
+                $this->nouveaux_projets_synthese($array_mail_nouveaux_projects, 'quotidienne');
             }
-        }
+            // les offres passées
+            if ($array_offres_placees != false)
+            {
+                $this->offres_placees_synthese($array_offres_placees, 'quotidienne');
+            }
+            // les offres refusées
+            if ($array_offres_refusees != false)
+            {
+                $this->offres_refusees_synthese($array_offres_refusees, 'quotidienne');
+            }
+            // les offres acceptees
+            if ($array_offres_acceptees != false)
+            {
+                $this->offres_acceptees_synthese($array_offres_acceptees, 'quotidienne');
+            }
+            // les remb
+            if ($array_remb != false)
+            {
+                $this->remb_synthese($array_remb, 'quotidienne');
+            }
 
-        /* 		echo '<pre>';
-          print_r($array_offres_placees);
-          echo '</pre>';
-          die; */
+            $timeFin = time();
 
-        //// ON RECUPERE LES TABLEAUX ////
-        // On a regroupé les notifs nouveaux projet dans une table
-        if ($array_mail_nouveaux_projects != false)
-        {
-            $this->nouveaux_projets_synthese($array_mail_nouveaux_projects, 'quotidienne');
-        }
-        // les offres passées
-        if ($array_offres_placees != false)
-        {
-            $this->offres_placees_synthese($array_offres_placees, 'quotidienne');
-        }
-        // les offres refusées
-        if ($array_offres_refusees != false)
-        {
-            $this->offres_refusees_synthese($array_offres_refusees, 'quotidienne');
-        }
-        // les offres acceptees
-        if ($array_offres_acceptees != false)
-        {
-            $this->offres_acceptees_synthese($array_offres_acceptees, 'quotidienne');
-        }
-        // les remb
-        if ($array_remb != false)
-        {
-            $this->remb_synthese($array_remb, 'quotidienne');
-        }
+            $time = $timeFin - $timeDebut;
 
-        $timeFin = time();
-
-        $time = $timeFin - $timeDebut;
-
-        //echo 'Durée : '.$time.' secondes';
-
+            //echo 'Durée : '.$time.' secondes';
+            $settingsControleQuotidiennne->value = 1;
+            $settingsControleQuotidiennne->update();
+        
+        }
         mail('k1@david.equinoa.net', 'cron ' . $this->Config['env'] . ' fin alertes_quotidiennee', 'cron ' . $this->Config['env'] . ' fin alertes_quotidiennee - ' . date('Y-m-d H:i:e'));
         die;
     }
@@ -10335,156 +10350,172 @@ class cronController extends bootstrap
     function _alertes_hebdomadaire()
     {
         mail('k1@david.equinoa.net', 'cron ' . $this->Config['env'] . ' debut gestion_alertes_hebdomadaire', 'cron ' . $this->Config['env'] . ' debut alertes_hebdomadaire - ' . date('Y-m-d H:i:e'));
+        
+        // On recup le param
+        $settingsControleHebdomadaire = $this->loadData('settings');
+        $settingsControleHebdomadaire->get('Controle notification hebomadaire', 'type');
 
-        $timeDebut = time();
-
-        $clients = $this->loadData('clients');
-        $lenders_accounts = $this->loadData('lenders_accounts');
-        $clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
-        $clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $notifications = $this->loadData('notifications');
-        $projects = $this->loadData('projects');
-
-        // Nouveau projet
-        $dateDebutNewProject = mktime(9, 0, 0, date('m'), date('d'), date('Y'));
-        $dateFinNewProject = mktime(9, 30, 0, date('m'), date('d'), date('Y'));
-
-        // Offre Acceptee
-        $dateDebutOffreAcceptee = mktime(9, 30, 0, date('m'), date('d'), date('Y'));
-        $dateFinOffreAcceptee = mktime(10, 0, 0, date('m'), date('d'), date('Y'));
-
-        // Remboursement
-        $dateDebutRemboursement = mktime(10, 0, 0, date('m'), date('d'), date('Y'));
-        $dateFinRemboursement = mktime(10, 30, 0, date('m'), date('d'), date('Y'));
-
-
-        // Nouveau projet
-        if (time() >= $dateDebutNewProject && time() < $dateFinNewProject)
+        // on rentre dans le cron si statut égale 1 
+        if ($settingsControleHebdomadaire->value == 1)
         {
-            $id_notif = 1;
 
-            //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
+            // On passe le statut a zero pour signaler qu'on est en cours de traitement
+            $settingsControleHebdomadaire->value = 0;
+            $settingsControleHebdomadaire->update();
+        
+            $timeDebut = time();
 
-            $lPreteurs = $clients->selectPreteursByStatusSlim(60);
-            //$lPreteurs = $clients->selectPreteursByStatusSlim(60,"c.id_client IN (2015,1,12)"); // mode test <------------------
-            //$lPreteurs = $clients->selectPreteursByStatus(60,"c.id_client IN (12)"); // mode test <------------------
-            // Liste des projets
-            $lProjects = $projects->selectProjectsByStatusSlim(50);
+            $clients = $this->loadData('clients');
+            $lenders_accounts = $this->loadData('lenders_accounts');
+            $clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
+            $clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+            $notifications = $this->loadData('notifications');
+            $projects = $this->loadData('projects');
 
-            // on check tous les preteurs
-            foreach ($lPreteurs as $preteur)
+            // Nouveau projet
+            $dateDebutNewProject = mktime(9, 0, 0, date('m'), date('d'), date('Y'));
+            $dateFinNewProject = mktime(9, 30, 0, date('m'), date('d'), date('Y'));
+
+            // Offre Acceptee
+            $dateDebutOffreAcceptee = mktime(9, 30, 0, date('m'), date('d'), date('Y'));
+            $dateFinOffreAcceptee = mktime(10, 0, 0, date('m'), date('d'), date('Y'));
+
+            // Remboursement
+            $dateDebutRemboursement = mktime(10, 0, 0, date('m'), date('d'), date('Y'));
+            $dateFinRemboursement = mktime(10, 30, 0, date('m'), date('d'), date('Y'));
+
+
+            // Nouveau projet
+            if (time() >= $dateDebutNewProject && time() < $dateFinNewProject)
             {
+                $id_notif = 1;
 
+                //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
 
-                // on regarde les projets concernés
-                foreach ($lProjects as $projet)
+                $lPreteurs = $clients->selectPreteursByStatusSlim(60);
+                //$lPreteurs = $clients->selectPreteursByStatusSlim(60,"c.id_client IN (2015,1,12)"); // mode test <------------------
+                //$lPreteurs = $clients->selectPreteursByStatus(60,"c.id_client IN (12)"); // mode test <------------------
+                // Liste des projets
+                $lProjects = $projects->selectProjectsByStatusSlim(50);
+
+                // on check tous les preteurs
+                foreach ($lPreteurs as $preteur)
                 {
 
 
-                    // si existe pas on crée
-                    //if(!$clients_gestion_mails_notif->get($projet['id_project'],'id_client = '.$preteur['id_client'].' AND id_project')){
-                    if ($clients_gestion_mails_notif->counter('id_client = ' . $preteur['id_client'] . ' AND id_project = ' . $projet['id_project']) <= 0)
+                    // on regarde les projets concernés
+                    foreach ($lProjects as $projet)
                     {
 
-                        //$clients_gestion_mails_notif->get($projet['id_project'],'id_client = '.$preteur['id_client'].' AND id_project');
 
-                        $notifications->type = 8; // nouveau projet
-                        $notifications->id_lender = $preteur['id_lender'];
-                        $notifications->id_project = $projet['id_project'];
-                        $notifications->status = 1; // on le fait passé en deja lu car pas forcement du jour meme
-                        $notifications->id_notification = $notifications->create();
+                        // si existe pas on crée
+                        //if(!$clients_gestion_mails_notif->get($projet['id_project'],'id_client = '.$preteur['id_client'].' AND id_project')){
+                        if ($clients_gestion_mails_notif->counter('id_client = ' . $preteur['id_client'] . ' AND id_project = ' . $projet['id_project']) <= 0)
+                        {
 
-                        //////// GESTION ALERTES //////////
-                        $clients_gestion_mails_notif->id_client = $preteur['id_client'];
-                        $clients_gestion_mails_notif->id_notif = 1; // type nouveau projet
-                        $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
-                        $clients_gestion_mails_notif->id_project = $projet['id_project'];
-                        $clients_gestion_mails_notif->date_notif = $projet['date_publication_full'];
-                        $clients_gestion_mails_notif->id_clients_gestion_mails_notif = $clients_gestion_mails_notif->create();
+                            //$clients_gestion_mails_notif->get($projet['id_project'],'id_client = '.$preteur['id_client'].' AND id_project');
 
-                        //////// FIN GESTION ALERTES //////////	
+                            $notifications->type = 8; // nouveau projet
+                            $notifications->id_lender = $preteur['id_lender'];
+                            $notifications->id_project = $projet['id_project'];
+                            $notifications->status = 1; // on le fait passé en deja lu car pas forcement du jour meme
+                            $notifications->id_notification = $notifications->create();
+
+                            //////// GESTION ALERTES //////////
+                            $clients_gestion_mails_notif->id_client = $preteur['id_client'];
+                            $clients_gestion_mails_notif->id_notif = 1; // type nouveau projet
+                            $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
+                            $clients_gestion_mails_notif->id_project = $projet['id_project'];
+                            $clients_gestion_mails_notif->date_notif = $projet['date_publication_full'];
+                            $clients_gestion_mails_notif->id_clients_gestion_mails_notif = $clients_gestion_mails_notif->create();
+
+                            //////// FIN GESTION ALERTES //////////	
+                        }
+                    }
+                }
+                ///////////////////////////////////////////////////////////////////////////////////////////////
+            }
+            // Offre Acceptée
+            elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee)
+            {
+                $id_notif = 4;
+            }
+            // Remboursement
+            elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement)
+            {
+                $id_notif = 5;
+            }
+            else
+            {
+                die;
+            }
+
+
+            // On recup les mails non envoyés aujourd'hui
+            //$mails_notif = $clients_gestion_notifications->selectNotifs('hebdomadaire',$id_notif,0,250);
+            // On recupere les clients qui ont des notifs a recevoir
+            $list_id_client = $clients_gestion_notifications->selectIdclientNotifs('hebdomadaire', $id_notif, 0, 250);
+
+            //echo '/////////// EMAILS NOTIF ////////////<br>';
+
+            $array_mail_nouveaux_projects = false;
+            $array_offres_placees = false;
+            $array_offres_refusees = false;
+            $array_offres_acceptees = false;
+            $array_remb = false;
+
+            foreach ($list_id_client as $id_client)
+            {
+                // On récupère les notifs du client
+                $mails_notif = $clients_gestion_notifications->selectNotifsByClient($id_client, 'hebdomadaire', $id_notif);
+
+                foreach ($mails_notif as $mail)
+                {
+                    // Nouveau projet
+                    if ($id_notif == 1)
+                    {
+                        $array_mail_nouveaux_projects[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
+                    }
+                    // Offres accpectées
+                    elseif ($id_notif == 4)
+                    {
+                        $array_offres_acceptees[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
+                    }
+                    // remb
+                    elseif ($id_notif == 5)
+                    {
+                        $array_remb[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
                     }
                 }
             }
-            ///////////////////////////////////////////////////////////////////////////////////////////////
-        }
-        // Offre Acceptée
-        elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee)
-        {
-            $id_notif = 4;
-        }
-        // Remboursement
-        elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement)
-        {
-            $id_notif = 5;
-        }
-        else
-        {
-            die;
-        }
 
-
-        // On recup les mails non envoyés aujourd'hui
-        //$mails_notif = $clients_gestion_notifications->selectNotifs('hebdomadaire',$id_notif,0,250);
-        // On recupere les clients qui ont des notifs a recevoir
-        $list_id_client = $clients_gestion_notifications->selectIdclientNotifs('hebdomadaire', $id_notif, 0, 250);
-
-        //echo '/////////// EMAILS NOTIF ////////////<br>';
-
-        $array_mail_nouveaux_projects = false;
-        $array_offres_placees = false;
-        $array_offres_refusees = false;
-        $array_offres_acceptees = false;
-        $array_remb = false;
-
-        foreach ($list_id_client as $id_client)
-        {
-            // On récupère les notifs du client
-            $mails_notif = $clients_gestion_notifications->selectNotifsByClient($id_client, 'hebdomadaire', $id_notif);
-
-            foreach ($mails_notif as $mail)
+            //// ON RECUPERE LES TABLEAUX ////
+            // On a regroupé les notifs nouveaux projet dans une table
+            if ($array_mail_nouveaux_projects != false)
             {
-                // Nouveau projet
-                if ($id_notif == 1)
-                {
-                    $array_mail_nouveaux_projects[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                }
-                // Offres accpectées
-                elseif ($id_notif == 4)
-                {
-                    $array_offres_acceptees[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                }
-                // remb
-                elseif ($id_notif == 5)
-                {
-                    $array_remb[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                }
+                $this->nouveaux_projets_synthese($array_mail_nouveaux_projects, 'hebdomadaire');
             }
+            // les offres acceptees
+            if ($array_offres_acceptees != false)
+            {
+                $this->offres_acceptees_synthese($array_offres_acceptees, 'hebdomadaire');
+            }
+            // les remb
+            if ($array_remb != false)
+            {
+                $this->remb_synthese($array_remb, 'hebdomadaire');
+            }
+
+            $timeFin = time();
+
+            $time = $timeFin - $timeDebut;
+
+            //echo 'Durée : ' . $time . ' secondes';
+
+            $settingsControleHebdomadaire->value = 1;
+            $settingsControleHebdomadaire->update();
         }
-
-        //// ON RECUPERE LES TABLEAUX ////
-        // On a regroupé les notifs nouveaux projet dans une table
-        if ($array_mail_nouveaux_projects != false)
-        {
-            $this->nouveaux_projets_synthese($array_mail_nouveaux_projects, 'hebdomadaire');
-        }
-        // les offres acceptees
-        if ($array_offres_acceptees != false)
-        {
-            $this->offres_acceptees_synthese($array_offres_acceptees, 'hebdomadaire');
-        }
-        // les remb
-        if ($array_remb != false)
-        {
-            $this->remb_synthese($array_remb, 'hebdomadaire');
-        }
-
-        $timeFin = time();
-
-        $time = $timeFin - $timeDebut;
-
-        echo 'Durée : ' . $time . ' secondes';
-
+        
         mail('k1@david.equinoa.net', 'cron ' . $this->Config['env'] . ' fin gestion_alertes_hebdomadaire', 'cron ' . $this->Config['env'] . ' fin alertes_hebdomadaire - ' . date('Y-m-d H:i:e'));
         die;
     }
@@ -10493,82 +10524,99 @@ class cronController extends bootstrap
     function _alertes_mensuelle()
     {
         mail('k1@david.equinoa.net', 'cron ' . $this->Config['env'] . ' debut alertes_mensuelle', 'cron ' . $this->Config['env'] . ' debut alertes_mensuelle - ' . date('Y-m-d H:i:e'));
+        
+        // On recup le param
+        $settingsControleMensuelle = $this->loadData('settings');
+        $settingsControleMensuelle->get('Controle notification mensuelle', 'type');
 
-        // si on est le dernier jour du mois
-        $last_day_of_month = date('t');
-        //if(date('d') == $last_day_of_month || 5 == 5)
-
-        $clients = $this->loadData('clients');
-        $lenders_accounts = $this->loadData('lenders_accounts');
-        $clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
-        $clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $projects = $this->loadData('projects');
-
-
-        // Offre Acceptee
-        $dateDebutOffreAcceptee = mktime(10, 30, 0, date('m'), date('d'), date('Y'));
-        $dateFinOffreAcceptee = mktime(11, 0, 0, date('m'), date('d'), date('Y'));
-
-        // Remboursement
-        $dateDebutRemboursement = mktime(11, 0, 0, date('m'), date('d'), date('Y'));
-        $dateFinRemboursement = mktime(11, 30, 0, date('m'), date('d'), date('Y'));
-
-        // Offre Acceptée
-        if (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee)
+        // on rentre dans le cron si statut égale 1 
+        if ($settingsControleMensuelle->value == 1)
         {
-            $id_notif = 4;
-        }
-        // Remboursement
-        elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement)
-        {
-            $id_notif = 5;
-        }
-        else
-        {
-            die;
-        }
 
-        // On recup les mails non envoyés aujourd'hui
-        //$mails_notif = $clients_gestion_notifications->selectNotifs('mensuelle',$id_notif,0,250);
-        // On recupere les clients qui ont des notifs a recevoir
-        $list_id_client = $clients_gestion_notifications->selectIdclientNotifs('mensuelle', $id_notif, 0, 250);
+            // On passe le statut a zero pour signaler qu'on est en cours de traitement
+            $settingsControleMensuelle->value = 0;
+            $settingsControleMensuelle->update();
+        
+            // si on est le dernier jour du mois
+            $last_day_of_month = date('t');
+            //if(date('d') == $last_day_of_month || 5 == 5)
 
-        //echo '/////////// EMAILS NOTIF ////////////<br>';
+            $clients = $this->loadData('clients');
+            $lenders_accounts = $this->loadData('lenders_accounts');
+            $clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
+            $clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+            $projects = $this->loadData('projects');
 
-        $array_offres_acceptees = false;
-        $array_remb = false;
 
-        foreach ($list_id_client as $id_client)
-        {
-            // On récupère les notifs du client
-            $mails_notif = $clients_gestion_notifications->selectNotifsByClient($id_client, 'mensuelle', $id_notif);
+            // Offre Acceptee
+            $dateDebutOffreAcceptee = mktime(10, 30, 0, date('m'), date('d'), date('Y'));
+            $dateFinOffreAcceptee = mktime(11, 0, 0, date('m'), date('d'), date('Y'));
 
-            foreach ($mails_notif as $mail)
+            // Remboursement
+            $dateDebutRemboursement = mktime(11, 0, 0, date('m'), date('d'), date('Y'));
+            $dateFinRemboursement = mktime(11, 30, 0, date('m'), date('d'), date('Y'));
+
+            // Offre Acceptée
+            if (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee)
             {
-                // Offres accpectées
-                if ($id_notif == 4)
+                $id_notif = 4;
+            }
+            // Remboursement
+            elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement)
+            {
+                $id_notif = 5;
+            }
+            else
+            {
+                die;
+            }
+
+            // On recup les mails non envoyés aujourd'hui
+            //$mails_notif = $clients_gestion_notifications->selectNotifs('mensuelle',$id_notif,0,250);
+            // On recupere les clients qui ont des notifs a recevoir
+            $list_id_client = $clients_gestion_notifications->selectIdclientNotifs('mensuelle', $id_notif, 0, 250);
+
+            //echo '/////////// EMAILS NOTIF ////////////<br>';
+
+            $array_offres_acceptees = false;
+            $array_remb = false;
+
+            foreach ($list_id_client as $id_client)
+            {
+                // On récupère les notifs du client
+                $mails_notif = $clients_gestion_notifications->selectNotifsByClient($id_client, 'mensuelle', $id_notif);
+
+                foreach ($mails_notif as $mail)
                 {
-                    $array_offres_acceptees[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                }
-                // remb
-                elseif ($id_notif == 5)
-                {
-                    $array_remb[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
+                    // Offres accpectées
+                    if ($id_notif == 4)
+                    {
+                        $array_offres_acceptees[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
+                    }
+                    // remb
+                    elseif ($id_notif == 5)
+                    {
+                        $array_remb[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
+                    }
                 }
             }
-        }
 
-        //// ON RECUPERE LES TABLEAUX ////
-        // les offres acceptees
-        if ($array_offres_acceptees != false)
-        {
-            $this->offres_acceptees_synthese($array_offres_acceptees, 'mensuelle');
+            //// ON RECUPERE LES TABLEAUX ////
+            // les offres acceptees
+            if ($array_offres_acceptees != false)
+            {
+                $this->offres_acceptees_synthese($array_offres_acceptees, 'mensuelle');
+            }
+            // les remb
+            if ($array_remb != false)
+            {
+                $this->remb_synthese($array_remb, 'mensuelle');
+            }
+        
+            $settingsControleMensuelle->value = 1;
+            $settingsControleMensuelle->update();
         }
-        // les remb
-        if ($array_remb != false)
-        {
-            $this->remb_synthese($array_remb, 'mensuelle');
-        }
+        
         mail('k1@david.equinoa.net', 'cron ' . $this->Config['env'] . ' fin alertes_mensuelle', 'cron ' . $this->Config['env'] . ' alertes_mensuelle - ' . date('Y-m-d H:i:e'));
         die;
     }
