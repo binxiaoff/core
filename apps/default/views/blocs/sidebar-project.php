@@ -601,7 +601,7 @@ else
                                     
                                     // pour éviter de refaire tous les conditions une autre fois pour le mobile, on place une variable qui sera a true si le client peut prêter
                                     $this->preter_by_mobile_ok = true;
-                                    $this->accept_ok_header = false;
+                                    //$this->accept_ok_header = false;
                                     ?>
 
 
