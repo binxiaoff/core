@@ -69,6 +69,7 @@ class clients_crud
 	public $optin1;
 	public $optin2;
 	public $status;
+	public $history;
 	public $added;
 	public $updated;
 	public $lastlogin;
@@ -121,6 +122,7 @@ class clients_crud
 		$this->optin1 = '';
 		$this->optin2 = '';
 		$this->status = '';
+		$this->history = '';
 		$this->added = '';
 		$this->updated = '';
 		$this->lastlogin = '';
@@ -177,6 +179,7 @@ class clients_crud
 			$this->optin1 = $record['optin1'];
 			$this->optin2 = $record['optin2'];
 			$this->status = $record['status'];
+			$this->history = $record['history'];
 			$this->added = $record['added'];
 			$this->updated = $record['updated'];
 			$this->lastlogin = $record['lastlogin'];
@@ -233,12 +236,13 @@ class clients_crud
 		$this->optin1 = $this->bdd->escape_string($this->optin1);
 		$this->optin2 = $this->bdd->escape_string($this->optin2);
 		$this->status = $this->bdd->escape_string($this->status);
+		$this->history = $this->bdd->escape_string($this->history);
 		$this->added = $this->bdd->escape_string($this->added);
 		$this->updated = $this->bdd->escape_string($this->updated);
 		$this->lastlogin = $this->bdd->escape_string($this->lastlogin);
 
 		
-		$sql = 'UPDATE `clients` SET `hash`="'.$this->hash.'",`id_langue`="'.$this->id_langue.'",`id_partenaire`="'.$this->id_partenaire.'",`id_partenaire_subcode`="'.$this->id_partenaire_subcode.'",`id_facebook`="'.$this->id_facebook.'",`id_linkedin`="'.$this->id_linkedin.'",`id_viadeo`="'.$this->id_viadeo.'",`id_twitter`="'.$this->id_twitter.'",`civilite`="'.$this->civilite.'",`nom`="'.$this->nom.'",`nom_usage`="'.$this->nom_usage.'",`prenom`="'.$this->prenom.'",`slug`="'.$this->slug.'",`fonction`="'.$this->fonction.'",`naissance`="'.$this->naissance.'",`id_pays_naissance`="'.$this->id_pays_naissance.'",`ville_naissance`="'.$this->ville_naissance.'",`id_nationalite`="'.$this->id_nationalite.'",`telephone`="'.$this->telephone.'",`mobile`="'.$this->mobile.'",`email`="'.$this->email.'",`password`="'.$this->password.'",`secrete_question`="'.$this->secrete_question.'",`secrete_reponse`="'.$this->secrete_reponse.'",`type`="'.$this->type.'",`status_depot_dossier`="'.$this->status_depot_dossier.'",`etape_inscription_preteur`="'.$this->etape_inscription_preteur.'",`status_inscription_preteur`="'.$this->status_inscription_preteur.'",`status_pre_emp`="'.$this->status_pre_emp.'",`status_transition`="'.$this->status_transition.'",`cni_passeport`="'.$this->cni_passeport.'",`signature`="'.$this->signature.'",`source`="'.$this->source.'",`source2`="'.$this->source2.'",`source3`="'.$this->source3.'",`slug_origine`="'.$this->slug_origine.'",`origine`="'.$this->origine.'",`optin1`="'.$this->optin1.'",`optin2`="'.$this->optin2.'",`status`="'.$this->status.'",`added`="'.$this->added.'",`updated`=NOW(),`lastlogin`="'.$this->lastlogin.'" WHERE id_client="'.$this->id_client.'"';
+		$sql = 'UPDATE `clients` SET `hash`="'.$this->hash.'",`id_langue`="'.$this->id_langue.'",`id_partenaire`="'.$this->id_partenaire.'",`id_partenaire_subcode`="'.$this->id_partenaire_subcode.'",`id_facebook`="'.$this->id_facebook.'",`id_linkedin`="'.$this->id_linkedin.'",`id_viadeo`="'.$this->id_viadeo.'",`id_twitter`="'.$this->id_twitter.'",`civilite`="'.$this->civilite.'",`nom`="'.$this->nom.'",`nom_usage`="'.$this->nom_usage.'",`prenom`="'.$this->prenom.'",`slug`="'.$this->slug.'",`fonction`="'.$this->fonction.'",`naissance`="'.$this->naissance.'",`id_pays_naissance`="'.$this->id_pays_naissance.'",`ville_naissance`="'.$this->ville_naissance.'",`id_nationalite`="'.$this->id_nationalite.'",`telephone`="'.$this->telephone.'",`mobile`="'.$this->mobile.'",`email`="'.$this->email.'",`password`="'.$this->password.'",`secrete_question`="'.$this->secrete_question.'",`secrete_reponse`="'.$this->secrete_reponse.'",`type`="'.$this->type.'",`status_depot_dossier`="'.$this->status_depot_dossier.'",`etape_inscription_preteur`="'.$this->etape_inscription_preteur.'",`status_inscription_preteur`="'.$this->status_inscription_preteur.'",`status_pre_emp`="'.$this->status_pre_emp.'",`status_transition`="'.$this->status_transition.'",`cni_passeport`="'.$this->cni_passeport.'",`signature`="'.$this->signature.'",`source`="'.$this->source.'",`source2`="'.$this->source2.'",`source3`="'.$this->source3.'",`slug_origine`="'.$this->slug_origine.'",`origine`="'.$this->origine.'",`optin1`="'.$this->optin1.'",`optin2`="'.$this->optin2.'",`status`="'.$this->status.'",`history`="'.$this->history.'",`added`="'.$this->added.'",`updated`=NOW(),`lastlogin`="'.$this->lastlogin.'" WHERE id_client="'.$this->id_client.'"';
 		$this->bdd->query($sql);
 		
 		if($cs=='')
@@ -304,12 +308,13 @@ class clients_crud
 		$this->optin1 = $this->bdd->escape_string($this->optin1);
 		$this->optin2 = $this->bdd->escape_string($this->optin2);
 		$this->status = $this->bdd->escape_string($this->status);
+		$this->history = $this->bdd->escape_string($this->history);
 		$this->added = $this->bdd->escape_string($this->added);
 		$this->updated = $this->bdd->escape_string($this->updated);
 		$this->lastlogin = $this->bdd->escape_string($this->lastlogin);
 
 		
-		$sql = 'INSERT INTO `clients`(`hash`,`id_langue`,`id_partenaire`,`id_partenaire_subcode`,`id_facebook`,`id_linkedin`,`id_viadeo`,`id_twitter`,`civilite`,`nom`,`nom_usage`,`prenom`,`slug`,`fonction`,`naissance`,`id_pays_naissance`,`ville_naissance`,`id_nationalite`,`telephone`,`mobile`,`email`,`password`,`secrete_question`,`secrete_reponse`,`type`,`status_depot_dossier`,`etape_inscription_preteur`,`status_inscription_preteur`,`status_pre_emp`,`status_transition`,`cni_passeport`,`signature`,`source`,`source2`,`source3`,`slug_origine`,`origine`,`optin1`,`optin2`,`status`,`added`,`updated`,`lastlogin`) VALUES(md5(UUID()),"'.$this->id_langue.'","'.$this->id_partenaire.'","'.$this->id_partenaire_subcode.'","'.$this->id_facebook.'","'.$this->id_linkedin.'","'.$this->id_viadeo.'","'.$this->id_twitter.'","'.$this->civilite.'","'.$this->nom.'","'.$this->nom_usage.'","'.$this->prenom.'","'.$this->slug.'","'.$this->fonction.'","'.$this->naissance.'","'.$this->id_pays_naissance.'","'.$this->ville_naissance.'","'.$this->id_nationalite.'","'.$this->telephone.'","'.$this->mobile.'","'.$this->email.'","'.$this->password.'","'.$this->secrete_question.'","'.$this->secrete_reponse.'","'.$this->type.'","'.$this->status_depot_dossier.'","'.$this->etape_inscription_preteur.'","'.$this->status_inscription_preteur.'","'.$this->status_pre_emp.'","'.$this->status_transition.'","'.$this->cni_passeport.'","'.$this->signature.'","'.$this->source.'","'.$this->source2.'","'.$this->source3.'","'.$this->slug_origine.'","'.$this->origine.'","'.$this->optin1.'","'.$this->optin2.'","'.$this->status.'",NOW(),NOW(),"'.$this->lastlogin.'")';
+		$sql = 'INSERT INTO `clients`(`hash`,`id_langue`,`id_partenaire`,`id_partenaire_subcode`,`id_facebook`,`id_linkedin`,`id_viadeo`,`id_twitter`,`civilite`,`nom`,`nom_usage`,`prenom`,`slug`,`fonction`,`naissance`,`id_pays_naissance`,`ville_naissance`,`id_nationalite`,`telephone`,`mobile`,`email`,`password`,`secrete_question`,`secrete_reponse`,`type`,`status_depot_dossier`,`etape_inscription_preteur`,`status_inscription_preteur`,`status_pre_emp`,`status_transition`,`cni_passeport`,`signature`,`source`,`source2`,`source3`,`slug_origine`,`origine`,`optin1`,`optin2`,`status`,`history`,`added`,`updated`,`lastlogin`) VALUES(md5(UUID()),"'.$this->id_langue.'","'.$this->id_partenaire.'","'.$this->id_partenaire_subcode.'","'.$this->id_facebook.'","'.$this->id_linkedin.'","'.$this->id_viadeo.'","'.$this->id_twitter.'","'.$this->civilite.'","'.$this->nom.'","'.$this->nom_usage.'","'.$this->prenom.'","'.$this->slug.'","'.$this->fonction.'","'.$this->naissance.'","'.$this->id_pays_naissance.'","'.$this->ville_naissance.'","'.$this->id_nationalite.'","'.$this->telephone.'","'.$this->mobile.'","'.$this->email.'","'.$this->password.'","'.$this->secrete_question.'","'.$this->secrete_reponse.'","'.$this->type.'","'.$this->status_depot_dossier.'","'.$this->etape_inscription_preteur.'","'.$this->status_inscription_preteur.'","'.$this->status_pre_emp.'","'.$this->status_transition.'","'.$this->cni_passeport.'","'.$this->signature.'","'.$this->source.'","'.$this->source2.'","'.$this->source3.'","'.$this->slug_origine.'","'.$this->origine.'","'.$this->optin1.'","'.$this->optin2.'","'.$this->status.'","'.$this->history.'",NOW(),NOW(),"'.$this->lastlogin.'")';
 		$this->bdd->query($sql);
 		
 		$this->id_client = $this->bdd->insert_id();
@@ -371,6 +376,7 @@ class clients_crud
 		$this->optin1 = '';
 		$this->optin2 = '';
 		$this->status = '';
+		$this->history = '';
 		$this->added = '';
 		$this->updated = '';
 		$this->lastlogin = '';
