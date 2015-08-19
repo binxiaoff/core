@@ -299,18 +299,27 @@ class emprunteursController extends bootstrap
 				
 				$this->companies->name = $_POST['societe'];
 				$this->companies->sector = $_POST['secteur'];
-				$this->companies->bic = str_replace(' ','',strtoupper($_POST['bic']));
-				$this->companies->iban = str_replace(' ','',strtoupper($_POST['iban']));
+				//Log modification de RIP par Unilend
+                                $edited_rib = false;
+                                if($this->companies->bic != str_replace(' ','',strtoupper($_POST['bic'])) || $this->companies->iban != str_replace(' ','',strtoupper($_POST['iban1'].$_POST['iban2'].$_POST['iban3'].$_POST['iban4'].$_POST['iban5'].$_POST['iban6'].$_POST['iban7'])))
+                                {
+                                    $this->clients->history .= "<tr><td><b>RIB modifi&eacute; par Unilend</b> (".$_SESSION['user']['firstname']." ".$_SESSION['user']['name']."<!-- User ID: ".$_SESSION['user']['id']."-->) le ".date('d/m/Y')." &agrave; ".date('H:i')."<br><u>Ancienne valeur:</u> ".$this->companies->iban." / ".$this->companies->bic."<br><u>Nouvelle valeur:</u> ".str_replace(' ','',strtoupper($_POST['iban1'].$_POST['iban2'].$_POST['iban3'].$_POST['iban4'].$_POST['iban5'].$_POST['iban6'].$_POST['iban7']))." / ".str_replace(' ','',strtoupper($_POST['bic']))."</tr></td>";
+                                    $edited_rib = true;
+                                }
+
+                                $this->companies->bic = str_replace(' ','',strtoupper($_POST['bic']));
+                                $this->companies->iban = str_replace(' ','',strtoupper($_POST['iban1'].$_POST['iban2'].$_POST['iban3'].$_POST['iban4'].$_POST['iban5'].$_POST['iban6'].$_POST['iban7']));
+
 				$this->companies->email_facture = trim($_POST['email_facture']);
 				// on verif si le bic est good
-				if($this->companies->bic != '' && isset($this->companies->bic) && $this->ficelle->swift_validate(trim($this->companies->bic)) == false)
+				if($this->companies->bic != '' && $this->ficelle->swift_validate(trim($this->companies->bic)) == false)
 				//if(strlen($this->companies->bic) < 8 || strlen($this->companies->bic) > 11)
 				{
 					$_SESSION['erreurBic'] = '';	
 					
 					// Mise en session du message
 					$_SESSION['freeow']['title'] = 'Erreur BIC';
-					$_SESSION['freeow']['message'] = 'Le BIC doit contenir entre 8 et 11 caractères';
+					$_SESSION['freeow']['message'] = 'L\'IBAN est invalide';
 					
 					header('Location:'.$this->lurl.'/emprunteurs/edit/'.$this->clients->id_client);
 					die;
@@ -399,6 +408,112 @@ class emprunteursController extends bootstrap
 				$this->clients->update();
 				$this->clients_adresses->update();
 				
+				if($edited_rib)
+                                {
+                                    // Chargement des datas
+                                    $e 			= $this->loadData('clients');
+                                    $loan 			= $this->loadData('loans');
+                                    $project 		= $this->loadData('projects');
+                                    $companie 		= $this->loadData('companies');
+                                    $echeancier 		= $this->loadData('echeanciers');
+                                    $clients_mandats        = $this->loadData('clients_mandats');
+                                    $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
+                                    foreach($companie->select('id_client_owner = '.$this->clients->id_client) as $company2) 
+                                    {
+                                        foreach($project->select('id_company = '.$company2['id_company']) as $projects)
+                                        {
+
+                                            $clients_mandats->get($this->params[0],'status <> 4 AND id_project = "'.$projects['id_project'].'" AND id_client');
+                                            $clients_mandats->status = 4;
+                                            rename('../../protected/pdf/mandat/'.$clients_mandats->name,'../../protected/pdf/mandat/'.str_replace('mandat', 'mandat-'.$clients_mandats->id_mandat, $clients_mandats->name));
+                                            $oldname = $clients_mandats->name;
+                                            $clients_mandats->name = str_replace('mandat', 'mandat-'.$clients_mandats->id_mandat, $clients_mandats->name);
+                                            $clients_mandats->update();
+                                            $clients_mandats->status = 0;
+                                            $clients_mandats->name = $oldname;
+                                            $clients_mandats->id_universign = '';
+                                            $clients_mandats->url_universign = '';
+                                            $clients_mandats->create();
+
+
+                                            //**********************************************//
+                                            //*** ENVOI DU MAIL FUNDE EMPRUNTEUR TERMINE ***//
+                                            //**********************************************//
+
+                                            // On recup le projet
+                                            $project->get($projects['id_project'],'id_project');
+
+                                            // On recup la companie
+                                            $companie->get($project->id_company,'id_company');
+
+                                            // Recuperation du modele de mail
+                                            $this->mails_text->get('changement-de-rib','lang = "'.$this->language.'" AND type');
+
+                                            // emprunteur
+                                            $e->get($companie->id_client_owner,'id_client');
+
+
+                                            $echeanciers_emprunteur->get($project->id_project,'ordre = 1 AND id_project');
+                                            $mensualite = $echeanciers_emprunteur->montant+$echeanciers_emprunteur->commission+$echeanciers_emprunteur->tva;
+                                            $mensualite = ($mensualite/100);
+
+                                            // Variables du mailing
+                                            $surl = $this->surl;
+                                            $url = $this->lurl;
+                                            $projet = $project->title;
+                                            $link_mandat = $this->urlfront.'/pdf/mandat/'.$e->hash.'/'.$project->id_project;
+                                            $link_pouvoir = $this->urlfront.'/pdf/pouvoir/'.$e->hash.'/'.$project->id_project;
+
+                                            $this->nextEcheance = $prelevements->select('status = 0 AND id_project = '.$projects['id_project']);
+
+                                            // Variables du mailing
+                                            $varMail = array(
+                                            'surl' => $surl,
+                                            'url' => $url,
+                                            'prenom_e' => $e->prenom,
+                                            'nom_e' => $companie->name,
+                                            'mensualite' => number_format($mensualite, 2, ',', ' '),
+                                            'montant' => number_format($project->amount, 0, ',', ' '),
+                                            'taux_moyen' => number_format($taux_moyen, 2, ',', ' '),
+                                            'link_compte_emprunteur' => $this->lurl.'/projects/detail/'.$project->id_project,
+                                            'link_mandat' => $link_mandat,
+                                            'link_pouvoir' => $link_pouvoir,
+                                            'projet' => $projet,
+                                            'lien_fb' => $lien_fb,
+                                            'lien_tw' => $lien_tw,
+                                            'date_echeance' => date('d/m/Y',strtotime($this->nextEcheance[0]['date_echeance_emprunteur'])));	
+
+                                              //echo $e->prenom."-".$projet;
+                                            //continue;
+                                            // Construction du tableau avec les balises EMV
+                                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                                            // Attribution des données aux variables
+                                            $sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);				
+                                            $texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
+                                            $exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
+
+                                            // Envoi du mail
+                                            $this->email = $this->loadLib('email',array());
+                                            $this->email->setFrom($this->mails_text->exp_email,$exp_name);
+
+                                            $this->email->setSubject(stripslashes($sujetMail));
+                                            $this->email->setHTMLBody(stripslashes($texteMail));
+
+                                            if($this->Config['env'] == 'prod') // nmp
+                                            {
+                                                    Mailer::sendNMP($this->email,$this->mails_filer,$this->mails_text->id_textemail,$e->email,$tabFiler);			
+                                                    // Injection du mail NMP dans la queue
+                                                    $this->tnmp->sendMailNMP($tabFiler,$varMail,$this->mails_text->nmp_secure,$this->mails_text->id_nmp,$this->mails_text->nmp_unique,$this->mails_text->mode);
+                                            }
+                                            else // non nmp
+                                            {
+                                                    $this->email->addRecipient(trim($e->email));
+                                                    Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);	
+                                            }
+                                        }
+                                    }
+                                }
 				// Histo user //
 				$serialize = serialize(array('id_client' => $this->clients->id_client,'post' => $_POST,'files' => $_FILES));
 				$this->users_history->histo(6,'edit emprunteur',$_SESSION['user']['id_user'],$serialize);
@@ -725,4 +840,24 @@ class emprunteursController extends bootstrap
 			die;	
 		}
 	}
+	function _RIBlightbox()
+        {
+        // On masque les Head, header et footer originaux plus le debug
+        $this->autoFireHeader = false;
+        $this->autoFireHead = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug = false;
+
+        // On place le redirect sur la home
+        $_SESSION['request_url'] = $this->url;
+
+        $prelevements = $this->loadData('prelevements');
+        $this->nextEcheance = $prelevements->select('status = 0 AND id_client = ' . $this->bdd->escape_string($this->params[0]));
+        $this->nextEcheance = $this->nextEcheance[0]['date_echeance_emprunteur'];
+
+        $this->sendedEcheance = $prelevements->select('status = 1 AND date_echeance_emprunteur > CURRENT_DATE AND id_client = ' . $this->bdd->escape_string($this->params[0]));
+        $this->alreadySended = count($this->sendedEcheance);
+        $this->sendedEcheance = $this->sendedEcheance[0]['date_echeance_emprunteur'];
+    }
+
 }
