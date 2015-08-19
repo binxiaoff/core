@@ -25,6 +25,9 @@ config.php
 ###PHPStorm###
 .idea/
 
+###Vagrant###
+vagrant/.vagrant/
+
 #sauf
 !public/default/styles/default/*
 !public/default/scripts/default/*
