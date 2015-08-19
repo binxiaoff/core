@@ -1,5 +1,4 @@
 <?
-//Test
 class dossiersController extends bootstrap
 {
 
@@ -3402,7 +3401,7 @@ if ($lEcheances == false)
                                                     $timeAdd = strtotime($dateDernierStatut);
                                                     $month = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
-                                                    // envi Prod
+                                                    // Prod
                                                     if ($this->Config['env'] == 'prod')
                                                     {
                                                         // Variables du mailing
@@ -3420,7 +3419,7 @@ if ($lEcheances == false)
                                                             'lien_fb' => $lien_fb,
                                                             'lien_tw' => $lien_tw);
                                                     }
-                                                    // envi Dev
+                                                    // Dev
                                                     else{
                                                        // Variables du mailing
                                                         $varMail = array(
