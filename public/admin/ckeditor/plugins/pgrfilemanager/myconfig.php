@@ -27,7 +27,8 @@ THE SOFTWARE.
 //Include your own script with authentication if you wish
 //i.e. include($_SERVER['DOCUMENT_ROOT'].'/_files/application/PGRFileManagerConfig.php');
 
-include($_SERVER['DOCUMENT_ROOT'].'/../../config.php');
+// Hotfix-20150819-page-blanche-explorateur-fichier
+include('../../../../../config.php');
 
 //real absolute path to root directory (directory you want to use with PGRFileManager) on your server  
 //i.e  PGRFileManagerConfig::$rootPath = '/home/user/htdocs/userfiles'
