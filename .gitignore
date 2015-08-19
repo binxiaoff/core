@@ -22,7 +22,8 @@ public/default/var
 public/default/.htaccess
 config.php
 
-
+###PHPStorm###
+.idea/
 
 #sauf
 !public/default/styles/default/*
