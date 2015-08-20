@@ -10,7 +10,7 @@ class statsController extends bootstrap
 		
 		$this->catchAll = true;
 
-		// Controle d'acces à la rubrique
+		// Controle d'acces ï¿½ la rubrique
 		$this->users->checkAccess('stats');
 		
 		// Activation du menu
@@ -114,7 +114,7 @@ class statsController extends bootstrap
 		}
 		else
 		{		
-			// Attribution jour,mois,année par defaut
+			// Attribution jour,mois,annï¿½e par defaut
 			$this->deb_jour = 1;
 			$this->deb_mois = $this->fin_mois = date('m');
 			$this->deb_annee = $this->fin_annee = date('Y');
@@ -169,7 +169,7 @@ class statsController extends bootstrap
 	// Ressort un csv avec les process des users
 	function _etape_inscription()
 	{		
-		// Récup des dates
+		// Rï¿½cup des dates
 		if($_POST['date1'] != '')
 		{
 			$d1 = explode('/',$_POST['date1']);
@@ -177,8 +177,9 @@ class statsController extends bootstrap
 		}
 		else
 		{
-			$_POST['date1'] = date('d/m/Y'); //"01/08/2014";
-			$date1 = date("Y-m-d H:i:s"); //"2014-08-01 00:00:00";
+			$_POST['date1'] = date('d/m/Y',strtotime('first day of this month')) ; //"01/08/2014";
+			$date1 = date('Y-m-d',strtotime('first day of this month')) ; //"2014-08-01";
+
 		}	
 		
 		if($_POST['date2'] != '')
@@ -189,20 +190,22 @@ class statsController extends bootstrap
 		else
 		{			
 			$_POST['date2'] =  date('d/m/Y',strtotime('last day of this month')); //"31/08/2014";
-			$date2 = date('Y-m-d H:i:s',strtotime('last day of this month')); //"2014-08-31 00:00:00";
+			$date2 = date('Y-m-d',strtotime('last day of this month')); //"2014-08-31";
+
 		}
 	
-		// récup de tous les clients crée depuis le 1 aout
+		// rï¿½cup de tous les clients crï¿½e depuis le 1 aout
 		$this->clients = $this->loadData('clients');
-		$this->L_clients = $this->clients->select('etape_inscription_preteur > 0 AND status = 1 AND added > "'.$date1.'" AND added < "'.$date2.'"');
-		
+		$this->L_clients = $this->clients->select('etape_inscription_preteur > 0 AND status = 1 AND added >= "'.$date1.'00:00:00'.'" AND added <= "'.$date2.'23:59:59"');
+
+
 		// Le post est simplement le clic sur un bouton
 		if(isset($_POST['recup'])){
 			
 			header("Content-type: application/vnd.ms-excel"); 
 			header("Content-disposition: attachment; filename=\"Export_etape_inscription.csv\"");
 			
-			// Récup des dates
+			// Rï¿½cup des dates
 			if($_POST['spy_date1'] != '')
 			{
 				$d1 = explode('/',$_POST['spy_date1']);
@@ -210,7 +213,7 @@ class statsController extends bootstrap
 			}
 			else
 			{
-				$date1 = date("Y-m-d H:i:s"); //"2014-08-01 00:00:00";
+				$date1 = date('Y-m-d',strtotime('first day of this month')) ; //"2014-08-01";
 			}	
 			
 			if($_POST['spy_date2'] != '')
@@ -220,11 +223,10 @@ class statsController extends bootstrap
 			}
 			else
 			{
-				$date2 = date('Y-m-d H:i:s',strtotime('last day of this month')); //"2014-08-31 00:00:00";
+				$date2 = date('Y-m-d',strtotime('last day of this month')); //"2014-08-31";
 			}
-	
-			$this->L_clients = $this->clients->select('etape_inscription_preteur > 0 AND status = 1 AND added > "'.$date1.'" AND added < "'.$date2.'"');
-		
+
+			$this->L_clients = $this->clients->select('etape_inscription_preteur > 0 AND status = 1 AND added >= "'.$date1.'00:00:00'.'" AND added <= "'.$date2.'23:59:59"');
 			
 			
 			$csv = "id_client;nom;prenom;email;tel;date_inscription;etape_inscription;Source;Source 2; Source 3\n";
@@ -233,7 +235,7 @@ class statsController extends bootstrap
 			{ 
 				if($u['etape_inscription_preteur'] == 3)
 				{
-					// On va récupérer le type de paiement
+					// On va rï¿½cupï¿½rer le type de paiement
 					$this->lenders_accounts = $this->loadData('lenders_accounts');
 					$this->lenders_accounts->get($u['id_client'],'id_client_owner');
 					
@@ -286,7 +288,7 @@ class statsController extends bootstrap
 		
 		$this->lEmpr = $this->clients->select('status_pre_emp IN(2,3) AND status = 1');
 		
-		$header = "Cdos;Dénomination;Adresse;Voie;CodeCommune;commune;CodePostal;Ville;Activités;Siret;APE;F Juridique;Capital;CapitalMonnaie;LieuRCS;Responsable;Fonction;Téléphone;Fax;CatJuridique;CDéclaration;Cbénéficiaire;";
+		$header = "Cdos;Dï¿½nomination;Adresse;Voie;CodeCommune;commune;CodePostal;Ville;Activitï¿½s;Siret;APE;F Juridique;Capital;CapitalMonnaie;LieuRCS;Responsable;Fonction;Tï¿½lï¿½phone;Fax;CatJuridique;CDï¿½claration;Cbï¿½nï¿½ficiaire;";
 		$header = utf8_encode($header);
 		
 		$csv = "";
@@ -699,7 +701,7 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 		$this->loans = $this->loadData('loans');
 		$this->insee_pays = $this->loadData('insee_pays');
 		
-		// EQ-Retenue à la source
+		// EQ-Retenue ï¿½ la source
 		$this->settings->get(63);
 		$this->retenuesource = $this->settings->value;
 		//id_client IN(1399,573)
@@ -723,13 +725,13 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 		$this->insee_pays = $this->loadData('insee_pays');
 		
 		
-		// EQ-Retenue à la source
+		// EQ-Retenue ï¿½ la source
 		$this->settings->get(63);
 		$this->retenuesource = $this->settings->value;
 		//id_client IN(1399,573)
 		$this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60');
 		
-		$header = "Cbene;Nom;Qualité;NomJFille;Prénom;DateNaissance;DépNaissance;ComNaissance;LieuNaissance;NomMari;Siret;AdISO;Adresse;Voie;CodeCommune;Commune;CodePostal;Ville / nom pays;IdFiscal;PaysISO;Entité;ToRS;Plib;Tél;Banque;IBAN;BIC;EMAIL;Obs;";
+		$header = "Cbene;Nom;Qualitï¿½;NomJFille;Prï¿½nom;DateNaissance;Dï¿½pNaissance;ComNaissance;LieuNaissance;NomMari;Siret;AdISO;Adresse;Voie;CodeCommune;Commune;CodePostal;Ville / nom pays;IdFiscal;PaysISO;Entitï¿½;ToRS;Plib;Tï¿½l;Banque;IBAN;BIC;EMAIL;Obs;";
 		$header = utf8_encode($header);
 		
 		$csv = "";
@@ -1033,7 +1035,7 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 		//id_client IN(1399,573)
 		//$this->lPre = $this->clients->selectPreteursByStatus('60');
 		
-		$header = "Cdos;Cbéné;CEtabl;CGuichet;RéfCompte;NatCompte;TypCompte;CDRC;";
+		$header = "Cdos;Cbï¿½nï¿½;CEtabl;CGuichet;Rï¿½fCompte;NatCompte;TypCompte;CDRC;";
 		$header = utf8_encode($header);
 		
 		$csv = "";
@@ -1083,7 +1085,7 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 	
 	function _requete_revenus()
 	{
-		// non utilisé ram trop
+		// non utilisï¿½ ram trop
 		die;
 		
 		// On masque les Head, header et footer originaux plus le debug
@@ -1128,7 +1130,7 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 		// Liste des projets en Remb
 		$this->lProjects = $this->projects->selectProjectsByStatus('80');
 		
-		$header = "Cdos;Cbéné;CodeV;Date;Montant;Monnaie;NbreParts;VAP;";
+		$header = "Cdos;Cbï¿½nï¿½;CodeV;Date;Montant;Monnaie;NbreParts;VAP;";
 		$header = utf8_encode($header);
 		
 		$csv = "";
@@ -1138,7 +1140,7 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 	
 			$this->companies->get($p['id_company'],'id_company');
 			
-			// Liste des prêts
+			// Liste des prï¿½ts
 			$lPrets = $this->loans->select('id_project = '.$p['id_project'].' AND status = 0');
 			
 			foreach($lPrets as $pret){
@@ -1169,7 +1171,7 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 				//$retenues = $e['prelevements_obligatoires']+$e['retenues_source']+$e['csg']+$e['prelevements_sociaux']+$e['contributions_additionnelles']+$e['prelevements_solidarite']+$e['crds'];
 				
 				// personne physique resident fiscal FR  -> prelevements obligatoires  (24%)
-				// personne morale ou etrangere -> retenues à la source (15%)
+				// personne morale ou etrangere -> retenues ï¿½ la source (15%)
 				//$retenues = $e['retenues_source'];
 				// personne morale
 				if($this->lenders_accounts->id_company_owner  != 0){
@@ -1278,7 +1280,7 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 		// Liste des projets en Remb
 		$this->lProjects = $this->projects->selectProjectsByStatus('80');
 		
-		$header = "Cdos;Cbéné;CodeV;Date;Montant;Monnaie;NbreParts;VAP;";
+		$header = "Cdos;Cbï¿½nï¿½;CodeV;Date;Montant;Monnaie;NbreParts;VAP;";
 		$header = utf8_encode($header);
 		
 		$csv = "";
@@ -1289,7 +1291,7 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 	
 			$this->companies->get($p['id_company'],'id_company');
 			
-			// Liste des prêts
+			// Liste des prï¿½ts
 			$lPrets = $this->loans->select('id_project = '.$p['id_project'].' AND status = 0');
 			
 			foreach($lPrets as $pret){
@@ -1314,7 +1316,7 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 			foreach($lEcheances as $e){
 				
 				// personne physique resident fiscal FR  -> prelevements obligatoires  (24%)
-				// personne morale ou etrangere -> retenues à la source (15%)
+				// personne morale ou etrangere -> retenues ï¿½ la source (15%)
 				//$retenues = $e['retenues_source'];
 				// personne morale
 				if($e['id_company_owner'] != 0){
@@ -1457,7 +1459,7 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 		$this->echeanciers = $this->loadData('echeanciers');
 		
 
-		$header = "Code Entreprise;CodeBénéficiaire;CodeV;Date;Montant;Monnaie;Nombre;VAP;";
+		$header = "Code Entreprise;CodeBï¿½nï¿½ficiaire;CodeV;Date;Montant;Monnaie;Nombre;VAP;";
 		$header = utf8_encode($header);
 		
 		$csv = "";
@@ -1486,7 +1488,7 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 		$resultat = $this->bdd->query($sql);
 		while($record = $this->bdd->fetch_array($resultat))
 		{
-			// cbéné 
+			// cbï¿½nï¿½ 
 			$p = substr($this->ficelle->stripAccents(utf8_decode(trim($record[1]))),0,1);
 			$nom = $this->ficelle->stripAccents(utf8_decode(trim($record[2])));
 			$id_client = $record[0];
@@ -1585,7 +1587,7 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 		while($record = $this->bdd->fetch_array($resultat))
 		{
 			
-			// cbéné 
+			// cbï¿½nï¿½ 
 			$p = substr($this->ficelle->stripAccents(utf8_decode(trim($record[1]))),0,1);
 			$nom = $this->ficelle->stripAccents(utf8_decode(trim($record[2])));
 			$id_client = $record[0];
@@ -1607,7 +1609,7 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 			// personne morale OU resident fiscal etranger
 			if($record[4] > 0){
 				
-				// Retenues à la source
+				// Retenues ï¿½ la source
 				$csv .= "1;";
 				$csv .= $cbene.";";
 				$csv .= "2;";
@@ -1623,7 +1625,7 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 			//else{
 			
 			if($record[5] > 0){
-				// prélèvements obligatoires
+				// prï¿½lï¿½vements obligatoires
 				$csv .= "1;";
 				$csv .= $cbene.";";
 				$csv .= "54;";
