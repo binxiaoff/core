@@ -71,13 +71,8 @@
 			$i = 1;
 			foreach($this->lPreteurs as $c)
 			{
-
-				
 				?>
-                
             	<tr class="<?=($i%2 == 1?'':'odd')?> " >
-
-                    
                     <td class="leLender<?=$c['id_lender_account']?>"><?=$c['id_client']?></td>
                     <td class="leLender<?=$c['id_lender_account']?>"><?=$c['nom_ou_societe']?></td>
                     <td class="leLender<?=$c['id_lender_account']?>"><?=$c['nom_usage']?></td>
@@ -91,8 +86,6 @@
 						if($c['novalid'] == 1)
 						{
 							?>
-							
-								<img onclick="if(confirm('Voulez vous supprimer définitivement ce preteur ?')){window.location = '<?=$this->lurl?>/preteurs/gestion/delete/<?=$c['id_client']?>/';}" src="<?=$this->surl?>/images/admin/delete.png" alt="Supprimer" style="cursor:pointer;" />
                                 <a href="<?=$this->lurl?>/preteurs/edit/<?=$c['id_lender_account']?>">
 								<img src="<?=$this->surl?>/images/admin/edit.png" alt="Modifier <?=$c['nom'].' '.$c['prenom']?>" />
 							</a>
@@ -102,9 +95,6 @@
 						else
 						{
 							?>
-							
-								<img onclick="if(confirm('Voulez vous <?=($c['status']==1?'Passer hors ligne':'Passer en ligne')?> ce preteur ?')){window.location = '<?=$this->lurl?>/preteurs/gestion/status/<?=$c['id_client']?>/<?=$c['status']?>';}" src="<?=$this->surl?>/images/admin/<?=($c['status']==1?'offline':'online')?>.png" alt="<?=($c['status']==1?'Passer hors ligne':'Passer en ligne')?>" />
-							
 							<a href="<?=$this->lurl?>/preteurs/edit/<?=$c['id_lender_account']?>">
 								<img src="<?=$this->surl?>/images/admin/edit.png" alt="Modifier <?=$c['nom'].' '.$c['prenom']?>" />
 							</a>
@@ -116,7 +106,7 @@
 							<?
 						}
 						?>
-                        
+
                   	</td>
                 </tr>   
             <?
