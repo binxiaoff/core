@@ -196,7 +196,7 @@ class statsController extends bootstrap
 	
 		// r�cup de tous les clients cr�e depuis le 1 aout
 		$this->clients = $this->loadData('clients');
-		$this->L_clients = $this->clients->select('etape_inscription_preteur > 0 AND status = 1 AND added >= "'.$date1.'00:00:00'.'" AND added <= "'.$date2.'23:59:59"');
+		$this->L_clients = $this->clients->select('etape_inscription_preteur > 0 AND status = 1 AND added >= "'.$date1.' 00:00:00'.'" AND added <= "'.$date2.' 23:59:59"');
 
 
 		// Le post est simplement le clic sur un bouton
@@ -226,7 +226,7 @@ class statsController extends bootstrap
 				$date2 = date('Y-m-d',strtotime('last day of this month')); //"2014-08-31";
 			}
 
-			$this->L_clients = $this->clients->select('etape_inscription_preteur > 0 AND status = 1 AND added >= "'.$date1.'00:00:00'.'" AND added <= "'.$date2.'23:59:59"');
+			$this->L_clients = $this->clients->select('etape_inscription_preteur > 0 AND status = 1 AND added >= "'.$date1.' 00:00:00'.'" AND added <= "'.$date2.' 23:59:59"');
 			
 			
 			$csv = "id_client;nom;prenom;email;tel;date_inscription;etape_inscription;Source;Source 2; Source 3\n";
