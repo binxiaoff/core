@@ -1,6 +1,5 @@
-<div id="popup">
-	<a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?=$this->surl?>/images/admin/delete.png" alt="Fermer" /></a>
-	<form method="post" name="search_preteur" id="search_preteur" enctype="multipart/form-data" action="<?=$this->lurl?>/preteurs/gestion" target="_parent">
+<div id="contenu">
+-->	<form method="post" name="search_preteur" id="search_preteur" enctype="multipart/form-data" action="<?=$this->lurl?>/preteurs/gestion" target="_parent">
         <h1>Rechercher un prêteur</h1>            
         <fieldset>
             <table class="formColor">
