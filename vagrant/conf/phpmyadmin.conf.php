@@ -32,7 +32,7 @@ $cfg['Servers'][$i]['host'] = 'localhost';
 $cfg['Servers'][$i]['connect_type'] = 'tcp';
 $cfg['Servers'][$i]['compress'] = false;
 /* Select mysql if your server does not have mysqli */
-$cfg['Servers'][$i]['extension'] = 'mysqli';
+$cfg['Servers'][$i]['extension'] = 'mysql';
 $cfg['Servers'][$i]['AllowNoPassword'] = false;
 
 /*
@@ -46,7 +46,7 @@ $cfg['Servers'][$i]['controluser'] = 'pma';
 $cfg['Servers'][$i]['controlpass'] = 'PMAUSERPASSWD';
 
 /* Storage database and tables */
-$cfg['Servers'][$i]['pmadb'] = 'phpmyadmin';
+$cfg['Servers'][$i]['pmadb'] = 'pma';
 $cfg['Servers'][$i]['bookmarktable'] = 'pma__bookmark';
 $cfg['Servers'][$i]['relation'] = 'pma__relation';
 $cfg['Servers'][$i]['table_info'] = 'pma__table_info';
