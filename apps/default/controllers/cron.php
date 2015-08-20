@@ -12441,7 +12441,7 @@ class cronController extends bootstrap
                             $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
 
                             // on recup la premiere echeance
-                            $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($this->projects->id_project, $this->loans->id_lender, $thid->loans->id_loan);
+                            $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($this->projects->id_project, $this->loans->id_lender, $this->loans->id_loan);
 
                             // Variables du mailing
 
@@ -13698,7 +13698,7 @@ class cronController extends bootstrap
                         $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
 
                         // on recup la premiere echeance
-                        $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($this->projects->id_project, $this->loans->id_lender, $thid->loans->id_loan);
+                        $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($this->projects->id_project, $this->loans->id_lender, $this->loans->id_loan);
 
                         // Variables du mailing
 

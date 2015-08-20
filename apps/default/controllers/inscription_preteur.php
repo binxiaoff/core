@@ -1114,7 +1114,7 @@ class inscription_preteurController extends bootstrap
 		// Chargement des datas
 		$this->lenders_accounts = $this->loadData('lenders_accounts');
 		$this->clients_status_history = $this->loadData('clients_status_history');
-		$thid->clients_status = $this->loadData('clients_status');
+		$this->clients_status = $this->loadData('clients_status');
 		$this->clients_history_actions = $this->loadData('clients_history_actions');
 		
 		//Recuperation des element de traductions
@@ -1466,7 +1466,7 @@ class inscription_preteurController extends bootstrap
 								$contenu .= '<li>Fichier document fiscal</li>';
 							$contenu .= '</ul>';
 							
-							$thid->clients_status->getLastStatut($this->clients->id_client);
+							$this->clients_status->getLastStatut($this->clients->id_client);
 							if($this->clients_status->status == 10) $statut_client = 10;
 							if(in_array($this->clients_status->status,array(20,30,40))) $statut_client = 40;
 							else $statut_client = 50;
