@@ -48,11 +48,10 @@
 	}
 	?>
      <h2><?=$this->x?> prêteurs au total (dont : <?=$this->y?> "hors ligne" et <?=$this->z?> "sans mouvement")</h2>
-    <div class="btnDroite"><a href="<?=$this->lurl?>/preteurs/search" class="btn_link thickbox">Rechercher un prêteur</a></div>
     <?
 	if(count($this->lPreteurs) > 0)
 	{
-	?>
+        ?>
     	<table class="tablesorter">
         	<thead>
                 <tr>
@@ -72,42 +71,12 @@
 			$i = 1;
 			foreach($this->lPreteurs as $c)
 			{
-				
-				// Solde du compte preteur
-				/*$solde = $this->transactions->getSolde($c['id_client']);
-				
-				$nbBidsValidOk = $this->loans->counter('id_lender = '.$c['id_lender_account']);
-				$nbBidsValid = $this->bids->counter('id_lender_account = '.$c['id_lender_account'].' AND status = 0');
-				
-				
-				$companies = false;
-				if($this->companies->get($c['id_client_owner'],'id_client_owner'))
-				{
-					$companies = true;
-					
-					if($this->companies->status_client == 1)
-					{
-						$this->clients->get($this->companies->id_client_owner,'id_client');
-						$dirigeant = $this->clients->prenom.' '.$this->clients->nom;
-					}
-					else
-					{
-						$dirigeant = $this->companies->prenom_dirigeant.' '.$this->companies->nom_dirigeant;
-					}
-					
-				}*/
+
 				
 				?>
                 
             	<tr class="<?=($i%2 == 1?'':'odd')?> " >
-                	
-                   <?php /*?> <td class="leLender<?=$c['id_lender_account']?>"><?=$c['id_client']?></td>
-                    <td class="leLender<?=$c['id_lender_account']?>"><?=($companies==true?$this->companies->name:$c['nom'])?></td>
-                    <td class="leLender<?=$c['id_lender_account']?>"><?=($companies==true?$dirigeant:$c['prenom'])?></td>
-                    <td class="leLender<?=$c['id_lender_account']?>"><?=$c['email']?></td>
-                    <td class="leLender<?=$c['id_lender_account']?>"><?=number_format($solde, 2, ',', ' ')?> €</td>
-                    <td class="leLender<?=$c['id_lender_account']?>"><?=$nbBidsValid?></td>
-                    <td class="leLender<?=$c['id_lender_account']?>"><?=$nbBidsValidOk?></td><?php */?>
+
                     
                     <td class="leLender<?=$c['id_lender_account']?>"><?=$c['id_client']?></td>
                     <td class="leLender<?=$c['id_lender_account']?>"><?=$c['nom_ou_societe']?></td>
