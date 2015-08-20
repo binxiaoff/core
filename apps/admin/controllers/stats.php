@@ -1464,8 +1464,8 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 		$csv .= $header." \n";
 		
 
-		$annee = '2014';
-		$date = '31/12/2014';
+		$annee = '2015';
+		$date = '31/12/2015';
 			
 		/*$sql = '
 		SELECT 
