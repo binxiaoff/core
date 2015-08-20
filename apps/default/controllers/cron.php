@@ -166,6 +166,9 @@ class cronController extends bootstrap
                 //// CREATION DES NOTIFICATIONS nouveau projet ///////
                 $this->nouveau_projet($projects['id_project']);
                 ////////////////////
+                
+                // Zippage pour groupama
+                $this->zippage($projects['id_project']);
             }
         }
     }
@@ -15378,6 +15381,96 @@ class cronController extends bootstrap
                 $this->indexage_vos_operations_boucle->update();
             }
         }
+    }
+    
+    function deleteOldFichiers() {
+        $path = $this->path . 'protected/sftp_groupama/';
+        $duree = 30; // jours
+        // On parcourt le dossier
+        $fichiers = scandir($path);
+        unset($fichiers[0], $fichiers[1]);
+        foreach ($fichiers as $f) {
+            $le_fichier = $path . $f;
+
+            $time = filemtime($le_fichier);
+            $time_plus_duree = mktime(date("H",$time), date("i",$time), date("s",$time), date("n",$time), date("d",$time) + $duree, date("Y",$time));
+
+            // si la date du jour est superieur à la date du fichier plus n jours => on supprime
+            if (time() >= $time_plus_duree) {
+                // On supprime le zip
+                unlink($le_fichier);
+            }
+        }
+    }
+
+    function zippage($id_project) {
+
+        //$id_project = 7;
+        // datas
+        $projects = $this->loadData('projects');
+        $companies = $this->loadData('companies');
+        $companies_details = $this->loadData('companies_details');
+
+        $projects->get($id_project, 'id_project');
+        $companies->get($projects->id_company, 'id_company');
+        $companies_details->get($projects->id_company, 'id_company');
+
+        // Récupération de l'extention
+        $ext_cni = substr(strrchr($companies_details->fichier_cni_passeport, '.'), 1);
+        $ext_kbis = substr(strrchr($companies_details->fichier_extrait_kbis, '.'), 1);
+
+        // Récupération du path des fichiers
+        $path_cni = $this->path . 'protected/companies/cni_passeport/' . $companies_details->fichier_cni_passeport;
+        $path_kbis = $this->path . 'protected/companies/extrait_kbis/' . $companies_details->fichier_extrait_kbis;
+
+        // Nouveau nom des fichiers
+        $new_nom_cni = 'CNI-#' . $companies->siren . '.' . $ext_cni;
+        $new_nom_kbis = 'KBIS-#' . $companies->siren . '.' . $ext_kbis;
+
+        // path
+        $path_nozip = $this->path . 'protected/sftp_groupama_nozip/';
+        $path = $this->path . 'protected/sftp_groupama/';
+
+        $nom_dossier = $companies->siren;
+
+        // création du dossier
+        if (!is_dir($path_nozip . $nom_dossier)) {
+            mkdir($path_nozip . $nom_dossier);
+        }
+
+        // copie du fichier CNI
+        copy($path_cni, $path_nozip . $nom_dossier . '/' . $new_nom_cni);
+        // copie du fichier KBIS
+        copy($path_kbis, $path_nozip . $nom_dossier . '/' . $new_nom_kbis);
+
+        /////////////////////
+        /// DEBUT ZIPPAGE ///
+        /////////////////////
+        $zip = new ZipArchive();
+        // Dossier existe
+        if (is_dir($path_nozip . $nom_dossier)) {
+            // Creation du dossier de destination zip
+            if ($zip->open($path . $nom_dossier . '.zip', ZipArchive::CREATE) == TRUE) {
+
+                $fichiers = scandir($path_nozip . $nom_dossier);
+                unset($fichiers[0], $fichiers[1]);
+                foreach ($fichiers as $f) {
+                    $zip->addFile($path_nozip . $nom_dossier . '/' . $f, $f);
+                }
+                // On ferme l'archive.
+                $zip->close();
+            } else {
+                //echo 'error creation zip';
+            }
+        } else {
+            //echo 'error dossier';
+        }
+        ///////////////////
+        /// FIN ZIPPAGE ///
+        ///////////////////
+        
+        $this->deleteOldFichiers();
+        
     }
 
     /* Envoi des mails pour le remboursement anticipe
