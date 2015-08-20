@@ -29,12 +29,11 @@ rm -rf /vagrant/phpmyadmin
 
 # configure phpmyadmin
 mv /srv/sites/phpmyadmin/config.sample.inc.php /srv/sites/phpmyadmin/config.inc.php
-#sed -i 's/a8b7c6d/NEWBLOWFISHSECRET/' /srv/sites/phpmyadmin/config.inc.php
-#echo "CREATE DATABASE pma" | mysql -uroot -pROOTPASSWORD
-#echo "CREATE USER 'pma'@'localhost' IDENTIFIED BY 'PMAUSERPASSWD'" | mysql -uroot -pROOTPASSWORD
-#echo "GRANT ALL ON pma.* TO 'pma'@'localhost'" | mysql -uroot -pROOTPASSWORD
+echo "CREATE DATABASE pma" | mysql -uroot -pROOTPASSWORD
+echo "CREATE USER 'pma'@'localhost' IDENTIFIED BY 'PMAUSERPASSWD'" | mysql -uroot -pROOTPASSWORD
+echo "GRANT ALL ON pma.* TO 'pma'@'localhost'" | mysql -uroot -pROOTPASSWORD
 #echo "GRANT ALL ON phpmyadmin.* TO 'pma'@'localhost'" | mysql -uroot -pROOTPASSWORD
-#echo "flush privileges" | mysql -uroot -pROOTPASSWORD
+echo "flush privileges" | mysql -uroot -pROOTPASSWORD
 cat /vagrant/conf/phpmyadmin.conf.php > /srv/sites/phpmyadmin/config.inc.php
 
 #install apache2
@@ -52,9 +51,14 @@ ln -fs /vagrant/conf/vhosts/phpmyadmin.conf /etc/apache2/sites-enabled/phpmyadmi
 sed -i '/Listen 443/c Listen 443\n    NameVirtualHost *:443' /etc/apache2/ports.conf
 echo "ServerName localhost" >> /etc/apache2/httpd.conf
 service apache2 restart
+update-rc.d apache2 defaults
 #fi
 
 # install php
 apt-get install -y php5 libapache2-mod-php5 php5-mcrypt php5-mysql php5-cli php5-gd php5-curl php5-memcache php5-intl php5-geoip
+sudo sed -i '/;session.save_path = "\/tmp"/c session.save_path = "\/tmp"' /etc/php5/apache2/php.ini
+sudo sed -i '/session.gc_maxlifetime = 1440/c session.gc_maxlifetime = 3600' /etc/php5/apache2/php.ini
+
+locale-gen fr_FR.UTF-8
 
 service apache2 restart
