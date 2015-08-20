@@ -197,11 +197,11 @@ class preteursController extends bootstrap
 	
 	function _search()
 	{
-		// On masque les Head, header et footer originaux plus le debug
-		$this->autoFireHeader = false;
-		$this->autoFireHead = false;
-		$this->autoFireFooter = false;
-		$this->autoFireDebug = false;
+		// On affiche les Head, header et footer originaux plus le debug
+		$this->autoFireHeader = true;
+		$this->autoFireHead = true;
+		$this->autoFireFooter = true;
+		$this->autoFireDebug = true;
 		
 		// On place le redirect sur la home
 		$_SESSION['request_url'] = $this->url;
