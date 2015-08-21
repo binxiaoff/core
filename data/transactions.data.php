@@ -166,6 +166,26 @@ class transactions extends transactions_crud
         }
 		return $res;
 	}
+	/**
+	Optimisation dashboard / David Raux
+	
+	1x requete optimisée vs 8 x requete full scan.
+	
+	**/
+	function recupMonthlyPartnershipTurnoverByYear($year)
+	{
+		
+		$sql = 'SELECT p.id_type as idTypePartenaire, date_format(date_transaction,"%m") AS monthTransaction, SUM(montant / 100) AS montant FROM transactions t inner join partenaires p on (t.id_partenaire = p.id_partenaire ) inner join partenaires_types pt on (p.id_type = pt.id_type) WHERE t.status = 1 AND t.etat != 3 AND pt.status = 1 AND year(date_transaction) = "'.$year.'" GROUP BY 1,2';
+		
+		$req = $this->bdd->query($sql);
+		$res = array();
+		while($rec = $this->bdd->fetch_array($req))
+        {
+			$montantFormate = number_format($rec['montant'],2,'.','');
+			$res[$rec['idTypePartenaire']][$rec['monthTransaction']] = $montantFormate;
+        }
+		return $res;
+	}
 	
 	function getCAcommandes($deb_jour, $deb_mois, $deb_annee, $fin_jour, $fin_mois, $fin_annee)
 	{
