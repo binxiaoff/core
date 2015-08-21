@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 class preteursController extends bootstrap
 {
@@ -7,16 +7,38 @@ class preteursController extends bootstrap
 	function preteursController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
-		
+
 		$this->catchAll = true;
-		
+
 		// Controle d'acces à la rubrique
 		$this->users->checkAccess('preteurs');
-		
+
 		// Activation du menu
 		$this->menu_admin = 'preteurs';
 	}
-	
+
+    function loadGestionData(){
+
+        // deplace tout chargement de données communes dans une méthodes à part
+        // Chargement du data
+        $this->clients = $this->loadData('clients');
+        $this->clients_adresses = $this->loadData('clients_adresses');
+        $this->clients_mandats = $this->loadData('clients_mandats');
+        $this->clients_status = $this->loadData('clients_status');
+        $this->clients_status_history = $this->loadData('clients_status_history');
+
+        $this->lenders_accounts = $this->loadData('lenders_accounts');
+        $this->transactions = $this->loadData('transactions');
+        $this->loans = $this->loadData('loans');
+        $this->bids = $this->loadData('bids');
+        $this->companies = $this->loadData('companies');
+
+        $this->projects = $this->loadData('projects');
+        $this->wallets_lines = $this->loadData('wallets_lines');
+        $this->echeanciers = $this->loadData('echeanciers');
+
+    }
+
 	function _default()
 	{
 		// On remonte la page dans l'arborescence
@@ -53,16 +75,9 @@ class preteursController extends bootstrap
 	
 	function _gestion()
 	{
-		
-		// Chargement du data
-		$this->clients = $this->loadData('clients');
-		$this->clients_adresses = $this->loadData('clients');
-		$this->lenders_accounts = $this->loadData('lenders_accounts');
-		$this->transactions = $this->loadData('transactions');
-		$this->loans = $this->loadData('loans');
-		$this->bids = $this->loadData('bids');
-		$this->companies = $this->loadData('companies');
-		
+//On appelle la fonction de chargement des données
+        $this->loadGestionData();
+
 		// Partie delete
 		if(isset($this->params[0]) && $this->params[0] == 'delete')
 		{
@@ -142,7 +157,7 @@ class preteursController extends bootstrap
 		
 		if(isset($_POST['form_search_preteur']))
 		{
-			// check si on affcihe les preteurs non valides
+			// check si on affiche les preteurs non valides
 			if(isset($_POST['nonValide']) && $_POST['nonValide'] != false)$nonValide = 1;
 			else $nonValide = '';
 			
@@ -181,18 +196,14 @@ class preteursController extends bootstrap
 			header('location:'.$this->lurl.'/preteurs/gestion');
 			die;
 		}
-		
-		$a = count($this->clients->selectPreteursByStatus('60','c.status = 1 AND status_inscription_preteur = 1 AND (SELECT COUNT(t.id_transaction) FROM transactions t WHERE t.type_transaction IN (1,3,4,5,7,8,14) AND t.status = 1 AND t.etat = 1 AND t.id_client = c.id_client) < 1'));
-		
+
+        //preteur sans mouvement
+        $a = count($this->clients->selectPreteursByStatus('60','c.status = 1 AND status_inscription_preteur = 1 AND (SELECT COUNT(t.id_transaction) FROM transactions t WHERE t.type_transaction IN (1,3,4,5,7,8,14) AND t.status = 1 AND t.etat = 1 AND t.id_client = c.id_client) < 1'));
 		$this->z = $a;
-		//$this->z = count($this->clients->selectPreteursByStatus('60','c.status = 1 AND status_inscription_preteur = 1'));
-		//$this->babla = count($this->clients->selectPreteursByStatus('10,20,30,40,50','c.status = 1 AND status_inscription_preteur = 1'));
-		
-		//$this->z = $this->clients->counter('status = 1 AND status_inscription_preteur= 1');
-		$this->y = $this->clients->counter('status = 0 AND status_inscription_preteur = 1 AND status_pre_emp IN(1,3)');
+        //preteur "hors ligne"
+        $this->y = $this->clients->counter('status = 0 AND status_inscription_preteur = 1 AND status_pre_emp IN(1,3)');
+        //preteur "total"
 		$this->x = $this->clients->counter('status_inscription_preteur = 1  AND status_pre_emp IN(1,3)');
-		//echo '<br> preteurs offline : '.$nb_offline = count($this->clients->selectPreteursByStatus('10,20,30,40,50,60','c.status = 0'));
-		
 	}
 	
 	function _search()
@@ -221,22 +232,10 @@ class preteursController extends bootstrap
 	
 	function _edit()
 	{
-		// Chargement du data
-		$this->clients = $this->loadData('clients');
-		$this->clients_adresses = $this->loadData('clients_adresses');
-		$this->lenders_accounts = $this->loadData('lenders_accounts');
-		$this->projects = $this->loadData('projects');
-		$this->companies = $this->loadData('companies');
-		$this->loans = $this->loadData('loans');
-		$this->transactions = $this->loadData('transactions');
-		$this->wallets_lines = $this->loadData('wallets_lines');
-		$this->echeanciers = $this->loadData('echeanciers');
-		$this->bids = $this->loadData('bids');
-		$this->clients_mandats = $this->loadData('clients_mandats');
-		$this->favoris = $this->loadData('favoris');
-		$this->clients_status = $this->loadData('clients_status');
-		$this->clients_status_history = $this->loadData('clients_status_history');
-		
+
+        //On appelle la fonction de chargement des données
+        $this->loadGestionData();
+
 		// On recup les infos du client
 		$this->lenders_accounts->get($this->params[0],'id_lender_account');
 
@@ -306,15 +305,6 @@ class preteursController extends bootstrap
 		
 		
 		$year = date('Y');
-		
-		//$this->lLoans = $this->loans->select('id_lender = '.$this->lenders_accounts->id_lender_account.' AND YEAR(added) = '.$year.' AND status = 0','added DESC');
-		
-		//$this->lTrans = $this->transactions->select('transaction = 1 AND status = 1 AND etat = 1 AND id_client = '.$this->clients->id_client.' AND YEAR(date_transaction) = '.$year,'added DESC');
-		
-		//$this->lTrans = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17) AND status = 1 AND etat = 1 AND id_client = '.$this->clients->id_client.' AND YEAR(date_transaction) = '.$year,'added DESC');
-		
-
-		//$this->lesStatuts = array(1 => $this->lng['profile']['versement-initial'],3 => $this->lng['profile']['alimentation-cb'],4 => $this->lng['profile']['alimentation-virement'],5 => 'Remboursement',7 => $this->lng['profile']['alimentation-prelevement'],8 => $this->lng['profile']['retrait'],14 => 'Régularisation prêteur',16 => 'Offre de bienvenue',17 => 'Retrait offre de bienvenue');
 
 		$this->lTrans = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17,19,20,22,23) AND status = 1 AND etat = 1 AND id_client = '.$this->clients->id_client.' AND YEAR(date_transaction) = '.$year,'added DESC');
 		
@@ -334,17 +324,6 @@ class preteursController extends bootstrap
                     22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
                     23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur']);
 		
-		
-		
-		// projets favoris
-		
-		// On recupere les projets favoris
-		$lesFav = $this->favoris->projetsFavorisPreteur($this->clients->id_client);
-		
-		// Liste des projets favoris
-		if($lesFav == false)$this->lProjetsFav = 0;
-		else $this->lProjetsFav = $this->projects->select('id_project IN ('.$lesFav.')');
-		
 		// statut client
 		$this->clients_status->getLastStatut($this->clients->id_client);
 		
@@ -358,14 +337,10 @@ class preteursController extends bootstrap
 	
 	function _edit_preteur()
 	{
-		// Chargement du data
-		$this->clients = $this->loadData('clients');
-		$this->clients_adresses = $this->loadData('clients_adresses');
-		$this->lenders_accounts = $this->loadData('lenders_accounts');
-		$this->companies = $this->loadData('companies');
-		$this->clients_mandats = $this->loadData('clients_mandats');
-		$this->clients_status = $this->loadData('clients_status');
-		$this->clients_status_history = $this->loadData('clients_status_history');
+        //On appelle la fonction de chargement des données
+        $this->loadGestionData();
+
+        // on charge d'autres données spécifiques à cette méthode
 		$this->nationalites = $this->loadData('nationalites_v2');
 		$this->pays = $this->loadData('pays_v2');
 		$this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
@@ -1408,14 +1383,8 @@ class preteursController extends bootstrap
 	
 	function _liste_preteurs_non_inscrits()
 	{
-		// Chargement du data
-		$this->clients = $this->loadData('clients');
-		$this->clients_adresses = $this->loadData('clients');
-		$this->lenders_accounts = $this->loadData('lenders_accounts');
-		$this->transactions = $this->loadData('transactions');
-		$this->loans = $this->loadData('loans');
-		$this->bids = $this->loadData('bids');
-		$this->companies = $this->loadData('companies');
+        //On appelle la fonction de chargement des données
+        $this->loadGestionData();
 		
 		// Partie delete
 		if(isset($this->params[0]) && $this->params[0] == 'delete')
@@ -1526,16 +1495,8 @@ class preteursController extends bootstrap
 	// Activation des comptes prêteurs
 	function _activation()
 	{
-		// Chargement du data
-		$this->clients = $this->loadData('clients');
-		$this->clients_adresses = $this->loadData('clients_adresses');
-		$this->clients_status_history = $this->loadData('clients_status_history');
-		$this->lenders_accounts = $this->loadData('lenders_accounts');
-		$this->clients_status = $this->loadData('clients_status');
-		$this->companies = $this->loadData('companies');
-		$this->transactions = $this->loadData('transactions');
-		$this->bids = $this->loadData('bids');
-		
+        //On appelle la fonction de chargement des données
+        $this->loadGestionData();
 		
 		// Partie delete
 		if(isset($this->params[0]) && $this->params[0] == 'delete')
@@ -1864,6 +1825,7 @@ class preteursController extends bootstrap
 				die;
 			}
 		}
+
 		$this->lPreteurs = $this->clients->selectPreteursByStatus('10,20,30,40,50','','added_status DESC');
 		
 	}
@@ -2061,6 +2023,7 @@ class preteursController extends bootstrap
 		
 		
 	}
+
 	function _letest(){
 		
 		die;
@@ -2374,4 +2337,128 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 			}
 		}
 	}
+
+	public function _email_history(){
+
+    $this->loadGestionData();
+
+        // On recup les infos du client
+        $this->lenders_accounts->get($this->params[0],'id_lender_account');
+
+        // On recup les infos du client
+        $this->clients->get($this->lenders_accounts->id_client_owner,'id_client');
+
+        $this->clients_adresses->get($this->clients->id_client,'id_client');
+
+        if(in_array($this->clients->type,array(2,4)))
+        {
+            $this->companies->get($this->lenders_accounts->id_company_owner,'id_company');
+        }
+
+	}
+
+	public function _portefeuille(){
+
+        //On appelle la fonction de chargement des données
+        $this->loadGestionData();
+
+        // on charge des données supplementaires nécessaires pour la méthode
+		$this->projects_status = $this->loadData('projects_status');
+		$this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
+
+		// On recup les infos du client
+		$this->lenders_accounts->get($this->params[0],'id_lender_account');
+
+		// On recup les infos du client
+		$this->clients->get($this->lenders_accounts->id_client_owner,'id_client');
+
+		$this->clients_adresses->get($this->clients->id_client,'id_client');
+
+		if(in_array($this->clients->type,array(2,4)))
+		{
+			$this->companies->get($this->lenders_accounts->id_company_owner,'id_company');
+		}
+
+
+		// vient de operations.php
+		// conf par defaut pour la date (1M)
+		$date_debut_time = mktime(0,0,0,date("m")-1,date("d"),date('Y')); // date debut
+		$date_fin_time = mktime(0,0,0,date("m"),date("d"),date('Y'));	// date fin
+
+		// dates pour la requete
+		$this->date_debut = date('Y-m-d',$date_debut_time);
+		$this->date_fin = date('Y-m-d',$date_fin_time);
+
+		// affichage dans le filtre
+		$this->date_debut_display = date('d/m/Y',$date_debut_time);
+		$this->date_fin_display = date('d/m/Y',$date_fin_time);
+
+
+			// On va chercher ce qu'on a dans la table d'indexage
+			$this->lTrans = $this->indexage_vos_operations->select('id_client= '.$this->clients->id_client.' AND LEFT(date_operation,10) >= "'.$this->date_debut.'" AND LEFT(date_operation,10) <= "'.$this->date_fin.'"','date_operation DESC, id_projet DESC');
+
+			// filtre secondaire
+			$this->lProjectsLoans = $this->indexage_vos_operations->get_liste_libelle_projet('id_client = '.$this->clients->id_client.' AND LEFT(date_operation,10) >= "'.$this->date_debut.'" AND LEFT(date_operation,10) <= "'.$this->date_fin.'"');
+
+			$_SESSION['filtre_vos_operations']['debut'] = $this->date_debut_display;
+			$_SESSION['filtre_vos_operations']['fin'] = $this->date_fin_display;
+			$_SESSION['filtre_vos_operations']['nbMois'] = '1';
+			$_SESSION['filtre_vos_operations']['annee'] = date('Y');
+			$_SESSION['filtre_vos_operations']['tri_type_transac'] = 1;
+			$_SESSION['filtre_vos_operations']['tri_projects'] = 1;
+			$_SESSION['filtre_vos_operations']['id_last_action'] = 'order_operations';
+			$_SESSION['filtre_vos_operations']['order'] = '';
+			$_SESSION['filtre_vos_operations']['type'] = '';
+			$_SESSION['filtre_vos_operations']['id_client'] = $this->clients->id_client;
+
+
+			// DETAIL des OPERATIONS //
+
+			$year = date('Y');
+			$this->lLoans = $this->loans->select('id_lender = '.$this->lenders_accounts->id_lender_account.' AND YEAR(added) = '.$year.' AND status = 0','added DESC');
+
+			//////////////////////////////
+
+
+			// les PRETS //
+			$this->lSumLoans = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account,$year,'next_echeance ASC');
+
+			$this->arrayDeclarationCreance = array(1456,1009, 1614, 3089);
+
+
+			function _vos_operations()
+			{
+				// On masque les Head, header et footer originaux plus le debug
+				$this->autoFireHeader 	= false;
+				$this->autoFireHead 	= false;
+				$this->autoFireFooter 	= false;
+				$this->autoFireDebug 	= false;
+			}
+
+			function _vos_prets()
+			{
+				// On masque les Head, header et footer originaux plus le debug
+				$this->autoFireHeader 	= false;
+				$this->autoFireHead 	= false;
+				$this->autoFireFooter 	= false;
+				$this->autoFireDebug 	= false;
+			}
+
+			function _histo_transac()
+			{
+				// On masque les Head, header et footer originaux plus le debug
+				$this->autoFireHeader = false;
+				$this->autoFireHead = false;
+				$this->autoFireFooter = false;
+				$this->autoFireDebug = false;
+			}
+
+        //nombre de projets en ligne depuis son inscription
+        $this->nblingne = count($this->projects->selectProjectsByStatus(50));
+
+
+
+    }
+
+
 }
