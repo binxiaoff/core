@@ -75,8 +75,7 @@
 					$nom = $c['nom'];
 					$prenom = $c['prenom'];
 				}
-				
-				//$array_type_transfert = array(0 => 'Aucun',1 => 'Virement',2 => number_format($solde, 2, ',', ' ').'€')
+
 				if($c['type_transfert'] == 1) $val = 'Virement';
 				else $val = number_format($solde, 2, ',', ' ').' €'
 				
@@ -93,11 +92,11 @@
                     <?
 					if(in_array($c['status_client'],array(10,40,50)))
 					{
-						?><a target="_blank" href="<?=$this->lurl?>/preteurs/edit_preteur/<?=$c['id_lender']?>" class="btn_link" style="padding: 3px;">Contrôler</a><?	
+						?><a href="<?=$this->lurl?>/preteurs/edit_preteur/<?=$c['id_lender']?>" class="btn_link" style="padding: 3px;">Contrôler</a><?
 					}
 					else
 					{
-						?><a target="_blank" href="<?=$this->lurl?>/preteurs/edit_preteur/<?=$c['id_lender']?>">Détails</a><?	
+						?><a href="<?=$this->lurl?>/preteurs/edit_preteur/<?=$c['id_lender']?>">Détails</a><?
 					}
 					?>
                     
