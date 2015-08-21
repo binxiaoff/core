@@ -77,8 +77,11 @@
     }
     ?>
 
+<!--    section "detail prêteur"    -->
     <h1>Detail prêteur : <?=$this->clients->prenom.' '.$this->clients->nom?></h1>
-    <div class="btnDroite"><a href="<?=$this->lurl?>/preteurs/edit_preteur/<?=$this->lenders_accounts->id_lender_account?>" class="btn_link">Toutes les infos</a></div>
+    <div class="btnDroite"><a href="<?=$this->lurl?>/preteurs/edit_preteur/<?=$this->lenders_accounts->id_lender_account?>" class="btn_link">Toutes les infos</a>
+    <a href="<?=$this->lurl?>/preteurs/email_history/<?=$this->lenders_accounts->id_lender_account?>" class="btn_link">Historique des emails</a>
+    <a href="<?=$this->lurl?>/preteurs/portefeuille/<?=$this->lenders_accounts->id_lender_account?>" class="btn_link">Portefeuille & Performances</a></div><br>
 
     <table class="form" style="margin: auto;">
         <tr>
@@ -489,9 +492,6 @@
             {
                 $(".MouvTransac").html(data);
 
-                //setTimeout(function() {
-                //$(".reponse").slideUp();
-                //}, 3000);
             }
         });
     });
@@ -513,9 +513,6 @@
 
                     $(".lesbidsEncours").html(data);
 
-                    //setTimeout(function() {
-                    //$(".reponse").slideUp();
-                    //}, 3000);
                 }
             });
 
