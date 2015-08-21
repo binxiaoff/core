@@ -12646,7 +12646,7 @@ class cronController extends bootstrap
 
                             //$sumInt = $this->echeanciers->getSumRembByloan($this->transactions->id_loan_remb,'interets');
                             // Récupération de la sommes des intérets deja versé au lender
-                            $sumInt = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND id_loan = '.$this->transactions->id_loan_remb.' AND status_ra = 0 AND status = 1 AND id_lender ='.$this->echeanciers->id_lender,'interets');  
+                            $sumInt = $this->echeanciers->getSumRembByloan_remb_ra($this->transactions->id_loan_remb,'interets');
 							
                             // on ajoute aussi une variable dans le cas d'un rmbt anticipe
                             /*$contenu_remboursement_anticipe = "
