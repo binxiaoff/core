@@ -75,196 +75,6 @@ if(isset($_SESSION['freeow']))
 ?>
 </script>
 <!--vient de "vos_operations"-->
-<style type="text/css">
-    .iconplusmoins {
-        color: white;
-        font-size: 18px;
-        cursor: default;
-        vertical-align: middle;
-    }
-
-    .vos_operations {
-        font-size: 13px;
-    }
-
-    .vos_operations td {
-        padding: 5px;
-    }
-
-    .vos_operations tr.content_transact td {
-        height: 0px;
-        padding: 0px;
-    }
-
-    table.vos_operations th#order_projects {
-        text-align: left;
-    }
-
-    .vos_operations tr.transact {
-        cursor: pointer;
-    }
-
-    .vos_operations tr.content_transact .div_content_transact {
-        display: inline-block;
-        width: 100%;
-    }
-
-    .vos_operations tr.content_transact td .soustable {
-        border-bottom: 1px solid #b10366;
-        margin-top: 10px;
-        padding-bottom: 10px;
-    }
-
-    .vos_operations tr.content_transact td .soustable tr td {
-        padding: 0px;
-        height: 15px;
-    }
-
-    .vos_operations tr.content_transact td .soustable tr td.chiffres {
-        text-align: right;
-    }
-
-    .vos_operations tr.content_transact td .soustable tr td.detail_remb {
-        padding-left: 5px;
-        vertical-align: top;
-    }
-
-    .vos_operations tr:nth-child(even) td {
-        background-color: white;
-    }
-
-    .vos_operations tr:hover td {
-        background-color: white;
-    }
-
-    .vos_operations tr.odd td {
-        background: #fafafa;
-    }
-
-    .vos_operations .icon-arrows {
-        cursor: pointer;
-    }
-
-    .vos_operations .companieleft {
-        text-align: left;
-    }
-
-    .soustable .detail_left {
-        text-align: left;
-    }
-
-    .vos_operations_ligne {
-        display: inline-block;
-        vertical-align: top;
-    }
-
-    /*.vos_operations .print{margin-top: 3px;}
-    .vos_operations .xls{margin-top: 6px;}*/
-
-    .vos_operations .print {
-        margin-top: 8px;
-        width: 50px;
-    }
-
-    .vos_operations .xls {
-        margin-top: 6px;
-        width: 50px;
-    }
-
-    .load_table_vos_operations {
-        background: none repeat scroll 0 0 white;
-        border: 1px solid #b10366;
-        border-radius: 5px;
-        display: none;
-        height: 50px;
-        left: 48%;
-        margin: 65px auto auto;
-        padding: 5px;
-        position: absolute;
-        text-align: center;
-        width: 100px;
-    }
-
-    .th-wrap {
-        color: white;
-    }
-
-    .table-filter .period {
-        float: left;
-        border: 1px solid;
-        padding: 10px;
-        border-radius: 3px;
-        border-color: #8D8D8D;
-    }
-
-    .table-filter .period tr td {
-        vertical-align: bottom;
-        line-height: 30px;
-    }
-
-    .table-filter .period tr td .ou {
-        text-align: center;
-        width: 80px;
-    }
-
-    .table-filter .period tr td .au {
-        text-align: center;
-        width: 40px;
-    }
-
-    .c2-sb-wrap {
-        z-index: 1;
-    }
-
-    .table-filter .period .c2-sb-wrap {
-        z-index: 10;
-    }
-
-    .populated .c2-sb-text,
-    .populated {
-        color: #b20066 !important;
-    }
-
-    .table-filter .export {
-        float: right;
-    }
-
-    .table-filter .filtre {
-        float: left;
-        border: 1px solid;
-        padding: 15px;
-        margin-top: 15px;
-        border-radius: 3px;
-        border-color: #8D8D8D;
-        width: 420px;
-    }
-
-    .vos_operations .th-wrap {
-        text-align: center;
-        /*width: 100px;*/
-        font-size: 12px;
-    }
-
-    .filtre .c2-sb-wrap {
-        width: 200px;
-    }
-
-    .filtre .c2-sb-text {
-        width: 140px !important;
-    }
-
-    .soustable tr td {
-        padding-top: 5px !important;
-        padding-bottom: 5px !important;
-    }
-
-    .title-ope {
-        margin-top: 12.5px;
-    }
-
-</style>
-
-
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <ul class="breadcrumbs">
@@ -302,6 +112,7 @@ if(isset($_SESSION['freeow']))
     <!--    section "detail prêteur"    -->
     <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
 
+    <h2>Préférences Notifications</h2>
     <div class="btnDroite">
         <a
             href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>"
@@ -310,10 +121,142 @@ if(isset($_SESSION['freeow']))
             href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>"
             class="btn_link">Toutes les infos</a>
         <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->lenders_accounts->id_lender_account ?>"
-        class="btn_link">Portefeuille & Performances</a>
+           class="btn_link">Portefeuille & Performances</a>
     </div>
+    <div class="form-body">
+        <div class="form-row">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                    <th><span><br>Offres et Projets</span></th>
+                    <th><br>Immédiatement</th>
+                    <th>
+                        <p>Synthèse<br>quotidienne</p>
+                    </th>
+                    <th>
+                        <p>Synthèse<br>hebdomadaire</p>
+                    </th>
+                    <th>
+                        <p>Synthèse<br>Mensuelle</p>
+                    </th>
+                    <th>
+                        <p>Uniquement<br>notification</p>
+                    </th>
+                </tr>
+                <?
+                foreach($this->lTypeNotifs as $k => $n){
+
+                    $id_notif = $n['id_client_gestion_type_notif'];
+                    if(in_array($id_notif,array(1,2,3,4))){
+                        ?>
+                        <tr>
+                            <td><p><?=$this->lTypeNotifs[$id_notif-1]['nom']?></p></td>
+                            <td>
+                                <input type="checkbox" id="immediatement_<?=$id_notif?>" name="immediatement_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['immediatement']==1?'checked':'')?> disabled/>
+                                <label for="immediatement_<?=$id_notif?>"></label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="quotidienne_<?=$id_notif?>" name="quotidienne_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['quotidienne']==1?'checked':'')?> disabled/>
+                                <label for="quotidienne_<?=$id_notif?>"></label>
+                            </td>
+                            <td>
+                                <?
+                                if(!in_array($id_notif,array(2,3))){
+                                    ?>
+                                    <input type="checkbox" id="hebdomadaire_<?=$id_notif?>" name="hebdomadaire_<?=$id_notif?>" <?=(in_array($id_notif,array(2))?'class="check-delete" disabled checked':($this->NotifC[$id_notif]['hebdomadaire']==1?'checked':''))?> disabled/>
+                                    <label for="hebdomadaire_<?=$id_notif?>"></label>
+                                    <?
+                                }
+                                ?>
+                            </td>
+                            <td>
+                                <?
+                                if(!in_array($id_notif,array(1,2,3))){
+                                    ?>
+                                    <input type="checkbox" id="mensuelle_<?=$id_notif?>" name="mensuelle_<?=$id_notif?>" <?=(in_array($id_notif,array(1,2))?'class="check-delete" disabled checked':($this->NotifC[$id_notif]['mensuelle']==1?'checked':''))?> disabled/>
+                                    <label for="mensuelle_<?=$id_notif?>"></label>
+
+                                    <?
+                                }
+                                ?>
+                            </td>
+                            <td>
+                                <input type="radio" id="uniquement_notif_<?=$id_notif?>" name="uniquement_notif_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['uniquement_notif']==1?'checked':'')?> disabled/>
+                                <label for="uniquement_notif_<?=$id_notif?>"></label>
+                            </td>
+                        </tr>
+                        <?
+                    }
+                }
+                ?>
+                <tr>
+                    <th><span>Remboursements</span></th>
+                </tr>
+                <?
+                foreach($this->lTypeNotifs as $k => $n){
+                    $id_notif = $n['id_client_gestion_type_notif'];
+                    if(in_array($id_notif,array(5))){
+                        ?>
+                        <tr>
+                            <td><p><?=$this->lTypeNotifs[$id_notif-1]['nom']?></p></td>
+                            <td>
+                                <input type="radio" id="immediatement_<?=$id_notif?>" name="immediatement_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['immediatement']==1?'checked':'')?> disabled/>
+                                <label for="immediatement_<?=$id_notif?>"></label>
+                            </td>
+
+                            <td>
+                                <input  type="checkbox" id="quotidienne_<?=$id_notif?>" name="quotidienne_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['quotidienne']==1?'checked':'')?> disabled/>
+                                <label for="quotidienne_<?=$id_notif?>"></label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="hebdomadaire_<?=$id_notif?>" name="hebdomadaire_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['hebdomadaire']==1?'checked':'')?> disabled/>
+                                <label for="hebdomadaire_<?=$id_notif?>"></label>
+                            </td>
+                            <td>
+                                <input type="checkbox" id="mensuelle_<?=$id_notif?>" name="mensuelle_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['mensuelle']==1?'checked':'')?> disabled/>
+                                <label for="mensuelle_<?=$id_notif?>"></label>
+                            </td>
+                            <td>
+                                <div class="form-controls">
+                                    <input type="radio" id="uniquement_notif_<?=$id_notif?>" name="uniquement_notif_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['uniquement_notif']==1?'checked':'')?> disabled/>
+
+                                    <label for="uniquement_notif_<?=$id_notif?>"></label>
+                            </td>
+                        </tr>
+                        <?
+                    }
+                }
+                ?>
+                <tr>
+                    <th><span>Mouvements sur le compte</span></th>
+                </tr>
+                <?
+                foreach($this->lTypeNotifs as $k => $n){
+                    $id_notif = $n['id_client_gestion_type_notif'];
+                    if(in_array($id_notif,array(6,7,8))){
+                        ?>
+                        <tr>
+                            <td>
+                                <p><?=$this->lTypeNotifs[$id_notif-1]['nom']?></p></td>
+                            <td>
+                                <input type="checkbox" id="immediatement_<?=$id_notif?>" name="immediatement_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['immediatement']==1?'checked':'')?> disabled/>
+                                <label for="immediatement_<?=$id_notif?>"></label>
+                            </td>
+                            <td colspan="3"></td>
+                            <td>
+                                <input type="radio" id="uniquement_notif_<?=$id_notif?>" name="uniquement_notif_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['uniquement_notif']==1?'checked':'')?> disabled />
+                                <label for="uniquement_notif_<?=$id_notif?>"></label>
+                            </td>
+                        </tr>
+                        <?
+                    }
+                }
+                ?>
+            </table>
+        </div><!-- /.form-row -->
+    </div><!-- /.form-body -->
 
 
+    <H2>Historique des Emails</H2>
     Et ici viedra la vue des l'historique des mails
     avec une lightbox preview à droite
 
