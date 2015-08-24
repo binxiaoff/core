@@ -2132,10 +2132,13 @@ class ajaxController extends bootstrap
 		
 		
 		// Les CA pour les typrd Partenaires
-		foreach($this->lTypes as $part)
+		/*foreach($this->lTypes as $part)
 		{
 			$lCaParMoisPart[$part['id_type']] = $this->transactions->recupCAByMonthForAYearType($this->year,$part['id_type']);
-		}
+		}*/
+		
+		$this->caParmoisPart = $this->transactions->recupMonthlyPartnershipTurnoverByYear($this->year);
+
 		
 		for($i=1; $i<=12; $i++)		
 		{
@@ -2147,10 +2150,12 @@ class ajaxController extends bootstrap
 			$this->RembEmprParMois[$i] = number_format(($lRembParMois[$i] != ''?$lRembParMois[$i]:0),2,'.','');
 			
 			
+			/*
 			foreach($this->lTypes as $part)
 			{
 				$this->caParmoisPart[$part['id_type']][$i] = number_format(($lCaParMoisPart[$part['id_type']][$i] != ''?$lCaParMoisPart[$part['id_type']][$i]:0),2,'.','');
 			}
+			*/
 		}
 		
 		
@@ -2162,17 +2167,22 @@ class ajaxController extends bootstrap
 		// nb preteurs connect
 		$this->nbPreteurLogin = $this->clients_history->getNb($this->month,$this->year,'type = 1 AND status = 1',1);
 		
+		
+		/*
 		// nb emprunteur connect
 		$this->nbEmprunteurLogin = $this->clients_history->getNb($this->month,$this->year,'type > 1 AND status = 1',1);
 		
 		// nb depot dossier
 		$this->nbDepotDossier = $this->clients_history->getNb($this->month,$this->year,'type > 1 AND status = 3');
 		
+		// nb inscription emprunteur
+		$this->nbInscriptionEmprunteur = $this->clients_history->getNb($this->month,$this->year,'type > 1 AND status = 2',1);
+		
+		
+		*/
 		// nb inscription preteur
 		$this->nbInscriptionPreteur = $this->clients_history->getNb($this->month,$this->year,'type = 1 AND status = 2',1);
 		
-		// nb inscription emprunteur
-		$this->nbInscriptionEmprunteur = $this->clients_history->getNb($this->month,$this->year,'type > 1 AND status = 2',1);
 		
 		// fonds deposés
 		$this->nbFondsDeposes = $this->caParmois[$this->month];
