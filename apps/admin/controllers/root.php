@@ -233,7 +233,7 @@ class rootController extends bootstrap
 			
 			$this->RembEmprParMois[$i] = number_format(($lRembParMois[$i] != ''?$lRembParMois[$i]:0),2,'.','');
 			
-			/*
+			/* suppression / optimisation
 			foreach($this->lTypes as $part)
 			{
 				$this->caParmoisPart[$part['id_type']][$i] = number_format(($lCaParMoisPart[$part['id_type']][$i] != ''?$lCaParMoisPart[$part['id_type']][$i]:0),2,'.','');
