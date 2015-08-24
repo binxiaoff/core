@@ -150,7 +150,7 @@ class inscription_preteurController extends bootstrap
 		
 		// sinon pas good pour recup les infos preteur
 		else $conditionOk = false;
-		
+
 		// Check si y a un compte accessible 
 		if($conditionOk == true){
 			// adresses
@@ -367,7 +367,7 @@ class inscription_preteurController extends bootstrap
 					$this->form_ok = false;
 				}
 			}
-			
+
 			// Formulaire ok
 			if($this->form_ok == true){
 				// mdp si nouveau compte
@@ -402,7 +402,7 @@ class inscription_preteurController extends bootstrap
 					}
 					
 					$le_id_client = $this->clients->id_client;
-					
+
 					$this->clients->update();
 					$this->clients_adresses->update();
 					$this->lenders_accounts->update();
@@ -448,10 +448,10 @@ class inscription_preteurController extends bootstrap
 					// type de preteur
 					if($this->clients->id_nationalite != 1)$this->clients->type = 3; // physique etrangé
 					else $this->clients->type = 1; // physique
-					
+
 					// On créer le client
 					$this->clients->id_client = $this->clients->create();
-					
+
 					// Histo client //
 					$pass = $_POST['pass'];
 					$pass2 = $_POST['pass2'];
@@ -1097,7 +1097,7 @@ class inscription_preteurController extends bootstrap
 	
 	function _etape2()
 	{
-		
+
 		// CSS
 		$this->unLoadCss('default/custom-theme/jquery-ui-1.10.3.custom');
 		$this->loadCss('default/preteurs/new-style');
@@ -1114,8 +1114,10 @@ class inscription_preteurController extends bootstrap
 		// Chargement des datas
 		$this->lenders_accounts = $this->loadData('lenders_accounts');
 		$this->clients_status_history = $this->loadData('clients_status_history');
-		$thid->clients_status = $this->loadData('clients_status');
+		$this->clients_status = $this->loadData('clients_status');
 		$this->clients_history_actions = $this->loadData('clients_history_actions');
+		$this->piece_jointe = $this->loadData('piece_jointe');
+		$this->piece_jointe_type = $this->loadData('piece_jointe_type');
 		
 		//Recuperation des element de traductions
 		$this->lng['etape1'] = $this->ln->selectFront('inscription-preteur-etape-1',$this->language,$this->App);
@@ -1199,14 +1201,14 @@ class inscription_preteurController extends bootstrap
 			}
 
 			// Particulier
-			if(isset($_POST['send_form_inscription_preteur_particulier_etape_2']))
-			{
-				// fichier
-				$fichier_cni_passeport = $this->lenders_accounts->fichier_cni_passeport;
-				$fichier_justificatif_domicile = $this->lenders_accounts->fichier_justificatif_domicile;
-				$fichier_rib = $this->lenders_accounts->fichier_rib;
-				//$fichier_autre = $this->lenders_accounts->fichier_autre;
-				if($this->etranger > 0) $fichier_document_fiscal = $this->lenders_accounts->fichier_document_fiscal;
+			if(isset($_POST['send_form_inscription_preteur_particulier_etape_2'])) {
+
+                $this->form_ok = true;
+                $this->error_fichier = false;
+
+                // fichier
+                $fichier_document_fiscal = $fichier_cni_passeport = $fichier_justificatif_domicile = $fichier_rib = $fichier_autre = '';
+
 				$iban = $this->lenders_accounts->iban;
 				$bic = $this->lenders_accounts->bic;
 				$origine_des_fonds = $this->lenders_accounts->origine_des_fonds;
@@ -1214,73 +1216,25 @@ class inscription_preteurController extends bootstrap
 				// si etrangé
 				if($this->etranger > 0){
 					// document_fiscal
-					if(isset($_FILES['document_fiscal']) && $_FILES['document_fiscal']['name'] != '')
-					{
-						$this->upload->setUploadDir($this->path,'protected/lenders/document_fiscal/');
-						if($this->upload->doUpload('document_fiscal'))
-						{
-							if($this->lenders_accounts->fichier_document_fiscal != '')@unlink($this->path.'protected/lenders/document_fiscal/'.$this->lenders_accounts->fichier_document_fiscal);
-							$this->lenders_accounts->fichier_document_fiscal = $this->upload->getName();
-						}
-						else{
-							$this->error_document_fiscal = true;	
-						}
-					}
+                    $fichier_document_fiscal = $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::JUSTIFICATIF_FISCAL);
+                    $this->error_document_fiscal = false === $fichier_document_fiscal;
 				}
 				
 				// carte-nationale-didentite
-				if(isset($_FILES['ci']) && $_FILES['ci']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport/');
-					if($this->upload->doUpload('ci'))
-					{
-						if($this->lenders_accounts->fichier_cni_passeport != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_cni_passeport);
-						$this->lenders_accounts->fichier_cni_passeport = $this->upload->getName();
-					}
-					else{
-						$this->error_cni = true;	
-					}
-				}
+                $fichier_cni_passeport = $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::CNI_PASSPORTE);
+                $this->error_cni = false === $fichier_cni_passeport;
+
 				// justificatif-de-domicile
-				if(isset($_FILES['justificatif_de_domicile']) && $_FILES['justificatif_de_domicile']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/justificatif_domicile/');
-					if($this->upload->doUpload('justificatif_de_domicile'))
-					{
-						if($this->lenders_accounts->fichier_justificatif_domicile != '')@unlink($this->path.'protected/companies/justificatif_domicile/'.$this->lenders_accounts->fichier_justificatif_domicile);
-						$this->lenders_accounts->fichier_justificatif_domicile = $this->upload->getName();
-					}
-					else{
-						$this->error_justificatif_domicile = true;	
-					}
-				}
+                $fichier_justificatif_domicile = $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::JUSTIFICATIF_DOMICILE);
+                $this->error_justificatif_domicile = false === $fichier_justificatif_domicile;
+
 				// rib
-				if(isset($_FILES['rib']) && $_FILES['rib']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/rib/');
-					if($this->upload->doUpload('rib'))
-					{
-						if($this->lenders_accounts->fichier_rib != '')@unlink($this->path.'protected/lenders/rib/'.$this->lenders_accounts->fichier_rib);
-						$this->lenders_accounts->fichier_rib = $this->upload->getName();
-					}
-					else{
-						$this->error_rib = true;	
-					}
-				}
+                $fichier_rib = $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::RIB);
+                $this->error_rib = false === $fichier_rib;
 				
 				// autre
-				if(isset($_FILES['autre']) && $_FILES['autre']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/autre/');
-					if($this->upload->doUpload('autre'))
-					{
-						if($this->lenders_accounts->fichier_autre != '')@unlink($this->path.'protected/lenders/autre/'.$this->lenders_accounts->fichier_autre);
-						$this->lenders_accounts->fichier_autre = $this->upload->getName();
-					}
-					else{
-						$this->error_autre = true;	
-					}
-				}
+                $fichier_autre = $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::AUTRE1);
+                $this->error_autre = false === $fichier_autre;
 				
 				$this->lenders_accounts->bic = trim(strtoupper($_POST['bic']));// Bic
 				$this->lenders_accounts->iban = ''; // Iban
@@ -1303,45 +1257,6 @@ class inscription_preteurController extends bootstrap
 				else $this->lenders_accounts->precision = '';
 				
 				$this->lenders_accounts->cni_passeport = 1; // ci
-				
-				$this->form_ok = true;
-				$this->error_fichier = false;
-				// On check si tout est là
-				
-				// si etranger
-				if($this->etranger > 0){
-					// document_fiscal
-					if($this->lenders_accounts->fichier_document_fiscal == '' || $this->error_document_fiscal == true){
-						$this->form_ok = false;
-						$this->error_fichier = true;
-					}
-				}
-				
-				// CI
-				if($this->lenders_accounts->fichier_cni_passeport == '' || $this->error_cni == true){
-					$this->form_ok = false;
-					$this->error_fichier = true;
-				}
-				// justificatif domicile
-				if($this->lenders_accounts->fichier_justificatif_domicile == '' || $this->error_justificatif_domicile == true){
-					$this->form_ok = false;
-					$this->error_fichier = true;
-				}
-				// RIB
-				if($this->lenders_accounts->fichier_rib == '' || $this->error_rib == true){
-					$this->form_ok = false;
-					$this->error_fichier = true;
-				}
-				// autre
-				if($this->error_autre == true){
-					$this->form_ok = false;
-					$this->error_fichier = true;
-				}
-				
-				// on enregistre une partie pour avoir les images good
-				if($this->error_cni == false || $this->error_justificatif_domicile == false || $this->error_rib == false || $this->error_autre == false){
-					$this->lenders_accounts->update();	
-				}
 				
 				// BIC
 				if(!isset($_POST['bic']) || $_POST['bic'] == $this->lng['etape2']['bic'] || $_POST['bic'] == ''){
@@ -1441,32 +1356,38 @@ class inscription_preteurController extends bootstrap
 						$this->clients_history_actions->histo(18,'edition inscription etape 2 particulier',$this->clients->id_client,$serialize);
 						////////////////
 						
-						if($fichier_cni_passeport != $this->lenders_accounts->fichier_cni_passeport ||
-						$fichier_justificatif_domicile != $this->lenders_accounts->fichier_justificatif_domicile ||
-						$fichier_rib != $this->lenders_accounts->fichier_rib ||
-						$this->etranger > 0 && $fichier_document_fiscal != $this->lenders_accounts->fichier_document_fiscal ||
+						if($fichier_cni_passeport != '' ||
+						$fichier_justificatif_domicile != '' ||
+						$fichier_rib != '' ||
+						$this->etranger > 0 && $fichier_document_fiscal != '' ||
 						$iban != $this->lenders_accounts->iban ||
 						$bic != $this->lenders_accounts->bic ||
 						$origine_des_fonds != $this->lenders_accounts->origine_des_fonds)
 						{
 							$contenu = '<ul>';
-							if($origine_des_fonds != $this->lenders_accounts->origine_des_fonds)
+							if($origine_des_fonds != $this->lenders_accounts->origine_des_fonds) {
 								$contenu .= '<li>Origine des fonds</li>';
-							if($bic != $this->lenders_accounts->bic)
+                            }
+							if($bic != $this->lenders_accounts->bic) {
 								$contenu .= '<li>BIC</li>';
+                            }
 							if($iban != $this->lenders_accounts->iban)
 								$contenu .= '<li>IBAN</li>';
-							if($fichier_cni_passeport != $this->lenders_accounts->fichier_cni_passeport)
+							if($fichier_cni_passeport != '') {
 								$contenu .= '<li>Fichier cni passeport</li>';
-							if($fichier_justificatif_domicile != $this->lenders_accounts->fichier_justificatif_domicile)
+                            }
+							if($fichier_justificatif_domicile != '') {
 								$contenu .= '<li>Fichier justificatif domicile</li>';
-							if($fichier_rib != $this->lenders_accounts->fichier_rib)
+                            }
+							if($fichier_rib != '') {
 								$contenu .= '<li>Fichier RIB</li>';
-							if($this->etranger > 0 && $fichier_document_fiscal != $this->lenders_accounts->fichier_document_fiscal)
+                            }
+							if($this->etranger > 0 && $fichier_document_fiscal != '') {
 								$contenu .= '<li>Fichier document fiscal</li>';
+                            }
 							$contenu .= '</ul>';
 							
-							$thid->clients_status->getLastStatut($this->clients->id_client);
+							$this->clients_status->getLastStatut($this->clients->id_client);
 							if($this->clients_status->status == 10) $statut_client = 10;
 							if(in_array($this->clients_status->status,array(20,30,40))) $statut_client = 40;
 							else $statut_client = 50;
@@ -1530,73 +1451,22 @@ class inscription_preteurController extends bootstrap
 			// SOCIETE
 			elseif(isset($_POST['send_form_inscription_preteur_societe_etape_2']))
 			{
+                $this->form_ok = true;
+                $this->error_fichier = false;
+
 				// carte-nationale-didentite dirigeant
-				if(isset($_FILES['ci_dirigeant']) && $_FILES['ci_dirigeant']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport_dirigent/');
-					if($this->upload->doUpload('ci_dirigeant'))
-					{
-						if($this->lenders_accounts->fichier_cni_passeport_dirigent != '')@unlink($this->path.'protected/lenders/cni_passeport_dirigent/'.$this->lenders_accounts->fichier_cni_passeport_dirigent);
-						$this->lenders_accounts->fichier_cni_passeport_dirigent = $this->upload->getName();
-					}
-					else{
-						$this->error_cni_dirigent = true;	
-					}
-				}
+                $this->error_cni_dirigent = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::CNI_PASSPORTE_DIRIGEANT);
+
 				// Extrait Kbis
-				if(isset($_FILES['kbis']) && $_FILES['kbis']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/extrait_kbis/');
-					if($this->upload->doUpload('kbis'))
-					{
-						if($this->lenders_accounts->fichier_extrait_kbis != '')@unlink($this->path.'protected/companies/extrait_kbis/'.$this->lenders_accounts->fichier_extrait_kbis);
-						$this->lenders_accounts->fichier_extrait_kbis = $this->upload->getName();
-					}
-					else{
-						$this->error_extrait_kbis = true;	
-					}
-				}
+                $this->error_extrait_kbis = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::KBIS);
+
 				// rib
-				if(isset($_FILES['rib']) && $_FILES['rib']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/rib/');
-					if($this->upload->doUpload('rib'))
-					{
-						if($this->lenders_accounts->fichier_rib != '')@unlink($this->path.'protected/lenders/rib/'.$this->lenders_accounts->fichier_rib);
-						$this->lenders_accounts->fichier_rib = $this->upload->getName();
-					}
-					else{
-						$this->error_rib = true;	
-					}
-				}
+                $this->error_rib = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::RIB);
 				
 				// autre
-				if(isset($_FILES['autre']) && $_FILES['autre']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/autre/');
-					if($this->upload->doUpload('autre'))
-					{
-						if($this->lenders_accounts->fichier_autre != '')@unlink($this->path.'protected/lenders/autre/'.$this->lenders_accounts->fichier_autre);
-						$this->lenders_accounts->fichier_autre = $this->upload->getName();
-					}
-					else{
-						$this->error_autre = true;	
-					}
-				}
-				
-				// Délégation de pouvoir
-				if(isset($_FILES['delegation_pouvoir']) && $_FILES['delegation_pouvoir']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/delegation_pouvoir/');
-					if($this->upload->doUpload('delegation_pouvoir'))
-					{
-						if($this->lenders_accounts->fichier_delegation_pouvoir != '')@unlink($this->path.'protected/companies/delegation_pouvoir/'.$this->lenders_accounts->fichier_delegation_pouvoir);
-						$this->lenders_accounts->fichier_delegation_pouvoir = $this->upload->getName();
-					}
-					else{
-						$this->error_delegation_pouvoir = true;	
-					}
-				}
+                $this->error_autre = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::AUTRE1);
+
+                $this->error_delegation_pouvoir = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::DELEGATION_POUVOIR);
 				
 				$this->lenders_accounts->bic = trim(strtoupper($_POST['bic']));// Bic
 				$this->lenders_accounts->iban = ''; // Iban
@@ -1619,40 +1489,7 @@ class inscription_preteurController extends bootstrap
 				else $this->lenders_accounts->precision = '';
 				
 				$this->lenders_accounts->cni_passeport = 1; // ci
-				
-				$this->form_ok = true;
-				$this->error_fichier = false;
-				// On check si tout est là
-				
-				// CI
-				if($this->lenders_accounts->fichier_cni_passeport_dirigent == '' || $this->error_cni_dirigent == true){
-					$this->form_ok = false;
-					$this->error_fichier = true;
-				}
-				// justificatif domicile
-				if($this->lenders_accounts->fichier_extrait_kbis == '' || $this->error_extrait_kbis == true){
-					$this->form_ok = false;
-					$this->error_fichier = true;
-				}
-				// RIB
-				if($this->lenders_accounts->fichier_rib == '' || $this->error_rib == true){
-					$this->form_ok = false;
-					$this->error_fichier = true;
-				}
-				if($this->error_autre == true){
-					$this->form_ok = false;
-					$this->error_fichier = true;
-				}
-				if($this->error_delegation_pouvoir == true){
-					$this->form_ok = false;
-					$this->error_fichier = true;
-				}
-				
-				// on enregistre une partie pour avoir les images good
-				if($this->error_cni_dirigent == false || $this->error_extrait_kbis == false || $this->error_rib == false || $this->error_autre == false || $this->error_delegation_pouvoir == false){
-					$this->lenders_accounts->update();	
-				}
-				
+
 				// BIC
 				if(!isset($_POST['bic']) || $_POST['bic'] == $this->lng['etape2']['bic'] || $_POST['bic'] == ''){
 					$this->form_ok = false;
@@ -2615,4 +2452,93 @@ class inscription_preteurController extends bootstrap
 		
 		$this->motif = $_SESSION['motif'];
 	}
+
+    private function uploadAttachment($lenderAccountId, $attachmentType)
+    {
+        if(false === isset($this->upload) || false === $this->upload instanceof upload) {
+            $this->upload = $this->loadLib('upload');
+        }
+
+        $basePath = 'protected/lenders/';
+
+        switch($attachmentType) {
+            case piece_jointe_type::CNI_PASSPORTE :
+                $field = 'ci';
+                $uploadPath = $basePath.'cni_passeport/';
+                break;
+            case piece_jointe_type::JUSTIFICATIF_FISCAL :
+                $field = 'document_fiscal';
+                $uploadPath = $basePath.'document_fiscal/';
+                break;
+            case piece_jointe_type::JUSTIFICATIF_DOMICILE :
+                $field = 'justificatif_de_domicile';
+                $uploadPath = $basePath.'justificatif_domicile/';
+                break;
+            case piece_jointe_type::RIB :
+                $field = 'rib';
+                $uploadPath = $basePath.'rib/';
+                break;
+            case piece_jointe_type::AUTRE1 :
+                $field = 'autre';
+                $uploadPath = $basePath.'autre/';
+                break;
+            case piece_jointe_type::CNI_PASSPORTE_DIRIGEANT :
+                $field = 'ci_dirigeant';
+                $uploadPath = $basePath.'cni_passeport_dirigent/';
+                break;
+            case piece_jointe_type::KBIS :
+                $field = 'kbis';
+                $uploadPath = $basePath.'extrait_kbis/';
+                break;
+            case piece_jointe_type::DELEGATION_POUVOIR :
+                $field = 'delegation_pouvoir';
+                $uploadPath = $basePath.'delegation_pouvoir/';
+                break;
+            default :
+                return false;
+        }
+
+        if(false === isset($_FILES[$field]) || $_FILES[$field]['name'] == '') {
+            return ''; // the filed is empty, NOT an error
+        }
+
+        $this->upload->setUploadDir($this->path, $uploadPath);
+
+        if(false === $this->upload->doUpload($field)) {
+            $this->form_ok = false;
+            $this->error_fichier = true;
+            return false;
+        }
+
+        // Supprimer l'ancien fichier
+        if(false === isset($this->piece_jointe) || false === $this->piece_jointe instanceof piece_jointe) {
+            $this->piece_jointe = $this->loadData('piece_jointe');
+        }
+        $piece_jointe = $this->piece_jointe->select(
+            'id_owner=' . $lenderAccountId
+            .' AND type_owner = "' . piece_jointe::LENDER .'"'
+            .' AND id_type = ' . $attachmentType
+        );
+
+        if(false === empty($piece_jointe) && $piece_jointe[0]['chemin'] != '') {
+            @unlink($this->path. $uploadPath . $piece_jointe[0]['chemin']);
+        }
+
+        $this->piece_jointe->id_type = $attachmentType;
+        $this->piece_jointe->id_owner = $lenderAccountId;
+        $this->piece_jointe->type_owner = piece_jointe::LENDER;
+        $this->piece_jointe->chemin = $this->upload->getName();
+        $this->piece_jointe->archived = null;
+
+        $piece_jointe_id = $this->piece_jointe->save();
+
+        if(false === is_numeric($piece_jointe_id)) {
+
+            $this->form_ok = false;
+            $this->error_fichier = true;
+            return false;
+        }
+
+        return $this->upload->getName();
+    }
 }
