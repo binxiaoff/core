@@ -212,7 +212,7 @@ class preteursController extends bootstrap
 		$this->autoFireHeader = true;
 		$this->autoFireHead = true;
 		$this->autoFireFooter = true;
-		$this->autoFireDebug = true;
+		$this->autoFireDebug = false;
 		
 		// On place le redirect sur la home
 		$_SESSION['request_url'] = $this->url;
@@ -2339,6 +2339,30 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 	}
 
 	public function _email_history(){
+
+		$this->loadGestionData();
+
+		// On recup les infos du client
+		$this->lenders_accounts->get($this->params[0],'id_lender_account');
+
+		// On recup les infos du client
+		$this->clients->get($this->lenders_accounts->id_client_owner,'id_client');
+
+/*		PARTIE PREFERENCES NOTIFICATION*/
+
+		//Préférences Notifications
+        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+        $this->clients_gestion_type_notif = $this->loadData('clients_gestion_type_notif');
+
+        //Liste des types de notification
+        $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
+
+		//Notifications par client
+        $this->NotifC = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
+
+/*		PARTIE HISTORIQUE*/
+//		à venir
+
 
     $this->loadGestionData();
 
