@@ -20,7 +20,8 @@ class dates
 		
 		$this->tableauJours['fr'] = array('Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche');
 		$this->tableauJours2['fr'] = array('Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi');
-		$this->tableauMois['fr'] = array('','Janvier',utf8_encode('Février'),'Mars','Avril','Mai','Juin','Juillet',utf8_encode('Août'),'Septembre','Octobre','Novembre',utf8_encode('Décembre')); 
+                // tous les mois commencent pas une minuscule (Note BT 16614)
+		$this->tableauMois['fr'] = array('','janvier',utf8_encode('février'),'mars','avril','mai','juin','juillet',utf8_encode('août'),'septembre','octobre','novembre',utf8_encode('décembre')); 
 		$this->limitMois = array(1=>31,3=>31,4=>30,5=>31,6=>30,7=>31,8=>31,9=>30,10=>31,11=>30,12=>31);
 	}
 	
