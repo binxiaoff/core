@@ -166,6 +166,9 @@ class cronController extends bootstrap
                 //// CREATION DES NOTIFICATIONS nouveau projet ///////
                 $this->nouveau_projet($projects['id_project']);
                 ////////////////////
+                
+                // Zippage pour groupama
+                $this->zippage($projects['id_project']);
             }
         }
     }
@@ -1228,20 +1231,34 @@ class cronController extends bootstrap
                 foreach ($lEcheanciers as $k => $e)
                 {
                     // on prend le nombre de jours dans le mois au lieu du mois
-                    $nbjourstemp = mktime(0, 0, 0, date("m") + $k, 1, date("Y"));
-                    $nbjoursMois += date('t', $nbjourstemp);
+//                    $nbjourstemp = mktime(0, 0, 0, date("m") + $k, 1, date("Y"));
+//                    $nbjoursMois += date('t', $nbjourstemp);
+//
+//                    // Date d'echeance preteur
+//                    $dateEcheance = $this->dates->dateAddMoisJours($this->projects->date_fin, 0, $nb_jours + $nbjoursMois);
+//                    $dateEcheance = date('Y-m-d H:i', $dateEcheance) . ':00';
+//
+//                    // Date d'echeance emprunteur
+//                    $dateEcheance_emprunteur = $this->dates->dateAddMoisJours($this->projects->date_fin, 0, $nbjoursMois);
+//                    // on retire 6 jours ouvrés
+//                    $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur, 6);
+//
+//                    $dateEcheance_emprunteur = date('Y-m-d H:i', $dateEcheance_emprunteur) . ':00';
 
+                    // on prend le nombre de jours dans le mois au lieu du mois
+                    //$nbjourstemp = mktime (0,0,0,date("m")+$k ,1,date("Y"));
+                    //$nbjoursMois += date('t',$nbjourstemp);
+                    
                     // Date d'echeance preteur
-                    $dateEcheance = $this->dates->dateAddMoisJours($this->projects->date_fin, 0, $nb_jours + $nbjoursMois);
-                    $dateEcheance = date('Y-m-d H:i', $dateEcheance) . ':00';
-
+                    $dateEcheance = $this->dates->dateAddMoisJoursV3($this->projects->date_fin,$k,$nb_jours);
+                    $dateEcheance = date('Y-m-d h:i',$dateEcheance).':00';
+                    
                     // Date d'echeance emprunteur
-                    $dateEcheance_emprunteur = $this->dates->dateAddMoisJours($this->projects->date_fin, 0, $nbjoursMois);
+                    $dateEcheance_emprunteur = $this->dates->dateAddMoisJoursV3($this->projects->date_fin,$k);
+                    
                     // on retire 6 jours ouvrés
-                    $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur, 6);
-
-                    $dateEcheance_emprunteur = date('Y-m-d H:i', $dateEcheance_emprunteur) . ':00';
-
+                    $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur,6);
+                    $dateEcheance_emprunteur = date('Y-m-d H:i',$dateEcheance_emprunteur).':00';
 
 
                     // particulier
@@ -12438,7 +12455,7 @@ class cronController extends bootstrap
                             $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
 
                             // on recup la premiere echeance
-                            $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($this->projects->id_project, $this->loans->id_lender, $thid->loans->id_loan);
+                            $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($this->projects->id_project, $this->loans->id_lender, $this->loans->id_loan);
 
                             // Variables du mailing
 
@@ -12643,7 +12660,7 @@ class cronController extends bootstrap
 
                             //$sumInt = $this->echeanciers->getSumRembByloan($this->transactions->id_loan_remb,'interets');
                             // Récupération de la sommes des intérets deja versé au lender
-                            $sumInt = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND id_loan = '.$this->transactions->id_loan_remb.' AND status_ra = 0 AND status = 1 AND id_lender ='.$this->echeanciers->id_lender,'interets');  
+                            $sumInt = $this->echeanciers->getSumRembByloan_remb_ra($this->transactions->id_loan_remb,'interets');
 							
                             // on ajoute aussi une variable dans le cas d'un rmbt anticipe
                             /*$contenu_remboursement_anticipe = "
@@ -13695,7 +13712,7 @@ class cronController extends bootstrap
                         $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
 
                         // on recup la premiere echeance
-                        $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($this->projects->id_project, $this->loans->id_lender, $thid->loans->id_loan);
+                        $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($this->projects->id_project, $this->loans->id_lender, $this->loans->id_loan);
 
                         // Variables du mailing
 
@@ -15378,6 +15395,96 @@ class cronController extends bootstrap
                 $this->indexage_vos_operations_boucle->update();
             }
         }
+    }
+    
+    function deleteOldFichiers() {
+        $path = $this->path . 'protected/sftp_groupama/';
+        $duree = 30; // jours
+        // On parcourt le dossier
+        $fichiers = scandir($path);
+        unset($fichiers[0], $fichiers[1]);
+        foreach ($fichiers as $f) {
+            $le_fichier = $path . $f;
+
+            $time = filemtime($le_fichier);
+            $time_plus_duree = mktime(date("H",$time), date("i",$time), date("s",$time), date("n",$time), date("d",$time) + $duree, date("Y",$time));
+
+            // si la date du jour est superieur à la date du fichier plus n jours => on supprime
+            if (time() >= $time_plus_duree) {
+                // On supprime le zip
+                unlink($le_fichier);
+            }
+        }
+    }
+
+    function zippage($id_project) {
+
+        //$id_project = 7;
+        // datas
+        $projects = $this->loadData('projects');
+        $companies = $this->loadData('companies');
+        $companies_details = $this->loadData('companies_details');
+
+        $projects->get($id_project, 'id_project');
+        $companies->get($projects->id_company, 'id_company');
+        $companies_details->get($projects->id_company, 'id_company');
+
+        // Récupération de l'extention
+        $ext_cni = substr(strrchr($companies_details->fichier_cni_passeport, '.'), 1);
+        $ext_kbis = substr(strrchr($companies_details->fichier_extrait_kbis, '.'), 1);
+
+        // Récupération du path des fichiers
+        $path_cni = $this->path . 'protected/companies/cni_passeport/' . $companies_details->fichier_cni_passeport;
+        $path_kbis = $this->path . 'protected/companies/extrait_kbis/' . $companies_details->fichier_extrait_kbis;
+
+        // Nouveau nom des fichiers
+        $new_nom_cni = 'CNI-#' . $companies->siren . '.' . $ext_cni;
+        $new_nom_kbis = 'KBIS-#' . $companies->siren . '.' . $ext_kbis;
+
+        // path
+        $path_nozip = $this->path . 'protected/sftp_groupama_nozip/';
+        $path = $this->path . 'protected/sftp_groupama/';
+
+        $nom_dossier = $companies->siren;
+
+        // création du dossier
+        if (!is_dir($path_nozip . $nom_dossier)) {
+            mkdir($path_nozip . $nom_dossier);
+        }
+
+        // copie du fichier CNI
+        copy($path_cni, $path_nozip . $nom_dossier . '/' . $new_nom_cni);
+        // copie du fichier KBIS
+        copy($path_kbis, $path_nozip . $nom_dossier . '/' . $new_nom_kbis);
+
+        /////////////////////
+        /// DEBUT ZIPPAGE ///
+        /////////////////////
+        $zip = new ZipArchive();
+        // Dossier existe
+        if (is_dir($path_nozip . $nom_dossier)) {
+            // Creation du dossier de destination zip
+            if ($zip->open($path . $nom_dossier . '.zip', ZipArchive::CREATE) == TRUE) {
+
+                $fichiers = scandir($path_nozip . $nom_dossier);
+                unset($fichiers[0], $fichiers[1]);
+                foreach ($fichiers as $f) {
+                    $zip->addFile($path_nozip . $nom_dossier . '/' . $f, $f);
+                }
+                // On ferme l'archive.
+                $zip->close();
+            } else {
+                //echo 'error creation zip';
+            }
+        } else {
+            //echo 'error dossier';
+        }
+        ///////////////////
+        /// FIN ZIPPAGE ///
+        ///////////////////
+        
+        $this->deleteOldFichiers();
+        
     }
 
     /* Envoi des mails pour le remboursement anticipe

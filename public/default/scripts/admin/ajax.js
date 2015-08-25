@@ -1205,3 +1205,20 @@ function check_force_pass()
 	// Si la reponse est OK on balance l'ajax
 	document.getElementById('indicateur_force').innerHTML = reponse;
 }
+
+
+/* Fonction qui check si une autre compagnie possede deja cet iban */
+function CheckIfIbanExistDeja(iban, id_client)
+{
+    xhr_object = AjaxObject();
+    var param = no_cache();
+
+    // On traite les donnees en POST via l'ajax
+    xhr_object.open('POST',add_url + '/ajax/ibanExistV2',false);
+    xhr_object.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+    xhr_object.send('iban=' + iban + '&id=' + id_client);
+    // On recupere la reponse
+    var reponse = xhr_object.responseText;
+    // Si la reponse est OK on balance l'ajax
+    return reponse;
+}

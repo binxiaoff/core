@@ -26,15 +26,23 @@
 //                                                                                   
 // **************************************************************************************************** //
 
-class companies extends companies_crud
+class attachment_type extends attachment_type_crud
 {
+	const CNI_PASSPORTE = 1;
+	const JUSTIFICATIF_DOMICILE = 2;
+	const RIB = 3;
+	const JUSTIFICATIF_FISCAL = 6;
+	const CNI_PASSPORTE_DIRIGEANT = 7;
+	const KBIS = 8;
+	const DELEGATION_POUVOIR = 9;
+	const AUTRE1 = 15;
 
-	function companies($bdd,$params='')
+	function attachment_type($bdd,$params='')
     {
-        parent::companies($bdd,$params);
+        parent::attachment_type($bdd,$params);
     }
     
-    function get($id,$field='id_company')
+    function get($id,$field='id')
     {
         return parent::get($id,$field);
     }
@@ -44,7 +52,7 @@ class companies extends companies_crud
         parent::update($cs);
     }
     
-    function delete($id,$field='id_company')
+    function delete($id,$field='id')
     {
     	parent::delete($id,$field);
     }
@@ -61,8 +69,8 @@ class companies extends companies_crud
 			$where = ' WHERE '.$where;
 		if($order != '')
 			$order = ' ORDER BY '.$order;
-		$sql = 'SELECT * FROM `companies`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
-                
+		$sql = 'SELECT * FROM `attachment_type`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+
 		$resultat = $this->bdd->query($sql);
 		$result = array();
 		while($record = $this->bdd->fetch_array($resultat))
@@ -77,15 +85,15 @@ class companies extends companies_crud
 		if($where != '')
 			$where = ' WHERE '.$where;
 			
-		$sql='SELECT count(*) FROM `companies` '.$where;
+		$sql='SELECT count(*) FROM `attachment_type` '.$where;
 
 		$result = $this->bdd->query($sql);
 		return (int)($this->bdd->result($result,0,0));
 	}
 	
-	function exist($id,$field='id_company')
+	function exist($id,$field='id')
 	{
-		$sql = 'SELECT * FROM `companies` WHERE '.$field.'="'.$id.'"';
+		$sql = 'SELECT * FROM `attachment_type` WHERE '.$field.'="'.$id.'"';
 		$result = $this->bdd->query($sql);
 		return ($this->bdd->fetch_array($result,0,0)>0);
 	}

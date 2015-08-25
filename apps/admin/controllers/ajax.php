@@ -501,6 +501,16 @@ class ajaxController extends bootstrap
 						if(strlen($mess) > 9)
 						{
 							//mail('courtier.damien@gmail.com','test alert mail info manquantes','test alert mail info manquantes projet : '.$this->projects->id_project);
+                                                        if($this->Config['env'] == 'prod') // nmp
+                                                        {
+                                                                $to  = 'unilend@equinoa.fr , nicolas.lesur@unilend.fr';
+                                                        }
+                                                        else // non nmp
+                                                        {
+                                                                $to  = 'unilend@equinoa.fr';
+                                                        }
+                                                    
+                                                    
 							$to  = 'unilend@equinoa.fr , nicolas.lesur@unilend.fr';
 							//$to  = 'courtier.damien@gmail.com , d.courtier@equinoa.com';
 							
@@ -791,13 +801,20 @@ class ajaxController extends bootstrap
 				$this->clients->fonction = $_POST['fonction_etape2'];
 				
 				///////// on check si mail existe deja si c'est le cas on rajoute l'id projet
-				//$clients = $this->loadData('clients');
-				/*if($clients->get($_POST['email_etape2'],'email') && strpos($_POST['email_etape2'], $this->projects->id_project) === false){*/
-				if($this->clients->counter('email = "'.$_POST['email_etape2'].'" AND id_client <> '.$this->clients->id_client) > 0){
-					$this->clients->email = $_POST['email_etape2'];
-					$this->clients->email .= '-'.$this->projects->id_project;
-				}
-				//////////
+                                //$clients = $this->loadData('clients');
+                                /* if($clients->get($_POST['email_etape2'],'email') && strpos($_POST['email_etape2'], $this->projects->id_project) === false){ */
+
+                                if ($this->clients->counter('email = "' . $_POST['email_etape2'] . '" AND id_client <> ' . $this->clients->id_client) > 0)
+                                {
+
+                                    $this->clients->email = $_POST['email_etape2'];
+                                    $this->clients->email .= '-' . $this->projects->id_project;
+                                }
+                                elseif ($this->clients->email != $_POST['email_etape2'])
+                                {
+                                    $this->clients->email = $_POST['email_etape2'];
+                                }
+                                //////////
 				
 				$this->clients->telephone = $_POST['phone_new_etape2'];
 				
@@ -2132,10 +2149,13 @@ class ajaxController extends bootstrap
 		
 		
 		// Les CA pour les typrd Partenaires
-		foreach($this->lTypes as $part)
+		/*foreach($this->lTypes as $part)
 		{
 			$lCaParMoisPart[$part['id_type']] = $this->transactions->recupCAByMonthForAYearType($this->year,$part['id_type']);
-		}
+		}*/
+		
+		$this->caParmoisPart = $this->transactions->recupMonthlyPartnershipTurnoverByYear($this->year);
+
 		
 		for($i=1; $i<=12; $i++)		
 		{
@@ -2147,10 +2167,12 @@ class ajaxController extends bootstrap
 			$this->RembEmprParMois[$i] = number_format(($lRembParMois[$i] != ''?$lRembParMois[$i]:0),2,'.','');
 			
 			
+			/*
 			foreach($this->lTypes as $part)
 			{
 				$this->caParmoisPart[$part['id_type']][$i] = number_format(($lCaParMoisPart[$part['id_type']][$i] != ''?$lCaParMoisPart[$part['id_type']][$i]:0),2,'.','');
 			}
+			*/
 		}
 		
 		
@@ -2162,17 +2184,22 @@ class ajaxController extends bootstrap
 		// nb preteurs connect
 		$this->nbPreteurLogin = $this->clients_history->getNb($this->month,$this->year,'type = 1 AND status = 1',1);
 		
+		
+		/*
 		// nb emprunteur connect
 		$this->nbEmprunteurLogin = $this->clients_history->getNb($this->month,$this->year,'type > 1 AND status = 1',1);
 		
 		// nb depot dossier
 		$this->nbDepotDossier = $this->clients_history->getNb($this->month,$this->year,'type > 1 AND status = 3');
 		
+		// nb inscription emprunteur
+		$this->nbInscriptionEmprunteur = $this->clients_history->getNb($this->month,$this->year,'type > 1 AND status = 2',1);
+		
+		
+		*/
 		// nb inscription preteur
 		$this->nbInscriptionPreteur = $this->clients_history->getNb($this->month,$this->year,'type = 1 AND status = 2',1);
 		
-		// nb inscription emprunteur
-		$this->nbInscriptionEmprunteur = $this->clients_history->getNb($this->month,$this->year,'type > 1 AND status = 2',1);
 		
 		// fonds deposés
 		$this->nbFondsDeposes = $this->caParmois[$this->month];
@@ -3203,6 +3230,21 @@ class ajaxController extends bootstrap
 		}
 		if(count($list) != 0)
 		echo implode(' / ',$list);
+		else
+		echo "none";
+	}
+        
+        
+        
+        function _ibanExistV2(){
+		
+		$companies = $this->loadData('companies');
+		$list = array();
+		foreach($companies->select('id_client_owner != "'.$this->bdd->escape_string($_POST['id']).'" AND iban = "'.$this->bdd->escape_string($_POST['iban']).'"') as $company){
+			$list[] = $company['id_company'];
+		}
+		if(count($list) != 0)
+		echo implode('-',$list);
 		else
 		echo "none";
 	}

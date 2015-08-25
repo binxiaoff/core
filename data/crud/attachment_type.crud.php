@@ -25,68 +25,103 @@
 //  Coupable : CM
 //                                                                                   
 // **************************************************************************************************** //
-
-class companies extends companies_crud
+class attachment_type_crud
 {
-
-	function companies($bdd,$params='')
-    {
-        parent::companies($bdd,$params);
-    }
-    
-    function get($id,$field='id_company')
-    {
-        return parent::get($id,$field);
-    }
-    
-    function update($cs='')
-    {
-        parent::update($cs);
-    }
-    
-    function delete($id,$field='id_company')
-    {
-    	parent::delete($id,$field);
-    }
-    
-    function create($cs='')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
 	
-	function select($where='',$order='',$start='',$nb='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
-		if($order != '')
-			$order = ' ORDER BY '.$order;
-		$sql = 'SELECT * FROM `companies`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
-                
-		$resultat = $this->bdd->query($sql);
-		$result = array();
-		while($record = $this->bdd->fetch_array($resultat))
-		{
-			$result[] = $record;
-		}
-		return $result;
-	} 
-	
-	function counter($where='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
-			
-		$sql='SELECT count(*) FROM `companies` '.$where;
+	public $id;
+	public $label;
 
-		$result = $this->bdd->query($sql);
-		return (int)($this->bdd->result($result,0,0));
+	
+	function attachment_type($bdd,$params='')
+	{
+		$this->bdd = $bdd;
+		if($params=='')
+			$params = array();
+		$this->params = $params;
+		$this->id = '';
+		$this->label = '';
+
 	}
 	
-	function exist($id,$field='id_company')
+	function get($id,$field='id')
 	{
-		$sql = 'SELECT * FROM `companies` WHERE '.$field.'="'.$id.'"';
+		$sql = 'SELECT * FROM  `attachment_type` WHERE '.$field.'="'.$id.'"';
 		$result = $this->bdd->query($sql);
-		return ($this->bdd->fetch_array($result,0,0)>0);
+		
+		if($this->bdd->num_rows()==1)
+		{
+			$record = $this->bdd->fetch_array($result);
+		
+				$this->id = $record['id'];
+			$this->label = $record['label'];
+
+			return true;
+		}
+		else
+		{
+			$this->unsetData();
+			return false;
+		}
+	}
+	
+	function update($cs='')
+	{
+		$this->id = $this->bdd->escape_string($this->id);
+		$this->label = $this->bdd->escape_string($this->label);
+
+		
+		$sql = 'UPDATE `attachment_type` SET `label`="'.$this->label.'" WHERE id="'.$this->id.'"';
+		$this->bdd->query($sql);
+		
+		if($cs=='')
+		{
+	
+		}
+		else
+		{
+		
+		}
+		
+		$this->get($this->id,'id');
+	}
+	
+	function delete($id,$field='id')
+	{
+		if($id=='')
+			$id = $this->id;
+		$sql = 'DELETE FROM `attachment_type` WHERE '.$field.'="'.$id.'"';
+		$this->bdd->query($sql);
+	}
+	
+	function create($cs='')
+	{
+		$this->id = $this->bdd->escape_string($this->id);
+		$this->label = $this->bdd->escape_string($this->label);
+
+		
+		$sql = 'INSERT INTO `attachment_type`(`label`) VALUES("'.$this->label.'")';
+		$this->bdd->query($sql);
+		
+		$this->id = $this->bdd->insert_id();
+		
+		if($cs=='')
+		{
+	
+		}
+		else
+		{
+		
+		}
+		
+		$this->get($this->id,'id');
+		
+		return $this->id;
+	}
+	
+	function unsetData()
+	{
+		$this->id = '';
+		$this->label = '';
+
 	}
 }

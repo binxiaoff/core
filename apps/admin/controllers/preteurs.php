@@ -9,8 +9,8 @@ class preteursController extends bootstrap
 		parent::__construct($command,$config,$app);
 
 		$this->catchAll = true;
-
-		// Controle d'acces Ã  la rubrique
+		
+		// Controle d'acces à la rubrique
 		$this->users->checkAccess('preteurs');
 
 		// Activation du menu
@@ -157,7 +157,7 @@ class preteursController extends bootstrap
 		
 		if(isset($_POST['form_search_preteur']))
 		{
-			// check si on affiche les preteurs non valides
+			// check si on affcihe les preteurs non valides
 			if(isset($_POST['nonValide']) && $_POST['nonValide'] != false)$nonValide = 1;
 			else $nonValide = '';
 			
@@ -165,7 +165,7 @@ class preteursController extends bootstrap
 			$this->lPreteurs = $this->clients->searchPreteursV2($_POST['id'],$_POST['nom'],$_POST['email'],$_POST['prenom'],$_POST['raison_sociale'],$nonValide);
 			
 			// Mise en session du message
-			$_SESSION['freeow']['title'] = 'Recherche d\'un prÃªteur';
+			$_SESSION['freeow']['title'] = 'Recherche d\'un prêteur';
 			$_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
 		}
 		else
@@ -249,7 +249,7 @@ class preteursController extends bootstrap
 			$this->companies->get($this->lenders_accounts->id_company_owner,'id_company');
 		}
 		
-		// le nombre de prets effectuÃ©
+		// le nombre de prets effectué
 		$this->nb_pret = $this->loans->counter('id_lender = "'.$this->lenders_accounts->id_lender_account.'" AND status = 0');
 		
 		$this->txMoyen = $this->loans->getAvgPrets('id_lender = "'.$this->lenders_accounts->id_lender_account.'" AND status = 0');
@@ -316,7 +316,7 @@ class preteursController extends bootstrap
                     5 => 'Remboursement',
                     7 => $this->lng['profile']['alimentation-prelevement'],
                     8 => $this->lng['profile']['retrait'],
-                    14 => 'RÃ©gularisation prÃªteur',
+                    14 => 'Régularisation prêteur',
                     16 => 'Offre de bienvenue',
                     17 => 'Retrait offre de bienvenue',
                     19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
@@ -444,7 +444,7 @@ class preteursController extends bootstrap
 		else $timeCreate = strtotime($this->clients->added);
 		$this->timeCreate = $timeCreate;
 		
-		// liste des cvg signÃ©
+		// liste des cvg signé
 		$this->lAcceptCGV = $this->acceptations_legal_docs->select('id_client = '.$this->clients->id_client);
 		
 		
@@ -483,7 +483,7 @@ class preteursController extends bootstrap
 			// Construction du tableau avec les balises EMV
 			$tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 			
-			// Attribution des donnÃ©es aux variables
+			// Attribution des données aux variables
 			$sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);				
 			$texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
 			$exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
@@ -573,7 +573,7 @@ class preteursController extends bootstrap
 						$les_id_client_email_exist .= ' '.$checkEmailEx['id_client'];	
 					}
 					
-					$_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est dÃ©jÃ  utilisÃ© par le compte id '.$les_id_client_email_exist;
+					$_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id '.$les_id_client_email_exist;
 				}
 				else $this->clients->email = $_POST['email'];
 				
@@ -593,7 +593,7 @@ class preteursController extends bootstrap
 				// id nationalite
 				$this->clients->id_nationalite = $_POST['nationalite'];
 				
-				// On crÃ©er le client
+				// On créer le client
 				$this->clients->id_langue = 'fr';
 				$this->clients->type = 1;
 				$this->clients->fonction = '';
@@ -617,76 +617,28 @@ class preteursController extends bootstrap
 				// debut fichiers //
 				
 				// carte-nationale-didentite-passeport
-				if(isset($_FILES['fichier1']) && $_FILES['fichier1']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport/');
-					if($this->upload->doUpload('fichier1'))
-					{
-						if($this->lenders_accounts->fichier_cni_passeport != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_cni_passeport);
-						$this->lenders_accounts->fichier_cni_passeport = $this->upload->getName();
-					}
-				}
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
+
 				// autre
-				if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/autre/');
-					if($this->upload->doUpload('fichier7'))
-					{
-						if($this->lenders_accounts->fichier_autre != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_autre);
-						$this->lenders_accounts->fichier_autre = $this->upload->getName();
-					}
-				}
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
 				
 				// CNI/Passeport dirigeants
-				if(isset($_FILES['fichier2']) && $_FILES['fichier2']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport_dirigent/');
-					if($this->upload->doUpload('fichier2'))
-					{
-						if($this->lenders_accounts->fichier_cni_passeport_dirigent != '')@unlink($this->path.'protected/lenders/cni_passeport_dirigent/'.$this->lenders_accounts->fichier_cni_passeport_dirigent);
-						$this->lenders_accounts->fichier_cni_passeport_dirigent = $this->upload->getName();
-					}
-				}
-				// DÃ©lÃ©gation de pouvoir
-				if(isset($_FILES['fichier3']) && $_FILES['fichier3']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/delegation_pouvoir/');
-					if($this->upload->doUpload('fichier3'))
-					{
-						if($this->lenders_accounts->fichier_delegation_pouvoir != '')@unlink($this->path.'protected/companies/delegation_pouvoir/'.$this->lenders_accounts->fichier_delegation_pouvoir);
-						$this->lenders_accounts->fichier_delegation_pouvoir = $this->upload->getName();
-					}
-				}
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
+
+				// Délégation de pouvoir
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
+
 				// Extrait Kbis
-				if(isset($_FILES['fichier4']) && $_FILES['fichier4']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/extrait_kbis/');
-					if($this->upload->doUpload('fichier4'))
-					{
-						if($this->lenders_accounts->fichier_extrait_kbis != '')@unlink($this->path.'protected/lenders/extrait_kbis/'.$this->lenders_accounts->fichier_extrait_kbis);
-						$this->lenders_accounts->fichier_extrait_kbis = $this->upload->getName();
-					}
-				}
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
 				// justificatif-de-domicile
-				if(isset($_FILES['fichier5']) && $_FILES['fichier5']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/justificatif_domicile/');
-					if($this->upload->doUpload('fichier5'))
-					{
-						if($this->lenders_accounts->fichier_justificatif_domicile != '')@unlink($this->path.'protected/companies/justificatif_domicile/'.$this->lenders_accounts->fichier_justificatif_domicile);
-						$this->lenders_accounts->fichier_justificatif_domicile = $this->upload->getName();
-					}
-				}
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
+
 				// RIB
-				if(isset($_FILES['fichier6']) && $_FILES['fichier6']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/rib/');
-					if($this->upload->doUpload('fichier6'))
-					{
-						if($this->lenders_accounts->fichier_rib != '')@unlink($this->path.'protected/lenders/rib/'.$this->lenders_accounts->fichier_rib);
-						$this->lenders_accounts->fichier_rib = $this->upload->getName();
-					}
-				}
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
+
+                // document_fiscal
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
+
 				// Statuts
 				/*if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
 				{
@@ -721,19 +673,6 @@ class preteursController extends bootstrap
 					}
 				}
 				
-					// document_fiscal
-				if(isset($_FILES['document_fiscal']) && $_FILES['document_fiscal']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/document_fiscal/');
-					if($this->upload->doUpload('document_fiscal'))
-					{
-						if($this->lenders_accounts->fichier_document_fiscal != '')@unlink($this->path.'protected/lenders/document_fiscal/'.$this->lenders_accounts->fichier_document_fiscal);
-						$this->lenders_accounts->fichier_document_fiscal = $this->upload->getName();
-					}
-				}
-				
-				
-				
 				$old_exonere = $this->lenders_accounts->exonere;
 				$this->lenders_accounts->exonere = $_POST['exonere'];
 				$new_exonere = $this->lenders_accounts->exonere;
@@ -744,8 +683,8 @@ class preteursController extends bootstrap
 					$this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
 					$this->echeanciers = $this->loadData('echeanciers');
 					
-					// EQ-Acompte d'impÃ´t sur le revenu
-					$this->settings->get("EQ-Acompte d'impÃ´t sur le revenu",'type');
+					// EQ-Acompte d'impôt sur le revenu
+					$this->settings->get("EQ-Acompte d'impôt sur le revenu",'type');
 					$prelevements_obligatoires = $this->settings->value;
 			
 					$this->etranger = 0;
@@ -812,7 +751,7 @@ class preteursController extends bootstrap
 				$this->clients_adresses->update();
 				$this->lenders_accounts->update();
 				
-				// Si on a une entreprise reliÃ©e, on la supprime car elle n'a plus rien a faire ici. on est un particulier.
+				// Si on a une entreprise reliée, on la supprime car elle n'a plus rien a faire ici. on est un particulier.
 				if($this->companies->get($this->clients->id_client,'id_client_owner'))
 				{
 					$this->companies->delete($this->companies->id_company,'id_company');
@@ -829,7 +768,7 @@ class preteursController extends bootstrap
 				
 				if(isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1)
 				{
-					// On check si on a deja eu le compte validÃ© au moins une fois. si c'est pas le cas on check l'offre
+					// On check si on a deja eu le compte validé au moins une fois. si c'est pas le cas on check l'offre
 					if($this->clients_status_history->counter('id_client = '.$this->clients->id_client.' AND id_client_status = 6') == 0){
 						///////////// OFFRE DE BIENVENUE /////////////
 						$this->create_offre_bienvenue($this->clients->id_client); /// <------------------------------
@@ -922,7 +861,7 @@ class preteursController extends bootstrap
 					// Construction du tableau avec les balises EMV
 					$tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 					
-					// Attribution des donnÃ©es aux variables
+					// Attribution des données aux variables
 					$sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);				
 					$texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
 					$exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
@@ -953,12 +892,12 @@ class preteursController extends bootstrap
 					$this->echeanciers = $this->loadData('echeanciers');
 					$this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
 					
-					// EQ-Acompte d'impÃ´t sur le revenu
-					$this->settings->get("EQ-Acompte d'impÃ´t sur le revenu",'type');
+					// EQ-Acompte d'impôt sur le revenu
+					$this->settings->get("EQ-Acompte d'impôt sur le revenu",'type');
 					$prelevements_obligatoires = $this->settings->value;
 					
-					// EQ-Contribution additionnelle au PrÃ©lÃ¨vement Social
-					$this->settings->get('EQ-Contribution additionnelle au PrÃ©lÃ¨vement Social','type');
+					// EQ-Contribution additionnelle au Prélèvement Social
+					$this->settings->get('EQ-Contribution additionnelle au Prélèvement Social','type');
 					$contributions_additionnelles = $this->settings->value;
 					
 					// EQ-CRDS
@@ -969,16 +908,16 @@ class preteursController extends bootstrap
 					$this->settings->get('EQ-CSG','type');
 					$csg = $this->settings->value;
 					
-					// EQ-PrÃ©lÃ¨vement de SolidaritÃ©
-					$this->settings->get('EQ-PrÃ©lÃ¨vement de SolidaritÃ©','type');
+					// EQ-Prélèvement de Solidarité
+					$this->settings->get('EQ-Prélèvement de Solidarité','type');
 					$prelevements_solidarite = $this->settings->value;
 					
-					// EQ-PrÃ©lÃ¨vement social
-					$this->settings->get('EQ-PrÃ©lÃ¨vement social','type');
+					// EQ-Prélèvement social
+					$this->settings->get('EQ-Prélèvement social','type');
 					$prelevements_sociaux = $this->settings->value;
 					
-					// EQ-Retenue Ã  la source
-					$this->settings->get('EQ-Retenue Ã  la source','type');
+					// EQ-Retenue à la source
+					$this->settings->get('EQ-Retenue à la source','type');
 					$retenues_source = $this->settings->value;
 					
 					$this->etranger = 0;
@@ -1084,7 +1023,7 @@ class preteursController extends bootstrap
 						$les_id_client_email_exist .= ' '.$checkEmailEx['id_client'];	
 					}
 					
-					$_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est dÃ©jÃ  utilisÃ© par le compte id '.$les_id_client_email_exist;
+					$_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id '.$les_id_client_email_exist;
 				}
 				else $this->clients->email = $_POST['email_e'];
 				
@@ -1130,7 +1069,7 @@ class preteursController extends bootstrap
 				//$this->clients->secrete_reponse = '';
 					
 					
-				// On crÃ©e la l'entreprise si existe pas
+				// On crée la l'entreprise si existe pas
 				if($this->companies->exist($this->clients->id_client,'id_client_owner'))
 				{
 					$this->companies->update();
@@ -1158,77 +1097,30 @@ class preteursController extends bootstrap
 				else $this->lenders_accounts->precision = '';
 				
 				// debut fichiers //
-				
-				// carte-nationale-didentite-passeport
-				if(isset($_FILES['fichier1']) && $_FILES['fichier1']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport/');
-					if($this->upload->doUpload('fichier1'))
-					{
-						if($this->lenders_accounts->fichier_cni_passeport != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_cni_passeport);
-						$this->lenders_accounts->fichier_cni_passeport = $this->upload->getName();
-					}
-				}
-				// autre
-				if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/autre/');
-					if($this->upload->doUpload('fichier7'))
-					{
-						if($this->lenders_accounts->fichier_autre != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_autre);
-						$this->lenders_accounts->fichier_autre = $this->upload->getName();
-					}
-				}
-				// CNI/Passeport dirigeants
-				if(isset($_FILES['fichier2']) && $_FILES['fichier2']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport_dirigent/');
-					if($this->upload->doUpload('fichier2'))
-					{
-						if($this->lenders_accounts->fichier_cni_passeport_dirigent != '')@unlink($this->path.'protected/lenders/cni_passeport_dirigent/'.$this->lenders_accounts->fichier_cni_passeport_dirigent);
-						$this->lenders_accounts->fichier_cni_passeport_dirigent = $this->upload->getName();
-					}
-				}
-				// DÃ©lÃ©gation de pouvoir
-				if(isset($_FILES['fichier3']) && $_FILES['fichier3']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/delegation_pouvoir/');
-					if($this->upload->doUpload('fichier3'))
-					{
-						if($this->lenders_accounts->fichier_delegation_pouvoir != '')@unlink($this->path.'protected/companies/delegation_pouvoir/'.$this->lenders_accounts->fichier_delegation_pouvoir);
-						$this->lenders_accounts->fichier_delegation_pouvoir = $this->upload->getName();
-					}
-				}
-				// Extrait Kbis
-				if(isset($_FILES['fichier4']) && $_FILES['fichier4']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/extrait_kbis/');
-					if($this->upload->doUpload('fichier4'))
-					{
-						if($this->lenders_accounts->fichier_extrait_kbis != '')@unlink($this->path.'protected/lenders/extrait_kbis/'.$this->lenders_accounts->fichier_extrait_kbis);
-						$this->lenders_accounts->fichier_extrait_kbis = $this->upload->getName();
-					}
-				}
-				// justificatif-de-domicile
-				if(isset($_FILES['fichier5']) && $_FILES['fichier5']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/justificatif_domicile/');
-					if($this->upload->doUpload('fichier5'))
-					{
-						if($this->lenders_accounts->fichier_justificatif_domicile != '')@unlink($this->path.'protected/companies/justificatif_domicile/'.$this->lenders_accounts->fichier_justificatif_domicile);
-						$this->lenders_accounts->fichier_justificatif_domicile = $this->upload->getName();
-					}
-				}
-				// RIB
-				if(isset($_FILES['fichier6']) && $_FILES['fichier6']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/rib/');
-					if($this->upload->doUpload('fichier6'))
-					{
-						if($this->lenders_accounts->fichier_rib != '')@unlink($this->path.'protected/lenders/rib/'.$this->lenders_accounts->fichier_rib);
-						$this->lenders_accounts->fichier_rib = $this->upload->getName();
-					}
-				}
+
+                // carte-nationale-didentite-passeport
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
+
+                // autre
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
+
+                // CNI/Passeport dirigeants
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
+
+                // Délégation de pouvoir
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
+
+                // Extrait Kbis
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
+                // justificatif-de-domicile
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
+
+                // RIB
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
+
+                // document_fiscal
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
+
 				// Statuts
 				/*if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
 				{
@@ -1263,18 +1155,7 @@ class preteursController extends bootstrap
 						
 					}
 				}
-				
-				// document_fiscal
-				if(isset($_FILES['document_fiscal']) && $_FILES['document_fiscal']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/document_fiscal/');
-					if($this->upload->doUpload('document_fiscal'))
-					{
-						if($this->lenders_accounts->fichier_document_fiscal != '')@unlink($this->path.'protected/lenders/document_fiscal/'.$this->lenders_accounts->fichier_document_fiscal);
-						$this->lenders_accounts->fichier_document_fiscal = $this->upload->getName();
-					}
-				}
-				
+
 				// fin fichier //
 						
 				// On met a jour le lender
@@ -1343,7 +1224,7 @@ class preteursController extends bootstrap
 					// Construction du tableau avec les balises EMV
 					$tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 					
-					// Attribution des donnÃ©es aux variables
+					// Attribution des données aux variables
 					$sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);				
 					$texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
 					$exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
@@ -1461,7 +1342,7 @@ class preteursController extends bootstrap
 			$this->lPreteurs = $this->clients->searchPreteursV2($_POST['id'],$_POST['nom'],$_POST['email'],$_POST['prenom'],$_POST['raison_sociale'],$nonValide);
 			
 			// Mise en session du message
-			$_SESSION['freeow']['title'] = 'Recherche d\'un prÃªteur non inscript';
+			$_SESSION['freeow']['title'] = 'Recherche d\'un prêteur non inscript';
 			$_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
 		}
 		else
@@ -1492,7 +1373,7 @@ class preteursController extends bootstrap
 		}
 	}
 	
-	// Activation des comptes prÃªteurs
+	// Activation des comptes prêteurs
 	function _activation()
 	{
         //On appelle la fonction de chargement des donnÃ©es
@@ -1510,7 +1391,7 @@ class preteursController extends bootstrap
 				if($this->lenders_accounts->get($this->clients->id_client,'id_client_owner'));
 				{
 					
-					// On verifie si on a deja une enchere d'effectuÃ© par ce compte
+					// On verifie si on a deja une enchere d'effectué par ce compte
 					$nb = $this->bids->counter('id_lender_account = '.$this->lenders_accounts->id_lender_account);
 					if($nb > 0){
 						
@@ -2001,7 +1882,7 @@ class preteursController extends bootstrap
 				else $offres_bienvenues->id_offre_bienvenue = $offres_bienvenues->create();
 				
 				$_SESSION['freeow']['title'] 	= 'Offre de bienvenue';
-				$_SESSION['freeow']['message'] 	= 'Offre de bienvenue ajoutÃ©';	
+				$_SESSION['freeow']['message'] 	= 'Offre de bienvenue ajouté';	
 			}
 			else{
 				$_SESSION['freeow']['title'] 	= 'Offre de bienvenue';
@@ -2014,7 +1895,7 @@ class preteursController extends bootstrap
 		
 		// Somme des virements unilend offre de bienvenue
 		$sumVirementUnilendOffres = $transactions->sum('status = 1 AND etat = 1 AND type_transaction = 18','montant');
-		// Somme des offres utilisÃ©
+		// Somme des offres utilisé
 		$sumOffresTransac = $transactions->sum('status = 1 AND etat = 1 AND type_transaction IN(16,17)','montant');
 		// Somme reel dispo
 		$this->sumDispoPourOffres = ($sumVirementUnilendOffres - $sumOffresTransac);
@@ -2100,7 +1981,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 				
 				// Somme des virements unilend offre de bienvenue
 				$sumVirementUnilendOffres = $transactions->sum('status = 1 AND etat = 1 AND type_transaction = 18','montant');
-				// Somme des offres utilisÃ©
+				// Somme des offres utilisé
 				$sumOffresTransac = $transactions->sum('status = 1 AND etat = 1 AND type_transaction IN(16,17)','montant');
 				// Somme reel dispo
 				$sumDispoPourOffres = ($sumVirementUnilendOffres - $sumOffresTransac);
@@ -2108,7 +1989,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 				echo " -> $sumOffresPlusOffre <= $offres_bienvenues->montant_limit" ; var_dump($sumOffresPlusOffre <= $offres_bienvenues->montant_limit);
 				echo " -> $sumDispoPourOffres >= $offres_bienvenues->montant" ; var_dump($sumDispoPourOffres >= $offres_bienvenues->montant);
 				
-				// On regarde que l'offre soit pas terminÃ©
+				// On regarde que l'offre soit pas terminé
 				if(strtotime($offres_bienvenues->debut) <= time() && $sumOffresPlusOffre <= $offres_bienvenues->montant_limit && $sumDispoPourOffres >= $offres_bienvenues->montant){
 					print_r(" -> #3");
 					// Motif
@@ -2119,7 +2000,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 					// Lender
 					$lenders_accounts->get($this->clients->id_client,'id_client_owner');
 					
-					// offres_bienvenues_details (on gÃ©nÃ¨re l'offre pour le preteur)
+					// offres_bienvenues_details (on génère l'offre pour le preteur)
 					$offres_bienvenues_details->id_offre_bienvenue 			= $offres_bienvenues->id_offre_bienvenue;
 					$offres_bienvenues_details->motif 						= $this->motifOffreBienvenue;
 					$offres_bienvenues_details->id_client 					= $this->clients->id_client;
@@ -2179,7 +2060,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 					// Construction du tableau avec les balises EMV
 					$tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 					
-					// Attribution des donnÃ©es aux variables
+					// Attribution des données aux variables
 					$sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);				
 					$texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
 					$exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
@@ -2232,13 +2113,13 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 				
 				// Somme des virements unilend offre de bienvenue
 				$sumVirementUnilendOffres = $transactions->sum('status = 1 AND etat = 1 AND type_transaction = 18','montant');
-				// Somme des offres utilisÃ©
+				// Somme des offres utilisé
 				$sumOffresTransac = $transactions->sum('status = 1 AND etat = 1 AND type_transaction IN(16,17)','montant');
 				// Somme reel dispo
 				$sumDispoPourOffres = ($sumVirementUnilendOffres - $sumOffresTransac);
 				
 				
-				// On regarde que l'offre soit pas terminÃ©
+				// On regarde que l'offre soit pas terminé
 				if(strtotime($offres_bienvenues->debut) <= time() && strtotime($offres_bienvenues->fin.' 23:59:59') >= time() && $sumOffresPlusOffre <= $offres_bienvenues->montant_limit && $sumDispoPourOffres >= $offres_bienvenues->montant){
 					
 					// Motif
@@ -2249,7 +2130,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 					// Lender
 					$lenders_accounts->get($this->clients->id_client,'id_client_owner');
 					
-					// offres_bienvenues_details (on gÃ©nÃ¨re l'offre pour le preteur)
+					// offres_bienvenues_details (on génère l'offre pour le preteur)
 					$offres_bienvenues_details->id_offre_bienvenue 			= $offres_bienvenues->id_offre_bienvenue;
 					$offres_bienvenues_details->motif 						= $this->motifOffreBienvenue;
 					$offres_bienvenues_details->id_client 					= $this->clients->id_client;
@@ -2309,7 +2190,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 					// Construction du tableau avec les balises EMV
 					$tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 					
-					// Attribution des donnÃ©es aux variables
+					// Attribution des données aux variables
 					$sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);				
 					$texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
 					$exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
@@ -2336,6 +2217,62 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 				}
 			}
 		}
+	}
+
+	private function uploadAttachment($lenderAccountId, $attachmentType)
+	{
+		if(false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
+			$this->attachmentHelper = $this->loadLib('attachment_helper');
+		}
+
+		if(false === isset($this->upload) || false === $this->upload instanceof upload) {
+			$this->upload = $this->loadLib('upload');
+		}
+
+		if(false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
+			$this->attachment = $this->loadData('attachment');
+		}
+
+		$basePath = 'protected/lenders/';
+
+		switch($attachmentType) {
+			case attachment_type::CNI_PASSPORTE :
+				$field = 'fichier1';
+				$uploadPath = $basePath.'cni_passeport/';
+				break;
+			case attachment_type::JUSTIFICATIF_FISCAL :
+				$field = 'document_fiscal';
+				$uploadPath = $basePath.'document_fiscal/';
+				break;
+			case attachment_type::JUSTIFICATIF_DOMICILE :
+				$field = 'fichier5';
+				$uploadPath = $basePath.'justificatif_domicile/';
+				break;
+			case attachment_type::RIB :
+				$field = 'fichier6';
+				$uploadPath = $basePath.'rib/';
+				break;
+			case attachment_type::AUTRE1 :
+				$field = 'fichier7';
+				$uploadPath = $basePath.'autre/';
+				break;
+			case attachment_type::CNI_PASSPORTE_DIRIGEANT :
+				$field = 'fichier2';
+				$uploadPath = $basePath.'cni_passeport_dirigent/';
+				break;
+			case attachment_type::KBIS :
+				$field = 'fichier4';
+				$uploadPath = $basePath.'extrait_kbis/';
+				break;
+			case attachment_type::DELEGATION_POUVOIR :
+				$field = 'fichier3';
+				$uploadPath = $basePath.'delegation_pouvoir/';
+				break;
+			default :
+				return false;
+		}
+
+		return $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->path, $uploadPath, $this->upload, $this->attachment);
 	}
 
 	public function _email_history(){
