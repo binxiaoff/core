@@ -3206,5 +3206,20 @@ class ajaxController extends bootstrap
 		else
 		echo "none";
 	}
+        
+        
+        
+        function _ibanExistV2(){
+		
+		$companies = $this->loadData('companies');
+		$list = array();
+		foreach($companies->select('id_client_owner != "'.$this->bdd->escape_string($_POST['id']).'" AND iban = "'.$this->bdd->escape_string($_POST['iban']).'"') as $company){
+			$list[] = $company['id_company'];
+		}
+		if(count($list) != 0)
+		echo implode('-',$list);
+		else
+		echo "none";
+	}
 	
 }

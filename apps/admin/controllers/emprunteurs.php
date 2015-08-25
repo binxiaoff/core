@@ -880,4 +880,30 @@ class emprunteursController extends bootstrap
         $this->date_activation = date('d/m/Y');
     }
 
+    function _RIB_iban_existant()
+    {
+        // On masque les Head, header et footer originaux plus le debug
+        $this->autoFireHeader = false;
+        $this->autoFireHead = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug = false;
+
+        // On place le redirect sur la home
+        $_SESSION['request_url'] = $this->url;
+
+        //recuperation de la liste des compagnies avec le même iban
+        $list_comp = explode('-',  $this->params[0]);
+        $this->list_comp = $sep = "";
+    
+        foreach($list_comp as $company)
+        {
+            //recuperation du nom de la compagnie
+            $companies = $this->loadData('companies');
+            if($companies->get($company))
+            {            
+                $this->list_comp .= $company.': '.$companies->name.' <br />';
+            }
+        }
+        
+    }
 }

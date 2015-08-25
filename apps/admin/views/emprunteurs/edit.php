@@ -279,6 +279,16 @@ if (isset($_SESSION['freeow']))
         {
             if (iban == "<?= $this->companies->iban ?>" && document.getElementById('bic').value == "<?= $this->companies->bic ?>")
                 return true;
+            
+            
+            List_compagnie_meme_iban = CheckIfIbanExistDeja(iban, <?= $this->clients->id_client ?>);
+            
+            if (List_compagnie_meme_iban != "none")
+            {               
+                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIB_iban_existant/'+List_compagnie_meme_iban});
+                return false;
+            }    
+                
                 
             if (<?= count($this->loadData('prelevements')->select('status = 0 AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0)
             {
@@ -289,6 +299,7 @@ if (isset($_SESSION['freeow']))
             {
                 return true;
             }
+            
             
             
 
