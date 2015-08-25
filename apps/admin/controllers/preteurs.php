@@ -2348,6 +2348,13 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 		// On recup les infos du client
 		$this->clients->get($this->lenders_accounts->id_client_owner,'id_client');
 
+		$this->clients_adresses->get($this->clients->id_client,'id_client');
+
+		if(in_array($this->clients->type,array(2,4)))
+		{
+			$this->companies->get($this->lenders_accounts->id_company_owner,'id_company');
+		}
+
 /*		PARTIE PREFERENCES NOTIFICATION*/
 
 		//Préférences Notifications
@@ -2364,20 +2371,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 //		à venir
 
 
-    $this->loadGestionData();
 
-        // On recup les infos du client
-        $this->lenders_accounts->get($this->params[0],'id_lender_account');
-
-        // On recup les infos du client
-        $this->clients->get($this->lenders_accounts->id_client_owner,'id_client');
-
-        $this->clients_adresses->get($this->clients->id_client,'id_client');
-
-        if(in_array($this->clients->type,array(2,4)))
-        {
-            $this->companies->get($this->lenders_accounts->id_company_owner,'id_company');
-        }
 
 	}
 
@@ -2402,7 +2396,6 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 		{
 			$this->companies->get($this->lenders_accounts->id_company_owner,'id_company');
 		}
-
 
 		// vient de operations.php
 		// conf par defaut pour la date (1M)
@@ -2448,34 +2441,6 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 			$this->lSumLoans = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account,$year,'next_echeance ASC');
 
 			$this->arrayDeclarationCreance = array(1456,1009, 1614, 3089);
-
-
-			function _vos_operations()
-			{
-				// On masque les Head, header et footer originaux plus le debug
-				$this->autoFireHeader 	= false;
-				$this->autoFireHead 	= false;
-				$this->autoFireFooter 	= false;
-				$this->autoFireDebug 	= false;
-			}
-
-			function _vos_prets()
-			{
-				// On masque les Head, header et footer originaux plus le debug
-				$this->autoFireHeader 	= false;
-				$this->autoFireHead 	= false;
-				$this->autoFireFooter 	= false;
-				$this->autoFireDebug 	= false;
-			}
-
-			function _histo_transac()
-			{
-				// On masque les Head, header et footer originaux plus le debug
-				$this->autoFireHeader = false;
-				$this->autoFireHead = false;
-				$this->autoFireFooter = false;
-				$this->autoFireDebug = false;
-			}
 
         //nombre de projets en ligne depuis son inscription
         $this->nblingne = count($this->projects->selectProjectsByStatus(50));
