@@ -801,13 +801,20 @@ class ajaxController extends bootstrap
 				$this->clients->fonction = $_POST['fonction_etape2'];
 				
 				///////// on check si mail existe deja si c'est le cas on rajoute l'id projet
-				//$clients = $this->loadData('clients');
-				/*if($clients->get($_POST['email_etape2'],'email') && strpos($_POST['email_etape2'], $this->projects->id_project) === false){*/
-				if($this->clients->counter('email = "'.$_POST['email_etape2'].'" AND id_client <> '.$this->clients->id_client) > 0){
-					$this->clients->email = $_POST['email_etape2'];
-					$this->clients->email .= '-'.$this->projects->id_project;
-				}
-				//////////
+                                //$clients = $this->loadData('clients');
+                                /* if($clients->get($_POST['email_etape2'],'email') && strpos($_POST['email_etape2'], $this->projects->id_project) === false){ */
+
+                                if ($this->clients->counter('email = "' . $_POST['email_etape2'] . '" AND id_client <> ' . $this->clients->id_client) > 0)
+                                {
+
+                                    $this->clients->email = $_POST['email_etape2'];
+                                    $this->clients->email .= '-' . $this->projects->id_project;
+                                }
+                                elseif ($this->clients->email != $_POST['email_etape2'])
+                                {
+                                    $this->clients->email = $_POST['email_etape2'];
+                                }
+                                //////////
 				
 				$this->clients->telephone = $_POST['phone_new_etape2'];
 				
