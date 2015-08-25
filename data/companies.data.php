@@ -62,7 +62,7 @@ class companies extends companies_crud
 		if($order != '')
 			$order = ' ORDER BY '.$order;
 		$sql = 'SELECT * FROM `companies`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
-
+                
 		$resultat = $this->bdd->query($sql);
 		$result = array();
 		while($record = $this->bdd->fetch_array($resultat))
