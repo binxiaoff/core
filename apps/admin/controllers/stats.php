@@ -664,9 +664,13 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 					$csv .= " \n";
 				}
 				
-				foreach($e as $key=>$field)
-				if(!is_numeric($key))
-				$csv .= $field."; ";
+				foreach($e as $key=>$field){
+					if(!is_numeric($key)){
+						if ($key == 'Adresse') 
+							$field = preg_replace('~[\r\n\t]+~', '', $field);
+						$csv .= $field."; ";
+					}
+				}
 				$csv .= " \n";
 			$i++;
 			}
@@ -1464,8 +1468,8 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 		$csv .= $header." \n";
 		
 
-		$annee = '2014';
-		$date = '31/12/2014';
+		$annee = '2015';
+		$date = '31/12/2015';
 			
 		/*$sql = '
 		SELECT 

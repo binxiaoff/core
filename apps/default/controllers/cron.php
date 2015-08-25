@@ -1231,20 +1231,34 @@ class cronController extends bootstrap
                 foreach ($lEcheanciers as $k => $e)
                 {
                     // on prend le nombre de jours dans le mois au lieu du mois
-                    $nbjourstemp = mktime(0, 0, 0, date("m") + $k, 1, date("Y"));
-                    $nbjoursMois += date('t', $nbjourstemp);
+//                    $nbjourstemp = mktime(0, 0, 0, date("m") + $k, 1, date("Y"));
+//                    $nbjoursMois += date('t', $nbjourstemp);
+//
+//                    // Date d'echeance preteur
+//                    $dateEcheance = $this->dates->dateAddMoisJours($this->projects->date_fin, 0, $nb_jours + $nbjoursMois);
+//                    $dateEcheance = date('Y-m-d H:i', $dateEcheance) . ':00';
+//
+//                    // Date d'echeance emprunteur
+//                    $dateEcheance_emprunteur = $this->dates->dateAddMoisJours($this->projects->date_fin, 0, $nbjoursMois);
+//                    // on retire 6 jours ouvrés
+//                    $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur, 6);
+//
+//                    $dateEcheance_emprunteur = date('Y-m-d H:i', $dateEcheance_emprunteur) . ':00';
 
+                    // on prend le nombre de jours dans le mois au lieu du mois
+                    //$nbjourstemp = mktime (0,0,0,date("m")+$k ,1,date("Y"));
+                    //$nbjoursMois += date('t',$nbjourstemp);
+                    
                     // Date d'echeance preteur
-                    $dateEcheance = $this->dates->dateAddMoisJours($this->projects->date_fin, 0, $nb_jours + $nbjoursMois);
-                    $dateEcheance = date('Y-m-d H:i', $dateEcheance) . ':00';
-
+                    $dateEcheance = $this->dates->dateAddMoisJoursV3($this->projects->date_fin,$k,$nb_jours);
+                    $dateEcheance = date('Y-m-d h:i',$dateEcheance).':00';
+                    
                     // Date d'echeance emprunteur
-                    $dateEcheance_emprunteur = $this->dates->dateAddMoisJours($this->projects->date_fin, 0, $nbjoursMois);
+                    $dateEcheance_emprunteur = $this->dates->dateAddMoisJoursV3($this->projects->date_fin,$k);
+                    
                     // on retire 6 jours ouvrés
-                    $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur, 6);
-
-                    $dateEcheance_emprunteur = date('Y-m-d H:i', $dateEcheance_emprunteur) . ':00';
-
+                    $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur,6);
+                    $dateEcheance_emprunteur = date('Y-m-d H:i',$dateEcheance_emprunteur).':00';
 
 
                     // particulier
@@ -12441,7 +12455,7 @@ class cronController extends bootstrap
                             $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
 
                             // on recup la premiere echeance
-                            $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($this->projects->id_project, $this->loans->id_lender, $thid->loans->id_loan);
+                            $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($this->projects->id_project, $this->loans->id_lender, $this->loans->id_loan);
 
                             // Variables du mailing
 
@@ -12646,7 +12660,7 @@ class cronController extends bootstrap
 
                             //$sumInt = $this->echeanciers->getSumRembByloan($this->transactions->id_loan_remb,'interets');
                             // Récupération de la sommes des intérets deja versé au lender
-                            $sumInt = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND id_loan = '.$this->transactions->id_loan_remb.' AND status_ra = 0 AND status = 1 AND id_lender ='.$this->echeanciers->id_lender,'interets');  
+                            $sumInt = $this->echeanciers->getSumRembByloan_remb_ra($this->transactions->id_loan_remb,'interets');
 							
                             // on ajoute aussi une variable dans le cas d'un rmbt anticipe
                             /*$contenu_remboursement_anticipe = "
@@ -13698,7 +13712,7 @@ class cronController extends bootstrap
                         $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
 
                         // on recup la premiere echeance
-                        $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($this->projects->id_project, $this->loans->id_lender, $thid->loans->id_loan);
+                        $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($this->projects->id_project, $this->loans->id_lender, $this->loans->id_loan);
 
                         // Variables du mailing
 

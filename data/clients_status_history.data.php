@@ -90,7 +90,12 @@ class clients_status_history extends clients_status_history_crud
 		return ($this->bdd->fetch_array($result,0,0)>0);
 	}
 	
-	function addStatus($id_user,$status,$id_client,$content='')
+	/*
+		2015-08-24 : Ajout du paramètre manquant pour la relance complétude client (numerorelance). Autres modifications sur cron.php
+	
+	*/
+	
+	function addStatus($id_user,$status,$id_client,$content='',$numerorelance=false)
 	{
 		$sql='SELECT id_client_status FROM `clients_status` WHERE status = '.$status.' ';
 
@@ -101,6 +106,8 @@ class clients_status_history extends clients_status_history_crud
 		$this->id_client_status = $id_client_status;
 		$this->id_user = $id_user;
 		$this->content = $content;
+		if (is_integer($numerorelance))
+			$this->numero_relance=$numerorelance;
 		$this->id_client_status_history = $this->create();
 		return $this->id_client_status_history;
 	}

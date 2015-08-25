@@ -858,7 +858,13 @@ class dossiersController extends bootstrap
                                 //mail('courtier.damien@gmail.com','alert change statut 2','statut : '.$_POST['status'].' projet : '.$this->projects->id_project .' strlen : '.strlen($mess).' mess : '.$mess);
 
                                 $to = 'unilend@equinoa.fr' . ', ';
-                                $to .= 'nicolas.lesur@unilend.fr';
+                                
+                                if($this->Config['env'] == 'prod') // nmp
+                                {
+                                        $to .= 'nicolas.lesur@unilend.fr';
+                                }
+                                
+                                
                                 //$to  = 'courtier.damien@gmail.com';
                                 // subject
                                 $subject = '[Rappel] Donnees projet manquantes';
@@ -1311,6 +1317,8 @@ class dossiersController extends bootstrap
                         $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 75, $this->projects->id_project);
                         $lesloans = $loans->select('id_project = ' . $this->projects->id_project);
 
+						$companies->get($this->projects->id_company, 'id_company');
+						
                         foreach ($lesloans as $l)
                         {
 
@@ -1320,9 +1328,8 @@ class dossiersController extends bootstrap
                             {
 
                                 // On recup le projet
-                                $projects->get($l['id_project'], 'id_project');
                                 // On recup l'entreprise
-                                $companies->get($projects->id_company, 'id_company');
+                                
 
                                 // On recup lender
                                 $lenders->get($l['id_lender'], 'id_lender_account');
