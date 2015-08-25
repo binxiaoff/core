@@ -30,31 +30,34 @@
             $('#changeDate').attr('href', "<?=$this->lurl?>/preteurs/edit/<?=$this->params[0]?>/" + $(this).val());
         });
 
-    });
-    //partie qui vient de la vue "vos_operations"
-    $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
+        //partie qui vient de la vue "vos_operations"
+        $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
-    $("#debut").datepicker({
-        changeMonth: true,
-        changeYear: true,
-        yearRange: '<?=(date('Y')-40)?>:<?=(date('Y'))?>',
-        maxDate: '<?=$this->date_fin_display?>',
-        onClose: function (selectedDate) {
-            $("#fin").datepicker("option", "minDate", selectedDate);
-        }
+        $("#debut").datepicker({
+            showOn: 'both',
+        buttonImage: '<?=$this->surl?>/images/admin/calendar.gif',
+        buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '<?=(date('Y')-40)?>:<?=(date('Y'))?>',
+            maxDate: '<?=$this->date_fin_display?>',
+            onClose: function (selectedDate) {
+                $("#fin").datepicker("option", "minDate", selectedDate);
+            }
+        });
+        $("#fin").datepicker({
+            showOn: 'both',
+        buttonImage: '<?=$this->surl?>/images/admin/calendar.gif',
+        buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '<?=(date('Y')-40)?>:<?=(date('Y'))?>',
+            minDate: '<?=$this->date_debut_display?>',
+            onClose: function (selectedDate) {
+                $("#debut").datepicker("option", "maxDate", selectedDate);
+            }
+        });
     });
-    $("#fin").datepicker({
-        changeMonth: true,
-        changeYear: true,
-        yearRange: '<?=(date('Y')-40)?>:<?=(date('Y'))?>',
-        minDate: '<?=$this->date_debut_display?>',
-        onClose: function (selectedDate) {
-            $("#debut").datepicker("option", "maxDate", selectedDate);
-        }
-    });
-
-    })
-    ;
 
     <!--partie copié de la vue "edit"-->
     <?
@@ -76,12 +79,8 @@ if(isset($_SESSION['freeow']))
 </script>
 <!--vient de "vos_operations"-->
 <style type="text/css">
-    .iconplusmoins {
-        color: white;
-        font-size: 18px;
-        cursor: default;
-        vertical-align: middle;
-    }
+
+
 
     .vos_operations {
         font-size: 13px;
@@ -141,9 +140,6 @@ if(isset($_SESSION['freeow']))
         background: #fafafa;
     }
 
-    .vos_operations .icon-arrows {
-        cursor: pointer;
-    }
 
     .vos_operations .companieleft {
         text-align: left;
@@ -156,37 +152,6 @@ if(isset($_SESSION['freeow']))
     .vos_operations_ligne {
         display: inline-block;
         vertical-align: top;
-    }
-
-    /*.vos_operations .print{margin-top: 3px;}
-    .vos_operations .xls{margin-top: 6px;}*/
-
-    .vos_operations .print {
-        margin-top: 8px;
-        width: 50px;
-    }
-
-    .vos_operations .xls {
-        margin-top: 6px;
-        width: 50px;
-    }
-
-    .load_table_vos_operations {
-        background: none repeat scroll 0 0 white;
-        border: 1px solid #b10366;
-        border-radius: 5px;
-        display: none;
-        height: 50px;
-        left: 48%;
-        margin: 65px auto auto;
-        padding: 5px;
-        position: absolute;
-        text-align: center;
-        width: 100px;
-    }
-
-    .th-wrap {
-        color: white;
     }
 
     .table-filter .period {
@@ -212,23 +177,6 @@ if(isset($_SESSION['freeow']))
         width: 40px;
     }
 
-    .c2-sb-wrap {
-        z-index: 1;
-    }
-
-    .table-filter .period .c2-sb-wrap {
-        z-index: 10;
-    }
-
-    .populated .c2-sb-text,
-    .populated {
-        color: #b20066 !important;
-    }
-
-    .table-filter .export {
-        float: right;
-    }
-
     .table-filter .filtre {
         float: left;
         border: 1px solid;
@@ -239,20 +187,6 @@ if(isset($_SESSION['freeow']))
         width: 420px;
     }
 
-    .vos_operations .th-wrap {
-        text-align: center;
-        /*width: 100px;*/
-        font-size: 12px;
-    }
-
-    .filtre .c2-sb-wrap {
-        width: 200px;
-    }
-
-    .filtre .c2-sb-text {
-        width: 140px !important;
-    }
-
     .soustable tr td {
         padding-top: 5px !important;
         padding-bottom: 5px !important;
@@ -260,6 +194,10 @@ if(isset($_SESSION['freeow']))
 
     .title-ope {
         margin-top: 12.5px;
+
+    .override_plus{  line-height: 18px !important; height: 15px !important;   padding: 0 4px !important;   top: 0px !important; width:10px;}
+
+    .title-ope{margin-top:12.5px !important;}
     }
 
 </style>
@@ -303,18 +241,334 @@ if(isset($_SESSION['freeow']))
     <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
 
     <div class="btnDroite">
-        <a
-            href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>"
+        <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>"
             class="btn_link">Consulter Prêteur</a>
-        <a
-            href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>"
+        <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>"
             class="btn_link">Toutes les infos</a>
         <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>"
            class="btn_link">Historique des emails</a>
     </div>
         <br>
 
-<!--Table pour choisire la periode d'affichage-->
+
+
+<!--HISTORIQUE DES PRETS-->
+
+    <h2>Prêts</h2>
+    <div class="table-filter clearfix">
+        <p class="left">Historique des projets financés depuis le compte Unilend n°<?=$this->clients->id_client?></p>
+            <select name="anneeDetailPret" id="anneeDetailPret" class="custom-select field-mini" >
+                <option value="<?=date('Y')?>">Année <?=date('Y')?></option>
+                <?
+                for($i=date('Y');$i>=2013;$i--){
+                    ?><option value="<?=$i?>">Année <?=$i?></option><?
+                }
+                ?>
+            </select>
+    </div>
+    <div><!-- debut div preteurs -->
+        <table class="tablesorter">
+            <thead>
+            <tr>
+                <th style="text-align: left">Projet</th>
+                <th style="text-align: left">Note</th>
+                <th style="text-align: left">Montant prêté</th>
+                <th style="text-align: left">Taux d'intérêt</th>
+                <th style="text-align: left">Début</th>
+                <th style="text-align: left">Prochaine</th>
+                <th style="text-align: left">Fin</th>
+                <th style="text-align: left">Mensualité</th>
+            </tr>
+            </thead>
+            <?
+            if($this->lSumLoans != false)
+            {
+                $i=1;
+                foreach($this->lSumLoans as $k => $l)
+                {
+                    $Le_projects = $this->loadData('projects');
+                    $Le_projects->get($l['id_project']);
+                    $this->projects_status->getLastStatut($l['id_project']);
+
+                    //si un seul loan sur le projet
+                    if($l['nb_loan'] == 1){
+                        ?>
+                        <tr class="<?=($i%2 == 1?'':'odd')?>">
+                            <td><h5><?=$l['name']?></h5></td>
+                            <td><?=$l['risk']?></td>
+                            <td><?=number_format($l['amount'], 2, ',', ' ')?> €</td>
+                            <td><?=number_format($l['rate'], 2, ',', ' ')?> %</td>
+                            <td><?=$this->dates->formatDate($l['debut'],'d/m/Y')?></td>
+                            <td><?=$this->dates->formatDate($l['next_echeance'],'d/m/Y')?></td>
+                            <td><?=$this->dates->formatDate($l['fin'],'d/m/Y')?></td>
+                            <td><?=number_format($l['mensuel'], 2, ',', ' ')?> €/mois</td>
+                            <td>
+                                <?
+                                if($this->projects_status->status >=80)
+                                {
+                                    ?>
+                                    <a href="<?=$this->lurl.'/pdf/contrat/'.$this->clients->hash.'/'.$l['id_loan_if_one_loan']?>">
+                                        <img src="<?=$this->surl?>/styles/default/images/pdf50.png" class="btn-detailLoans_<?=$k?>" style="margin-right: 20px;"/></a>
+                                    <?php
+                                }
+                                ?>
+                            </td>
+                        </tr>
+                        <?php
+                        // Debut déclaration de créances //
+                        if(in_array($l['id_project'],$this->arrayDeclarationCreance)){
+
+                            $i++;
+                            ?>
+                            <tr>
+                                <td><h5><?=$l['name']?></h5></td>
+                                <td><?=$l['risk']?></td>
+                                <td><?=number_format($l['amount'], 2, ',', ' ')?> €</td>
+                                <td><?=number_format($l['rate'], 2, ',', ' ')?> %</td>
+                                <td><?=$this->dates->formatDate($l['debut'],'d/m/Y')?></td>
+                                <td><?=$this->dates->formatDate($l['next_echeance'],'d/m/Y')?></td>
+                                <td><?=$this->dates->formatDate($l['fin'],'d/m/Y')?></td>
+                                <td><?=number_format($l['mensuel'], 2, ',', ' ')?>€/mois</td>
+                                <td>
+                                    <a style="vertical-align: middle;font-size: 10px;" href="<?=$this->lurl.'/pdf/declaration_de_creances/'.$this->clients->hash.'/'.$l['id_loan_if_one_loan']?>" class="btn btn-info btn-small multi"><?=$this->lng['preteur-operations-detail']['declaration-de-creances']?></a>
+                                </td>
+                            </tr>
+                            <?php
+                        }
+                        // Fin Déclaration de créances //
+                        $i++;
+                    }
+                    // Si plus
+                    else{
+                        ?>
+                        <tr>
+                            <td><h5><?=$l['name']?></h5></td>
+                            <td><?=$l['risk']?>"></td>
+                            <td><?=number_format($l['amount'], 2, ',', ' ')?> €</td>
+                            <td><?=number_format($l['rate'], 2, ',', ' ')?> %</td>
+                            <td><?=$this->dates->formatDate($l['debut'],'d/m/Y')?></td>
+                            <td><?=$this->dates->formatDate($l['next_echeance'],'d/m/Y')?></td>
+                            <td><?=$this->dates->formatDate($l['fin'],'d/m/Y')?></td>
+                            <td><?=number_format($l['mensuel'], 2, ',', ' ')?>€/mois</td>
+                            <td>
+                                <img src="<?=$this->surl?>/styles/default/images/pdf50.png" class="btn-detailLoans_<?=$k?>"/>
+                                <a class="btn btn-small btn-detailLoans_<?=$k?> override_plus">+</a>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="7" style="padding:0px;">
+                                <div class="detailLoans loans_<?=$k?>" style="display:none;">
+                                    <table class="table" style="margin-bottom:0px;">
+                                        <?
+                                        $a = 0;
+                                        $listeLoans = $this->loans->select('id_lender = '.$this->lenders_accounts->id_lender_account.' AND id_project = '.$l['id_project']);
+                                        foreach($listeLoans as $loan){
+
+                                            $SumAremb = $this->echeanciers->select('id_loan = '.$loan['id_loan'].' AND status = 0','ordre ASC',0,1);
+
+                                            $fiscal = $SumAremb[0]['prelevements_obligatoires']+$SumAremb[0]['retenues_source']+$SumAremb[0]['csg']+$SumAremb[0]['prelevements_sociaux']+$SumAremb[0]['contributions_additionnelles']+$SumAremb[0]['prelevements_solidarite']+$SumAremb[0]['crds'];
+
+                                            $b = $a+1;
+                                            ?>
+
+                                            <tr>
+                                                <td></td>
+                                                <td></td>
+                                                <td><?=number_format($loan['amount']/100, 0, ',', ' ')?> €</td>
+                                                <td><?=number_format($loan['rate'], 2, ',', ' ')?>%</td>
+                                                <td></td>
+                                                <td><?=number_format(($SumAremb[0]['montant']/100)-$fiscal, 2, ',', ' ')?> €/mois</td>
+                                                <td>
+                                                    <?
+                                                    if($this->projects_status->status >=80)
+                                                    {
+                                                        ?>
+                                                        <a class="tooltip-anchor icon-pdf" href="<?=$this->lurl.'/pdf/contrat/'.$this->clients->hash.'/'.$loan['id_loan']?>"></a>
+                                                        <?php
+                                                    }
+                                                    ?>
+                                                </td>
+                                            </tr>
+                                            <?php
+
+                                            $a++;
+                                        }
+                                        ?>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                        <?
+                        // Début Déclaration de créance //
+                        if(in_array($l['id_project'],$this->arrayDeclarationCreance))
+                        {
+                            $i++;
+                            ?>
+                            <tr>
+                                <td><h5><?=$l['name']?></h5></td>
+                                <td><?=$l['risk']?></td>
+                                <td><?=number_format($l['amount'], 2, ',', ' ')?> €</td>
+                                <td><?=number_format($l['rate'], 2, ',', ' ')?> %</td>
+                                <td><?=$this->dates->formatDate($l['debut'],'d/m/Y')?></td>
+                                <td><?=$this->dates->formatDate($l['next_echeance'],'d/m/Y')?></td>
+                                <td><?=$this->dates->formatDate($l['fin'],'d/m/Y')?></td>
+                                <td><?=number_format($l['mensuel'], 2, ',', ' ')?> €/mois</td>
+                                <td>
+                                    <a class="btn btn-info btn-small btn-detailLoans_declaration_creances_<?=$k?> override_plus override_plus_<?=$k?>" style="float:right;margin-right: 15px;">+</a><br /><br />
+                                    <a style="font-size: 10px;vertical-align: middle;margin-right: 13px;" class="btn-detailLoans_declaration_creances_<?=$k?> btn-grise btn-warning btn btn-info btn-small multi">Declaration-de-creances</a>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td colspan="7" style="padding:0px;">
+                                    <div class="detailLoans_declaration_creances loans_declaration_creances_<?=$k?>" style="display:none;">
+                                        <table class="table" style="margin-bottom:0px;">
+                                            <?
+                                            $a = 0;
+                                            $listeLoans = $this->loans->select('id_lender = '.$this->lenders_accounts->id_lender_account.' AND id_project = '.$l['id_project']);
+                                            foreach($listeLoans as $loan){
+
+                                                $SumAremb = $this->echeanciers->select('id_loan = '.$loan['id_loan'].' AND status = 0','ordre ASC',0,1);
+
+                                                $fiscal = $SumAremb[0]['prelevements_obligatoires']+$SumAremb[0]['retenues_source']+$SumAremb[0]['csg']+$SumAremb[0]['prelevements_sociaux']+$SumAremb[0]['contributions_additionnelles']+$SumAremb[0]['prelevements_solidarite']+$SumAremb[0]['crds'];
+
+                                                $b = $a+1;
+                                                ?>
+
+                                                <tr>
+                                                    <td></td>
+                                                    <td></td>
+                                                    <td><?=number_format($loan['amount']/100, 0, ',', ' ')?> €</td>
+                                                    <td><?=number_format($loan['rate'], 2, ',', ' ')?>%</td>
+                                                    <td colspan="3"></td>
+                                                    <td><?=number_format(($SumAremb[0]['montant']/100)-$fiscal, 2, ',', ' ')?> €/mois</td>
+                                                    <td style="padding-top:5px;">
+                                                        <?
+                                                        if($this->projects_status->status >=80)
+                                                        {
+                                                            ?><a style="font-size:9px;margin-left: 14px;margin-right: 6px;  vertical-align: middle;" class="btn btn-info btn-small multi" href="<?=$this->lurl.'/pdf/declaration_de_creances/'.$this->clients->hash.'/'.$loan['id_loan']?>">Seclaration de creances</a><?php
+                                                        }
+                                                        ?>
+                                                    </td>
+                                                </tr>
+
+                                                <?php
+                                                $a++;
+                                            }
+                                            ?>
+                                        </table>
+                                    </div>
+                                    <script type="text/javascript">
+                                        $(".btn-detailLoans_declaration_creances_<?=$k?>").click(function() {
+                                            $(".loans_declaration_creances_<?=$k?>").slideToggle();
+
+                                            if($(".btn-detailLoans_declaration_creances_<?=$k?>").hasClass("on_display"))
+                                            {
+                                                $(".override_plus_<?=$k?>").html('+');
+
+                                                $(".btn-detailLoans_declaration_creances_<?=$k?>").addClass("off_display");
+                                                $(".btn-detailLoans_declaration_creances_<?=$k?>").removeClass("on_display");
+                                            }
+                                            else
+                                            {
+                                                $(".override_plus_<?=$k?>").html('-');
+
+                                                $(".btn-detailLoans_declaration_creances_<?=$k?>").addClass("on_display");
+                                                $(".btn-detailLoans_declaration_creances_<?=$k?>").removeClass("off_display");
+                                            }
+
+                                        });
+                                            $(".btn-detailLoans_<?=$k?>").click(function() {
+                                                $(".loans_<?=$k?>").slideToggle();
+
+                                                if($(".btn-detailLoans_<?=$k?>").hasClass("on_display"))
+                                                {
+                                                    $(".btn-detailLoans_<?=$k?>").html('+');
+
+                                                    $(".btn-detailLoans_<?=$k?>").addClass("off_display");
+                                                    $(".btn-detailLoans_<?=$k?>").removeClass("on_display");
+                                                }
+                                                else
+                                                {
+                                                    $(".btn-detailLoans_<?=$k?>").html('-');
+
+                                                    $(".btn-detailLoans_<?=$k?>").addClass("on_display");
+                                                    $(".btn-detailLoans_<?=$k?>").removeClass("off_display");
+                                                }
+                                            });
+                                    </script>
+                                </td>
+                            </tr>
+                            <?
+                        }
+                        // Fin Déclaration de créance //
+                        $i++;
+                    }
+                }
+            }
+            ?>
+        </table><!-- /.table -->
+    </div>
+
+
+    <br>
+    <div>
+        <h2>Autres informations</h2>
+        <h3>TRI du portefeuille</h3>
+
+        <h3>TRI de chaque prêt </h3>
+
+        <h3>Nombre de projets à probleme <?php  ?> /  nombre de projets : <?php ?></h3>
+
+        <h3>Nombre de projets mis en ligne depuis son inscription : <?php echo $this->nblingne; ?><h2>
+
+    </div>
+
+
+    <script type="text/javascript">
+        $("input,select").change(function () {
+
+            $(".c2-sb-wrap").removeClass('populated');
+
+
+            $(".load_table_vos_operations").fadeIn();
+
+
+            var val = {
+                debut: $("#debut").val(),
+                fin: $("#fin").val(),
+                nbMois: $("#nbMois").val(),
+                annee: $("#annee").val(),
+                tri_type_transac: $("#tri_type_transac").val(),
+                tri_projects: $("#tri_projects").val(),
+                id_last_action: $(this).attr('id')
+            };
+            //alert('debut : '+debut+' fin : '+fin+' mois : '+mois+' annee : '+annee+' tri_type_transac : '+tri_type_transac+' tri_projects : '+tri_projects);
+            $.post(add_url + "/ajax/vos_operations", val).done(function (data) {
+                //alert( "Data Loaded: " + data );
+
+                var obj = jQuery.parseJSON(data);
+
+                $("#debut").val(obj.debut);
+                $("#fin").val(obj.fin);
+
+
+                $("#filtres_secondaires").html(obj.html_filtre);
+                $(".custom-select").c2Selectbox();
+
+                $(".content_table_vos_operations").html(obj.html);
+                $(".load_table_vos_operations").fadeOut();
+
+            });
+        });
+
+
+    </script>
+    <br>
+<div>
+    <h2>Opérations</h2>
+    <!--Table pour choisire la periode d'affichage-->
     <div class="table-filter clearfix">
         <div class="period">
             <b>Selectionnez une periode</b>
@@ -331,9 +585,7 @@ if(isset($_SESSION['freeow']))
                             </select>
                         </div>
                     </td>
-                    <td>
-                        <div class="ou">ou</div>
-                    </td>
+                    <td><div class="ou">ou</div></td>
                     <td>
                         Anuelle<br/>
                         <div class="vos_operations_ligne div_annee">
@@ -348,23 +600,18 @@ if(isset($_SESSION['freeow']))
                             </select>
                         </div>
                     </td>
-                    <td>
-                        <div class="ou">ou</div>
-                    </td>
-                    <td>
-                        Personalisée<br/>
+                    <td><div class="ou">ou</div></td>
+                    <td>Personalisée<br/>
                         <div class="vos_operations_ligne div_debut">
-                            <input type="text" id="debut" name="debut" title="debut"
-                                   value="<?= $this->date_debut_display ?>" class="field" style="width:72px;">
+                            <input type="text" id="debut" name="debut" title="debut" class="input_dp" style="width:72px;" value="<?= $this->date_debut_display ?>">
                         </div>
                     </td>
                     <td>
-                        <div class="au"><?= $this->lng['preteur-operations']['sous-titre-operation-au'] ?></div>
+                        <div class="au">au</div>
                     </td>
                     <td>
                         <div class="vos_operations_ligne div_fin">
-                            <input type="text" id="fin" name="fin" title="fin" value="<?= $this->date_fin_display ?>"
-                                   class="field" style="width:72px;">
+                            <input type="text" id="fin" name="fin" title="fin" class="input_dp" style="width:72px;" value="<?= $this->date_fin_display ?>">
                         </div>
                     </td>
                 </tr>
@@ -373,23 +620,23 @@ if(isset($_SESSION['freeow']))
 
         <div style="clear:both;"></div>
         <div class="filtre" id="filtres_secondaires">
-            <b>selectionnez-un-ou-plusieurs-filtres</b><br/><br/>
+            <b>Selectionnez un ou plusieurs filtres</b><br/><br/>
 
             <div class="vos_operations_ligne">
                 <select name="tri_type_transac" id="tri_type_transac" class="custom-select field-mini" width="200px;">
-                    <option value="1">Selectionnez</option>
-                    <option value="1">toutes</option>
-                    <option value="2">apports-retraits</option>
-                    <option value="3">apports</option>
-                    <option value="4">retraits</option>
-                    <option value="5">prets</option>
-                    <option value="6">remboursement</option>
+                    <option value="1">Filtrer par opération</option>
+                    <option value="1">Toutes les opérations</option>
+                    <option value="2">Apport/Retrait</option>
+                    <option value="3">Apport</option>
+                    <option value="4">Retrait</option>
+                    <option value="5">Offre de prêt</option>
+                    <option value="6">Remboursement</option>
                 </select>
             </div>
             &nbsp;&nbsp;&nbsp;
             <div class="vos_operations_ligne">
                 <select name="tri_projects" id="tri_projects" class="custom-select field-mini">
-                    <option value="0">Projet</option>
+                    <option value="0">Filtrer par projet</option>
                     <option value="1">Tous</option>
                     <?
                     foreach ($this->lProjectsLoans as $pro) {
@@ -402,71 +649,19 @@ if(isset($_SESSION['freeow']))
         </div>
         <div style="clear:both;"></div>
     </div>
-
-    <div class="load_table_vos_operations">
-        <img src="<?= $this->surl ?>/styles/default/images/loading.gif"/>
-        Chargement...
-    </div>
-
+<br>
     <div class="content_table_vos_operations">
-        <table class="table vos_operations transactions-history finances" border="0" cellspacing="0" cellpadding="0">
+        <table class="tablesorter">
+            <thead>
             <tr>
-                <th width="200px" id="order_operations" align="left" class="col1" style="padding-left: 0px;">
-                    <div class="th-wrap" style='top:-3px;width: 130px;'>
-                        <i title='info-titre-operation' class="tooltip-anchor icon-double"></i>
-                        <div class="title-ope">Operations
-                            &nbsp;
-                            <i class="icon-arrows" style="width:15px;"></i>
-                        </div>
-                    </div></th>
-                <th width="200px" id="order_bdc" align="left" class="col1" style="padding-left: 0px;">
-                    <div class="th-wrap" style='top:-3px;width: 200px;'>
-                        <i title="info-titre-bon-caisse"
-                           class="tooltip-anchor icon-bdc"></i>
-                        <div class="title-ope">bdc &nbsp;
-                            <i class="icon-arrows" style="width:15px;"></i>
-                        </div>
-                    </div>
-                </th>
-                <th width="150px" id="order_projects" align="center">
-                    <div class="th-wrap">
-                        <i title="" class="icon-person tooltip-anchor" style="margin-left:-15px;"
-                           data-original-title="info-titre-projets"></i>
-                        <div class="title-ope">projets &nbsp;
-                            <i class="icon-arrows" style="width:15px;"></i>
-                        </div>
-                    </div>
-                </th>
-                <th width="140px" id="ordpoer_date">
-                    <div class="th-wrap">
-                        <i title="" class="icon-calendar tooltip-anchor"
-                           data-original-title="info-titre-date-operation"></i>
-
-                        <div class="title-ope">date-de-loperation &nbsp;
-                            <i class="icon-arrows" style="width:15px;"></i>
-                        </div>
-                    </div>
-
-                </th>
-                <th width="180px" id="order_montant">
-                    <div class="th-wrap" style="top:-2px;">
-                        <i title="" class="icon-euro tooltip-anchor"
-                           data-original-title="info-titre-montant-operation"></i>
-
-                        <div class="title-ope">montant-de-loperation
-                            &nbsp;<i class="icon-arrows" style="width:15px;"></i>
-                        </div>
-                    </div>
-                </th>
-                <th width="140px">
-                    <div class="th-wrap">
-                        <i title="" class="icon-bank tooltip-anchor"
-                           data-original-title="info-titre-solde-compte"></i>
-                        <div class="title-ope">solde-du-compte</div>
-                    </div>
-                </th>
+                <th>Operations</th>
+                <th>Bon de caisse</th>
+                <th>Projet</th>
+                <th>Date de l'operation</th>
+                <th>Montant de l'operation</th>
+                <th>Solde du compte</th>
             </tr>
-
+            </thead>
             <?
             $i = 1;
             $asterix_on = false;
@@ -508,14 +703,14 @@ if(isset($_SESSION['freeow']))
                                 <table class="soustable" width="100%">
                                     <tbody>
                                     <tr>
-                                        <td width="138px" class="detail_remb">voici-le-detail-de-votre-remboursement</td>
-                                        <td width="115px" class="detail_left">capital-rembourse</td>
+                                        <td width="138px" class="detail_remb">Detail du remboursement</td>
+                                        <td width="115px" class="detail_left">Capital remboursé/td>
                                         <td width="99px" class="chiffres" style="padding-bottom:8px; color:#40b34f;"><?= number_format(($t['montant_capital'] / 100), 2, ',', ' ') ?>€</td>
                                         <td width="101px">&nbsp;</td>
                                     </tr>
                                     <tr>
                                         <td></td>
-                                        <td class="detail_left">interets-recus</td>
+                                        <td class="detail_left">Interêts reçus</td>
                                         <td class="chiffres"
                                             style="color:#40b34f;"><?= number_format(($t['montant_interet'] / 100), 2, ',', ' ') ?>
                                             €
@@ -568,28 +763,28 @@ if(isset($_SESSION['freeow']))
                 // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
                 switch ($t['type_transaction']) {
                     case 8:
-                        $t['libelle_operation'] = retrait-dargents;
+                        $t['libelle_operation'] = "Retrait d'argent";
                         break;
                     case 1:
-                        $t['libelle_operation'] = depot-de-fonds;
+                        $t['libelle_operation'] = "Depot de fonds";
                         break;
                     case 3:
-                        $t['libelle_operation'] = depot-de-fonds;
+                        $t['libelle_operation'] = "Depot de fonds";
                         break;
                     case 4:
-                        $t['libelle_operation'] = depot-de-fonds;
+                        $t['libelle_operation'] = "Depot de fonds";
                         break;
                     case 16:
-                        $t['libelle_operation'] = offre-de-bienvenue;
+                        $t['libelle_operation'] = "Offre de Bienvenue";
                         break;
                     case 17:
-                        $t['libelle_operation'] = retrait-offre;
+                        $t['libelle_operation'] = "Retrait offre";
                         break;
                     case 19:
-                        $t['libelle_operation'] = gain-filleul;
+                        $t['libelle_operation'] = "Gain filleul";
                         break;
                     case 20:
-                        $t['libelle_operation'] = gain-parrain;
+                        $t['libelle_operation'] = "Gain parrain";
                         break;
                 }
 
@@ -655,7 +850,6 @@ if(isset($_SESSION['freeow']))
             <?php
         }
         ?>
-
 
         <script type="text/javascript">
             $("#order_operations,#order_projects,#order_date,#order_montant, #order_bdc").click(function () {
@@ -738,57 +932,5 @@ if(isset($_SESSION['freeow']))
             });
         </script>
 
-
     </div>
-    <div>
-        <h2>Affichage du TRI du portefeuille</h2>
-
-        <h2>Affichage du TRI de chaque prêt </h2>
-
-        <h2>Nombre de projets à probleme <?php  ?> /  nombre de projets : <?php ?></h2>
-
-        <h2>Nombre de projets mis en ligne depuis son inscription : <?php echo $this->nblingne; ?><h2>
-
-    </div>
-
-
-    <script type="text/javascript">
-        $("input,select").change(function () {
-
-            $(".c2-sb-wrap").removeClass('populated');
-
-
-            $(".load_table_vos_operations").fadeIn();
-
-
-            var val = {
-                debut: $("#debut").val(),
-                fin: $("#fin").val(),
-                nbMois: $("#nbMois").val(),
-                annee: $("#annee").val(),
-                tri_type_transac: $("#tri_type_transac").val(),
-                tri_projects: $("#tri_projects").val(),
-                id_last_action: $(this).attr('id')
-            };
-            //alert('debut : '+debut+' fin : '+fin+' mois : '+mois+' annee : '+annee+' tri_type_transac : '+tri_type_transac+' tri_projects : '+tri_projects);
-            $.post(add_url + "/ajax/vos_operations", val).done(function (data) {
-                //alert( "Data Loaded: " + data );
-
-                var obj = jQuery.parseJSON(data);
-
-                $("#debut").val(obj.debut);
-                $("#fin").val(obj.fin);
-
-
-                $("#filtres_secondaires").html(obj.html_filtre);
-                $(".custom-select").c2Selectbox();
-
-                $(".content_table_vos_operations").html(obj.html);
-                $(".load_table_vos_operations").fadeOut();
-
-            });
-        });
-
-
-    </script>
-
+</div>
