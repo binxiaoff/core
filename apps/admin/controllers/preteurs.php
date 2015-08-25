@@ -369,8 +369,8 @@ class preteursController extends bootstrap
 		$this->nationalites = $this->loadData('nationalites_v2');
 		$this->pays = $this->loadData('pays_v2');
 		$this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
-        $this->piece_jointe = $this->loadData('piece_jointe');
-        $this->piece_jointe_type = $this->loadData('piece_jointe_type');
+        $this->attachment = $this->loadData('attachment');
+        $this->attachment_type = $this->loadData('attachment_type');
 		
 		// liste nationalites
 		$this->lNatio = $this->nationalites->select();
@@ -644,27 +644,27 @@ class preteursController extends bootstrap
 				// debut fichiers //
 				
 				// carte-nationale-didentite-passeport
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::CNI_PASSPORTE);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
 
 				// autre
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::AUTRE1);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
 				
 				// CNI/Passeport dirigeants
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::CNI_PASSPORTE_DIRIGEANT);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
 
 				// Délégation de pouvoir
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::DELEGATION_POUVOIR);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
 
 				// Extrait Kbis
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::KBIS);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
 				// justificatif-de-domicile
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::JUSTIFICATIF_DOMICILE);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
 
 				// RIB
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::RIB);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
 
                 // document_fiscal
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::JUSTIFICATIF_FISCAL);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
 
 				// Statuts
 				/*if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
@@ -1126,27 +1126,27 @@ class preteursController extends bootstrap
 				// debut fichiers //
 
                 // carte-nationale-didentite-passeport
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::CNI_PASSPORTE);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
 
                 // autre
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::AUTRE1);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
 
                 // CNI/Passeport dirigeants
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::CNI_PASSPORTE_DIRIGEANT);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
 
                 // Délégation de pouvoir
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::DELEGATION_POUVOIR);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
 
                 // Extrait Kbis
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::KBIS);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
                 // justificatif-de-domicile
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::JUSTIFICATIF_DOMICILE);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
 
                 // RIB
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::RIB);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
 
                 // document_fiscal
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::JUSTIFICATIF_FISCAL);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
 
 				// Statuts
 				/*if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
@@ -2260,42 +2260,50 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 
 	private function uploadAttachment($lenderAccountId, $attachmentType)
 	{
+		if(false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
+			$this->attachmentHelper = $this->loadLib('attachment_helper');
+		}
+
 		if(false === isset($this->upload) || false === $this->upload instanceof upload) {
 			$this->upload = $this->loadLib('upload');
+		}
+
+		if(false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
+			$this->attachment = $this->loadData('attachment');
 		}
 
 		$basePath = 'protected/lenders/';
 
 		switch($attachmentType) {
-			case piece_jointe_type::CNI_PASSPORTE :
+			case attachment_type::CNI_PASSPORTE :
 				$field = 'fichier1';
 				$uploadPath = $basePath.'cni_passeport/';
 				break;
-			case piece_jointe_type::JUSTIFICATIF_FISCAL :
+			case attachment_type::JUSTIFICATIF_FISCAL :
 				$field = 'document_fiscal';
 				$uploadPath = $basePath.'document_fiscal/';
 				break;
-			case piece_jointe_type::JUSTIFICATIF_DOMICILE :
+			case attachment_type::JUSTIFICATIF_DOMICILE :
 				$field = 'fichier5';
 				$uploadPath = $basePath.'justificatif_domicile/';
 				break;
-			case piece_jointe_type::RIB :
+			case attachment_type::RIB :
 				$field = 'fichier6';
 				$uploadPath = $basePath.'rib/';
 				break;
-			case piece_jointe_type::AUTRE1 :
+			case attachment_type::AUTRE1 :
 				$field = 'fichier7';
 				$uploadPath = $basePath.'autre/';
 				break;
-			case piece_jointe_type::CNI_PASSPORTE_DIRIGEANT :
+			case attachment_type::CNI_PASSPORTE_DIRIGEANT :
 				$field = 'fichier2';
 				$uploadPath = $basePath.'cni_passeport_dirigent/';
 				break;
-			case piece_jointe_type::KBIS :
+			case attachment_type::KBIS :
 				$field = 'fichier4';
 				$uploadPath = $basePath.'extrait_kbis/';
 				break;
-			case piece_jointe_type::DELEGATION_POUVOIR :
+			case attachment_type::DELEGATION_POUVOIR :
 				$field = 'fichier3';
 				$uploadPath = $basePath.'delegation_pouvoir/';
 				break;
@@ -2303,43 +2311,6 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 				return false;
 		}
 
-		if(false === isset($_FILES[$field]) || $_FILES[$field]['name'] == '') {
-			return ''; // the filed is empty, NOT an error
-		}
-
-		$this->upload->setUploadDir($this->path, $uploadPath);
-
-		if(false === $this->upload->doUpload($field)) {
-			return false;
-		}
-
-		// Supprimer l'ancien fichier
-		if(false === isset($this->piece_jointe) || false === $this->piece_jointe instanceof piece_jointe) {
-			$this->piece_jointe = $this->loadData('piece_jointe');
-		}
-		$piece_jointe = $this->piece_jointe->select(
-			'id_owner=' . $lenderAccountId
-			.' AND type_owner = "' . piece_jointe::LENDER .'"'
-			.' AND id_type = ' . $attachmentType
-		);
-
-		if(false === empty($piece_jointe) && $piece_jointe[0]['chemin'] != '') {
-			@unlink($this->path. $uploadPath . $piece_jointe[0]['chemin']);
-		}
-
-		$this->piece_jointe->id_type = $attachmentType;
-		$this->piece_jointe->id_owner = $lenderAccountId;
-		$this->piece_jointe->type_owner = piece_jointe::LENDER;
-		$this->piece_jointe->chemin = $this->upload->getName();
-		$this->piece_jointe->archived = null;
-
-		$piece_jointe_id = $this->piece_jointe->save();
-
-		if(false === is_numeric($piece_jointe_id)) {
-
-			return false;
-		}
-
-		return $this->upload->getName();
+		return $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->path, $uploadPath, $this->upload, $this->attachment);
 	}
 }

@@ -1116,8 +1116,8 @@ class inscription_preteurController extends bootstrap
 		$this->clients_status_history = $this->loadData('clients_status_history');
 		$this->clients_status = $this->loadData('clients_status');
 		$this->clients_history_actions = $this->loadData('clients_history_actions');
-		$this->piece_jointe = $this->loadData('piece_jointe');
-		$this->piece_jointe_type = $this->loadData('piece_jointe_type');
+		$this->attachment = $this->loadData('attachment');
+		$this->attachment_type = $this->loadData('attachment_type');
 		
 		//Recuperation des element de traductions
 		$this->lng['etape1'] = $this->ln->selectFront('inscription-preteur-etape-1',$this->language,$this->App);
@@ -1216,24 +1216,24 @@ class inscription_preteurController extends bootstrap
 				// si etrangé
 				if($this->etranger > 0){
 					// document_fiscal
-                    $fichier_document_fiscal = $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::JUSTIFICATIF_FISCAL);
+                    $fichier_document_fiscal = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
                     $this->error_document_fiscal = false === $fichier_document_fiscal;
 				}
 				
 				// carte-nationale-didentite
-                $fichier_cni_passeport = $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::CNI_PASSPORTE);
+                $fichier_cni_passeport = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
                 $this->error_cni = false === $fichier_cni_passeport;
 
 				// justificatif-de-domicile
-                $fichier_justificatif_domicile = $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::JUSTIFICATIF_DOMICILE);
+                $fichier_justificatif_domicile = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
                 $this->error_justificatif_domicile = false === $fichier_justificatif_domicile;
 
 				// rib
-                $fichier_rib = $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::RIB);
+                $fichier_rib = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
                 $this->error_rib = false === $fichier_rib;
 				
 				// autre
-                $fichier_autre = $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::AUTRE1);
+                $fichier_autre = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
                 $this->error_autre = false === $fichier_autre;
 				
 				$this->lenders_accounts->bic = trim(strtoupper($_POST['bic']));// Bic
@@ -1455,18 +1455,18 @@ class inscription_preteurController extends bootstrap
                 $this->error_fichier = false;
 
 				// carte-nationale-didentite dirigeant
-                $this->error_cni_dirigent = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::CNI_PASSPORTE_DIRIGEANT);
+                $this->error_cni_dirigent = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
 
 				// Extrait Kbis
-                $this->error_extrait_kbis = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::KBIS);
+                $this->error_extrait_kbis = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
 
 				// rib
-                $this->error_rib = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::RIB);
+                $this->error_rib = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
 				
 				// autre
-                $this->error_autre = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::AUTRE1);
+                $this->error_autre = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
 
-                $this->error_delegation_pouvoir = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, piece_jointe_type::DELEGATION_POUVOIR);
+                $this->error_delegation_pouvoir = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
 				
 				$this->lenders_accounts->bic = trim(strtoupper($_POST['bic']));// Bic
 				$this->lenders_accounts->iban = ''; // Iban
@@ -2453,92 +2453,66 @@ class inscription_preteurController extends bootstrap
 		$this->motif = $_SESSION['motif'];
 	}
 
-    private function uploadAttachment($lenderAccountId, $attachmentType)
-    {
-        if(false === isset($this->upload) || false === $this->upload instanceof upload) {
-            $this->upload = $this->loadLib('upload');
-        }
+	private function uploadAttachment($lenderAccountId, $attachmentType)
+	{
+		if(false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
+			$this->attachmentHelper = $this->loadLib('attachment_helper');
+		}
 
-        $basePath = 'protected/lenders/';
+		if(false === isset($this->upload) || false === $this->upload instanceof upload) {
+			$this->upload = $this->loadLib('upload');
+		}
 
-        switch($attachmentType) {
-            case piece_jointe_type::CNI_PASSPORTE :
-                $field = 'ci';
-                $uploadPath = $basePath.'cni_passeport/';
-                break;
-            case piece_jointe_type::JUSTIFICATIF_FISCAL :
-                $field = 'document_fiscal';
-                $uploadPath = $basePath.'document_fiscal/';
-                break;
-            case piece_jointe_type::JUSTIFICATIF_DOMICILE :
-                $field = 'justificatif_de_domicile';
-                $uploadPath = $basePath.'justificatif_domicile/';
-                break;
-            case piece_jointe_type::RIB :
-                $field = 'rib';
-                $uploadPath = $basePath.'rib/';
-                break;
-            case piece_jointe_type::AUTRE1 :
-                $field = 'autre';
-                $uploadPath = $basePath.'autre/';
-                break;
-            case piece_jointe_type::CNI_PASSPORTE_DIRIGEANT :
-                $field = 'ci_dirigeant';
-                $uploadPath = $basePath.'cni_passeport_dirigent/';
-                break;
-            case piece_jointe_type::KBIS :
-                $field = 'kbis';
-                $uploadPath = $basePath.'extrait_kbis/';
-                break;
-            case piece_jointe_type::DELEGATION_POUVOIR :
-                $field = 'delegation_pouvoir';
-                $uploadPath = $basePath.'delegation_pouvoir/';
-                break;
-            default :
-                return false;
-        }
+		if(false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
+			$this->attachment = $this->loadData('attachment');
+		}
 
-        if(false === isset($_FILES[$field]) || $_FILES[$field]['name'] == '') {
-            return ''; // the filed is empty, NOT an error
-        }
+		$basePath = 'protected/lenders/';
 
-        $this->upload->setUploadDir($this->path, $uploadPath);
+		switch($attachmentType) {
+			case attachment_type::CNI_PASSPORTE :
+				$field = 'ci';
+				$uploadPath = $basePath.'cni_passeport/';
+				break;
+			case attachment_type::JUSTIFICATIF_FISCAL :
+				$field = 'document_fiscal';
+				$uploadPath = $basePath.'document_fiscal/';
+				break;
+			case attachment_type::JUSTIFICATIF_DOMICILE :
+				$field = 'justificatif_de_domicile';
+				$uploadPath = $basePath.'justificatif_domicile/';
+				break;
+			case attachment_type::RIB :
+				$field = 'rib';
+				$uploadPath = $basePath.'rib/';
+				break;
+			case attachment_type::AUTRE1 :
+				$field = 'autre';
+				$uploadPath = $basePath.'autre/';
+				break;
+			case attachment_type::CNI_PASSPORTE_DIRIGEANT :
+				$field = 'ci_dirigeant';
+				$uploadPath = $basePath.'cni_passeport_dirigent/';
+				break;
+			case attachment_type::KBIS :
+				$field = 'kbis';
+				$uploadPath = $basePath.'extrait_kbis/';
+				break;
+			case attachment_type::DELEGATION_POUVOIR :
+				$field = 'delegation_pouvoir';
+				$uploadPath = $basePath.'delegation_pouvoir/';
+				break;
+			default :
+				return false;
+		}
 
-        if(false === $this->upload->doUpload($field)) {
-            $this->form_ok = false;
-            $this->error_fichier = true;
-            return false;
-        }
+		$resultUpload = $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->path, $uploadPath, $this->upload, $this->attachment);
 
-        // Supprimer l'ancien fichier
-        if(false === isset($this->piece_jointe) || false === $this->piece_jointe instanceof piece_jointe) {
-            $this->piece_jointe = $this->loadData('piece_jointe');
-        }
-        $piece_jointe = $this->piece_jointe->select(
-            'id_owner=' . $lenderAccountId
-            .' AND type_owner = "' . piece_jointe::LENDER .'"'
-            .' AND id_type = ' . $attachmentType
-        );
+		if(false === $resultUpload) {
+			$this->form_ok = false;
+			$this->error_fichier = true;
+		}
 
-        if(false === empty($piece_jointe) && $piece_jointe[0]['chemin'] != '') {
-            @unlink($this->path. $uploadPath . $piece_jointe[0]['chemin']);
-        }
-
-        $this->piece_jointe->id_type = $attachmentType;
-        $this->piece_jointe->id_owner = $lenderAccountId;
-        $this->piece_jointe->type_owner = piece_jointe::LENDER;
-        $this->piece_jointe->chemin = $this->upload->getName();
-        $this->piece_jointe->archived = null;
-
-        $piece_jointe_id = $this->piece_jointe->save();
-
-        if(false === is_numeric($piece_jointe_id)) {
-
-            $this->form_ok = false;
-            $this->error_fichier = true;
-            return false;
-        }
-
-        return $this->upload->getName();
-    }
+		return $resultUpload;
+	}
 }
