@@ -103,6 +103,12 @@ class attachment extends attachment_crud
 		$this->updated = $this->bdd->escape_string($this->updated);
 		$this->archived = $this->bdd->escape_string($this->archived);
 
+		if('' === $this->added) {
+			$this->added = 'NOW()';
+		} else {
+			$this->added = '"'.$this->added.'"';
+		}
+
 		if('' === $this->archived) {
 			$this->archived = 'null';
 		} else {
@@ -110,7 +116,7 @@ class attachment extends attachment_crud
 		}
 
 		$sql = 'INSERT INTO `attachment`(`id_type`,`id_owner`,`type_owner`,`path`,`added`,`updated`,`archived`)
-				VALUES("'.$this->id_type.'","'.$this->id_owner.'","'.$this->type_owner.'","'.$this->path.'",NOW(),null,'.$this->archived.')
+				VALUES("'.$this->id_type.'","'.$this->id_owner.'","'.$this->type_owner.'","'.$this->path.'",'.$this->added.',null,'.$this->archived.')
 				ON DUPLICATE KEY UPDATE path = "'.$this->path.'", updated = NOW(), archived = '.$this->archived;
 
 		$this->bdd->query($sql);
