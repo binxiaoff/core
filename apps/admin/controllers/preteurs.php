@@ -2258,6 +2258,11 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 		}
 	}
 
+	/**
+	 * @param integer $lenderAccountId
+	 * @param integer $attachmentType
+	 * @return bool
+	 */
 	private function uploadAttachment($lenderAccountId, $attachmentType)
 	{
 		if(false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {

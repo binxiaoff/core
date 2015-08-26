@@ -1,6 +1,17 @@
 <?php
 class attachment_helper
 {
+    /**
+     * @param integer $ownerId
+     * @param string $ownerType
+     * @param integer $attachmentType
+     * @param string $field
+     * @param string $path
+     * @param string $uploadPath
+     * @param upload $upload
+     * @param attachment $attachment
+     * @return bool|string
+     */
     public function upload($ownerId, $ownerType, $attachmentType, $field, $path, $uploadPath, $upload, $attachment)
     {
         if(false === $upload instanceof upload) {
