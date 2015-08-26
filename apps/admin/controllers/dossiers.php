@@ -1294,6 +1294,7 @@ class dossiersController extends bootstrap
                         $wallets_lines = $this->loadData('wallets_lines');
                         $companies = $this->loadData('companies');
                         $projects = $this->loadData('projects');
+                        $echeanciers = $this->loadData('echeanciers');
 
 
                         // FB
@@ -1312,7 +1313,10 @@ class dossiersController extends bootstrap
                         $lesloans = $loans->select('id_project = ' . $this->projects->id_project);
 
                         $companies->get($this->projects->id_company, 'id_company');
-
+                        
+                        //on supp l'écheancier du projet pour ne pas avoir de doublon d'affichage sur le front (BT 18600)
+                        $echeanciers->delete($this->projects->id_project, 'id_project');
+                        
                         foreach ($lesloans as $l)
                         {
 
@@ -4240,7 +4244,7 @@ class dossiersController extends bootstrap
             }
             else
             {
-                $this->date_next_echeance_4jouvres_avant = "Aucune échéance à venir dans le futur";
+                $this->date_next_echeance_4jouvres_avant = "Aucune &eacute;ch&eacute;ance &agrave; venir dans le futur";
             }
         }
         else
@@ -4279,7 +4283,7 @@ class dossiersController extends bootstrap
 
         if ($statut_projet[0]['id_project_status'] == 24) //Statut remb anticipe
         {
-            $this->phrase_resultat = "<div style='color:green;'>Remboursement anticipé effectué</div>";
+            $this->phrase_resultat = "<div style='color:green;'>Remboursement anticip&eacute; effectu&eacute;</div>";
             $this->remb_anticipe_effectue = true;
         }
         else
@@ -4290,11 +4294,11 @@ class dossiersController extends bootstrap
             }
             elseif ($resultat_num < O) // si emprunteur doit plus que les prets ==> Orange non bloquant
             {
-                $this->phrase_resultat = "<div style='color:orange;'>Remboursement possible <br />(CRD Prêteurs :" . $this->montant_restant_du_preteur . "€ - CRD Emprunteur :" . $this->montant_restant_du_emprunteur . "€)</div>";
+                $this->phrase_resultat = "<div style='color:orange;'>Remboursement possible <br />(CRD Pr&ecirc;teurs :" . $this->montant_restant_du_preteur . "€ - CRD Emprunteur :" . $this->montant_restant_du_emprunteur . "€)</div>";
             }
             elseif ($resultat_num > O) // si preteurs doivent plus que les emprunteurs ==> rouge bloquant
             {
-                $this->phrase_resultat = "<div style='color:red;'>Remboursement impossible <br />(CRD Prêteurs :" . $this->montant_restant_du_preteur . "€ - CRD Emprunteur :" . $this->montant_restant_du_emprunteur . "€)</div>";
+                $this->phrase_resultat = "<div style='color:red;'>Remboursement impossible <br />(CRD Pr&ecirc;teurs :" . $this->montant_restant_du_preteur . "€ - CRD Emprunteur :" . $this->montant_restant_du_emprunteur . "€)</div>";
             }
         }
 
@@ -4315,11 +4319,11 @@ class dossiersController extends bootstrap
             if ($resultat_num == 0 && ($this->receptions->montant / 100) >= $this->montant_restant_du_preteur)
             {
                 $this->virement_recu_ok = true;
-                $this->phrase_resultat = "<div style='color:green;'>Virement reçu conforme</div>";
+                $this->phrase_resultat = "<div style='color:green;'>Virement re&ccedil;u conforme</div>";
             }
             elseif (($this->receptions->montant / 100) < $this->montant_restant_du_preteur)
             {
-                $this->phrase_resultat = "<div style='color:red;'>Virement reçu - Problème montant <br />(CRD Prêteurs :" . $this->montant_restant_du_preteur . "€ - Virement :" . ($this->receptions->montant / 100) . "€)</div>";
+                $this->phrase_resultat = "<div style='color:red;'>Virement re&ccedil;u - Probl&egrave;me montant <br />(CRD Pr&ecirc;teurs :" . $this->montant_restant_du_preteur . "€ - Virement :" . ($this->receptions->montant / 100) . "€)</div>";
             }
         }
 
@@ -4329,7 +4333,7 @@ class dossiersController extends bootstrap
         $this->ra_possible_all_payed = true;
         if (count($L_echeance_avant) > 0)
         {
-            $this->phrase_resultat = "<div style='color:red;'>Remboursement impossible <br />Toutes les échéances précédentes ne sont pas remboursées</div>";
+            $this->phrase_resultat = "<div style='color:red;'>Remboursement impossible <br />Toutes les &eacute;ch&eacute;ances pr&eacute;c&eacute;dentes ne sont pas rembours&eacute;es</div>";
             $this->ra_possible_all_payed = false;
         }
 
