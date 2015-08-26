@@ -1233,7 +1233,7 @@ class inscription_preteurController extends bootstrap
                 $this->error_rib = false === $fichier_rib;
 				
 				// autre
-                $fichier_autre = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
+                $fichier_autre = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
                 $this->error_autre = false === $fichier_autre;
 				
 				$this->lenders_accounts->bic = trim(strtoupper($_POST['bic']));// Bic
@@ -1464,7 +1464,7 @@ class inscription_preteurController extends bootstrap
                 $this->error_rib = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
 				
 				// autre
-                $this->error_autre = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
+                $this->error_autre = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
 
                 $this->error_delegation_pouvoir = false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
 				
@@ -2486,7 +2486,7 @@ class inscription_preteurController extends bootstrap
 				$field = 'rib';
 				$uploadPath = $basePath.'rib/';
 				break;
-			case attachment_type::AUTRE1 :
+			case attachment_type::CNI_PASSPORTE_VERSO :
 				$field = 'autre';
 				$uploadPath = $basePath.'autre/';
 				break;
