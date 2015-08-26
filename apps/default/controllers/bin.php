@@ -38,7 +38,7 @@ class binController extends bootstrap
         $treated = 0;
         $start = 0;
         $limit = 100;
-        while(ture)
+        while(true)
         {
             $lenders = $this->lenders_accounts->select('', '', $start, $limit);
             $start += $limit;

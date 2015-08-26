@@ -369,8 +369,6 @@ class preteursController extends bootstrap
 		$this->nationalites = $this->loadData('nationalites_v2');
 		$this->pays = $this->loadData('pays_v2');
 		$this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
-        $this->attachment = $this->loadData('attachment');
-        $this->attachment_type = $this->loadData('attachment_type');
 		
 		// liste nationalites
 		$this->lNatio = $this->nationalites->select();
@@ -644,28 +642,76 @@ class preteursController extends bootstrap
 				// debut fichiers //
 				
 				// carte-nationale-didentite-passeport
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
-
+				if(isset($_FILES['fichier1']) && $_FILES['fichier1']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport/');
+					if($this->upload->doUpload('fichier1'))
+					{
+						if($this->lenders_accounts->fichier_cni_passeport != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_cni_passeport);
+						$this->lenders_accounts->fichier_cni_passeport = $this->upload->getName();
+					}
+				}
 				// autre
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
+				if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/autre/');
+					if($this->upload->doUpload('fichier7'))
+					{
+						if($this->lenders_accounts->fichier_autre != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_autre);
+						$this->lenders_accounts->fichier_autre = $this->upload->getName();
+					}
+				}
 				
 				// CNI/Passeport dirigeants
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
-
+				if(isset($_FILES['fichier2']) && $_FILES['fichier2']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport_dirigent/');
+					if($this->upload->doUpload('fichier2'))
+					{
+						if($this->lenders_accounts->fichier_cni_passeport_dirigent != '')@unlink($this->path.'protected/lenders/cni_passeport_dirigent/'.$this->lenders_accounts->fichier_cni_passeport_dirigent);
+						$this->lenders_accounts->fichier_cni_passeport_dirigent = $this->upload->getName();
+					}
+				}
 				// Délégation de pouvoir
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
-
+				if(isset($_FILES['fichier3']) && $_FILES['fichier3']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/delegation_pouvoir/');
+					if($this->upload->doUpload('fichier3'))
+					{
+						if($this->lenders_accounts->fichier_delegation_pouvoir != '')@unlink($this->path.'protected/companies/delegation_pouvoir/'.$this->lenders_accounts->fichier_delegation_pouvoir);
+						$this->lenders_accounts->fichier_delegation_pouvoir = $this->upload->getName();
+					}
+				}
 				// Extrait Kbis
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
+				if(isset($_FILES['fichier4']) && $_FILES['fichier4']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/extrait_kbis/');
+					if($this->upload->doUpload('fichier4'))
+					{
+						if($this->lenders_accounts->fichier_extrait_kbis != '')@unlink($this->path.'protected/lenders/extrait_kbis/'.$this->lenders_accounts->fichier_extrait_kbis);
+						$this->lenders_accounts->fichier_extrait_kbis = $this->upload->getName();
+					}
+				}
 				// justificatif-de-domicile
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
-
+				if(isset($_FILES['fichier5']) && $_FILES['fichier5']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/justificatif_domicile/');
+					if($this->upload->doUpload('fichier5'))
+					{
+						if($this->lenders_accounts->fichier_justificatif_domicile != '')@unlink($this->path.'protected/companies/justificatif_domicile/'.$this->lenders_accounts->fichier_justificatif_domicile);
+						$this->lenders_accounts->fichier_justificatif_domicile = $this->upload->getName();
+					}
+				}
 				// RIB
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
-
-                // document_fiscal
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
-
+				if(isset($_FILES['fichier6']) && $_FILES['fichier6']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/rib/');
+					if($this->upload->doUpload('fichier6'))
+					{
+						if($this->lenders_accounts->fichier_rib != '')@unlink($this->path.'protected/lenders/rib/'.$this->lenders_accounts->fichier_rib);
+						$this->lenders_accounts->fichier_rib = $this->upload->getName();
+					}
+				}
 				// Statuts
 				/*if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
 				{
@@ -699,6 +745,19 @@ class preteursController extends bootstrap
 						
 					}
 				}
+				
+					// document_fiscal
+				if(isset($_FILES['document_fiscal']) && $_FILES['document_fiscal']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/document_fiscal/');
+					if($this->upload->doUpload('document_fiscal'))
+					{
+						if($this->lenders_accounts->fichier_document_fiscal != '')@unlink($this->path.'protected/lenders/document_fiscal/'.$this->lenders_accounts->fichier_document_fiscal);
+						$this->lenders_accounts->fichier_document_fiscal = $this->upload->getName();
+					}
+				}
+				
+				
 				
 				$old_exonere = $this->lenders_accounts->exonere;
 				$this->lenders_accounts->exonere = $_POST['exonere'];
@@ -1124,30 +1183,77 @@ class preteursController extends bootstrap
 				else $this->lenders_accounts->precision = '';
 				
 				// debut fichiers //
-
-                // carte-nationale-didentite-passeport
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
-
-                // autre
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
-
-                // CNI/Passeport dirigeants
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
-
-                // Délégation de pouvoir
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
-
-                // Extrait Kbis
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
-                // justificatif-de-domicile
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
-
-                // RIB
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
-
-                // document_fiscal
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
-
+				
+				// carte-nationale-didentite-passeport
+				if(isset($_FILES['fichier1']) && $_FILES['fichier1']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport/');
+					if($this->upload->doUpload('fichier1'))
+					{
+						if($this->lenders_accounts->fichier_cni_passeport != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_cni_passeport);
+						$this->lenders_accounts->fichier_cni_passeport = $this->upload->getName();
+					}
+				}
+				// autre
+				if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/autre/');
+					if($this->upload->doUpload('fichier7'))
+					{
+						if($this->lenders_accounts->fichier_autre != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_autre);
+						$this->lenders_accounts->fichier_autre = $this->upload->getName();
+					}
+				}
+				// CNI/Passeport dirigeants
+				if(isset($_FILES['fichier2']) && $_FILES['fichier2']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport_dirigent/');
+					if($this->upload->doUpload('fichier2'))
+					{
+						if($this->lenders_accounts->fichier_cni_passeport_dirigent != '')@unlink($this->path.'protected/lenders/cni_passeport_dirigent/'.$this->lenders_accounts->fichier_cni_passeport_dirigent);
+						$this->lenders_accounts->fichier_cni_passeport_dirigent = $this->upload->getName();
+					}
+				}
+				// Délégation de pouvoir
+				if(isset($_FILES['fichier3']) && $_FILES['fichier3']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/delegation_pouvoir/');
+					if($this->upload->doUpload('fichier3'))
+					{
+						if($this->lenders_accounts->fichier_delegation_pouvoir != '')@unlink($this->path.'protected/companies/delegation_pouvoir/'.$this->lenders_accounts->fichier_delegation_pouvoir);
+						$this->lenders_accounts->fichier_delegation_pouvoir = $this->upload->getName();
+					}
+				}
+				// Extrait Kbis
+				if(isset($_FILES['fichier4']) && $_FILES['fichier4']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/extrait_kbis/');
+					if($this->upload->doUpload('fichier4'))
+					{
+						if($this->lenders_accounts->fichier_extrait_kbis != '')@unlink($this->path.'protected/lenders/extrait_kbis/'.$this->lenders_accounts->fichier_extrait_kbis);
+						$this->lenders_accounts->fichier_extrait_kbis = $this->upload->getName();
+					}
+				}
+				// justificatif-de-domicile
+				if(isset($_FILES['fichier5']) && $_FILES['fichier5']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/justificatif_domicile/');
+					if($this->upload->doUpload('fichier5'))
+					{
+						if($this->lenders_accounts->fichier_justificatif_domicile != '')@unlink($this->path.'protected/companies/justificatif_domicile/'.$this->lenders_accounts->fichier_justificatif_domicile);
+						$this->lenders_accounts->fichier_justificatif_domicile = $this->upload->getName();
+					}
+				}
+				// RIB
+				if(isset($_FILES['fichier6']) && $_FILES['fichier6']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/rib/');
+					if($this->upload->doUpload('fichier6'))
+					{
+						if($this->lenders_accounts->fichier_rib != '')@unlink($this->path.'protected/lenders/rib/'.$this->lenders_accounts->fichier_rib);
+						$this->lenders_accounts->fichier_rib = $this->upload->getName();
+					}
+				}
 				// Statuts
 				/*if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
 				{
@@ -1182,7 +1288,18 @@ class preteursController extends bootstrap
 						
 					}
 				}
-
+				
+				// document_fiscal
+				if(isset($_FILES['document_fiscal']) && $_FILES['document_fiscal']['name'] != '')
+				{
+					$this->upload->setUploadDir($this->path,'protected/lenders/document_fiscal/');
+					if($this->upload->doUpload('document_fiscal'))
+					{
+						if($this->lenders_accounts->fichier_document_fiscal != '')@unlink($this->path.'protected/lenders/document_fiscal/'.$this->lenders_accounts->fichier_document_fiscal);
+						$this->lenders_accounts->fichier_document_fiscal = $this->upload->getName();
+					}
+				}
+				
 				// fin fichier //
 						
 				// On met a jour le lender
@@ -2256,66 +2373,5 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 				}
 			}
 		}
-	}
-
-	/**
-	 * @param integer $lenderAccountId
-	 * @param integer $attachmentType
-	 * @return bool
-	 */
-	private function uploadAttachment($lenderAccountId, $attachmentType)
-	{
-		if(false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-			$this->attachmentHelper = $this->loadLib('attachment_helper');
-		}
-
-		if(false === isset($this->upload) || false === $this->upload instanceof upload) {
-			$this->upload = $this->loadLib('upload');
-		}
-
-		if(false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
-			$this->attachment = $this->loadData('attachment');
-		}
-
-		$basePath = 'protected/lenders/';
-
-		switch($attachmentType) {
-			case attachment_type::CNI_PASSPORTE :
-				$field = 'fichier1';
-				$uploadPath = $basePath.'cni_passeport/';
-				break;
-			case attachment_type::JUSTIFICATIF_FISCAL :
-				$field = 'document_fiscal';
-				$uploadPath = $basePath.'document_fiscal/';
-				break;
-			case attachment_type::JUSTIFICATIF_DOMICILE :
-				$field = 'fichier5';
-				$uploadPath = $basePath.'justificatif_domicile/';
-				break;
-			case attachment_type::RIB :
-				$field = 'fichier6';
-				$uploadPath = $basePath.'rib/';
-				break;
-			case attachment_type::CNI_PASSPORTE_VERSO :
-				$field = 'fichier7';
-				$uploadPath = $basePath.'autre/';
-				break;
-			case attachment_type::CNI_PASSPORTE_DIRIGEANT :
-				$field = 'fichier2';
-				$uploadPath = $basePath.'cni_passeport_dirigent/';
-				break;
-			case attachment_type::KBIS :
-				$field = 'fichier4';
-				$uploadPath = $basePath.'extrait_kbis/';
-				break;
-			case attachment_type::DELEGATION_POUVOIR :
-				$field = 'fichier3';
-				$uploadPath = $basePath.'delegation_pouvoir/';
-				break;
-			default :
-				return false;
-		}
-
-		return $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->path, $uploadPath, $this->upload, $this->attachment);
 	}
 }
