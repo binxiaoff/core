@@ -2453,11 +2453,6 @@ class inscription_preteurController extends bootstrap
 		$this->motif = $_SESSION['motif'];
 	}
 
-	/**
-	 * @param integer $lenderAccountId
-	 * @param integer $attachmentType
-	 * @return bool
-	 */
 	private function uploadAttachment($lenderAccountId, $attachmentType)
 	{
 		if(false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
