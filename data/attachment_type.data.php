@@ -35,7 +35,7 @@ class attachment_type extends attachment_type_crud
 	const CNI_PASSPORTE_DIRIGEANT = 7;
 	const KBIS = 8;
 	const DELEGATION_POUVOIR = 9;
-	const AUTRE1 = 15;
+	const CNI_PASSPORTE_VERSO = 11;
 
 	function attachment_type($bdd,$params='')
     {
