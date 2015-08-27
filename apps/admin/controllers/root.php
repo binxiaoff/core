@@ -200,7 +200,7 @@ class rootController extends bootstrap
 		$this->projects = $this->loadData('projects');
 		
 		// Recuperation de la liste des type de partenaires
-		//$this->lTypes = $this->partenaires_types->select('status = 1');
+		$this->lTypes = $this->partenaires_types->select('status = 1');
 		
 		
 		$this->year = date('Y');
@@ -223,6 +223,7 @@ class rootController extends bootstrap
 		}*/
 		
 		$this->caParmoisPart = $this->transactions->recupMonthlyPartnershipTurnoverByYear($this->year);
+		
 		
 		for($i=1; $i<=12; $i++)		
 		{

@@ -319,7 +319,11 @@
 						for($i=1;$i<=12;$i++)
 						{
 							$i = ($i<10?'0'.$i:$i);
-							echo $this->caParmoisPart[$part['id_type']][$i].($i!=12?',':'');
+							if(isset($this->caParmoisPart[$part['id_type']][$i]))
+								echo $this->caParmoisPart[$part['id_type']][$i];
+							   else
+							    echo "0.00";
+							if ($i!=12) echo ',';
 						}
 						?>]
 					}
