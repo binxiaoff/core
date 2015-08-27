@@ -26,15 +26,17 @@
 //                                                                                   
 // **************************************************************************************************** //
 
-class companies extends companies_crud
+class attachment extends attachment_crud
 {
+	const LENDER = 'lenders_accounts';
+	const COMPANY = 'companies';
 
-	function companies($bdd,$params='')
+	function attachment($bdd,$params='')
     {
-        parent::companies($bdd,$params);
+        parent::attachment($bdd,$params);
     }
     
-    function get($id,$field='id_company')
+    function get($id,$field='id')
     {
         return parent::get($id,$field);
     }
@@ -44,7 +46,7 @@ class companies extends companies_crud
         parent::update($cs);
     }
     
-    function delete($id,$field='id_company')
+    function delete($id,$field='id')
     {
     	parent::delete($id,$field);
     }
@@ -61,8 +63,8 @@ class companies extends companies_crud
 			$where = ' WHERE '.$where;
 		if($order != '')
 			$order = ' ORDER BY '.$order;
-		$sql = 'SELECT * FROM `companies`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
-                
+		$sql = 'SELECT * FROM `attachment`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+
 		$resultat = $this->bdd->query($sql);
 		$result = array();
 		while($record = $this->bdd->fetch_array($resultat))
@@ -77,16 +79,52 @@ class companies extends companies_crud
 		if($where != '')
 			$where = ' WHERE '.$where;
 			
-		$sql='SELECT count(*) FROM `companies` '.$where;
+		$sql='SELECT count(*) FROM `attachment` '.$where;
 
 		$result = $this->bdd->query($sql);
 		return (int)($this->bdd->result($result,0,0));
 	}
 	
-	function exist($id,$field='id_company')
+	function exist($id,$field='id')
 	{
-		$sql = 'SELECT * FROM `companies` WHERE '.$field.'="'.$id.'"';
+		$sql = 'SELECT * FROM `attachment` WHERE '.$field.'="'.$id.'"';
 		$result = $this->bdd->query($sql);
 		return ($this->bdd->fetch_array($result,0,0)>0);
+	}
+
+	function save()
+	{
+		$this->id = $this->bdd->escape_string($this->id);
+		$this->id_type = $this->bdd->escape_string($this->id_type);
+		$this->id_owner = $this->bdd->escape_string($this->id_owner);
+		$this->type_owner = $this->bdd->escape_string($this->type_owner);
+		$this->path = $this->bdd->escape_string($this->path);
+		$this->added = $this->bdd->escape_string($this->added);
+		$this->updated = $this->bdd->escape_string($this->updated);
+		$this->archived = $this->bdd->escape_string($this->archived);
+
+		if('' === $this->added) {
+			$this->added = 'NOW()';
+		} else {
+			$this->added = '"'.$this->added.'"';
+		}
+
+		if('' === $this->archived) {
+			$this->archived = 'null';
+		} else {
+			$this->archived = '"'.$this->archived.'"';
+		}
+
+		$sql = 'INSERT INTO `attachment`(`id_type`,`id_owner`,`type_owner`,`path`,`added`,`updated`,`archived`)
+				VALUES("'.$this->id_type.'","'.$this->id_owner.'","'.$this->type_owner.'","'.$this->path.'",'.$this->added.',null,'.$this->archived.')
+				ON DUPLICATE KEY UPDATE path = "'.$this->path.'", updated = NOW(), archived = '.$this->archived;
+
+		$this->bdd->query($sql);
+
+		$this->id = $this->bdd->insert_id();
+
+		$this->get($this->id,'id');
+
+		return $this->id;
 	}
 }
