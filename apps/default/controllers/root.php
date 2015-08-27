@@ -16,92 +16,8 @@ class rootController extends bootstrap
 		// Activation du cache
 		$this->fireCache();
 		
-		// On regarde si le slug passé est celui d'un produit
-		/*if(isset($this->params[0]) && $this->params[0] != '' && $this->produits->isProduct($this->params[0],$this->language,$id_produit))
-		{
-			// On recupere les infos du produit
-			$this->produits->get($id_produit,'id_produit');
-			$this->p = $this->produits->detailsProduit($id_produit,$this->language);
-			
-			// Recuperation du template de la page produit
-			$this->templates->get($this->p['id_template'],'id_template');
-			$this->current_template = $this->templates->name.' | '.$this->templates->slug.'.php';
-			
-			// Recuperation du contenu de la page produit
-			$contenu = $this->produits_elements->select('id_produit = "'.$this->p['id_produit'].'" AND id_langue = "'.$this->language.'"');
-			foreach($contenu as $elt)
-			{
-				$this->elements->get($elt['id_element']);
-				$this->contentP[$this->elements->slug] = $elt['value'];	
-				$this->complementP[$this->elements->slug] = $elt['complement'];
-			}
-			
-			// Declaration des metas pour l'arbo
-			$this->meta_title = ($this->p['meta_title']!=''?$this->p['meta_title']:$this->p['nom']);
-			$this->meta_description = $this->p['meta_description'];
-			$this->meta_keywords = $this->p['meta_keywords'];
-			
-			// Recuperation de la categorie en url
-			if(isset($this->params[1]) && $this->params[1] != '')
-			{
-				// Recuperation des infos de la categorie par le slug
-				$this->tree->get(array('slug'=>$this->params[1],'id_langue'=>$this->language));
-				
-				// Creation du breadcrumb
-				$this->breadCrumb = $this->tree->getBreadCrumb($this->tree->id_tree,$this->language);
-			}
-			// Si on a pas de categorie en url on prend la principale et on recupere les infos de la categorie par le slug
-			elseif($this->tree->get(array('slug'=>$this->p['slug_categorie'],'id_langue'=>$this->language)))
-			{
-				// Creation du breadcrumb
-				$this->breadCrumb = $this->tree->getBreadCrumb($this->tree->id_tree,$this->language);
-			}
-			// Sinon pas de breadcrumb ni de catégorie
-			else
-			{
-				$this->breadCrumb = array();
-			}
-			
-			// Recuperation du contenu de la categorie
-			if(isset($this->tree->id_tree) && $this->tree->id_tree != '')
-			{
-				$contenu = $this->tree_elements->select('id_tree = "'.$this->tree->id_tree.'" AND id_langue = "'.$this->language.'"');
-				foreach($contenu as $elt)
-				{
-					$this->elements->get($elt['id_element']);
-					$this->content[$this->elements->slug] = $elt['value'];	
-					$this->complement[$this->elements->slug] = $elt['complement'];
-				}
-			}
-			
-			// Recuperation du details principal pour ce produit
-			$this->produits_details->getFirstDetail($this->p['id_produit']);
-			
-			// On fixe la quantite originale
-			$this->quantite = 1;
-			
-			// Recuperation de la liste des images pour le produit
-			$this->lImages = $this->produits_images->select('id_produit = "'.$this->p['id_produit'].'"','ordre ASC');
-			
-			// Recuperation de la liste des produits complementaires
-			$this->lProduits = $this->produits->listeProduitsComp($this->p['id_produit'],$this->language,'','ordre ASC');
-			
-			// Recuperations des differents details du produit
-			$this->lDetails = $this->produits_details->select('id_produit = "'.$this->p['id_produit'].'" AND status = 1 AND stock > 0','ordre ASC');			
-			
-			// Chargemement du tempalte
-			if($this->templates->slug == '')
-			{
-				header("HTTP/1.0 404 Not Found");
-				$this->setView('../root/404');	
-			}
-			else
-			{
-				$this->setView('../templates/'.$this->templates->slug,true);
-			}
-		}*/
-		if(5 == 5)
-		{
+		
+		
 			// ajout du slash car capital rajout un Get
 			if(substr($this->params[0],0,8) == 'capital?')
 			{
@@ -922,8 +838,11 @@ $this->lng['etape1'] = $this->ln->selectFront('inscription-preteur-etape-1',$thi
 					// Liste des projets en funding
 					$this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay,' AND p.status = 0 AND p.display = 0',$this->tabOrdreProject[$this->ordreProject],0,10);
 					
-					// Nb projets en funding
-					$this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay,' AND p.status = 0 AND p.display = 0');
+					// Nb projets en funding. 2015-08-22 : ajout du statut 75 en comptage 
+					$statutsACompterTotalProjets = $this->tabProjectDisplay;
+					$statutsACompterTotalProjets.=',75';
+					
+					$this->nbProjects = $this->projects->countSelectProjectsByStatus($statutsACompterTotalProjets,' AND p.status = 0 AND p.display = 0');
 					
 					
 					
@@ -1143,7 +1062,7 @@ $this->lng['etape1'] = $this->ln->selectFront('inscription-preteur-etape-1',$thi
 					$this->setView('../root/404');	
 				}
 			}	
-		}
+		
 	}
 	
 	function _logout()

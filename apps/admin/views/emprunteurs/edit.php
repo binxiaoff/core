@@ -279,13 +279,32 @@ if (isset($_SESSION['freeow']))
         {
             if (iban == "<?= $this->companies->iban ?>" && document.getElementById('bic').value == "<?= $this->companies->bic ?>")
                 return true;
-            if (<?= count($this->loadData('prelevements')->select('date_echeance_emprunteur > CURRENT_DATE AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0)
+            
+            
+            List_compagnie_meme_iban = CheckIfIbanExistDeja(iban, <?= $this->clients->id_client ?>);
+            
+            if (List_compagnie_meme_iban != "none")
+            {               
+                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIB_iban_existant/'+List_compagnie_meme_iban});
+                return false;
+            }    
+                
+                
+            if (<?= count($this->loadData('prelevements')->select('status = 0 AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0)
+            {
+                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox_no_prelev/<?= $this->clients->id_client ?>'});
+                return false;
+            }
+            else if (<?= count($this->loadData('prelevements')->select('date_echeance_emprunteur > CURRENT_DATE AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0)
             {
                 return true;
             }
+            
+            
+            
 
             $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox/<?= $this->clients->id_client ?>'});
-                        return false
+                return false;
         }
         else 
         {

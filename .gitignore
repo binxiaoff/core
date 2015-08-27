@@ -22,7 +22,11 @@ public/default/var
 public/default/.htaccess
 config.php
 
+###PHPStorm###
+.idea/
 
+###Vagrant###
+vagrant/.vagrant/
 
 #sauf
 !public/default/styles/default/*
