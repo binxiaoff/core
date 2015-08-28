@@ -420,4 +420,27 @@ class projects extends projects_crud
 
         return $record;
     }
+
+    public function countProjectsSinceLendersubscription($client, $status){
+
+        if(is_array($status)){
+            $statusString = implode(",", $status);
+        }
+
+        $sql = 'SELECT	COUNT(*)
+                FROM projects p
+                WHERE  `date_publication_full` >= (
+                        SELECT `added` FROM clients
+		                WHERE id_client = '.$client.')
+		                AND (
+                              SELECT ps.status
+		                      FROM projects_status ps
+			                    LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status)
+		                        WHERE psh.id_project = p.id_project
+		                    ORDER BY psh.added DESC LIMIT 1) IN ('.$statusString.');';
+        $result = $this->bdd->query($sql);
+        $record = $this->bdd->result($result);
+
+        return $record;
+    }
 }
