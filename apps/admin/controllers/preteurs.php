@@ -17,7 +17,7 @@ class preteursController extends bootstrap
 		$this->menu_admin = 'preteurs';
 	}
 
-    function loadGestionData(){
+    public function loadGestionData(){
 
         // deplace tout chargement de données communes dans une méthodes à part
         // Chargement du data
@@ -2334,57 +2334,25 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 			$this->companies->get($this->lenders_accounts->id_company_owner,'id_company');
 		}
 
-		// vient de operations.php
-		// conf par defaut pour la date (1M)
-		$date_debut_time = mktime(0,0,0,date("m")-1,date("d"),date('Y')); // date debut
-		$date_fin_time = mktime(0,0,0,date("m"),date("d"),date('Y'));	// date fin
-
-		// dates pour la requete
-		$this->date_debut = date('Y-m-d',$date_debut_time);
-		$this->date_fin = date('Y-m-d',$date_fin_time);
-
-		// affichage dans le filtre
-		$this->date_debut_display = date('d/m/Y',$date_debut_time);
-		$this->date_fin_display = date('d/m/Y',$date_fin_time);
-
-
-			// On va chercher ce qu'on a dans la table d'indexage
-			$this->lTrans = $this->indexage_vos_operations->select('id_client= '.$this->clients->id_client.' AND LEFT(date_operation,10) >= "'.$this->date_debut.'" AND LEFT(date_operation,10) <= "'.$this->date_fin.'"','date_operation DESC, id_projet DESC');
-
-			// filtre secondaire
-			$this->lProjectsLoans = $this->indexage_vos_operations->get_liste_libelle_projet('id_client = '.$this->clients->id_client.' AND LEFT(date_operation,10) >= "'.$this->date_debut.'" AND LEFT(date_operation,10) <= "'.$this->date_fin.'"');
-
-			$_SESSION['filtre_vos_operations']['debut'] = $this->date_debut_display;
-			$_SESSION['filtre_vos_operations']['fin'] = $this->date_fin_display;
-			$_SESSION['filtre_vos_operations']['nbMois'] = '1';
-			$_SESSION['filtre_vos_operations']['annee'] = date('Y');
-			$_SESSION['filtre_vos_operations']['tri_type_transac'] = 1;
-			$_SESSION['filtre_vos_operations']['tri_projects'] = 1;
-			$_SESSION['filtre_vos_operations']['id_last_action'] = 'order_operations';
-			$_SESSION['filtre_vos_operations']['order'] = '';
-			$_SESSION['filtre_vos_operations']['type'] = '';
-			$_SESSION['filtre_vos_operations']['id_client'] = $this->clients->id_client;
-
-
-			// DETAIL des OPERATIONS //
-
-			$year = date('Y');
-			$this->lLoans = $this->loans->select('id_lender = '.$this->lenders_accounts->id_lender_account.' AND YEAR(added) = '.$year.' AND status = 0','added DESC');
-
-			//////////////////////////////
-
-
-			// les PRETS //
-			$this->lSumLoans = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account,$year,'next_echeance ASC');
+		// LOANS //
+		$this->lSumLoans = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account,$year,'next_echeance ASC');
 
 			$this->arrayDeclarationCreance = array(1456,1009, 1614, 3089);
 
-        //nombre de projets en ligne depuis son inscription
-        $this->nblingne = count($this->projects->selectProjectsByStatus(50));
+		//PORTFOLIO DETAILS
+		//amount of projects online since his registration
+		$statusOk = array(projects_status::A_FUNDER, projects_status::EN_FUNDING, projects_status::REMBOURSEMENT, projects_status::PRET_REFUSE);
+		$this->projectsPublished = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, $statusOk);
 
 
+		//Number of problematic projects in his wallet
+		$statusKo = array(projects_status::PROBLEME, projects_status::RECOUVREMENT);
+		$this->problProjects = $this->projects->countProjectsByStatusAndLender($this->lenders_accounts->id_lender_account, $statusKo);
 
-    }
+		//Total number of projects in his wallet
+		$this->totalProjects = $this->loans->getNbPprojet($this->lenders_accounts->id_lender_account);
+
+	}
 
 
 }
