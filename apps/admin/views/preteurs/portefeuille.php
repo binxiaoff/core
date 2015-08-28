@@ -95,7 +95,7 @@
                 <th style="text-align: left">Prochaine</th>
                 <th style="text-align: left">Fin</th>
                 <th style="text-align: left">Mensualité</th>
-                <th></th>
+                <th style="text-align: left">Documents <br> à télécharger</th>
             </tr>
             </thead>
             <?
