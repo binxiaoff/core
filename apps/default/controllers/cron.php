@@ -160,15 +160,15 @@ class cronController extends bootstrap
             //if($datePublication.' '.$this->heureDebutFunding == $today ) // on lance le matin a 7h00
             if ($datePublication == $today) // on lance en fonction de l'heure definie dans le bo
             {
-                $this->projects_status_history->addStatus(-1, 50, $projects['id_project']);
-
                 //mail('d.courtier@equinoa.com','unilend '.$this->Config['env'].' cron','check_projet_a_funder date : '.date('d/m/y H:i:s').' id_projet : '.$projects['id_project']);
-                //// CREATION DES NOTIFICATIONS nouveau projet ///////
-                $this->nouveau_projet($projects['id_project']);
-                ////////////////////
+                
+                $this->projects_status_history->addStatus(-1, 50, $projects['id_project']);
                 
                 // Zippage pour groupama
                 $this->zippage($projects['id_project']);
+                
+                //// CREATION DES NOTIFICATIONS nouveau projet (/!\ DIE à la fin de la fonction ) ///////
+                $this->nouveau_projet($projects['id_project']);
             }
         }
     }
