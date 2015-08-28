@@ -5,9 +5,9 @@
  * Financial functions with the Excel function names and
  * parameter order.
  * 
- * @version   $Id: financial_class.php,v 1.0.7 2012-11-13 08:00:56-05 egarcia Exp $
- * @author    Enrique García M. <egarcia@egm.co>
- * @copyright (c) 2003-2012 Enrique García M.
+ * @version   $Id: financial.class.php,v 1.0.7 2012-11-13 08:00:56-05 egarcia Exp $
+ * @author    Enrique Garcï¿½a M. <egarcia@egm.co>
+ * @copyright (c) 2003-2012 Enrique Garcï¿½a M.
  * @since     Saturday, January 7, 2003
  **/
 
@@ -85,7 +85,7 @@ define('FINANCIAL_BASIS_ACT_365', 3);
 define('FINANCIAL_BASIS_30E_360', 4);
 define('FINANCIAL_BASIS_30Ep_360', 5);
 
-class Financial
+class financial
 {
 	function __construct()
 	{
@@ -917,7 +917,7 @@ class Financial
 	 * Pmt: is the payment made each period and cannot change over the life
 	 *  of the annuity. Typically, pmt includes principal and interest but no
 	 *  other fees or taxes. If pmt is omitted, you must include the fv argument.
-	 * Pv: is the present value — the total amount that a series of future payments
+	 * Pv: is the present value ï¿½ the total amount that a series of future payments
 	 *  is worth now.
 	 * Fv: is the future value, or a cash balance you want to attain after the
 	 *  last payment is made. If fv is omitted, it is assumed to be 0 (the future
@@ -1362,14 +1362,14 @@ class Financial
 	 *  4 European 30/360
 	 *
 	 */
-	function YIELD($settlement, $maturity, $rate, $pr, $redemption, $frequency, $basis = FINANCIAL_BASIS_MSRB_30_360)
+	function YIELDfunction($settlement, $maturity, $rate, $pr, $redemption, $frequency, $basis = FINANCIAL_BASIS_MSRB_30_360)
 	{
 		if (!$this->_is_valid_basis($basis)) return null;
 		if (!$this->_is_valid_frequency($frequency)) return null;
 		if ($rate < 0) return null;
 		if (($pr <= 0) || ($redemption <= 0)) return null;
 		if ($settlement >= $maturity) return null;
-		
+
 		// TODO: Not yet implemented
 		return null;
 	}
