@@ -10261,6 +10261,9 @@ class cronController extends bootstrap
             }
             else
             {
+                //si on dit on remet en ON le params
+                $settingsControleQuotidiennne->value = 1;
+                $settingsControleQuotidiennne->update();
                 die;
             }
 
