@@ -65,7 +65,7 @@
     <div>
         <h2>Portefeuille</h2>
 
-        <h3>TRI du portefeuille</h3>
+        <h3>TRI du portefeuille : <?=$this->TRI?></h3>
 
         <h3>Nombre de projets à probleme dans le portefeuille :  <?=$this->problProjects?></h3>
         <h3>Nombre de projets total dans le portefeuille : <?=$this->totalProjects?></h3>
@@ -167,12 +167,12 @@
 
                                             <tr style="background-color: #e3e4e5; color: black;">
                                                 <td style="text-align: right; background-color: #e3e4e5; color: black;">Détail loan</td>
-                                                <td></td>
+                                                <td style="text-align: right; background-color: #e3e4e5; color: black;"></td>
                                                 <td style="background-color: #e3e4e5; color: black;"><?=number_format($loan['amount']/100, 0, ',', ' ')?> €</td>
                                                 <td style="background-color: #e3e4e5; color: black;"><?=number_format($loan['rate'], 2, ',', ' ')?>%</td>
-                                                <td></td>
-                                                <td></td>
-                                                <td></td>
+                                                <td style="text-align: right; background-color: #e3e4e5; color: black;"></td>
+                                                <td style="text-align: right; background-color: #e3e4e5; color: black;"></td>
+                                                <td style="text-align: right; background-color: #e3e4e5; color: black;"></td>
                                                 <td style="background-color: #e3e4e5; color: black;"><?=number_format(($SumAremb[0]['montant']/100)-$fiscal, 2, ',', ' ')?> €/mois</td>
                                                 <td>
                                                     <?
