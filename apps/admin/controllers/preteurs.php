@@ -2340,6 +2340,10 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 			$this->arrayDeclarationCreance = array(1456,1009, 1614, 3089);
 
 		//PORTFOLIO DETAILS
+
+		//TRI
+		$this->calculTRI();
+
 		//amount of projects online since his registration
 		$statusOk = array(projects_status::A_FUNDER, projects_status::EN_FUNDING, projects_status::REMBOURSEMENT, projects_status::PRET_REFUSE);
 		$this->projectsPublished = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, $statusOk);
@@ -2352,6 +2356,15 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 		//Total number of projects in his wallet
 		$this->totalProjects = $this->loans->getNbPprojet($this->lenders_accounts->id_lender_account);
 
+	}
+
+	private function calculTRI(){
+
+		$values = $this->lenders_accounts->getValuesforTRI($this->lenders_accounts->id_lender_account);
+		$dates = $this->lenders_accounts->getDatesforTRI($this->lenders_accounts->id_lender_account);
+
+		$this->financial = $this->loadLib('financial');
+		$this->TRI = $this->financial->XIRR($values, $dates, $guess = 0.1);
 	}
 
 
