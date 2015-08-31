@@ -356,8 +356,8 @@ class rootController extends bootstrap
 					// Liste des projets en funding
 					$this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay,' AND p.status = 0 AND p.display = 0',$this->tabOrdreProject[$this->ordreProject],0,10);
 					
-					// Nb projets en funding
-					$this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay,' AND p.status = 0 AND p.display = 0');
+					// Nb projets en funding. Ajout du statut 75 (prêts refusés) au comptage, demande nicolas d'Aout 2015
+					$this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay.',75',' AND p.status = 0 AND p.display = 0');
 					
 					// on signal que c'est une page du fo
 					$this->page = 'projets_fo';
@@ -814,6 +814,7 @@ $this->lng['etape1'] = $this->ln->selectFront('inscription-preteur-etape-1',$thi
 				
 				if($this->tree->id_template == 8)
 				{
+					
 					$this->loadCss('default/compteur_home/style');
 					
 					// Chargement des datas
@@ -835,14 +836,17 @@ $this->lng['etape1'] = $this->ln->selectFront('inscription-preteur-etape-1',$thi
 					
 					$_SESSION['ordreProject'] = $this->ordreProject;
 					
-					// Liste des projets en funding
-					$this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay,' AND p.status = 0 AND p.display = 0',$this->tabOrdreProject[$this->ordreProject],0,10);
-					
 					// Nb projets en funding. 2015-08-22 : ajout du statut 75 en comptage 
 					$statutsACompterTotalProjets = $this->tabProjectDisplay;
 					$statutsACompterTotalProjets.=',75';
 					
+					
+					// Liste des projets en funding
+					$this->lProjetsFunding = $this->projects->selectProjectsByStatus($statutsACompterTotalProjets,' AND p.status = 0 AND p.display = 0',$this->tabOrdreProject[$this->ordreProject],0,10);
+					
+					
 					$this->nbProjects = $this->projects->countSelectProjectsByStatus($statutsACompterTotalProjets,' AND p.status = 0 AND p.display = 0');
+					
 					
 					
 					
