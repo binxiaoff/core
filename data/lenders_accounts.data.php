@@ -90,92 +90,62 @@ class lenders_accounts extends lenders_accounts_crud
 		return ($this->bdd->fetch_array($result,0,0)>0);
 	}
 
-	public function getValuesforTRI($lender, $status = array(projects_status::REMBOURSE, projects_status::REMBOURSEMENT, projects_status::REMBOURSEMENT_ANTICIPE)){
+	public function getValuesforTRI($lender){
 
-		if(is_array($status)){
-			$statusString = implode(",", $status);
-		}
-		//get loans values as negativ values
-		$sql = 'SELECT (l.amount *-1) FROM loans l
-				LEFT JOIN projects p ON l.id_project = p.id_project
-				WHERE l.id_lender = '.$lender.'
-				AND ( SELECT ps.status FROM projects_status ps
-				LEFT JOIN projects_status_history psh
-				ON ( ps.id_project_status = psh.id_project_status )
-				WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1 )
-				IN ('.$statusString.');';
+		//get loans values as negativ , dates and project status
+		$sql = 'SELECT (l.amount *-1) as loan, l.added
+						FROM loans l
+						LEFT JOIN projects p ON l.id_project = p.id_project
+						WHERE l.id_lender = '.$lender.';';
 
 		$result = $this->bdd->query($sql);
 		$loansValues = array();
 		while ($record = $this->bdd->fetch_array($result)) {
-			$loansValues[] = intval($record["(l.amount *-1)"]);
+
+			$loansValues[] = array(strtotime($record["added"]) => intval($record["loan"]));
 		}
 
 		//get echeancier values
-		$sql = 'SELECT e.montant FROM echeanciers e
-				LEFT JOIN projects p ON e.id_project = p.id_project
-				INNER JOIN loans l ON e.id_loan = l.id_loan WHERE e.id_lender = '.$lender.'
-				AND ( SELECT ps.status FROM projects_status ps
-				LEFT JOIN projects_status_history psh ON ( ps.id_project_status = psh.id_project_status )
-				WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1 )
-				IN ('.$statusString.');';
+		$sql = 'SELECT
+						e.montant as montant,
+						e.date_echeance_emprunteur_reel as echeance_date_reel,
+						e.date_echeance_emprunteur as echeance_date,
+						e.status as echeance_status,
+							(
+							SELECT ps.status
+							FROM projects_status ps
+									LEFT JOIN projects_status_history psh ON (
+									ps.id_project_status = psh.id_project_status)
+									WHERE psh.id_project = p.id_project
+									ORDER BY psh.added DESC LIMIT 1) as project_status
+						FROM echeanciers e
+							LEFT JOIN projects p ON e.id_project = p.id_project
+							INNER JOIN loans l ON e.id_loan = l.id_loan
+						WHERE e.id_lender = '.$lender.';';
 
 		$result = $this->bdd->query($sql);
 		$echeancesValues = array();
 
+
+		$statusKo = array(projects_status::PROBLEME, projects_status::RECOUVREMENT);
 		while ($record = $this->bdd->fetch_array($result)) {
-			$echeancesValues[] = intval($record["montant"]);
+
+			if(in_array(intval($record["project_status"]), $statusKo) && $record["echeance_status"] == "0" ){
+
+				$record["montant"] = 0;
+			}
+
+			if($record["echeance_date_reel"] == "0000-00-00 00:00:00" ){
+					$record["echeance_date_reel"] = $record["echeance_date"];
+			}// end if Date echeance reele
+
+			$echeancesValues[] = array(strtotime($record["echeance_date_reel"]) => intval($record["montant"]));
 		}
 
 		//merge arrays into one
 		$values = array_merge($loansValues, $echeancesValues);
 
 		return $values;
-	}
-
-	public function getDatesforTRI($lender, $status = array(projects_status::REMBOURSE, projects_status::REMBOURSEMENT, projects_status::REMBOURSEMENT_ANTICIPE)){
-
-		if(is_array($status)){
-			$statusString = implode(",", $status);
-		}
-		//get loans dates
-
-		$sql = 'SELECT l.added FROM loans l
-				LEFT JOIN projects p ON l.id_project = p.id_project
-				WHERE l.id_lender = '.$lender.'
-				AND ( SELECT ps.status FROM projects_status ps
-				LEFT JOIN projects_status_history psh
-				ON ( ps.id_project_status = psh.id_project_status )
-				WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1 )
-				IN ('.$statusString.');';
-
-		$result = $this->bdd->query($sql);
-		$loansDates = array();
-		while ($record = $this->bdd->fetch_array($result)) {
-			$loansDates[] = strtotime($record["added"]);
-		}
-
-		//get echeancier dates
-
-		$sql = 'SELECT e.date_echeance FROM echeanciers e
-				LEFT JOIN projects p ON e.id_project = p.id_project
-				INNER JOIN loans l ON e.id_loan = l.id_loan WHERE e.id_lender = '.$lender.'
-				AND ( SELECT ps.status FROM projects_status ps
-				LEFT JOIN projects_status_history psh ON ( ps.id_project_status = psh.id_project_status )
-				WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1 )
-				IN ('.$statusString.');';
-
-		$result = $this->bdd->query($sql);
-		$echeancesDates = array();
-
-		while ($record = $this->bdd->fetch_array($result)) {
-			$echeancesDates[] = strtotime($record["added"]);
-		}
-
-		$dates = array_merge($loansDates, $echeancesDates);
-
-		return $dates;
-
 	}
 
 
