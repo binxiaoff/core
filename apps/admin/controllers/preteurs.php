@@ -620,7 +620,7 @@ class preteursController extends bootstrap
                 $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
 
 				// autre
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
 				
 				// CNI/Passeport dirigeants
                 $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
@@ -1102,7 +1102,7 @@ class preteursController extends bootstrap
                 $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
 
                 // autre
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
 
                 // CNI/Passeport dirigeants
                 $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
@@ -2219,6 +2219,11 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 		}
 	}
 
+	/**
+	 * @param integer $lenderAccountId
+	 * @param integer $attachmentType
+	 * @return bool
+	 */
 	private function uploadAttachment($lenderAccountId, $attachmentType)
 	{
 		if(false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
@@ -2252,7 +2257,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 				$field = 'fichier6';
 				$uploadPath = $basePath.'rib/';
 				break;
-			case attachment_type::AUTRE1 :
+			case attachment_type::CNI_PASSPORTE_VERSO :
 				$field = 'fichier7';
 				$uploadPath = $basePath.'autre/';
 				break;
