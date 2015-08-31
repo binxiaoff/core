@@ -2342,7 +2342,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 		//PORTFOLIO DETAILS
 
 		//TRI
-		$this->calculTRI();
+        $this->TRI = $this->calculTRI();
 
 		//amount of projects online since his registration
 		$statusOk = array(projects_status::A_FUNDER, projects_status::EN_FUNDING, projects_status::REMBOURSEMENT, projects_status::PRET_REFUSE);
@@ -2360,11 +2360,25 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 
 	private function calculTRI(){
 
-		$values = $this->lenders_accounts->getValuesforTRI($this->lenders_accounts->id_lender_account);
-		$dates = $this->lenders_accounts->getDatesforTRI($this->lenders_accounts->id_lender_account);
+		$valuesTRI = $this->lenders_accounts->getValuesforTRI($this->lenders_accounts->id_lender_account);
+
+
+        $dates = array();
+        $values = array();
+
+
+        foreach($valuesTRI as $k => $paire){
+
+            foreach($paire as $date => $valeur){
+
+                $dates[] = $date;
+                $values[] = $valeur;
+
+            }
+        }
 
 		$this->financial = $this->loadLib('financial');
-		$this->TRI = $this->financial->XIRR($values, $dates, $guess = 0.1);
+		return $this->financial->XIRR($values, $dates, $guess = 0.1);
 	}
 
 
