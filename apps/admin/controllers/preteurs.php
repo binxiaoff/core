@@ -37,6 +37,9 @@ class preteursController extends bootstrap
         $this->wallets_lines = $this->loadData('wallets_lines');
         $this->echeanciers = $this->loadData('echeanciers');
 
+		$this->attachment = $this->loadData('attachment');
+		$this->attachment_type = $this->loadData('attachment_type');
+
     }
 
 	function _default()
@@ -287,6 +290,9 @@ class preteursController extends bootstrap
 		
 
 		$this->clients_mandats->get($this->clients->id_client,'id_client');
+
+		//attachements
+		$this->attachements = $this->lenders_accounts->getAttachements($this->lenders_accounts->id_lender_account);
 		
 		// liste des bids en cour
 		$this->lBids = $this->bids->select('id_lender_account = '.$this->lenders_accounts->id_lender_account.' AND status = 0','added DESC');
@@ -340,8 +346,6 @@ class preteursController extends bootstrap
 	{
         //On appelle la fonction de chargement des données
         $this->loadGestionData();
-        $this->attachment = $this->loadData('attachment');
-        $this->attachment_type = $this->loadData('attachment_type');
 
         // on charge d'autres données spécifiques à cette méthode
 		$this->nationalites = $this->loadData('nationalites_v2');
