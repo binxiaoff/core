@@ -236,6 +236,7 @@ class preteursController extends bootstrap
         //On appelle la fonction de chargement des donnÃ©es
         $this->loadGestionData();
 
+
 		// On recup les infos du client
 		$this->lenders_accounts->get($this->params[0],'id_lender_account');
 
@@ -339,6 +340,8 @@ class preteursController extends bootstrap
 	{
         //On appelle la fonction de chargement des donnÃ©es
         $this->loadGestionData();
+        $this->attachment = $this->loadData('attachment');
+        $this->attachment_type = $this->loadData('attachment_type');
 
         // on charge d'autres donnÃ©es spÃ©cifiques Ã  cette mÃ©thode
 		$this->nationalites = $this->loadData('nationalites_v2');
@@ -443,6 +446,9 @@ class preteursController extends bootstrap
 		if($this->lActions[0]['added'] != false) $timeCreate = strtotime($this->lActions[0]['added']);
 		else $timeCreate = strtotime($this->clients->added);
 		$this->timeCreate = $timeCreate;
+
+        //attachements
+        $this->attachements = $this->lenders_accounts->getAttachements($this->lenders_accounts->id_lender_account);
 		
 		// liste des cvg signé
 		$this->lAcceptCGV = $this->acceptations_legal_docs->select('id_client = '.$this->clients->id_client);
@@ -615,29 +621,46 @@ class preteursController extends bootstrap
 				else $this->lenders_accounts->precision = '';
 				
 				// debut fichiers //
-				
+
 				// carte-nationale-didentite-passeport
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
 
-				// autre
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
-				
-				// CNI/Passeport dirigeants
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
+				// CNI passeport verso
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
 
-				// Délégation de pouvoir
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
-
-				// Extrait Kbis
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
 				// justificatif-de-domicile
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
 
 				// RIB
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
 
-                // document_fiscal
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
+				//Attestation d'hebergement par un tiers
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::ATTESTATION_HEBERGEMENT_TIERS);
+
+				//CNI/Passport du tiers hébergeant
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
+
+				// CNI/Passeport dirigeants
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
+
+				// Délégation de pouvoir
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
+
+				// Extrait Kbis
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
+
+				// document_fiscal
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
+
+				//autre1
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
+
+				//autre2
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE2);
+
+				//autre3
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE3);
+
 
 				// Statuts
 				/*if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
@@ -1101,8 +1124,20 @@ class preteursController extends bootstrap
                 // carte-nationale-didentite-passeport
                 $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
 
-                // autre
+                // CNI passeport verso
                 $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
+
+				// justificatif-de-domicile
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
+
+				// RIB
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
+
+				//Attestation d'hebergement par un tiers
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::ATTESTATION_HEBERGEMENT_TIERS);
+
+				//CNI/Passport du tiers hébergeant
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
 
                 // CNI/Passeport dirigeants
                 $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
@@ -1112,14 +1147,19 @@ class preteursController extends bootstrap
 
                 // Extrait Kbis
                 $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
-                // justificatif-de-domicile
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
-
-                // RIB
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
 
                 // document_fiscal
                 $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
+
+				//autre1
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
+
+				//autre2
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE2);
+
+				//autre3
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE3);
+
 
 				// Statuts
 				/*if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
@@ -2242,36 +2282,56 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 
 		switch($attachmentType) {
 			case attachment_type::CNI_PASSPORTE :
-				$field = 'fichier1';
+				$field = 'cni_passeport';
 				$uploadPath = $basePath.'cni_passeport/';
+				break;
+			case attachment_type::CNI_PASSPORTE_VERSO :
+				$field = 'cni_passeport_verso';
+				$uploadPath = $basePath.'cni_passeport_verso/';
+				break;
+			case attachment_type::JUSTIFICATIF_DOMICILE :
+				$field = 'justificatif_domicile';
+				$uploadPath = $basePath.'justificatif_domicile/';
+				break;
+			case attachment_type::RIB :
+				$field = 'rib';
+				$uploadPath = $basePath.'rib/';
+				break;
+			case attachment_type::ATTESTATION_HEBERGEMENT_TIERS :
+				$field = 'attestation_hebergement_tiers';
+				$uploadPath = $basePath.'attestation_hebergement_tiers/';
+				break;
+			case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT :
+				$field = 'cni_passport_tiers_hebergeant';
+				$uploadPath = $basePath.'cni_passport_tiers_hebergeant/';
+				break;
+			case attachment_type::CNI_PASSPORTE_DIRIGEANT :
+				$field = 'cni_passeport_dirigeant';
+				$uploadPath = $basePath.'cni_passeport_dirigeant/';
+				break;
+			case attachment_type::DELEGATION_POUVOIR :
+				$field = 'delegation_pouvoir';
+				$uploadPath = $basePath.'delegation_pouvoir/';
+				break;
+			case attachment_type::KBIS :
+				$field = 'extrait_kbis';
+				$uploadPath = $basePath.'extrait_kbis/';
 				break;
 			case attachment_type::JUSTIFICATIF_FISCAL :
 				$field = 'document_fiscal';
 				$uploadPath = $basePath.'document_fiscal/';
 				break;
-			case attachment_type::JUSTIFICATIF_DOMICILE :
-				$field = 'fichier5';
-				$uploadPath = $basePath.'justificatif_domicile/';
+			case attachment_type::AUTRE1 :
+				$field = 'autre1';
+				$uploadPath = $basePath.'autre1/';
 				break;
-			case attachment_type::RIB :
-				$field = 'fichier6';
-				$uploadPath = $basePath.'rib/';
+			case attachment_type::AUTRE2 :
+				$field = 'autre2';
+				$uploadPath = $basePath.'autre2/';
 				break;
-			case attachment_type::CNI_PASSPORTE_VERSO :
-				$field = 'fichier7';
-				$uploadPath = $basePath.'autre/';
-				break;
-			case attachment_type::CNI_PASSPORTE_DIRIGEANT :
-				$field = 'fichier2';
-				$uploadPath = $basePath.'cni_passeport_dirigent/';
-				break;
-			case attachment_type::KBIS :
-				$field = 'fichier4';
-				$uploadPath = $basePath.'extrait_kbis/';
-				break;
-			case attachment_type::DELEGATION_POUVOIR :
-				$field = 'fichier3';
-				$uploadPath = $basePath.'delegation_pouvoir/';
+			case attachment_type::AUTRE3:
+				$field = 'autre3';
+				$uploadPath = $basePath.'autre3/';
 				break;
 			default :
 				return false;
