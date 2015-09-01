@@ -209,39 +209,91 @@
     <h2>Pièces jointes :</h2>
     <table class="form" style="width: auto;">
         <tr>
-            <th><?=($this->lenders_accounts->cni_passeport==1?'CNI':'Passeport')?> :</th>
-            <td><a href="<?=$this->lurl?>/protected/cni_passeport_lender/<?=$this->lenders_accounts->fichier_cni_passeport?>"><?=$this->lenders_accounts->fichier_cni_passeport?></a></td>
+            <th>Type de fichier</th>
+            <th>Nom (cliquer pour télécharger)</th>
         </tr>
         <tr>
-            <th>cni/passeport dirigeant :</th>
-            <td><a href="<?=$this->lurl?>/protected/cni_passeport_dirigent_lender/<?=$this->lenders_accounts->fichier_cni_passeport_dirigent?>"><?=$this->lenders_accounts->fichier_cni_passeport_dirigent?></a></td>
+            <th>CNI/Passeport</th>
+            <td>
+                <a href="<?=$this->lurl?>/protected/lenders/cni_passeport/<?=$this->attachements[attachment_type::CNI_PASSPORTE]["path"]?>">
+                    <?=$this->attachements[attachment_type::CNI_PASSPORTE]["path"]; ?></a>
+            </td>
         </tr>
         <tr>
-            <th>Délégation de pouvoir :</th>
-            <td><a href="<?=$this->lurl?>/protected/delegation_pouvoir_lender/<?=$this->lenders_accounts->fichier_delegation_pouvoir?>"><?=$this->lenders_accounts->fichier_delegation_pouvoir?></a></td>
+            <th>CNI/Passeport verso</th>
+            <td>
+                <a href="<?=$this->lurl?>/protected/lenders/cni_passeport_verso/<?=$this->attachements[attachment_type::CNI_PASSPORTE_VERSO]["path"]?>">
+                    <?=$this->attachements[attachment_type::CNI_PASSPORTE_VERSO]["path"]; ?></a>
+            </td>
         </tr>
         <tr>
-            <th>Extrait kbis :</th>
-            <td><a href="<?=$this->lurl?>/protected/extrait_kbis_lender/<?=$this->lenders_accounts->fichier_extrait_kbis?>"><?=$this->lenders_accounts->fichier_extrait_kbis?></a></td>
+            <th>Justificatif de domicile</th>
+            <td>
+                <a href="<?=$this->lurl?>/protected/lender/justificatif_domicile/<?=$this->attachements[attachment_type::JUSTIFICATIF_DOMICILE]["path"]?>">
+                    <?=$this->attachements[attachment_type::JUSTIFICATIF_DOMICILE]["path"];?></a>
+            </td>
         </tr>
         <tr>
-            <th>Justificatif de domicile :</th>
-            <td><a href="<?=$this->lurl?>/protected/justificatif_domicile_lender/<?=$this->lenders_accounts->fichier_justificatif_domicile?>"><?=$this->lenders_accounts->fichier_justificatif_domicile?></a></td>
+            <th>RIB</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/rib/<?=$this->attachements[attachment_type::RIB]["path"]?>">
+                    <?=$this->attachements[attachment_type::RIB]["path"]?></a></td>
         </tr>
         <tr>
-            <th>RIB :</th>
-            <td><a href="<?=$this->lurl?>/protected/rib_lender/<?=$this->lenders_accounts->fichier_rib?>"><?=$this->lenders_accounts->fichier_rib?></a></td>
+            <th>Attestation d'hébergement par un tiers</th>
+            <td>
+                <a href="<?=$this->lurl?>/protected/lender/attestation_hebergement_tiers/<?=$this->attachements[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]["path"]?>">
+                    <?=$this->attachements[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]["path"];?></a>
+            </td>
+        </tr>
+        <tr>
+            <th>CNI ou passport du tiers hébergeant</th>
+            <td>
+                <a href="<?=$this->lurl?>/protected/lender/cni_passport_tiers_hebergeant/<?=$this->attachements[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]["path"]?>">
+                    <?=$this->attachements[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]["path"];?></a></td>
+        </tr>
+        <tr>
+            <th>CNI/Passeport dirigeant</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/cni_passeport_dirigeant/<?=$this->attachements[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]?>">
+                    <?=$this->attachements[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]?></a></td>
+        </tr>
+        <tr>
+            <th>Délégation de pouvoir</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/delegation_pouvoir/<?=$this->attachements[attachment_type::DELEGATION_POUVOIR]["path"]?>">
+                    <?=$this->attachements[attachment_type::DELEGATION_POUVOIR]["path"]?></a></td>
+        </tr>
+        <tr>
+            <th>Extrait kbis</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/extrait_kbis/<?=$this->attachements[attachment_type::KBIS]["path"]?>">
+                    <?=$this->attachements[attachment_type::KBIS]["path"]?></a></td>
         </tr>
 
         <tr>
-            <th>Mandat :</th>
-            <td><a href="<?=$this->lurl?>/protected/mandat_preteur/<?=$this->clients_mandats->name?>"><?=$this->clients_mandats->name?></a></td>
-
+            <th>Mandat</th>
+            <td>
+                <?
+                if($this->clients_mandats->get($this->clients->id_client,'id_client'))
+                {
+                    ?><a href="<?=$this->lurl?>/protected/mandat_preteur/<?=$this->clients_mandats->name?>"><?=$this->clients_mandats->name?></a><?
+                }
+                ?>
+            </td>
         </tr>
         <tr>
-            <th>Document fiscal :</th>
-            <td><a href="<?=$this->lurl?>/protected/document_fiscal_preteur/<?=$this->lenders_accounts->fichier_document_fiscal?>"><?=$this->lenders_accounts->fichier_document_fiscal?></a></td>
-
+            <th>Document fiscal</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/document_fiscal/<?=$this->attachements[attachment_type::JUSTIFICATIF_FISCAL]["path"]?>">
+                    <?=$this->attachements[attachment_type::JUSTIFICATIF_FISCAL]["path"]?></a></td>
+        </tr>
+        <tr>
+            <th>Autre 1</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/autre1/<?=$this->attachements[attachment_type::AUTRE1]["path"]?>"></a><?=$this->attachements[attachment_type::AUTRE1]["path"]?></td>
+        </tr>
+        <tr>
+            <th>Autre 2</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/autre2/<?=$this->attachements[attachment_type::AUTRE2]["path"]?>"><?=$this->attachements[attachment_type::AUTRE2]["path"]?></a></td>
+        </tr>
+        <tr>
+            <th>Autre 3</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/autre3/<?=$this->attachements[attachment_type::AUTRE3]["path"]?>"><?=$this->attachements[attachment_type::AUTRE3]["path"]?></a></td>
         </tr>
     </table>
     <br /><br />
