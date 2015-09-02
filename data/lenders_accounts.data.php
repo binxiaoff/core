@@ -108,8 +108,8 @@ class lenders_accounts extends lenders_accounts_crud
 		//get echeancier values
 		$sql = 'SELECT
 						e.montant as montant,
-						e.date_echeance_emprunteur_reel as echeance_date_reel,
-						e.date_echeance_emprunteur as echeance_date,
+						e.date_echeance_reel as date_echeance_reel,
+						e.date_echeance as date_echeance,
 						e.status as echeance_status,
 							(
 							SELECT ps.status
@@ -135,11 +135,11 @@ class lenders_accounts extends lenders_accounts_crud
 				$record["montant"] = 0;
 			}
 
-			if($record["echeance_date_reel"] == "0000-00-00 00:00:00" ){
-					$record["echeance_date_reel"] = $record["echeance_date"];
+			if($record["date_echeance_reel"] == "0000-00-00 00:00:00" ){
+					$record["date_echeance_reel"] = $record["date_echeance"];
 			}// end if Date echeance reele
 
-			$echeancesValues[] = array(strtotime($record["echeance_date_reel"]) => intval($record["montant"]));
+			$echeancesValues[] = array(strtotime($record["date_echeance_reel"]) => intval($record["montant"]));
 		}
 
 		//merge arrays into one
