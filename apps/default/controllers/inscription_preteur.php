@@ -1175,6 +1175,8 @@ class inscription_preteurController extends bootstrap
 			$this->lenders_accounts->get($this->clients->id_client,'id_client_owner');
 			
 			$this->clients_adresses->get($this->clients->id_client,'id_client');
+
+			$this->attachements = $this->lenders_accounts->getAttachements($this->lenders_accounts->id_lender_account);
 			
 			if($this->lenders_accounts->iban != '')
 			{
@@ -1232,7 +1234,7 @@ class inscription_preteurController extends bootstrap
                 $fichier_rib = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
                 $this->error_rib = false === $fichier_rib;
 				
-				// autre
+				// CNI_verso
                 $fichier_autre = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
                 $this->error_autre = false === $fichier_autre;
 				
@@ -2476,36 +2478,56 @@ class inscription_preteurController extends bootstrap
 
 		switch($attachmentType) {
 			case attachment_type::CNI_PASSPORTE :
-				$field = 'ci';
+				$field = 'cni_passeport';
 				$uploadPath = $basePath.'cni_passeport/';
 				break;
-			case attachment_type::JUSTIFICATIF_FISCAL :
-				$field = 'document_fiscal';
-				$uploadPath = $basePath.'document_fiscal/';
+			case attachment_type::CNI_PASSPORTE_VERSO :
+				$field = 'cni_passeport_verso';
+				$uploadPath = $basePath.'cni_passeport_verso/';
 				break;
 			case attachment_type::JUSTIFICATIF_DOMICILE :
-				$field = 'justificatif_de_domicile';
+				$field = 'justificatif_domicile';
 				$uploadPath = $basePath.'justificatif_domicile/';
 				break;
 			case attachment_type::RIB :
 				$field = 'rib';
 				$uploadPath = $basePath.'rib/';
 				break;
-			case attachment_type::CNI_PASSPORTE_VERSO :
-				$field = 'autre';
-				$uploadPath = $basePath.'autre/';
+			case attachment_type::ATTESTATION_HEBERGEMENT_TIERS :
+				$field = 'attestation_hebergement_tiers';
+				$uploadPath = $basePath.'attestation_hebergement_tiers/';
+				break;
+			case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT :
+				$field = 'cni_passport_tiers_hebergeant';
+				$uploadPath = $basePath.'cni_passport_tiers_hebergeant/';
 				break;
 			case attachment_type::CNI_PASSPORTE_DIRIGEANT :
-				$field = 'ci_dirigeant';
-				$uploadPath = $basePath.'cni_passeport_dirigent/';
-				break;
-			case attachment_type::KBIS :
-				$field = 'kbis';
-				$uploadPath = $basePath.'extrait_kbis/';
+				$field = 'cni_passeport_dirigeant';
+				$uploadPath = $basePath.'cni_passeport_dirigeant/';
 				break;
 			case attachment_type::DELEGATION_POUVOIR :
 				$field = 'delegation_pouvoir';
 				$uploadPath = $basePath.'delegation_pouvoir/';
+				break;
+			case attachment_type::KBIS :
+				$field = 'extrait_kbis';
+				$uploadPath = $basePath.'extrait_kbis/';
+				break;
+			case attachment_type::JUSTIFICATIF_FISCAL :
+				$field = 'document_fiscal';
+				$uploadPath = $basePath.'document_fiscal/';
+				break;
+			case attachment_type::AUTRE1 :
+				$field = 'autre1';
+				$uploadPath = $basePath.'autre1/';
+				break;
+			case attachment_type::AUTRE2 :
+				$field = 'autre2';
+				$uploadPath = $basePath.'autre2/';
+				break;
+			case attachment_type::AUTRE3:
+				$field = 'autre3';
+				$uploadPath = $basePath.'autre3/';
 				break;
 			default :
 				return false;
