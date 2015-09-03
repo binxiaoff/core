@@ -232,7 +232,7 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
 
             <div><!--row CNI Verso-->
                 <label class="inline-text">
-                    <?=$this->lng['etape2']['piece-didentite']?>
+                    <?=$this->lng['etape2']['piece-didentite-verso']?>
                 </label>
 
                 <div class="uploader">
@@ -292,7 +292,13 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
 
                         <div class="file-holder">
                         <span class="btn btn-small">
-                            <->
+                            <?
+                            if($this->attachments[attachment_type::JUSTIFICATIF_DOMICILE]["path"]!=''){
+                                echo "<->";
+                            } else {
+                                echo "+";
+                            }
+                            ?>
                             <span class="file-upload">
                                 <input type="file" class="file-field" name="justificatif_domicile" id="file_just_dom">
                             </span>
@@ -303,7 +309,7 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                 </div><!-- end row Justificatif -->
                 <div class="row"><!-- début row ATTESTATION_HEBERGEMENT_TIERS -->
                     <label class="inline-text">
-                        <?=$this->lng['etape2']['justificatif-de-domicile']?>
+                        <?=$this->lng['etape2']['attestation-hebergement']?>
                     </label>
                     <div class="uploader"><!-- début uploader -->
                         <input id="text_att_herb_tiers" type="text" class="field" readonly value="<?=($this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]["path"]!=''?$this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>">
@@ -314,14 +320,14 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                             <span class="file-upload">
                                 <input type="file" class="file-field" name="attestation_hebergement_tiers" id="file_att_herb_tiers">
                             </span>
-                            <small><?=$this->lng['profile']['telecharger-un-autre-document-justificatif-de-domicile']?></small>
+                            <small><?=$this->lng['profile']['telecharger-une-attestation-dhebergement-tiers']?></small>
                         </span>
                         </div><!-- end file holder -->
                     </div><!-- end row uploader -->
                 </div><!-- end row ATTESTATION_HEBERGEMENT_TIERS -->
                 <div class="row"><!-- row CNI_PASSPORT_TIERS_HEBERGEANT -->
                 <label class="inline-text">
-                    <?=$this->lng['etape2']['justificatif-de-domicile']?>
+                    <?=$this->lng['profile']['cni-tiers-hebergeant']?>
                 </label>
                 <div class="uploader"><!-- début uploader-->
                     <input id="text_cni_tiers_herb" type="text" class="field" readonly value="<?=($this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]["path"]!=''?$this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>">
@@ -333,14 +339,14 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                                 <input type="file" class="file-field" name="cni_passport_tiers_hebergeant" id="file_cni_tiers_herb">
                             </span>
 
-                            <small><?=$this->lng['profile']['telecharger-un-autre-document-justificatif-de-domicile']?></small>
+                            <small><?=$this->lng['profile']['ajouter']?></small>
                         </span>
                     </div><!-- end file holder -->
                 </div><!-- end  uploader -->
             </div><!-- end row CNI_PASSPORT_TIERS_HEBERGEANT -->
                 <div class="row"><!-- row AUTRE1 -->
                 <label class="inline-text">
-                    <?=$this->lng['etape2']['justificatif-de-domicile']?>
+                    <?=$this->lng['profile']['autre-fichier']?>
                 </label>
                 <div class="uploader">
                     <input id="text_autre1" type="text" class="field" readonly value="<?=($this->attachments[attachment_type::AUTRE1]["path"]!=''?$this->attachments[attachment_type::AUTRE1]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>">
@@ -352,7 +358,7 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                                 <input type="file" class="file-field" name="autre1" id="file_autre1">
                             </span>
 
-                            <small><?=$this->lng['profile']['telecharger-un-autre-document-justificatif-de-domicile']?></small>
+                            <small><?=$this->lng['profile']['ajouter']?></small>
                         </span>
                     </div><!-- enf file holder -->
                 </div><!-- end uploader -->
