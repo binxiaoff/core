@@ -1176,7 +1176,7 @@ class inscription_preteurController extends bootstrap
 			
 			$this->clients_adresses->get($this->clients->id_client,'id_client');
 
-			$this->attachements = $this->lenders_accounts->getAttachements($this->lenders_accounts->id_lender_account);
+			$this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 			
 			if($this->lenders_accounts->iban != '')
 			{
