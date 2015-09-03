@@ -25,7 +25,7 @@
  * iterations to solve
  */
 define('FINANCIAL_ACCURACY', 1.0e-6);
-define('FINANCIAL_MAX_ITERATIONS', 100);
+define('FINANCIAL_MAX_ITERATIONS', 1000);
 
 define('FINANCIAL_SECS_PER_DAY', 24 * 60 * 60);
 define('FINANCIAL_HALF_SEC', 0.5 / FINANCIAL_SECS_PER_DAY);
