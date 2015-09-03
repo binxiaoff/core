@@ -291,8 +291,8 @@ class preteursController extends bootstrap
 
 		$this->clients_mandats->get($this->clients->id_client,'id_client');
 
-		//attachements
-		$this->attachements = $this->lenders_accounts->getAttachements($this->lenders_accounts->id_lender_account);
+		//attachments
+		$this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 		
 		// liste des bids en cour
 		$this->lBids = $this->bids->select('id_lender_account = '.$this->lenders_accounts->id_lender_account.' AND status = 0','added DESC');
@@ -452,7 +452,7 @@ class preteursController extends bootstrap
 		$this->timeCreate = $timeCreate;
 
         //attachements
-        $this->attachements = $this->lenders_accounts->getAttachements($this->lenders_accounts->id_lender_account);
+        $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 		
 		// liste des cvg signé
 		$this->lAcceptCGV = $this->acceptations_legal_docs->select('id_client = '.$this->clients->id_client);
@@ -777,6 +777,7 @@ class preteursController extends bootstrap
 				$this->clients->update();
 				$this->clients_adresses->update();
 				$this->lenders_accounts->update();
+				$this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 				
 				// Si on a une entreprise reliée, on la supprime car elle n'a plus rien a faire ici. on est un particulier.
 				if($this->companies->get($this->clients->id_client,'id_client_owner'))
@@ -982,7 +983,7 @@ class preteursController extends bootstrap
 				}
 				
 				
-				
+				$this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 				header('location:'.$this->lurl.'/preteurs/edit_preteur/'.$this->lenders_accounts->id_lender_account);
 				die;
 			}
@@ -1164,19 +1165,6 @@ class preteursController extends bootstrap
 				//autre3
 				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE3);
 
-
-				// Statuts
-				/*if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/statuts/');
-					if($this->upload->doUpload('fichier7'))
-					{
-						if($this->lenders_accounts->fichier_statuts != '')@unlink($this->path.'protected/lenders/statuts/'.$this->lenders_accounts->fichier_statuts);
-						$this->lenders_accounts->fichier_statuts = $this->upload->getName();
-					}
-				}*/
-				
-				
 				
 				// Mandat
 				if(isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '')
@@ -1205,12 +1193,14 @@ class preteursController extends bootstrap
 				// On met a jour le lender
 				$this->lenders_accounts->id_company_owner = $this->companies->id_company;
 				$this->lenders_accounts->update();
-				
+				$this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+
 				// On met a jour le client
 				$this->clients->update();
 				// On met a jour l'adresse client
 				$this->clients_adresses->update();
-				
+
+
 				// Histo user //
 				$serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST,'files' => $_FILES));
 				$this->users_history->histo(3,'modif info preteur personne morale',$_SESSION['user']['id_user'],$serialize);
@@ -2447,7 +2437,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
         }
 
 		$this->financial = $this->loadLib('financial');
-		return $this->financial->XIRR($values, $dates, $guess = 0.1);
+		return round($this->financial->XIRR($values, $dates, $guess = 0.1)*100, 2);
 	}
 
 
