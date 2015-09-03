@@ -102,6 +102,12 @@ class dossiersController extends bootstrap
         $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
 
+        $this->settings->get('Durée des prêts autorisées','type');
+        $this->dureePossible = explode(',',$this->settings->value);
+        if (empty($this->dureePossible)) {
+            $this->dureePossible = array(24,36,48,60);
+        }
+
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project'))
         {
             $this->projects_notes->get($this->params[0], 'id_project');
