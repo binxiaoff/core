@@ -1091,84 +1091,169 @@ class dossiersController extends bootstrap
                                 }
                             }
                         }
-                        // fin statut recouvrement
+                        // statut recouvrement
                         elseif ($_POST['status'] == '110')
                         {
-
-                            // date du dernier probleme
-                            $statusProbleme = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 9', 'added DESC');
-                            $DateProbleme = date('d/m/Y', strtotime($statusProbleme[0]['added']));
-
-                            $lPreteurs = $this->loans->select('id_project = ' . $this->projects->id_project);
-
-                            $this->companies->get($this->projects->id_company, 'id_company');
-
-                            // FB
-                            $this->settings->get('Facebook', 'type');
-                            $lien_fb = $this->settings->value;
-
-                            // Twitter
-                            $this->settings->get('Twitter', 'type');
-                            $lien_tw = $this->settings->value;
-
-                            if ($lPreteurs != false)
+                            
+                            // On bloque tous les futures prélèvements 
+                            $this->prelevements = $this->loadData('prelevements');
+                            $prelevements = $this->loadData('prelevements');
+                            $L_prelevements = $this->prelevements->select('id_project = ' . $this->projects->id_project.' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
+                            
+                            print_r($L_prelevements);
+                            die;
+                            
+                            foreach($L_prelevements as $prel)
                             {
-                                foreach ($lPreteurs as $p)
+                                $prelevements->get($prel['id_prelevement']);
+                                $prelevements->status = 4; // bloqué temporairement
+                                $prelevements->update();
+                            }
+                            
+                            
+                            // on récupère la variable pour savoir si on envoi le mail au preteur ou non
+                            $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_probleme_recouvrement'];
+                            $contenu_a_ajouter_mail = $_POST['area_recouvrement'];
+                           
+                            //si on envoi le mail
+                            if($mail_a_envoyer)
+                            {
+
+                                // date du dernier probleme
+                                $statusProbleme = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 9', 'added DESC');
+                                $DateProbleme = date('d/m/Y', strtotime($statusProbleme[0]['added']));
+
+                                $lPreteurs = $this->loans->select('id_project = ' . $this->projects->id_project);
+
+                                $this->companies->get($this->projects->id_company, 'id_company');
+
+                                // FB
+                                $this->settings->get('Facebook', 'type');
+                                $lien_fb = $this->settings->value;
+
+                                // Twitter
+                                $this->settings->get('Twitter', 'type');
+                                $lien_tw = $this->settings->value;
+
+                                if ($lPreteurs != false)
                                 {
-                                    $this->lenders_accounts->get($p['id_lender'], 'id_lender_account');
-                                    $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+                                    foreach ($lPreteurs as $p)
+                                    {
+                                        $this->lenders_accounts->get($p['id_lender'], 'id_lender_account');
+                                        $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
-                                    // Motif virement
-                                    $p = substr($this->ficelle->stripAccents(utf8_decode($this->clients->prenom)), 0, 1);
-                                    $nom = $this->ficelle->stripAccents(utf8_decode($this->clients->nom));
-                                    $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-                                    $motif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+                                        // Motif virement
+                                        $p = substr($this->ficelle->stripAccents(utf8_decode($this->clients->prenom)), 0, 1);
+                                        $nom = $this->ficelle->stripAccents(utf8_decode($this->clients->nom));
+                                        $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
+                                        $motif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
 
-                                    //******************************************//
-                                    //*** ENVOI DU MAIL RECOUVREMENT PRETEUR ***//
-                                    //******************************************//
-                                    // Recuperation du modele de mail
-                                    $this->mails_text->get('preteur-dossier-recouvrement', 'lang = "' . $this->language . '" AND type');
+                                        // pour chaque preteur on fait la somme des loans qu'il a sur le projet pour le mail
+                                        $L_loans = $this->loans->select('id_project = ' . $this->projects->id_project.' AND id_lender = '.$p['id_lender']);
+                                        $nb_loan = 0;
+                                        $rembNet = 0;
+                                        
+                                        foreach($L_loans as $l)
+                                        {
+                                            $sum_amount += $l['amount'];
+                                            $nb_loan++;
+                                        
+                                            
+                                            
+                                            // Ajout d'une notification
+                                            $this->notifications->type = 10; // type recouvrement
+                                            $this->notifications->id_lender = $p['id_lender'];
+                                            $this->notifications->id_project = $p['id_project'];
+                                            $this->notifications->amount = $sum_amount;
+                                            $this->notifications->id_bid = $p['id_bid'];
+                                            $this->notifications->id_notification = $this->notifications->create();
 
 
-                                    // Variables du mailing
-                                    $varMail = array(
-                                        'surl' => $this->surl,
-                                        'url' => $this->furl,
-                                        'prenom_p' => $this->clients->prenom,
-                                        'date_probleme' => $DateProbleme,
-                                        'cab_recouvrement' => $this->cab,
-                                        'nom_entreprise' => $this->companies->name,
-                                        'motif_virement' => $motif,
-                                        'lien_fb' => $lien_fb,
-                                        'lien_tw' => $lien_tw);
+                                            //////// GESTION ALERTES //////////
+                                            $this->clients_gestion_mails_notif->id_client = $lender->id_client_owner;
+                                            $this->clients_gestion_mails_notif->id_notif = 10; // type recouvrement
+                                            $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                                            $this->clients_gestion_mails_notif->id_transaction = 0;
+                                            $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
+                                            $this->clients_gestion_mails_notif->id_loan = $p['id_loan'];
+                                            $this->clients_gestion_mails_notif->create();
+                                            //////// FIN GESTION ALERTES //////////
+                                            
+                                        
+                                            // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
+                                            
+                                            $liste_attente_mail = $this->loadData('liste_attente_mail');
+                                            
+                                            
+                                            // Variables du mailing
+                                            $varMail = array(
+                                                'surl' => $this->surl,
+                                                'url' => $this->furl,
+                                                'prenom_p' => $this->clients->prenom,
+                                                'date_probleme' => $DateProbleme,
+                                                'cab_recouvrement' => $this->cab,
+                                                'nom_entreprise' => $this->companies->name,
+                                                'motif_virement' => $motif,
+                                                'lien_fb' => $lien_fb,
+                                                'lien_tw' => $lien_tw);
+                                            
+                                            $liste_attente_mail->type_mail = 'preteur-dossier-recouvrement';
+                                            $liste_attente_mail->language = $this->language;
+                                            $liste_attente_mail->variables = serialize($varMail);
+                                            $liste_attente_mail->to = $this->clients->email;
+                                            $liste_attente_mail->statut = 0; //pas envoyé
+                                            $liste_attente_mail->create();
+                                            
+                                            
+                                            //******************************************//
+                                            //*** ENVOI DU MAIL RECOUVREMENT PRETEUR ***//
+                                            //******************************************//
+                                            // Recuperation du modele de mail
+                                            /*$this->mails_text->get('preteur-dossier-recouvrement', 'lang = "' . $this->language . '" AND type');
 
-                                    // Construction du tableau avec les balises EMV
-                                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                                    // Attribution des données aux variables
-                                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                    $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                                            // Variables du mailing
+                                            $varMail = array(
+                                                'surl' => $this->surl,
+                                                'url' => $this->furl,
+                                                'prenom_p' => $this->clients->prenom,
+                                                'date_probleme' => $DateProbleme,
+                                                'cab_recouvrement' => $this->cab,
+                                                'nom_entreprise' => $this->companies->name,
+                                                'motif_virement' => $motif,
+                                                'lien_fb' => $lien_fb,
+                                                'lien_tw' => $lien_tw);
 
-                                    // Envoi du mail
-                                    /* $this->email = $this->loadLib('email',array());
-                                      $this->email->setFrom($this->mails_text->exp_email,$exp_name);
-                                      $this->email->setSubject(stripslashes($sujetMail));
-                                      $this->email->setHTMLBody(stripslashes($texteMail));
+                                            // Construction du tableau avec les balises EMV
+                                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                                      if($this->Config['env'] == 'prod') // nmp
-                                      {
-                                      Mailer::sendNMP($this->email,$this->mails_filer,$this->mails_text->id_textemail,$this->clients->email,$tabFiler);
-                                      // Injection du mail NMP dans la queue
-                                      $this->tnmp->sendMailNMP($tabFiler,$varMail,$this->mails_text->nmp_secure,$this->mails_text->id_nmp,$this->mails_text->nmp_unique,$this->mails_text->mode);
-                                      }
-                                      else // non nmp
-                                      {
-                                      $this->email->addRecipient(trim($this->clients->email));
-                                      Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);
-                                      } */
-                                    // fin mail pour preteur //	
+                                            // Attribution des données aux variables
+                                            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                                            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                                            $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                                            // Envoi du mail
+                                            $this->email = $this->loadLib('email',array());
+                                            $this->email->setFrom($this->mails_text->exp_email,$exp_name);
+                                            $this->email->setSubject(stripslashes($sujetMail));
+                                            $this->email->setHTMLBody(stripslashes($texteMail));
+
+                                            if($this->Config['env'] == 'prod') // nmp
+                                            {
+                                                Mailer::sendNMP($this->email,$this->mails_filer,$this->mails_text->id_textemail,$this->clients->email,$tabFiler);
+                                                // Injection du mail NMP dans la queue
+                                                $this->tnmp->sendMailNMP($tabFiler,$varMail,$this->mails_text->nmp_secure,$this->mails_text->id_nmp,$this->mails_text->nmp_unique,$this->mails_text->mode);
+                                            }
+                                            else // non nmp
+                                            {
+                                                $this->email->addRecipient(trim($this->clients->email));
+                                                Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);
+                                            } 
+                                            // fin mail pour preteur //
+                                             * 
+                                             */
+                                        }
+                                    }
                                 }
                             }
                         }

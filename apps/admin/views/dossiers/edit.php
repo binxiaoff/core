@@ -467,6 +467,33 @@ if (isset($_SESSION['freeow']))
                             ?>
                         </td>	
                     </tr>
+                    
+                <tr>
+                        
+                    <table style="display:none; margin-bottom: 20px;" class="bloc_mail_preteur_recouvrement">
+                        <tr>
+                            <th><label for="nature_project"><i>Email d'information aux prêteurs :</i></label></th>
+                        </tr>
+                        <tr>
+                            <td><textarea class="textarea_lng" name="area_recouvrement" id="area_recouvrement" style="height: 100px;width: 420px;"></textarea></td>
+                        </tr>
+                        <tr>   
+                            <th><i>Envoyer l'email d'information aux prêteurs :</i></th>                                
+                        </tr>
+                        <tr>
+                            <td>
+                                <input type="radio" name="mail_a_envoyer_preteur_probleme_recouvrement" id="oui_envoyer_mail_recouvrement" value="0" />
+                                <label for="oui_envoyer_mail">Oui</label>
+                                <input type="radio" name="mail_a_envoyer_preteur_probleme_recouvrement" id="non_envoyer_mail_recouvrement" value="1" checked/>
+                                <label for="non_envoyer_mail">Non</label>
+                            </td>
+                        </tr>
+                    </table>
+                </tr>    
+                
+                    
+                    
+                    
                 </table>
                 <table class="form" style="width: 538px;">
                     <?
@@ -737,9 +764,12 @@ if (isset($_SESSION['freeow']))
                         if ($("#status").val() == 40) {
                             $(".change_statut").hide();
                         }
-                        elseif ($("#status").val() == 80) {
+                        else if($("#status").val() == 80) {
                             /* dans le cas d'un changement vers probleme, on affiche une box de conf */
                             
+                        }
+                        else if($("#status").val() == 110) { /* Recouvrement, on affiche un textarea pour le mail aux preteurs*/
+                            $('.bloc_mail_preteur_recouvrement').show();
                         }
                         else {
                             $(".change_statut").show();
