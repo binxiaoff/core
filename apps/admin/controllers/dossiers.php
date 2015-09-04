@@ -11,7 +11,7 @@ class dossiersController extends bootstrap
 
         $this->catchAll = true;
 
-        // Controle d'acces à la rubrique
+        // Controle d'acces à la rubrique.
         $this->users->checkAccess('dossiers');
 
         // Activation du menu
