@@ -1,0 +1,8 @@
+#!/bin/bash
+
+#we deloy when we push somthing only in branch develop
+branch=$(git symbolic-ref HEAD | sed -e 's,.*/\(.*\),\1,')
+if [ $branch == 'develop' ]
+then
+	/usr/bin/phploy.phar -s dev
+fi

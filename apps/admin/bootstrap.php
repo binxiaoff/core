@@ -3,6 +3,7 @@ class bootstrap extends Controller
 {
 	var $Command;
 
+	//toto
 	function bootstrap($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
