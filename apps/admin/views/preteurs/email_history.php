@@ -125,20 +125,20 @@ if(isset($_SESSION['freeow']))
     </div>
     <div class="form-body">
         <div class="form-row">
-            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+            <table>
                 <tr>
-                    <th><span><br>Offres et Projets</span></th>
-                    <th><br>Immédiatement</th>
-                    <th>
+                    <th width="auto"><span><br>Offres et Projets</span></th>
+                    <th width="100px"><br>Immédiatement</th>
+                    <th width="100px">
                         <p>Synthèse<br>quotidienne</p>
                     </th>
-                    <th>
+                    <th width="100px">
                         <p>Synthèse<br>hebdomadaire</p>
                     </th>
-                    <th>
+                    <th width="100px">
                         <p>Synthèse<br>Mensuelle</p>
                     </th>
-                    <th>
+                    <th width="100px">
                         <p>Uniquement<br>notification</p>
                     </th>
                 </tr>
