@@ -82,7 +82,8 @@
                     <td class="leLender<?=$c['id_lender_account']?>"><?=$c['telephone']?></td>
                     <td class="leLender<?=$c['id_lender_account']?>"><?=number_format($c['solde'], 2, ',', ' ')?> €</td>
                     <td class="leLender<?=$c['id_lender_account']?>"><?=$c['bids_encours']?></td>
-					<td class="leLender<?=$c['id_lender_account']?>"><?=$c['status']?></td>
+					<td class="leLender<?=$c['id_lender_account']?>"><?=$c['status']==1?'en ligne':'hors ligne'?></td>
+
 					<td align="center">
                     	<?
 						if($c['novalid'] == 1)
