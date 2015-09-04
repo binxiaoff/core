@@ -63,7 +63,8 @@
                     <th>Téléphone</th>
                     <th>Montant sur Unilend</th>
                     <th>Nbre d'enchères en cours</th>
-                    <th>&nbsp;</th>  
+					<th>Status</th>
+                    <th>&nbsp;</th>
                 </tr>
            	</thead>
             <tbody>
@@ -81,7 +82,8 @@
                     <td class="leLender<?=$c['id_lender_account']?>"><?=$c['telephone']?></td>
                     <td class="leLender<?=$c['id_lender_account']?>"><?=number_format($c['solde'], 2, ',', ' ')?> €</td>
                     <td class="leLender<?=$c['id_lender_account']?>"><?=$c['bids_encours']?></td>
-                    <td align="center">
+					<td class="leLender<?=$c['id_lender_account']?>"><?=$c['status']?></td>
+					<td align="center">
                     	<?
 						if($c['novalid'] == 1)
 						{
