@@ -119,7 +119,7 @@ if(isset($_SESSION['freeow']))
             class="btn_link">Consulter Prêteur</a>
         <a
             href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>"
-            class="btn_link">Toutes les infos</a>
+            class="btn_link">Modifier Prêteur</a>
         <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->lenders_accounts->id_lender_account ?>"
            class="btn_link">Portefeuille & Performances</a>
     </div>
