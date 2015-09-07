@@ -12,7 +12,7 @@ class create_project_emprunteurController extends bootstrap
 		
 		// On prend le header account
 		$this->setHeader('header_account');
-		
+
 		// On check si y a un compte
 		if(!$this->clients->checkAccess())
 		{
@@ -44,8 +44,13 @@ class create_project_emprunteurController extends bootstrap
 		$this->projects = $this->loadData('projects');
 		
 		$this->companies->get($this->clients->id_client,'id_client_owner');
-		
-		
+
+		$this->settings->get('Durée des prêts autorisées','type');
+		$this->dureePossible = explode(',',$this->settings->value);
+		if (empty($this->dureePossible)) {
+			$this->dureePossible = array(24,36,48,60);
+		}
+
 		if(isset($_POST['send_form_create_project']))
 		{
 			// enregistrement des informations

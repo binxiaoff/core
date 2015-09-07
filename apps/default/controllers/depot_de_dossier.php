@@ -83,6 +83,12 @@ class depot_de_dossierController extends bootstrap
         // Initialisation variable
         $this->preteurCreateEmprunteur = false;
 
+        $this->settings->get('Durée des prêts autorisées','type');
+        $this->dureePossible = explode(',',$this->settings->value);
+        if (empty($this->dureePossible)) {
+            $this->dureePossible = array(24,36,48,60);
+        }
+
         // Si on a une session active
         if (isset($_SESSION['client']))
         {

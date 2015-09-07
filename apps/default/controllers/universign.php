@@ -504,8 +504,8 @@ class universignController extends bootstrap
 				);
 				// positionnement signature
 				$page = 1;
-				$x = 335;
-				$y = 350;
+				$x = 350;
+				$y = 385;
 				
 				
 				//create the request

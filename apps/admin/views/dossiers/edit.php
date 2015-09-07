@@ -205,11 +205,9 @@ if (isset($_SESSION['freeow']))
                         <th><label for="duree">Durée du prêt* :</label></th>
                         <td>
                             <select name="duree" id="duree" class="select" style="width:160px;background-color:#AAACAC;" >
-
-                                <option <?= ($this->projects->period == '24' ? 'selected' : '') ?> value="24">24 mois</option>
-                                <option <?= ($this->projects->period == '36' ? 'selected' : '') ?> value="36">36 mois</option>
-                                <option <?= ($this->projects->period == '48' ? 'selected' : '') ?> value="48">48 mois</option>
-                                <option <?= ($this->projects->period == '60' ? 'selected' : '') ?> value="60">60 mois</option>
+                                <?foreach($this->dureePossible as $duree):?>
+                                    <option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?=$duree?>"><?=$duree?> mois</option>
+                                <?endforeach?>
                                 <option <?= ($this->projects->period == '1000000' ? 'selected' : '') ?> value="1000000">je ne sais pas</option>
 
                             </select>
@@ -841,11 +839,9 @@ if (isset($_SESSION['freeow']))
                         <th><label for="duree_etape1">Durée du prêt :</label></th>
                         <td>
                             <select name="duree_etape1" id="duree_etape1" class="select">
-
-                                <option <?= ($this->projects->period == '24' ? 'selected' : '') ?> value="24">24 mois</option>
-                                <option <?= ($this->projects->period == '36' ? 'selected' : '') ?> value="36">36 mois</option>
-                                <option <?= ($this->projects->period == '48' ? 'selected' : '') ?> value="48">48 mois</option>
-                                <option <?= ($this->projects->period == '60' ? 'selected' : '') ?> value="60">60 mois</option>
+                                <?foreach($this->dureePossible as $duree):?>
+                                    <option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?=$duree?>"><?=$duree?> mois</option>
+                                <?endforeach?>
                                 <option <?= ($this->projects->period == '1000000' ? 'selected' : '') ?> value="1000000">je ne sais pas</option>
                             </select>
                         </td>
@@ -1062,11 +1058,9 @@ if (isset($_SESSION['freeow']))
                         <th><label for="duree_etape3">Durée du prêt :</label></th>
                         <td>
                             <select name="duree_etape3" id="duree_etape3" class="select">
-
-                                <option <?= ($this->projects->period == '24' ? 'selected' : '') ?> value="24">24 mois</option>
-                                <option <?= ($this->projects->period == '36' ? 'selected' : '') ?> value="36">36 mois</option>
-                                <option <?= ($this->projects->period == '48' ? 'selected' : '') ?> value="48">48 mois</option>
-                                <option <?= ($this->projects->period == '60' ? 'selected' : '') ?> value="60">60 mois</option>
+                                <?foreach($this->dureePossible as $duree):?>
+                                    <option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?=$duree?>"><?=$duree?> mois</option>
+                                <?endforeach?>
                                 <option <?= ($this->projects->period == '1000000' ? 'selected' : '') ?> value="1000000">je ne sais pas</option>
                             </select>
                         </td>

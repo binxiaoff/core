@@ -144,11 +144,9 @@ if($this->google_analytics != '')
                         
                         <select name="duree" id="duree" class="field field-large required custom-select selectbox_duree" >
                             <option value="0"><?=$this->lng['landing-page']['duree-de-remboursement']?></option>
-                           
-                            <option value="24">24 mois</option>
-                            <option value="36">36 mois</option>
-                            <option value="48">48 mois</option>
-                            <option value="60">60 mois</option>
+							<?foreach($this->dureePossible as $duree):?>
+								<option value="<?=$duree?>"><?=$duree?> mois</option>
+							<?endforeach?>
                         </select>
                         
 					</div><!-- /.form-row -->

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #install percona (mysql)
-apt-key adv --keyserver keys.gnupg.net --recv-keys 1C4CBDCDCD2EFD2A
+apt-key adv --keyserver 213.133.103.71 --recv-keys 1C4CBDCDCD2EFD2A #keys.gnupg.net
 add-apt-repository "deb http://repo.percona.com/apt precise main"
 add-apt-repository "deb-src http://repo.percona.com/apt precise main"
 apt-get update
@@ -51,8 +51,10 @@ update-rc.d apache2 defaults
 
 # install php
 apt-get install -y php5 libapache2-mod-php5 php5-mcrypt php5-mysql php5-cli php5-gd php5-curl php5-memcache php5-intl php5-geoip memcached
-sudo sed -i '/;session.save_path = "\/tmp"/c session.save_path = "\/tmp"' /etc/php5/apache2/php.ini
-sudo sed -i '/session.gc_maxlifetime = 1440/c session.gc_maxlifetime = 3600' /etc/php5/apache2/php.ini
+sed -i '/;session.save_path = "\/tmp"/c session.save_path = "\/tmp"' /etc/php5/apache2/php.ini
+sed -i '/session.gc_maxlifetime = 1440/c session.gc_maxlifetime = 3600' /etc/php5/apache2/php.ini
+sed -i '/;date.timezone =/c date.timezone = "Europe/Paris"' /etc/php5/apache2/php.ini
+sed -i '/upload_max_filesize = 2M/c upload_max_filesize = 100M' /etc/php5/apache2/php.ini
 
 locale-gen fr_FR.UTF-8
 

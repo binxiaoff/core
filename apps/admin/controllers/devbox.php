@@ -1229,5 +1229,21 @@ class devboxController extends bootstrap
         die;
     }
      
-     
+     // BT 18600
+    // Correction transaction de degel du projet 13996
+    function _recuperation_projet_refuse_transaction()
+    {
+        die; //secu
+        $sql ="
+            UPDATE `unilend`.`indexage_vos_operations` 
+            SET libelle_projet = 'Brunet Tente' ,
+            	id_projet = 13996
+            WHERE date_operation > '2015-08-15 00:00:00'
+            AND libelle_operation = 'Offre rejetée'
+            AND id_projet = 0
+            AND bdc = 0
+            AND `libelle_projet` = '' 
+        ";
+        $this->bdd->query($sql);
+    }
 }

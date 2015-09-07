@@ -111,7 +111,7 @@ class transactions extends transactions_crud
 		if ($transaction === false) return false;
 		
 		
-		$sql = "SELECT SUM(montant/100) AS montant, month(date_transaction) AS monthTransaction FROM transactions 
+		$sql = "SELECT SUM(montant/100) AS montant, date_format(date_transaction,'%m') AS monthTransaction FROM transactions 
 					WHERE status = ".$status."  
 					AND etat = ".$etat."
 					AND transaction = ".$transaction;
@@ -129,6 +129,7 @@ class transactions extends transactions_crud
 		while($rec = $this->bdd->fetch_array($req))
         {
 			//$d = explode('-',$rec['date']);
+			//if ($rec['monthTransaction']
             $res[$rec['monthTransaction']] = $rec['montant'];
         }
 		return $res;

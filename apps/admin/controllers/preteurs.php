@@ -7,12 +7,12 @@ class preteursController extends bootstrap
 	function preteursController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
-
+		
 		$this->catchAll = true;
 		
 		// Controle d'acces à la rubrique
 		$this->users->checkAccess('preteurs');
-
+		
 		// Activation du menu
 		$this->menu_admin = 'preteurs';
 	}
