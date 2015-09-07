@@ -1,5 +1,5 @@
 <div id="contenu">
--->	<form method="post" name="search_preteur" id="search_preteur" enctype="multipart/form-data" action="<?=$this->lurl?>/preteurs/gestion" target="_parent">
+<form method="post" name="search_preteur" id="search_preteur" enctype="multipart/form-data" action="<?=$this->lurl?>/preteurs/gestion" target="_parent">
         <h1>Rechercher un prêteur</h1>            
         <fieldset>
             <table class="formColor">
