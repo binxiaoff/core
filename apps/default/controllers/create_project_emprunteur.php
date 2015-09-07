@@ -47,7 +47,7 @@ class create_project_emprunteurController extends bootstrap
 
 		$this->settings->get('Durée des prêts autorisées','type');
 		$this->dureePossible = explode(',',$this->settings->value);
-		if (empty($this->dureePossible)) {
+		if (empty($this->settings->value)) {
 			$this->dureePossible = array(24,36,48,60);
 		}
 
