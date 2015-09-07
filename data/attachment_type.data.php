@@ -42,6 +42,11 @@ class attachment_type extends attachment_type_crud
 	const AUTRE1 = 22;
 	const AUTRE2 = 23;
 	const AUTRE3 = 24;
+	const DISPENSE_PRELEVEMENT_2014 = 25;
+	const DISPENSE_PRELEVEMENT_2015 = 26;
+	const DISPENSE_PRELEVEMENT_2016 = 27;
+	const DISPENSE_PRELEVEMENT_2017 = 28;
+
 
 
 	function attachment_type($bdd,$params='')
