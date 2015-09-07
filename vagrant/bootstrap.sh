@@ -72,5 +72,6 @@ sed -i "/post_max_size =/c post_max_size = 64M \nzend_extension=/usr/lib/php5/20
 
 #copy unversioned files
 lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/files_outside_git  /srv/sites/unilend; bye' -u vagrantftp,X9d\@\$nsa -p 21 192.168.1.6
+chmod -R u+w /srv/sites/unilend
 
 service apache2 restart
