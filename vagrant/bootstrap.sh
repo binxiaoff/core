@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+locale-gen fr_FR.UTF-8
+
 #install percona (mysql)
 apt-key adv --keyserver 213.133.103.71 --recv-keys 1C4CBDCDCD2EFD2A #keys.gnupg.net
 add-apt-repository "deb http://repo.percona.com/apt precise main"
@@ -8,6 +10,11 @@ apt-get update
 debconf-set-selections <<< 'percona-server-server-5.5 percona-server-server/root_password password ROOTPASSWORD'
 debconf-set-selections <<< 'percona-server-server-5.5 percona-server-server/root_password_again password ROOTPASSWORD'
 apt-get install -y percona-server-server-5.5
+
+# install lftp for download fixture
+apt-get install -y lftp
+
+lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/fixture  /vagrant/fixture; bye' -u vagrantftp,X9d\@\$nsa -p 21 192.168.1.6
 
 if [ -f /vagrant/fixture/schemas.sql ];
     then
@@ -55,7 +62,5 @@ sed -i '/;session.save_path = "\/tmp"/c session.save_path = "\/tmp"' /etc/php5/a
 sed -i '/session.gc_maxlifetime = 1440/c session.gc_maxlifetime = 3600' /etc/php5/apache2/php.ini
 sed -i '/;date.timezone =/c date.timezone = "Europe/Paris"' /etc/php5/apache2/php.ini
 sed -i '/upload_max_filesize = 2M/c upload_max_filesize = 64M\npost_max_size=64M' /etc/php5/apache2/php.ini
-
-locale-gen fr_FR.UTF-8
 
 service apache2 restart
