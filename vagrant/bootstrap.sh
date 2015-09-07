@@ -57,10 +57,16 @@ service apache2 restart
 update-rc.d apache2 defaults
 
 # install php
-apt-get install -y php5 libapache2-mod-php5 php5-mcrypt php5-mysql php5-cli php5-gd php5-curl php5-memcache php5-intl php5-geoip memcached
-sed -i '/;session.save_path = "\/tmp"/c session.save_path = "\/tmp"' /etc/php5/apache2/php.ini
-sed -i '/session.gc_maxlifetime = 1440/c session.gc_maxlifetime = 3600' /etc/php5/apache2/php.ini
+apt-get install -y php5 libapache2-mod-php5 php5-mcrypt php5-mysql php5-cli php5-gd php5-curl php5-memcache php5-intl php5-geoip memcached php5-xdebug
+
+# modify php.ini
+sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php5/apache2/php.ini
+sed -i "s/;session.save_path = .*/session.save_path = \/tmp/" /etc/php5/apache2/php.ini
+sed -i "s/session.gc_maxlifetime = .*/session.gc_maxlifetime = 3600/" /etc/php5/apache2/php.ini
 sed -i '/;date.timezone =/c date.timezone = "Europe/Paris"' /etc/php5/apache2/php.ini
-sed -i '/upload_max_filesize = 2M/c upload_max_filesize = 64M\npost_max_size=64M' /etc/php5/apache2/php.ini
+sed -i "s/display_errors = .*/display_errors = On/" /etc/php5/apache2/php.ini
+sed -i "s/html_errors = .*/html_errors = On/" /etc/php5/apache2/php.ini
+sed -i "s/upload_max_filesize = .*/upload_max_filesize = 64M/" /etc/php5/apache2/php.ini
+sed -i "/post_max_size =/c post_max_size = 64M \nzend_extension=/usr/lib/php5/20090626/xdebug.so \nxdebug.remote_enable=1 \nxdebug.remote_handler=dbgp \nxdebug.remote_mode=req \nxdebug.remote_host=127.0.0.1 \nxdebug.remote_port=9000/" /etc/php5/apache2/php.ini
 
 service apache2 restart
