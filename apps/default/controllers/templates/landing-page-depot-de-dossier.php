@@ -16,6 +16,12 @@ $this->companies_actif_passif = $this->loadData('companies_actif_passif');
 $this->projects_status_history = $this->loadData('projects_status_history');
 $this->projects = $this->loadData('projects');
 
+// load des durée des prêts autorisées
+$this->settings->get('Durée des prêts autorisées','type');
+$this->dureePossible = explode(',',$this->settings->value);
+if (empty($this->dureePossible)) {
+	$this->dureePossible = array(24,36,48,60);
+}
 //traduction 
 $this->lng['landing-page'] = $this->ln->selectFront('landing-page',$this->language,$this->App);
 
