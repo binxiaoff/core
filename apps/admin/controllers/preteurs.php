@@ -665,18 +665,17 @@ class preteursController extends bootstrap
 				//autre3
 				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE3);
 
+				// Dispense de prélèvement 2014
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2014);
 
-				// Statuts
-				/*if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/statuts/');
-					if($this->upload->doUpload('fichier7'))
-					{
-						if($this->lenders_accounts->fichier_statuts != '')@unlink($this->path.'protected/lenders/statuts/'.$this->lenders_accounts->fichier_statuts);
-						$this->lenders_accounts->fichier_statuts = $this->upload->getName();
-					}
-				}*/
-				// fin fichier //
+				// Dispense de prélèvement 2015
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2015);
+
+				// Dispense de prélèvement 2016
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2016);
+
+				//Dispense de prélèvement 2017
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2017);
 				
 				// Mandat
 				if(isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '')
@@ -2326,6 +2325,22 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 			case attachment_type::AUTRE3:
 				$field = 'autre3';
 				$uploadPath = $basePath.'autre3/';
+				break;
+			case attachment_type::DISPENSE_PRELEVEMENT_2014:
+				$field = 'dispense_prelevement_2014';
+				$uploadPath = $basePath.'dispense_prelevement_2014';
+				break;
+			case attachment_type::DISPENSE_PRELEVEMENT_2015:
+				$field = 'dispense_prelevement_2015';
+				$uploadPath = $basePath.'dispense_prelevement_2015';
+				break;
+			case attachment_type::DISPENSE_PRELEVEMENT_2016:
+				$field = 'dispense_prelevement_2016';
+				$uploadPath = $basePath.'dispense_prelevement_2016';
+				break;
+			case attachment_type::DISPENSE_PRELEVEMENT_2017:
+				$field = 'dispense_prelevement_2017';
+				$uploadPath = $basePath.'dispense_prelevement_2017';
 				break;
 			default :
 				return false;
