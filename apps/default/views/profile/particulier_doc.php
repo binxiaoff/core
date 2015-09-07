@@ -44,13 +44,11 @@
                     <label class="inline-text">
                         <div class="row-upload file-uploaded">
                             <div class="uploader">
-                                <div class="file-holder">
-                                    <span class="btn btn-small btn-add-new-row">+<small><?=$this->lng['etape2']['telecharger-un-autre-document']?></small></span>
-                                </div>
+                                <?=$this->lng['etape2']['piece-didentite-verso']?>
                             </div><!-- /.uploader -->
                         </div><!-- /.row -->
                     </label>
-                    <div class="uploader uploader-file" <?=($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]!= '' || $this->error_autre==true ?'':'style="display:none;"')?> >
+                    <div class="uploader uploader-file">
                         <input id="txt_autre" type="text" class="field required <?=($this->error_autre==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]!= ''?$this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
                         <div class="file-holder">
                             <span class="btn btn-small">

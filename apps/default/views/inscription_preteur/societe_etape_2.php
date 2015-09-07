@@ -67,7 +67,7 @@
              <?=$this->lng['etape2']['extrait-kbis']?> 
         </label>
         <div class="uploader">
-            <input id="txt_kbis" type="text" class="field required <?=($this->error_extrait_kbis==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachements[attachment_type::KBIS]["path"]!= ''?$this->attachements[attachment_type::KBIS]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
+            <input id="txt_kbis" type="text" class="field required <?=($this->error_extrait_kbis==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::KBIS]["path"]!= ''?$this->attachments[attachment_type::KBIS]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
             <div class="file-holder">
                 <span class="btn btn-small">
                     <?=$this->lng['etape2']['parcourir']?>
@@ -87,7 +87,7 @@
         </label>
 
         <div class="uploader">
-            <input id="txt_delegation_pouvoir" type="text" class="field required <?=($this->error_delegation_pouvoir==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachements[attachment_type::DELEGATION_POUVOIR]["path"]!= ''?$this->$this->attachements[attachment_type::DELEGATION_POUVOIR]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
+            <input id="txt_delegation_pouvoir" type="text" class="field required <?=($this->error_delegation_pouvoir==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::DELEGATION_POUVOIR]["path"]!= ''?$this->attachments[attachment_type::DELEGATION_POUVOIR]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
 
             <div class="file-holder">
                 <span class="btn btn-small">
@@ -108,7 +108,7 @@
         </label>
 
         <div class="uploader">
-            <input id="txt_rib" type="text" class="field required <?=($this->error_rib==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachements[attachment_type::RIB]["path"]!= ''?$this->attachements[attachment_type::RIB]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
+            <input id="txt_rib" type="text" class="field required <?=($this->error_rib==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::RIB]["path"]!= ''?$this->attachments[attachment_type::RIB]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
 
             <div class="file-holder">
                 <span class="btn btn-small">
@@ -129,7 +129,7 @@
         </label>
 
         <div class="uploader">
-            <input id="txt_ci_dirigeant" type="text" class="field required <?=($this->error_cni_dirigent==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachements[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]!= ''?$this->attachements[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
+            <input id="txt_ci_dirigeant" type="text" class="field required <?=($this->error_cni_dirigent==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]!= ''?$this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
 
             <div class="file-holder">
                 <span class="btn btn-small">
@@ -153,8 +153,8 @@
                 </div><!-- /.uploader -->
             </div><!-- /.row -->
         </label>
-        <div class="uploader uploader-file" <?=($this->attachements[attachment_type::CNI_PASSPORTE_VERSO]["path"]!= '' || $this->error_autre==true?'':'style="display:none;"')?> >
-            <input id="txt_autre" type="text" class="field required <?=($this->error_autre==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachements[attachment_type::CNI_PASSPORTE_VERSO]["path"]!= ''?$this->attachements[attachment_type::CNI_PASSPORTE_VERSO]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
+        <div class="uploader uploader-file" <?=($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]!= '' || $this->error_autre==true?'':'style="display:none;"')?> >
+            <input id="txt_autre" type="text" class="field required <?=($this->error_autre==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]!= ''?$this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
             <div class="file-holder">
                 <span class="btn btn-small">
                     <?=$this->lng['etape2']['parcourir']?>

@@ -93,16 +93,19 @@ class lenders_accounts extends lenders_accounts_crud
 	public function getValuesforTRI($lender){
 
 		//get loans values as negativ , dates and project status
-		$sql = 'SELECT (l.amount *-1) as loan, l.added
-						FROM loans l
-						LEFT JOIN projects p ON l.id_project = p.id_project
-						WHERE l.id_lender = '.$lender.';';
+		$sql = 'SELECT (l.amount *-1) as loan,
+					( SELECT psh.added
+						FROM `projects_status_history` psh
+						WHERE psh.id_project_status = "8"
+						AND l.id_project = psh.id_project
+						ORDER BY psh.added ASC LIMIT 1 ) as date
+				  FROM loans l WHERE l.id_lender = '.$lender.';';
 
 		$result = $this->bdd->query($sql);
 		$loansValues = array();
 		while ($record = $this->bdd->fetch_array($result)) {
 
-			$loansValues[] = array(strtotime($record["added"]) => intval($record["loan"]));
+			$loansValues[] = array(strtotime($record["date"]) => intval($record["loan"]));
 		}
 
 		//get echeancier values
@@ -148,7 +151,7 @@ class lenders_accounts extends lenders_accounts_crud
 		return $values;
 	}
 
-	public function getAttachements($lender){
+	public function getAttachments($lender){
 
 		$sql = 'SELECT a.id_type, a.id_owner, a.type_owner, a.path, a.added, a.updated, a.archived
 				FROM attachment a
@@ -156,12 +159,12 @@ class lenders_accounts extends lenders_accounts_crud
 					AND a.type_owner = "lenders_accounts";';
 
 		$result = $this->bdd->query($sql);
-		$attachements = array();
+		$attachments = array();
 		while ($record = $this->bdd->fetch_array($result)) {
 
-			$attachements[$record["id_type"]] = $record;
+			$attachments[$record["id_type"]] = $record;
 		}
-		return $attachements;
+		return $attachments;
 
 	}
 

@@ -207,7 +207,7 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
 
         <!--  -->
         <div class="row row-upload identite">
-            <div> <!--row CNI -->
+            <div class="row"> <!--row CNI -->
                 <label class="inline-text">
                     <i class="icon-help tooltip-anchor" data-placement="right" title="" data-original-title="<?=$this->lng['etape2']['info-cni']?>"></i>
 
@@ -215,11 +215,18 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                 </label>
 
                 <div class="uploader">
-                    <input id="text_ci" type="text" class="field" readonly value="<?=($this->attachments[attachment_type::CNI_PASSPORTE]["path"]!=''?$this->attachments[attachment_type::CNI_PASSPORTE]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>">
+                    <input id="text_ci" type="text" class="field"
+                           readonly value="<?=($this->attachments[attachment_type::CNI_PASSPORTE]["path"]!=''?$this->attachments[attachment_type::CNI_PASSPORTE]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>">
 
                     <div class="file-holder">
                     <span class="btn btn-small">
-                        <->
+                        <?
+                            if($this->attachments[attachment_type::CNI_PASSPORTE]["path"]!=''){
+                                echo "&hArr;";
+                            } else {
+                                echo "+";
+                            }
+                         ?>
                         <span class="file-upload">
                             <input type="file" class="file-field" name="cni_passeport" id="file-ci">
                         </span>
@@ -230,13 +237,14 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
             </div><!--row CNI -->
 
 
-            <div><!--row CNI Verso-->
+            <div class="row"><!--row CNI Verso-->
                 <label class="inline-text">
                     <?=$this->lng['etape2']['piece-didentite-verso']?>
                 </label>
 
                 <div class="uploader">
-                    <input id="text_ci_verso" type="text" class="field" readonly value="<?=($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]!=''?$this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>">
+                    <input id="text_ci_verso" type="text" class="field"
+                           readonly value="<?=($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]!=''?$this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>">
                     <div class="file-holder">
                     <span class="btn btn-small">
                         +
@@ -294,7 +302,7 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                         <span class="btn btn-small">
                             <?
                             if($this->attachments[attachment_type::JUSTIFICATIF_DOMICILE]["path"]!=''){
-                                echo "<->";
+                                echo "&hArr;";
                             } else {
                                 echo "+";
                             }
@@ -316,7 +324,13 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
 
                         <div class="file-holder">
                         <span class="btn btn-small">
-                            <->
+                        <?
+                            if($this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]["path"]!=''){
+                                 echo "&hArr;";
+                            } else {
+                             echo "+";
+                            }
+                        ?>
                             <span class="file-upload">
                                 <input type="file" class="file-field" name="attestation_hebergement_tiers" id="file_att_herb_tiers">
                             </span>
