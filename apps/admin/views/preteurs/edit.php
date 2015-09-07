@@ -79,7 +79,7 @@
 
 <!--    section "detail prêteur"    -->
     <h1>Detail prêteur : <?=$this->clients->prenom.' '.$this->clients->nom?></h1>
-    <div class="btnDroite"><a href="<?=$this->lurl?>/preteurs/edit_preteur/<?=$this->lenders_accounts->id_lender_account?>" class="btn_link">Toutes les infos</a>
+    <div class="btnDroite"><a href="<?=$this->lurl?>/preteurs/edit_preteur/<?=$this->lenders_accounts->id_lender_account?>" class="btn_link">Modifier Prêteur</a>
     <a href="<?=$this->lurl?>/preteurs/email_history/<?=$this->lenders_accounts->id_lender_account?>" class="btn_link">Historique des emails</a>
     <a href="<?=$this->lurl?>/preteurs/portefeuille/<?=$this->lenders_accounts->id_lender_account?>" class="btn_link">Portefeuille & Performances</a></div><br>
 
@@ -103,7 +103,7 @@
                 Passer hors ligne
             </th>
             <td width="365">
-                <img onclick="if(confirm('Voulez vous <?=($c['status']==1?'Passer hors ligne':'Passer en ligne')?> ce preteur ?')){window.location = '<?=$this->lurl?>/preteurs/gestion/status/<?=$c['id_client']?>/<?=$c['status']?>';}" src="<?=$this->surl?>/images/admin/<?=($c['status']==1?'offline':'online')?>.png" alt="<?=($c['status']==1?'Passer hors ligne':'Passer en ligne')?>" />
+                <img onclick="if(confirm('Voulez vous <?=($this->clients->status==1?'Passer hors ligne':'Passer en ligne')?> ce preteur ?')){window.location = '<?=$this->lurl?>/preteurs/gestion/status/<?=$this->clients->id_client?>/<?=$this->clients->status?>';}" src="<?=$this->surl?>/images/admin/<?=($this->clients->status==1?'offline':'online')?>.png" alt="<?=($this->clients->status==1?'Passer hors ligne':'Passer en ligne')?>" />
             </td>
         </tr>
         <tr>
@@ -294,6 +294,22 @@
         <tr>
             <th>Autre 3</th>
             <td><a href="<?=$this->lurl?>/protected/lender/autre3/<?=$this->attachments[attachment_type::AUTRE3]["path"]?>"><?=$this->attachments[attachment_type::AUTRE3]["path"]?></a></td>
+        </tr>
+        <tr>
+            <th>Dispense de prélèvement 2014</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/autre3/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2014]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2014]["path"]?></a></td>
+        </tr>
+        <tr>
+            <th>Dispense de prélèvement 2015</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/autre3/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2015]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2015]["path"]?></a></td>
+        </tr>
+        <tr>
+            <th>Dispense de prélèvement 2016</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/autre3/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2016]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2016]["path"]?></a></td>
+        </tr>
+        <tr>
+            <th>Dispense de prélèvement 2017</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/autre3/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2017]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2016]["path"]?></a></td>
         </tr>
     </table>
     <br /><br />
