@@ -635,6 +635,26 @@
             <td><a href="<?=$this->lurl?>/protected/lender/autre3/<?=$this->attachments[attachment_type::AUTRE3]["path"]?>"><?=$this->attachments[attachment_type::AUTRE3]["path"]?></a></td>
             <td><input type="file" name="autre3"></td>
         </tr>
+        <tr>
+            <th>Dispense de prélèvement 2014</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/dispense_prelevement_2014/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2014]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2014]["path"]?></a></td>
+            <td><input type="file" name="dispense_prelevement_2014"></td>
+        </tr>
+        <tr>
+            <th>Dispense de prélèvement 2015</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/dispense_prelevement_2015/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2015]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2015]["path"]?></a></td>
+            <td><input type="file" name="dispense_prelevement_2015"></td>
+        </tr>
+        <tr>
+            <th>Dispense de prélèvement 2016</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/dispense_prelevement_2016/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2016]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2016]["path"]?></a></td>
+            <td><input type="file" name="dispense_prelevement_2016"></td>
+        </tr>
+        <tr>
+            <th>Dispense de prélèvement 2017</th>
+            <td><a href="<?=$this->lurl?>/protected/lender/dispense_prelevement_2017/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2017]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2017]["path"]?></a></td>
+            <td><input type="file" name="dispense_prelevement_2017"></td>
+        </tr>
     </table>
     
     <br /><br />
