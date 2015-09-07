@@ -1,7 +1,0 @@
-/*!40101 SET NAMES binary*/;
-/*!40014 SET FOREIGN_KEY_CHECKS=0*/;
-/*!40103 SET TIME_ZONE='+00:00' */;
-INSERT INTO `users_types` VALUES
-(1,"Administrateur","2013-09-05 18:07:40","2013-09-05 18:07:40"),
-(2,"Analyste","2013-09-05 18:07:40","2013-09-05 18:07:40"),
-(3,"Commercial","2013-09-05 18:07:40","2013-09-05 18:07:40");
