@@ -1162,10 +1162,6 @@ class echeanciers extends echeanciers_crud
 		return ($sum/100);
 	}
         
-<<<<<<< HEAD
-        
-=======
->>>>>>> Bugfix-BT17951
         // retourne la somme des echeances deja remboursé d'une enchere
 	function getSumRembByloan_remb_ra($id_loan,$champ='montant')
 	{

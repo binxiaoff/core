@@ -1319,14 +1319,7 @@ class dossiersController extends bootstrap
                         $lesloans = $loans->select('id_project = ' . $this->projects->id_project);
 
                         $companies->get($this->projects->id_company, 'id_company');
-<<<<<<< HEAD
 
-=======
-                        
-                        //on supp l'écheancier du projet pour ne pas avoir de doublon d'affichage sur le front (BT 18600)
-                        $echeanciers->delete($this->projects->id_project, 'id_project');
-                        
->>>>>>> Bugfix-BT17951
                         foreach ($lesloans as $l)
                         {
 
