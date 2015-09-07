@@ -22,6 +22,7 @@ if [ -f /vagrant/fixture/schemas.sql ];
         mysql -uroot -pROOTPASSWORD unilend < /vagrant/fixture/schemas.sql
         cat /vagrant/fixture/unilend.*.sql | mysql -uroot -pROOTPASSWORD unilend
 fi
+rm -rf /vagrant/fixture
 
 # install phpmyadmin
 mkdir /vagrant/phpmyadmin/
@@ -68,5 +69,8 @@ sed -i "s/display_errors = .*/display_errors = On/" /etc/php5/apache2/php.ini
 sed -i "s/html_errors = .*/html_errors = On/" /etc/php5/apache2/php.ini
 sed -i "s/upload_max_filesize = .*/upload_max_filesize = 64M/" /etc/php5/apache2/php.ini
 sed -i "/post_max_size =/c post_max_size = 64M \nzend_extension=/usr/lib/php5/20090626/xdebug.so \nxdebug.remote_enable=1 \nxdebug.remote_handler=dbgp \nxdebug.remote_mode=req \nxdebug.remote_host=127.0.0.1 \nxdebug.remote_port=9000/" /etc/php5/apache2/php.ini
+
+#copy unversioned files
+lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/files_outside_git  /srv/sites/unilend; bye' -u vagrantftp,X9d\@\$nsa -p 21 192.168.1.6
 
 service apache2 restart
