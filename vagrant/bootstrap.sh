@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+locale-gen fr_FR.UTF-8
+
 #install percona (mysql)
 apt-key adv --keyserver 213.133.103.71 --recv-keys 1C4CBDCDCD2EFD2A #keys.gnupg.net
 add-apt-repository "deb http://repo.percona.com/apt precise main"
@@ -8,6 +10,11 @@ apt-get update
 debconf-set-selections <<< 'percona-server-server-5.5 percona-server-server/root_password password ROOTPASSWORD'
 debconf-set-selections <<< 'percona-server-server-5.5 percona-server-server/root_password_again password ROOTPASSWORD'
 apt-get install -y percona-server-server-5.5
+
+# install lftp for download fixture
+apt-get install -y lftp
+
+lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/fixture  /vagrant/fixture; bye' -u vagrantftp,X9d\@\$nsa -p 21 192.168.1.6
 
 if [ -f /vagrant/fixture/schemas.sql ];
     then
@@ -50,12 +57,16 @@ service apache2 restart
 update-rc.d apache2 defaults
 
 # install php
-apt-get install -y php5 libapache2-mod-php5 php5-mcrypt php5-mysql php5-cli php5-gd php5-curl php5-memcache php5-intl php5-geoip memcached
-sed -i '/;session.save_path = "\/tmp"/c session.save_path = "\/tmp"' /etc/php5/apache2/php.ini
-sed -i '/session.gc_maxlifetime = 1440/c session.gc_maxlifetime = 3600' /etc/php5/apache2/php.ini
-sed -i '/;date.timezone =/c date.timezone = "Europe/Paris"' /etc/php5/apache2/php.ini
-sed -i '/upload_max_filesize = 2M/c upload_max_filesize = 100M' /etc/php5/apache2/php.ini
+apt-get install -y php5 libapache2-mod-php5 php5-mcrypt php5-mysql php5-cli php5-gd php5-curl php5-memcache php5-intl php5-geoip memcached php5-xdebug
 
-locale-gen fr_FR.UTF-8
+# modify php.ini
+sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php5/apache2/php.ini
+sed -i "s/;session.save_path = .*/session.save_path = \/tmp/" /etc/php5/apache2/php.ini
+sed -i "s/session.gc_maxlifetime = .*/session.gc_maxlifetime = 3600/" /etc/php5/apache2/php.ini
+sed -i '/;date.timezone =/c date.timezone = "Europe/Paris"' /etc/php5/apache2/php.ini
+sed -i "s/display_errors = .*/display_errors = On/" /etc/php5/apache2/php.ini
+sed -i "s/html_errors = .*/html_errors = On/" /etc/php5/apache2/php.ini
+sed -i "s/upload_max_filesize = .*/upload_max_filesize = 64M/" /etc/php5/apache2/php.ini
+sed -i "/post_max_size =/c post_max_size = 64M \nzend_extension=/usr/lib/php5/20090626/xdebug.so \nxdebug.remote_enable=1 \nxdebug.remote_handler=dbgp \nxdebug.remote_mode=req \nxdebug.remote_host=127.0.0.1 \nxdebug.remote_port=9000/" /etc/php5/apache2/php.ini
 
 service apache2 restart
