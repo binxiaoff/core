@@ -1,4 +1,5 @@
 <?php
+
 //commit test2
 class cronController extends bootstrap
 {
@@ -20,13 +21,12 @@ class cronController extends bootstrap
         {
             //die;
         }
-        
+
         //blocage sur dev
-        if($this->Config['env'] == "dev")
+        if ($this->Config['env'] == "dev")
         {
             //die;
         }
-        
     }
 
     //********************//
@@ -75,7 +75,7 @@ class cronController extends bootstrap
     //*************************************//
     function _queueNMP()
     {
-        
+
         if ($this->Config['env'] == 'prod')
         {
             $this->tnmp->processQueue();
@@ -124,7 +124,6 @@ class cronController extends bootstrap
     function _check_projet_a_funder()
     {
         //mail('k1@david.equinoa.net', '_check_projet_a_funder dev-local-corp', 'DEBUG !');
-
         // chargement des datas
         $this->projects = $this->loadData('projects');
         $this->projects_status = $this->loadData('projects_status');
@@ -161,12 +160,21 @@ class cronController extends bootstrap
             if ($datePublication == $today) // on lance en fonction de l'heure definie dans le bo
             {
                 //mail('d.courtier@equinoa.com','unilend '.$this->Config['env'].' cron','check_projet_a_funder date : '.date('d/m/y H:i:s').' id_projet : '.$projects['id_project']);
+<<<<<<< HEAD
                 
                 $this->projects_status_history->addStatus(-1, 50, $projects['id_project']);
                 
                 // Zippage pour groupama
                 $this->zippage($projects['id_project']);
                 
+=======
+
+                $this->projects_status_history->addStatus(-1, 50, $projects['id_project']);
+
+                // Zippage pour groupama
+                $this->zippage($projects['id_project']);
+
+>>>>>>> Bugfix-BT17951
                 //// CREATION DES NOTIFICATIONS nouveau projet (/!\ DIE à la fin de la fonction ) ///////
                 $this->nouveau_projet($projects['id_project']);
             }
@@ -1244,21 +1252,19 @@ class cronController extends bootstrap
 //                    $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur, 6);
 //
 //                    $dateEcheance_emprunteur = date('Y-m-d H:i', $dateEcheance_emprunteur) . ':00';
-
                     // on prend le nombre de jours dans le mois au lieu du mois
                     //$nbjourstemp = mktime (0,0,0,date("m")+$k ,1,date("Y"));
                     //$nbjoursMois += date('t',$nbjourstemp);
-                    
                     // Date d'echeance preteur
-                    $dateEcheance = $this->dates->dateAddMoisJoursV3($this->projects->date_fin,$k,$nb_jours);
-                    $dateEcheance = date('Y-m-d h:i',$dateEcheance).':00';
-                    
+                    $dateEcheance = $this->dates->dateAddMoisJoursV3($this->projects->date_fin, $k, $nb_jours);
+                    $dateEcheance = date('Y-m-d h:i', $dateEcheance) . ':00';
+
                     // Date d'echeance emprunteur
-                    $dateEcheance_emprunteur = $this->dates->dateAddMoisJoursV3($this->projects->date_fin,$k);
-                    
+                    $dateEcheance_emprunteur = $this->dates->dateAddMoisJoursV3($this->projects->date_fin, $k);
+
                     // on retire 6 jours ouvrés
-                    $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur,6);
-                    $dateEcheance_emprunteur = date('Y-m-d H:i',$dateEcheance_emprunteur).':00';
+                    $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur, 6);
+                    $dateEcheance_emprunteur = date('Y-m-d H:i', $dateEcheance_emprunteur) . ':00';
 
 
                     // particulier
@@ -1974,8 +1980,8 @@ class cronController extends bootstrap
 
 
             file_put_contents($this->path . 'protected/sftp/virements/' . $filename . '.xml', $xml);
-            
-            if($this->Config['env'] != "dev")
+
+            if ($this->Config['env'] != "dev")
             {
                 mail('k1@david.equinoa.net', 'unilend ' . $this->Config['env'] . ' cron', 'virements date : ' . date('d/m/y H:i:s'));
             }
@@ -3088,11 +3094,11 @@ class cronController extends bootstrap
             $dossier = 'ssh2.sftp://' . $sftp . '/home/sfpmei/receptions';
             if (!file_exists($dossier))
             {
-                if($this->Config['env'] != "dev")
+                if ($this->Config['env'] != "dev")
                 {
                     mail('k1@david.equinoa.net', '[Alert] Unilend error connexion ssh ' . $this->Config['env'], '[Alert] Unilend error connexion ssh ' . $this->Config['env'] . ' cron reception');
                 }
-                
+
                 die;
             }
         }
@@ -3166,7 +3172,7 @@ class cronController extends bootstrap
             // lecture du fichier
             $lrecus = $this->recus2array($lien);
 
-			/* EX : 
+            /* EX : 
 
               0430004056802118EUR2 0004063100718230615  230615DELERY HELENE                    0000000  0000000000400{ZZ0X4VY7PFE69K8V
               0530004056802118EUR2 0004063100718230615     NPYDELERY HELENE
@@ -3270,10 +3276,10 @@ class cronController extends bootstrap
                     {
                         //if(5 == 6){
 
-                        if($this->Config['env'] != "dev")
+                        if ($this->Config['env'] != "dev")
                         {
                             mail('k1@david.equinoa.net', 'virement offre de bienvenue', 'virement offre de bienvenue effectue');
-                        }                        
+                        }
 
                         // transact
                         $transactions->id_prelevement = 0;
@@ -3408,14 +3414,14 @@ class cronController extends bootstrap
                                                     // On regarde si le remb preteur auto est autorisé (eclatement preteur auto)
                                                     if ($projects->remb_auto == 0)
                                                     {
-                                                            // file d'attente pour les remb auto preteurs
-                                                            $projects_remb->id_project = $projects->id_project;
-                                                            $projects_remb->ordre = $ordre;
-                                                            $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
-                                                            $projects_remb->date_remb_preteurs = $date_echeance_preteur[0]['date_echeance'];
-                                                            $projects_remb->date_remb_preteurs_reel = '0000-00-00 00:00:00';
-                                                            $projects_remb->status = 0; // nom remb aux preteurs
-                                                            $projects_remb->create();
+                                                        // file d'attente pour les remb auto preteurs
+                                                        $projects_remb->id_project = $projects->id_project;
+                                                        $projects_remb->ordre = $ordre;
+                                                        $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
+                                                        $projects_remb->date_remb_preteurs = $date_echeance_preteur[0]['date_echeance'];
+                                                        $projects_remb->date_remb_preteurs_reel = '0000-00-00 00:00:00';
+                                                        $projects_remb->status = 0; // nom remb aux preteurs
+                                                        $projects_remb->create();
                                                     }
                                                 }
                                             }
@@ -3431,7 +3437,7 @@ class cronController extends bootstrap
                         // on fait ca que pour les virements recu
                         elseif ($type == 2 && $status_virement == 1)
                         {
-							$is_remboursement_anticipe = false;
+                            $is_remboursement_anticipe = false;
 
                             // On gère ici le Remboursement anticipé
                             if (strstr($r['libelleOpe3'], 'RA-'))
@@ -3451,47 +3457,47 @@ class cronController extends bootstrap
                             else
                             {
 
-	                            // DEBUT RECHERCHE DU MOTIF EN BDD //
-	                            // On cherche une suite de chiffres
-	                            preg_match_all('#[0-9]+#', $motif, $extract);
-	                            //$nombre = (int)$extract[0][0]; // on retourne un int pour retirer les zeros devant
-	
-	
-	
-	
-	                            $retour_auto = false;
-	                            foreach ($extract[0] as $nombre)
-	                            {
-	                                // ajout de la condition pour ne pas rerentrer dedans une fois qu'on a déjà trouvé
-	                                if($retour_auto != true)
-	                                {
-	                                    // si existe en bdd
-	                                    if ($clients->get($nombre, 'id_client'))
-	                                    {
-	                                        // on créer le motif qu'on devrait avoir
-	                                        $p = substr($this->ficelle->stripAccents(utf8_decode(trim($clients->prenom))), 0, 1);
-	                                        $nom = $this->ficelle->stripAccents(utf8_decode(trim($clients->nom)));
-	                                        $id_client = str_pad($clients->id_client, 6, 0, STR_PAD_LEFT);
-	                                        $returnMotif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-	
-	                                        $mystring = str_replace(' ', '', $motif); // retire les espaces au cas ou le motif soit mal ecrit
-	                                        $findme = str_replace(' ', '', $returnMotif);
-	                                        $pos = strpos($mystring, $findme);
-	
-	                                        // on laisse en manuel
-	                                        if ($pos === false)
-	                                        {
-	                                            $retour_auto = false; //echo 'Recu';
-	                                        }
-	                                        // Automatique (on attribue le virement au preteur)
-	                                        else
-	                                        {
-	                                            $retour_auto = true; //echo 'Auto';
-	                                        }
-	                                    }
-	                                }
-	                            }
-							} //end else
+                                // DEBUT RECHERCHE DU MOTIF EN BDD //
+                                // On cherche une suite de chiffres
+                                preg_match_all('#[0-9]+#', $motif, $extract);
+                                //$nombre = (int)$extract[0][0]; // on retourne un int pour retirer les zeros devant
+
+
+
+
+                                $retour_auto = false;
+                                foreach ($extract[0] as $nombre)
+                                {
+                                    // ajout de la condition pour ne pas rerentrer dedans une fois qu'on a déjà trouvé
+                                    if ($retour_auto != true)
+                                    {
+                                        // si existe en bdd
+                                        if ($clients->get($nombre, 'id_client'))
+                                        {
+                                            // on créer le motif qu'on devrait avoir
+                                            $p = substr($this->ficelle->stripAccents(utf8_decode(trim($clients->prenom))), 0, 1);
+                                            $nom = $this->ficelle->stripAccents(utf8_decode(trim($clients->nom)));
+                                            $id_client = str_pad($clients->id_client, 6, 0, STR_PAD_LEFT);
+                                            $returnMotif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+
+                                            $mystring = str_replace(' ', '', $motif); // retire les espaces au cas ou le motif soit mal ecrit
+                                            $findme = str_replace(' ', '', $returnMotif);
+                                            $pos = strpos($mystring, $findme);
+
+                                            // on laisse en manuel
+                                            if ($pos === false)
+                                            {
+                                                $retour_auto = false; //echo 'Recu';
+                                            }
+                                            // Automatique (on attribue le virement au preteur)
+                                            else
+                                            {
+                                                $retour_auto = true; //echo 'Auto';
+                                            }
+                                        }
+                                    }
+                                }
+                            } //end else
                             // FIN RECHERCHE MOTIF EN BDD //
 
                             if ($retour_auto == true)
@@ -3500,7 +3506,7 @@ class cronController extends bootstrap
                                 if ($transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement') == false)
                                 {
 
-									if ($is_remboursement_anticipe)
+                                    if ($is_remboursement_anticipe)
                                     {
                                         // reception
                                         $receptions->get($receptions->id_reception, 'id_reception');
@@ -3547,12 +3553,10 @@ class cronController extends bootstrap
                                         $this->settings->get('Adresse notification nouveau remboursement anticipe', 'type');
                                         $destinataire = $this->settings->value;
                                         //$destinataire = 'd.courtier@equinoa.com';
-
-
                                         // Recuperation du modele de mail
                                         $this->mails_text->get('notification-nouveau-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
-                                        
-                                        
+
+
                                         // Variables du mailing
                                         $surl = $this->surl;
                                         $url = $this->lurl;
@@ -3586,142 +3590,142 @@ class cronController extends bootstrap
                                     }
                                     else
                                     {
-	                                    // reception
-	                                    $receptions->get($receptions->id_reception, 'id_reception');
-	                                    $receptions->id_client = $clients->id_client;
-	                                    $receptions->status_bo = 2;
-	                                    $receptions->remb = 1;
-	                                    $receptions->update();
-	
-	                                    // lender
-	                                    $lenders->get($clients->id_client, 'id_client_owner');
-	                                    $lenders->status = 1;
-	                                    $lenders->update();
-	
-	                                    // transact
-	                                    $transactions->id_virement = $receptions->id_reception;
-	                                    $transactions->id_client = $lenders->id_client_owner;
-	                                    $transactions->montant = $receptions->montant;
-	                                    $transactions->id_langue = 'fr';
-	                                    $transactions->date_transaction = date('Y-m-d H:i:s');
-	                                    $transactions->status = 1;
-	                                    $transactions->etat = 1;
-	                                    $transactions->transaction = 1;
-	                                    $transactions->type_transaction = 4; // alimentation virement
-	                                    $transactions->ip_client = $_SERVER['REMOTE_ADDR'];
-	                                    $transactions->id_transaction = $transactions->create();
-	
-	                                    // wallet
-	                                    $wallets->id_lender = $lenders->id_lender_account;
-	                                    $wallets->type_financial_operation = 30; // alimenation
-	                                    $wallets->id_transaction = $transactions->id_transaction;
-	                                    $wallets->type = 1; // physique
-	                                    $wallets->amount = $receptions->montant;
-	                                    $wallets->status = 1;
-	                                    $wallets->id_wallet_line = $wallets->create();
-	
-	                                    // bank line
-	                                    $bank->id_wallet_line = $wallets->id_wallet_line;
-	                                    $bank->id_lender_account = $lenders->id_lender_account;
-	                                    $bank->status = 1;
-	                                    $bank->amount = $receptions->montant;
-	                                    $bank->create();
-	
-	                                    $this->notifications->type = 5; // alim virement
-	                                    $this->notifications->id_lender = $lenders->id_lender_account;
-	                                    $this->notifications->amount = $receptions->montant;
-	                                    $this->notifications->id_notification = $this->notifications->create();
-	
-	                                    //////// GESTION ALERTES //////////
-	                                    $this->clients_gestion_mails_notif->id_client = $lenders->id_client_owner;
-	                                    $this->clients_gestion_mails_notif->id_notif = 6; // alim virement
-	                                    $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
-	                                    $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-	                                    $this->clients_gestion_mails_notif->id_transaction = $transactions->id_transaction;
-	                                    $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
-	                                    //////// FIN GESTION ALERTES //////////
-	                                    // on met l'etape inscription a 3
-	                                    if ($clients->etape_inscription_preteur < 3)
-	                                    {
-	                                        $clients->etape_inscription_preteur = 3; // etape 3 ok
-	                                        $clients->update();
-	                                    }
-	
-	
-	                                    // envoi email virement maintenant ou non
-	                                    if ($this->clients_gestion_notifications->getNotif($lenders->id_client_owner, 6, 'immediatement') == true)
-	                                    {
-	
-	                                        //////// GESTION ALERTES //////////
-	                                        $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-	                                        $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
-	                                        $this->clients_gestion_mails_notif->update();
-	                                        //////// FIN GESTION ALERTES //////////
-	                                        // email
-	                                        //******************************//
-	                                        //*** ENVOI DU MAIL preteur-alimentation ***//
-	                                        //******************************//
-	                                        // Recuperation du modele de mail
-	                                        $this->mails_text->get('preteur-alimentation', 'lang = "' . $this->language . '" AND type');
-	
-	                                        // FB
-	                                        $this->settings->get('Facebook', 'type');
-	                                        $lien_fb = $this->settings->value;
-	
-	                                        // Twitter
-	                                        $this->settings->get('Twitter', 'type');
-	                                        $lien_tw = $this->settings->value;
-	
-	                                        // Solde du compte preteur
-	                                        $solde = $transactions->getSolde($receptions->id_client);
-	
-	                                        // Variables du mailing
-	                                        $varMail = array(
-	                                            'surl' => $this->surl,
-	                                            'url' => $this->lurl,
-	                                            'prenom_p' => utf8_decode($clients->prenom),
-	                                            'fonds_depot' => number_format($receptions->montant / 100, 2, ',', ' '),
-	                                            'solde_p' => number_format($solde, 2, ',', ' '),
-	                                            'motif_virement' => $returnMotif,
-	                                            'projets' => $this->lurl . '/projets-a-financer',
-	                                            'gestion_alertes' => $this->lurl . '/profile',
-	                                            'lien_fb' => $lien_fb,
-	                                            'lien_tw' => $lien_tw);
-	
-	                                        // Construction du tableau avec les balises EMV
-	                                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-	
-	                                        // Attribution des données aux variables
-	                                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-	                                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-	                                        $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-	
-	                                        // Envoi du mail
-	                                        $this->email = $this->loadLib('email', array());
-	                                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-	                                        $this->email->setSubject(stripslashes($sujetMail));
-	                                        $this->email->setHTMLBody(stripslashes($texteMail));
-	
-	                                        // Pas de mail si le compte est desactivé
-	                                        if ($clients->status == 1)
-	                                        {
-	                                            if ($this->Config['env'] == 'prod') // nmp
-	                                            {
-	
-	
-	                                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
-	                                                // Injection du mail NMP dans la queue
-	                                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-	                                            }
-	                                            else // non nmp
-	                                            {
-	                                                $this->email->addRecipient(trim($clients->email));
-	                                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-	                                            }
-	                                        }
-	                                        // fin mail
-	                                    }
-									}//fin else $is_remboursement_anticipe
+                                        // reception
+                                        $receptions->get($receptions->id_reception, 'id_reception');
+                                        $receptions->id_client = $clients->id_client;
+                                        $receptions->status_bo = 2;
+                                        $receptions->remb = 1;
+                                        $receptions->update();
+
+                                        // lender
+                                        $lenders->get($clients->id_client, 'id_client_owner');
+                                        $lenders->status = 1;
+                                        $lenders->update();
+
+                                        // transact
+                                        $transactions->id_virement = $receptions->id_reception;
+                                        $transactions->id_client = $lenders->id_client_owner;
+                                        $transactions->montant = $receptions->montant;
+                                        $transactions->id_langue = 'fr';
+                                        $transactions->date_transaction = date('Y-m-d H:i:s');
+                                        $transactions->status = 1;
+                                        $transactions->etat = 1;
+                                        $transactions->transaction = 1;
+                                        $transactions->type_transaction = 4; // alimentation virement
+                                        $transactions->ip_client = $_SERVER['REMOTE_ADDR'];
+                                        $transactions->id_transaction = $transactions->create();
+
+                                        // wallet
+                                        $wallets->id_lender = $lenders->id_lender_account;
+                                        $wallets->type_financial_operation = 30; // alimenation
+                                        $wallets->id_transaction = $transactions->id_transaction;
+                                        $wallets->type = 1; // physique
+                                        $wallets->amount = $receptions->montant;
+                                        $wallets->status = 1;
+                                        $wallets->id_wallet_line = $wallets->create();
+
+                                        // bank line
+                                        $bank->id_wallet_line = $wallets->id_wallet_line;
+                                        $bank->id_lender_account = $lenders->id_lender_account;
+                                        $bank->status = 1;
+                                        $bank->amount = $receptions->montant;
+                                        $bank->create();
+
+                                        $this->notifications->type = 5; // alim virement
+                                        $this->notifications->id_lender = $lenders->id_lender_account;
+                                        $this->notifications->amount = $receptions->montant;
+                                        $this->notifications->id_notification = $this->notifications->create();
+
+                                        //////// GESTION ALERTES //////////
+                                        $this->clients_gestion_mails_notif->id_client = $lenders->id_client_owner;
+                                        $this->clients_gestion_mails_notif->id_notif = 6; // alim virement
+                                        $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
+                                        $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                                        $this->clients_gestion_mails_notif->id_transaction = $transactions->id_transaction;
+                                        $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
+                                        //////// FIN GESTION ALERTES //////////
+                                        // on met l'etape inscription a 3
+                                        if ($clients->etape_inscription_preteur < 3)
+                                        {
+                                            $clients->etape_inscription_preteur = 3; // etape 3 ok
+                                            $clients->update();
+                                        }
+
+
+                                        // envoi email virement maintenant ou non
+                                        if ($this->clients_gestion_notifications->getNotif($lenders->id_client_owner, 6, 'immediatement') == true)
+                                        {
+
+                                            //////// GESTION ALERTES //////////
+                                            $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
+                                            $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                                            $this->clients_gestion_mails_notif->update();
+                                            //////// FIN GESTION ALERTES //////////
+                                            // email
+                                            //******************************//
+                                            //*** ENVOI DU MAIL preteur-alimentation ***//
+                                            //******************************//
+                                            // Recuperation du modele de mail
+                                            $this->mails_text->get('preteur-alimentation', 'lang = "' . $this->language . '" AND type');
+
+                                            // FB
+                                            $this->settings->get('Facebook', 'type');
+                                            $lien_fb = $this->settings->value;
+
+                                            // Twitter
+                                            $this->settings->get('Twitter', 'type');
+                                            $lien_tw = $this->settings->value;
+
+                                            // Solde du compte preteur
+                                            $solde = $transactions->getSolde($receptions->id_client);
+
+                                            // Variables du mailing
+                                            $varMail = array(
+                                                'surl' => $this->surl,
+                                                'url' => $this->lurl,
+                                                'prenom_p' => utf8_decode($clients->prenom),
+                                                'fonds_depot' => number_format($receptions->montant / 100, 2, ',', ' '),
+                                                'solde_p' => number_format($solde, 2, ',', ' '),
+                                                'motif_virement' => $returnMotif,
+                                                'projets' => $this->lurl . '/projets-a-financer',
+                                                'gestion_alertes' => $this->lurl . '/profile',
+                                                'lien_fb' => $lien_fb,
+                                                'lien_tw' => $lien_tw);
+
+                                            // Construction du tableau avec les balises EMV
+                                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                                            // Attribution des données aux variables
+                                            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                                            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                                            $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                                            // Envoi du mail
+                                            $this->email = $this->loadLib('email', array());
+                                            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                                            $this->email->setSubject(stripslashes($sujetMail));
+                                            $this->email->setHTMLBody(stripslashes($texteMail));
+
+                                            // Pas de mail si le compte est desactivé
+                                            if ($clients->status == 1)
+                                            {
+                                                if ($this->Config['env'] == 'prod') // nmp
+                                                {
+
+
+                                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
+                                                    // Injection du mail NMP dans la queue
+                                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                                }
+                                                else // non nmp
+                                                {
+                                                    $this->email->addRecipient(trim($clients->email));
+                                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                                }
+                                            }
+                                            // fin mail
+                                        }
+                                    }//fin else $is_remboursement_anticipe
                                 } // fin check transaction
                             }
                             else
@@ -3744,7 +3748,7 @@ class cronController extends bootstrap
         $jour = date('d');
 
         // si on veut mettre a jour une date on met le jour ici mais attention ca va sauvegarder enbdd et sur l'etat quotidien fait ce matin a 1h du mat
-       // $jour = 1;
+        // $jour = 1;
         // modif manuelle dans etat quotidien de janvier 2014 total solde sfpme 0.69 € retiré
         //$num = '02';
         //$ladatedetest = '201409'.$num;
@@ -3785,7 +3789,7 @@ class cronController extends bootstrap
             $leJour = $nbJours;
 
             $InfeA = mktime(0, 0, 0, date('m'), date('d'), date('Y'));
-            
+
             // pour regeneration à la mano
             //$InfeA = mktime( 0, 0, 0, 07, 26,2015); 
 
@@ -3810,17 +3814,17 @@ class cronController extends bootstrap
 
         // Les remboursements preteurs
         $lrembPreteurs = $bank_unilend->sumMontantByDayMonths('type = 2 AND status = 1', $leMois, $lannee);
-		
-		
-		
+
+
+
 
         // On recup les echeances le jour où ils ont été remb aux preteurs
         $listEcheances = $bank_unilend->ListEcheancesByDayMonths('type = 2 AND status = 1', $leMois, $lannee);
-		
-		
-		/*echo '<pre>';
-		print_r($listEcheances);
-		echo '</pre>';*/
+
+
+        /* echo '<pre>';
+          print_r($listEcheances);
+          echo '</pre>'; */
 
         // alimentations CB
         $alimCB = $transac->sumByday(3, $leMois, $lannee);
@@ -4095,10 +4099,10 @@ class cronController extends bootstrap
 
                 // sommes des echeance par jour (sans RA)
                 $echangeDate = $echeanciers->getEcheanceByDayAll($date, '1 AND status_ra = 0');
-				
-				// sommes des echeance par jour (que RA)
+
+                // sommes des echeance par jour (que RA)
                 $echangeDateRA = $echeanciers->getEcheanceByDayAll($date, '1 AND status_ra = 1');
-				
+
 
                 // on recup com de lecheance emprunteur a la date de mise a jour de la ligne (ddonc au changement de statut remboursé)
                 //$commission = $echeanciers_emprunteur->sum('commission','LEFT(date_echeance_emprunteur_reel,10) = "'.$date.'" AND status_emprunteur = 1');
@@ -4226,7 +4230,7 @@ class cronController extends bootstrap
                 ///////////////////////////
                 // somme capital preteurs par jour
                 $capitalPreteur = $echangeDate['capital'];
-				$capitalPreteur += $echangeDateRA['capital'];
+                $capitalPreteur += $echangeDateRA['capital'];
                 $capitalPreteur = ($capitalPreteur / 100);
 
                 // somme net net preteurs par jour
@@ -4973,10 +4977,8 @@ class cronController extends bootstrap
         //die;
         //mail('d.courtier@equinoa.com','unilend '.$this->Config['env'].' cron','etat quotidien date : '.date('d/m/y H:i:s'));
         //die;
-        
         // Pour regeneration on die avant l'envoie du mail
         //die;
-        
         //
         //************************************//
         //*** ENVOI DU MAIL ETAT QUOTIDIEN ***//
@@ -6971,13 +6973,13 @@ class cronController extends bootstrap
 
 
         file_put_contents($this->path . 'protected/sftp/etat_quotidien/' . $filename . '.xls', $tableau);
-        
-        if($this->Config['env'] != "dev")
+
+        if ($this->Config['env'] != "dev")
         {
             mail('k1@david.equinoa.net', 'unilend ' . $this->Config['env'] . ' cron', 'etat quotidien date : ' . date('d/m/y H:i:s'));
         }
-        
-        
+
+
 
 
         //************************************//
@@ -7160,7 +7162,7 @@ class cronController extends bootstrap
                 $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
 
                 // Mail it
-                if($this->Config['env'] != "dev")
+                if ($this->Config['env'] != "dev")
                 {
                     mail($to, $subject, $message, $headers);
                 }
@@ -7168,7 +7170,6 @@ class cronController extends bootstrap
                 {
                     mail("k1@david.equinoa.net", $subject, $message, $headers);
                 }
-                
             }
         }
     }
@@ -7572,13 +7573,12 @@ class cronController extends bootstrap
           echo $table; */
 
         echo utf8_decode($table);
-       // die;
+        // die;
 
         $filename = 'Unilend_etat_fiscal_' . date('Ymd');
         //$filename = 'Unilend_etat_'.$ladatedetest;
         file_put_contents($this->path . 'protected/sftp/etat_fiscal/' . $filename . '.xls', $table);
-		//die;
-		
+        //die;
         // Enregistrement sur le sftp
         $connection = ssh2_connect('ssh.reagi.com', 22);
         ssh2_auth_password($connection, 'sfpmei', '769kBa5v48Sh3Nug');
@@ -7586,8 +7586,7 @@ class cronController extends bootstrap
         $sftpStream = @fopen('ssh2.sftp://' . $sftp . '/home/sfpmei/emissions/etat_fiscal/' . $filename . '.xls', 'w');
         fwrite($sftpStream, $table);
         fclose($sftpStream);
-		//die;
-
+        //die;
         // les echeances du mois passé
         /* $dateMoins1Mois = mktime (date("H"),date("i"),0,date("m")-1,date("d"),date("Y"));
 
@@ -7965,7 +7964,7 @@ class cronController extends bootstrap
                 //$headers .= 'From: Unilend <courtier.damien@gmail.com>' . "\r\n";
                 //$headers .= 'From: Unilend <d.courtier@equinoa.com>' . "\r\n";
                 // Mail it
-                if($this->Config['env'] != "dev")
+                if ($this->Config['env'] != "dev")
                 {
                     mail($to, $subject, $message, $headers);
                 }
@@ -7973,7 +7972,7 @@ class cronController extends bootstrap
                 {
                     mail("k1@david.equinoa.net", $subject, $message, $headers);
                 }
-                
+
                 //break;
             }
         }
@@ -8161,7 +8160,7 @@ class cronController extends bootstrap
 
 
                 // Mail it
-                if($this->Config['env'] != "dev")
+                if ($this->Config['env'] != "dev")
                 {
                     mail($to, $subject, $message, $headers);
                 }
@@ -8169,7 +8168,6 @@ class cronController extends bootstrap
                 {
                     mail("k1@david.equinoa.net", $subject, $message, $headers);
                 }
-                
             }
 
             //break;
@@ -8240,7 +8238,7 @@ class cronController extends bootstrap
                 //$headers .= 'From: Unilend <courtier.damien@gmail.com>' . "\r\n";
                 //$headers .= 'From: Unilend <d.courtier@equinoa.com>' . "\r\n";
                 // Mail it
-                if($this->Config['env'] != "dev")
+                if ($this->Config['env'] != "dev")
                 {
                     mail($to, $subject, $message, $headers);
                 }
@@ -8301,7 +8299,7 @@ class cronController extends bootstrap
                 //$headers .= 'To: equinoa <courtier.damien@gmail.com>' . "\r\n";
                 //$headers .= 'From: Unilend <courtier.damien@gmail.com>' . "\r\n";
                 // Mail it
-                if($this->Config['env'] != "dev")
+                if ($this->Config['env'] != "dev")
                 {
                     mail($to, $subject, $message, $headers);
                 }
@@ -8678,7 +8676,7 @@ class cronController extends bootstrap
         $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
 
         // Mail it
-        if($this->Config['env'] != "dev")
+        if ($this->Config['env'] != "dev")
         {
             mail($to, $subject, $message, $headers);
         }
@@ -9400,7 +9398,7 @@ class cronController extends bootstrap
                     $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
 
                     // Mail it
-                    if($this->Config['env'] != "dev")
+                    if ($this->Config['env'] != "dev")
                     {
                         mail($to, $subject, $message, $headers);
                     }
@@ -9507,9 +9505,9 @@ class cronController extends bootstrap
         $timeMoins8 = mktime(0, 0, 0, date("m"), date("d") - 8, date("Y"));
         // les preteurs en completude
         $lPreteurs = $this->clients->selectPreteursByStatus('20', '', 'added_status DESC');
-        
-        
-        
+
+
+
         // Variables du mailing
         $surl = $this->surl;
         $url = $this->lurl;
@@ -9532,7 +9530,7 @@ class cronController extends bootstrap
             $timestamp_date = $this->dates->formatDateMySqlToTimeStamp($p['added_status']);
 
             // on ajoute une restriction. Plus de 7j et le premier samedi qui suit.			
-            if (    $timestamp_date <= $timeMoins8 &&
+            if ($timestamp_date <= $timeMoins8 &&
                     date('w') == 6)
             {
 
@@ -10051,7 +10049,7 @@ class cronController extends bootstrap
                         $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
 
                         // Mail it
-                        if($this->Config['env'] != "dev")
+                        if ($this->Config['env'] != "dev")
                         {
                             mail($to, $subject, $message, $headers);
                         }
@@ -10059,13 +10057,12 @@ class cronController extends bootstrap
                         {
                             mail("k1@david.equinoa.net", $subject, $message, $headers);
                         }
-                        
                     }
                 }
             }
         }
     }
-    
+
     // Une fois par jour (crée le 27/04/2015) 
     function check_remboursement_preteurs()
     {
@@ -10092,9 +10089,8 @@ class cronController extends bootstrap
 					<td>' . ($l['status_emprunteur'] == 1 ? 'Oui' : 'Non') . '</td>
 				</tr>';
         }
-		
-		// <td>' . ($l['status'] == 1 ? 'Oui' : 'Non') . '</td> // statut remb preteur
 
+        // <td>' . ($l['status'] == 1 ? 'Oui' : 'Non') . '</td> // statut remb preteur
         //************************************//
         //*** ENVOI DU MAIL NOTIFICATION  check remb preteurs ***//
         //************************************//
@@ -10125,7 +10121,6 @@ class cronController extends bootstrap
         $exp_name = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
         //echo $texteMail;
-
         // Envoi du mail
         $this->email = $this->loadLib('email', array());
         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
@@ -10144,7 +10139,6 @@ class cronController extends bootstrap
     function _alertes_quotidienne()
     {
         //mail('d.courtier@relance.fr', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee - ' . date('Y-m-d H:i:e'));
-        
         // On recup le param
         $settingsControleQuotidiennne = $this->loadData('settings');
         $settingsControleQuotidiennne->get('Controle notification quotidienne', 'type');
@@ -10156,7 +10150,7 @@ class cronController extends bootstrap
             // On passe le statut a zero pour signaler qu'on est en cours de traitement
             $settingsControleQuotidiennne->value = 0;
             $settingsControleQuotidiennne->update();
-        
+
             $timeDebut = time();
 
             $clients = $this->loadData('clients');
@@ -10360,7 +10354,6 @@ class cronController extends bootstrap
             //echo 'Durée : '.$time.' secondes';
             $settingsControleQuotidiennne->value = 1;
             $settingsControleQuotidiennne->update();
-        
         }
         mail('k1@david.equinoa.net', 'cron ' . $this->Config['env'] . ' fin alertes_quotidiennee', 'cron ' . $this->Config['env'] . ' fin alertes_quotidiennee - ' . date('Y-m-d H:i:e'));
         die;
@@ -10370,7 +10363,7 @@ class cronController extends bootstrap
     function _alertes_hebdomadaire()
     {
         mail('k1@david.equinoa.net', 'cron ' . $this->Config['env'] . ' debut gestion_alertes_hebdomadaire', 'cron ' . $this->Config['env'] . ' debut alertes_hebdomadaire - ' . date('Y-m-d H:i:e'));
-        
+
         // On recup le param
         $settingsControleHebdomadaire = $this->loadData('settings');
         $settingsControleHebdomadaire->get('Controle notification hebomadaire', 'type');
@@ -10382,7 +10375,7 @@ class cronController extends bootstrap
             // On passe le statut a zero pour signaler qu'on est en cours de traitement
             $settingsControleHebdomadaire->value = 0;
             $settingsControleHebdomadaire->update();
-        
+
             $timeDebut = time();
 
             $clients = $this->loadData('clients');
@@ -10535,7 +10528,7 @@ class cronController extends bootstrap
             $settingsControleHebdomadaire->value = 1;
             $settingsControleHebdomadaire->update();
         }
-        
+
         mail('k1@david.equinoa.net', 'cron ' . $this->Config['env'] . ' fin gestion_alertes_hebdomadaire', 'cron ' . $this->Config['env'] . ' fin alertes_hebdomadaire - ' . date('Y-m-d H:i:e'));
         die;
     }
@@ -10544,7 +10537,7 @@ class cronController extends bootstrap
     function _alertes_mensuelle()
     {
         mail('k1@david.equinoa.net', 'cron ' . $this->Config['env'] . ' debut alertes_mensuelle', 'cron ' . $this->Config['env'] . ' debut alertes_mensuelle - ' . date('Y-m-d H:i:e'));
-        
+
         // On recup le param
         $settingsControleMensuelle = $this->loadData('settings');
         $settingsControleMensuelle->get('Controle notification mensuelle', 'type');
@@ -10556,7 +10549,7 @@ class cronController extends bootstrap
             // On passe le statut a zero pour signaler qu'on est en cours de traitement
             $settingsControleMensuelle->value = 0;
             $settingsControleMensuelle->update();
-        
+
             // si on est le dernier jour du mois
             $last_day_of_month = date('t');
             //if(date('d') == $last_day_of_month || 5 == 5)
@@ -10632,11 +10625,11 @@ class cronController extends bootstrap
             {
                 $this->remb_synthese($array_remb, 'mensuelle');
             }
-        
+
             $settingsControleMensuelle->value = 1;
             $settingsControleMensuelle->update();
         }
-        
+
         mail('k1@david.equinoa.net', 'cron ' . $this->Config['env'] . ' fin alertes_mensuelle', 'cron ' . $this->Config['env'] . ' alertes_mensuelle - ' . date('Y-m-d H:i:e'));
         die;
     }
@@ -11493,10 +11486,11 @@ class cronController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
 
+        $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese',$this->language,$this->App);
 
 
 
-
+        
         // on regarde si on a bien quelque chose
         if ($array_mail_nouveaux_projects != false)
         {
@@ -11540,8 +11534,8 @@ class cronController extends bootstrap
                     $motif = mb_strtoupper($le_id_client . $p . $nom, 'UTF-8');
                     $nb_arrayoffres = count($mails_notif); // (BT 18180 04/08/2015)
                     $goMail = true; // (BT 18180 04/08/2015)
-                    
-                    if(5 == 5) // (BT 18180 04/08/2015)
+
+                    if (5 == 5) // (BT 18180 04/08/2015)
                     //if (count($mails_notif) > 1 || $type != 'quotidienne')
                     {
 
@@ -11559,10 +11553,12 @@ class cronController extends bootstrap
                             $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
                             if ($type == 'quotidienne')
                             {
-                                if($nb_arrayoffres <= 1 && $this->clients_gestion_mails_notif->immediatement == 1){
+                                if ($nb_arrayoffres <= 1 && $this->clients_gestion_mails_notif->immediatement == 1)
+                                {
                                     $goMail = false;
                                 }
-                                else{
+                                else
+                                {
                                     $this->clients_gestion_mails_notif->quotidienne = 1;
                                 }
                                 $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
@@ -11589,12 +11585,46 @@ class cronController extends bootstrap
 								</tr>';
                         }
 
-                        if($goMail == true) // (BT 18180 04/08/2015)
+                        if ($goMail == true) // (BT 18180 04/08/2015)
                         {
                             if ($type == 'quotidienne')
                                 $this->mails_text->get('nouveaux-projets-du-jour', 'lang = "' . $this->language . '" AND type');
                             else
                                 $this->mails_text->get('nouveaux-projets-de-la-semaine', 'lang = "' . $this->language . '" AND type');
+
+
+                            // contenu
+                            $lecontenu = '';
+                            // on gère ici le cas du singulier/pluriel
+                            if ($nb_arrayoffres <= 1)
+                            {
+                                if ($type == 'quotidienne')
+                                {
+                                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                                    $lecontenu = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
+                                    $objet = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
+                                }
+                                elseif ($type == 'hebdomadaire')
+                                {
+                                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                                    $lecontenu = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
+                                    $objet = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
+                                }
+                            }
+                            else
+                            {
+                                if ($type == 'quotidienne')
+                                {
+                                    $lecontenu = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
+                                    $objet = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
+                                }
+                                elseif ($type == 'hebdomadaire')
+                                {
+                                    $lecontenu = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
+                                    $objet = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
+                                }
+                            }
+
 
                             // Variables du mailing
                             $varMail = array(
@@ -11605,6 +11635,8 @@ class cronController extends bootstrap
                                 'projet-p' => $this->lurl . '/projets-a-financer',
                                 'motif_virement' => $motif,
                                 'gestion_alertes' => $this->lurl . '/profile',
+                                'objet' => utf8_decode($objet),
+                                'contenu' => utf8_decode($lecontenu),
                                 'lien_fb' => $lien_fb,
                                 'lien_tw' => $lien_tw);
                             // Construction du tableau avec les balises EMV
@@ -11657,10 +11689,12 @@ class cronController extends bootstrap
                         $goMail = true;
                         if ($type == 'quotidienne')
                         {
-                            if($this->clients_gestion_mails_notif->immediatement == 1){
+                            if ($this->clients_gestion_mails_notif->immediatement == 1)
+                            {
                                 $goMail = false;
                             }
-                            else{
+                            else
+                            {
                                 $this->clients_gestion_mails_notif->quotidienne = 1;
                             }
                             $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
@@ -11678,7 +11712,8 @@ class cronController extends bootstrap
                         $this->clients_gestion_mails_notif->update();
                         //////// FIN GESTION ALERTES //////////
 
-                        if($goMail == true){
+                        if ($goMail == true)
+                        {
                             $this->mails_text->get('nouveau-projet', 'lang = "' . $this->language . '" AND type');
 
 
@@ -11765,6 +11800,8 @@ class cronController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
 
+        $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese',$this->language,$this->App);
+        
         // on regarde si on a bien quelque chose
         if ($array_offres_placees != false)
         {
@@ -11831,7 +11868,7 @@ class cronController extends bootstrap
                                 //    $goMail = false;
                                 //}
                                 //else{
-                                    $this->clients_gestion_mails_notif->quotidienne = 1;
+                                $this->clients_gestion_mails_notif->quotidienne = 1;
                                 //}
                                 $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
                             }
@@ -11876,13 +11913,36 @@ class cronController extends bootstrap
                             }
                             $i++;
                         }
-                        
-                        if($goMail == true){
-                        
+
+                        if ($goMail == true)
+                        {
+
                             if ($type == 'quotidienne')
                                 $this->mails_text->get('vos-offres-du-jour', 'lang = "' . $this->language . '" AND type');
                             //else
                             //$this->mails_text->get('vos-offres-de-la-semaine','lang = "'.$this->language.'" AND type');
+                            // on gère ici le cas du singulier/pluriel
+                            // contenu
+                            $lecontenu = '';
+                            // on gère ici le cas du singulier/pluriel
+                            if ($nb_arrayRemb <= 1)
+                            {
+                                if ($type == 'quotidienne')
+                                {
+                                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
+                                    $lecontenu = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-singulier'];
+                                    $objet = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-singulier'];
+                                }
+                            }
+                            else
+                            {
+                                if ($type == 'quotidienne')
+                                {
+                                    $lecontenu = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-pluriel'];
+                                    $objet = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-pluriel'];
+                                }
+                            }
+
 
                             // Variables du mailing
                             $varMail = array(
@@ -11892,6 +11952,8 @@ class cronController extends bootstrap
                                 'liste_offres' => $liste_offres,
                                 'motif_virement' => $motif,
                                 'gestion_alertes' => $this->lurl . '/profile',
+                                'contenu' => utf8_decode($lecontenu),
+                                'objet' => utf8_decode($objet),
                                 'lien_fb' => $lien_fb,
                                 'lien_tw' => $lien_tw);
                             // Construction du tableau avec les balises EMV
@@ -11946,10 +12008,12 @@ class cronController extends bootstrap
                         $goMail = true;
                         if ($type == 'quotidienne')
                         {
-                            if($this->clients_gestion_mails_notif->immediatement == 1){
+                            if ($this->clients_gestion_mails_notif->immediatement == 1)
+                            {
                                 $goMail = false;
                             }
-                            else{
+                            else
+                            {
                                 $this->clients_gestion_mails_notif->quotidienne = 1;
                             }
                             $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
@@ -11966,8 +12030,9 @@ class cronController extends bootstrap
                         }
                         $this->clients_gestion_mails_notif->update();
                         //////// FIN GESTION ALERTES //////////
-                        
-                        if($goMail == true){
+
+                        if ($goMail == true)
+                        {
                             ////*********************************//
                             //*** ENVOI DU MAIL CONFIRM BID ***//
                             //*********************************//
@@ -12065,6 +12130,8 @@ class cronController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
 
+        $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese',$this->language,$this->App);
+        
         // on regarde si on a bien quelque chose
         if ($array_offres_refusees != false)
         {
@@ -12175,6 +12242,30 @@ class cronController extends bootstrap
                     $le_id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
                     $motif = mb_strtoupper($le_id_client . $p . $nom, 'UTF-8');
 
+                    // on gère ici le cas du singulier/pluriel
+                    // contenu
+                    $lecontenu = '';
+                    // on gère ici le cas du singulier/pluriel
+                    if ($nb_arrayoffres <= 1)
+                    {
+                        if ($type == 'quotidienne')
+                        {
+                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
+                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-singulier'];
+                            $objet = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-singulier'];
+                        }
+                    }
+                    else
+                    {
+                        if ($type == 'quotidienne')
+                        {
+                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-pluriel'];
+                            $objet = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-pluriel'];
+                        }
+                    }
+
+
+
                     // Variables du mailing
                     $varMail = array(
                         'surl' => $this->surl,
@@ -12183,6 +12274,8 @@ class cronController extends bootstrap
                         'liste_offres' => $liste_offres,
                         'motif_virement' => $motif,
                         'gestion_alertes' => $this->lurl . '/profile',
+                        'contenu' => utf8_decode($lecontenu),
+                        'objet' => utf8_decode($objet),
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw);
                     // Construction du tableau avec les balises EMV
@@ -12251,6 +12344,8 @@ class cronController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
 
+        $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese',$this->language,$this->App);
+        
         // on regarde si on a bien quelque chose
         if ($array_offres_acceptees != false)
         {
@@ -12312,10 +12407,10 @@ class cronController extends bootstrap
                             if ($type == 'quotidienne')
                             {
                                 //if($nb_arrayoffres <= 1 && $this->clients_gestion_mails_notif->immediatement == 1){
-                                  //  $goMail = false;
+                                //  $goMail = false;
                                 //}
                                 //else{
-                                    $this->clients_gestion_mails_notif->quotidienne = 1;
+                                $this->clients_gestion_mails_notif->quotidienne = 1;
                                 //}
                                 $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
                             }
@@ -12331,7 +12426,7 @@ class cronController extends bootstrap
                             }
                             $this->clients_gestion_mails_notif->update();
                             //////// FIN GESTION ALERTES //////////
-                            
+
                             $total += ($this->loans->amount / 100);
 
                             if ($i == $nb_arrayoffres)
@@ -12360,8 +12455,8 @@ class cronController extends bootstrap
                             }
                             $i++;
                         }
-                        
-                        if($goMail == true) // (BT : 18180 04/08/2015)
+
+                        if ($goMail == true) // (BT : 18180 04/08/2015)
                         {
                             if ($type == 'quotidienne')
                                 $this->mails_text->get('synthese-quotidienne-offres-acceptees', 'lang = "' . $this->language . '" AND type');
@@ -12370,6 +12465,52 @@ class cronController extends bootstrap
                             else
                                 $this->mails_text->get('synthese-mensuelle-offres-acceptees', 'lang = "' . $this->language . '" AND type');
 
+
+                            // on gère ici le cas du singulier/pluriel
+                            // contenu
+                            $lecontenu = '';
+                            // on gère ici le cas du singulier/pluriel
+                            if ($nb_arrayoffres <= 1)
+                            {
+                                if ($type == 'quotidienne')
+                                {
+                                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
+                                    $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-singulier'];
+                                    $objet = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-singulier'];
+                                }
+                                elseif ($type == 'hebdomadaire')
+                                {
+                                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
+                                    $lecontenu = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-singulier'];
+                                    $objet = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-singulier'];
+                                }
+                                elseif ($type == 'mensuelle')
+                                {
+                                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
+                                    $lecontenu = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-singulier'];
+                                    $objet = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-singulier'];
+                                }
+                            }
+                            else
+                            {
+                                if ($type == 'quotidienne')
+                                {
+                                    $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-pluriel'];
+                                    $objet = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-pluriel'];
+                                }
+                                elseif ($type == 'hebdomadaire')
+                                {
+                                    $lecontenu = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-pluriel'];
+                                    $objet = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-pluriel'];
+                                }
+                                elseif ($type == 'mensuelle')
+                                {
+                                    $lecontenu = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-pluriel'];
+                                    $objet = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-pluriel'];
+                                }
+                            }
+
+
                             // Variables du mailing
                             $varMail = array(
                                 'surl' => $this->surl,
@@ -12377,6 +12518,8 @@ class cronController extends bootstrap
                                 'prenom_p' => $this->clients->prenom,
                                 'liste_offres' => $liste_offres,
                                 'motif_virement' => $motif,
+                                'contenu' => utf8_decode($lecontenu),
+                                'objet' => utf8_decode($objet),
                                 'gestion_alertes' => $this->lurl . '/profile',
                                 'lien_fb' => $lien_fb,
                                 'lien_tw' => $lien_tw);
@@ -12429,10 +12572,12 @@ class cronController extends bootstrap
                         $goMail = true;
                         if ($type == 'quotidienne')
                         {
-                            if($this->clients_gestion_mails_notif->immediatement == 1){
+                            if ($this->clients_gestion_mails_notif->immediatement == 1)
+                            {
                                 $goMail = false;
                             }
-                            else{
+                            else
+                            {
                                 $this->clients_gestion_mails_notif->quotidienne = 1;
                             }
                             $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
@@ -12449,8 +12594,9 @@ class cronController extends bootstrap
                         }
                         $this->clients_gestion_mails_notif->update();
                         //////// FIN GESTION ALERTES //////////
-                        
-                        if($goMail == true){
+
+                        if ($goMail == true)
+                        {
                             ////*********************************//
                             //*** ENVOI DU MAIL BID OK 100% ***//
                             //*********************************//
@@ -12554,8 +12700,8 @@ class cronController extends bootstrap
         $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
 
         //Recuperation des element de traductions
-	$this->lng['email-synthese'] = $this->ln->selectFront('email-synthese',$this->language,$this->App);
-        mail('k1@david.equinoa.net', 'DEBUG CRON remb_synthese', serialize($array_remb).' --- '.$type);
+        $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
+        mail('k1@david.equinoa.net', 'DEBUG CRON remb_synthese', serialize($array_remb) . ' --- ' . $type);
         // on regarde si on a bien quelque chose
         if ($array_remb != false)
         {
@@ -12631,14 +12777,14 @@ class cronController extends bootstrap
                         }
                         $this->clients_gestion_mails_notif->update();
                         //////// FIN GESTION ALERTES //////////
-						// On gère ici le cas ou on est dans un remboursement anticipé (on a pas de id_echeance car plusieurs echeances)
-                        
+                        // On gère ici le cas ou on est dans un remboursement anticipé (on a pas de id_echeance car plusieurs echeances)
+
                         $contenu_remboursement_anticipe = "";
-                       
+
                         if ($this->transactions->type_transaction == 23)
                         {
-                            
-                            
+
+
                             //on simule l'echeancier pour ne pas avoir a modifier le reste du code
                             $this->echeanciers->prelevements_obligatoires = 0;
                             $this->echeanciers->retenues_source = 0;
@@ -12649,43 +12795,43 @@ class cronController extends bootstrap
                             $this->echeanciers->crds = 0;
                             $this->echeanciers->interets = 0;
                             $this->echeanciers->capital = $this->transactions->montant;
-                            
-                            
+
+
                             // Taux moyen des encheres validés (all du projet)
                             $montantHaut = 0;
                             $montantBas = 0;
-                            foreach($this->loans->select('id_project = '.$this->projects->id_project.' AND id_loan = '.$this->transactions->id_loan_remb) as $b)
+                            foreach ($this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_loan = ' . $this->transactions->id_loan_remb) as $b)
                             {
-                                    $montantHaut += ($b['rate']*($b['amount']/100));
-                                    $montantBas += ($b['amount']/100);
+                                $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                                $montantBas += ($b['amount'] / 100);
                             }
-                            $AvgLoans = ($montantHaut/$montantBas);
+                            $AvgLoans = ($montantHaut / $montantBas);
 
                             //$sumInt = $this->echeanciers->getSumRembByloan($this->transactions->id_loan_remb,'interets');
                             // Récupération de la sommes des intérets deja versé au lender
-                            $sumInt = $this->echeanciers->getSumRembByloan_remb_ra($this->transactions->id_loan_remb,'interets');
-							
-                            // on ajoute aussi une variable dans le cas d'un rmbt anticipe
-                            /*$contenu_remboursement_anticipe = "
-                                
-                            Vous avez également reçu un remboursement de ". number_format(($this->echeanciers->capital / 100), 2, ',', ' ') ." &euro; sur votre compte Unilend.
-                            <br /><br />
-                            Il s’agit du remboursement total du capital restant dû de votre prêt à " . $this->companies->name . ".
-                            <br /><br />
-                            En effet, nous vous rappelons que les emprunteurs ont la possibilité de rembourser leur emprunt par anticipation 
-                            <br />
-                            sans frais à tout moment, et c’est le choix qu’a fait " . $this->companies->name . ".
-                            <br /><br />
-                            ";*/
-                            
-                            $contenu_remboursement_anticipe = "    
-                            Important : le remboursement de <span style='color: #b20066;'>". number_format(($this->echeanciers->capital / 100), 2, ',', ' ') ."&euro;</span> correspond au remboursement total du capital restant dû de votre prêt à <span style='color: #b20066;'>" . $this->companies->name . "</span>. Comme le prévoient les règles d'Unilend, <span style='color: #b20066;'>" . $this->companies->name . "</span> a choisi de rembourser son emprunt par anticipation sans frais.
-                            <br /><br />
-                            Depuis l’origine, il vous a versé <span style='color: #b20066;'>". number_format($sumInt, 2, ',', ' ')."€</span> d’intérêts soit un taux d’intérêt annualisé moyen de <span style='color: #b20066;'>".number_format($AvgLoans, 2, ',', ' ')."%.</span><br><br> ";
+                            $sumInt = $this->echeanciers->getSumRembByloan_remb_ra($this->transactions->id_loan_remb, 'interets');
 
+                            // on ajoute aussi une variable dans le cas d'un rmbt anticipe
+                            /* $contenu_remboursement_anticipe = "
+
+                              Vous avez également reçu un remboursement de ". number_format(($this->echeanciers->capital / 100), 2, ',', ' ') ." &euro; sur votre compte Unilend.
+                              <br /><br />
+                              Il s’agit du remboursement total du capital restant dû de votre prêt à " . $this->companies->name . ".
+                              <br /><br />
+                              En effet, nous vous rappelons que les emprunteurs ont la possibilité de rembourser leur emprunt par anticipation
+                              <br />
+                              sans frais à tout moment, et c’est le choix qu’a fait " . $this->companies->name . ".
+                              <br /><br />
+                              "; */
+
+                            $contenu_remboursement_anticipe = "    
+                            Important : le remboursement de <span style='color: #b20066;'>" . number_format(($this->echeanciers->capital / 100), 2, ',', ' ') . "&euro;</span> correspond au remboursement total du capital restant dû de votre prêt à <span style='color: #b20066;'>" . $this->companies->name . "</span>. Comme le prévoient les règles d'Unilend, <span style='color: #b20066;'>" . $this->companies->name . "</span> a choisi de rembourser son emprunt par anticipation sans frais.
+                            <br /><br />
+                            Depuis l’origine, il vous a versé <span style='color: #b20066;'>" . number_format($sumInt, 2, ',', ' ') . "€</span> d’intérêts soit un taux d’intérêt annualisé moyen de <span style='color: #b20066;'>" . number_format($AvgLoans, 2, ',', ' ') . "%.</span><br><br> ";
                         }
-                        else{
-                            $this->echeanciers->get($this->transactions->id_echeancier, 'id_echeancier');                       
+                        else
+                        {
+                            $this->echeanciers->get($this->transactions->id_echeancier, 'id_echeancier');
                         }
 
 
@@ -12740,12 +12886,12 @@ class cronController extends bootstrap
                     if ($this->Config['env'] != 'prod') // nmp
                     {
                         $liste_remb = utf8_decode($liste_remb);
-                    } 
-                    
+                    }
+
                     // contenu
                     $lecontenu = '';
-                     // on gère ici le cas du singulier/pluriel
-                    if($nb_arrayRemb <= 1)
+                    // on gère ici le cas du singulier/pluriel
+                    if ($nb_arrayRemb <= 1)
                     {
                         if ($type == 'quotidienne')
                         {
@@ -12763,7 +12909,8 @@ class cronController extends bootstrap
                             $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
                         }
                     }
-                    else{
+                    else
+                    {
                         if ($type == 'quotidienne')
                         {
                             $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-pluriel'];
@@ -12777,7 +12924,7 @@ class cronController extends bootstrap
                             $lecontenu = $this->lng['email-synthese']['contenu-synthese-mensuelle-pluriel'];
                         }
                     }
-                    
+
                     // Variables du mailing
                     $varMail = array(
                         'surl' => $this->surl,
@@ -12793,7 +12940,7 @@ class cronController extends bootstrap
                         'lien_tw' => $lien_tw);
                     // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-                    
+
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
@@ -14225,11 +14372,11 @@ class cronController extends bootstrap
             }// fin boucle
         }
     }
-    
+
     // Toutes les minutes (cron en place) le 27/01/2015
     function _send_email_remb_auto()
-    {       
-        
+    {
+
         $echeanciers = $this->loadData('echeanciers');
         $transactions = $this->loadData('transactions');
         $lenders = $this->loadData('lenders_accounts');
@@ -14245,12 +14392,12 @@ class cronController extends bootstrap
         // On recup le param
         $settingsControleEmailRemb = $this->loadData('settings');
         $settingsControleEmailRemb->get('Controle send_email_remb_auto', 'type');
-        
+
         // ajout KLE - 28-07-15 BT : 18157 *** pour ne pas envoyer de mail tant que le remb auto n'est pas terminé
         // On recup le param du remb auto
         $settingsControleRemb = $this->loadData('settings');
         $settingsControleRemb->get('Controle remboursements auto', 'type');
-        
+
         /* END ajout KLE apres le &&$settingsControleRemb->value == 1) */
 
         // on rentre dans le cron si statut égale 1 
@@ -14263,13 +14410,12 @@ class cronController extends bootstrap
             // BIEN PRENDRE EN COMPTE LA DATE DE DEBUT DE LA REQUETE POUR NE PAS TRATER LES ANCIENS PROJETS REMB <------------------------------------| !!!!!!!!!
             // On recup les echeanches non remboursé aux preteurs mais remb par l'emprunteur
             $lEcheances = $echeanciers->selectEcheances_a_remb('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1 AND LEFT(date_echeance,10) > "2015-06-30"', '', 0, 300); // on limite a 300 mails par executions
-            
             //$lEcheances = $echeanciers->selectEcheances_a_remb('status = 1 AND id_lender = 4 AND status_email_remb = 0 AND status_emprunteur = 1 AND LEFT(date_echeance,10) > "2015-06-30"', '', 0, 1); // on limite a 300 mails par executions
-          
+
             foreach ($lEcheances as $e)
             {
-				
-				
+
+
                 // On verifie que la transaction existe
                 if ($transactions->get($e['id_echeancier'], 'id_echeancier') == true)
                 {
@@ -14332,8 +14478,8 @@ class cronController extends bootstrap
                     // Twitter
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
-                    
-                    
+
+
                     // Variables du mailing
                     $varMail = array(
                         'surl' => $this->surl,
@@ -14363,28 +14509,28 @@ class cronController extends bootstrap
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    
+
                     // On enregistre la notification pour le preteur
                     $notifications->type = 2; // remb
                     $notifications->id_lender = $e['id_lender'];
                     $notifications->id_project = $e['id_project'];
                     $notifications->amount = ($rembNet * 100);
                     $notifications->id_notification = $notifications->create();
-                    
+
                     //////// GESTION ALERTES //////////
                     $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
-                    
+
                     $this->clients_gestion_mails_notif->id_client = $lenders->id_client_owner;
                     $this->clients_gestion_mails_notif->id_notif = 5; // remb preteur
                     $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
                     $this->clients_gestion_mails_notif->id_notification = $notifications->id_notification;
                     $this->clients_gestion_mails_notif->id_transaction = $transactions->id_transaction;
                     $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
-                  
+
                     //////// FIN GESTION ALERTES //////////
-                    
+
                     $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-                    
+
                     // envoi email remb ok maintenant ou non
                     if ($this->clients_gestion_notifications->getNotif($clients->id_client, 5, 'immediatement') == true)
                     {
@@ -14393,7 +14539,6 @@ class cronController extends bootstrap
                         $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                         $this->clients_gestion_mails_notif->update();
                         //////// FIN GESTION ALERTES //////////
-                    
                         // Pas de mail si le compte est desactivé
                         if ($clients->status == 1)
                         {
@@ -14433,10 +14578,9 @@ class cronController extends bootstrap
         die;
     }
 
-
     // Toutes les 5 minutes (cron en place)	le 27/01/2015
     function _remboursement_preteurs_auto()
-    {        
+    {
         $projects = $this->loadData('projects');
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $echeanciers = $this->loadData('echeanciers');
@@ -14474,12 +14618,12 @@ class cronController extends bootstrap
 
             $timeDebut = strtotime(date('Y-m-d') . ' ' . $paramDebut . ':00'); // on commence le traitement du cron a l'heure demandé
             $timeFin = mktime(0, 0, 0, date("m"), date("d") + 1, date("Y")); // on termine le cron a minuit
-			
-			// A l'heure de debut de traitement on lance une fonction check remb
-			if(date('H:i') == $paramDebut){
-				$this->check_remboursement_preteurs();
-			}
-			// Traitement des remb toutes les 5mins
+            // A l'heure de debut de traitement on lance une fonction check remb
+            if (date('H:i') == $paramDebut)
+            {
+                $this->check_remboursement_preteurs();
+            }
+            // Traitement des remb toutes les 5mins
             elseif ($timeDebut <= time() && $timeFin >= time())
             {
 
@@ -14494,7 +14638,6 @@ class cronController extends bootstrap
                 if ($lProjetsAremb != false)
                 {
                     foreach ($lProjetsAremb as $r)
-                        
                     {
 
                         // debut tracer
@@ -14518,7 +14661,7 @@ class cronController extends bootstrap
                         $day = date('d', $timeAdd);
                         $month = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
                         $year = date('Y', $timeAdd);
-                        
+
 
                         // On recup les echeanches non remboursé aux preteurs mais remb par l'emprunteur
                         $lEcheances = $echeanciers->selectEcheances_a_remb('id_project = ' . $r['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $r['ordre'] . ' AND status = 0');
@@ -14588,7 +14731,6 @@ class cronController extends bootstrap
                                     //$notifications->id_project = $r['id_project'];
                                     //$notifications->amount = ($rembNet * 100);
                                     //$notifications->create();
-
                                     /////////////// FIN ENREGISTREMENT DU REMB PRETEUR ///////////////
                                     // old
                                     //////////////////// FIN EMAIL PRETEURS REMBOURSEMENTS /////////////////////////////
@@ -14610,7 +14752,7 @@ class cronController extends bootstrap
                             $projects->get($r['id_project'], 'id_project');
                             $companies->get($projects->id_company, 'id_company');
                             $emprunteur->get($companies->id_client_owner, 'id_client');
-                            $echeanciers_emprunteur->get($r['id_project'],' ordre = '. $r['ordre'] . ' AND id_project');
+                            $echeanciers_emprunteur->get($r['id_project'], ' ordre = ' . $r['ordre'] . ' AND id_project');
 
                             // On enregistre la transaction
                             $transactions->montant = 0;
@@ -14645,7 +14787,7 @@ class cronController extends bootstrap
                             // Recuperation du modele de mail
                             $this->mails_text->get('facture-emprunteur-remboursement', 'lang = "' . $this->language . '" AND type');
 
-                            
+
                             // FB
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
@@ -14654,7 +14796,7 @@ class cronController extends bootstrap
                             // Twitter
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
-                            
+
                             // Variables du mailing
                             $varMail = array(
                                 'surl' => $this->surl,
@@ -14730,7 +14872,6 @@ class cronController extends bootstrap
                             //$projects_remb->get($r['id_project_remb'], 'id_project_remb');
                             //$projects_remb->status = 3; // pb car na pas trouvé d'echeance nom remb (deja remb)
                             //$projects_remb->update();
-                            
                             // on ajoute l'alerte pour cette erreur
                             //$alerte_erreur_remb_auto = $this->loadData('alerte_erreur_remb_auto');
                             //$alerte_erreur_remb_auto->id_projet = $r['id_project_remb'];
@@ -15399,28 +15540,32 @@ class cronController extends bootstrap
             }
         }
     }
-    
-    function deleteOldFichiers() {
+
+    function deleteOldFichiers()
+    {
         $path = $this->path . 'protected/sftp_groupama/';
         $duree = 30; // jours
         // On parcourt le dossier
         $fichiers = scandir($path);
         unset($fichiers[0], $fichiers[1]);
-        foreach ($fichiers as $f) {
+        foreach ($fichiers as $f)
+        {
             $le_fichier = $path . $f;
 
             $time = filemtime($le_fichier);
-            $time_plus_duree = mktime(date("H",$time), date("i",$time), date("s",$time), date("n",$time), date("d",$time) + $duree, date("Y",$time));
+            $time_plus_duree = mktime(date("H", $time), date("i", $time), date("s", $time), date("n", $time), date("d", $time) + $duree, date("Y", $time));
 
             // si la date du jour est superieur à la date du fichier plus n jours => on supprime
-            if (time() >= $time_plus_duree) {
+            if (time() >= $time_plus_duree)
+            {
                 // On supprime le zip
                 unlink($le_fichier);
             }
         }
     }
 
-    function zippage($id_project) {
+    function zippage($id_project)
+    {
 
         //$id_project = 7;
         // datas
@@ -15451,7 +15596,8 @@ class cronController extends bootstrap
         $nom_dossier = $companies->siren;
 
         // création du dossier
-        if (!is_dir($path_nozip . $nom_dossier)) {
+        if (!is_dir($path_nozip . $nom_dossier))
+        {
             mkdir($path_nozip . $nom_dossier);
         }
 
@@ -15465,27 +15611,34 @@ class cronController extends bootstrap
         /////////////////////
         $zip = new ZipArchive();
         // Dossier existe
-        if (is_dir($path_nozip . $nom_dossier)) {
+        if (is_dir($path_nozip . $nom_dossier))
+        {
             // Creation du dossier de destination zip
-            if ($zip->open($path . $nom_dossier . '.zip', ZipArchive::CREATE) == TRUE) {
+            if ($zip->open($path . $nom_dossier . '.zip', ZipArchive::CREATE) == TRUE)
+            {
 
                 $fichiers = scandir($path_nozip . $nom_dossier);
                 unset($fichiers[0], $fichiers[1]);
-                foreach ($fichiers as $f) {
+                foreach ($fichiers as $f)
+                {
                     $zip->addFile($path_nozip . $nom_dossier . '/' . $f, $f);
                 }
                 // On ferme l'archive.
                 $zip->close();
-            } else {
+            }
+            else
+            {
                 //echo 'error creation zip';
             }
-        } else {
+        }
+        else
+        {
             //echo 'error dossier';
         }
         ///////////////////
         /// FIN ZIPPAGE ///
         ///////////////////
-        
+
         $this->deleteOldFichiers();
         
     }
@@ -15496,7 +15649,7 @@ class cronController extends bootstrap
      *  */
     function _RA_email()
     {
-        
+
         $this->projects = $this->loadData('projects');
         $this->echeanciers = $this->loadData('echeanciers');
         $this->receptions = $this->loadData('receptions');
@@ -15515,25 +15668,23 @@ class cronController extends bootstrap
         $loans = $this->loadData('loans');
 
         $remboursement_anticipe_mail_a_envoyer = $this->loadData('remboursement_anticipe_mail_a_envoyer');
-        
+
         // recup des mails à envoyer pour les projets en ra en attente, 1 seul à la fois car traitement pouvant etre lourd
-        $L_mail_ra_en_attente = $remboursement_anticipe_mail_a_envoyer->select('statut = 0','added ASC','',1);
-        
-        if(count($L_mail_ra_en_attente) > 0)
+        $L_mail_ra_en_attente = $remboursement_anticipe_mail_a_envoyer->select('statut = 0', 'added ASC', '', 1);
+
+        if (count($L_mail_ra_en_attente) > 0)
         {
-            foreach($L_mail_ra_en_attente as $ra_email)
-            {           
+            foreach ($L_mail_ra_en_attente as $ra_email)
+            {
                 // Tout se base sur cette variable !
                 $id_reception = $ra_email['id_reception'];
 
 
                 $this->receptions->get($id_reception);
                 $this->projects->get($this->receptions->id_project);
-                $this->companies->get($this->projects->id_company,'id_company'); 
+                $this->companies->get($this->projects->id_company, 'id_company');
 
-                 // REMB ECHEANCE PRETEURS ----------------------------------------------------------------------
-
-
+                // REMB ECHEANCE PRETEURS ----------------------------------------------------------------------
                 // FB
                 $this->settings->get('Facebook', 'type');
                 $lien_fb = $this->settings->value;
@@ -15548,23 +15699,22 @@ class cronController extends bootstrap
 
 
 
-                $reste_a_payer_pour_preteur= 0;
+                $reste_a_payer_pour_preteur = 0;
                 $montant_total = 0;
 
 
                 // on veut recup le nb d'echeances restantes
-                $sum_ech_restant = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');                                    
-                
+                $sum_ech_restant = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');
+
                 // par loan
-                foreach($L_preteur_on_projet as $preteur)
+                foreach ($L_preteur_on_projet as $preteur)
                 {
                     // pour chaque preteur on calcule le total qui restait à lui payer (sum capital par loan)
                     //$reste_a_payer_pour_preteur= $this->echeanciers->getSumRestanteARembByProject_capital($preteur['id_lender'],'id_loan = '.$preteur['id_loan'].' AND '.$this->projects->id_project);
 
-                    $reste_a_payer_pour_preteur= $this->echeanciers->getSumRestanteARembByProject_capital(' AND id_lender ='.$preteur['id_lender'].' AND id_loan = '.$preteur['id_loan'].' AND status_ra = 1 AND id_project = '.$this->projects->id_project);
+                    $reste_a_payer_pour_preteur = $this->echeanciers->getSumRestanteARembByProject_capital(' AND id_lender =' . $preteur['id_lender'] . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status_ra = 1 AND id_project = ' . $this->projects->id_project);
 
                     // on rembourse le preteur
-
                     // On recup lenders_accounts
                     $this->lenders_accounts->get($preteur['id_lender'], 'id_lender_account');
                     // On recup le client
@@ -15582,9 +15732,9 @@ class cronController extends bootstrap
 
                     // Récupération de la sommes des intérets deja versé au lender                        
                     //$sum_interet = $this->echeanciers->sum('interets','id_project = ' . $this->projects->id_project . ' AND id_loan = '.$preteur['id_loan'].' AND status_ra = 0 AND status = 1 AND id_lender ='.$preteur['id_lender']);  
-                    $sum_interet = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND id_loan = '.$preteur['id_loan'].' AND status_ra = 0 AND status = 1 AND id_lender ='.$preteur['id_lender'],'interets');  
+                    $sum_interet = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status_ra = 0 AND status = 1 AND id_lender =' . $preteur['id_lender'], 'interets');
 
-                    
+
 
                     // Remb net email
                     if ($reste_a_payer_pour_preteur >= 2)
@@ -15611,9 +15761,9 @@ class cronController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    $loans->get($preteur['id_loan'],'id_loan');
+                    $loans->get($preteur['id_loan'], 'id_loan');
 
-                    $this->transactions->get($preteur['id_loan'],'id_loan_remb');
+                    $this->transactions->get($preteur['id_loan'], 'id_loan_remb');
 
 
                     // Variables du mailing
@@ -15676,7 +15826,6 @@ class cronController extends bootstrap
                         $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                         $this->clients_gestion_mails_notif->update();
                         //////// FIN GESTION ALERTES //////////
-
                         // Pas de mail si le compte est desactivé
                         if ($this->clients->status == 1)
                         {
@@ -15694,19 +15843,377 @@ class cronController extends bootstrap
                             }
                         }
                     }//End si notif ok
-
                 }
-                
+
                 // on passe la file d'attente de ce projet RA en statut = envoyé
                 $remboursement_anticipe_mail_a_envoyer = $this->loadData('remboursement_anticipe_mail_a_envoyer');
-                $remboursement_anticipe_mail_a_envoyer->get($ra_email['id_remboursement_anticipe_mail_a_envoyer']);  
-                $remboursement_anticipe_mail_a_envoyer->statut = 1; 
+                $remboursement_anticipe_mail_a_envoyer->get($ra_email['id_remboursement_anticipe_mail_a_envoyer']);
+                $remboursement_anticipe_mail_a_envoyer->statut = 1;
                 $remboursement_anticipe_mail_a_envoyer->update();
-                
             } // end foreach
         }//end if count
-        
-     }
-    
-    
+    }
+
+}
+
+// fonction qui gère les notif des regul  / retard   
+function synthese_regul_retard($array_regul_retard, $type)
+{
+    $this->clients = $this->loadData('clients');
+    $this->notifications = $this->loadData('notifications');
+    $this->projects = $this->loadData('projects');
+    $this->companies = $this->loadData('companies');
+    $this->loans = $this->loadData('loans');
+    $echeanciers = $this->loadData('echeanciers');
+
+    $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+    $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
+
+    // on regarde si on a bien quelque chose
+    if ($array_regul_retard != false)
+    {
+
+        // debut tracer
+        $clients_gestion_notif_log = $this->loadData('clients_gestion_notif_log');
+        $clients_gestion_notif_log->id_notif = 9;
+        $clients_gestion_notif_log->type = $type;
+        $clients_gestion_notif_log->debut = date('Y-m-d H:i:s');
+        $clients_gestion_notif_log->fin = '0000-00-00 00:00:00';
+        $clients_gestion_notif_log->id_client_gestion_notif_log = $clients_gestion_notif_log->create();
+
+        $clients_gestion_notif_log->get($clients_gestion_notif_log->id_client_gestion_notif_log, 'id_client_gestion_notif_log');
+
+        // FB
+        $this->settings->get('Facebook', 'type');
+        $lien_fb = $this->settings->value;
+
+        // Twitter
+        $this->settings->get('Twitter', 'type');
+        $lien_tw = $this->settings->value;
+
+        // on recup les notifs par preteur
+        foreach ($array_offres_acceptees as $id_client => $mails_notif)
+        {
+
+            // On check dans la gestion des alertes qotidienne/hebdo/mensuelle ou pas
+            if ($this->clients_gestion_notifications->getNotif($id_client, 4, $type) == true)
+            {
+
+                // On recup les infos du preteur
+                $this->clients->get($id_client, 'id_client');
+
+                // Motif virement
+                $p = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
+                $nom = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
+                $le_id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
+                $motif = mb_strtoupper($le_id_client . $p . $nom, 'UTF-8');
+
+                //if(5 == 5) // on passe ici meme si on qu'une notification car on veut le mail de synthese tout le temps (BT : 18180 04/08/2015)
+                if (count($mails_notif) > 1 || $type != 'quotidienne')
+                {
+
+                    $liste_offres = '';
+                    $i = 1;
+                    $total = 0;
+                    $nb_arrayoffres = count($mails_notif);
+                    $goMail = true;
+                    foreach ($mails_notif as $n)
+                    {
+
+                        $this->notifications->get($n['id_notification'], 'id_notification');
+                        $this->projects->get($this->notifications->id_project, 'id_project');
+                        $this->companies->get($this->projects->id_company, 'id_company');
+                        $this->loans->get($n['id_loan'], 'id_loan');
+
+                        //////// GESTION ALERTES //////////
+                        $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
+                        if ($type == 'quotidienne')
+                        {
+                            //if($nb_arrayoffres <= 1 && $this->clients_gestion_mails_notif->immediatement == 1){
+                            //  $goMail = false;
+                            //}
+                            //else{
+                            $this->clients_gestion_mails_notif->quotidienne = 1;
+                            //}
+                            $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
+                        }
+                        elseif ($type == 'hebdomadaire')
+                        {
+                            $this->clients_gestion_mails_notif->hebdomadaire = 1;
+                            $this->clients_gestion_mails_notif->status_check_hebdomadaire = 1;
+                        }
+                        elseif ($type == 'mensuelle')
+                        {
+                            $this->clients_gestion_mails_notif->mensuelle = 1;
+                            $this->clients_gestion_mails_notif->status_check_mensuelle = 1;
+                        }
+                        $this->clients_gestion_mails_notif->update();
+                        //////// FIN GESTION ALERTES //////////
+
+                        $total += ($this->loans->amount / 100);
+
+                        if ($i == $nb_arrayoffres)
+                        {
+                            $liste_offres .= '
+								<tr style="color:#b20066;">
+									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->loans->amount / 100), 0, ',', ' ') . ' €</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->loans->rate, 2, ',', ' ') . ' %</td>
+								</tr>
+								<tr>
+									<td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
+									<td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . number_format($total, 0, ',', ' ') . ' €</td>
+									<td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
+								</tr>
+								';
+                        }
+                        else
+                        {
+                            $liste_offres .= '
+								<tr style="color:#b20066;">
+									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->loans->amount / 100), 0, ',', ' ') . ' €</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->loans->rate, 2, ',', ' ') . ' %</td>
+								</tr>';
+                        }
+                        $i++;
+                    }
+
+                    if ($goMail == true) // (BT : 18180 04/08/2015)
+                    {
+                        if ($type == 'quotidienne')
+                            $this->mails_text->get('synthese-quotidienne-offres-acceptees', 'lang = "' . $this->language . '" AND type');
+                        elseif ($type == 'hebdomadaire')
+                            $this->mails_text->get('synthese-hebdomadaire-offres-acceptees', 'lang = "' . $this->language . '" AND type');
+                        else
+                            $this->mails_text->get('synthese-mensuelle-offres-acceptees', 'lang = "' . $this->language . '" AND type');
+
+                        // Variables du mailing
+                        $varMail = array(
+                            'surl' => $this->surl,
+                            'url' => $this->furl,
+                            'prenom_p' => $this->clients->prenom,
+                            'liste_offres' => $liste_offres,
+                            'motif_virement' => $motif,
+                            'gestion_alertes' => $this->lurl . '/profile',
+                            'lien_fb' => $lien_fb,
+                            'lien_tw' => $lien_tw);
+                        // Construction du tableau avec les balises EMV
+                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                        // Attribution des données aux variables
+                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                        $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                        // Envoi du mail
+                        $this->email = $this->loadLib('email', array());
+                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                        $this->email->setSubject(stripslashes($sujetMail));
+                        $this->email->setHTMLBody(stripslashes($texteMail));
+
+                        // Pas de mail si le compte est desactivé
+                        if ($this->clients->status == 1)
+                        {
+                            if ($this->Config['env'] == 'prod') // nmp
+                            {
+                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                                // Injection du mail NMP dans la queue
+                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                            }
+                            else // non nmp
+                            {
+                                $this->email->addRecipient($this->clients->email);
+                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                            }
+                        }
+                    }
+                }
+                else // On passe plus ici (BT : 18180 04/08/2015)
+                {
+                    foreach ($mails_notif as $n)
+                    {
+                        $mail = $n;
+                        break;
+                    }
+
+                    $this->notifications->get($mail['id_notification'], 'id_notification');
+                    $this->projects->get($this->notifications->id_project, 'id_project');
+                    $this->companies->get($this->projects->id_company, 'id_company');
+                    $this->loans->get($n['id_loan'], 'id_loan');
+
+                    //////// GESTION ALERTES //////////
+                    $this->clients_gestion_mails_notif->get($mail['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
+                    $goMail = true;
+                    if ($type == 'quotidienne')
+                    {
+                        if ($this->clients_gestion_mails_notif->immediatement == 1)
+                        {
+                            $goMail = false;
+                        }
+                        else
+                        {
+                            $this->clients_gestion_mails_notif->quotidienne = 1;
+                        }
+                        $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
+                    }
+                    elseif ($type == 'hebdomadaire')
+                    {
+                        $this->clients_gestion_mails_notif->hebdomadaire = 1;
+                        $this->clients_gestion_mails_notif->status_check_hebdomadaire = 1;
+                    }
+                    elseif ($type == 'mensuelle')
+                    {
+                        $this->clients_gestion_mails_notif->mensuelle = 1;
+                        $this->clients_gestion_mails_notif->status_check_mensuelle = 1;
+                    }
+                    $this->clients_gestion_mails_notif->update();
+                    //////// FIN GESTION ALERTES //////////
+
+                    if ($goMail == true)
+                    {
+                        ////*********************************//
+                        //*** ENVOI DU MAIL BID OK 100% ***//
+                        //*********************************//
+                        // Recuperation du modele de mail
+                        $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
+
+                        // on recup la premiere echeance
+                        $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($this->projects->id_project, $this->loans->id_lender, $thid->loans->id_loan);
+
+                        // Variables du mailing
+
+                        $timeAdd = strtotime($lecheancier['date_echeance']);
+                        $month = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
+
+                        // Variables du mailing
+                        $varMail = array(
+                            'surl' => $this->surl,
+                            'url' => $this->lurl,
+                            'prenom_p' => $this->clients->prenom,
+                            'valeur_bid' => number_format($this->loans->amount / 100, 0, ',', ' '),
+                            'taux_bid' => number_format($this->loans->rate, 2, ',', ' '),
+                            'nom_entreprise' => $this->companies->name,
+                            'nbre_echeance' => $this->projects->period,
+                            'mensualite_p' => number_format($lecheancier['montant'] / 100, 2, ',', ' '),
+                            'date_debut' => date('d', $timeAdd) . ' ' . strtolower($month) . ' ' . date('Y', $timeAdd),
+                            'compte-p' => $this->lurl,
+                            'projet-p' => $this->lurl . '/projects/detail/' . $this->projects->slug,
+                            'motif_virement' => $motif,
+                            'lien_fb' => $lien_fb,
+                            'lien_tw' => $lien_tw);
+
+                        // Construction du tableau avec les balises EMV
+                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                        // Attribution des données aux variables
+                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                        $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                        // Envoi du mail
+                        $this->email = $this->loadLib('email', array());
+                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+
+                        $this->email->setSubject(stripslashes($sujetMail));
+                        $this->email->setHTMLBody(stripslashes($texteMail));
+
+                        // Pas de mail si le compte est desactivé
+                        if ($this->clients->status == 1)
+                        {
+                            if ($this->Config['env'] == 'prod') // nmp
+                            {
+                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+
+                                // Injection du mail NMP dans la queue
+                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                            }
+                            else // non nmp
+                            {
+                                $this->email->addRecipient(trim($preteur->email));
+                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                            }
+                        }
+                    }
+                }
+            }
+            // si il veut pas de mail
+            else
+            {
+                // On ajout un statut comme quoi on a deja checké
+                foreach ($mails_notif as $n)
+                {
+                    $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
+                    if ($type == 'quotidienne')
+                        $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
+                    elseif ($type == 'hebdomadaire')
+                        $this->clients_gestion_mails_notif->status_check_hebdomadaire = 1;
+                    elseif ($type == 'mensuelle')
+                        $this->clients_gestion_mails_notif->status_check_mensuelle = 1;
+                    $this->clients_gestion_mails_notif->update();
+                }
+            }
+        }
+        // fin tracer
+        $clients_gestion_notif_log->fin = date('Y-m-d H:i:s');
+        $clients_gestion_notif_log->id_client_gestion_notif_log = $clients_gestion_notif_log->update();
+    }
+}
+
+// fonction qui envoie les mails en differé (pour eviter la surchage au CTA)
+/* Executé toutes les minutes avec une limite de nb/minute
+ * 
+ */
+function _traitement_file_attente_envoi_mail()
+{
+
+    // Récuperation des mails à envoyer
+    $liste_attente_mail = $this->loadData('liste_attente_mail');
+    $liste_attente_mail_temp = $this->loadData('liste_attente_mail');
+
+    $L_mail_a_traiter = $liste_attente_mail->select('statut = 0', 'added ASC', 0, 50);
+
+    if (count($L_mail_a_traiter) > 0)
+    {
+        foreach ($L_mail_a_traiter as $mail)
+        {
+            // envoi du mail             
+            // Recuperation du modele de mail
+            $this->mails_text->get($mail['type_mail'], 'lang = "' . $mail['language'] . '" AND type');
+
+            // Variables du mailing
+            $varMail = unserialize($mail['variables']);
+
+            // Construction du tableau avec les balises EMV
+            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+            // Attribution des données aux variables
+            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+            $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+            // Envoi du mail
+            $this->email = $this->loadLib('email', array());
+            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+            $this->email->setSubject(stripslashes($sujetMail));
+            $this->email->setHTMLBody(stripslashes($texteMail));
+
+            if ($this->Config['env'] == 'prod') // nmp
+            {
+                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $mail['to'], $tabFiler);
+                // Injection du mail NMP dans la queue
+                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+            }
+            else // non nmp
+            {
+                $this->email->addRecipient(trim($mail['to']));
+                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            }
+
+            // mise à jour du mail dans la file d'attente
+            $liste_attente_mail_temp->get($mail['id']);
+            $liste_attente_mail_temp->statut = 1; //envoyé
+            $liste_attente_mail_temp->update();
+        }
+    }
 }

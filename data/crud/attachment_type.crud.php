@@ -28,8 +28,13 @@
 class attachment_type_crud
 {
 	
+<<<<<<< HEAD
 	public $id;
 	public $label;
+=======
+	public $id;
+	public $label;
+>>>>>>> Bugfix-BT17951
 
 	
 	function attachment_type($bdd,$params='')
@@ -38,8 +43,13 @@ class attachment_type_crud
 		if($params=='')
 			$params = array();
 		$this->params = $params;
+<<<<<<< HEAD
 		$this->id = '';
 		$this->label = '';
+=======
+		$this->id = '';
+		$this->label = '';
+>>>>>>> Bugfix-BT17951
 
 	}
 	
@@ -52,8 +62,13 @@ class attachment_type_crud
 		{
 			$record = $this->bdd->fetch_array($result);
 		
+<<<<<<< HEAD
 				$this->id = $record['id'];
 			$this->label = $record['label'];
+=======
+				$this->id = $record['id'];
+			$this->label = $record['label'];
+>>>>>>> Bugfix-BT17951
 
 			return true;
 		}
@@ -66,8 +81,13 @@ class attachment_type_crud
 	
 	function update($cs='')
 	{
+<<<<<<< HEAD
 		$this->id = $this->bdd->escape_string($this->id);
 		$this->label = $this->bdd->escape_string($this->label);
+=======
+		$this->id = $this->bdd->escape_string($this->id);
+		$this->label = $this->bdd->escape_string($this->label);
+>>>>>>> Bugfix-BT17951
 
 		
 		$sql = 'UPDATE `attachment_type` SET `label`="'.$this->label.'" WHERE id="'.$this->id.'"';
@@ -95,8 +115,13 @@ class attachment_type_crud
 	
 	function create($cs='')
 	{
+<<<<<<< HEAD
 		$this->id = $this->bdd->escape_string($this->id);
 		$this->label = $this->bdd->escape_string($this->label);
+=======
+		$this->id = $this->bdd->escape_string($this->id);
+		$this->label = $this->bdd->escape_string($this->label);
+>>>>>>> Bugfix-BT17951
 
 		
 		$sql = 'INSERT INTO `attachment_type`(`label`) VALUES("'.$this->label.'")';
@@ -120,8 +145,13 @@ class attachment_type_crud
 	
 	function unsetData()
 	{
+<<<<<<< HEAD
 		$this->id = '';
 		$this->label = '';
+=======
+		$this->id = '';
+		$this->label = '';
+>>>>>>> Bugfix-BT17951
 
 	}
 }
