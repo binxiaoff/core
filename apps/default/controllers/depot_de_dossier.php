@@ -130,8 +130,7 @@ class depot_de_dossierController extends bootstrap
 // Si on a les get en question
         if (isset($_GET['montant']) && $_GET['montant'] != '' &&
             isset($_GET['duree']) && $_GET['duree'] != '' &&
-            isset($_GET['siren']) && $_GET['siren'] != '' &&
-            isset($_GET['exercices_comptables']) && $_GET['exercices_comptables'] != ''
+            isset($_GET['siren']) && $_GET['siren'] != ''
         ) {
             $reponse_get = true;
         }
@@ -142,12 +141,10 @@ class depot_de_dossierController extends bootstrap
                 $montant = str_replace(',', '.', str_replace(' ', '', $_GET['montant']));
                 $duree = $_GET['duree'];
                 $siren = $_GET['siren'];
-                $exercices_comptables = $_GET['exercices_comptables'];
             } else {
                 $montant = str_replace(',', '.', str_replace(' ', '', $_POST['montant']));
                 $duree = $_POST['duree'];
                 $siren = $_POST['siren'];
-                $exercices_comptables = $_POST['exercices_comptables'];
             }
 
             $form_valid = true;
@@ -174,11 +171,6 @@ class depot_de_dossierController extends bootstrap
                 $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
             }
 
-            // 3 annees comptable oui ou non
-            $comptable = false;
-            if (!isset($exercices_comptables) || $exercices_comptables == '' || $exercices_comptables == '0') {
-                $comptable = true;
-            }
 
 
             if ($form_valid) {
@@ -492,12 +484,6 @@ class depot_de_dossierController extends bootstrap
                         }
                     }
 
-                    // Moins de 3 exercices comptables
-                    if ($comptable == true) {
-                        // ajout du statut dans l'historique : statut 6 (Pas 3 bilans)
-                        $this->projects_status_history->addStatus(-2, 6, $this->projects->id_project);
-                    }
-
 
                 }// fin altares
                 else {
@@ -572,7 +558,7 @@ class depot_de_dossierController extends bootstrap
 
 
                 // Si altarest est pas good ou comptable pas good
-                if ($altares == true || $comptable == true) {
+                if ($altares == true) {
                     header('location:' . $this->lurl . '/depot_de_dossier/etape1/nok');
                     die;
                 }
