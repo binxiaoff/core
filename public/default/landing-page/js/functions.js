@@ -3,25 +3,7 @@
 	var $doc = $(document);
 
 	$doc.ready(function() {
-		
-		
-		$( "#depot_de_dossier" ).submit(function( event ) {
-			var radio = true;
-	
-			if($('input[type=radio][name=exercices_comptables]:checked').length){
-				$('.exercice_comptable_check').css('color','#999');
-			}
-			else
-			{
-				$('.exercice_comptable_check').css('color','#c84747');
-				radio = false
-			}
-			
-			if(radio == false)
-			{
-				event.preventDefault();	
-			}
-		});
+
 		
 		
 		$('.custom-select').c2Selectbox();
