@@ -22,10 +22,7 @@
 	<script src="<?=$this->url?>/landing-page/js/jquery.c2selectbox.js"></script>
     <script src="<?=$this->url?>/landing-page/js/functions.js"></script>
     <script src="<?=$this->url?>/scripts/default/main.js"></script>
-    
-    
-    
-  
+
 </head>
 <body>
 
@@ -125,7 +122,7 @@ if($this->google_analytics != '')
 			<aside class="signup right">
 				<h2><?=$this->content['lp-titre-formulaire']?></h2>
 
-				<form action="" method="post" id="depot_de_dossier" name="depot_de_dossier">
+				<form action="/depot_de_dossier/etape1" method="post" id="depot_de_dossier" name="depot_de_dossier">
 					
                     <div class="form-row" style="display:inline;">                    	
                     	<span style="text-align:center; color:#C84747;"><?=$this->retour_form?></span>
