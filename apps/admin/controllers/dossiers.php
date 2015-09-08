@@ -32,7 +32,7 @@ class dossiersController extends bootstrap
         // Liste deroulante conseil externe de l'entreprise
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $this->conseil_externe = $this->ficelle->explodeStr2array($this->settings->value);
-    }
+    } 
 
     function _default()
     {
@@ -1325,10 +1325,7 @@ class dossiersController extends bootstrap
                         $lesloans = $loans->select('id_project = ' . $this->projects->id_project);
 
                         $companies->get($this->projects->id_company, 'id_company');
-                        
-                        //on supp l'écheancier du projet pour ne pas avoir de doublon d'affichage sur le front (BT 18600)
-                        $echeanciers->delete($this->projects->id_project, 'id_project');
-                        
+
                         foreach ($lesloans as $l)
                         {
 
@@ -3240,194 +3237,194 @@ class dossiersController extends bootstrap
                             // On recup les echeanches non remboursé aux preteurs mais remb par l'emprunteur
                             $lEcheances = $this->echeanciers->select('id_project = ' . $RembEmpr['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $RembEmpr['ordre'] . ' AND status = 0');
 
-                            if ($lEcheances == false)
+if ($lEcheances == false)
                             {
                                 
                             }
                             else
                             {
                                 //BT 17882
-                                if (!$deja_passe)
+                                if(!$deja_passe)
                                 {
                                     $deja_passe = true;
                                     foreach ($lEcheances as $e)
                                     {
 
-                                        // on fait la somme de tout
-                                        $montant += ($e['montant'] / 100);
-                                        $capital += ($e['capital'] / 100);
-                                        $interets += ($e['interets'] / 100);
-                                        $commission += ($e['commission'] / 100);
-                                        $tva += ($e['tva'] / 100);
-                                        $prelevements_obligatoires += $e['prelevements_obligatoires'];
-                                        $retenues_source += $e['retenues_source'];
-                                        $csg += $e['csg'];
-                                        $prelevements_sociaux += $e['prelevements_sociaux'];
-                                        $contributions_additionnelles += $e['contributions_additionnelles'];
-                                        $prelevements_solidarite += $e['prelevements_solidarite'];
-                                        $crds += $e['crds'];
+                                            // on fait la somme de tout
+                                            $montant += ($e['montant'] / 100);
+                                            $capital += ($e['capital'] / 100);
+                                            $interets += ($e['interets'] / 100);
+                                            $commission += ($e['commission'] / 100);
+                                            $tva += ($e['tva'] / 100);
+                                            $prelevements_obligatoires += $e['prelevements_obligatoires'];
+                                            $retenues_source += $e['retenues_source'];
+                                            $csg += $e['csg'];
+                                            $prelevements_sociaux += $e['prelevements_sociaux'];
+                                            $contributions_additionnelles += $e['contributions_additionnelles'];
+                                            $prelevements_solidarite += $e['prelevements_solidarite'];
+                                            $crds += $e['crds'];
 
-                                        // Remb net preteur
-                                        $rembNet = ($e['montant'] / 100) - $e['prelevements_obligatoires'] - $e['retenues_source'] - $e['csg'] - $e['prelevements_sociaux'] - $e['contributions_additionnelles'] - $e['prelevements_solidarite'] - $e['crds'];
+                                            // Remb net preteur
+                                            $rembNet = ($e['montant'] / 100) - $e['prelevements_obligatoires'] - $e['retenues_source'] - $e['csg'] - $e['prelevements_sociaux'] - $e['contributions_additionnelles'] - $e['prelevements_solidarite'] - $e['crds'];
 
-                                        // Partie pour l'etat sur un remb preteur
-                                        $etat = $e['prelevements_obligatoires'] + $e['retenues_source'] + $e['csg'] + $e['prelevements_sociaux'] + $e['contributions_additionnelles'] + $e['prelevements_solidarite'] + $e['crds'];
+                                            // Partie pour l'etat sur un remb preteur
+                                            $etat = $e['prelevements_obligatoires'] + $e['retenues_source'] + $e['csg'] + $e['prelevements_sociaux'] + $e['contributions_additionnelles'] + $e['prelevements_solidarite'] + $e['crds'];
 
-                                        //echo 'Preteur '.$e['id_lender'].' remb net : '.$rembNet.' €<br>';
-                                        // Partie on enregistre les mouvements
-                                        // On regarde si on a pas deja
-                                        if ($this->transactions->get($e['id_echeancier'], 'id_echeancier') == false)
-                                        {
-
-                                            // On recup lenders_accounts
-                                            $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
-                                            // On recup le client
-                                            $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
-
-                                            // echeance preteur
-                                            $this->echeanciers->get($e['id_echeancier'], 'id_echeancier');
-                                            $this->echeanciers->status = 1; // remboursé
-                                            $this->echeanciers->status_email_remb = 1; // remboursé
-                                            $this->echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
-                                            $this->echeanciers->update();
-
-                                            // On enregistre la transaction
-                                            $this->transactions->id_client = $this->lenders_accounts->id_client_owner;
-                                            $this->transactions->montant = ($rembNet * 100);
-                                            $this->transactions->id_echeancier = $e['id_echeancier']; // id de l'echeance remb
-                                            $this->transactions->id_langue = 'fr';
-                                            $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                                            $this->transactions->status = '1';
-                                            $this->transactions->etat = '1';
-                                            $this->transactions->ip_client = $_SERVER['REMOTE_ADDR'];
-                                            $this->transactions->type_transaction = 5; // remb enchere
-                                            $this->transactions->transaction = 2; // transaction virtuelle
-                                            $this->transactions->id_transaction = $this->transactions->create();
-
-                                            // on enregistre la transaction dans son wallet
-                                            $this->wallets_lines->id_lender = $e['id_lender'];
-                                            $this->wallets_lines->type_financial_operation = 40;
-                                            $this->wallets_lines->id_transaction = $this->transactions->id_transaction;
-                                            $this->wallets_lines->status = 1; // non utilisé
-                                            $this->wallets_lines->type = 2; // transaction virtuelle
-                                            $this->wallets_lines->amount = ($rembNet * 100);
-                                            $this->wallets_lines->id_wallet_line = $this->wallets_lines->create();
-
-                                            // On enregistre la notification pour le preteur
-                                            $this->notifications->type = 2; // remb
-                                            $this->notifications->id_lender = $this->lenders_accounts->id_lender_account;
-                                            $this->notifications->id_project = $this->projects->id_project;
-                                            $this->notifications->amount = ($rembNet * 100);
-                                            $this->notifications->id_notification = $this->notifications->create();
-
-                                            //////// GESTION ALERTES //////////
-                                            $this->clients_gestion_mails_notif->id_client = $this->lenders_accounts->id_client_owner;
-                                            $this->clients_gestion_mails_notif->id_notif = 5; // remb preteur
-                                            $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
-                                            $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                                            $this->clients_gestion_mails_notif->id_transaction = $this->transactions->id_transaction;
-                                            $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
-                                            //////// FIN GESTION ALERTES //////////
-                                            // Motif virement
-                                            $p = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
-                                            $nom = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
-                                            $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-                                            $motif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-
-                                            ///////////////////////////
-                                            // rajouter verif statut projet
-                                            if ($this->projects_status->status == 110)
-                                            {
-                                                // mail recouvré
-                                                // on envoie un mail recouvré au lieu du mail remboursement
-                                                //*******************************************//
-                                                //*** ENVOI DU MAIL RECOUVRE PRETEUR ***//
-                                                //*******************************************//
-                                                // Recuperation du modele de mail
-                                                $this->mails_text->get('preteur-dossier-recouvre', 'lang = "' . $this->language . '" AND type');
-                                                $this->companies->get($this->projects->id_company, 'id_company');
-
-                                                // Variables du mailing
-                                                $varMail = array(
-                                                    'surl' => $this->surl,
-                                                    'url' => $this->furl,
-                                                    'prenom_p' => $this->clients->prenom,
-                                                    'cab_recouvrement' => $this->cab,
-                                                    'mensualite_p' => number_format($rembNet, 2, ',', ' '),
-                                                    'nom_entreprise' => $this->companies->name,
-                                                    'solde_p' => $this->transactions->getSolde($this->clients->id_client),
-                                                    'link_echeancier' => $this->furl,
-                                                    'motif_virement' => $motif,
-                                                    'lien_fb' => $lien_fb,
-                                                    'lien_tw' => $lien_tw);
-
-                                                // Construction du tableau avec les balises EMV
-                                                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-
-
-                                                // Attribution des données aux variables
-                                                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                                $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                                                // Envoi du mail
-                                                $this->email = $this->loadLib('email', array());
-                                                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                                $this->email->setSubject(stripslashes($sujetMail));
-                                                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                                                if ($this->Config['env'] == 'prod') // nmp
-                                                {
-                                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                                    // Injection du mail NMP dans la queue
-                                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                                }
-                                                else // non nmp
-                                                {
-                                                    $this->email->addRecipient(trim($this->clients->email));
-                                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                                }
-
-                                                // et on fait passer le satut recouvrement en remboursement
-                                                ////////////////////////////
-                                            }
-                                            elseif (isset($this->params[2]) && $this->params[2] == 'regul')
+                                            //echo 'Preteur '.$e['id_lender'].' remb net : '.$rembNet.' €<br>';
+                                            // Partie on enregistre les mouvements
+                                            // On regarde si on a pas deja
+                                            if ($this->transactions->get($e['id_echeancier'], 'id_echeancier') == false)
                                             {
 
-                                                //*******************************************//
-                                                //*** ENVOI DU MAIL REMBOURSEMENT PRETEUR ***//
-                                                //*******************************************//
-                                                // Recuperation du modele de mail
-                                                $this->mails_text->get('preteur-regularisation-remboursement', 'lang = "' . $this->language . '" AND type');
-                                                $this->companies->get($this->projects->id_company, 'id_company');
+                                                // On recup lenders_accounts
+                                                $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
+                                                // On recup le client
+                                                $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
-                                                $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
+                                                // echeance preteur
+                                                $this->echeanciers->get($e['id_echeancier'], 'id_echeancier');
+                                                $this->echeanciers->status = 1; // remboursé
+												$this->echeanciers->status_email_remb = 1; // remboursé
+                                                $this->echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
+                                                $this->echeanciers->update();
 
-                                                // Variables du mailing
-                                                $surl = $this->surl;
-                                                $url = $this->furl;
+                                                // On enregistre la transaction
+                                                $this->transactions->id_client = $this->lenders_accounts->id_client_owner;
+                                                $this->transactions->montant = ($rembNet * 100);
+                                                $this->transactions->id_echeancier = $e['id_echeancier']; // id de l'echeance remb
+                                                $this->transactions->id_langue = 'fr';
+                                                $this->transactions->date_transaction = date('Y-m-d H:i:s');
+                                                $this->transactions->status = '1';
+                                                $this->transactions->etat = '1';
+                                                $this->transactions->ip_client = $_SERVER['REMOTE_ADDR'];
+                                                $this->transactions->type_transaction = 5; // remb enchere
+                                                $this->transactions->transaction = 2; // transaction virtuelle
+                                                $this->transactions->id_transaction = $this->transactions->create();
 
-                                                // euro avec ou sans "s"
-                                                if ($rembNet >= 2)
-                                                    $euros = ' euros';
-                                                else
-                                                    $euros = ' euro';
-                                                $rembNetEmail = number_format($rembNet, 2, ',', ' ') . $euros;
+                                                // on enregistre la transaction dans son wallet
+                                                $this->wallets_lines->id_lender = $e['id_lender'];
+                                                $this->wallets_lines->type_financial_operation = 40;
+                                                $this->wallets_lines->id_transaction = $this->transactions->id_transaction;
+                                                $this->wallets_lines->status = 1; // non utilisé
+                                                $this->wallets_lines->type = 2; // transaction virtuelle
+                                                $this->wallets_lines->amount = ($rembNet * 100);
+                                                $this->wallets_lines->id_wallet_line = $this->wallets_lines->create();
 
-                                                if ($this->transactions->getSolde($this->clients->id_client) >= 2)
-                                                    $euros = ' euros';
-                                                else
-                                                    $euros = ' euro';
-                                                $solde = number_format($this->transactions->getSolde($this->clients->id_client), 2, ',', ' ') . $euros;
-                                                $timeAdd = strtotime($dateDernierStatut);
-                                                $month = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
+                                                // On enregistre la notification pour le preteur
+                                                $this->notifications->type = 2; // remb
+                                                $this->notifications->id_lender = $this->lenders_accounts->id_lender_account;
+                                                $this->notifications->id_project = $this->projects->id_project;
+                                                $this->notifications->amount = ($rembNet * 100);
+                                                $this->notifications->id_notification = $this->notifications->create();
+
+                                                //////// GESTION ALERTES //////////
+                                                $this->clients_gestion_mails_notif->id_client = $this->lenders_accounts->id_client_owner;
+                                                $this->clients_gestion_mails_notif->id_notif = 5; // remb preteur
+                                                $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
+                                                $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                                                $this->clients_gestion_mails_notif->id_transaction = $this->transactions->id_transaction;
+                                                $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
+                                                //////// FIN GESTION ALERTES //////////
+                                                // Motif virement
+                                                $p = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
+                                                $nom = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
+                                                $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
+                                                $motif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+
+                                                ///////////////////////////
+                                                // rajouter verif statut projet
+                                                if ($this->projects_status->status == 110)
+                                                {
+                                                    // mail recouvré
+                                                    // on envoie un mail recouvré au lieu du mail remboursement
+                                                    //*******************************************//
+                                                    //*** ENVOI DU MAIL RECOUVRE PRETEUR ***//
+                                                    //*******************************************//
+                                                    // Recuperation du modele de mail
+                                                    $this->mails_text->get('preteur-dossier-recouvre', 'lang = "' . $this->language . '" AND type');
+                                                    $this->companies->get($this->projects->id_company, 'id_company');
+
+                                                    // Variables du mailing
+                                                    $varMail = array(
+                                                        'surl' => $this->surl,
+                                                        'url' => $this->furl,
+                                                        'prenom_p' => $this->clients->prenom,
+                                                        'cab_recouvrement' => $this->cab,
+                                                        'mensualite_p' => number_format($rembNet, 2, ',', ' '),
+                                                        'nom_entreprise' => $this->companies->name,
+                                                        'solde_p' => $this->transactions->getSolde($this->clients->id_client),
+                                                        'link_echeancier' => $this->furl,
+                                                        'motif_virement' => $motif,
+                                                        'lien_fb' => $lien_fb,
+                                                        'lien_tw' => $lien_tw);
+
+                                                    // Construction du tableau avec les balises EMV
+                                                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
 
-                                                // Variables du mailing
-                                                $varMail = array(
-                                                    'surl' => $surl,
-                                                    'url' => $url,
+
+                                                    // Attribution des données aux variables
+                                                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                                                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                                                    $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                                                    // Envoi du mail
+                                                    $this->email = $this->loadLib('email', array());
+                                                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                                                    $this->email->setSubject(stripslashes($sujetMail));
+                                                    $this->email->setHTMLBody(stripslashes($texteMail));
+
+                                                    if ($this->Config['env'] == 'prod') // nmp
+                                                    {
+                                                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                                                        // Injection du mail NMP dans la queue
+                                                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                                    }
+                                                    else // non nmp
+                                                    {
+                                                        $this->email->addRecipient(trim($this->clients->email));
+                                                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                                    }
+
+                                                    // et on fait passer le satut recouvrement en remboursement
+                                                    ////////////////////////////
+                                                }
+                                                elseif (isset($this->params[2]) && $this->params[2] == 'regul')
+                                                {
+
+                                                    //*******************************************//
+                                                    //*** ENVOI DU MAIL REMBOURSEMENT PRETEUR ***//
+                                                    //*******************************************//
+                                                    // Recuperation du modele de mail
+                                                    $this->mails_text->get('preteur-regularisation-remboursement', 'lang = "' . $this->language . '" AND type');
+                                                    $this->companies->get($this->projects->id_company, 'id_company');
+
+                                                    $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
+
+                                                    // Variables du mailing
+                                                    $surl = $this->surl;
+                                                    $url = $this->furl;
+
+                                                    // euro avec ou sans "s"
+                                                    if ($rembNet >= 2)
+                                                        $euros = ' euros';
+                                                    else
+                                                        $euros = ' euro';
+                                                    $rembNetEmail = number_format($rembNet, 2, ',', ' ') . $euros;
+
+                                                    if ($this->transactions->getSolde($this->clients->id_client) >= 2)
+                                                        $euros = ' euros';
+                                                    else
+                                                        $euros = ' euro';
+                                                    $solde = number_format($this->transactions->getSolde($this->clients->id_client), 2, ',', ' ') . $euros;
+                                                    $timeAdd = strtotime($dateDernierStatut);
+                                                    $month = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
+
+
+                                                    // Variables du mailing
+                                                    $varMail = array(
+                                                        'surl' => $surl,
+                                                        'url' => $url,
                                                     'prenom_p' => utf8_decode($this->clients->prenom),
                                                     'mensualite_p' => $rembNetEmail,
                                                     'mensualite_avantfisca' => ($e['montant'] / 100),

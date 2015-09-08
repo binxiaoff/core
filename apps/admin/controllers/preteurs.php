@@ -2328,19 +2328,19 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 				break;
 			case attachment_type::DISPENSE_PRELEVEMENT_2014:
 				$field = 'dispense_prelevement_2014';
-				$uploadPath = $basePath.'dispense_prelevement_2014';
+				$uploadPath = $basePath.'dispense_prelevement_2014/';
 				break;
 			case attachment_type::DISPENSE_PRELEVEMENT_2015:
 				$field = 'dispense_prelevement_2015';
-				$uploadPath = $basePath.'dispense_prelevement_2015';
+				$uploadPath = $basePath.'dispense_prelevement_2015/';
 				break;
 			case attachment_type::DISPENSE_PRELEVEMENT_2016:
 				$field = 'dispense_prelevement_2016';
-				$uploadPath = $basePath.'dispense_prelevement_2016';
+				$uploadPath = $basePath.'dispense_prelevement_2016/';
 				break;
 			case attachment_type::DISPENSE_PRELEVEMENT_2017:
 				$field = 'dispense_prelevement_2017';
-				$uploadPath = $basePath.'dispense_prelevement_2017';
+				$uploadPath = $basePath.'dispense_prelevement_2017/';
 				break;
 			default :
 				return false;
