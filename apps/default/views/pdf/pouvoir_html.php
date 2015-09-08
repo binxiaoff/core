@@ -66,7 +66,7 @@
 								R.C.S.
 							</div>
 							<div class="col-small">
-								<?=$this->companies->rcs?>
+								<?=$this->companies->siren?>
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>

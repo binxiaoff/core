@@ -9,8 +9,7 @@
 
         $(".tablesorter").tablesorter();
 <?
-if ($this->nb_lignes != '')
-{
+if ($this->nb_lignes != '') {
     ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
     <?
@@ -19,8 +18,7 @@ if ($this->nb_lignes != '')
 
     });
 <?
-if (isset($_SESSION['freeow']))
-{
+if (isset($_SESSION['freeow'])) {
     ?>
         $(document).ready(function () {
             var title, message, opts, container;
@@ -71,9 +69,7 @@ if (isset($_SESSION['freeow']))
     </table>
     <br />
     <?
-    
-    if (count($this->lRemb) > 0)
-    {
+    if (count($this->lRemb) > 0) {
         ?>
         <table class="tablesorter">
             <thead>
@@ -87,7 +83,6 @@ if (isset($_SESSION['freeow']))
                     <th>Montant emprunteur (I+C+ComTTC)</th>
                     <th>Capital restant</th>
                     <th>Date echeance Emprunteur</th>
-                    <th>Date d'envoi du prélèvement</th>
                     <?php /* ?><th>Statut</th><?php */ ?>
                 </tr>
             </thead>
@@ -95,23 +90,12 @@ if (isset($_SESSION['freeow']))
                 <?
                 $i = 1;
                 $capRestant = $this->capital;
-                foreach ($this->lRemb as $r)
-                {
+                foreach ($this->lRemb as $r) {
                     $montantEmprunteur = $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
 
                     $capRestant -= $r['capital'];
                     if ($capRestant < 0)
                         $capRestant = 0;
-                    
-                    //on va récuperer la date d'envoi du prelevement, pour cela on doit lier la table echeancier_emp à prelevements, on utilisera la clé "Ordre + id_projet"
-                    $date_envoi_prelevement = "";
-                    if($this->prelevements->get($r['id_project'], 'num_prelevement = '.$r['ordre'].' AND id_project'))
-                    {
-                        $date_envoi_prelevement = $this->dates->formatDate($this->prelevements->date_execution_demande_prelevement, 'd/m/Y');
-                    }
-                    
-                    
-                    
                     ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
 
@@ -124,15 +108,13 @@ if (isset($_SESSION['freeow']))
                         <td><?= number_format($montantEmprunteur / 100, 2, ',', ' ') ?></td>
                         <td><?= number_format($capRestant / 100, 2, ',', ' ') ?></td>
                         <td><?= $this->dates->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
-                        <td><?= $date_envoi_prelevement ?></td>
                         <?php /* ?><td><?=($r['status']==1?'Remboursé':'A venir')?></td><?php */ ?>
                     </tr>   
                     <?
                     $i++;
                 }
                 // ajout de la ligne du RA
-                if ($this->montant_ra > 0)
-                {
+                if ($this->montant_ra > 0) {
                     ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
 
@@ -153,8 +135,7 @@ if (isset($_SESSION['freeow']))
             </tbody>
         </table>
         <?
-        if ($this->nb_lignes != '')
-        {
+        if ($this->nb_lignes != '') {
             ?>
             <table>
                 <tr>
