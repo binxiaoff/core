@@ -154,23 +154,6 @@ if($this->google_analytics != '')
 						<input type="text" class="field required" value="<?=(isset($_POST['siren'])?$_POST['siren']:$this->lng['landing-page']['siren'])?>" title="<?=$this->lng['landing-page']['siren']?>" name="siren" id="siren" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 9}" />
                         <em class="caractmax"><?=$this->lng['landing-page']['9-caracteres-numeriques']?></em>
 					</div><!-- /.form-row -->
-                    
-                    <div class="form-row exercice_comptable_check">
-                        
-                        <p style="font-size:16px;"><?=$this->lng['landing-page']['lentreprise-a-t-elle-cloture-au-moins-trois-exercices-comptables']?></p>
-                        
-                        <div style="display:inline-block;margin-top: 5px;" class="radio-holder exercice_comptable_check">
-                        	<input type="radio" name="exercices_comptables" id="exercices_comptables_oui" value="1" class="custom-input">
-                            <label for="exercices_comptables_oui"><?=$this->lng['landing-page']['oui']?></label>
-                        </div>
-                        &nbsp;&nbsp;&nbsp;
-                        <div style="display:inline-block;" class="radio-holder exercice_comptable_check">
-                            
-                            <input type="radio" name="exercices_comptables" id="exercices_comptables_non" value="0" class="custom-input">
-                            <label for="exercices_comptables_non"><?=$this->lng['landing-page']['non']?></label>
-                        </div>
-                    
-                    </div><!-- /.form-row -->
 
 					
 					<input type="hidden" name="spy_inscription_landing_page_depot_dossier" value="1"/> 
