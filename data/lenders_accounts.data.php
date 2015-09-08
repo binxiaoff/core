@@ -89,4 +89,86 @@ class lenders_accounts extends lenders_accounts_crud
 		$result = $this->bdd->query($sql);
 		return ($this->bdd->fetch_array($result,0,0)>0);
 	}
+
+	public function getValuesforTRI($lender){
+
+		//get loans values as negativ , dates and project status
+		$sql = 'SELECT (l.amount *-1) as loan,
+					( SELECT psh.added
+						FROM `projects_status_history` psh
+						WHERE psh.id_project_status = "8"
+						AND l.id_project = psh.id_project
+						ORDER BY psh.added ASC LIMIT 1 ) as date
+				  FROM loans l WHERE l.id_lender = '.$lender.';';
+
+		$result = $this->bdd->query($sql);
+		$loansValues = array();
+		while ($record = $this->bdd->fetch_array($result)) {
+
+			$loansValues[] = array(strtotime($record["date"]) => intval($record["loan"]));
+		}
+
+		//get echeancier values
+		$sql = 'SELECT
+						e.montant as montant,
+						e.date_echeance_reel as date_echeance_reel,
+						e.date_echeance as date_echeance,
+						e.status as echeance_status,
+							(
+							SELECT ps.status
+							FROM projects_status ps
+									LEFT JOIN projects_status_history psh ON (
+									ps.id_project_status = psh.id_project_status)
+									WHERE psh.id_project = p.id_project
+									ORDER BY psh.added DESC LIMIT 1) as project_status
+						FROM echeanciers e
+							LEFT JOIN projects p ON e.id_project = p.id_project
+							INNER JOIN loans l ON e.id_loan = l.id_loan
+						WHERE e.id_lender = '.$lender.';';
+
+		$result = $this->bdd->query($sql);
+		$echeancesValues = array();
+
+
+		$statusKo = array(projects_status::PROBLEME, projects_status::RECOUVREMENT);
+		while ($record = $this->bdd->fetch_array($result)) {
+
+			if(in_array(intval($record["project_status"]), $statusKo) && $record["echeance_status"] == "0" ){
+
+				$record["montant"] = 0;
+			}
+
+			if($record["date_echeance_reel"] == "0000-00-00 00:00:00" ){
+					$record["date_echeance_reel"] = $record["date_echeance"];
+			}// end if Date echeance reele
+
+			$echeancesValues[] = array(strtotime($record["date_echeance_reel"]) => intval($record["montant"]));
+		}
+
+		//merge arrays into one
+		$values = array_merge($loansValues, $echeancesValues);
+
+		return $values;
+	}
+
+	public function getAttachments($lender){
+
+		$sql = 'SELECT a.id_type, a.id_owner, a.type_owner, a.path, a.added, a.updated, a.archived
+				FROM attachment a
+				WHERE a.id_owner = '.$lender.'
+					AND a.type_owner = "lenders_accounts";';
+
+		$result = $this->bdd->query($sql);
+		$attachments = array();
+		while ($record = $this->bdd->fetch_array($result)) {
+
+			$attachments[$record["id_type"]] = $record;
+		}
+		return $attachments;
+
+	}
+
+
+
+
 }

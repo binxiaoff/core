@@ -1,4 +1,4 @@
-<?php 
+<?php
 
 class preteursController extends bootstrap
 {
@@ -10,13 +10,38 @@ class preteursController extends bootstrap
 		
 		$this->catchAll = true;
 		
-		// Controle d'acces Ã  la rubrique
+		// Controle d'acces à la rubrique
 		$this->users->checkAccess('preteurs');
 		
 		// Activation du menu
 		$this->menu_admin = 'preteurs';
 	}
-	
+
+    public function loadGestionData(){
+
+        // deplace tout chargement de donnÃ©es communes dans une mÃ©thodes Ã  part
+        // Chargement du data
+        $this->clients = $this->loadData('clients');
+        $this->clients_adresses = $this->loadData('clients_adresses');
+        $this->clients_mandats = $this->loadData('clients_mandats');
+        $this->clients_status = $this->loadData('clients_status');
+        $this->clients_status_history = $this->loadData('clients_status_history');
+
+        $this->lenders_accounts = $this->loadData('lenders_accounts');
+        $this->transactions = $this->loadData('transactions');
+        $this->loans = $this->loadData('loans');
+        $this->bids = $this->loadData('bids');
+        $this->companies = $this->loadData('companies');
+
+        $this->projects = $this->loadData('projects');
+        $this->wallets_lines = $this->loadData('wallets_lines');
+        $this->echeanciers = $this->loadData('echeanciers');
+
+		$this->attachment = $this->loadData('attachment');
+		$this->attachment_type = $this->loadData('attachment_type');
+
+    }
+
 	function _default()
 	{
 		// On remonte la page dans l'arborescence
@@ -53,16 +78,9 @@ class preteursController extends bootstrap
 	
 	function _gestion()
 	{
-		
-		// Chargement du data
-		$this->clients = $this->loadData('clients');
-		$this->clients_adresses = $this->loadData('clients');
-		$this->lenders_accounts = $this->loadData('lenders_accounts');
-		$this->transactions = $this->loadData('transactions');
-		$this->loans = $this->loadData('loans');
-		$this->bids = $this->loadData('bids');
-		$this->companies = $this->loadData('companies');
-		
+//On appelle la fonction de chargement des donnÃ©es
+        $this->loadGestionData();
+
 		// Partie delete
 		if(isset($this->params[0]) && $this->params[0] == 'delete')
 		{
@@ -150,7 +168,7 @@ class preteursController extends bootstrap
 			$this->lPreteurs = $this->clients->searchPreteursV2($_POST['id'],$_POST['nom'],$_POST['email'],$_POST['prenom'],$_POST['raison_sociale'],$nonValide);
 			
 			// Mise en session du message
-			$_SESSION['freeow']['title'] = 'Recherche d\'un prÃªteur';
+			$_SESSION['freeow']['title'] = 'Recherche d\'un prêteur';
 			$_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
 		}
 		else
@@ -181,26 +199,22 @@ class preteursController extends bootstrap
 			header('location:'.$this->lurl.'/preteurs/gestion');
 			die;
 		}
-		
-		$a = count($this->clients->selectPreteursByStatus('60','c.status = 1 AND status_inscription_preteur = 1 AND (SELECT COUNT(t.id_transaction) FROM transactions t WHERE t.type_transaction IN (1,3,4,5,7,8,14) AND t.status = 1 AND t.etat = 1 AND t.id_client = c.id_client) < 1'));
-		
+
+        //preteur sans mouvement
+        $a = count($this->clients->selectPreteursByStatus('60','c.status = 1 AND status_inscription_preteur = 1 AND (SELECT COUNT(t.id_transaction) FROM transactions t WHERE t.type_transaction IN (1,3,4,5,7,8,14) AND t.status = 1 AND t.etat = 1 AND t.id_client = c.id_client) < 1'));
 		$this->z = $a;
-		//$this->z = count($this->clients->selectPreteursByStatus('60','c.status = 1 AND status_inscription_preteur = 1'));
-		//$this->babla = count($this->clients->selectPreteursByStatus('10,20,30,40,50','c.status = 1 AND status_inscription_preteur = 1'));
-		
-		//$this->z = $this->clients->counter('status = 1 AND status_inscription_preteur= 1');
-		$this->y = $this->clients->counter('status = 0 AND status_inscription_preteur = 1 AND status_pre_emp IN(1,3)');
+        //preteur "hors ligne"
+        $this->y = $this->clients->counter('status = 0 AND status_inscription_preteur = 1 AND status_pre_emp IN(1,3)');
+        //preteur "total"
 		$this->x = $this->clients->counter('status_inscription_preteur = 1  AND status_pre_emp IN(1,3)');
-		//echo '<br> preteurs offline : '.$nb_offline = count($this->clients->selectPreteursByStatus('10,20,30,40,50,60','c.status = 0'));
-		
 	}
 	
 	function _search()
 	{
-		// On masque les Head, header et footer originaux plus le debug
-		$this->autoFireHeader = false;
-		$this->autoFireHead = false;
-		$this->autoFireFooter = false;
+		// On affiche les Head, header et footer originaux plus le debug
+		$this->autoFireHeader = true;
+		$this->autoFireHead = true;
+		$this->autoFireFooter = true;
 		$this->autoFireDebug = false;
 		
 		// On place le redirect sur la home
@@ -221,22 +235,11 @@ class preteursController extends bootstrap
 	
 	function _edit()
 	{
-		// Chargement du data
-		$this->clients = $this->loadData('clients');
-		$this->clients_adresses = $this->loadData('clients_adresses');
-		$this->lenders_accounts = $this->loadData('lenders_accounts');
-		$this->projects = $this->loadData('projects');
-		$this->companies = $this->loadData('companies');
-		$this->loans = $this->loadData('loans');
-		$this->transactions = $this->loadData('transactions');
-		$this->wallets_lines = $this->loadData('wallets_lines');
-		$this->echeanciers = $this->loadData('echeanciers');
-		$this->bids = $this->loadData('bids');
-		$this->clients_mandats = $this->loadData('clients_mandats');
-		$this->favoris = $this->loadData('favoris');
-		$this->clients_status = $this->loadData('clients_status');
-		$this->clients_status_history = $this->loadData('clients_status_history');
-		
+
+        //On appelle la fonction de chargement des donnÃ©es
+        $this->loadGestionData();
+
+
 		// On recup les infos du client
 		$this->lenders_accounts->get($this->params[0],'id_lender_account');
 
@@ -250,7 +253,7 @@ class preteursController extends bootstrap
 			$this->companies->get($this->lenders_accounts->id_company_owner,'id_company');
 		}
 		
-		// le nombre de prets effectuÃ©
+		// le nombre de prets effectué
 		$this->nb_pret = $this->loans->counter('id_lender = "'.$this->lenders_accounts->id_lender_account.'" AND status = 0');
 		
 		$this->txMoyen = $this->loans->getAvgPrets('id_lender = "'.$this->lenders_accounts->id_lender_account.'" AND status = 0');
@@ -287,6 +290,9 @@ class preteursController extends bootstrap
 		
 
 		$this->clients_mandats->get($this->clients->id_client,'id_client');
+
+		//attachments
+		$this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 		
 		// liste des bids en cour
 		$this->lBids = $this->bids->select('id_lender_account = '.$this->lenders_accounts->id_lender_account.' AND status = 0','added DESC');
@@ -306,15 +312,6 @@ class preteursController extends bootstrap
 		
 		
 		$year = date('Y');
-		
-		//$this->lLoans = $this->loans->select('id_lender = '.$this->lenders_accounts->id_lender_account.' AND YEAR(added) = '.$year.' AND status = 0','added DESC');
-		
-		//$this->lTrans = $this->transactions->select('transaction = 1 AND status = 1 AND etat = 1 AND id_client = '.$this->clients->id_client.' AND YEAR(date_transaction) = '.$year,'added DESC');
-		
-		//$this->lTrans = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17) AND status = 1 AND etat = 1 AND id_client = '.$this->clients->id_client.' AND YEAR(date_transaction) = '.$year,'added DESC');
-		
-
-		//$this->lesStatuts = array(1 => $this->lng['profile']['versement-initial'],3 => $this->lng['profile']['alimentation-cb'],4 => $this->lng['profile']['alimentation-virement'],5 => 'Remboursement',7 => $this->lng['profile']['alimentation-prelevement'],8 => $this->lng['profile']['retrait'],14 => 'RÃ©gularisation prÃªteur',16 => 'Offre de bienvenue',17 => 'Retrait offre de bienvenue');
 
 		$this->lTrans = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17,19,20,22,23) AND status = 1 AND etat = 1 AND id_client = '.$this->clients->id_client.' AND YEAR(date_transaction) = '.$year,'added DESC');
 		
@@ -326,24 +323,13 @@ class preteursController extends bootstrap
                     5 => 'Remboursement',
                     7 => $this->lng['profile']['alimentation-prelevement'],
                     8 => $this->lng['profile']['retrait'],
-                    14 => 'RÃ©gularisation prÃªteur',
+                    14 => 'Régularisation prêteur',
                     16 => 'Offre de bienvenue',
                     17 => 'Retrait offre de bienvenue',
                     19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
                     20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
                     22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
                     23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur']);
-		
-		
-		
-		// projets favoris
-		
-		// On recupere les projets favoris
-		$lesFav = $this->favoris->projetsFavorisPreteur($this->clients->id_client);
-		
-		// Liste des projets favoris
-		if($lesFav == false)$this->lProjetsFav = 0;
-		else $this->lProjetsFav = $this->projects->select('id_project IN ('.$lesFav.')');
 		
 		// statut client
 		$this->clients_status->getLastStatut($this->clients->id_client);
@@ -358,14 +344,10 @@ class preteursController extends bootstrap
 	
 	function _edit_preteur()
 	{
-		// Chargement du data
-		$this->clients = $this->loadData('clients');
-		$this->clients_adresses = $this->loadData('clients_adresses');
-		$this->lenders_accounts = $this->loadData('lenders_accounts');
-		$this->companies = $this->loadData('companies');
-		$this->clients_mandats = $this->loadData('clients_mandats');
-		$this->clients_status = $this->loadData('clients_status');
-		$this->clients_status_history = $this->loadData('clients_status_history');
+        //On appelle la fonction de chargement des donnÃ©es
+        $this->loadGestionData();
+
+        // on charge d'autres donnÃ©es spÃ©cifiques Ã  cette mÃ©thode
 		$this->nationalites = $this->loadData('nationalites_v2');
 		$this->pays = $this->loadData('pays_v2');
 		$this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
@@ -468,8 +450,11 @@ class preteursController extends bootstrap
 		if($this->lActions[0]['added'] != false) $timeCreate = strtotime($this->lActions[0]['added']);
 		else $timeCreate = strtotime($this->clients->added);
 		$this->timeCreate = $timeCreate;
+
+        //attachements
+        $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 		
-		// liste des cvg signÃ©
+		// liste des cvg signé
 		$this->lAcceptCGV = $this->acceptations_legal_docs->select('id_client = '.$this->clients->id_client);
 		
 		
@@ -508,7 +493,7 @@ class preteursController extends bootstrap
 			// Construction du tableau avec les balises EMV
 			$tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 			
-			// Attribution des donnÃ©es aux variables
+			// Attribution des données aux variables
 			$sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);				
 			$texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
 			$exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
@@ -598,7 +583,7 @@ class preteursController extends bootstrap
 						$les_id_client_email_exist .= ' '.$checkEmailEx['id_client'];	
 					}
 					
-					$_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est dÃ©jÃ  utilisÃ© par le compte id '.$les_id_client_email_exist;
+					$_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id '.$les_id_client_email_exist;
 				}
 				else $this->clients->email = $_POST['email'];
 				
@@ -618,7 +603,7 @@ class preteursController extends bootstrap
 				// id nationalite
 				$this->clients->id_nationalite = $_POST['nationalite'];
 				
-				// On crÃ©er le client
+				// On créer le client
 				$this->clients->id_langue = 'fr';
 				$this->clients->type = 1;
 				$this->clients->fonction = '';
@@ -640,89 +625,57 @@ class preteursController extends bootstrap
 				else $this->lenders_accounts->precision = '';
 				
 				// debut fichiers //
-				
+
 				// carte-nationale-didentite-passeport
-				if(isset($_FILES['fichier1']) && $_FILES['fichier1']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport/');
-					if($this->upload->doUpload('fichier1'))
-					{
-						if($this->lenders_accounts->fichier_cni_passeport != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_cni_passeport);
-						$this->lenders_accounts->fichier_cni_passeport = $this->upload->getName();
-					}
-				}
-				// autre
-				if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/autre/');
-					if($this->upload->doUpload('fichier7'))
-					{
-						if($this->lenders_accounts->fichier_autre != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_autre);
-						$this->lenders_accounts->fichier_autre = $this->upload->getName();
-					}
-				}
-				
-				// CNI/Passeport dirigeants
-				if(isset($_FILES['fichier2']) && $_FILES['fichier2']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport_dirigent/');
-					if($this->upload->doUpload('fichier2'))
-					{
-						if($this->lenders_accounts->fichier_cni_passeport_dirigent != '')@unlink($this->path.'protected/lenders/cni_passeport_dirigent/'.$this->lenders_accounts->fichier_cni_passeport_dirigent);
-						$this->lenders_accounts->fichier_cni_passeport_dirigent = $this->upload->getName();
-					}
-				}
-				// DÃ©lÃ©gation de pouvoir
-				if(isset($_FILES['fichier3']) && $_FILES['fichier3']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/delegation_pouvoir/');
-					if($this->upload->doUpload('fichier3'))
-					{
-						if($this->lenders_accounts->fichier_delegation_pouvoir != '')@unlink($this->path.'protected/companies/delegation_pouvoir/'.$this->lenders_accounts->fichier_delegation_pouvoir);
-						$this->lenders_accounts->fichier_delegation_pouvoir = $this->upload->getName();
-					}
-				}
-				// Extrait Kbis
-				if(isset($_FILES['fichier4']) && $_FILES['fichier4']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/extrait_kbis/');
-					if($this->upload->doUpload('fichier4'))
-					{
-						if($this->lenders_accounts->fichier_extrait_kbis != '')@unlink($this->path.'protected/lenders/extrait_kbis/'.$this->lenders_accounts->fichier_extrait_kbis);
-						$this->lenders_accounts->fichier_extrait_kbis = $this->upload->getName();
-					}
-				}
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
+
+				// CNI passeport verso
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
+
 				// justificatif-de-domicile
-				if(isset($_FILES['fichier5']) && $_FILES['fichier5']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/justificatif_domicile/');
-					if($this->upload->doUpload('fichier5'))
-					{
-						if($this->lenders_accounts->fichier_justificatif_domicile != '')@unlink($this->path.'protected/companies/justificatif_domicile/'.$this->lenders_accounts->fichier_justificatif_domicile);
-						$this->lenders_accounts->fichier_justificatif_domicile = $this->upload->getName();
-					}
-				}
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
+
 				// RIB
-				if(isset($_FILES['fichier6']) && $_FILES['fichier6']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/rib/');
-					if($this->upload->doUpload('fichier6'))
-					{
-						if($this->lenders_accounts->fichier_rib != '')@unlink($this->path.'protected/lenders/rib/'.$this->lenders_accounts->fichier_rib);
-						$this->lenders_accounts->fichier_rib = $this->upload->getName();
-					}
-				}
-				// Statuts
-				/*if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/statuts/');
-					if($this->upload->doUpload('fichier7'))
-					{
-						if($this->lenders_accounts->fichier_statuts != '')@unlink($this->path.'protected/lenders/statuts/'.$this->lenders_accounts->fichier_statuts);
-						$this->lenders_accounts->fichier_statuts = $this->upload->getName();
-					}
-				}*/
-				// fin fichier //
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
+
+				//Attestation d'hebergement par un tiers
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::ATTESTATION_HEBERGEMENT_TIERS);
+
+				//CNI/Passport du tiers hébergeant
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
+
+				// CNI/Passeport dirigeants
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
+
+				// Délégation de pouvoir
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
+
+				// Extrait Kbis
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
+
+				// document_fiscal
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
+
+				//autre1
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
+
+				//autre2
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE2);
+
+				//autre3
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE3);
+
+				// Dispense de prélèvement 2014
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2014);
+
+				// Dispense de prélèvement 2015
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2015);
+
+				// Dispense de prélèvement 2016
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2016);
+
+				//Dispense de prélèvement 2017
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2017);
 				
 				// Mandat
 				if(isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '')
@@ -746,19 +699,6 @@ class preteursController extends bootstrap
 					}
 				}
 				
-					// document_fiscal
-				if(isset($_FILES['document_fiscal']) && $_FILES['document_fiscal']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/document_fiscal/');
-					if($this->upload->doUpload('document_fiscal'))
-					{
-						if($this->lenders_accounts->fichier_document_fiscal != '')@unlink($this->path.'protected/lenders/document_fiscal/'.$this->lenders_accounts->fichier_document_fiscal);
-						$this->lenders_accounts->fichier_document_fiscal = $this->upload->getName();
-					}
-				}
-				
-				
-				
 				$old_exonere = $this->lenders_accounts->exonere;
 				$this->lenders_accounts->exonere = $_POST['exonere'];
 				$new_exonere = $this->lenders_accounts->exonere;
@@ -769,8 +709,8 @@ class preteursController extends bootstrap
 					$this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
 					$this->echeanciers = $this->loadData('echeanciers');
 					
-					// EQ-Acompte d'impÃ´t sur le revenu
-					$this->settings->get("EQ-Acompte d'impÃ´t sur le revenu",'type');
+					// EQ-Acompte d'impôt sur le revenu
+					$this->settings->get("EQ-Acompte d'impôt sur le revenu",'type');
 					$prelevements_obligatoires = $this->settings->value;
 			
 					$this->etranger = 0;
@@ -836,8 +776,9 @@ class preteursController extends bootstrap
 				$this->clients->update();
 				$this->clients_adresses->update();
 				$this->lenders_accounts->update();
+				$this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 				
-				// Si on a une entreprise reliÃ©e, on la supprime car elle n'a plus rien a faire ici. on est un particulier.
+				// Si on a une entreprise reliée, on la supprime car elle n'a plus rien a faire ici. on est un particulier.
 				if($this->companies->get($this->clients->id_client,'id_client_owner'))
 				{
 					$this->companies->delete($this->companies->id_company,'id_company');
@@ -854,7 +795,7 @@ class preteursController extends bootstrap
 				
 				if(isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1)
 				{
-					// On check si on a deja eu le compte validÃ© au moins une fois. si c'est pas le cas on check l'offre
+					// On check si on a deja eu le compte validé au moins une fois. si c'est pas le cas on check l'offre
 					if($this->clients_status_history->counter('id_client = '.$this->clients->id_client.' AND id_client_status = 6') == 0){
 						///////////// OFFRE DE BIENVENUE /////////////
 						$this->create_offre_bienvenue($this->clients->id_client); /// <------------------------------
@@ -947,7 +888,7 @@ class preteursController extends bootstrap
 					// Construction du tableau avec les balises EMV
 					$tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 					
-					// Attribution des donnÃ©es aux variables
+					// Attribution des données aux variables
 					$sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);				
 					$texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
 					$exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
@@ -978,12 +919,12 @@ class preteursController extends bootstrap
 					$this->echeanciers = $this->loadData('echeanciers');
 					$this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
 					
-					// EQ-Acompte d'impÃ´t sur le revenu
-					$this->settings->get("EQ-Acompte d'impÃ´t sur le revenu",'type');
+					// EQ-Acompte d'impôt sur le revenu
+					$this->settings->get("EQ-Acompte d'impôt sur le revenu",'type');
 					$prelevements_obligatoires = $this->settings->value;
 					
-					// EQ-Contribution additionnelle au PrÃ©lÃ¨vement Social
-					$this->settings->get('EQ-Contribution additionnelle au PrÃ©lÃ¨vement Social','type');
+					// EQ-Contribution additionnelle au Prélèvement Social
+					$this->settings->get('EQ-Contribution additionnelle au Prélèvement Social','type');
 					$contributions_additionnelles = $this->settings->value;
 					
 					// EQ-CRDS
@@ -994,16 +935,16 @@ class preteursController extends bootstrap
 					$this->settings->get('EQ-CSG','type');
 					$csg = $this->settings->value;
 					
-					// EQ-PrÃ©lÃ¨vement de SolidaritÃ©
-					$this->settings->get('EQ-PrÃ©lÃ¨vement de SolidaritÃ©','type');
+					// EQ-Prélèvement de Solidarité
+					$this->settings->get('EQ-Prélèvement de Solidarité','type');
 					$prelevements_solidarite = $this->settings->value;
 					
-					// EQ-PrÃ©lÃ¨vement social
-					$this->settings->get('EQ-PrÃ©lÃ¨vement social','type');
+					// EQ-Prélèvement social
+					$this->settings->get('EQ-Prélèvement social','type');
 					$prelevements_sociaux = $this->settings->value;
 					
-					// EQ-Retenue Ã  la source
-					$this->settings->get('EQ-Retenue Ã  la source','type');
+					// EQ-Retenue à la source
+					$this->settings->get('EQ-Retenue à la source','type');
 					$retenues_source = $this->settings->value;
 					
 					$this->etranger = 0;
@@ -1041,7 +982,7 @@ class preteursController extends bootstrap
 				}
 				
 				
-				
+				$this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 				header('location:'.$this->lurl.'/preteurs/edit_preteur/'.$this->lenders_accounts->id_lender_account);
 				die;
 			}
@@ -1109,7 +1050,7 @@ class preteursController extends bootstrap
 						$les_id_client_email_exist .= ' '.$checkEmailEx['id_client'];	
 					}
 					
-					$_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est dÃ©jÃ  utilisÃ© par le compte id '.$les_id_client_email_exist;
+					$_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id '.$les_id_client_email_exist;
 				}
 				else $this->clients->email = $_POST['email_e'];
 				
@@ -1155,7 +1096,7 @@ class preteursController extends bootstrap
 				//$this->clients->secrete_reponse = '';
 					
 					
-				// On crÃ©e la l'entreprise si existe pas
+				// On crée la l'entreprise si existe pas
 				if($this->companies->exist($this->clients->id_client,'id_client_owner'))
 				{
 					$this->companies->update();
@@ -1183,89 +1124,46 @@ class preteursController extends bootstrap
 				else $this->lenders_accounts->precision = '';
 				
 				// debut fichiers //
-				
-				// carte-nationale-didentite-passeport
-				if(isset($_FILES['fichier1']) && $_FILES['fichier1']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport/');
-					if($this->upload->doUpload('fichier1'))
-					{
-						if($this->lenders_accounts->fichier_cni_passeport != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_cni_passeport);
-						$this->lenders_accounts->fichier_cni_passeport = $this->upload->getName();
-					}
-				}
-				// autre
-				if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/autre/');
-					if($this->upload->doUpload('fichier7'))
-					{
-						if($this->lenders_accounts->fichier_autre != '')@unlink($this->path.'protected/lenders/cni_passeport/'.$this->lenders_accounts->fichier_autre);
-						$this->lenders_accounts->fichier_autre = $this->upload->getName();
-					}
-				}
-				// CNI/Passeport dirigeants
-				if(isset($_FILES['fichier2']) && $_FILES['fichier2']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/cni_passeport_dirigent/');
-					if($this->upload->doUpload('fichier2'))
-					{
-						if($this->lenders_accounts->fichier_cni_passeport_dirigent != '')@unlink($this->path.'protected/lenders/cni_passeport_dirigent/'.$this->lenders_accounts->fichier_cni_passeport_dirigent);
-						$this->lenders_accounts->fichier_cni_passeport_dirigent = $this->upload->getName();
-					}
-				}
-				// DÃ©lÃ©gation de pouvoir
-				if(isset($_FILES['fichier3']) && $_FILES['fichier3']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/delegation_pouvoir/');
-					if($this->upload->doUpload('fichier3'))
-					{
-						if($this->lenders_accounts->fichier_delegation_pouvoir != '')@unlink($this->path.'protected/companies/delegation_pouvoir/'.$this->lenders_accounts->fichier_delegation_pouvoir);
-						$this->lenders_accounts->fichier_delegation_pouvoir = $this->upload->getName();
-					}
-				}
-				// Extrait Kbis
-				if(isset($_FILES['fichier4']) && $_FILES['fichier4']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/extrait_kbis/');
-					if($this->upload->doUpload('fichier4'))
-					{
-						if($this->lenders_accounts->fichier_extrait_kbis != '')@unlink($this->path.'protected/lenders/extrait_kbis/'.$this->lenders_accounts->fichier_extrait_kbis);
-						$this->lenders_accounts->fichier_extrait_kbis = $this->upload->getName();
-					}
-				}
+
+                // carte-nationale-didentite-passeport
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
+
+                // CNI passeport verso
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
+
 				// justificatif-de-domicile
-				if(isset($_FILES['fichier5']) && $_FILES['fichier5']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/justificatif_domicile/');
-					if($this->upload->doUpload('fichier5'))
-					{
-						if($this->lenders_accounts->fichier_justificatif_domicile != '')@unlink($this->path.'protected/companies/justificatif_domicile/'.$this->lenders_accounts->fichier_justificatif_domicile);
-						$this->lenders_accounts->fichier_justificatif_domicile = $this->upload->getName();
-					}
-				}
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
+
 				// RIB
-				if(isset($_FILES['fichier6']) && $_FILES['fichier6']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/rib/');
-					if($this->upload->doUpload('fichier6'))
-					{
-						if($this->lenders_accounts->fichier_rib != '')@unlink($this->path.'protected/lenders/rib/'.$this->lenders_accounts->fichier_rib);
-						$this->lenders_accounts->fichier_rib = $this->upload->getName();
-					}
-				}
-				// Statuts
-				/*if(isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/statuts/');
-					if($this->upload->doUpload('fichier7'))
-					{
-						if($this->lenders_accounts->fichier_statuts != '')@unlink($this->path.'protected/lenders/statuts/'.$this->lenders_accounts->fichier_statuts);
-						$this->lenders_accounts->fichier_statuts = $this->upload->getName();
-					}
-				}*/
-				
-				
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
+
+				//Attestation d'hebergement par un tiers
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::ATTESTATION_HEBERGEMENT_TIERS);
+
+				//CNI/Passport du tiers hébergeant
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
+
+                // CNI/Passeport dirigeants
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
+
+                // Délégation de pouvoir
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
+
+                // Extrait Kbis
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
+
+                // document_fiscal
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
+
+				//autre1
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
+
+				//autre2
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE2);
+
+				//autre3
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE3);
+
 				
 				// Mandat
 				if(isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '')
@@ -1288,29 +1186,20 @@ class preteursController extends bootstrap
 						
 					}
 				}
-				
-				// document_fiscal
-				if(isset($_FILES['document_fiscal']) && $_FILES['document_fiscal']['name'] != '')
-				{
-					$this->upload->setUploadDir($this->path,'protected/lenders/document_fiscal/');
-					if($this->upload->doUpload('document_fiscal'))
-					{
-						if($this->lenders_accounts->fichier_document_fiscal != '')@unlink($this->path.'protected/lenders/document_fiscal/'.$this->lenders_accounts->fichier_document_fiscal);
-						$this->lenders_accounts->fichier_document_fiscal = $this->upload->getName();
-					}
-				}
-				
+
 				// fin fichier //
 						
 				// On met a jour le lender
 				$this->lenders_accounts->id_company_owner = $this->companies->id_company;
 				$this->lenders_accounts->update();
-				
+				$this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+
 				// On met a jour le client
 				$this->clients->update();
 				// On met a jour l'adresse client
 				$this->clients_adresses->update();
-				
+
+
 				// Histo user //
 				$serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST,'files' => $_FILES));
 				$this->users_history->histo(3,'modif info preteur personne morale',$_SESSION['user']['id_user'],$serialize);
@@ -1368,7 +1257,7 @@ class preteursController extends bootstrap
 					// Construction du tableau avec les balises EMV
 					$tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 					
-					// Attribution des donnÃ©es aux variables
+					// Attribution des données aux variables
 					$sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);				
 					$texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
 					$exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
@@ -1408,14 +1297,8 @@ class preteursController extends bootstrap
 	
 	function _liste_preteurs_non_inscrits()
 	{
-		// Chargement du data
-		$this->clients = $this->loadData('clients');
-		$this->clients_adresses = $this->loadData('clients');
-		$this->lenders_accounts = $this->loadData('lenders_accounts');
-		$this->transactions = $this->loadData('transactions');
-		$this->loans = $this->loadData('loans');
-		$this->bids = $this->loadData('bids');
-		$this->companies = $this->loadData('companies');
+        //On appelle la fonction de chargement des donnÃ©es
+        $this->loadGestionData();
 		
 		// Partie delete
 		if(isset($this->params[0]) && $this->params[0] == 'delete')
@@ -1492,7 +1375,7 @@ class preteursController extends bootstrap
 			$this->lPreteurs = $this->clients->searchPreteursV2($_POST['id'],$_POST['nom'],$_POST['email'],$_POST['prenom'],$_POST['raison_sociale'],$nonValide);
 			
 			// Mise en session du message
-			$_SESSION['freeow']['title'] = 'Recherche d\'un prÃªteur non inscript';
+			$_SESSION['freeow']['title'] = 'Recherche d\'un prêteur non inscript';
 			$_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
 		}
 		else
@@ -1523,19 +1406,11 @@ class preteursController extends bootstrap
 		}
 	}
 	
-	// Activation des comptes prÃªteurs
+	// Activation des comptes prêteurs
 	function _activation()
 	{
-		// Chargement du data
-		$this->clients = $this->loadData('clients');
-		$this->clients_adresses = $this->loadData('clients_adresses');
-		$this->clients_status_history = $this->loadData('clients_status_history');
-		$this->lenders_accounts = $this->loadData('lenders_accounts');
-		$this->clients_status = $this->loadData('clients_status');
-		$this->companies = $this->loadData('companies');
-		$this->transactions = $this->loadData('transactions');
-		$this->bids = $this->loadData('bids');
-		
+        //On appelle la fonction de chargement des donnÃ©es
+        $this->loadGestionData();
 		
 		// Partie delete
 		if(isset($this->params[0]) && $this->params[0] == 'delete')
@@ -1549,7 +1424,7 @@ class preteursController extends bootstrap
 				if($this->lenders_accounts->get($this->clients->id_client,'id_client_owner'));
 				{
 					
-					// On verifie si on a deja une enchere d'effectuÃ© par ce compte
+					// On verifie si on a deja une enchere d'effectué par ce compte
 					$nb = $this->bids->counter('id_lender_account = '.$this->lenders_accounts->id_lender_account);
 					if($nb > 0){
 						
@@ -1864,6 +1739,7 @@ class preteursController extends bootstrap
 				die;
 			}
 		}
+
 		$this->lPreteurs = $this->clients->selectPreteursByStatus('10,20,30,40,50','','added_status DESC');
 		
 	}
@@ -2039,7 +1915,7 @@ class preteursController extends bootstrap
 				else $offres_bienvenues->id_offre_bienvenue = $offres_bienvenues->create();
 				
 				$_SESSION['freeow']['title'] 	= 'Offre de bienvenue';
-				$_SESSION['freeow']['message'] 	= 'Offre de bienvenue ajoutÃ©';	
+				$_SESSION['freeow']['message'] 	= 'Offre de bienvenue ajouté';	
 			}
 			else{
 				$_SESSION['freeow']['title'] 	= 'Offre de bienvenue';
@@ -2052,7 +1928,7 @@ class preteursController extends bootstrap
 		
 		// Somme des virements unilend offre de bienvenue
 		$sumVirementUnilendOffres = $transactions->sum('status = 1 AND etat = 1 AND type_transaction = 18','montant');
-		// Somme des offres utilisÃ©
+		// Somme des offres utilisé
 		$sumOffresTransac = $transactions->sum('status = 1 AND etat = 1 AND type_transaction IN(16,17)','montant');
 		// Somme reel dispo
 		$this->sumDispoPourOffres = ($sumVirementUnilendOffres - $sumOffresTransac);
@@ -2061,6 +1937,7 @@ class preteursController extends bootstrap
 		
 		
 	}
+
 	function _letest(){
 		
 		die;
@@ -2137,7 +2014,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 				
 				// Somme des virements unilend offre de bienvenue
 				$sumVirementUnilendOffres = $transactions->sum('status = 1 AND etat = 1 AND type_transaction = 18','montant');
-				// Somme des offres utilisÃ©
+				// Somme des offres utilisé
 				$sumOffresTransac = $transactions->sum('status = 1 AND etat = 1 AND type_transaction IN(16,17)','montant');
 				// Somme reel dispo
 				$sumDispoPourOffres = ($sumVirementUnilendOffres - $sumOffresTransac);
@@ -2145,7 +2022,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 				echo " -> $sumOffresPlusOffre <= $offres_bienvenues->montant_limit" ; var_dump($sumOffresPlusOffre <= $offres_bienvenues->montant_limit);
 				echo " -> $sumDispoPourOffres >= $offres_bienvenues->montant" ; var_dump($sumDispoPourOffres >= $offres_bienvenues->montant);
 				
-				// On regarde que l'offre soit pas terminÃ©
+				// On regarde que l'offre soit pas terminé
 				if(strtotime($offres_bienvenues->debut) <= time() && $sumOffresPlusOffre <= $offres_bienvenues->montant_limit && $sumDispoPourOffres >= $offres_bienvenues->montant){
 					print_r(" -> #3");
 					// Motif
@@ -2156,7 +2033,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 					// Lender
 					$lenders_accounts->get($this->clients->id_client,'id_client_owner');
 					
-					// offres_bienvenues_details (on gÃ©nÃ¨re l'offre pour le preteur)
+					// offres_bienvenues_details (on génère l'offre pour le preteur)
 					$offres_bienvenues_details->id_offre_bienvenue 			= $offres_bienvenues->id_offre_bienvenue;
 					$offres_bienvenues_details->motif 						= $this->motifOffreBienvenue;
 					$offres_bienvenues_details->id_client 					= $this->clients->id_client;
@@ -2216,7 +2093,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 					// Construction du tableau avec les balises EMV
 					$tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 					
-					// Attribution des donnÃ©es aux variables
+					// Attribution des données aux variables
 					$sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);				
 					$texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
 					$exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
@@ -2269,13 +2146,13 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 				
 				// Somme des virements unilend offre de bienvenue
 				$sumVirementUnilendOffres = $transactions->sum('status = 1 AND etat = 1 AND type_transaction = 18','montant');
-				// Somme des offres utilisÃ©
+				// Somme des offres utilisé
 				$sumOffresTransac = $transactions->sum('status = 1 AND etat = 1 AND type_transaction IN(16,17)','montant');
 				// Somme reel dispo
 				$sumDispoPourOffres = ($sumVirementUnilendOffres - $sumOffresTransac);
 				
 				
-				// On regarde que l'offre soit pas terminÃ©
+				// On regarde que l'offre soit pas terminé
 				if(strtotime($offres_bienvenues->debut) <= time() && strtotime($offres_bienvenues->fin.' 23:59:59') >= time() && $sumOffresPlusOffre <= $offres_bienvenues->montant_limit && $sumDispoPourOffres >= $offres_bienvenues->montant){
 					
 					// Motif
@@ -2286,7 +2163,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 					// Lender
 					$lenders_accounts->get($this->clients->id_client,'id_client_owner');
 					
-					// offres_bienvenues_details (on gÃ©nÃ¨re l'offre pour le preteur)
+					// offres_bienvenues_details (on génère l'offre pour le preteur)
 					$offres_bienvenues_details->id_offre_bienvenue 			= $offres_bienvenues->id_offre_bienvenue;
 					$offres_bienvenues_details->motif 						= $this->motifOffreBienvenue;
 					$offres_bienvenues_details->id_client 					= $this->clients->id_client;
@@ -2346,7 +2223,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 					// Construction du tableau avec les balises EMV
 					$tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 					
-					// Attribution des donnÃ©es aux variables
+					// Attribution des données aux variables
 					$sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);				
 					$texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
 					$exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
@@ -2374,4 +2251,209 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 			}
 		}
 	}
+
+	/**
+	 * @param integer $lenderAccountId
+	 * @param integer $attachmentType
+	 * @return bool
+	 */
+	private function uploadAttachment($lenderAccountId, $attachmentType)
+	{
+		if(false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
+			$this->attachmentHelper = $this->loadLib('attachment_helper');
+		}
+
+		if(false === isset($this->upload) || false === $this->upload instanceof upload) {
+			$this->upload = $this->loadLib('upload');
+		}
+
+		if(false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
+			$this->attachment = $this->loadData('attachment');
+		}
+
+		$basePath = 'protected/lenders/';
+
+		switch($attachmentType) {
+			case attachment_type::CNI_PASSPORTE :
+				$field = 'cni_passeport';
+				$uploadPath = $basePath.'cni_passeport/';
+				break;
+			case attachment_type::CNI_PASSPORTE_VERSO :
+				$field = 'cni_passeport_verso';
+				$uploadPath = $basePath.'cni_passeport_verso/';
+				break;
+			case attachment_type::JUSTIFICATIF_DOMICILE :
+				$field = 'justificatif_domicile';
+				$uploadPath = $basePath.'justificatif_domicile/';
+				break;
+			case attachment_type::RIB :
+				$field = 'rib';
+				$uploadPath = $basePath.'rib/';
+				break;
+			case attachment_type::ATTESTATION_HEBERGEMENT_TIERS :
+				$field = 'attestation_hebergement_tiers';
+				$uploadPath = $basePath.'attestation_hebergement_tiers/';
+				break;
+			case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT :
+				$field = 'cni_passport_tiers_hebergeant';
+				$uploadPath = $basePath.'cni_passport_tiers_hebergeant/';
+				break;
+			case attachment_type::CNI_PASSPORTE_DIRIGEANT :
+				$field = 'cni_passeport_dirigeant';
+				$uploadPath = $basePath.'cni_passeport_dirigeant/';
+				break;
+			case attachment_type::DELEGATION_POUVOIR :
+				$field = 'delegation_pouvoir';
+				$uploadPath = $basePath.'delegation_pouvoir/';
+				break;
+			case attachment_type::KBIS :
+				$field = 'extrait_kbis';
+				$uploadPath = $basePath.'extrait_kbis/';
+				break;
+			case attachment_type::JUSTIFICATIF_FISCAL :
+				$field = 'document_fiscal';
+				$uploadPath = $basePath.'document_fiscal/';
+				break;
+			case attachment_type::AUTRE1 :
+				$field = 'autre1';
+				$uploadPath = $basePath.'autre1/';
+				break;
+			case attachment_type::AUTRE2 :
+				$field = 'autre2';
+				$uploadPath = $basePath.'autre2/';
+				break;
+			case attachment_type::AUTRE3:
+				$field = 'autre3';
+				$uploadPath = $basePath.'autre3/';
+				break;
+			case attachment_type::DISPENSE_PRELEVEMENT_2014:
+				$field = 'dispense_prelevement_2014';
+				$uploadPath = $basePath.'dispense_prelevement_2014';
+				break;
+			case attachment_type::DISPENSE_PRELEVEMENT_2015:
+				$field = 'dispense_prelevement_2015';
+				$uploadPath = $basePath.'dispense_prelevement_2015';
+				break;
+			case attachment_type::DISPENSE_PRELEVEMENT_2016:
+				$field = 'dispense_prelevement_2016';
+				$uploadPath = $basePath.'dispense_prelevement_2016';
+				break;
+			case attachment_type::DISPENSE_PRELEVEMENT_2017:
+				$field = 'dispense_prelevement_2017';
+				$uploadPath = $basePath.'dispense_prelevement_2017';
+				break;
+			default :
+				return false;
+		}
+
+		return $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->path, $uploadPath, $this->upload, $this->attachment);
+	}
+
+	public function _email_history(){
+
+		$this->loadGestionData();
+
+		// On recup les infos du client
+		$this->lenders_accounts->get($this->params[0],'id_lender_account');
+
+		// On recup les infos du client
+		$this->clients->get($this->lenders_accounts->id_client_owner,'id_client');
+
+		$this->clients_adresses->get($this->clients->id_client,'id_client');
+
+		if(in_array($this->clients->type,array(2,4)))
+		{
+			$this->companies->get($this->lenders_accounts->id_company_owner,'id_company');
+		}
+
+/*		PARTIE PREFERENCES NOTIFICATION*/
+
+		//Préférences Notifications
+        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+        $this->clients_gestion_type_notif = $this->loadData('clients_gestion_type_notif');
+
+        //Liste des types de notification
+        $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
+
+		//Notifications par client
+        $this->NotifC = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
+
+/*		PARTIE HISTORIQUE*/
+//		à venir
+
+
+
+
+	}
+
+	public function _portefeuille(){
+
+        //On appelle la fonction de chargement des donnÃ©es
+        $this->loadGestionData();
+
+        // on charge des donnÃ©es supplementaires nÃ©cessaires pour la mÃ©thode
+		$this->projects_status = $this->loadData('projects_status');
+		$this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
+
+		// On recup les infos du client
+		$this->lenders_accounts->get($this->params[0],'id_lender_account');
+
+		// On recup les infos du client
+		$this->clients->get($this->lenders_accounts->id_client_owner,'id_client');
+
+		$this->clients_adresses->get($this->clients->id_client,'id_client');
+
+		if(in_array($this->clients->type,array(2,4)))
+		{
+			$this->companies->get($this->lenders_accounts->id_company_owner,'id_company');
+		}
+
+		// LOANS //
+		$this->lSumLoans = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account,$year,'next_echeance ASC');
+
+			$this->arrayDeclarationCreance = array(1456,1009, 1614, 3089);
+
+		//PORTFOLIO DETAILS
+
+		//TRI
+        $this->TRI = $this->calculTRI();
+
+		//amount of projects online since his registration
+		$statusOk = array(projects_status::A_FUNDER, projects_status::EN_FUNDING, projects_status::REMBOURSEMENT, projects_status::PRET_REFUSE);
+		$this->projectsPublished = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, $statusOk);
+
+
+		//Number of problematic projects in his wallet
+		$statusKo = array(projects_status::PROBLEME, projects_status::RECOUVREMENT);
+		$this->problProjects = $this->projects->countProjectsByStatusAndLender($this->lenders_accounts->id_lender_account, $statusKo);
+
+		//Total number of projects in his wallet
+		$this->totalProjects = $this->loans->getNbPprojet($this->lenders_accounts->id_lender_account);
+
+	}
+
+	private function calculTRI(){
+
+		$valuesTRI = $this->lenders_accounts->getValuesforTRI($this->lenders_accounts->id_lender_account);
+
+
+        $dates = array();
+        $values = array();
+
+
+        foreach($valuesTRI as $k => $paire){
+
+            foreach($paire as $date => $valeur){
+
+                $dates[] = $date;
+                $values[] = $valeur;
+
+            }
+        }
+
+		$this->financial = $this->loadLib('financial');
+		return round($this->financial->XIRR($values, $dates, $guess = 0.1)*100, 2);
+	}
+
+
 }

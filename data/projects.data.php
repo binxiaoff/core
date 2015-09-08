@@ -66,8 +66,7 @@ class projects extends projects_crud
 
         $resultat = $this->bdd->query($sql);
         $result = array();
-        while ($record = $this->bdd->fetch_array($resultat))
-        {
+        while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -81,7 +80,7 @@ class projects extends projects_crud
         $sql = 'SELECT count(*) FROM `projects` ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int)($this->bdd->result($result, 0, 0));
     }
 
     function exist($id, $field = 'id_project')
@@ -93,41 +92,32 @@ class projects extends projects_crud
 
     function searchDossiers($date1 = '', $date2 = '', $montant = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $start = '', $nb = '')
     {
-        if ($date1 != '')
-        {
+        if ($date1 != '') {
             $where .= ' AND p.added >= "' . $date1 . ' 00:00:00"';
         }
-        if ($date2 != '')
-        {
+        if ($date2 != '') {
             $where .= ' AND p.added <= "' . $date2 . ' 23:59:59"';
         }
 
-        if ($montant != '0' && $montant != '')
-        {
+        if ($montant != '0' && $montant != '') {
             $where .= ' AND p.amount = "' . $montant . '"';
         }
-        if ($duree != '')
-        {
+        if ($duree != '') {
             $where .= ' AND p.period = "' . $duree . '"';
         }
-        if ($status != '')
-        {
+        if ($status != '') {
             $having .= ' AND status IN (' . $status . ')';
         }
-        if ($analyste != '0' && $analyste != '')
-        {
+        if ($analyste != '0' && $analyste != '') {
             $where .= ' AND p.id_analyste = "' . $analyste . '"';
         }
-        if ($siren != '')
-        {
+        if ($siren != '') {
             $where .= ' AND co.siren LIKE "%' . $siren . '%"';
         }
-        if ($id != '')
-        {
+        if ($id != '') {
             $where .= ' AND p.id_project = "' . $id . '"';
         }
-        if ($raison_sociale != '0' && $raison_sociale != '')
-        {
+        if ($raison_sociale != '0' && $raison_sociale != '') {
             $where .= ' AND co.name LIKE "%' . $raison_sociale . '%"';
         }
 
@@ -146,8 +136,7 @@ class projects extends projects_crud
         $resultat = $this->bdd->query($sql);
         $result = array();
 
-        while ($record = $this->bdd->fetch_array($resultat))
-        {
+        while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -174,15 +163,14 @@ class projects extends projects_crud
 				' . $where . ' 
 				HAVING status IN (' . $status . ') 
 				ORDER BY '
-                . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+            . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         //mail('d.courtier@equinoa.com','test unilend sql',$sql);
         $resultat = $this->bdd->query($sql);
         $result = array();
 
         $positionStart = $start + $nb;
 
-        while ($record = $this->bdd->fetch_array($resultat))
-        {
+        while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
 
             // on récupere la derniere position pour demarrer une autre requete au meme niveau
@@ -212,8 +200,7 @@ class projects extends projects_crud
 
         $positionStart = $start + $nb;
 
-        while ($record = $this->bdd->fetch_array($resultat))
-        {
+        while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -236,8 +223,7 @@ class projects extends projects_crud
 
         $positionStart = $start + $nb;
         $i = 0;
-        while ($record = $this->bdd->fetch_array($resultat))
-        {
+        while ($record = $this->bdd->fetch_array($resultat)) {
             $i++;
         }
         return $i;
@@ -245,28 +231,22 @@ class projects extends projects_crud
 
     function searchDossiersRemb($siren = '', $societe = '', $nom = '', $prenom = '', $projet = '', $email = '', $start = '', $nb = '')
     {
-        if ($siren != '')
-        {
+        if ($siren != '') {
             $where .= ' AND co.siren = "' . $siren . '"';
         }
-        if ($societe != '')
-        {
+        if ($societe != '') {
             $where .= ' AND co.name = "' . $societe . '"';
         }
-        if ($nom != '')
-        {
+        if ($nom != '') {
             $where .= ' AND c.nom = "' . $nom . '"';
         }
-        if ($prenom != '')
-        {
+        if ($prenom != '') {
             $where .= ' AND c.prenom = "' . $prenom . '"';
         }
-        if ($projet != '')
-        {
+        if ($projet != '') {
             $where .= ' AND p.title_bo LIKE "%' . $projet . '%"';
         }
-        if ($email != '')
-        {
+        if ($email != '') {
             $where .= ' AND c.email = "' . $email . '"';
         }
 
@@ -284,8 +264,7 @@ class projects extends projects_crud
         $resultat = $this->bdd->query($sql);
         $result = array();
 
-        while ($record = $this->bdd->fetch_array($resultat))
-        {
+        while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -293,28 +272,22 @@ class projects extends projects_crud
 
     function searchDossiersNoRemb($siren = '', $societe = '', $nom = '', $prenom = '', $projet = '', $email = '', $start = '', $nb = '')
     {
-        if ($siren != '')
-        {
+        if ($siren != '') {
             $where .= ' AND co.siren = "' . $siren . '"';
         }
-        if ($societe != '')
-        {
+        if ($societe != '') {
             $where .= ' AND co.name = "' . $societe . '"';
         }
-        if ($nom != '')
-        {
+        if ($nom != '') {
             $where .= ' AND c.nom = "' . $nom . '"';
         }
-        if ($prenom != '')
-        {
+        if ($prenom != '') {
             $where .= ' AND c.prenom = "' . $prenom . '"';
         }
-        if ($projet != '')
-        {
+        if ($projet != '') {
             $where .= ' AND p.title_bo LIKE "%' . $projet . '%"';
         }
-        if ($email != '')
-        {
+        if ($email != '') {
             $where .= ' AND c.email = "' . $email . '"';
         }
 
@@ -332,8 +305,7 @@ class projects extends projects_crud
         $resultat = $this->bdd->query($sql);
         $result = array();
 
-        while ($record = $this->bdd->fetch_array($resultat))
-        {
+        while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -347,10 +319,8 @@ class projects extends projects_crud
         $lProjets = $this->selectProjectsByStatus($status, ' AND p.display = 0 and p.status = 0', ($order != '' ? $order : 'p.date_publication DESC'));
         $tabProjects = array();
 
-        foreach ($lProjets as $k => $p)
-        {
-            if ($p['id_project'] == $id_project)
-            {
+        foreach ($lProjets as $k => $p) {
+            if ($p['id_project'] == $id_project) {
                 $previous = $lProjets[$k - 1]['slug'];
 
                 $next = $lProjets[$k + 1]['slug'];
@@ -369,8 +339,7 @@ class projects extends projects_crud
         $resultat = $this->bdd->query($sql);
         $lesfav = '';
         $i = 0;
-        while ($f = $this->bdd->fetch_array($resultat))
-        {
+        while ($f = $this->bdd->fetch_array($resultat)) {
             $lesfav .= ($i > 0 ? ',' : '') . $f['id_project'];
             $i++;
         }
@@ -379,8 +348,7 @@ class projects extends projects_crud
 
         $resultat = $this->bdd->query($sql);
         $result = array();
-        while ($record = $this->bdd->fetch_array($resultat))
-        {
+        while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -396,9 +364,83 @@ class projects extends projects_crud
 				';
 
         $result = $this->bdd->query($sql);
-        $id_project = (int) ($this->bdd->result($result, 0, 0));
+        $id_project = (int)($this->bdd->result($result, 0, 0));
 
         return parent::get($id_project, 'id_project');
     }
 
+    public function countProjectsByStatus($status)
+    {
+        if(is_array($status)){
+            $statusString = implode(",", $status);
+        }
+
+        $sql = 'SELECT COUNT(*) FROM projects p WHERE(
+    SELECT
+			ps.status
+		FROM
+			projects_status ps
+			LEFT JOIN projects_status_history psh ON (
+            ps.id_project_status = psh.id_project_status
+        )
+		WHERE
+			psh.id_project = p.id_project
+		ORDER BY
+			psh.added DESC
+		LIMIT
+			1
+	) IN (' . $statusString . ');';
+
+        $result = $this->bdd->query($sql);
+        $record = $this->bdd->result($result);
+
+        return $record;
+    }
+
+
+    public function countProjectsByStatusAndLender($lender, $status){
+
+        if(is_array($status)){
+            $statusString = implode(",", $status);
+        }
+
+        $sql = 'SELECT COUNT(DISTINCT l.id_project)
+                FROM loans l
+                INNER JOIN projects p ON l.id_project = p.id_project
+                WHERE id_lender = ' . $lender . '
+                AND l.status = 0
+                AND
+                    ( SELECT ps.status FROM projects_status ps
+                    LEFT JOIN projects_status_history psh ON ( ps.id_project_status = psh.id_project_status )
+                    WHERE psh.id_project = p.id_project ORDER BY
+                    psh.added DESC LIMIT 1 ) IN (' . $statusString . ');';
+
+        $result = $this->bdd->query($sql);
+        $record = $this->bdd->result($result);
+
+        return $record;
+    }
+
+    public function countProjectsSinceLendersubscription($client, $status){
+
+        if(is_array($status)){
+            $statusString = implode(",", $status);
+        }
+
+        $sql = 'SELECT	COUNT(*)
+                FROM projects p
+                WHERE  `date_publication_full` >= (
+                        SELECT `added` FROM clients
+		                WHERE id_client = '.$client.')
+		                AND (
+                              SELECT ps.status
+		                      FROM projects_status ps
+			                    LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status)
+		                        WHERE psh.id_project = p.id_project
+		                    ORDER BY psh.added DESC LIMIT 1) IN ('.$statusString.');';
+        $result = $this->bdd->query($sql);
+        $record = $this->bdd->result($result);
+
+        return $record;
+    }
 }

@@ -29,6 +29,30 @@
 class projects_status extends projects_status_crud
 {
 
+	const NON_LU = 10;
+	const A_LETUDE = 20;
+	const A_FUNDER = 40;
+	const EN_FUNDING = 50;
+	const FUNDE = 60;
+	const FUNDING_KO = 70;
+	const REJETE = 30;
+	const REMBOURSEMENT = 80;
+	const PROBLEME = 100;
+	const RECOUVREMENT = 110;
+	const DEFAULT_STATUS = 120;
+	const REMBOURSE = 90;
+	const PRET_REFUSE = 75;
+	const REVUE_ANALYSTE = 31;
+	const REJET_ANALYSTE = 32;
+	const COMITE = 33;
+	const REJET_COMITE = 34;
+	const PREP_FUNDING = 35;
+	const NOTE_EXTERNE_FAIBLE = 5;
+	const PAS_3_BILANS = 6;
+	const ABANDON_ETAPE_2 = 7;
+	const REMBOURSEMENT_ANTICIPE = 130;
+
+
 	function projects_status($bdd,$params='')
     {
         parent::projects_status($bdd,$params);

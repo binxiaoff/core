@@ -26,7 +26,7 @@
 	}
 	?>
     
-    <form action="<?=$this->lurl?>/profile/societe/3" method="post" id="form_societe_perso" name="form_societe_perso">
+    <form action="<?=$this->lurl?>/profile/societe/3" method="post" id="form_societe_perso" name="form_societe_perso" enctype="multipart/form-data">
 		<div class="part_societe1">
             <div class="row">
                 
