@@ -57,50 +57,58 @@ class depot_de_dossierController extends bootstrap
 
     function _etape1()
     {
-        // source
-        $this->ficelle->source($_GET['utm_source'], $this->lurl . '/depot_de_dossier/etape1', $_GET['utm_source2']);
-
-        //Recuperation des element de traductions
-        $this->lng['etape1'] = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
 
         // Num page
         $this->page = 1;
 
-        // Somme à emprunter min
-        $this->settings->get('Somme à emprunter min', 'type');
-        $this->sommeMin = $this->settings->value;
-
-        // Somme à emprunter max
-        $this->settings->get('Somme à emprunter max', 'type');
-        $this->sommeMax = $this->settings->value;
 
         // Declaration des metas pour l'arbo
         $this->meta_title = $this->lng['depot-de-dossier-header']['meta-title'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-title'];
         $this->meta_keywords = $this->lng['depot-de-dossier-header']['meta-title'];
 
-        ////////////////////////////////
-        // Initialisation variable
-        $this->preteurCreateEmprunteur = false;
-
-        $this->settings->get('Durée des prêts autorisées','type');
-        $this->dureePossible = explode(',',$this->settings->value);
+// load des durée des prêts autorisées
+        $this->settings->get('Durée des prêts autorisées', 'type');
+        $this->dureePossible = explode(',', $this->settings->value);
         if (empty($this->settings->value)) {
-            $this->dureePossible = array(24,36,48,60);
+            $this->dureePossible = array(24, 36, 48, 60);
         }
 
-        // Si on a une session active
-        if (isset($_SESSION['client']))
-        {
+// Somme à emprunter min
+        $this->settings->get('Somme à emprunter min', 'type');
+        $this->sommeMin = $this->settings->value;
+
+// Somme à emprunter max
+        $this->settings->get('Somme à emprunter max', 'type');
+        $this->sommeMax = $this->settings->value;
+
+//traduction
+        $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
+
+
+// source -> mets utm_source dans la session
+        $this->ficelle->source($_GET['utm_source'], $this->lurl . '/' . $this->params[0], $_GET['utm_source2']);
+
+
+// Si on a une session d'ouverte on redirige - vrsion LP
+        if (isset($_SESSION['client'])) {
+            header('location:' . $this->lurl);
+            die;
+        }
+
+////////////////////////////////
+// Initialisation variable
+        $this->preteurCreateEmprunteur = false;
+
+// Si on a une session active - version etape 1
+        if (isset($_SESSION['client'])) {
             // On recup le mec
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
 
             // Si c'est un preteur
-            if ($this->clients->status_pre_emp == 1)
-            {
+            if ($this->clients->status_pre_emp == 1) {
                 // On controle si personne morale
-                if (in_array($this->clients->type, array(2, 4)))
-                {
+                if (in_array($this->clients->type, array(2, 4))) {
                     $this->preteurCreateEmprunteur = true;
 
                     // Si personne morale on recup l'entreprise
@@ -108,8 +116,7 @@ class depot_de_dossierController extends bootstrap
                     $this->companies_details->get($this->companies->id_company, 'id_company');
 
                     // Si a deja créer un projet on le redirige dessus
-                    if ($this->clients->status_depot_dossier > 0)
-                    {
+                    if ($this->clients->status_depot_dossier > 0) {
 
                         header('location:' . $this->lurl . '/depot_de_dossier/etape' . ($this->clients->status_depot_dossier + 1) . '/' . $this->clients->hash);
                         die;
@@ -118,81 +125,94 @@ class depot_de_dossierController extends bootstrap
             }
         }
 
-        /////////////////////////////////
-        // On valide l'etape 1 (formulaire)
-        if (isset($_POST['send_form_etape_1']))
-        {
-            $montant = str_replace(',', '.', str_replace(' ', '', $_POST['montant']));
 
-            $this->form_ok = true;
+        $reponse_get = false;
+// Si on a les get en question
+        if (isset($_GET['montant']) && $_GET['montant'] != '' &&
+            isset($_GET['duree']) && $_GET['duree'] != '' &&
+            isset($_GET['siren']) && $_GET['siren'] != '' &&
+            isset($_GET['exercices_comptables']) && $_GET['exercices_comptables'] != ''
+        ) {
+            $reponse_get = true;
+        }
 
-            // Montant
-            if (!isset($_POST['montant']) || $_POST['montant'] == '' || $_POST['montant'] == $this->lng['etape1']['montant'])
-            {
-                $this->form_ok = false;
+// On récupère le formulaire d'inscription de la page
+        if (isset($_POST['spy_inscription_landing_page_depot_dossier']) || $reponse_get == true) {
+            if ($reponse_get == true) {
+                $montant = str_replace(',', '.', str_replace(' ', '', $_GET['montant']));
+                $duree = $_GET['duree'];
+                $siren = $_GET['siren'];
+                $exercices_comptables = $_GET['exercices_comptables'];
+            } else {
+                $montant = str_replace(',', '.', str_replace(' ', '', $_POST['montant']));
+                $duree = $_POST['duree'];
+                $siren = $_POST['siren'];
+                $exercices_comptables = $_POST['exercices_comptables'];
             }
-            // Si pas numerique 
-            elseif (!is_numeric($montant))
-            {
-                $this->form_ok = false;
-            }
-            // montant < ou > au min et max
-            elseif ($montant < $this->sommeMin || $montant > $this->sommeMax)
-            {
+
+            $form_valid = true;
+
+            if (!isset($montant) or $montant == $this->lng['landing-page']['montant-souhaite']) {
+                $form_valid = false;
+                $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
+            } // Si pas numerique
+            elseif (!is_numeric($montant)) {
+                $form_valid = false;
+                $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
+            } // montant < ou > au min et max
+            elseif ($montant < $this->sommeMin || $montant > $this->sommeMax) {
                 $this->form_ok = false;
             }
 
-            // siren
-            if (!isset($_POST['siren']) || $_POST['siren'] == '' || $_POST['siren'] == $this->lng['etape1']['siren'])
-            {
-                $this->form_ok = false;
+            if (!isset($duree) or $duree == 0 or !in_array($duree, $this->dureePossible)) {
+                $form_valid = false;
+                $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
             }
+
+            if (!isset($siren) or $siren == $this->lng['landing-page']['siren'] || strlen($siren) != 9) {
+                $form_valid = false;
+                $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
+            }
+
             // 3 annees comptable oui ou non
             $comptable = false;
-            if (!isset($_POST['comptables']) || $_POST['comptables'] == '' || $_POST['comptables'] == '0')
-            {
+            if (!isset($exercices_comptables) || $exercices_comptables == '' || $exercices_comptables == '0') {
                 $comptable = true;
             }
 
-            // form valide
-            if ($this->form_ok == true)
-            {
+
+            if ($form_valid) {
                 //Si on a une session client
-                if (isset($_SESSION['client']))
-                {
+                if (isset($_SESSION['client'])) {
                     // On recup le mec
                     $this->clients->get($_SESSION['client']['id_client'], 'id_client');
 
                     $this->clients->status_depot_dossier = 1;
 
                     // Si c'est un preteur
-                    if ($this->clients->status_pre_emp == 1)
-                    {
+                    if ($this->clients->status_pre_emp == 1) {
                         // On controle si personne physique
-                        if ($this->clients->type == 1)
-                        {
+                        if ($this->clients->type == 1) {
                             // on cache tant qu'on met pas le systeme preteur/emprunteur
                             //$_SESSION['error_pre_empr'] = 'Seule une personne morale peut créer un compte emprunteur';
-                            header('location:' . $this->lurl . '/depot_de_dossier/etape1');
+                            header('location:' . $this->lurl . '/lp-depot-de-dossier');
                             die;
                         }
-                    }
-                    // Si c'est un emprunteur ou deja un preteur/emprunteur
-                    elseif ($this->clients->status_pre_emp == 2 || $this->clients->status_pre_emp == 3)
-                    {
+                    } // Si c'est un emprunteur ou deja un preteur/emprunteur
+                    elseif ($this->clients->status_pre_emp == 2 || $this->clients->status_pre_emp == 3) {
                         // on cache tant qu'on met pas le systeme preteur/emprunteur
                         //$_SESSION['error_pre_empr'] = 'Vous disposez déjà d\'un compte emprunteur';
                         // Si emprunteur pas le droit de créer un autre compte en etant connecté
-                        header('location:' . $this->lurl . '/depot_de_dossier/etape1');
+                        header('location:' . $this->lurl . '/lp-depot-de-dossier');
                         die;
                     }
 
                     // dans tous les cas tant qu'on a pas le syteme preteur/emprunteur on redirige si on est connecté (a supprimer lors de la mise en place du systeme)
-                    header('location:' . $this->lurl . '/depot_de_dossier/etape1');
+                    header('location:' . $this->lurl . '/lp-depot-de-dossier');
                     die;
                 }
-                
-                
+
+
                 // 1 : activé 2 : activé mais prend pas en compte le resultat 3 : desactivé (DC)
                 $this->settings->get('Altares debrayage', 'type');
                 $AltaresDebrayage = $this->settings->value;
@@ -201,23 +221,18 @@ class depot_de_dossierController extends bootstrap
                 $AltaresEmailAlertes = $this->settings->value;
 
                 // 1 : activé 2 : on prend pas en compte les filtres.(DC)
-                if (in_array($AltaresDebrayage, array(1, 2)))
-                {
+                if (in_array($AltaresDebrayage, array(1, 2))) {
                     // Web Service Altares
                     $result = '';
-                    try
-                    {
-                        $siren = $_POST['siren'];
-                        $result = $this->ficelle->ws($this->wsdl, $this->identification, $_POST['siren']);
-                    }
-                    catch (Exception $e)
-                    {
+                    try {
+                        $result = $this->ficelle->ws($this->wsdl, $this->identification, $siren);
+                    } catch (Exception $e) {
+
                         mail($AltaresEmailAlertes, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $e->getMessage());
                         error_log("[" . date('Y-m-d H:i:s') . "] " . $e->getMessage(), 3, $this->path . '/log/error_altares.txt');
-                    }
 
-                    if ($result->exception != false)
-                    {
+                    }
+                    if ($result->exception != false) {
 
                         $erreur = 'Siren fourni : ' . $siren . ' | ' . $result->exception->code . ' | ' . $result->exception->description . ' | ' . $result->exception->erreur;
                         mail($AltaresEmailAlertes, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . '' . $erreur);
@@ -228,45 +243,47 @@ class depot_de_dossierController extends bootstrap
                     $exception = $result->exception;
 
                     // que pour le statut 2 (DC)
-                    if ($AltaresDebrayage == 2)
-                    {
+                    if ($AltaresDebrayage == 2) {
                         mail($AltaresEmailAlertes, '[ALERTE] Altares Tentative evaluation', 'Date ' . date('Y-m-d H:i:s') . ' siren : ' . $siren);
                     }
-                }
-                // debrayage statut 3 : altares desactivé
-                else
-                {
+
+                } // debrayage statut 3 : altares desactivé
+                else {
                     $exception = '';
                 }
+
                 // si altares ok
-                if ($exception == '')
-                {
+                if ($exception == '') {
                     // verif reponse
                     $eligibility = $result->myInfo->eligibility;
                     $score = $result->myInfo->score;
                     $identite = $result->myInfo->identite;
                     $siege = $result->myInfo->siege;
 
+
                     // clients //
-                    if ($this->preteurCreateEmprunteur == false)
-                    {
+                    if ($this->preteurCreateEmprunteur == false) {
                         $this->clients->source = $_SESSION['utm_source'];
                         $this->clients->source2 = $_SESSION['utm_source2'];
                     }
                     $this->clients->id_langue = $this->language;
                     $this->clients->status_depot_dossier = 1;
-                    if ($this->preteurCreateEmprunteur == true)
+
+                    $this->clients->slug_origine = $this->tree->slug;
+
+                    if ($this->preteurCreateEmprunteur == true) {
                         $this->clients->update();
-                    else
+
+                    } else {
                         $this->clients->id_client = $this->clients->create();
-                    // fin clients //
-                    //clients_adresses //
-                    if ($this->preteurCreateEmprunteur == false)
-                    {
-                        $this->clients_adresses->id_client = $this->clients->id_client;
-                        $this->clients_adresses->create();
                     }
+                    // fin clients //
+
+                    //clients_adresses - non fait en etape 1//
+                    $this->clients_adresses->id_client = $this->clients->id_client;
+                    $this->clients_adresses->create();
                     // clients_adresses //
+
                     // Companie //
                     $this->companies->name = $identite->raisonSociale;
                     $this->companies->forme = $identite->formeJuridique;
@@ -285,17 +302,18 @@ class depot_de_dossierController extends bootstrap
                     $this->companies->date_creation = $dateCreation;
 
                     $this->companies->id_client_owner = $this->clients->id_client; // id client
-                    $this->companies->siren = $_POST['siren'];
-                    $this->companies->execices_comptables = $_POST['comptables'];
-                    //$this->companies->activite = $identite->typeExploitationLabel;
-                    //$this->companies->lieu_exploi = $identite->ville;
+                    $this->companies->siren = $siren;
+
+                    //pas presente en etape 1
+                    $this->companies->siret = $identite->siret;
+
+                    $this->companies->execices_comptables = $exercices_comptables;
                     $this->companies->status_adresse_correspondance = '1';
 
-                    if ($this->preteurCreateEmprunteur == true && $this->clients->type == 2)
-                        $this->companies->update();
-                    else
-                        $this->companies->id_company = $this->companies->create();
+                    if ($this->preteurCreateEmprunteur == true && $this->clients->type == 2) $this->companies->update();
+                    else $this->companies->id_company = $this->companies->create();
                     // Fin companie //
+
                     // dernier bilan (companies_details) //
                     $dateDernierBilanString = substr($identite->dateDernierBilan, 0, 10);
                     $dateDernierBilan = explode('-', $dateDernierBilanSting);
@@ -304,15 +322,14 @@ class depot_de_dossierController extends bootstrap
                     $this->companies_details->date_dernier_bilan_annee = $dateDernierBilan[0];
 
                     $this->companies_details->id_company = $this->companies->id_company;
-                    if ($this->preteurCreateEmprunteur == true && $this->clients->type == 2)
-                        $this->companies_details->update();
-                    else
-                        $this->companies_details->create();
+                    if ($this->preteurCreateEmprunteur == true && $this->clients->type == 2) $this->companies_details->update();
+                    else $this->companies_details->create();
                     // fin companies_details //
+
                     // projects //
                     $this->projects->id_company = $this->companies->id_company;
-                    $this->projects->amount = str_replace(',', '.', str_replace(' ', '', $_POST['montant']));
-                    $this->projects->period = $_POST['duree'];
+                    $this->projects->amount = $montant;
+                    $this->projects->period = $duree;
 
                     // Default analyst
                     $this->settings->get('Default analyst', 'type');
@@ -321,10 +338,10 @@ class depot_de_dossierController extends bootstrap
 
                     $this->projects->id_project = $this->projects->create();
                     // fin projects //
+
                     // On génère 5 lignes dans la base pour les bilans
                     $lesdates = array(date('Y') - 3, date('Y') - 2, date('Y') - 1, date('Y'), date('Y') + 1);
-                    for ($i = 0; $i < 5; $i++)
-                    {
+                    for ($i = 0; $i < 5; $i++) {
                         $this->companies_bilans->id_company = $this->companies->id_company;
                         $this->companies_bilans->date = $lesdates[$i];
                         $this->companies_bilans->create();
@@ -336,8 +353,7 @@ class depot_de_dossierController extends bootstrap
                     $date[2] = (date('Y') - 2);
                     $date[3] = (date('Y') - 3);
 
-                    foreach ($date as $k => $d)
-                    {
+                    foreach ($date as $k => $d) {
                         $this->companies_actif_passif->annee = $d;
                         $this->companies_actif_passif->ordre = $k;
                         $this->companies_actif_passif->id_company = $this->companies->id_company;
@@ -357,8 +373,8 @@ class depot_de_dossierController extends bootstrap
                     $syntheseFinanciereList = array();
                     $derniersBilans = array();
                     $i = 0;
-                    foreach ($result->myInfo->bilans as $b)
-                    {
+
+                    foreach ($result->myInfo->bilans as $b) {
                         $annee = substr($b->bilan->dateClotureN, 0, 4);
                         $posteActifList[$annee] = $b->bilanRetraiteInfo->posteActifList;
                         $postePassifList[$annee] = $b->bilanRetraiteInfo->postePassifList;
@@ -381,8 +397,7 @@ class depot_de_dossierController extends bootstrap
                         for ($a = 0; $a < 3; $a++)// on parcourt les 3 dernieres années
                         {
                             // si y a une année du bilan qui correxpond a une année du tableau
-                            if ($derniersBilans[$a] == $ldate[$i])
-                            {
+                            if ($derniersBilans[$a] == $ldate[$i]) {
                                 // On recup les données de cette année
                                 $montant1 = $posteActifList[$ldate[$i]][1]->montant;
                                 $montant2 = $posteActifList[$ldate[$i]][2]->montant;
@@ -400,14 +415,11 @@ class depot_de_dossierController extends bootstrap
                     }
 
                     // Debut actif/passif
-                    foreach ($derniersBilans as $annees)
-                    {
-                        foreach ($posteActifList[$annees] as $a)
-                        {
+                    foreach ($derniersBilans as $annees) {
+                        foreach ($posteActifList[$annees] as $a) {
                             $ActifPassif[$annees][$a->posteCle] = $a->montant;
                         }
-                        foreach ($postePassifList[$annees] as $p)
-                        {
+                        foreach ($postePassifList[$annees] as $p) {
                             $ActifPassif[$annees][$p->posteCle] = $p->montant;
                         }
                     }
@@ -416,10 +428,8 @@ class depot_de_dossierController extends bootstrap
                     $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '"', 'annee DESC');
 
                     $i = 0;
-                    foreach ($this->lCompanies_actif_passif as $k => $ap)
-                    {
-                        if ($this->companies_actif_passif->get($ap['annee'], 'id_company = ' . $ap['id_company'] . ' AND annee'))
-                        {
+                    foreach ($this->lCompanies_actif_passif as $k => $ap) {
+                        if ($this->companies_actif_passif->get($ap['annee'], 'id_company = ' . $ap['id_company'] . ' AND annee')) {
                             // Actif
                             $this->companies_actif_passif->immobilisations_corporelles = $ActifPassif[$ap['annee']]['posteBR_IMCOR'];
                             $this->companies_actif_passif->immobilisations_incorporelles = $ActifPassif[$ap['annee']]['posteBR_IMMINC'];
@@ -450,33 +460,22 @@ class depot_de_dossierController extends bootstrap
                         $i++;
                     }
                     // Fin actif/passif
+
                     ///////////////////////////////////////////////////////////////
+
                     // date -3 ans
                     $todayMoins3 = date('Y') - 3;
 
                     // || $eligibility == 'Non'
-                    if (in_array($eligibility, array('Société radiée', 'Non', 'Pas de RCS')))
                     //if($eligibility == 'Société radiée' || $eligibility == 'Non')
-                    {
+                    if (in_array($eligibility, array('Société radiée', 'Non', 'Pas de RCS'))) {
                         // ajout du statut dans l'historique : statut 5 (Note externe faible)
                         $this->projects_status_history->addStatus(-2, 5, $this->projects->id_project);
 
                         // pas good
                         $altares = true;
-                    }
-                    // $this->tablStatus = array('Oui','Pas de bilan');
-                    elseif (in_array($eligibility, $this->tablStatus))
-                    {
-                        /* if($score->scoreVingt < 12)
-                          {
-                          // inferieur a 12
-                          $this->projects_status_history->addStatus(-2,5,$this->projects->id_project);
-
-                          // pas good
-                          //$altares = true;
-                          } */
-                        if ($eligibility == 'Pas de bilan')
-                        {
+                    } elseif (in_array($eligibility, $this->tablStatus)) {
+                        if ($eligibility == 'Pas de bilan') {
                             // ajout du statut dans l'historique : statut 6 (Pas 3 bilans)
                             $this->projects_status_history->addStatus(-2, 6, $this->projects->id_project);
 
@@ -484,8 +483,7 @@ class depot_de_dossierController extends bootstrap
                             //$altares = true;
                         }
                         // date creation -3 ans
-                        if (substr($identite->dateCreation, 0, 4) > $todayMoins3)
-                        {
+                        if (substr($identite->dateCreation, 0, 4) > $todayMoins3) {
                             // ajout du statut dans l'historique : statut 5 (Note externe faible)
                             $this->projects_status_history->addStatus(-2, 5, $this->projects->id_project);
 
@@ -495,14 +493,14 @@ class depot_de_dossierController extends bootstrap
                     }
 
                     // Moins de 3 exercices comptables
-                    if ($comptable == true)
-                    {
+                    if ($comptable == true) {
                         // ajout du statut dans l'historique : statut 6 (Pas 3 bilans)
                         $this->projects_status_history->addStatus(-2, 6, $this->projects->id_project);
                     }
+
+
                 }// fin altares
-                else
-                {
+                else {
                     // clients //
                     $this->clients->source = $_SESSION['utm_source'];
                     $this->clients->source2 = $_SESSION['utm_source2'];
@@ -510,25 +508,29 @@ class depot_de_dossierController extends bootstrap
                     $this->clients->status_depot_dossier = 1;
                     $this->clients->id_client = $this->clients->create();
                     // fin clients //
+
                     //clients_adresses //
                     $this->clients_adresses->id_client = $this->clients->id_client;
                     $this->clients_adresses->create();
                     // clients_adresses //
+
                     // Companie //
                     $this->companies->id_client_owner = $this->clients->id_client; // id client
-                    $this->companies->siren = $_POST['siren'];
-                    $this->companies->execices_comptables = $_POST['comptables'];
+                    $this->companies->siren = $siren;
+                    $this->companies->execices_comptables = $exercices_comptables;
                     $this->companies->status_adresse_correspondance = '1';
                     $this->companies->id_company = $this->companies->create();
                     // Fin companie //
+
                     // dernier bilan (companies_details) //
                     $this->companies_details->id_company = $this->companies->id_company;
                     $this->companies_details->create();
                     // fin companies_details //
+
                     // projects //
                     $this->projects->id_company = $this->companies->id_company;
-                    $this->projects->amount = str_replace(',', '.', str_replace(' ', '', $_POST['montant']));
-                    $this->projects->period = $_POST['duree'];
+                    $this->projects->amount = $montant;
+                    $this->projects->period = $duree;
 
                     // Default analyst
                     $this->settings->get('Default analyst', 'type');
@@ -536,10 +538,10 @@ class depot_de_dossierController extends bootstrap
 
                     $this->projects->id_project = $this->projects->create();
                     // fin projects //
+
                     // On génère 5 lignes dans la base pour les bilans
                     $lesdates = array(date('Y') - 3, date('Y') - 2, date('Y') - 1, date('Y'), date('Y') + 1);
-                    for ($i = 0; $i < 5; $i++)
-                    {
+                    for ($i = 0; $i < 5; $i++) {
                         $this->companies_bilans->id_company = $this->companies->id_company;
                         $this->companies_bilans->date = $lesdates[$i];
                         $this->companies_bilans->create();
@@ -551,110 +553,39 @@ class depot_de_dossierController extends bootstrap
                     $date[2] = (date('Y') - 2);
                     $date[3] = (date('Y') - 3);
 
-                    foreach ($date as $k => $d)
-                    {
+                    foreach ($date as $k => $d) {
                         $this->companies_actif_passif->annee = $d;
                         $this->companies_actif_passif->ordre = $k;
                         $this->companies_actif_passif->id_company = $this->companies->id_company;
                         $this->companies_actif_passif->create();
                     }
 
-
-
                     // ajout du statut dans l'historique : statut 5 (Note externe faible)
                     $this->projects_status_history->addStatus(-2, 5, $this->projects->id_project);
 
-                    
-                    //on envoi un MAIL ALERTE
-                    // subject
-                    $subject = '[Alerte] Webservice Altares sans reponse';
+                    //on envoie email erreur
+                    $this->emailAltares($this->projects->id_project, $this->projects->title );
 
-                    // message
-                    $message = '
-                        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-                        <html xmlns="http://www.w3.org/1999/xhtml">
-                        <head>
-                            <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-                            <title>Webservice Altares sans r&eacute;ponse</title>
-                        </head>
-                        <style>
-                            table {width: 100%;}
-                            th {height: 50px;}
-                        </style>
-
-                        <body >
-                            <table border="0" width="450" style="margin:auto;">
-                                <tr>
-                                        <td colspan="2" ><img src="'.$this->surl.'/images/default/emails/logo.png" alt="logo" /></td>
-                                </tr>
-                                <tr>
-                                        <td colspan="2">Le Webservice Altares ne semble pas r&eacute;pondre</td>
-                                </tr>
-
-                                <tr>
-                                    <td colspan="2">Projet touch&eacute; :</td>
-                                </tr>
-                            </table>
-                            
-                            <br />
-                            Id Projet : '.$this->projects->id_project.'<br />
-                            Nom : '.$this->projects->title.'
-                                
-                        </body>
-                        </html>
-                        ';
-
-
-                    // To send HTML mail, the Content-type header must be set
-                    $headers = 'MIME-Version: 1.0' . "\r\n";
-                    $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-                    // Additional headers
-                    //$headers .= 'To: Damien <d.courtier@equinoa.com>, Kelly <kelly@example.com>' . "\r\n";
-                    //$headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
-                    $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
-
-                    // multiple recipients
-                    //$to  = 'aidan@example.com' . ', '; // note the comma
-                    //$to .= 'wez@example.com';
-                    $to = 'k1@david.equinoa.net';
-
-
-                    // Recupération du destinataire
-                    $this->settings->get('Adresse alerte altares erreur', 'type');
-                    $to = $this->settings->value;
-
-                    // Mail it
-                    mail($to, $subject, $message, $headers);
-
-                    // FIN ENVOI MAIL ALERTE
-                    
-                    
-                    
-                    
-                    header('location:' . $this->lurl . '/depot_de_dossier/etape1/nok');      /// <---- a remettre
-                    die;                    /// <---- a remettre
-                    
-                    // // filtre altares -  cour-circuit
-                    // on autorise le passage en etape 2 temporairement
-                    //header('location:'.$this->lurl.'/depot_de_dossier/etape2/'.$this->clients->hash); 	/// <---- a retirer
-                    //die;	/// <---- a retirer
-                }
-
-                // Si altarest est pas good ou comptable pas good
-                if ($altares == true || $comptable == true)
-                {
                     header('location:' . $this->lurl . '/depot_de_dossier/etape1/nok');
                     die;
                 }
 
-                sleep(1); // pour avoir une date en décalé pour le statut
+
+                // Si altarest est pas good ou comptable pas good
+                if ($altares == true || $comptable == true) {
+                    header('location:' . $this->lurl . '/depot_de_dossier/etape1/nok');
+                    die;
+                }
+
+                // si good page confirmation
+                //$this->projects_status_history->addStatus(-2,10,$this->projects->id_project); // ajouté meme normalement present en étape 2
+                sleep(1);
                 $this->projects_status_history->addStatus(-2, 7, $this->projects->id_project); // statut abandon
 
                 header('location:' . $this->lurl . '/depot_de_dossier/etape2/' . $this->clients->hash);
                 die;
-            }// fin form valide
-        }// fin formulaire
+            }
+        }
     }
 
     function _etape2()
@@ -2332,6 +2263,66 @@ class depot_de_dossierController extends bootstrap
     {
         //Recuperation des element de traductions
         $this->lng['etape1'] = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
+    }
+
+    private function emailAltares($id_project, $project_title){
+
+        //on envoi un MAIL ALERTE
+        // subject
+        $subject = '[Alerte] Webservice Altares sans reponse';
+
+        // message
+        $message = '
+                        <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+                        <html xmlns="http://www.w3.org/1999/xhtml">
+                        <head>
+                            <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+                            <title>Webservice Altares sans r&eacute;ponse</title>
+                        </head>
+                        <style>
+                            table {width: 100%;}
+                            th {height: 50px;}
+                        </style>
+
+                        <body >
+                            <table border="0" width="450" style="margin:auto;">
+                                <tr>
+                                        <td colspan="2" ><img src="' . $this->surl . '/images/default/emails/logo.png" alt="logo" /></td>
+                                </tr>
+                                <tr>
+                                        <td colspan="2">Le Webservice Altares ne semble pas r&eacute;pondre</td>
+                                </tr>
+
+                                <tr>
+                                    <td colspan="2">Projet touch&eacute; :</td>
+                                </tr>
+                            </table>
+
+                            <br />
+                            Id Projet : ' . $id_project . '<br />
+                            Nom : ' . $project_title . '
+
+                        </body>
+                        </html>
+                        ';
+
+
+        // To send HTML mail, the Content-type header must be set
+        $headers = 'MIME-Version: 1.0' . "\r\n";
+        $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+
+        // Additional headers
+        $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
+
+        // Recupération du destinataire
+        $this->settings->get('Adresse alerte altares erreur', 'type');
+        $to = $this->settings->value;
+
+        // Mail it
+        mail($to, $subject, $message, $headers);
+
+        // FIN ENVOI MAIL ALERTE
+
     }
 
 }
