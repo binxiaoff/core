@@ -21,6 +21,7 @@ public/admin/.htaccess
 public/default/var
 public/default/.htaccess
 config.php
+data/crud/*
 
 ###PHPStorm###
 .idea/
@@ -33,3 +34,4 @@ vagrant/.vagrant/
 !public/default/scripts/default/*
 !/dev/public/
 /route.php
+*.rej

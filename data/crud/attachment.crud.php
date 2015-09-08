@@ -28,6 +28,7 @@
 class attachment_crud
 {
 	
+<<<<<<< HEAD
 	public $id;
 	public $id_type;
 	public $id_owner;
@@ -36,6 +37,16 @@ class attachment_crud
 	public $added;
 	public $updated;
 	public $archived;
+=======
+	public $id;
+	public $id_type;
+	public $id_owner;
+	public $type_owner;
+	public $path;
+	public $added;
+	public $updated;
+	public $archived;
+>>>>>>> Bugfix-BT17951
 
 	
 	function attachment($bdd,$params='')
@@ -44,6 +55,7 @@ class attachment_crud
 		if($params=='')
 			$params = array();
 		$this->params = $params;
+<<<<<<< HEAD
 		$this->id = '';
 		$this->id_type = '';
 		$this->id_owner = '';
@@ -52,6 +64,16 @@ class attachment_crud
 		$this->added = '';
 		$this->updated = '';
 		$this->archived = '';
+=======
+		$this->id = '';
+		$this->id_type = '';
+		$this->id_owner = '';
+		$this->type_owner = '';
+		$this->path = '';
+		$this->added = '';
+		$this->updated = '';
+		$this->archived = '';
+>>>>>>> Bugfix-BT17951
 
 	}
 	
@@ -64,6 +86,7 @@ class attachment_crud
 		{
 			$record = $this->bdd->fetch_array($result);
 		
+<<<<<<< HEAD
 				$this->id = $record['id'];
 			$this->id_type = $record['id_type'];
 			$this->id_owner = $record['id_owner'];
@@ -72,6 +95,16 @@ class attachment_crud
 			$this->added = $record['added'];
 			$this->updated = $record['updated'];
 			$this->archived = $record['archived'];
+=======
+				$this->id = $record['id'];
+			$this->id_type = $record['id_type'];
+			$this->id_owner = $record['id_owner'];
+			$this->type_owner = $record['type_owner'];
+			$this->path = $record['path'];
+			$this->added = $record['added'];
+			$this->updated = $record['updated'];
+			$this->archived = $record['archived'];
+>>>>>>> Bugfix-BT17951
 
 			return true;
 		}
@@ -84,6 +117,7 @@ class attachment_crud
 	
 	function update($cs='')
 	{
+<<<<<<< HEAD
 		$this->id = $this->bdd->escape_string($this->id);
 		$this->id_type = $this->bdd->escape_string($this->id_type);
 		$this->id_owner = $this->bdd->escape_string($this->id_owner);
@@ -92,6 +126,16 @@ class attachment_crud
 		$this->added = $this->bdd->escape_string($this->added);
 		$this->updated = $this->bdd->escape_string($this->updated);
 		$this->archived = $this->bdd->escape_string($this->archived);
+=======
+		$this->id = $this->bdd->escape_string($this->id);
+		$this->id_type = $this->bdd->escape_string($this->id_type);
+		$this->id_owner = $this->bdd->escape_string($this->id_owner);
+		$this->type_owner = $this->bdd->escape_string($this->type_owner);
+		$this->path = $this->bdd->escape_string($this->path);
+		$this->added = $this->bdd->escape_string($this->added);
+		$this->updated = $this->bdd->escape_string($this->updated);
+		$this->archived = $this->bdd->escape_string($this->archived);
+>>>>>>> Bugfix-BT17951
 
 		
 		$sql = 'UPDATE `attachment` SET `id_type`="'.$this->id_type.'",`id_owner`="'.$this->id_owner.'",`type_owner`="'.$this->type_owner.'",`path`="'.$this->path.'",`added`="'.$this->added.'",`updated`=NOW(),`archived`="'.$this->archived.'" WHERE id="'.$this->id.'"';
@@ -119,6 +163,7 @@ class attachment_crud
 	
 	function create($cs='')
 	{
+<<<<<<< HEAD
 		$this->id = $this->bdd->escape_string($this->id);
 		$this->id_type = $this->bdd->escape_string($this->id_type);
 		$this->id_owner = $this->bdd->escape_string($this->id_owner);
@@ -127,6 +172,16 @@ class attachment_crud
 		$this->added = $this->bdd->escape_string($this->added);
 		$this->updated = $this->bdd->escape_string($this->updated);
 		$this->archived = $this->bdd->escape_string($this->archived);
+=======
+		$this->id = $this->bdd->escape_string($this->id);
+		$this->id_type = $this->bdd->escape_string($this->id_type);
+		$this->id_owner = $this->bdd->escape_string($this->id_owner);
+		$this->type_owner = $this->bdd->escape_string($this->type_owner);
+		$this->path = $this->bdd->escape_string($this->path);
+		$this->added = $this->bdd->escape_string($this->added);
+		$this->updated = $this->bdd->escape_string($this->updated);
+		$this->archived = $this->bdd->escape_string($this->archived);
+>>>>>>> Bugfix-BT17951
 
 		
 		$sql = 'INSERT INTO `attachment`(`id_type`,`id_owner`,`type_owner`,`path`,`added`,`updated`,`archived`) VALUES("'.$this->id_type.'","'.$this->id_owner.'","'.$this->type_owner.'","'.$this->path.'",NOW(),NOW(),"'.$this->archived.'")';
@@ -150,6 +205,7 @@ class attachment_crud
 	
 	function unsetData()
 	{
+<<<<<<< HEAD
 		$this->id = '';
 		$this->id_type = '';
 		$this->id_owner = '';
@@ -158,6 +214,16 @@ class attachment_crud
 		$this->added = '';
 		$this->updated = '';
 		$this->archived = '';
+=======
+		$this->id = '';
+		$this->id_type = '';
+		$this->id_owner = '';
+		$this->type_owner = '';
+		$this->path = '';
+		$this->added = '';
+		$this->updated = '';
+		$this->archived = '';
+>>>>>>> Bugfix-BT17951
 
 	}
 }
