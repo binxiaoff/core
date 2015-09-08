@@ -30,7 +30,7 @@
                     <?
 				}
 				?>
-				<a href="<?=$this->lurl.'/'.$this->tree->getSlug(128,$this->language)?>" class="btn btn-mega">
+				<a href="<?=$this->lurl.'/'.$this->tree->getSlug(236,$this->language)?>" class="btn btn-mega">
 					<i class="icon-arrow-medium-next right"></i>
 					<?=$this->lng['home']['empruntez']?>
 				</a>
