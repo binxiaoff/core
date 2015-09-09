@@ -29,7 +29,13 @@
 class projects_status extends projects_status_crud
 {
 
-	const NON_LU = 10;
+	const NOTE_EXTERNE_FAIBLE = 5;
+	const PAS_3_BILANS = 6;
+	const ABANDON_ETAPE_2 = 7;
+	const COMPLETUDE_ETAPE_2 = 8;
+	const ABANDON = 9;
+	const EN_ATTENTE_PIECES = 11;
+	const A_TRAITER = 10;
 	const A_LETUDE = 20;
 	const A_FUNDER = 40;
 	const EN_FUNDING = 50;
@@ -47,10 +53,8 @@ class projects_status extends projects_status_crud
 	const COMITE = 33;
 	const REJET_COMITE = 34;
 	const PREP_FUNDING = 35;
-	const NOTE_EXTERNE_FAIBLE = 5;
-	const PAS_3_BILANS = 6;
-	const ABANDON_ETAPE_2 = 7;
 	const REMBOURSEMENT_ANTICIPE = 130;
+
 
 
 	function projects_status($bdd,$params='')
