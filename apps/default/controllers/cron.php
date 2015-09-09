@@ -11591,13 +11591,13 @@ class cronController extends bootstrap
                             {
                                 if ($type == 'quotidienne')
                                 {
-                                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                                    $sujet = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
                                     $objet = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
                                 }
                                 elseif ($type == 'hebdomadaire')
                                 {
-                                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                                    $sujet = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
                                     $objet = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
                                 }
@@ -11606,11 +11606,13 @@ class cronController extends bootstrap
                             {
                                 if ($type == 'quotidienne')
                                 {
+                                    $sujet = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
                                     $objet = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
                                 }
                                 elseif ($type == 'hebdomadaire')
                                 {
+                                    $sujet = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
                                     $objet = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
                                 }
@@ -11626,6 +11628,7 @@ class cronController extends bootstrap
                                 'projet-p' => $this->lurl . '/projets-a-financer',
                                 'motif_virement' => $motif,
                                 'gestion_alertes' => $this->lurl . '/profile',
+                                'sujet' => utf8_decode($sujet),
                                 'objet' => utf8_decode($objet),
                                 'contenu' => utf8_decode($lecontenu),
                                 'lien_fb' => $lien_fb,
@@ -11920,7 +11923,7 @@ class cronController extends bootstrap
                             {
                                 if ($type == 'quotidienne')
                                 {
-                                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
+                                    $sujet = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-singulier'];
                                     $objet = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-singulier'];
                                 }
@@ -11929,6 +11932,7 @@ class cronController extends bootstrap
                             {
                                 if ($type == 'quotidienne')
                                 {
+                                    $sujet = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-pluriel'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-pluriel'];
                                     $objet = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-pluriel'];
                                 }
@@ -11945,6 +11949,7 @@ class cronController extends bootstrap
                                 'gestion_alertes' => $this->lurl . '/profile',
                                 'contenu' => utf8_decode($lecontenu),
                                 'objet' => utf8_decode($objet),
+                                'sujet' => utf8_decode($sujet),
                                 'lien_fb' => $lien_fb,
                                 'lien_tw' => $lien_tw);
                             // Construction du tableau avec les balises EMV
@@ -12241,7 +12246,7 @@ class cronController extends bootstrap
                     {
                         if ($type == 'quotidienne')
                         {
-                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
+                            $sujet = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
                             $lecontenu = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-singulier'];
                             $objet = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-singulier'];
                         }
@@ -12250,6 +12255,7 @@ class cronController extends bootstrap
                     {
                         if ($type == 'quotidienne')
                         {
+                            $sujet = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-pluriel'];
                             $lecontenu = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-pluriel'];
                             $objet = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-pluriel'];
                         }
@@ -12267,6 +12273,7 @@ class cronController extends bootstrap
                         'gestion_alertes' => $this->lurl . '/profile',
                         'contenu' => utf8_decode($lecontenu),
                         'objet' => utf8_decode($objet),
+                        'sujet' => utf8_decode($sujet),
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw);
                     // Construction du tableau avec les balises EMV
@@ -12465,19 +12472,19 @@ class cronController extends bootstrap
                             {
                                 if ($type == 'quotidienne')
                                 {
-                                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
+                                    $sujet = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-singulier'];
                                     $objet = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-singulier'];
                                 }
                                 elseif ($type == 'hebdomadaire')
                                 {
-                                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
+                                    $sujet = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-singulier'];
                                     $objet = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-singulier'];
                                 }
                                 elseif ($type == 'mensuelle')
                                 {
-                                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
+                                    $sujet = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-singulier'];
                                     $objet = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-singulier'];
                                 }
@@ -12486,16 +12493,19 @@ class cronController extends bootstrap
                             {
                                 if ($type == 'quotidienne')
                                 {
+                                    $sujet = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-pluriel'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-pluriel'];
                                     $objet = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-pluriel'];
                                 }
                                 elseif ($type == 'hebdomadaire')
                                 {
+                                    $sujet = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-pluriel'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-pluriel'];
                                     $objet = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-pluriel'];
                                 }
                                 elseif ($type == 'mensuelle')
                                 {
+                                    $sujet = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-pluriel'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-pluriel'];
                                     $objet = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-pluriel'];
                                 }
@@ -12511,6 +12521,7 @@ class cronController extends bootstrap
                                 'motif_virement' => $motif,
                                 'contenu' => utf8_decode($lecontenu),
                                 'objet' => utf8_decode($objet),
+                                'sujet' => utf8_decode($sujet),
                                 'gestion_alertes' => $this->lurl . '/profile',
                                 'lien_fb' => $lien_fb,
                                 'lien_tw' => $lien_tw);
@@ -12882,36 +12893,38 @@ class cronController extends bootstrap
                     // contenu
                     $lecontenu = '';
                     // on gère ici le cas du singulier/pluriel
-                    if ($nb_arrayRemb <= 1)
+                    if($nb_arrayRemb <= 1)
                     {
                         if ($type == 'quotidienne')
                         {
-                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
+                            $sujet = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
                             $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
                         }
                         elseif ($type == 'hebdomadaire')
                         {
-                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
-                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
+                            $sujet = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
+                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-singulier'];
                         }
                         elseif ($type == 'mensuelle')
                         {
-                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
-                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
+                            $sujet = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
+                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-mensuelle-singulier'];
                         }
                     }
-                    else
-                    {
+                    else{
                         if ($type == 'quotidienne')
                         {
+                            $sujet = $this->lng['email-synthese']['sujet-synthese-quotidienne-pluriel'];
                             $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-pluriel'];
                         }
                         elseif ($type == 'hebdomadaire')
                         {
+                            $sujet = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-pluriel'];
                             $lecontenu = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-pluriel'];
                         }
                         elseif ($type == 'mensuelle')
                         {
+                            $sujet = $this->lng['email-synthese']['sujet-synthese-mensuelle-pluriel'];
                             $lecontenu = $this->lng['email-synthese']['contenu-synthese-mensuelle-pluriel'];
                         }
                     }
@@ -12927,6 +12940,7 @@ class cronController extends bootstrap
                         'montant_dispo' => number_format($getsolde, 2, ',', ' '),
                         'remboursement_anticipe' => $contenu_remboursement_anticipe,
                         'contenu' => $lecontenu,
+                        'sujet' => $sujet,
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw);
                     // Construction du tableau avec les balises EMV
