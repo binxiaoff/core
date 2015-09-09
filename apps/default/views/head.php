@@ -211,23 +211,6 @@
                 if ($this->lurl == 'http://partenaire.unilend.challenges.fr')
                 {
                     ?>
-                    <script>
-                        <!--
-                            xtnv = document;
-                        xtsd = "http://logi150";
-                        xtsite = " 350533";
-                        xtn2 = "46";
-                        xtpage = "Unilend::Global";
-                        xtdi = "";
-                        //-->
-                    </script>
-                    <script type="text/javascript" src="http://referentiel.nouvelobs.com/scripts/xiti/challenges.fr/xtcore.js"></script>
-                    <noscript>
-                        <img width="1" height="1" alt="" src="http://logi150.xiti.com/hit.xiti?s=350533&amp;s2=46&amp;p=Unilend::Global&amp;di=&amp;" />
-                    </noscript>
-
-
-
                     <?php
                     // pub challenges
                     /* ?><script>
