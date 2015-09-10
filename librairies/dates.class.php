@@ -21,7 +21,7 @@ class dates
 		$this->tableauJours['fr'] = array('Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi','Dimanche');
 		$this->tableauJours2['fr'] = array('Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi');
                 // tous les mois commencent pas une minuscule (Note BT 16614)
-		$this->tableauMois['fr'] = array('','janvier',utf8_encode('février'),'mars','avril','mai','juin','juillet',utf8_encode('août'),'septembre','octobre','novembre',utf8_encode('décembre')); 
+		$this->tableauMois['fr'] = array('','janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre');
 		$this->limitMois = array(1=>31,3=>31,4=>30,5=>31,6=>30,7=>31,8=>31,9=>30,10=>31,11=>30,12=>31);
 	}
 	
@@ -36,7 +36,7 @@ class dates
 	//-----------------------------------------------------------------------------------------
 	
 	/**
-	 * des tableaux de jours/mois g�rant les langues ...
+	 * des tableaux de jours/mois gérant les langues ...
 	 * ajout d'un tableau de mois dans une langue specifique
 	 */
 	function addLnMois($ln = 'en' , $mois = array() )
@@ -45,7 +45,7 @@ class dates
 	}
 	
 	/**
-	 * des tableaux de jours/mois g�rant les langues ...
+	 * des tableaux de jours/mois gérant les langues ...
 	 * ajout d'un tableau de jours dans une langue specifique
 	 */
 	function addLnJours($ln = 'en' , $jours = array() )
@@ -54,8 +54,8 @@ class dates
 	}
 	
 	/**
-	 * des tableaux de jours/mois g�rant les langues ...
-	 * ajout d'un mois sp�cifique dans une langue specifique
+	 * des tableaux de jours/mois gérant les langues ...
+	 * ajout d'un mois spécifique dans une langue specifique
 	 */
 	function addLnMoisNum($ln = 'en' , $num = 1 , $mois = "January" )
 	{
@@ -63,8 +63,8 @@ class dates
 	}
 	
 	/**
-	 * des tableaux de jours/mois g�rant les langues ...
-	 * ajout d'un jour sp�cifique dans une langue specifique
+	 * des tableaux de jours/mois gérant les langues ...
+	 * ajout d'un jour spécifique dans une langue specifique
 	 */
 	function addLnJourNum($ln = 'en' ,  $num = 0 , $jours = "Monday" )
 	{
