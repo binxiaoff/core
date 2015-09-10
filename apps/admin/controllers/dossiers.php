@@ -1098,11 +1098,13 @@ class dossiersController extends bootstrap
                             $prelevements = $this->loadData('prelevements');
                             $L_prelevements = $prelevements->select('id_project = ' . $this->projects->id_project.' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
                             
-                            foreach($L_prelevements as $prel)
-                            {
-                                $prelevements->get($prel['id_prelevement']);
-                                $prelevements->status = 4; // bloqué temporairement
-                                $prelevements->update();
+                            if($L_prelevements != false){
+                                foreach($L_prelevements as $prel)
+                                {
+                                    $prelevements->get($prel['id_prelevement']);
+                                    $prelevements->status = 4; // bloqué temporairement
+                                    $prelevements->update();
+                                }
                             }
                             
                             // On stop les remb auto si y en a
