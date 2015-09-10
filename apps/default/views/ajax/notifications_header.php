@@ -99,6 +99,16 @@ foreach ($this->lNotifHeader as $r) {
             </div>
             <?
         }
+        // Projet en probleme
+        elseif ($r['type'] == 9) {
+            $this->projects_notifs->get($r['id_project'], 'id_project');
+            ?>
+            <b><?= $this->lng['notifications']['annonce-nouveau-probleme'] ?></b><br />
+            <div class="content_notif">
+            <?= $this->lng['notifications']['probleme-notif-texte1'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['probleme-notif-texte2'] ?>
+            </div>
+            <?
+        }
         // recouvrement
         elseif ($r['type'] == 10) {
             $this->projects_notifs->get($r['id_project'], 'id_project');

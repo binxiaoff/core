@@ -1094,14 +1094,9 @@ class dossiersController extends bootstrap
                         // statut recouvrement
                         elseif ($_POST['status'] == '110')
                         {
-                            
                             // On bloque tous les futures prélèvements 
-                            $this->prelevements = $this->loadData('prelevements');
                             $prelevements = $this->loadData('prelevements');
-                            $L_prelevements = $this->prelevements->select('id_project = ' . $this->projects->id_project.' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
-                            
-                            print_r($L_prelevements);
-                            die;
+                            $L_prelevements = $prelevements->select('id_project = ' . $this->projects->id_project.' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
                             
                             foreach($L_prelevements as $prel)
                             {
@@ -1110,76 +1105,100 @@ class dossiersController extends bootstrap
                                 $prelevements->update();
                             }
                             
+                            // On stop les remb auto si y en a
+                            $projects_remb = $this->loadData('projects_remb');
+                            $lRembAuto = $projects_remb->select('status = 0 AND id_project = '.$this->projects->id_project);
+                            if($lRembAuto != false){
+                                foreach ($lRembAuto as $r){
+                                   $projects_remb->get($r['id_project_remb'],'id_project_remb');
+                                   $projects_remb->status = 4;
+                                   $projects_remb->update();
+                                }
+                            }
                             
                             // on récupère la variable pour savoir si on envoi le mail au preteur ou non
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_probleme_recouvrement'];
                             $contenu_a_ajouter_mail = $_POST['area_recouvrement'];
                            
-                            //si on envoi le mail
-                            if($mail_a_envoyer)
+                            $lPreteurs = $this->loans->select('id_project = ' . $this->projects->id_project);
+
+                            if ($lPreteurs != false)
                             {
-                                // date du dernier probleme
-                                $statusProbleme = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 9', 'added DESC');
-                                $DateProbleme = date('d/m/Y', strtotime($statusProbleme[0]['added']));
-
-                                $lPreteurs = $this->loans->select('id_project = ' . $this->projects->id_project);
-
-                                $this->companies->get($this->projects->id_company, 'id_company');
-
-                                // FB
-                                $this->settings->get('Facebook', 'type');
-                                $lien_fb = $this->settings->value;
-
-                                // Twitter
-                                $this->settings->get('Twitter', 'type');
-                                $lien_tw = $this->settings->value;
-
-                                if ($lPreteurs != false)
+                                foreach ($lPreteurs as $p)
                                 {
-                                    foreach ($lPreteurs as $p)
+                                    $this->lenders_accounts->get($p['id_lender'], 'id_lender_account');
+                                    $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+
+                                    // Motif virement
+                                    $pre = substr($this->ficelle->stripAccents(utf8_decode($this->clients->prenom)), 0, 1);
+                                    $nom = $this->ficelle->stripAccents(utf8_decode($this->clients->nom));
+                                    $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
+                                    $motif = mb_strtoupper($id_client . $pre . $nom, 'UTF-8');
+
+                                    // pour chaque preteur on fait la somme des loans qu'il a sur le projet pour le mail
+                                    $L_loans = $this->loans->select('id_project = ' . $this->projects->id_project.' AND id_lender = '.$p['id_lender']);
+                                    $nb_loan = 0;
+                                    $rembNet = 0;
+                                    $sum_amount = 0;
+                                    foreach($L_loans as $l)
                                     {
-                                        $this->lenders_accounts->get($p['id_lender'], 'id_lender_account');
-                                        $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+                                        $sum_amount += $l['amount'];
+                                        $nb_loan++;
+                                    }
 
-                                        // Motif virement
-                                        $p = substr($this->ficelle->stripAccents(utf8_decode($this->clients->prenom)), 0, 1);
-                                        $nom = $this->ficelle->stripAccents(utf8_decode($this->clients->nom));
-                                        $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-                                        $motif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+                                    // Gestion de l'ajout des nouvelles notifications manquantes
+                                    $this->lNotif_manquante = $this->clients_gestion_notifications->select('id_client = '.$this->clients->id_client.' AND id_notif IN (9)');
+                                    if($this->lNotif_manquante == false)
+                                    {
+                                        $this->clients_gestion_type_notif = $this->loadData('clients_gestion_type_notif');
+                                        $this->lTypeNotifs_manquates = $this->clients_gestion_type_notif->select('id_client_gestion_type_notif IN (9)');                   
 
-                                        // pour chaque preteur on fait la somme des loans qu'il a sur le projet pour le mail
-                                        $L_loans = $this->loans->select('id_project = ' . $this->projects->id_project.' AND id_lender = '.$p['id_lender']);
-                                        $nb_loan = 0;
-                                        $rembNet = 0;
-                                        
-                                        foreach($L_loans as $l)
+                                        foreach($this->lTypeNotifs_manquates as $n){
+                                            $this->clients_gestion_notifications->id_client = $this->clients->id_client;
+                                            $this->clients_gestion_notifications->id_notif = $n['id_client_gestion_type_notif'];
+                                            $this->clients_gestion_notifications->immediatement = 1;
+                                            $this->clients_gestion_notifications->create();
+                                        }
+                                    }
+
+                                    // Ajout d'une notification
+                                    $this->notifications->type = 10; // type recouvrement
+                                    $this->notifications->id_lender = $p['id_lender'];
+                                    $this->notifications->id_project = $p['id_project'];
+                                    $this->notifications->amount = $sum_amount;
+                                    $this->notifications->id_bid = 0; // On peut avoir plusieurs bid donc inutile  
+                                    $this->notifications->id_notification = $this->notifications->create();
+
+                                    //////// GESTION ALERTES //////////
+                                    $this->clients_gestion_mails_notif->id_client = $lender->id_client_owner;
+                                    $this->clients_gestion_mails_notif->id_notif = 9; // type Notifications de retards & régularisations de retards
+                                    $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                                    $this->clients_gestion_mails_notif->id_transaction = 0;
+                                    $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
+                                    $this->clients_gestion_mails_notif->id_loan = 0; // On peut avoir plusieurs loans donc inutile  
+                                    $this->clients_gestion_mails_notif->create();
+                                    //////// FIN GESTION ALERTES //////////
+
+                                    //si on envoi le mail
+                                    if($mail_a_envoyer == 0)
+                                    {
+                                        // pour chaque preteur on check si le preteur veut recevoir l'email instantané
+                                        if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true)
                                         {
-                                            $sum_amount += $l['amount'];
-                                            $nb_loan++;
+                                            // date du dernier probleme
+                                            $statusProbleme = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 9', 'added DESC');
+                                            $DateProbleme = date('d/m/Y', strtotime($statusProbleme[0]['added']));
 
-                                            // Ajout d'une notification
-                                            $this->notifications->type = 10; // type recouvrement
-                                            $this->notifications->id_lender = $p['id_lender'];
-                                            $this->notifications->id_project = $p['id_project'];
-                                            $this->notifications->amount = $sum_amount;
-                                            $this->notifications->id_bid = $p['id_bid'];
-                                            $this->notifications->id_notification = $this->notifications->create();
+                                            $this->companies->get($this->projects->id_company, 'id_company');
 
-                                            //////// GESTION ALERTES //////////
-                                            $this->clients_gestion_mails_notif->id_client = $lender->id_client_owner;
-                                            $this->clients_gestion_mails_notif->id_notif = 10; // type recouvrement
-                                            $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                                            $this->clients_gestion_mails_notif->id_transaction = 0;
-                                            $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
-                                            $this->clients_gestion_mails_notif->id_loan = $p['id_loan'];
-                                            $this->clients_gestion_mails_notif->create();
-                                            //////// FIN GESTION ALERTES //////////
-                                            
-                                        
-                                            // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
-                                            
-                                            $liste_attente_mail = $this->loadData('liste_attente_mail');
- 
+                                            // FB
+                                            $this->settings->get('Facebook', 'type');
+                                            $lien_fb = $this->settings->value;
+
+                                            // Twitter
+                                            $this->settings->get('Twitter', 'type');
+                                            $lien_tw = $this->settings->value;
+
                                             // Variables du mailing
                                             $varMail = array(
                                                 'surl' => $this->surl,
@@ -1189,20 +1208,22 @@ class dossiersController extends bootstrap
                                                 'cab_recouvrement' => $this->cab,
                                                 'nom_entreprise' => $this->companies->name,
                                                 'motif_virement' => $motif,
+                                                'contenu_mail' => $contenu_a_ajouter_mail,
                                                 'lien_fb' => $lien_fb,
                                                 'lien_tw' => $lien_tw);
-                                            
+
+                                            // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
+                                            $liste_attente_mail = $this->loadData('liste_attente_mail');
                                             $liste_attente_mail->type_mail = 'preteur-dossier-recouvrement';
                                             $liste_attente_mail->language = $this->language;
                                             $liste_attente_mail->variables = serialize($varMail);
                                             $liste_attente_mail->to = $this->clients->email;
                                             $liste_attente_mail->statut = 0; //pas envoyé
-                                            $liste_attente_mail->create();
-
+                                            $liste_attente_mail->create(); 
                                         }
                                     }
                                 }
-                            }
+                            } 
                         }
                         // remboursé
                         elseif ($_POST['status'] == '90')
