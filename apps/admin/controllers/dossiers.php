@@ -1118,7 +1118,6 @@ class dossiersController extends bootstrap
                             //si on envoi le mail
                             if($mail_a_envoyer)
                             {
-
                                 // date du dernier probleme
                                 $statusProbleme = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 9', 'added DESC');
                                 $DateProbleme = date('d/m/Y', strtotime($statusProbleme[0]['added']));
@@ -1157,9 +1156,7 @@ class dossiersController extends bootstrap
                                         {
                                             $sum_amount += $l['amount'];
                                             $nb_loan++;
-                                        
-                                            
-                                            
+
                                             // Ajout d'une notification
                                             $this->notifications->type = 10; // type recouvrement
                                             $this->notifications->id_lender = $p['id_lender'];
@@ -1167,7 +1164,6 @@ class dossiersController extends bootstrap
                                             $this->notifications->amount = $sum_amount;
                                             $this->notifications->id_bid = $p['id_bid'];
                                             $this->notifications->id_notification = $this->notifications->create();
-
 
                                             //////// GESTION ALERTES //////////
                                             $this->clients_gestion_mails_notif->id_client = $lender->id_client_owner;
@@ -1183,8 +1179,7 @@ class dossiersController extends bootstrap
                                             // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                                             
                                             $liste_attente_mail = $this->loadData('liste_attente_mail');
-                                            
-                                            
+ 
                                             // Variables du mailing
                                             $varMail = array(
                                                 'surl' => $this->surl,
@@ -1203,55 +1198,7 @@ class dossiersController extends bootstrap
                                             $liste_attente_mail->to = $this->clients->email;
                                             $liste_attente_mail->statut = 0; //pas envoyé
                                             $liste_attente_mail->create();
-                                            
-                                            
-                                            //******************************************//
-                                            //*** ENVOI DU MAIL RECOUVREMENT PRETEUR ***//
-                                            //******************************************//
-                                            // Recuperation du modele de mail
-                                            /*$this->mails_text->get('preteur-dossier-recouvrement', 'lang = "' . $this->language . '" AND type');
 
-
-                                            // Variables du mailing
-                                            $varMail = array(
-                                                'surl' => $this->surl,
-                                                'url' => $this->furl,
-                                                'prenom_p' => $this->clients->prenom,
-                                                'date_probleme' => $DateProbleme,
-                                                'cab_recouvrement' => $this->cab,
-                                                'nom_entreprise' => $this->companies->name,
-                                                'motif_virement' => $motif,
-                                                'lien_fb' => $lien_fb,
-                                                'lien_tw' => $lien_tw);
-
-                                            // Construction du tableau avec les balises EMV
-                                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                                            // Attribution des données aux variables
-                                            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                            $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                                            // Envoi du mail
-                                            $this->email = $this->loadLib('email',array());
-                                            $this->email->setFrom($this->mails_text->exp_email,$exp_name);
-                                            $this->email->setSubject(stripslashes($sujetMail));
-                                            $this->email->setHTMLBody(stripslashes($texteMail));
-
-                                            if($this->Config['env'] == 'prod') // nmp
-                                            {
-                                                Mailer::sendNMP($this->email,$this->mails_filer,$this->mails_text->id_textemail,$this->clients->email,$tabFiler);
-                                                // Injection du mail NMP dans la queue
-                                                $this->tnmp->sendMailNMP($tabFiler,$varMail,$this->mails_text->nmp_secure,$this->mails_text->id_nmp,$this->mails_text->nmp_unique,$this->mails_text->mode);
-                                            }
-                                            else // non nmp
-                                            {
-                                                $this->email->addRecipient(trim($this->clients->email));
-                                                Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);
-                                            } 
-                                            // fin mail pour preteur //
-                                             * 
-                                             */
                                         }
                                     }
                                 }
