@@ -21,6 +21,7 @@
 				<p><?=$this->lng['etape1']['contenu']?></p>
 
 				<div class="register-form">
+					<h1>Etape 1 - encore utliséé??? </h1>
 					<form action="" method="post" id="form_etape_1">
 
 						<div class="row rel">

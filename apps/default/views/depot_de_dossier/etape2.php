@@ -4,9 +4,12 @@
 
 <div class="main">
     <div class="shell">
-    	
-        <?=$this->fireView('../blocs/depot-de-dossier')?>
-    	<p><?=$this->lng['etape2']['contenu']?></p>
+		<!--message d'eligibilité-->
+<!--        --><?//=$this->fireView('../blocs/depot-de-dossier')?>
+		<!--		Bonne nouvelle.....-->
+<!--    	<p>--><?//=$this->lng['etape2']['contenu']?><!--</p>-->
+		<p>Ici viendra la texte avec les montants et durées moyennes</p>
+
     	<?
 		if(isset($this->params[0]) && $this->params[0] == 'nok'){
 			echo $this->lng['etape1']['contenu-non-eligible'];
@@ -27,45 +30,77 @@
 					<div class="row">
 						<p><?=$this->lng['etape1']['identite-de-la-societe']?></p>
 	
-						<input type="text" name="raison-sociale" id="raison-sociale" title="<?=$this->lng['etape2']['raison-sociale']?>" value="<?=($this->companies->name != ''?$this->companies->name:$this->lng['etape2']['raison-sociale'])?>" class="field field-large required" data-validators="Presence">
+						<input type="text" name="raison-sociale" id="raison-sociale"
+							   title="<?=$this->lng['etape2']['raison-sociale']?>"
+							   value="<?=($this->companies->name != ''?$this->companies->name:$this->lng['etape2']['raison-sociale'])?>"
+							   class="field field-large required" data-validators="Presence">
 	
 					</div><!-- /.row -->
 	
 					<div class="row">
-						<p><?=$this->lng['etape2']['identite-du-representant-de-la-societe']?></p>
+<!--						<p>--><?//=$this->lng['etape2']['identite-du-representant-de-la-societe']?><!--</p>-->
 	
-						<input type="text" name="nom_representative" title="<?=$this->lng['etape2']['nom']?>" value="<?=($this->nom_dirigeant!=''?$this->nom_dirigeant:$this->lng['etape2']['nom'])?>" id="nom_representative" class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
-						<input type="text" name="prenom_representative" title="<?=$this->lng['etape2']['prenom']?>" value="<?=($this->prenom_dirigeant!=''?$this->prenom_dirigeant:$this->lng['etape2']['prenom'])?>" id="prenom_representative" class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
+						<input type="text" name="nom_representative" id="nom_representative"
+							   title="<?=$this->lng['etape2']['nom']?>"
+							   value="<?=($this->clients->nom!=''?$this->clients->nom:$this->lng['etape2']['nom'])?>"
+							   class="field field-small required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
+
+						<input type="text" name="prenom_representative" id="prenom_representative"
+							   title="<?=$this->lng['etape2']['prenom']?>"
+							   value="<?=($this->clients->prenom!=''?$this->clients->prenom:$this->lng['etape2']['prenom'])?>"
+							   class="field field-small required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
+
+						<input type="text" name="fonction_representative" id="fonction_representative"
+							   title="<?=$this->lng['etape2']['fonction']?>"
+							   value="<?=($this->clients->fonction!=''?$this->clients->fonction:$this->lng['etape2']['fonction'])?>"
+							   class="field field-small required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
 					</div><!-- /.row -->
 	
 					<div class="row">
-						<input type="text" name="email_representative" title="<?=$this->lng['etape2']['email']?>" value="<?=($this->email_dirigeant!=''?$this->email_dirigeant:$this->lng['etape2']['email'])?>" id="email_representative" class="field field-large required" data-validators="Presence&amp;Email" onkeyup="checkConf(this.value,'conf_email_representative')">
-						<input type="text" name="conf_email_representative" title="Confirmation Email*" value="<?=($this->conf_email_representative != ''?$this->conf_email_representative:'Confirmation Email*')?>" id="conf_email_representative" class="field field-large required" data-validators="Confirmation, { match: 'email_representative' }" >
+						<input type=<?=($this->clients->email!= ''?("hidden"):("text"))?> name="email_representative" id="email_representative"
+							   title="<?=$this->lng['etape2']['email']?>"
+							   value="<?=($this->clients->email!=''?$this->clients->email:$this->lng['etape2']['email'])?>"
+							   class="field field-small required" data-validators="Presence&amp;Email" onkeyup="checkConf(this.value,'conf_email_representative')">
+
+						<input type=<?=($this->clients->email!= ''?("hidden"):("text"))?> name="conf_email_representative" title="Confirmation Email*" id="conf_email_representative"
+							   value="<?=($this->clients->email != ''?$this->clients->email:'Confirmation Email*')?>"
+							   class="field field-small required" data-validators="Confirmation, { match: 'email_representative' }" >
+
+						<input type="text" name="portable_representative" id="portable_representative"
+							   title="<?=$this->lng['etape2']['telephone']?>"
+							   value="<?=($this->clients->fonction!=''?$this->clients->fonction:$this->lng['etape2']['telephone'])?>"
+							   class="field field-small required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
+
 					</div><!-- /.row -->
-	
-					<div class="row">
-						<input type="text" name="phone_representative" id="phone_representative" value="<?=($this->phone_dirigeant!=''?$this->phone_dirigeant:$this->lng['etape2']['telephone'])?>" title="<?=$this->lng['etape2']['telephone']?>" class="field field-large required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 14}">
-                        <input type="text" name="fonction_representative" title="<?=$this->lng['etape2']['fonction']?>" value="<?=($this->fonction_dirigeant!=''?$this->fonction_dirigeant:$this->lng['etape2']['fonction'])?>" id="fonction_representative" class="field field-large required" data-validators="Presence">
-					</div><!-- /.row -->
-	
+
+					<?if((isset($this->params[0]) && $this->params[0] == '720')){
+
+						// message dedié
+						// bouton envoie du formulaire
+						die;
+
+
+
+					}?>
+
 					<div class="row">
 						<div class="form-choose fixed">
-							<span class="title"><?=$this->lng['etape2']['vous-etes']?></span>
-	
-							<div class="radio-holder-wrap radios-about" style="float: left; width:733px;">
-								<div class="radio-holder" style="width:733px; padding-bottom: 10px;">
-									<label for="radio1-1-about"><?=$this->lng['etape2']['dirigeant-entreprise']?></label>
-									<input <?=(isset($_POST['send_form_depot_dossier'])?($this->companies->status_client == 1?'checked':''):'checked')?> type="radio" class="custom-input" name="radio1-about" id="radio1-1-about" value="1">
+<!--							<span class="title">--><?//=$this->lng['etape2']['vous-etes']?><!--</span>-->
+
+								<div class="radio-holder">
+									<label style ="width: 192px;" for="radio1-1-about"><?=$this->lng['etape2']['dirigeant-entreprise']?></label>
+									<input <?=(isset($_POST['send_form_depot_dossier'])?($this->companies->status_client == 1?'checked':''):'checked')?>
+										type="radio" class="custom-input" name="radio1-about" id="radio1-1-about" value="1">
 								</div><!-- /.radio-holder -->
-	
-								<div class="radio-holder" style="width:733px; padding-bottom: 10px;">
-									<label for="radio1-3-about"><?=$this->lng['etape2']['conseil-externe-entreprise']?></label>
-									<input <?=($this->companies->status_client == 3?'checked':'')?> type="radio" class="custom-input" name="radio1-about" id="radio1-3-about" value="3" data-condition="show:.identification">
+
+								<div class="radio-holder">
+									<label style ="width: 192px;" for="radio1-3-about"><?=$this->lng['etape2']['conseil-externe-entreprise']?></label>
+									<input <?=($this->companies->status_client == 3?'checked':'')?>
+										type="radio" class="custom-input" name="radio1-about" id="radio1-3-about" value="3" data-condition="show:.identification">
 								</div><!-- /.radio-holder -->
-							</div><!-- /.radio-holder-wrap -->
 						</div><!-- /.form-choose -->
 					</div><!-- /.row -->
-	
+
 					<div class="about-sections">
 						
 						<div class="about-section">
@@ -76,7 +111,6 @@
 							<div class="row">
 								<select name="autre" style="width:458px;" id="autre" class="field field-large custom-select required">
 									<option value="0"><?=$this->lng['etape2']['choisir']?></option>
-                                    <option value="0"><?=$this->lng['etape2']['choisir']?></option>
 									<?
 									foreach($this->conseil_externe as $k => $conseil_externe){
 										?><option <?=($this->companies->status_conseil_externe_entreprise == $k?'selected':'')?> value="<?=$k?>" ><?=$conseil_externe?></option><?
@@ -105,51 +139,63 @@
 							</div><!-- /.row -->
 	
 							<div class="row">
-								<input type="text" name="nom-famille" id="nom-famille" title="<?=$this->lng['etape2']['nom']?>" value="<?=($this->clients->nom!=''?$this->clients->nom:$this->lng['etape2']['nom'])?>" class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
-								<input type="text" name="prenom" id="prenom" title="<?=$this->lng['etape2']['prenom']?>" value="<?=($this->clients->prenom!=''?$this->clients->prenom:$this->lng['etape2']['prenom'])?>" class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}" >
+								<input type="text" name="prescripteur_nom-famille" id="prescripteur_nom-famille"
+									   title="<?=$this->lng['etape2']['nom']?>"
+									   value="<?=($this->clients->nom!=''?$this->clients->nom:$this->lng['etape2']['nom'])?>"
+									   class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
+
+								<input type="text" name="prescripteur_prenom" id="prescripteur_prenom"
+									   title="<?=$this->lng['etape2']['prenom']?>"
+									   value="<?=($this->clients->prenom!=''?$this->clients->prenom:$this->lng['etape2']['prenom'])?>"
+									   class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}" >
 							</div><!-- /.row -->
 	
 							<div class="row">
-								<input type="text" name="email" id="email" title="<?=$this->lng['etape2']['email']?>" value="<?=($this->clients->email!=''?$this->clients->email:$this->lng['etape2']['email'])?>" class="field field-large required" data-validators="Presence&amp;Email" onkeyup="checkConf(this.value,'conf_email')" >
-								<input type="text" name="conf_email" id="conf_email" title="<?=$this->lng['etape2']['confirmation-email']?>" value="<?=($this->conf_email!=''?$this->conf_email:$this->lng['etape2']['confirmation-email'])?>" class="field field-large required" data-validators="Confirmation,{ match: 'email' }" >
+								<input type="text" name="prescripteur_email" id="prescripteur_email"
+									   title="<?=$this->lng['etape2']['email']?>"
+									   value="<?=($this->clients->email!=''?$this->clients->email:$this->lng['etape2']['email'])?>"
+									   class="field field-large required" data-validators="Presence&amp;Email" onkeyup="checkConf(this.value,'conf_email')" >
+
+								<input type="text" name="prescripteur_conf_email" id="prescripteur_conf_email"
+									   title="<?=$this->lng['etape2']['confirmation-email']?>"
+									   value="<?=($this->conf_email!=''?$this->conf_email:$this->lng['etape2']['confirmation-email'])?>"
+									   class="field field-large required" data-validators="Confirmation,{ match: 'email' }" >
 							</div><!-- /.row -->
 	
 							<div class="row">
-								<input type="text" name="phone" id="phone" value="<?=($this->clients->telephone!=''?$this->clients->telephone:$this->lng['etape2']['telephone'])?>" title="<?=$this->lng['etape2']['telephone']?>" class="field field-large required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 14}">
-                                <input type="text" name="fonction" title="<?=$this->lng['etape2']['fonction']?>" value="<?=($this->clients->fonction!=''?$this->clients->fonction:$this->lng['etape2']['fonction'])?>" id="fonction" class="field field-large required" data-validators="Presence">
+								<input type="text" name="prescripteur_phone" id="prescripteur_phone"
+									   value="<?=($this->clients->telephone!=''?$this->clients->telephone:$this->lng['etape2']['telephone'])?>"
+									   title="<?=$this->lng['etape2']['telephone']?>"
+									   class="field field-large required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 14}">
+
+                                <input type="text" name="prescripteur_fonction" id="prescripteur_fonction"
+									   title="<?=$this->lng['etape2']['fonction']?>"
+									   value="<?=($this->clients->fonction!=''?$this->clients->fonction:$this->lng['etape2']['fonction'])?>"
+									   class="field field-large required" data-validators="Presence">
 							</div><!-- /.row -->
 						</div><!-- /.about-section -->
 					</div><!-- /.about-sections -->
-	
-					<div class="row">
-						<p><?=$this->lng['etape2']['documents-financiers']?></p>
-	
-						<div class="uploader" data-file="1" style="width:460px; float: left;">
-							<span style="display:block;">Dernière liasse fiscale*</span>
-							<input type="text" class="field required" id="dernière-liasse-fiscale" data-validators="Presence" readonly="readonly" value="<?=$this->companies_details->fichier_derniere_liasse_fiscale?>">
-							<div class="file-holder">
-								<span class="btn btn-small" style="line-height:40px; padding: 0 15px; margin-top: 3px;">
-									<?=$this->lng['etape2']['parcourir']?><span class="file-upload">
-										<input type="file" class="file-field" name="fichier1">
-									</span>
-								</span>
-							</div>
-                            <i style="display:inline-block; color: #b20066;font-size:10px;font-family:Arial, Helvetica, sans-serif;">
-							<?=$this->lng['etape2']['contenu-fichier']?>
-                            </i>
-						</div>
-						<div class="uploader" data-file="1" style="width:460px; float:left; margin-left: 16px;">
-							<span style="display:block;"><?=$this->lng['etape2']['autre']?></span>
-							<input type="text" class="field" readonly="readonly">
-							<div class="file-holder">
-								<span class="btn btn-small" style="line-height:40px; padding: 0 15px; margin-top: 3px;">
-									<?=$this->lng['etape2']['parcourir']?><span class="file-upload">
-										<input type="file" class="file-field" name="fichier2">
-									</span>
-								</span>
-							</div>
-						</div>
-					</div><!-- /.row -->
+
+					<? if((isset($this->params[1]) && $this->params[1] == '1080')){?>
+
+						<div class="row">
+							<div class="form-choose radio_comptables">
+								<span class="title"><?=$this->lng['etape1']['exercices-comptables']?></span>
+
+								<div class="radio-holder">
+									<label for="comptables-oui"><?=$this->lng['etape1']['oui']?></label>
+									<input type="radio" class="custom-input" name="comptables" id="comptables-oui" value="1">
+								</div><!-- /.radio-holder -->
+
+								<div class="radio-holder">
+									<label for="comptables-non"><?=$this->lng['etape1']['non']?></label>
+									<input type="radio" class="custom-input" name="comptables" id="comptables-non" value="0">
+								</div><!-- /.radio-holder -->
+
+							</div><!-- /.form-choose -->
+						</div><!-- /.row -->
+
+					<?}?>
 	
 					<div class="row">
                     	<label for="radio1-3-about"><?=$this->lng['etape2']['label-toutes-informations-utiles']?></label>
@@ -166,7 +212,7 @@
 					<span class="form-caption"><?=$this->lng['etape2']['champs-obligatoires']?></span>
 					<div class="form-foot row row-cols centered">
 						<input type="hidden" name="send_form_depot_dossier" />
-						<button class="btn" type="submit"><?=$this->lng['etape2']['deposer-son-dossier']?><i class="icon-arrow-next"></i></button>
+						<button class="btn" style="height: 70px; line-height: 1.2em;" type="submit"><?=$this->lng['etape2']['deposer-son-dossier']?></button>
 					</div><!-- /.form-foot foot-cols -->
 				</form>
 			</div><!-- /.register-form -->

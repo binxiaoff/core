@@ -122,7 +122,7 @@ if($this->google_analytics != '')
 			<aside class="signup right">
 				<h2><?=$this->content['lp-titre-formulaire']?></h2>
 
-				<form action="/depot_de_dossier/etape1" method="post" id="depot_de_dossier" name="depot_de_dossier">
+				<form action="/depot_de_dossier/interrogation" method="post" id="depot_de_dossier" name="depot_de_dossier">
 					
                     <div class="form-row" style="display:inline;">                    	
                     	<span style="text-align:center; color:#C84747;"><?=$this->retour_form?></span>
@@ -153,6 +153,10 @@ if($this->google_analytics != '')
 					<div class="form-row">
 						<input type="text" class="field required" value="<?=(isset($_POST['siren'])?$_POST['siren']:$this->lng['landing-page']['siren'])?>" title="<?=$this->lng['landing-page']['siren']?>" name="siren" id="siren" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 9}" />
                         <em class="caractmax"><?=$this->lng['landing-page']['9-caracteres-numeriques']?></em>
+					</div><!-- /.form-row -->
+
+					<div class="form-row">
+						<input type="text" value="<?=(isset($_POST['email'])?$_POST['email']:$this->lng['landing-page']['emailetape1'])?>" title="<?=$this->lng['landing-page']['emailetape1']?>" name="email" id="email" />
 					</div><!-- /.form-row -->
 
 					
