@@ -1164,7 +1164,18 @@ class preteursController extends bootstrap
 				//autre3
 				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE3);
 
-				
+				// Dispense de prélèvement 2014
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2014);
+
+				// Dispense de prélèvement 2015
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2015);
+
+				// Dispense de prélèvement 2016
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2016);
+
+				//Dispense de prélèvement 2017
+				$this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2017);
+
 				// Mandat
 				if(isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '')
 				{
