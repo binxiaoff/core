@@ -35,85 +35,24 @@
 							   value="<?=($this->companies->name != ''?$this->companies->name:$this->lng['etape2']['raison-sociale'])?>"
 							   class="field field-large required" data-validators="Presence">
 	
-					</div><!-- /.row -->
-	
-					<div class="row">
-						<div class="row" >
-							<p><?=$this->lng['etape2']['identite-du-representant-de-la-societe']?></p>
+					</div><!-- /.row raison sociale-->
 
-							<div class="form-choose fixed radio_sex_representative">
-								<span class="title"><?=$this->lng['etape2']['civilite']?></span>
-								<div class="radio-holder">
-									<label for="female_representative"><?=$this->lng['etape2']['madame']?></label>
-									<input type="radio" class="custom-input" name="sex_representative" id="female_representative"  value="Mme" <?=($this->clients->civilite=='Mme'?'checked="checked"':'')?>>
-								</div><!-- /.radio-holder -->
-
-								<div class="radio-holder">
-									<label for="male_representative"><?=$this->lng['etape2']['monsieur']?></label>
-									<input type="radio" class="custom-input" name="sex_representative" id="male_representative"  value="M." <?=($this->clients->civilite=='M.'?'checked="checked"':'')?>>
-								</div><!-- /.radio-holder -->
-							</div><!-- /.form-choose -->
-						</div><!-- /.row -->
-
-						<div class="row">
-						<input type="text" name="nom_representative" id="nom_representative"
-							   title="<?=$this->lng['etape2']['nom']?>"
-							   value="<?=($this->clients->nom!=''?$this->clients->nom:$this->lng['etape2']['nom'])?>"
-							   class="field field-small required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
-
-						<input type="text" name="prenom_representative" id="prenom_representative"
-							   title="<?=$this->lng['etape2']['prenom']?>"
-							   value="<?=($this->clients->prenom!=''?$this->clients->prenom:$this->lng['etape2']['prenom'])?>"
-							   class="field field-small required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
-
-						<input type="text" name="fonction_representative" id="fonction_representative"
-							   title="<?=$this->lng['etape2']['fonction']?>"
-							   value="<?=($this->clients->fonction!=''?$this->clients->fonction:$this->lng['etape2']['fonction'])?>"
-							   class="field field-small required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
-					</div><!-- /.row -->
-	
-					<div class="row">
-						<input type=<?=($this->clients->email!= ''?("hidden"):("text"))?> name="email_representative" id="email_representative"
-							   title="<?=$this->lng['etape2']['email']?>"
-							   value="<?=($this->clients->email!=''?$this->clients->email:$this->lng['etape2']['email'])?>"
-							   class="field field-small required" data-validators="Presence&amp;Email" onkeyup="checkConf(this.value,'conf_email_representative')">
-
-						<input type=<?=($this->clients->email!= ''?("hidden"):("text"))?> name="conf_email_representative" title="Confirmation Email*" id="conf_email_representative"
-							   value="<?=($this->clients->email != ''?$this->clients->email:'Confirmation Email*')?>"
-							   class="field field-small required" data-validators="Confirmation, { match: 'email_representative' }" >
-
-						<input type="text" name="portable_representative" id="portable_representative"
-							   title="<?=$this->lng['etape2']['telephone']?>"
-							   value="<?=($this->clients->mobile!=''?$this->clients->mobile:$this->lng['etape2']['telephone'])?>"
-							   class="field field-small required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 14}">
-
-					</div><!-- /.row -->
-
-					<?if((isset($this->params[0]) && $this->params[0] == '720')){
-
-						// message dedié
-						// bouton envoie du formulaire
-						die;
-
-
-
-					}?>
-
+<!--					question si on est gerant ou pas de l'entreprise: -->
 					<div class="row">
 						<div class="form-choose fixed">
-<!--							<span class="title">--><?//=$this->lng['etape2']['vous-etes']?><!--</span>-->
+							<!--							<span class="title">--><?//=$this->lng['etape2']['vous-etes']?><!--</span>-->
 
-								<div class="radio-holder">
-									<label style ="width: 192px;" for="radio1-1-about"><?=$this->lng['etape2']['dirigeant-entreprise']?></label>
-									<input <?=(isset($_POST['send_form_depot_dossier'])?($this->companies->status_client == 1?'checked':''):'checked')?>
-										type="radio" class="custom-input" name="gerant" id="radio1-1-about" value="1">
-								</div><!-- /.radio-holder -->
+							<div class="radio-holder">
+								<label style ="width: 192px;" for="radio1-1-about"><?=$this->lng['etape2']['dirigeant-entreprise']?></label>
+								<input <?=(isset($_POST['send_form_depot_dossier'])?($this->companies->status_client == 1?'checked':''):'checked')?>
+									type="radio" class="custom-input" name="gerant" id="radio1-1-about" value="1">
+							</div><!-- /.radio-holder -->
 
-								<div class="radio-holder">
-									<label style ="width: 192px;" for="radio1-3-about"><?=$this->lng['etape2']['conseil-externe-entreprise']?></label>
-									<input <?=($this->companies->status_client == 3?'checked':'')?>
-										type="radio" class="custom-input" name="gerant" id="radio1-3-about" value="3" data-condition="show:.identification">
-								</div><!-- /.radio-holder -->
+							<div class="radio-holder">
+								<label style ="width: 192px;" for="radio1-3-about"><?=$this->lng['etape2']['conseil-externe-entreprise']?></label>
+								<input <?=($this->companies->status_client == 3?'checked':'')?>
+									type="radio" class="custom-input" name="gerant" id="radio1-3-about" value="3" data-condition="show:.identification">
+							</div><!-- /.radio-holder -->
 						</div><!-- /.form-choose -->
 					</div><!-- /.row -->
 
@@ -124,18 +63,6 @@
 						</div><!-- /.about-section -->
 
 						<div class="about-section identification">
-							<div class="row">
-								<select name="autre" style="width:458px;" id="autre" class="field field-large custom-select required">
-									<option value="0"><?=$this->lng['etape2']['choisir']?></option>
-									<?
-									foreach($this->conseil_externe as $k => $conseil_externe){
-										?><option <?=($this->companies->status_conseil_externe_entreprise == $k?'selected':'')?> value="<?=$k?>" ><?=$conseil_externe?></option><?
-									}
-									?>
-								</select>
-
-								<input style="display:none;" type="text" name="autre-preciser" title="<?=$this->lng['etape2']['autre']?>" value="<?=($this->companies->preciser_conseil_externe_entreprise!=''?$this->companies->preciser_conseil_externe_entreprise:$this->lng['etape2']['autre'])?>" id="autre-preciser" class="field field-large">
-							</div><!-- /.row -->
 
 							<div class="row" >
 								<p><?=$this->lng['etape2']['vos-coordonnees']?></p>
@@ -184,13 +111,84 @@
 									   title="<?=$this->lng['etape2']['telephone']?>"
 									   class="field field-large required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 14}">
 
-                                <input type="text" name="prescripteur_fonction" id="prescripteur_fonction"
+								<input type="text" name="prescripteur_fonction" id="prescripteur_fonction"
 									   title="<?=$this->lng['etape2']['fonction']?>"
 									   value="<?=($this->clients->fonction!=''?$this->clients->fonction:$this->lng['etape2']['fonction'])?>"
 									   class="field field-large required" data-validators="Presence">
 							</div><!-- /.row -->
 						</div><!-- /.about-section -->
 					</div><!-- /.about-sections -->
+
+<!--	coordonnées du gérant-->
+					<div class="row">
+						<div class="row" >
+							<p><?=$this->lng['etape2']['identite-du-representant-de-la-societe']?></p>
+
+							<div class="form-choose fixed radio_sex_representative">
+								<span class="title"><?=$this->lng['etape2']['civilite']?></span>
+								<div class="radio-holder">
+									<label for="female_representative"><?=$this->lng['etape2']['madame']?></label>
+									<input type="radio" class="custom-input" name="sex_representative" id="female_representative"  value="Mme" <?=($this->clients->civilite=='Mme'?'checked="checked"':'')?>>
+								</div><!-- /.radio-holder  -->
+
+								<div class="radio-holder">
+									<label for="male_representative"><?=$this->lng['etape2']['monsieur']?></label>
+									<input type="radio" class="custom-input" name="sex_representative" id="male_representative"  value="M." <?=($this->clients->civilite=='M.'?'checked="checked"':'')?>>
+								</div><!-- /.radio-holder -->
+							</div><!-- /.form-choose -->
+						</div><!-- /.row -->
+
+						<div class="row">
+							<input type="text" name="nom_representative" id="nom_representative"
+								   title="<?=$this->lng['etape2']['nom']?>"
+								   value="<?=($this->clients->nom!=''?$this->clients->nom:$this->lng['etape2']['nom'])?>"
+								   class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
+
+							<input type="text" name="prenom_representative" id="prenom_representative"
+								   title="<?=$this->lng['etape2']['prenom']?>"
+								   value="<?=($this->clients->prenom!=''?$this->clients->prenom:$this->lng['etape2']['prenom'])?>"
+								   class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
+						</div><!-- /.row -->
+
+						<div class="row">
+							<input type=<?=($this->clients->email!= ''?("hidden"):("text"))?> name="email_representative" id="email_representative"
+								   title="<?=$this->lng['etape2']['email']?>"
+								   value="<?=($this->clients->email!=''?$this->clients->email:$this->lng['etape2']['email'])?>"
+								   class="field field-large required" data-validators="Presence&amp;Email" onkeyup="checkConf(this.value,'conf_email_representative')">
+
+							<input type=<?=($this->clients->email!= ''?("hidden"):("text"))?> name="conf_email_representative" title="Confirmation Email*" id="conf_email_representative"
+								   value="<?=($this->clients->email != ''?$this->clients->email:'Confirmation Email*')?>"
+								   class="field field-large required" data-validators="Confirmation, { match: 'email_representative' }" >
+						</div><!-- /.row -->
+
+
+						<div class="row">
+
+							<input type="text" name="fonction_representative" id="fonction_representative"
+								   title="<?=$this->lng['etape2']['fonction']?>"
+								   value="<?=($this->clients->fonction!=''?$this->clients->fonction:$this->lng['etape2']['fonction'])?>"
+								   class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
+
+							<input type="text" name="portable_representative" id="portable_representative"
+								   title="<?=$this->lng['etape2']['telephone']?>"
+								   value="<?=($this->clients->mobile!=''?$this->clients->mobile:$this->lng['etape2']['telephone'])?>"
+								   class="field field-large required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 14}">
+
+						</div><!-- /.row -->
+
+
+
+						<?if((isset($this->params[0]) && $this->params[0] == '720')){
+
+						// message dedié
+						// bouton envoie du formulaire
+						die;
+
+
+
+					}?>
+
+
 
 					<? if((isset($this->params[1]) && $this->params[1] == '1080')){?>
 
