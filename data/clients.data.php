@@ -202,7 +202,7 @@ class clients extends clients_crud
 		$sql = 'SELECT * FROM '.$this->userTable.' WHERE '.$this->userMail.' = "'.$email.'"';
 		$res = $this->bdd->query($sql);
 		
-		if($this->bdd->num_rows($res) == 1)
+		if($this->bdd->num_rows($res) >= 1)
 		{
 			return false;
 		}
