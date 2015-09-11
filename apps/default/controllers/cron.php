@@ -8,7 +8,11 @@ class cronController extends bootstrap
 
     function cronController($command, $config)
     {
+
         parent::__construct($command, $config, 'default');
+
+        // Inclusion controller pdf
+        include($this->path.'/apps/default/controllers/pdf.php');
 
         $this->autoFireHeader = false;
         $this->autoFireHead = false;
@@ -8344,7 +8348,6 @@ class cronController extends bootstrap
             }
         }
         ///////////////////////
-
         if ($settingsControlecrondeclarationContratPret->value == 1)
         {
 
@@ -8374,7 +8377,6 @@ class cronController extends bootstrap
                 // On recupere que le premier loan
                 //$lLoans = $loans->select('status = "0" AND fichier_declarationContratPret = "" AND id_project IN('.$this->params[0].')','id_loan ASC','0','');
                 $lLoans = $loans->select('status = "0" AND fichier_declarationContratPret = "" AND id_project IN(' . $lesProjets . ')', 'id_loan ASC', 0, 10);
-
                 if (count($lLoans) > 0)
                 {
 
@@ -8393,22 +8395,12 @@ class cronController extends bootstrap
                         // chemin où l'on enregistre
                         $path = $this->path . 'protected/declarationContratPret/' . $annee . '/' . $projects->slug . '/';
 
-                        // Si le dossier existe pas on créer
-                        if (!file_exists($pathAnnee))
-                        {
-                            mkdir($pathAnnee);
-                        }
-                        // Si le dossier existe pas on créer
-                        if (!file_exists($path))
-                        {
-                            mkdir($path);
-                        }
-
                         // Nom du fichier	
                         $nom = 'Unilend_declarationContratPret_' . $l['id_loan'] . '.pdf';
-
                         // Génération pdf
-                        $this->Web2Pdf->convertSimple($this->lurl . '/pdf/declarationContratPret_html/' . $l['id_loan'], $path, $nom);
+                        $oCommandPdf = new Command('pdf','declarationContratPret_html',array($l['id_loan'], $path),$this->language);
+                        $oPdf = new pdfController($oCommandPdf, $this->Config, 'default');
+                        $oPdf->_declarationContratPret_html($l['id_loan'], $path);
 
                         // On met a jour le loan pour savoir qu'on la deja enregistré
                         $loans->get($l['id_loan'], 'id_loan');
@@ -9842,23 +9834,9 @@ class cronController extends bootstrap
         {
             foreach ($listeRemb as $r)
             {
-                /* echo '<pre>';
-                  print_r($r);
-                  echo '</pre>'; */
-
-                $path = $this->path . 'protected/pdf/facture/';
-                $slug = $r['hash'];
-                $urlsite = $this->lurl . '/pdf/facture_ER_html/' . $r['hash'] . '/' . $r['id_project'] . '/' . $r['ordre'] . '/';
-                $name = 'facture_ER';
-                $vraisNomPdf = 'FACTURE-UNILEND-' . $r['slug'] . '-' . $r['ordre'];
-                $param = $r['id_project'] . '-' . $r['ordre'];
-                $signe = '';
-                $entete = '';
-                $piedpage = $this->lurl . '/pdf/footer_facture/';
-                $display = 'nodisplay';
-
-                // fonction pdf
-                $this->Web2Pdf->convert($path, $slug, $urlsite, $name, $vraisNomPdf, $param, $signe, $entete, $piedpage, $display);
+                $oCommandPdf = new Command('pdf','facture_ER',array($r['hash'],$r['id_project'],$r['ordre'], $path),$this->language);
+                $oPdf = new pdfController($oCommandPdf, $this->Config, 'default');
+                $oPdf->_facture_ER($r['hash'],$r['id_project'],$r['ordre']);
             }
         }
 
@@ -9870,26 +9848,11 @@ class cronController extends bootstrap
             // Les projets n'ayant pas encore de facture EF
             if ($factures->get($projet['id_project'], 'type_commission = 1 AND id_project') == false)
             {
-
-                /* echo '<pre>';
-                  print_r($projet);
-                  echo '</pre>'; */
-
                 $companies->get($projet['id_company'], 'id_company');
                 $emprunteurs->get($companies->id_client_owner, 'id_client');
-                $path = $this->path . 'protected/pdf/facture/';
-                $slug = $emprunteurs->hash;
-                $urlsite = $this->lurl . '/pdf/facture_EF_html/' . $emprunteurs->hash . '/' . $projet['id_project'] . '/';
-                $name = 'facture_EF';
-                $vraisNomPdf = 'FACTURE-UNILEND-' . $project['slug'];
-                $param = $projet['id_project'];
-                $signe = '';
-                $entete = '';
-                $piedpage = $this->lurl . '/pdf/footer_facture/';
-                $display = 'nodisplay';
-
-                // fonction pdf
-                $this->Web2Pdf->convert($path, $slug, $urlsite, $name, $vraisNomPdf, $param, $signe, $entete, $piedpage, $display);
+                $oCommandPdf = new Command('pdf','facture_EF',array($emprunteurs->hash,$r['id_project']),$this->language);
+                $oPdf = new pdfController($oCommandPdf, $this->Config, 'default');
+                $oPdf->_facture_EF($emprunteurs->hash,$r['id_project']);
             }
         }
         die;
