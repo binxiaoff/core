@@ -14,7 +14,7 @@ apt-get install -y percona-server-server-5.5
 # install lftp for download fixture
 apt-get install -y lftp
 
-lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/fixture  /vagrant/fixture; bye' -u vagrantftp,X9d\@\$nsa -p 21 192.168.1.6
+lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/fixture  /vagrant/fixture; bye' -u vagrantftp,X9d\@\$nsa -p 21 synology.corp.unilend.fr
 
 if [ -f /vagrant/fixture/schemas.sql ];
     then
@@ -71,7 +71,7 @@ sed -i "s/upload_max_filesize = .*/upload_max_filesize = 64M/" /etc/php5/apache2
 sed -i "/post_max_size =/c post_max_size = 64M \nzend_extension=/usr/lib/php5/20090626/xdebug.so \nxdebug.remote_enable=1 \nxdebug.remote_handler=dbgp \nxdebug.remote_mode=req \nxdebug.remote_host=127.0.0.1 \nxdebug.remote_port=9000/" /etc/php5/apache2/php.ini
 
 #copy unversioned files
-lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/files_outside_git  /srv/sites/unilend; bye' -u vagrantftp,X9d\@\$nsa -p 21 192.168.1.6
+lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/files_outside_git  /srv/sites/unilend; bye' -u vagrantftp,X9d\@\$nsa -p 21 synology.corp.unilend.fr
 chmod -R u+w /srv/sites/unilend
 
 service apache2 restart
