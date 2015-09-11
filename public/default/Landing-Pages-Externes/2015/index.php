@@ -254,6 +254,7 @@
                         <option value="140">Pérou    </option>
                         <option value="141">Philippines    </option>
                         <option value="142">Pologne    </option>
+						<option value="195">Polynésie française</option>
                         <option value="143">Portugal    </option>
                         <option value="144">Qatar    </option>
                         <option value="145">Russie    </option>
@@ -458,6 +459,7 @@
                             <option value="140">Pérou    </option>
                             <option value="141">Philippines    </option>
                             <option value="142">Pologne    </option>
+							<option value="195">Polynésie française</option>
                             <option value="143">Portugal    </option>
                             <option value="144">Qatar    </option>
                             <option value="145">Russie    </option>
@@ -699,6 +701,7 @@
                         <option value="140">Pérou    </option>
                         <option value="141">Philippines    </option>
                         <option value="142">Pologne    </option>
+						<option value="195">Polynésie française</option>
                         <option value="143">Portugal    </option>
                         <option value="144">Qatar    </option>
                         <option value="145">Russie    </option>
@@ -896,10 +899,11 @@
             </div>
             <div class="clear"></div>
             <p class="fleche">Choisissez vos projets. Pour les découvrir, inscrivez-vous</p>
-            <div class="scroll2"><a href="#simulez_vos_interets"></a></div>
+            <!-- <div class="scroll2"><a href="#simulez_vos_interets"></a></div> -->
+			 <div class="scroll2"><a href="#presse"></a></div>
         </section>
     </div><!-- projet_analyse -->
-
+<!--
     <div id="simulez_vos_interets" class="wrapper100">
         <section class="wrapper">
             <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60"></a>
@@ -1046,6 +1050,8 @@
             <div class="scroll2"><a href="#chiffres"></a></div>
         </section>
     </div><!-- simulez_vos_interets -->
+	
+	-->
 
     <div id="presse" class="wrapper100">
         <section class="wrapper">
