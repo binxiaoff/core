@@ -53,13 +53,11 @@ class depot_de_dossierController extends bootstrap
     function _default()
     {
         header('location:' . $this->lurl . '/lp-depot-de-dossier');
-        die;
     }
 
     function  _etape1()
     {
         header('location:' . $this->lurl . '/lp-depot-de-dossier');
-        die;
     }
 
     function _interrogation()
@@ -90,13 +88,6 @@ class depot_de_dossierController extends bootstrap
 // source -> mets utm_source dans la session
         $this->ficelle->source($_GET['utm_source'], $this->lurl . '/' . $this->params[0], $_GET['utm_source2']);
 
-
-// Si on a une session d'ouverte on redirige - version LP
-        if (isset($_SESSION['client'])) {
-            header('location:' . $this->lurl);
-            die;
-        }
-
 ////////////////////////////////
 // Initialisation variable
         $this->preteurCreateEmprunteur = false;
@@ -120,7 +111,6 @@ class depot_de_dossierController extends bootstrap
                     if ($this->clients->status_depot_dossier > 0) {
 
                         header('location:' . $this->lurl . '/depot_de_dossier/etape' . ($this->clients->status_depot_dossier + 1) . '/' . $this->clients->hash);
-                        die;
                     }
                 }
             }
@@ -246,6 +236,7 @@ class depot_de_dossierController extends bootstrap
                 else {
                     $exception = '';
                 }
+
                 // si altares ok
                 if ($exception == '') {
 
@@ -463,96 +454,73 @@ class depot_de_dossierController extends bootstrap
                     }
                     // Fin actif/passif
 
-                    ///////////////////////////////////////////////////////////////
-
-                    // date -3 ans
-                    $todayMoins3 = date('Y') - 3;
-
-                    if (in_array($eligibility, $this->tablStatus)) {
-                        if ($eligibility == 'Pas de bilan') {
-                            // ajout du statut dans l'historique : statut 6 (Pas 3 bilans)
-                            $this->projects_status_history->addStatus(-2, 6, $this->projects->id_project);
-
-                            // pas good
-                            //$altares = true;
-                        }
-                        // date creation -3 ans
-                        if (substr($identite->dateCreation, 0, 4) > $todayMoins3) {
-                            // ajout du statut dans l'historique : statut 5 (Note externe faible)
-                            $this->projects_status_history->addStatus(-2, 5, $this->projects->id_project);
-
-                            // pas good
-                            $altares = true;
-                        }
-                    }
-
                     switch ($eligibility) {
                         case '1_Etablissement Inactif':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
                             header('location:' . $this->lurl . '/depot_de_dossier/nok/no-siren');
-                            die;
                             break;
                         case '2_Etablissement sans RCS':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
                             header('location:' . $this->lurl . '/depot_de_dossier/nok/no-rcs');
-                            die;
                             break;
                         case '3_Procedure Active':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
                             header('location:' . $this->lurl . '/depot_de_dossier/nok');
-                            die;
                             break;
                         case '4_Bilan de plus de 450 jours':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
                             header('location:' . $this->lurl . '/depot_de_dossier/nok');
-                            die;
                             break;
                         case '5_Fonds Propres Négatifs':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
                             header('location:' . $this->lurl . '/depot_de_dossier/nok/rex-nega');
-                            die;
                             break;
                         case '6_EBE Négatif':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
                             header('location:' . $this->lurl . '/depot_de_dossier/nok/rex-nega');
-                            die;
                             break;
                         case '7_SIREN inconnu':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
                             header('location:' . $this->lurl . '/depot_de_dossier/nok/no-siren');
-                            die;
                             break;
-                        case '8_Eligible':
+                        case 'Oui':
+
+                            $anneecreation = substr($identite->dateCreation, 0, 10);
+                            $datetime1 = date_create_from_format('Y-m-d', $anneecreation);
+                            $datetime2 = date_create();
+                            $interval = date_diff($datetime1, $datetime2);
+
                             //if création moins de 720 jours -> demande de coordonnées puis message dédié
+                            if ($interval->days < 720)
+                            {
                             $this->projects_status_history->addStatus(-2, projects_status::PAS_3_BILANS, $this->projects->id_project);
-                            header('location:' . $this->lurl . '/depot_de_dossier/etape2/720');
+                            header('location:' . $this->lurl . '/depot_de_dossier/etape2/'. $this->clients->hash.'/720');
                             die;
-
+                            }
                             //ifelse création entre 720 et 1080 jours -> question 3 bilans
-
-                            //else
-
-
-                            sleep(1);
-                            $this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_2, $this->projects->id_project);
-                            header('location:' . $this->lurl . '/depot_de_dossier/etape2/' . $this->clients->hash);
-                            die;
+                            elseif ($interval->days > 720 && $interval->days < 1080)
+                            {
+                                $this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_2, $this->projects->id_project);
+                                header('location:' . $this->lurl . '/depot_de_dossier/etape2/'. $this->clients->hash.'/1080');
+                            } else {
+                                sleep(1);
+                                $this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_2, $this->projects->id_project);
+                                header('location:' . $this->lurl . '/depot_de_dossier/etape2/' . $this->clients->hash);
+                            }
                             break;
                         case '9_Ne publie pas':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
                             header('location:' . $this->lurl . '/depot_de_dossier/nok');
-                            die;
                             break;
                         default:
                             $this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_2, $this->projects->id_project);
                             header('location:' . $this->lurl . '/depot_de_dossier/nok');
-                            die;
-
                     }// end switch status atares
 
 
                 }// fin altares
                 else {
+
                     // clients //
                     $this->clients->source = $_SESSION['utm_source'];
                     $this->clients->source2 = $_SESSION['utm_source2'];
@@ -619,7 +587,6 @@ class depot_de_dossierController extends bootstrap
                     $this->emailAltares($this->projects->id_project, $this->projects->title);
 
                     header('location:' . $this->lurl . '/depot_de_dossier/nok');
-                    die;
                 }// fin else exception=''
 
             }// fin form valide
@@ -666,6 +633,7 @@ class depot_de_dossierController extends bootstrap
         $this->companies_actif_passif = $this->loadData('companies_actif_passif');
         $this->projects = $this->loadData('projects');
         $this->projects_status_history = $this->loadData('projects_status_history');
+        $this->prescripteur = $this->loadData('prescripteur');
 
         //////////////////////////////////
         // Initialisation variable
@@ -721,6 +689,9 @@ class depot_de_dossierController extends bootstrap
         if ($this->preteurCreateEmprunteur == true && $this->clients->status_depot_dossier >= 1)
         {
             $conditionOk = true;
+            // ceci ne peut pas etre true, car la variable est istancié à false, et le if precedent censée de changer
+            // son status se termine tous par une header; die;
+
         }
         elseif ($this->clients->get($this->params['0'], 'status = 0 AND hash') && $this->clients->status_depot_dossier >= 1)
         {
@@ -735,7 +706,7 @@ class depot_de_dossierController extends bootstrap
         // On récupere les infos clients
         if ($conditionOk == true)
         {
-            // on recup la companie
+            // on recup la companie (le client est deja chargé avec le get dans la condtion plus haut)
             $this->companies->get($this->clients->id_client, 'id_client_owner');
             $this->companies_details->get($this->companies->id_company, 'id_company');
 
@@ -752,7 +723,7 @@ class depot_de_dossierController extends bootstrap
                 $this->phone_dirigeant = $this->clients->telephone;
                 $this->conf_email_representative = $this->email_dirigeant;
             }
-            // si pas dirigeant -masi ces données sortent d'ou??
+            // si pas dirigeant -mais ces données sortent d'ou??
             else
             {
                 $this->nom_dirigeant = $this->companies->nom;
@@ -764,64 +735,57 @@ class depot_de_dossierController extends bootstrap
 
             // Form depot de dossier etape 2
             if (isset($_POST['send_form_depot_dossier']))
+
             {
+
                 //////////////////////////////////////////////////
 
                 $this->companies->name = $_POST['raison-sociale'];
-                $this->companies->status_client = $_POST['radio1-about'];
+                $this->companies->status_client = $_POST['gerant'];
 
-                $this->conf_email_representative = $_POST['conf_email_representative'];
+                $this->prescripteur->email = $_POST['conf_email_representative'];
+
+                //si gérant, données dans la table client, rien dans la table companies
+
+                //si conseil extern, données dans la table prescripteur, géerant dans la table des clients
 
                 // si conseil externe
-                if (isset($_POST['radio1-about']) && $_POST['radio1-about'] == 3)
+                if (isset($_POST['gerant']) && $_POST['gerant'] == 3)
                 {
                     $this->companies->status_conseil_externe_entreprise = $_POST['autre'];
 
                     if (isset($_POST['autre']) && $_POST['autre'] == 3)
                         $this->companies->preciser_conseil_externe_entreprise = $_POST['autre-preciser'];
 
-                    // partie utilisateur du compte
-                    $this->clients->civilite = $_POST['sex'];
-                    $this->clients->nom = $_POST['nom-famille'];
-                    $this->clients->prenom = $_POST['prenom'];
-                    $this->clients->email = $_POST['email'];
-                    $this->clients->telephone = $_POST['phone'];
-                    $this->conf_email = $_POST['conf_email'];
-                    $this->clients->fonction = $_POST['fonction'];
+                    // Le representant de la société devient le client
+                    $this->clients->civilite = $_POST['sex_representative'];
+                    $this->clients->nom = $_POST['nom_representative'];
+                    $this->clients->prenom = $_POST['prenom_representative'];
+                    $this->clients->email = $_POST['email_representative'];
+                    $this->clients->telephone = $_POST['portable_representative'];
+                    $this->conf_email = $_POST['conf_email_representative'];
+                    $this->clients->fonction = $_POST['fonction_representative'];
 
-                    // partie dirigeant
-                    $this->companies->civilite = '';
-                    $this->companies->nom_dirigeant = $_POST['nom_representative'];
-                    $this->companies->prenom_dirigeant = $_POST['prenom_representative'];
-                    $this->companies->email_dirigeant = $_POST['email_representative'];
-                    $this->companies->phone_dirigeant = $_POST['phone_representative'];
-                    $this->companies->fonction_dirigeant = $_POST['fonction_representative'];
+                    //partie prescripteur
+
+                    $this->prescripteur->civilite = $_POST['sex_prescripteur'];
+                    $this->prescripteur->nom_prescripteur = $_POST['prescripteur_nom-famille'];
+                    $this->prescripteur->prenom_prescripteur = $_POST['prescripteur_prenom'];
+                    $this->prescripteur->mobile_prescripteur = $_POST['prescripteur_phone'];
+
                 }
                 // si dirigeant
                 else
                 {
                     $this->clients->civilite = '';
                     $this->clients->nom = $_POST['nom_representative'];
-                    ;
                     $this->clients->prenom = $_POST['prenom_representative'];
                     $this->clients->email = $_POST['email_representative'];
                     $this->clients->telephone = $_POST['phone_representative'];
                     $this->clients->fonction = $_POST['fonction_representative'];
 
-                    $this->companies->civilite = '';
-                    $this->companies->nom_dirigeant = '';
-                    $this->companies->prenom_dirigeant = '';
-                    $this->companies->email_dirigeant = '';
-                    $this->companies->phone_dirigeant = '';
-                    $this->companies->fonction_dirigeant = '';
                 }
-                // pour l'affichage
-                $this->nom_dirigeant = $this->clients->nom;
-                $this->prenom_dirigeant = $this->clients->prenom;
-                $this->email_dirigeant = $this->clients->email;
-                $this->phone_dirigeant = $this->clients->telephone;
-                $this->conf_email_representative = $this->email_dirigeant;
-                $this->fonction_dirigeant = $this->clients->fonction;
+
                 //////////////////////////////////////////////////
 
                 if (isset($_POST['comments']) && $_POST['comments'] != $this->lng['etape2']['toutes-informations-utiles'])
@@ -834,35 +798,17 @@ class depot_de_dossierController extends bootstrap
 
 
                 // accept-cgu
-                if (!isset($_POST['accept-cgu']) || $_POST['accept-cgu'] == false)
-                {
-                    $form_ok = false;
-                }
+                $form_ok = (isset($_POST['accept-cgu']) || $_POST['accept-cgu'] == true)?:false;
                 // raison-sociale
-                if (!isset($_POST['raison-sociale']) || $_POST['raison-sociale'] == '' || $_POST['raison-sociale'] == $this->lng['etape2']['raison-sociale'])
-                {
-                    $form_ok = false;
-                }
+                $form_ok = (isset($_POST['raison-sociale']) || $_POST['raison-sociale'] != '' || $_POST['raison-sociale'] != $this->lng['etape2']['raison-sociale'])?:false;
                 // nom_representative
-                if (!isset($_POST['nom_representative']) || $_POST['nom_representative'] == '' || $_POST['nom_representative'] == $this->lng['etape2']['nom'])
-                {
-                    $form_ok = false;
-                }
+                $form_ok = (isset($_POST['nom_representative']) || $_POST['nom_representative'] !='' || $_POST['nom_representative'] != $this->lng['etape2']['nom'])?:false;
                 // prenom_representative
-                if (!isset($_POST['prenom_representative']) || $_POST['prenom_representative'] == '' || $_POST['prenom_representative'] == $this->lng['etape2']['prenom'])
-                {
-                    $form_ok = false;
-                }
+                $form_ok = (isset($_POST['prenom_representative']) || $_POST['prenom_representative'] != '' || $_POST['prenom_representative'] != $this->lng['etape2']['prenom'])?:false;
                 // phone_representative
-                if (!isset($_POST['phone_representative']) || $_POST['phone_representative'] == '' || $_POST['phone_representative'] == $this->lng['etape2']['telephone'] || strlen($_POST['phone_representative']) < 9 && strlen($_POST['phone_representative']) > 14)
-                {
-                    $form_ok = false;
-                }
+                $form_ok =  (!isset($_POST['phone_representative']) || $_POST['phone_representative'] == '' || $_POST['phone_representative'] == $this->lng['etape2']['telephone'] || strlen($_POST['phone_representative']) < 9 && strlen($_POST['phone_representative']) > 14)? false:true;
                 // fonction_representative
-                if (!isset($_POST['fonction_representative']) || $_POST['fonction_representative'] == '' || $_POST['fonction_representative'] == $this->lng['etape2']['fonction'])
-                {
-                    $form_ok = false;
-                }
+                $form_ok = (isset($_POST['fonction_representative']) || $_POST['fonction_representative'] != '' || $_POST['fonction_representative'] != $this->lng['etape2']['fonction'])?:false;
                 // email_representative
                 if (!isset($_POST['email_representative']) || $_POST['email_representative'] == '' || $_POST['email_representative'] == $this->lng['etape2']['email'])
                 {
@@ -880,54 +826,40 @@ class depot_de_dossierController extends bootstrap
                 }
                 //==> le reste pour le mail un peu plus bas <==
                 // si conseil externe
-                if (isset($_POST['radio1-about']) && $_POST['radio1-about'] == 3)
+                if (isset($_POST['gerant']) && $_POST['gerant'] == 3)
                 {
                     // externe
-                    if (!isset($_POST['autre']) || $_POST['autre'] == '0')
-                    {
-                        $form_ok = false;
-                    }
+                    $form_ok = (isset($_POST['autre']) || $_POST['autre'] != '0')?:false;
                     // civilite
-                    if (!isset($_POST['sex']) || $_POST['sex'] == '')
-                    {
-                        $form_ok = false;
-                    }
+                    $form_ok = (isset($_POST['sex_prescripteur']) || $_POST['sex_prescripteur'] != '')?:false;
                     // nom
-                    if (!isset($_POST['nom-famille']) || $_POST['nom-famille'] == '' || $_POST['nom-famille'] == $this->lng['etape2']['nom'])
-                    {
-                        $form_ok = false;
-                    }
+                    $form_ok = (isset($_POST['prescripteur_nom-famille']) || $_POST['prescripteur_nom-famille'] != '' || $_POST['prescripteur_nom-famille'] != $this->lng['etape2']['nom'])?:false;
                     // prenom
-                    if (!isset($_POST['prenom']) || $_POST['prenom'] == '' || $_POST['prenom'] == $this->lng['etape2']['prenom'])
-                    {
-                        $form_ok = false;
-                    }
+                    $form_ok = (isset($_POST['prescripteur_prenom']) || $_POST['prescripteur_prenom'] != '' || $_POST['prescripteur_prenom'] != $this->lng['etape2']['prenom'])?:false;
                     // fonction_representative
-                    if (!isset($_POST['fonction']) || $_POST['fonction'] == '' || $_POST['fonction'] == $this->lng['etape2']['fonction'])
-                    {
-                        $form_ok = false;
-                    }
+                    $form_ok = (isset($_POST['prescripteur_fonction']) || $_POST['prescripteur_fonction'] != '' || $_POST['prescripteur_fonction'] != $this->lng['etape2']['fonction'])?:false;
+
                     // email
-                    if (!isset($_POST['email']) || $_POST['email'] == '' || $_POST['email'] == $this->lng['etape2']['email'])
+                    if (!isset($_POST['prescripteur_email']) || $_POST['prescripteur_email'] == '' || $_POST['prescripteur_email'] == $this->lng['etape2']['email'])
                     {
                         $form_ok = false;
                     }
                     // verif format mail
-                    elseif (!$this->ficelle->isEmail($_POST['email']))
+                    elseif (!$this->ficelle->isEmail($_POST['prescripteur_email']))
                     {
                         $form_ok = false;
                     }
                     // conf email good/pas
-                    elseif ($_POST['email'] != $_POST['conf_email'])
+                    elseif ($_POST['prescripteur_email'] != $_POST['prescripteur_conf_email'])
                     {
                         $form_ok = false;
                     }
                     // email existe deja
-                    elseif (!$this->clients->existEmail($_POST['email']))
+                    elseif (!$this->clients->existEmail($_POST['prescripteur_email']))
                     {
-                        if (isset($_SESSION['client']) && $this->email_temp == $_POST['email'])
+                        if (isset($_SESSION['client']) && $this->email_temp == $_POST['prescripteur_email'])
                         {
-                            
+
                         }
                         else
                         {
@@ -948,7 +880,7 @@ class depot_de_dossierController extends bootstrap
                         }
                     }
                     // phone
-                    if (!isset($_POST['phone']) || $_POST['phone'] == '' || $_POST['phone'] == $this->lng['etape2']['telephone'] || strlen($_POST['phone']) < 9 && strlen($_POST['phone']) > 14)
+                    if (!isset($_POST['portable_representative']) || $_POST['portable_representative'] == '' || $_POST['portable_representative'] == $this->lng['etape2']['telephone'] || strlen($_POST['portable_representative']) < 9 && strlen($_POST['portable_representative']) > 14)
                     {
                         $form_ok = false;
                     }
@@ -961,7 +893,7 @@ class depot_de_dossierController extends bootstrap
 
                         if (isset($_SESSION['client']) && $this->email_temp == $_POST['email_representative'])
                         {
-                            
+
                         }
                         else
                         {
@@ -1027,6 +959,7 @@ class depot_de_dossierController extends bootstrap
                     $this->companies->update();
                     $this->companies_details->update();
                     $this->projects->update();
+                    $this->prescripteur->update();
 
 
                     // -- acceptation des cgu -- // 
@@ -1040,9 +973,10 @@ class depot_de_dossierController extends bootstrap
                         $this->acceptations_legal_docs->update();
                     else
                         $this->acceptations_legal_docs->create();
-                    // -- fin partie cgu -- // 
+                    // -- fin partie cgu -- //
+
                     // si good page confirmation
-                    $this->projects_status_history->addStatus(-2, 10, $this->projects->id_project);
+                    $this->projects_status_history->addStatus(-2, projects_status::A_TRAITER, $this->projects->id_project);
 
                     // Creation du mot de passe client
                     $lemotdepasse = '';
@@ -1161,8 +1095,8 @@ class depot_de_dossierController extends bootstrap
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     // fin mail
                     // Page confirmation
-                    header('location:' . $this->lurl . '/' . $this->tree->getSlug(48, $this->language));
-                    die;
+                    header('location:' . $this->lurl . '/depot_de_dossier/etape3/'. $this->clients->hash);
+
                 }
             } // fin formulaire etape 2
         }
@@ -1173,9 +1107,45 @@ class depot_de_dossierController extends bootstrap
         }
     }
 
-    function _etape3()
+    function _etape3(){
+
+        // Num page
+        $this->page = 3;
+
+        //Recuperation des element de traductions
+        $this->lng['etape1'] = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
+        $this->lng['etape2'] = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
+        $this->lng['etape3'] = $this->ln->selectFront('depot-de-dossier-etape-3', $this->language, $this->App);
+
+
+        $this->settings->get('Lien conditions generales depot dossier', 'type');
+        $this->lienConditionsGenerales = $this->settings->value;
+
+        // Somme à emprunter min
+        $this->settings->get('Somme à emprunter min', 'type');
+        $this->sommeMin = $this->settings->value;
+
+        // Somme à emprunter max
+        $this->settings->get('Somme à emprunter max', 'type');
+        $this->sommeMax = $this->settings->value;
+
+        // Datas
+        $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
+        $this->companies = $this->loadData('companies');
+        $this->companies_details = $this->loadData('companies_details');
+        $this->companies_bilans = $this->loadData('companies_bilans');
+        $this->companies_actif_passif = $this->loadData('companies_actif_passif');
+        $this->projects = $this->loadData('projects');
+        $this->projects_status_history = $this->loadData('projects_status_history');
+        $this->prescripteur = $this->loadData('prescripteur');
+
+
+    }
+
+
+
+    function _etape3_old()
     {
-        die;
         //////////////////////////////////
         // Initialisation variable
         $this->preteurCreateEmprunteur = false;
@@ -1236,7 +1206,7 @@ class depot_de_dossierController extends bootstrap
             $conditionOk = false;
         }
 
-
+        $conditionOk = true;
         // On récupere les infos clients
         if ($conditionOk == true)
         {
@@ -1422,7 +1392,6 @@ class depot_de_dossierController extends bootstrap
 
     function _etape4()
     {
-        die;
         //////////////////////////////////
         // Initialisation variable
         $this->preteurCreateEmprunteur = false;
@@ -1483,6 +1452,7 @@ class depot_de_dossierController extends bootstrap
             $conditionOk = false;
         }
 
+        $conditionOk = true;
 
         // On récupere les infos clients
         if ($conditionOk == true)
@@ -1845,7 +1815,6 @@ class depot_de_dossierController extends bootstrap
 
     function _etape5()
     {
-        die;
         // Chargement des datas
         $this->users = $this->loadData('users');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
@@ -1910,6 +1879,7 @@ class depot_de_dossierController extends bootstrap
             $conditionOk = false;
         }
 
+        $conditionOk = true;
 
         // On récupere les infos clients
         if ($conditionOk == true)

@@ -38,8 +38,24 @@
 					</div><!-- /.row -->
 	
 					<div class="row">
-<!--						<p>--><?//=$this->lng['etape2']['identite-du-representant-de-la-societe']?><!--</p>-->
-	
+						<div class="row" >
+							<p><?=$this->lng['etape2']['identite-du-representant-de-la-societe']?></p>
+
+							<div class="form-choose fixed radio_sex_representative">
+								<span class="title"><?=$this->lng['etape2']['civilite']?></span>
+								<div class="radio-holder">
+									<label for="female_representative"><?=$this->lng['etape2']['madame']?></label>
+									<input type="radio" class="custom-input" name="sex_representative" id="female_representative"  value="Mme" <?=($this->clients->civilite=='Mme'?'checked="checked"':'')?>>
+								</div><!-- /.radio-holder -->
+
+								<div class="radio-holder">
+									<label for="male_representative"><?=$this->lng['etape2']['monsieur']?></label>
+									<input type="radio" class="custom-input" name="sex_representative" id="male_representative"  value="M." <?=($this->clients->civilite=='M.'?'checked="checked"':'')?>>
+								</div><!-- /.radio-holder -->
+							</div><!-- /.form-choose -->
+						</div><!-- /.row -->
+
+						<div class="row">
 						<input type="text" name="nom_representative" id="nom_representative"
 							   title="<?=$this->lng['etape2']['nom']?>"
 							   value="<?=($this->clients->nom!=''?$this->clients->nom:$this->lng['etape2']['nom'])?>"
@@ -68,8 +84,8 @@
 
 						<input type="text" name="portable_representative" id="portable_representative"
 							   title="<?=$this->lng['etape2']['telephone']?>"
-							   value="<?=($this->clients->fonction!=''?$this->clients->fonction:$this->lng['etape2']['telephone'])?>"
-							   class="field field-small required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
+							   value="<?=($this->clients->mobile!=''?$this->clients->mobile:$this->lng['etape2']['telephone'])?>"
+							   class="field field-small required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 14}">
 
 					</div><!-- /.row -->
 
@@ -90,23 +106,23 @@
 								<div class="radio-holder">
 									<label style ="width: 192px;" for="radio1-1-about"><?=$this->lng['etape2']['dirigeant-entreprise']?></label>
 									<input <?=(isset($_POST['send_form_depot_dossier'])?($this->companies->status_client == 1?'checked':''):'checked')?>
-										type="radio" class="custom-input" name="radio1-about" id="radio1-1-about" value="1">
+										type="radio" class="custom-input" name="gerant" id="radio1-1-about" value="1">
 								</div><!-- /.radio-holder -->
 
 								<div class="radio-holder">
 									<label style ="width: 192px;" for="radio1-3-about"><?=$this->lng['etape2']['conseil-externe-entreprise']?></label>
 									<input <?=($this->companies->status_client == 3?'checked':'')?>
-										type="radio" class="custom-input" name="radio1-about" id="radio1-3-about" value="3" data-condition="show:.identification">
+										type="radio" class="custom-input" name="gerant" id="radio1-3-about" value="3" data-condition="show:.identification">
 								</div><!-- /.radio-holder -->
 						</div><!-- /.form-choose -->
 					</div><!-- /.row -->
 
 					<div class="about-sections">
-						
+
 						<div class="about-section">
-							
+
 						</div><!-- /.about-section -->
-	
+
 						<div class="about-section identification">
 							<div class="row">
 								<select name="autre" style="width:458px;" id="autre" class="field field-large custom-select required">
@@ -117,27 +133,27 @@
 									}
 									?>
 								</select>
-	
+
 								<input style="display:none;" type="text" name="autre-preciser" title="<?=$this->lng['etape2']['autre']?>" value="<?=($this->companies->preciser_conseil_externe_entreprise!=''?$this->companies->preciser_conseil_externe_entreprise:$this->lng['etape2']['autre'])?>" id="autre-preciser" class="field field-large">
 							</div><!-- /.row -->
-	
+
 							<div class="row" >
 								<p><?=$this->lng['etape2']['vos-coordonnees']?></p>
-	
-								<div class="form-choose fixed radio_sex">
+
+								<div class="form-choose fixed radio_sex_prescripteur">
 									<span class="title"><?=$this->lng['etape2']['civilite']?></span>
 									<div class="radio-holder">
-										<label for="female"><?=$this->lng['etape2']['madame']?></label>
-										<input type="radio" class="custom-input" name="sex" id="female"  value="Mme" <?=($this->clients->civilite=='Mme'?'checked="checked"':'')?>>
+										<label for="female_prescripteur"><?=$this->lng['etape2']['madame']?></label>
+										<input type="radio" class="custom-input" name="sex_prescripteur" id="female_prescripteur"  value="Mme" <?=($this->clients->civilite=='Mme'?'checked="checked"':'')?>>
 									</div><!-- /.radio-holder -->
-	
+
 									<div class="radio-holder">
-										<label for="male"><?=$this->lng['etape2']['monsieur']?></label>
-										<input type="radio" class="custom-input" name="sex" id="male"  value="M." <?=($this->clients->civilite=='M.'?'checked="checked"':'')?>>
+										<label for="male_prescripteur"><?=$this->lng['etape2']['monsieur']?></label>
+										<input type="radio" class="custom-input" name="sex_prescripteur" id="male_prescripteur"  value="M." <?=($this->clients->civilite=='M.'?'checked="checked"':'')?>>
 									</div><!-- /.radio-holder -->
 								</div><!-- /.form-choose -->
 							</div><!-- /.row -->
-	
+
 							<div class="row">
 								<input type="text" name="prescripteur_nom-famille" id="prescripteur_nom-famille"
 									   title="<?=$this->lng['etape2']['nom']?>"
@@ -149,7 +165,7 @@
 									   value="<?=($this->clients->prenom!=''?$this->clients->prenom:$this->lng['etape2']['prenom'])?>"
 									   class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}" >
 							</div><!-- /.row -->
-	
+
 							<div class="row">
 								<input type="text" name="prescripteur_email" id="prescripteur_email"
 									   title="<?=$this->lng['etape2']['email']?>"
@@ -161,7 +177,7 @@
 									   value="<?=($this->conf_email!=''?$this->conf_email:$this->lng['etape2']['confirmation-email'])?>"
 									   class="field field-large required" data-validators="Confirmation,{ match: 'email' }" >
 							</div><!-- /.row -->
-	
+
 							<div class="row">
 								<input type="text" name="prescripteur_phone" id="prescripteur_phone"
 									   value="<?=($this->clients->telephone!=''?$this->clients->telephone:$this->lng['etape2']['telephone'])?>"
@@ -180,15 +196,15 @@
 
 						<div class="row">
 							<div class="form-choose radio_comptables">
-								<span class="title"><?=$this->lng['etape1']['exercices-comptables']?></span>
+								<span class="title"><?=$this->lng['etape2']['exercices-comptables']?></span>
 
 								<div class="radio-holder">
-									<label for="comptables-oui"><?=$this->lng['etape1']['oui']?></label>
+									<label for="comptables-oui"><?=$this->lng['etape2']['oui']?></label>
 									<input type="radio" class="custom-input" name="comptables" id="comptables-oui" value="1">
 								</div><!-- /.radio-holder -->
 
 								<div class="radio-holder">
-									<label for="comptables-non"><?=$this->lng['etape1']['non']?></label>
+									<label for="comptables-non"><?=$this->lng['etape2']['non']?></label>
 									<input type="radio" class="custom-input" name="comptables" id="comptables-non" value="0">
 								</div><!-- /.radio-holder -->
 
@@ -236,15 +252,15 @@ if($this->error_email_representative_exist == true){
 }
 elseif($this->error_email_exist == true){
 	?>
-	$("#email").addClass('LV_invalid_field');
-	$("#email").removeClass('LV_valid_field');
+	$("#prescripteur_email").addClass('LV_invalid_field');
+	$("#prescripteur_email").removeClass('LV_valid_field');
 	<?
 }
 ?>
 
 $(document).ready(function () {
   	$('#conf_email_representative').bind('paste', function (e) { e.preventDefault(); });
-	$('#conf_email').bind('paste', function (e) { e.preventDefault(); });
+	$('#conf_prescripteur_email').bind('paste', function (e) { e.preventDefault(); });
 });
 
 $('select#autre').on('change', function() {
