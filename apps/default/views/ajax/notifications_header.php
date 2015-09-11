@@ -113,9 +113,9 @@ foreach ($this->lNotifHeader as $r) {
         elseif ($r['type'] == 10) {
             $this->projects_notifs->get($r['id_project'], 'id_project');
             ?>
-            <b><?= $this->lng['notifications']['annonce-nouveau-probleme'] ?> recouvrement</b><br />
+            <b><?= $this->lng['notifications']['annonce-recouvrement'] ?></b><br />
             <div class="content_notif">
-                <?= $this->lng['notifications']['probleme-notif-texte1'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['probleme-notif-texte2'] ?>
+                <?= $this->lng['notifications']['recouvrement-notif-texte1'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['recouvrement-notif-texte2'] ?>
             </div>
             <?
         }
