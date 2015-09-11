@@ -777,7 +777,7 @@ class dossiersController extends bootstrap
                     // Status
                     if ($this->current_projects_status->status != $_POST['status'])
                     {
-                        $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
+                        $this->projects_status_history->id_project_status_history = $this->projects_status_history->addStatusAndReturnID($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
 
                         // Si statut a funder, en funding ou fundé
                         if (in_array($_POST['status'], array(40, 50, 60)))
@@ -1122,6 +1122,12 @@ class dossiersController extends bootstrap
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_probleme_recouvrement'];
                             $contenu_a_ajouter_mail = $_POST['area_recouvrement'];
                            
+                            // on enregsitre le contenu
+                            $projects_status_history_informations = $this->loadData('projects_status_history_informations');
+                            $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                            $projects_status_history_informations->information = $contenu_a_ajouter_mail;
+                            $projects_status_history_informations->create();
+                            
                             // On recuprere les lenders ayant des loans sur le projet
                             $lPreteurs = $this->loans->getPreteurs($this->projects->id_project);
 

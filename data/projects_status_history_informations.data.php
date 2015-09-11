@@ -26,15 +26,15 @@
 //                                                                                   
 // **************************************************************************************************** //
 
-class projects_status_history extends projects_status_history_crud
+class projects_status_history_informations extends projects_status_history_informations_crud
 {
 
-	function projects_status_history($bdd,$params='')
+	function projects_status_history_informations($bdd,$params='')
     {
-        parent::projects_status_history($bdd,$params);
+        parent::projects_status_history_informations($bdd,$params);
     }
     
-    function get($id,$field='id_project_status_history')
+    function get($id,$field='id_project_status_history_information')
     {
         return parent::get($id,$field);
     }
@@ -44,7 +44,7 @@ class projects_status_history extends projects_status_history_crud
         parent::update($cs);
     }
     
-    function delete($id,$field='id_project_status_history')
+    function delete($id,$field='id_project_status_history_information')
     {
     	parent::delete($id,$field);
     }
@@ -61,7 +61,7 @@ class projects_status_history extends projects_status_history_crud
 			$where = ' WHERE '.$where;
 		if($order != '')
 			$order = ' ORDER BY '.$order;
-		$sql = 'SELECT * FROM `projects_status_history`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+		$sql = 'SELECT * FROM `projects_status_history_informations`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
 
 		$resultat = $this->bdd->query($sql);
 		$result = array();
@@ -77,46 +77,16 @@ class projects_status_history extends projects_status_history_crud
 		if($where != '')
 			$where = ' WHERE '.$where;
 			
-		$sql='SELECT count(*) FROM `projects_status_history` '.$where;
+		$sql='SELECT count(*) FROM `projects_status_history_informations` '.$where;
 
 		$result = $this->bdd->query($sql);
 		return (int)($this->bdd->result($result,0,0));
 	}
 	
-	function exist($id,$field='id_project_status_history')
+	function exist($id,$field='id_project_status_history_information')
 	{
-		$sql = 'SELECT * FROM `projects_status_history` WHERE '.$field.'="'.$id.'"';
+		$sql = 'SELECT * FROM `projects_status_history_informations` WHERE '.$field.'="'.$id.'"';
 		$result = $this->bdd->query($sql);
 		return ($this->bdd->fetch_array($result,0,0)>0);
-	} 
-	
-	function addStatus($id_user,$status,$id_project)
-	{
-		$sql='SELECT id_project_status FROM `projects_status` WHERE status = '.$status.' ';
-
-		$result = $this->bdd->query($sql);
-		$id_project_status = (int)($this->bdd->result($result,0,0));
-		
-		
-		$this->id_project = $id_project;
-		$this->id_project_status = $id_project_status;
-		$this->id_user = $id_user;
-		
-		$this->create();
-	}
-        
-        function addStatusAndReturnID($id_user,$status,$id_project)
-	{
-		$sql='SELECT id_project_status FROM `projects_status` WHERE status = '.$status.' ';
-
-		$result = $this->bdd->query($sql);
-		$id_project_status = (int)($this->bdd->result($result,0,0));
-		
-		
-		$this->id_project = $id_project;
-		$this->id_project_status = $id_project_status;
-		$this->id_user = $id_user;
-		
-		return $this->create();
 	}
 }
