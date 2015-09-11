@@ -1122,7 +1122,8 @@ class dossiersController extends bootstrap
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_probleme_recouvrement'];
                             $contenu_a_ajouter_mail = $_POST['area_recouvrement'];
                            
-                            $lPreteurs = $this->loans->select('id_project = ' . $this->projects->id_project);
+                            // On recuprere les lenders ayant des loans sur le projet
+                            $lPreteurs = $this->loans->getPreteurs($this->projects->id_project);
 
                             if ($lPreteurs != false)
                             {

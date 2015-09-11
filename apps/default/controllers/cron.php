@@ -15823,5 +15823,73 @@ class cronController extends bootstrap
         
      }
     
+    // fonction qui envoie les mails en differé (pour eviter la surchage au CTA)
+    /* Executé toutes les minutes avec une limite de nb/minute
+     * 
+     */
+    function _traitement_file_attente_envoi_mail()
+    {
+        
+        // Récuperation des mails à envoyer
+        $liste_attente_mail = $this->loadData('liste_attente_mail');
+        $liste_attente_mail_temp = $this->loadData('liste_attente_mail');
+        
+        $L_mail_a_traiter = $liste_attente_mail->select('statut = 0','added ASC',0, 50);
+        
+        if(count($L_mail_a_traiter)> 0)
+        {
+            foreach($L_mail_a_traiter as $mail)
+            {
+                // envoi du mail             
+                
+                // Recuperation du modele de mail
+                $this->mails_text->get($mail['type_mail'], 'lang = "' . $mail['language']. '" AND type');
+
+                // Variables du mailing
+                
+                $varMail = unserialize($mail['variables']);
+                
+                // on rajoute un decodage utf8 lorsqu'on n'est pas en prod
+                if ($this->Config['env'] != 'prod'){
+                    $varMail = array_map('utf8_decode', $varMail);
+                }
+                
+                // Construction du tableau avec les balises EMV
+                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                // Attribution des données aux variables
+                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                // Envoi du mail
+                $this->email = $this->loadLib('email', array());
+                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                $this->email->setSubject(stripslashes($sujetMail));
+                $this->email->setHTMLBody(stripslashes($texteMail));
+
+                if ($this->Config['env'] == 'prod') // nmp
+                {
+                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $mail['to'], $tabFiler);
+                    // Injection du mail NMP dans la queue
+                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                }
+                else // non nmp
+                {
+                    $this->email->addRecipient(trim($mail['to']));
+                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                }
+                
+                // mise à jour du mail dans la file d'attente
+                $liste_attente_mail_temp->get($mail['id']);
+                $liste_attente_mail_temp->statut = 1; //envoyé
+                $liste_attente_mail_temp->update();
+                
+            }
+        }
+        
+        
+         
+    }
     
 }

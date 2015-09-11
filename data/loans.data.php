@@ -114,7 +114,7 @@ class loans extends loans_crud
 	
 	function getPreteurs($id_project)
 	{
-		$sql='SELECT DISTINCT id_lender FROM `loans` WHERE id_project = '.$id_project.' AND status = 0';
+		$sql='SELECT * FROM `loans` WHERE id_project = '.$id_project.' AND status = 0 GROUP BY id_lender';
 
 		$resultat = $this->bdd->query($sql);
 		$result = array();
