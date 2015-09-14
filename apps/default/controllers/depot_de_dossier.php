@@ -20,6 +20,8 @@ class depot_de_dossierController extends bootstrap
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->projects_status= $this->loadData('projects_status');
         $this->projects = $this->loadData('projects');
+        $this->clients = $this->loadData('clients');
+        $this->prescripteur = $this->loadData('prescripteur');
 
         $this->navigateurActive = 3;
 
@@ -166,13 +168,12 @@ class depot_de_dossierController extends bootstrap
 
             if ($form_valid)
             {
-                //Si on a une session client
-                if (isset($_SESSION['client']))
-                {
-                    // On recup le mec
-                    $this->clients->get($_SESSION['client']['id_client'], 'id_client');
+                //create client, company and project independent from eligibility
+                    //Check if company exists based on SIREN
+                    if($this->companies->exist($siren,$field='siren')) $this->companies->get($siren, 'siren');
 
-                    $this->clients->status_depot_dossier = 1;
+                    //then get the client from that company in case it has not already been found by email before
+                    if ($this->clients->id_client == '') $this->clients->get($this->companies->id_client_owner);
 
                     // Si c'est un preteur
                     if ($this->clients->status_pre_emp == 1) {
@@ -191,6 +192,9 @@ class depot_de_dossierController extends bootstrap
                         header('location:' . $this->lurl . '/lp-depot-de-dossier');
                         die;
                     }
+                    $this->clients->id_langue = $this->language;
+                    $this->clients->status_depot_dossier = 1;
+                    if(isset($email)) $this->clients->email = $email;
 
                     // dans tous les cas tant qu'on a pas le syteme preteur/emprunteur on redirige si on est connecté (a supprimer lors de la mise en place du systeme)
                     header('location:' . $this->lurl . '/lp-depot-de-dossier');
@@ -242,9 +246,9 @@ class depot_de_dossierController extends bootstrap
 
                     // verif reponse
                     $eligibility = $result->myInfo->eligibility;
-                    $score = $result->myInfo->score;
-                    $identite = $result->myInfo->identite;
-                    $siege = $result->myInfo->siege;
+                    //save status altares in the project
+                    $this->projects->retour_altares = $eligibility;
+                    $this->projects->update();
 
 
                     // clients //
@@ -322,10 +326,6 @@ class depot_de_dossierController extends bootstrap
                     $this->projects->period = $duree;
                     $this->projects->retour_altares = $eligibility;
 
-                    // Default analyst
-                    $this->settings->get('Default analyst', 'type');
-                    $default_analyst = $this->settings->value;
-                    $this->projects->id_analyste = $default_analyst;
 
                     $this->projects->id_project = $this->projects->create();
                     // fin projects //
@@ -552,9 +552,8 @@ class depot_de_dossierController extends bootstrap
                     $this->projects->amount = $montant;
                     $this->projects->period = $duree;
 
-                    // Default analyst
-                    $this->settings->get('Default analyst', 'type');
-                    $this->projects->id_analyste = $this->settings->value;
+    function _prospect()
+    {
 
                     $this->projects->id_project = $this->projects->create();
                     // fin projects //
@@ -566,12 +565,30 @@ class depot_de_dossierController extends bootstrap
                         $this->companies_bilans->date = $lesdates[$i];
                         $this->companies_bilans->create();
                     }
+                    // phone
+                    if (!isset($_POST['prescripteur_phone']) || $_POST['prescripteur_phone'] == '' || $_POST['prescripteur_phone'] == $this->lng['etape2']['telephone'] || strlen($_POST['prescripteur_phone']) < 9 && strlen($_POST['prescripteur_phone']) > 14) {
+                        $form_ok = false;
+                    }
+                }
 
-                    // les 3 dernieres vrais années (actif/passif)
-                    $date = array();
-                    $date[1] = (date('Y') - 1);
-                    $date[2] = (date('Y') - 2);
-                    $date[3] = (date('Y') - 3);
+                // clients (gerant)
+                $form_ok = (isset($_POST['nom_representative']) || $_POST['nom_representative'] != '' || $_POST['nom_representative'] != $this->lng['etape2']['nom']) ?: false;
+                // prenom_representative
+                $form_ok = (isset($_POST['prenom_representative']) || $_POST['prenom_representative'] != '' || $_POST['prenom_representative'] != $this->lng['etape2']['prenom']) ?: false;
+                // phone_representative
+                $form_ok = (!isset($_POST['phone_representative']) || $_POST['phone_representative'] == '' || $_POST['phone_representative'] == $this->lng['etape2']['telephone'] || strlen($_POST['phone_representative']) < 9 && strlen($_POST['phone_representative']) > 14) ? false : true;
+                // fonction_representative
+                $form_ok = (isset($_POST['fonction_representative']) || $_POST['fonction_representative'] != '' || $_POST['fonction_representative'] != $this->lng['etape2']['fonction']) ?: false;
+                // email_representative
+                if (!isset($_POST['email_representative']) || $_POST['email_representative'] == '' || $_POST['email_representative'] == $this->lng['etape2']['email']) {
+                    $form_ok = false;
+                } // verif format mail
+                elseif (!$this->ficelle->isEmail($_POST['email_representative'])) {
+                    $form_ok = false;
+                } // conf email good/pas
+                elseif ($_POST['email_representative'] != $_POST['conf_email_representative']) {
+                    $form_ok = false;
+                }
 
                     foreach ($date as $k => $d) {
                         $this->companies_actif_passif->annee = $d;
@@ -617,13 +634,12 @@ class depot_de_dossierController extends bootstrap
         $this->settings->get('Somme à emprunter max', 'type');
         $this->sommeMax = $this->settings->value;
 
-        // Liste deroulante conseil externe de l'entreprise
-        $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
-        $this->conseil_externe = $this->ficelle->explodeStr2array($this->settings->value);
-
-        // Default analyst
-        $this->settings->get('Default analyst', 'type');
-        $default_analyst = $this->settings->value;
+        // load des durée des prêts autorisées
+        $this->settings->get('Durée des prêts autorisées', 'type');
+        $this->dureePossible = explode(',', $this->settings->value);
+        if (empty($this->settings->value)) {
+            $this->dureePossible = array(24, 36, 48, 60);
+        }
 
         // Datas
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
@@ -700,7 +716,6 @@ class depot_de_dossierController extends bootstrap
         else
         {
             header('location:' . $this->lurl . '/depot_de_dossier/etape1');
-            die;
         }
 
         // On récupere les infos clients
@@ -712,6 +727,7 @@ class depot_de_dossierController extends bootstrap
 
             // le projet
             $this->projects->get($this->companies->id_company, 'id_company');
+            $this->prescripteur->get($this->projects->id_prescripteur, 'id_prescripteur');
 
             // si dirigeant
             if ($this->companies->status_client == 1)
@@ -739,6 +755,7 @@ class depot_de_dossierController extends bootstrap
             {
 
                 //////////////////////////////////////////////////
+                // on fixe les données dans des variables du controlleur pour affichage dans le form
 
                 $this->companies->name = $_POST['raison-sociale'];
                 $this->companies->status_client = $_POST['gerant'];
@@ -789,9 +806,12 @@ class depot_de_dossierController extends bootstrap
                 //////////////////////////////////////////////////
 
                 if (isset($_POST['comments']) && $_POST['comments'] != $this->lng['etape2']['toutes-informations-utiles'])
-                    $this->projects->comments = $_POST['comments'];
+                    $this->projects_comments = $_POST['comments'];
                 else
-                    $this->projects->comments = '';
+                    $this->projects_comments = '';
+
+
+                //on verifie le form
 
                 // variable
                 $form_ok = true;
@@ -887,9 +907,6 @@ class depot_de_dossierController extends bootstrap
                 }
                 else
                 {
-                    // email existe deja
-                    if (isset($_POST['email_representative']) && !$this->clients->existEmail($_POST['email_representative']))
-                    {
 
                         if (isset($_SESSION['client']) && $this->email_temp == $_POST['email_representative'])
                         {
@@ -898,54 +915,28 @@ class depot_de_dossierController extends bootstrap
                         else
                         {
 
-                            // si emprunteur on créer une adresse mail avec son id projet
-                            $clients = $this->loadData('clients');
-                            if ($clients->counter('email = "' . $_POST['email_representative'] . '"') > 0)
-                            {
-                                $this->lemailduclient = $this->clients->email;
-                                $this->clients->email .= '-' . $this->projects->id_project;
-                            }
-                            // sinon com d'hab on valide pas
-                            else
-                            {
-                                $form_ok = false;
-                                $this->error_email_representative_exist = true;
-                            }
-                        }
-                    }
-                }
+                    // Le representant de la société devient le client
+                    $this->clients->civilite = $this->clients_civilite;
+                    $this->clients->nom = $this->clients_nom;
+                    $this->clients->prenom = $this->clients_prenom;
+                    $this->clients->email = $this->clients_email;
+                    $this->clients->telephone = $this->clients_telephone;
+                    $this->clients->fonction = $this->clients_fonction;
 
-                //Si on a une session client
-                if (isset($_SESSION['client']))
-                {
-                    // On recup le mec
-                    $this->clients->get($_SESSION['client']['id_client'], 'id_client');
-
-                    // Si c'est un preteur
-                    if ($this->clients->status_pre_emp == 1)
+                    //si conseil extern, données dans la table prescripteur, gérant dans la table des clients
+                    if (isset($_POST['gerant']) && $_POST['gerant'] == 3)
                     {
-                        // On controle si personne physique
-                        if ($this->clients->type == 1)
-                        {
-                            $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
-                            // personne physique on dit non
-                            header('location:' . $this->lurl . '/depot_de_dossier/etape1');
-                            die;
-                        }
-                    }
-                    // Si c'est un emprunteur ou deja un preteur/emprunteur
-                    elseif ($this->clients->status_pre_emp == 2 || $this->clients->status_pre_emp == 3)
-                    {
-                        $_SESSION['error_pre_empr'] = $this->lng['etape1']['vous-disposez-deja-dun-compte-emprunteur'];
-                        // Si emprunteur pas le droit de créer un autre compte en etant connecté
-                        header('location:' . $this->lurl . '/depot_de_dossier/etape1');
-                        die;
-                    }
-                }
+                        $this->prescripteur->exist($this->prescripteur_email, 'email_prescripteur')?$this->prescripteur->get($this->prescripteur_email, 'email_prescripteur'):$this->prescripteur->id_prescripteur = $this->prescripteur->create();
 
-                // Si les champs sont bien remplis
-                if ($form_ok == true)
-                {
+                        //partie prescripteur
+                        $this->prescripteur->civilite = $this->civilite_prescripteur;
+                        $this->prescripteur->nom_prescripteur = $this->prescripteur_nom;
+                        $this->prescripteur->prenom_prescripteur = $this->prescripteur_prenom;
+                        $this->prescripteur->mobile_prescripteur = $this->prescripteur_mobile ;
+                        $this->prescripteur->email_prescripteur = $this->prescripteur_email;
+                        $this->prescripteur->update();
+                    }
+
                     // clients
                     $this->clients->id_langue = 'fr';
                     $this->clients->slug = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
@@ -962,7 +953,7 @@ class depot_de_dossierController extends bootstrap
                     $this->prescripteur->update();
 
 
-                    // -- acceptation des cgu -- // 
+                    // -- acceptation des cgu -- //
                     if ($this->acceptations_legal_docs->get($this->lienConditionsGenerales, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc'))
                         $accepet_ok = true;
                     else
@@ -1103,7 +1094,7 @@ class depot_de_dossierController extends bootstrap
         else
         {
             // redirection etape 1
-            //....................	
+            //....................
         }
     }
 
@@ -1146,6 +1137,7 @@ class depot_de_dossierController extends bootstrap
 
     function _etape3_old()
     {
+        die;
         //////////////////////////////////
         // Initialisation variable
         $this->preteurCreateEmprunteur = false;
@@ -1392,6 +1384,7 @@ class depot_de_dossierController extends bootstrap
 
     function _etape4()
     {
+        die;
         //////////////////////////////////
         // Initialisation variable
         $this->preteurCreateEmprunteur = false;
@@ -1537,7 +1530,7 @@ class depot_de_dossierController extends bootstrap
                         }
 
 
-                        // dernier bilan 
+                        // dernier bilan
                         $dateDernierBilan = substr($identite->dateDernierBilan, 0, 10);
                         $dateDernierBilan = explode('-', $dateDernierBilan);
 
@@ -1815,6 +1808,7 @@ class depot_de_dossierController extends bootstrap
 
     function _etape5()
     {
+        die;
         // Chargement des datas
         $this->users = $this->loadData('users');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
