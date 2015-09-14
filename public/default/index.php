@@ -35,7 +35,6 @@ include('../../core/bdd.class.php');
 include('../../core/errorhandler.class.php');
 include('../../config.php');
 include('../../route.php');
-include('../../Autoloader.php');
 
 
 $tablOk = array('78.225.42.28','109.0.41.146','78.225.121.47','78.225.121.3','93.26.42.99');

@@ -48,6 +48,7 @@ class Controller
 	function __construct(&$command,$config,$app)
 	{
 		$this->initVendor();
+		$this->initUnilendAutoload();
 
 		//Variables de session pour la fenetre de debug
 		unset($_SESSION['error']);
@@ -80,9 +81,6 @@ class Controller
 		$this->surl = $this->Config['static_url'][$this->Config['env']];
 		$this->url = $this->Config['url'][$this->Config['env']][$this->App];
 		$this->lurl = $this->Config['url'][$this->Config['env']][$this->App].($this->Config['multilanguage']['enabled']?'/'.$this->language:'');
-
-		//Call Autoloader
-		Autoloader::register();
 
 		//admin 
 		$this->aurl = $this->Config['url'][$this->Config['env']]['admin'];
@@ -779,6 +777,11 @@ class Controller
 
 	function initVendor(){
 		require __DIR__ . '/../vendor/autoload.php';
+	}
+
+	function initUnilendAutoload(){
+		require __DIR__ . '/../Autoloader.php';
+		Autoloader::register();
 	}
 
 	// Initialisation du cache
