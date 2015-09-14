@@ -2314,7 +2314,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 				break;
 			case attachment_type::CNI_PASSPORTE_DIRIGEANT :
 				$field = 'cni_passeport_dirigeant';
-				$uploadPath = $basePath.'cni_passeport_dirigeant/';
+				$uploadPath = $basePath.'cni_passeport_dirigent/';
 				break;
 			case attachment_type::DELEGATION_POUVOIR :
 				$field = 'delegation_pouvoir';
@@ -2330,7 +2330,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 				break;
 			case attachment_type::AUTRE1 :
 				$field = 'autre1';
-				$uploadPath = $basePath.'autre1/';
+				$uploadPath = $basePath.'autre/';
 				break;
 			case attachment_type::AUTRE2 :
 				$field = 'autre2';
