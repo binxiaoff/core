@@ -34,10 +34,22 @@ class UnilendLogger
      */
     private $oStreamHandlerError;
 
+    /**
+     * @var string fullpath log
+     */
+    private $sFullPath;
+
     public function __construct($sNameLogger, $sPathLog, $sNameLog)
     {
-        $this->setStreamHandler($sPathLog . $sNameLog);
-        $this->setLogger($sNameLogger);
+        $this->setFormatterLog()
+            ->setFullPath($sPathLog . $sNameLog)
+            ->setLogger($sNameLogger);
+    }
+
+    public function setFullPath($sFullPath)
+    {
+        $this->sFullPath = $sFullPath;
+        return $this;
     }
 
     public function setFormatterLog()
@@ -45,25 +57,58 @@ class UnilendLogger
         $sDateFormat = "d-m-Y H:i:s";
         $sOutput = "[%datetime%] [%channel%] [%level_name%] %message% %context% %extra%\n";
         $this->oFormatter = new LineFormatter($sOutput, $sDateFormat);
+        return $this;
     }
 
-    public function setStreamHandler($sFullPathLog)
+    public function setStreamHandlerInfo()
     {
-        $this->setFormatterLog();
-        $this->oStreamHandlerInfo = new StreamHandler($sFullPathLog, Logger::INFO);
-        $this->oStreamHandlerDebug = new StreamHandler($sFullPathLog, Logger::DEBUG);
-        $this->oStreamHandlerError = new StreamHandler($sFullPathLog, Logger::ERROR);
+        $this->oStreamHandlerInfo = new StreamHandler($this->sFullPath, Logger::INFO);
         $this->oStreamHandlerInfo->setFormatter($this->oFormatter);
-        $this->oStreamHandlerDebug->setFormatter($this->oFormatter);
-        $this->oStreamHandlerError->setFormatter($this->oFormatter);
+        $this->oLogger->pushHandler($this->oStreamHandlerInfo);
+
+        return $this;
     }
+
+    public function setStreamHandlerDebug()
+    {
+        $this->oStreamHandlerDebug = new StreamHandler($this->sFullPath, Logger::DEBUG);
+        $this->oStreamHandlerDebug->setFormatter($this->oFormatter);
+        $this->oLogger->pushHandler($this->oStreamHandlerDebug);
+
+        return $this;
+    }
+
+    public function setStreamHandlerError()
+    {
+        $this->oStreamHandlerError = new StreamHandler($this->sFullPath, Logger::ERROR);
+        $this->oStreamHandlerError->setFormatter($this->oFormatter);
+        $this->oLogger->pushHandler($this->oStreamHandlerError);
+
+        return $this;
+    }
+
+    public function setStreamHandlerAlert()
+    {
+        $this->oStreamHandlerAlert = new StreamHandler($this->sFullPath, Logger::ALERT);
+        $this->oStreamHandlerAlert->setFormatter($this->oFormatter);
+        $this->oLogger->pushHandler($this->oStreamHandlerAlert);
+
+        return $this;
+    }
+
+    public function setStreamHandlerNotice()
+    {
+        $this->oStreamHandlerNotice = new StreamHandler($this->sFullPath, Logger::NOTICE);
+        $this->oStreamHandlerNotice->setFormatter($this->oFormatter);
+        $this->oLogger->pushHandler($this->oStreamHandlerNotice);
+
+        return $this;
+    }
+
 
     public function setLogger($sNameLogger)
     {
         $this->oLogger = new Logger($sNameLogger);
-        $this->oLogger->pushHandler($this->oStreamHandlerInfo)
-            ->pushHandler($this->oStreamHandlerDebug)
-            ->pushHandler($this->oStreamHandlerError);
     }
 
     public function getLogger()

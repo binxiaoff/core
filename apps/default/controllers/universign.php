@@ -337,8 +337,6 @@ class universignController extends bootstrap
 				$lastname = utf8_decode($clients->nom); // the signatory last name
 				$phoneNumber = str_replace(' ','',$clients->telephone); // the signatory mobile phone number
 				$email = $clients->email; // the signatory mobile phone number
-                $email = 'sebastien.laizeau@unilend.fr';
-
 				$doc_name = $this->path.'protected/pdf/mandat/'.$clients_mandats->name; // the name of the PDF document to sign
 				$doc_content = file_get_contents($doc_name); // the binary content of the PDF file
 				$returnPage = array (
@@ -392,7 +390,7 @@ class universignController extends bootstrap
 				  "certificateTypes" =>  new Value(array(new Value("timestamp", "string")), "array"),
 				  "language" => new Value($language, "string"),
 				  //The OTP will be sent by Email
-				  "identificationType" => new Value("email", "string"),
+				  "identificationType" => new Value("sms", "string"),
 				  "description" => new Value("Mandat id : ".$clients_mandats->id_mandat, "string")
 				);
 				

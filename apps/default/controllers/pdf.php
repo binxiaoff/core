@@ -75,9 +75,10 @@ class pdfController extends bootstrap
 
         $this->oSnapPdf = new Pdf($this->path . 'vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
         $oUnilendLogger = new UnilendLogger('PdfManagement', $this->logPath, self::NAME_LOG);
+        $oUnilendLogger->setStreamHandlerInfo()
+            ->setStreamHandlerDebug()
+            ->setStreamHandlerError();
         $this->oLogger = $oUnilendLogger->getLogger();
-
-
     }
 
 
