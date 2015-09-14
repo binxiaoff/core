@@ -861,20 +861,10 @@ class dossiersController extends bootstrap
 
                             if (strlen($mess) > 9)
                             {
-                                //mail('courtier.damien@gmail.com','alert change statut 2','statut : '.$_POST['status'].' projet : '.$this->projects->id_project .' strlen : '.strlen($mess).' mess : '.$mess);
-
-                                $to = 'unilend@equinoa.fr' . ', ';
-                                
-                                if($this->Config['env'] == 'prod') // nmp
-                                {
-                                        $to .= 'nicolas.lesur@unilend.fr';
-                                }
-                                
-                                
-                                //$to  = 'courtier.damien@gmail.com';
+                                $to  = implode(',', $this->Config['DebugAlertesBusiness']);
+                                $to .= ($this->Config['env'] == 'prod') ? ', nicolas.lesur@unilend.fr' : '';
                                 // subject
                                 $subject = '[Rappel] Donnees projet manquantes';
-
                                 // message
                                 $message = '
 								<html>

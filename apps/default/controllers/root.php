@@ -1216,7 +1216,7 @@ $this->lng['etape1'] = $this->ln->selectFront('inscription-preteur-etape-1',$thi
 					////////////////////////////
 				
 					//$to  = 'unilend@equinoa.fr';
-					$to  = 'd.courtier@relance.fr';
+					$to  = implode(',', $this->Config['DebugAlertesBusiness']);
 				
 					// subject
 					$subject = '[Alerte] BACK PAYLINE Transaction approved';
@@ -1265,7 +1265,7 @@ $this->lng['etape1'] = $this->ln->selectFront('inscription-preteur-etape-1',$thi
 					////////////////////////////
 				
 					//$to  = 'unilend@equinoa.fr';
-					$to  = 'd.courtier@relance.fr';
+					$to  = implode(',', $this->Config['DebugAlertesBusiness']);
 				
 					// subject
 					$subject = '[Alerte] BACK PAYLINE Transaction approved DEJA TRAITE';

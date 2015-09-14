@@ -614,11 +614,6 @@ class depot_de_dossierController extends bootstrap
                     //$headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
                     $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
 
-                    // multiple recipients
-                    //$to  = 'aidan@example.com' . ', '; // note the comma
-                    //$to .= 'wez@example.com';
-                    $to = 'k1@david.equinoa.net';
-
 
                     // Recupération du destinataire
                     $this->settings->get('Adresse alerte altares erreur', 'type');
@@ -1694,7 +1689,7 @@ class depot_de_dossierController extends bootstrap
                 }
                 else
                 {
-                    mail('d.courtier@equinoa.com', 'unilend erreur', 'Erreur etape 4 depot dossier : ' . $result->exception->erreur);
+                    mail(implode(',',$this->Config['DebugMailIt']), 'unilend erreur', 'Erreur etape 4 depot dossier : ' . $result->exception->erreur);
                 }
             }
 
