@@ -246,6 +246,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <option value="140">Pérou    </option>
                         <option value="141">Philippines    </option>
                         <option value="142">Pologne    </option>
+						<option value="195">Polynésie française</option>
                         <option value="143">Portugal    </option>
                         <option value="144">Qatar    </option>
                         <option value="145">Russie    </option>
@@ -450,6 +451,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                             <option value="140">Pérou    </option>
                             <option value="141">Philippines    </option>
                             <option value="142">Pologne    </option>
+							<option value="195">Polynésie française</option>
                             <option value="143">Portugal    </option>
                             <option value="144">Qatar    </option>
                             <option value="145">Russie    </option>
@@ -691,6 +693,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <option value="140">Pérou    </option>
                         <option value="141">Philippines    </option>
                         <option value="142">Pologne    </option>
+						<option value="195">Polynésie française</option>
                         <option value="143">Portugal    </option>
                         <option value="144">Qatar    </option>
                         <option value="145">Russie    </option>
@@ -908,7 +911,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
             <div class="scroll2"><a href="#simulez_vos_interets"></a></div>
         </section>
     </div><!-- projet_analyse -->
-
+<!--
     <div id="simulez_vos_interets" class="wrapper100">
         <section class="wrapper">
             <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60"></a>
@@ -996,6 +999,10 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                     <div id="dc_slider-step"></div>
                     <ul>
                         <li>
+                            <p>12</p>
+                            <p>mois</p>
+                        </li>
+						<li>
                             <p>24</p>
                             <p>mois</p>
                         </li>
@@ -1056,6 +1063,8 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
         </section>
     </div><!-- simulez_vos_interets -->
 
+	-->
+	
     <!--<div id="chiffres" class="wrapper100 bg_gris">
         <section class="wrapper">
             <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60"></a>

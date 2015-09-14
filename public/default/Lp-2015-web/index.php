@@ -996,7 +996,14 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                     <p>Durée du prêt</p>
                     <div id="dc_slider-step"></div>
                     <ul>
+			<li>
+				<p>12</p><p>mois</p>
+			</li>
                         <li>
+                            <p>12</p>
+                            <p>mois</p>
+                        </li>
+						<li>
                             <p>24</p>
                             <p>mois</p>
                         </li>

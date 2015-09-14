@@ -140,18 +140,20 @@ $(function(){
 
     /**** select duree ****/
 
+	
+	/* à remettre lors de la remise en route du simulateur
     $('#dc_slider-step').noUiSlider({
         start: [ 60 ],
         connect: "lower",
         step: 12,
         range: {
-            'min': [  24 ],
+            'min': [  12 ],
             'max': [ 60 ]
         },
         format: wNumb({
             decimals: 0
         })
-    });
+    });*/
 
     /**** calcul interets ****/
 
