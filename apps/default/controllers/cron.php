@@ -10116,6 +10116,8 @@ class cronController extends bootstrap
     // Cron une fois par jour a 19h30 (* 18-20 * * *) 
     function _alertes_quotidienne()
     {
+        ini_set('max_execution_time', 3600); // hotbug 07/09/2015
+        ini_set('memory_limit', '4096M'); // hotbug 07/09/2015
         //mail('d.courtier@relance.fr', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee - ' . date('Y-m-d H:i:e'));
         // On recup le param
         $settingsControleQuotidiennne = $this->loadData('settings');
@@ -11615,9 +11617,9 @@ class cronController extends bootstrap
                                 'projet-p' => $this->lurl . '/projets-a-financer',
                                 'motif_virement' => $motif,
                                 'gestion_alertes' => $this->lurl . '/profile',
-                                'sujet' => utf8_decode($sujet),
-                                'objet' => utf8_decode($objet),
-                                'contenu' => utf8_decode($lecontenu),
+                                'objet' => $objet,
+                                'contenu' => $lecontenu,
+                                'sujet' => $sujet,
                                 'lien_fb' => $lien_fb,
                                 'lien_tw' => $lien_tw);
                             // Construction du tableau avec les balises EMV
@@ -11934,9 +11936,9 @@ class cronController extends bootstrap
                                 'liste_offres' => $liste_offres,
                                 'motif_virement' => $motif,
                                 'gestion_alertes' => $this->lurl . '/profile',
-                                'contenu' => utf8_decode($lecontenu),
-                                'objet' => utf8_decode($objet),
-                                'sujet' => utf8_decode($sujet),
+                                'objet' => $objet,
+                                'contenu' => $lecontenu,
+                                'sujet' => $sujet,
                                 'lien_fb' => $lien_fb,
                                 'lien_tw' => $lien_tw);
                             // Construction du tableau avec les balises EMV
@@ -12258,9 +12260,9 @@ class cronController extends bootstrap
                         'liste_offres' => $liste_offres,
                         'motif_virement' => $motif,
                         'gestion_alertes' => $this->lurl . '/profile',
-                        'contenu' => utf8_decode($lecontenu),
-                        'objet' => utf8_decode($objet),
-                        'sujet' => utf8_decode($sujet),
+                        'contenu' => $lecontenu,
+                        'objet' => $objet,
+                        'sujet' => $sujet,
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw);
                     // Construction du tableau avec les balises EMV
@@ -12506,9 +12508,9 @@ class cronController extends bootstrap
                                 'prenom_p' => $this->clients->prenom,
                                 'liste_offres' => $liste_offres,
                                 'motif_virement' => $motif,
-                                'contenu' => utf8_decode($lecontenu),
-                                'objet' => utf8_decode($objet),
-                                'sujet' => utf8_decode($sujet),
+                                'contenu' => $lecontenu,
+                                'objet' => $objet,
+                                'sujet' => $sujet,
                                 'gestion_alertes' => $this->lurl . '/profile',
                                 'lien_fb' => $lien_fb,
                                 'lien_tw' => $lien_tw);

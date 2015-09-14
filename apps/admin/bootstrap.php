@@ -250,7 +250,7 @@ class bootstrap extends Controller
 			$this->lZonesHeader = $this->users_zones->selectZonesUser($_SESSION['user']['id_user']);
 		}
 		
-		if($_SERVER['REMOTE_ADDR'] == '93.26.42.99' or $_SESSION['user']['id_user'] == 1)
+		if($_SERVER['REMOTE_ADDR'] == '93.26.42.99')
 		{
 			$this->equinoa = true;
 		}
