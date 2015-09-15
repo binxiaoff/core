@@ -561,7 +561,15 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                     <p><strong class="pinky-span"><?= number_format($this->sumRemb, 2, ',', ' ') ?> €</strong> <?= $this->lng['preteur-projets']['vous-ont-ete-rembourses-il-vous-reste'] ?> <strong class="pinky-span"><?= number_format($this->sumRestanteARemb, 2, ',', ' ') ?> €</strong> <?= $this->lng['preteur-projets']['a-percevoir-sur-une-periode-de'] ?> <strong class="pinky-span"><?= $this->nbPeriod ?> <?= $this->lng['preteur-projets']['mois'] ?></strong></p>
                                     
                                     <?php
+                                    if($this->lhistoStatus != false){
+                                        foreach($this->lhistoStatus as $s){
+                                            ?>
+                                            <p><?=date('d/m/Y',strtotime($s['added']))?> : <?=$s['information']?></p>
+                                            <?php
+                                        }
+                                    }
                                     // affichage le h'isto problemen recouvrment etc <----------------------------------
+                                    
                                     ?>
                                 </div>
                             </div><!-- /.tab -->

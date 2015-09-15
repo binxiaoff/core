@@ -819,17 +819,17 @@ class projectsController extends bootstrap
 				//{
 				if($this->lenders_accounts->id_lender_account != false)
 				{
-					
-					
-				$this->sumRemb = $this->echeanciers->sumARembByProject($this->lenders_accounts->id_lender_account,$this->projects->id_project.' AND status_ra = 0');
-				
-				
-				$this->sumRemb += $this->echeanciers->sumARembByProjectCapital($this->lenders_accounts->id_lender_account,$this->projects->id_project.' AND status_ra = 1'); // (add 17/07/2015)
-				
-				
-				$this->sumRestanteARemb = $this->echeanciers->getSumRestanteARembByProject($this->lenders_accounts->id_lender_account,$this->projects->id_project);
-				
-				$this->nbPeriod = $this->echeanciers->counterPeriodRestantes($this->lenders_accounts->id_lender_account,$this->projects->id_project);
+                                    $this->sumRemb = $this->echeanciers->sumARembByProject($this->lenders_accounts->id_lender_account,$this->projects->id_project.' AND status_ra = 0');
+
+                                    $this->sumRemb += $this->echeanciers->sumARembByProjectCapital($this->lenders_accounts->id_lender_account,$this->projects->id_project.' AND status_ra = 1'); // (add 17/07/2015)
+
+                                    $this->sumRestanteARemb = $this->echeanciers->getSumRestanteARembByProject($this->lenders_accounts->id_lender_account,$this->projects->id_project);
+
+                                    $this->nbPeriod = $this->echeanciers->counterPeriodRestantes($this->lenders_accounts->id_lender_account,$this->projects->id_project);
+                                    
+                                    if($this->bidsvalid['solde'] > 0){
+                                        $this->lhistoStatus = $this->projects_status_history->selectHisto($this->projects->id_project,array(10,25));
+                                    }
 				}
 				//}
 				
