@@ -3,12 +3,7 @@
 <head>
 	<title>SFF docs</title>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-	<link rel="shortcut icon" href="<?=$this->surl?>/styles/default/pdf/images/favicon.ico" />
 	<link rel="stylesheet" href="<?=$this->surl?>/styles/default/pdf/style.css" type="text/css" media="all" />
-
-	<script src="<?=$this->surl?>/scripts/default/pdf/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
-	<script src="<?=$this->surl?>/scripts/default/pdf/functions.js" type="text/javascript" charset="utf-8"></script>
-
 </head>
 <body>
 	<!-- Doc Wrapper -->
@@ -28,7 +23,7 @@
 					<ul>
 						<li>Raison sociale<div class="col-small"><?=$this->companiesEmprunteur->name?></div></li>
 						<li>Forme juridique<div class="col-small"><?=$this->companiesEmprunteur->forme?></div></li>
-						<li>Capital social<div class="col-small"><?=number_format($this->companiesEmprunteur->capital, 2, ',', ' ')?> €</div></li>
+						<li>Capital social<div class="col-small"><?=(0 < $this->companiesEmprunteur->capital) ? number_format($this->companiesEmprunteur->capital, 2, ',', ' ') : 0?> €</div></li>
 						<li>Adresse du siège social<div class="col-small"><?=$this->companiesEmprunteur->adresse1?></div></li>
 						<li>Code postal<div class="col-small"><?=$this->companiesEmprunteur->zip?></div></li>
 						<li>Ville<div class="col-small"><?=$this->companiesEmprunteur->city?></div></li>

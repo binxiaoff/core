@@ -1,25 +1,26 @@
 <?php
 
+use PhpXmlRpc\Value;
+use PhpXmlRpc\Request;
+use PhpXmlRpc\Client;
+
+
 class universignController extends bootstrap
 {
 	var $Command;
-	
+
 	function universignController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
 		
 		$this->catchAll = true;
-		
 		// On masque les Head, header et footer originaux plus le debug
 		$this->autoFireHeader = false;
 		$this->autoFireHead = false;
 		$this->autoFireFooter = false;
 		$this->autoFireDebug = false;	
 		
-		//$this->uni_url = "https://t.raymond@equinoa.com:g5rtohav@ws.universign.eu/sign/rpc/";
-		$this->uni_url = "https://t.raymond@equinoa.com:GZ1I7ZQN@ws.universign.eu/sign/rpc/";
-		
-		
+		$this->uni_url = $this->Config['universign_url'][$this->Config['env']];
 	}
 	
 	function _default()
@@ -44,16 +45,16 @@ class universignController extends bootstrap
 				//// UNIVERSIGN REPONSE ///
 				///////////////////////////
 				
-				include($this->path.'protected/xmlrpc-3.0.0.beta/lib/xmlrpc.inc');
-				
+
 				//used variables
 				$uni_url = $this->uni_url;
 				//$uni_url = "https://login:password@ws.universign.eu/sign/rpc/"; // address of the universign server with basic authentication
 				$uni_id = $clients_mandats->id_universign; // a collection id
 				
 				//create the request
-				$c = new xmlrpc_client($uni_url);
-				$f = new xmlrpcmsg('requester.getDocumentsByTransactionId', array(new xmlrpcval($uni_id, "string")));
+				var_dump($uni_url);
+				$c = new Client($uni_url);
+				$f = new Request('requester.getDocumentsByTransactionId', array(new Value($uni_id, "string")));
 				
 				//Send request and analyse response
 				$r = &$c->send($f);
@@ -180,17 +181,15 @@ class universignController extends bootstrap
 				///////////////////////////
 				//// UNIVERSIGN REPONSE ///
 				///////////////////////////
-				
-				include($this->path.'protected/xmlrpc-3.0.0.beta/lib/xmlrpc.inc');
-				
+
 				//used variables
 				$uni_url = $this->uni_url;
 				//$uni_url = "https://login:password@ws.universign.eu/sign/rpc/"; // address of the universign server with basic authentication
 				$uni_id = $projects_pouvoir->id_universign; // a collection id
 				
 				//create the request
-				$c = new xmlrpc_client($uni_url);
-				$f = new xmlrpcmsg('requester.getDocumentsByTransactionId', array(new xmlrpcval($uni_id, "string")));
+				$c = new Client($uni_url);
+				$f = new Request('requester.getDocumentsByTransactionId', array(new Value($uni_id, "string")));
 				
 				//Send request and analyse response
 				$r = &$c->send($f);
@@ -323,17 +322,14 @@ class universignController extends bootstrap
 		{
 			if($clients_mandats->url_universign != '' && $clients_mandats->status == 0)
 			{
-				
 				header("location:".$clients_mandats->url_universign);
 				die;
 			}
 			else
 			{
-			
 				$clients->get($clients_mandats->id_client,'id_client');
 				
-				include($this->path.'protected/xmlrpc-3.0.0.beta/lib/xmlrpc.inc');
-				
+
 				//used variables
 				
 				$uni_url = $this->uni_url; // address of the universign server with basic authentication
@@ -355,50 +351,51 @@ class universignController extends bootstrap
 				$y = 314;
 				
 				//create the request
-				$c = new xmlrpc_client($uni_url);
+				var_dump($uni_url);
+				$c = new Client($uni_url);
 				
 				$docSignatureField = array(
-					"page" => new xmlrpcval($page, "int"),
-					"x" => new xmlrpcval($x, "int"),
-					"y" => new xmlrpcval($y, "int"),
-					"signerIndex" => new xmlrpcval(0, "int"),
-					"label" => new xmlrpcval("Unilend", "string")
+					"page" => new Value($page, "int"),
+					"x" => new Value($x, "int"),
+					"y" => new Value($y, "int"),
+					"signerIndex" => new Value(0, "int"),
+					"label" => new Value("Unilend", "string")
 				);
 				
 				$signer = array(
-				  "firstname" => new xmlrpcval($firstname, "string"),
-				  "lastname" => new xmlrpcval($lastname, "string"),
-				  "phoneNum"=> new xmlrpcval($phoneNumber, "string"),
-				  "emailAddress"=> new xmlrpcval($email, "string")
+				  "firstname" => new Value($firstname, "string"),
+				  "lastname" => new Value($lastname, "string"),
+				  "phoneNum"=> new Value($phoneNumber, "string"),
+				  "emailAddress"=> new Value($email, "string")
 				);
 				
 				$doc = array(
-				  "content" => new xmlrpcval($doc_content, "base64"),
-				  "name" => new xmlrpcval($doc_name, "string"),
-				  "signatureFields"=> new xmlrpcval(array(new xmlrpcval($docSignatureField, "struct")), "array")
+				  "content" => new Value($doc_content, "base64"),
+				  "name" => new Value($doc_name, "string"),
+				  "signatureFields"=> new Value(array(new Value($docSignatureField, "struct")), "array")
 				);
 				 
 				$language = "fr";
 				
-				$signers = array(new xmlrpcval($signer, "struct"));
+				$signers = array(new Value($signer, "struct"));
 				
 				$request = array(
-				  "documents" => new xmlrpcval(array(new xmlrpcval($doc, "struct")), "array"),
-				  "signers" => new xmlrpcval($signers, "array"),
+				  "documents" => new Value(array(new Value($doc, "struct")), "array"),
+				  "signers" => new Value($signers, "array"),
 				  // the return urls
-				  "successURL" =>  new xmlrpcval($returnPage["success"], "string"),
-				  "failURL" =>  new xmlrpcval($returnPage["fail"], "string"),
-				  "cancelURL" =>  new xmlrpcval($returnPage["cancel"], "string"),
+				  "successURL" =>  new Value($returnPage["success"], "string"),
+				  "failURL" =>  new Value($returnPage["fail"], "string"),
+				  "cancelURL" =>  new Value($returnPage["cancel"], "string"),
 				  //the types of accepted certificate : timestamp for simple signature
-				  "certificateTypes" =>  new xmlrpcval(array(new xmlrpcval("timestamp", "string")), "array"),
-				  "language" => new xmlrpcval($language, "string"),
+				  "certificateTypes" =>  new Value(array(new Value("timestamp", "string")), "array"),
+				  "language" => new Value($language, "string"),
 				  //The OTP will be sent by Email
-				  "identificationType" => new xmlrpcval("sms", "string"),
-				  "description" => new xmlrpcval("Mandat id : ".$clients_mandats->id_mandat, "string")
+				  "identificationType" => new Value("sms", "string"),
+				  "description" => new Value("Mandat id : ".$clients_mandats->id_mandat, "string")
 				);
 				
 				
-				$f = new xmlrpcmsg('requester.requestTransaction', array(new xmlrpcval($request, "struct")));
+				$f = new Request('requester.requestTransaction', array(new Value($request, "struct")));
 				
 				
 				//send request and stores response values
@@ -423,8 +420,8 @@ class universignController extends bootstrap
 				   //displays the error code and the fault message
 				   //print "An error occurred: ";
 				   //print "Code: " . $r->faultCode(). " Reason: '" . $r->faultString();
-				   
-				    mail('d.courtier@equinoa.com','unilend erreur universign reception',' creatioon mandat id mandat : '.$clients_mandats->id_mandat.' | An error occurred: Code: ' . $r->faultCode(). ' Reason: "' . $r->faultString()); 
+				   var_dump($r->faultCode());
+				    //mail('d.courtier@equinoa.com','unilend erreur universign reception',' creatioon mandat id mandat : '.$clients_mandats->id_mandat.' | An error occurred: Code: ' . $r->faultCode(). ' Reason: "' . $r->faultString());
 				}
 			}
 		}
@@ -468,9 +465,7 @@ class universignController extends bootstrap
 				$companies->get($projects->id_company,'id_company');
 				// on recup l'emprunteur
 				$clients->get($companies->id_client_owner,'id_client');
-				
-				include($this->path.'protected/xmlrpc-3.0.0.beta/lib/xmlrpc.inc');
-				
+
 
 				//used variables
 				$uni_url = $this->uni_url; // address of the universign server with basic authentication
@@ -493,52 +488,52 @@ class universignController extends bootstrap
 				
 				
 				//create the request
-				$c = new xmlrpc_client($uni_url);
+				$c = new Client($uni_url);
 				
 				$docSignatureField = array(
-					"page" => new xmlrpcval($page, "int"),
-					"x" => new xmlrpcval($x, "int"),
-					"y" => new xmlrpcval($y, "int"),
-					"signerIndex" => new xmlrpcval(0, "int"),
-					"label" => new xmlrpcval("Unilend", "string")
+					"page" => new Value($page, "int"),
+					"x" => new Value($x, "int"),
+					"y" => new Value($y, "int"),
+					"signerIndex" => new Value(0, "int"),
+					"label" => new Value("Unilend", "string")
 				);
 				
 				
 				$signer = array(
-				  "firstname" => new xmlrpcval($firstname, "string"),
-				  "lastname" => new xmlrpcval($lastname, "string"),
-				  "organization" => new xmlrpcval($organization, "string"),
-				  "phoneNum"=> new xmlrpcval($phoneNumber, "string"),
-				  "emailAddress"=> new xmlrpcval($email, "string")
+				  "firstname" => new Value($firstname, "string"),
+				  "lastname" => new Value($lastname, "string"),
+				  "organization" => new Value($organization, "string"),
+				  "phoneNum"=> new Value($phoneNumber, "string"),
+				  "emailAddress"=> new Value($email, "string")
 				);
 				
 				$doc = array(
-				  "content" => new xmlrpcval($doc_content, "base64"),
-				  "name" => new xmlrpcval($doc_name, "string"),
-				  "signatureFields"=> new xmlrpcval(array(new xmlrpcval($docSignatureField, "struct")), "array")
+				  "content" => new Value($doc_content, "base64"),
+				  "name" => new Value($doc_name, "string"),
+				  "signatureFields"=> new Value(array(new Value($docSignatureField, "struct")), "array")
 				);
 				 
 				$language = "fr";
 				
-				$signers = array(new xmlrpcval($signer, "struct"));
+				$signers = array(new Value($signer, "struct"));
 				
 				$request = array(
-				  "documents" => new xmlrpcval(array(new xmlrpcval($doc, "struct")), "array"),
-				  "signers" => new xmlrpcval($signers, "array"),
+				  "documents" => new Value(array(new Value($doc, "struct")), "array"),
+				  "signers" => new Value($signers, "array"),
 				  // the return urls
-				  "successURL" =>  new xmlrpcval($returnPage["success"], "string"),
-				  "failURL" =>  new xmlrpcval($returnPage["fail"], "string"),
-				  "cancelURL" =>  new xmlrpcval($returnPage["cancel"], "string"),
+				  "successURL" =>  new Value($returnPage["success"], "string"),
+				  "failURL" =>  new Value($returnPage["fail"], "string"),
+				  "cancelURL" =>  new Value($returnPage["cancel"], "string"),
 				  //the types of accepted certificate : timestamp for simple signature
-				  "certificateTypes" =>  new xmlrpcval(array(new xmlrpcval("timestamp", "string")), "array"),
-				  "language" => new xmlrpcval($language, "string"),
+				  "certificateTypes" =>  new Value(array(new Value("timestamp", "string")), "array"),
+				  "language" => new Value($language, "string"),
 				  //The OTP will be sent by Email
-				  "identificationType" => new xmlrpcval("sms", "string"),
-				  "description" => new xmlrpcval("Pouvoir id : ".$projects_pouvoir->id_pouvoir, "string"),
+				  "identificationType" => new Value("sms", "string"),
+				  "description" => new Value("Pouvoir id : ".$projects_pouvoir->id_pouvoir, "string"),
 				);
 				
 				
-				$f = new xmlrpcmsg('requester.requestTransaction', array(new xmlrpcval($request, "struct")));
+				$f = new Request('requester.requestTransaction', array(new Value($request, "struct")));
 				
 				
 				//send request and stores response values
@@ -562,11 +557,10 @@ class universignController extends bootstrap
 					die;
 				   
 				} else {
-					
 				   //displays the error code and the fault message
 				   //print "An error occurred: ";
 				   //print "Code: " . $r->faultCode(). " Reason: '" . $r->faultString();
-				    mail('d.courtier@equinoa.com','unilend erreur universign reception','id mandat : '.$projects_pouvoir->id_pouvoir.' | An error occurred: Code: ' . $r->faultCode(). ' Reason: "' . $r->faultString()); 
+				    mail('d.courtier@equinoa.com','unilend erreur universign reception','id mandat : '.$projects_pouvoir->id_pouvoir.' | An error occurred: Code: ' . $r->faultCode(). ' Reason: "' . $r->faultString());
 				}
 			}
 		}

@@ -1,79 +1,22 @@
-
-<style type="text/css">
-.iconplusmoins{color:white;font-size:18px;cursor:default;vertical-align: middle;}
-
-
-.vos_operations{font-size:13px;width:960px;margin:auto;}
-.vos_operations td{padding:5px;}
-.vos_operations tr.content_transact td{height: 0px;padding: 0px;}
-
-table.vos_operations th#order_projects{text-align:left;}
-
-.vos_operations tr.transact{cursor:pointer;}
-.vos_operations tr.content_transact .div_content_transact{display:inline-block;width:100%;}
-
-.vos_operations tr.content_transact td .soustable{border-bottom:1px solid #b10366;margin-top: 10px;padding-bottom: 10px;}
-.vos_operations tr.content_transact td .soustable tr td{padding:0px;height: 15px;}
-.vos_operations tr.content_transact td .soustable tr td.chiffres{text-align:right;}
-.vos_operations tr.content_transact td .soustable tr td.detail_remb{padding-left:5px;vertical-align:top;}
-
-.vos_operations tr:nth-child(even) td{background-color:white;}
-.vos_operations tr:hover td{background-color:white;}
-.vos_operations tr.odd td{background:#fafafa;}
-.vos_operations .icon-arrows{cursor:pointer;}
-.vos_operations .companieleft{text-align:left;}
-.soustable .detail_left{text-align:left;}
-.vos_operations_ligne{display:inline-block;vertical-align: top;}
-
-.vos_operations .print{margin-top: 3px;}
-.vos_operations .xls{margin-top: 6px;}
-
-.load_table_vos_operations{
-	background: none repeat scroll 0 0 white;
-    border: 1px solid #b10366;
-    border-radius: 5px;
-    display: none;
-    height: 50px;
-    left: 48%;
-    margin: 65px auto auto;
-    padding: 5px;
-    position: absolute;
-    text-align: center;
-    width: 100px;}
-	
-	
-.pdfHeader,.pdfFooter{width:960px;margin:auto;}
-.pdfFooter{font-size:13px;}
-
-.table th:first-child.pdfSolde{color:white;padding-left: 5px;border-radius: 0;font-size: 17px;}
-
-.th-wrap{color:white;}
-
-
-
-
-.vos_operations .th-wrap {
-text-align: center;
-/*width: 100px;*/
-font-size: 12px;
-}
-
-.soustable tr td{padding-top: 5px !important; padding-bottom: 5px !important;}
-
-.title-ope{margin-top:25px;}
-
-</style>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en-US" xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
+<head>
+    <title>Vos operations indexation</title>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="<?=$this->surl?>/styles/default/pdf/styleOperations.css" type="text/css" media="all" />
+</head>
+<body>
 
 <div class="pdfHeader">
-<img src="<?=$this->surl?>/styles/default/images/logo.png" />
+    <div class="logo"></div>
 <br /><br />
-<div style="float:left;">
+<div style="float: left;">
 <b>Unilend – Société Française pour le financement des PME</b><br />
 6 Rue du général Clergerie<br />
 75116 Paris
 </div>
 
-<div style="float:right;text-align:right;">
+<div style="float: left;padding:0 0 0 300px;">
 <b><?=$this->lng['preteur-operations-pdf']['paris-le']?> <?=(date('d/m/Y'))?></b>
 <br /><br /><br />
 <?

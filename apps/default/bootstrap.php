@@ -3,11 +3,22 @@
 class bootstrap extends Controller
 {
 	var $Command;
-	
+
+	/**
+	 * @object data\crud\companies
+	 * @desc object for Companies infos
+	 */
+	public $companies;
+
+	/**
+	 * @object data\crud\projects
+	 * @des obecjt for Projects infos
+	 */
+	public $projects;
+
 	function bootstrap($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
-		
 		// Mise en session de l'url demand�e pour un retour si deconnect� sauf pour la fonction login du controller root
 		if($this->current_function != 'login') { $_SESSION['redirection_url'] = $_SERVER['REQUEST_URI']; }
 		
@@ -44,19 +55,21 @@ class bootstrap extends Controller
 		$this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
 		$this->convert_api_compteur = $this->loadData('convert_api_compteur');
 		$this->accept_cookies = $this->loadData('accept_cookies');
-		
+		$this->companies = $this->loadData('companies');
+		$this->projects = $this->loadData('projects');
+
 		// Chargement des librairies
 		$this->ficelle = $this->loadLib('ficelle');
 		$this->photos = $this->loadLib('photos',array($this->spath,$this->surl));
 		$this->tnmp = $this->loadLib('tnmp',array($this->nmp,$this->nmp_desabo,$this->Config['env']));
 		$this->dates = $this->loadLib('dates');
 		$this->Web2Pdf = $this->loadLib('Web2Pdf',$this->convert_api_compteur);
-		
+
 		// Recuperation de la liste des langue disponibles
 		$this->lLangues = $this->Config['multilanguage']['allowed_languages'];
 		//unset($_SESSION['utm_source']);
-		
-		
+
+
 		// Formulaire de modification d'un texte de traduction
 		if(isset($_POST['form_mod_traduction']))
 		{
@@ -102,7 +115,7 @@ class bootstrap extends Controller
 				  $_POST[$key] = htmlspecialchars(strip_tags($value));
 			 }
 		}
-		
+
 		// Mise en tableau de l'url
 		$urlParams = explode('/',$_SERVER['REQUEST_URI']);
 		
@@ -124,9 +137,9 @@ class bootstrap extends Controller
 		// super login //
 		
 		/////////////////
-		
-		
-		
+
+
+
 		// R�cuperation du menu footer
 		$this->menuFooter = $this->tree->getMenu('footer',$this->language,$this->lurl);
 		
@@ -518,8 +531,7 @@ class bootstrap extends Controller
 					$this->etape_transition = true;	
 				}
 				
-				$this->companies = $this->loadData('companies');
-				$this->projects = $this->loadData('projects');
+
 				$this->companies->get($this->clients->id_client,'id_client_owner');
 				$this->nbProjets = $this->projects->countSelectProjectsByStatus('30,50,60,70,80',' AND id_company = '. $this->companies->id_company.' AND p.status = 0 AND p.display = 0');	
 				
@@ -728,8 +740,6 @@ class bootstrap extends Controller
 				die;
 			}
 		}
-		
-		
 	}
 	
 	function handlePartenaire($params)
