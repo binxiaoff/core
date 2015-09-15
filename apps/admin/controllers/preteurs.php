@@ -1624,10 +1624,13 @@ class preteursController extends bootstrap
 					$this->companies->delete($this->clients->id_client,'id_client_owner');
 					
 				}
-				
-				
+
+
 				if($backup_delete==true){
-					
+
+					// Get attachment
+					$attachment = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+
 					$backup_lenders->id_lender_account = $this->lenders_accounts->id_lender_account;
 					$backup_lenders->id_client_owner = $this->lenders_accounts->id_client_owner;
 					$backup_lenders->id_company_owner = $this->lenders_accounts->id_company_owner;
@@ -1643,14 +1646,14 @@ class preteursController extends bootstrap
 					$backup_lenders->motif = $this->lenders_accounts->motif;
 					$backup_lenders->fonds = $this->lenders_accounts->fonds;
 					$backup_lenders->cni_passeport = $this->lenders_accounts->cni_passeport;
-					$backup_lenders->fichier_cni_passeport = $this->lenders_accounts->fichier_cni_passeport;
-					$backup_lenders->fichier_justificatif_domicile = $this->lenders_accounts->fichier_justificatif_domicile;
-					$backup_lenders->fichier_rib = $this->lenders_accounts->fichier_rib;
-					$backup_lenders->fichier_cni_passeport_dirigent = $this->lenders_accounts->fichier_cni_passeport_dirigent;
-					$backup_lenders->fichier_extrait_kbis = $this->lenders_accounts->fichier_extrait_kbis;
-					$backup_lenders->fichier_delegation_pouvoir = $this->lenders_accounts->fichier_delegation_pouvoir;
-					$backup_lenders->fichier_statuts = $this->lenders_accounts->fichier_statuts;
-					$backup_lenders->fichier_autre = $this->lenders_accounts->fichier_autre;
+					$backup_lenders->fichier_cni_passeport = isset($attachment[attachment_type::CNI_PASSPORTE]["path"]) ? $attachment[attachment_type::CNI_PASSPORTE]["path"] : '';
+					$backup_lenders->fichier_justificatif_domicile = isset($attachment[attachment_type::JUSTIFICATIF_DOMICILE]["path"]) ? $attachment[attachment_type::JUSTIFICATIF_DOMICILE]["path"] : '';
+					$backup_lenders->fichier_rib = isset($attachment[attachment_type::RIB]["path"]) ? $attachment[attachment_type::RIB]["path"] : '';
+					$backup_lenders->fichier_cni_passeport_dirigent = isset($attachment[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]) ? $attachment[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"] : '';
+					$backup_lenders->fichier_extrait_kbis = isset($attachment[attachment_type::KBIS]["path"]) ? $attachment[attachment_type::KBIS]["path"] : '';
+					$backup_lenders->fichier_delegation_pouvoir = isset($attachment[attachment_type::DELEGATION_POUVOIR]["path"]) ? $attachment[attachment_type::DELEGATION_POUVOIR]["path"] : '';
+					$backup_lenders->fichier_statuts = isset($attachment[attachment_type::STATUTS]["path"]) ? $attachment[attachment_type::STATUTS]["path"] : '';
+					$backup_lenders->fichier_autre = isset($attachment[attachment_type::AUTRE1]["path"]) ? $attachment[attachment_type::AUTRE1]["path"] : '';
 					$backup_lenders->added_backup = $this->lenders_accounts->added;
 					$backup_lenders->updated_backup = $this->lenders_accounts->updated;
 					$backup_lenders->create();	
@@ -2311,7 +2314,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 				break;
 			case attachment_type::CNI_PASSPORTE_DIRIGEANT :
 				$field = 'cni_passeport_dirigeant';
-				$uploadPath = $basePath.'cni_passeport_dirigeant/';
+				$uploadPath = $basePath.'cni_passeport_dirigent/';
 				break;
 			case attachment_type::DELEGATION_POUVOIR :
 				$field = 'delegation_pouvoir';
@@ -2327,7 +2330,7 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 				break;
 			case attachment_type::AUTRE1 :
 				$field = 'autre1';
-				$uploadPath = $basePath.'autre1/';
+				$uploadPath = $basePath.'autre/';
 				break;
 			case attachment_type::AUTRE2 :
 				$field = 'autre2';

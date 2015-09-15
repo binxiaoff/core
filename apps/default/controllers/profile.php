@@ -2429,7 +2429,7 @@ class profileController extends bootstrap
                 break;
             case attachment_type::CNI_PASSPORTE_DIRIGEANT :
                 $field = 'cni_passeport_dirigeant';
-                $uploadPath = $basePath.'cni_passeport_dirigeant/';
+                $uploadPath = $basePath.'cni_passeport_dirigent/';
                 break;
             case attachment_type::DELEGATION_POUVOIR :
                 $field = 'delegation_pouvoir';
@@ -2445,7 +2445,7 @@ class profileController extends bootstrap
                 break;
             case attachment_type::AUTRE1 :
                 $field = 'autre1';
-                $uploadPath = $basePath.'autre1/';
+                $uploadPath = $basePath.'autre/';
                 break;
             case attachment_type::AUTRE2 :
                 $field = 'autre2';

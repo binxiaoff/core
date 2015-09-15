@@ -3227,7 +3227,7 @@ class dossiersController extends bootstrap
                             // On recup les echeanches non remboursé aux preteurs mais remb par l'emprunteur
                             $lEcheances = $this->echeanciers->select('id_project = ' . $RembEmpr['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $RembEmpr['ordre'] . ' AND status = 0');
 
-if ($lEcheances == false)
+                            if ($lEcheances == false)
                             {
                                 
                             }
@@ -3274,7 +3274,7 @@ if ($lEcheances == false)
                                                 // echeance preteur
                                                 $this->echeanciers->get($e['id_echeancier'], 'id_echeancier');
                                                 $this->echeanciers->status = 1; // remboursé
-												$this->echeanciers->status_email_remb = 1; // remboursé
+                                                $this->echeanciers->status_email_remb = 1; // remboursé
                                                 $this->echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
                                                 $this->echeanciers->update();
 
@@ -3782,6 +3782,11 @@ if ($lEcheances == false)
                     $this->prelevements = $this->loadData('prelevements');
                     $this->prelevements->delete($this->projects->id_project, 'type_prelevement = 1 AND type = 2 AND status = 0 AND id_project');
 
+                    // on ajoute ici le projet dans la file d'attente des mails de RA a envoyer
+                    $remboursement_anticipe_mail_a_envoyer = $this->loadData('remboursement_anticipe_mail_a_envoyer');
+                    $remboursement_anticipe_mail_a_envoyer->id_reception = $id_reception;
+                    $remboursement_anticipe_mail_a_envoyer->statut = 0;
+                    $remboursement_anticipe_mail_a_envoyer->create();
 
                     //on change le statut du projet
                     $this->projects_status_history->addStatus(-1, 130, $this->projects->id_project);

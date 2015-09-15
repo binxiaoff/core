@@ -197,6 +197,7 @@ class cronController extends bootstrap
     {
 
         //$this->fonct_clean_mails_filer();
+        //mail('d.courtier@equinoa.com',' le cronn unilend '.$this->Config['env'].' cron','le cron passe : '.date('d/m/y H:i:s'));
         // chargement des datas
         $this->bids = $this->loadData('bids');
         $this->loans = $this->loadData('loans');
@@ -288,6 +289,7 @@ class cronController extends bootstrap
                     // on regarde si tout a bien été traité
                     //if($this->bids->select('id_project = '.$projects['id_project'].' AND checked = 0') == false)
                     //{
+                    //mail('d.courtier@equinoa.com','unilend '.$this->Config['env'].' cron','check_projet_en_funding date : '.date('d/m/y H:i:s').' id_projet : '.$projects['id_project']);
                     // On enregistre la date de fin
                     $this->projects->get($projects['id_project'], 'id_project');
                     $this->projects->date_fin = date('Y-m-d H:i:s');
@@ -453,6 +455,7 @@ class cronController extends bootstrap
                                 //if($this->transactions->get($e['id_bid'],'id_bid_remb')==false)
                                 if ($this->bids->status == '0')
                                 {
+                                    //mail('d.courtier@equinoa.com','debug cron degel 2',$this->lenders_accounts->id_client_owner.' - id bid :'.$e['id_bid']);
 
                                     $this->bids->status = 2;
                                     $this->bids->update();
@@ -2392,6 +2395,7 @@ class cronController extends bootstrap
             }
 
             file_put_contents($this->path . 'protected/sftp/prelevements/' . $filename . '.xml', $xml);
+            //mail('d.courtier@equinoa.com','unilend '.$this->Config['env'].' cron','prelevements date : '.date('d/m/y H:i:s'));
         }
     }
 
@@ -3439,47 +3443,47 @@ class cronController extends bootstrap
                             else
                             {
 
-	                            // DEBUT RECHERCHE DU MOTIF EN BDD //
-	                            // On cherche une suite de chiffres
-	                            preg_match_all('#[0-9]+#', $motif, $extract);
-	                            //$nombre = (int)$extract[0][0]; // on retourne un int pour retirer les zeros devant
-	
-	
-	
-	
-	                            $retour_auto = false;
-	                            foreach ($extract[0] as $nombre)
-	                            {
-	                                // ajout de la condition pour ne pas rerentrer dedans une fois qu'on a déjà trouvé
-	                                if($retour_auto != true)
-	                                {
-	                                    // si existe en bdd
-	                                    if ($clients->get($nombre, 'id_client'))
-	                                    {
-	                                        // on créer le motif qu'on devrait avoir
-	                                        $p = substr($this->ficelle->stripAccents(utf8_decode(trim($clients->prenom))), 0, 1);
-	                                        $nom = $this->ficelle->stripAccents(utf8_decode(trim($clients->nom)));
-	                                        $id_client = str_pad($clients->id_client, 6, 0, STR_PAD_LEFT);
-	                                        $returnMotif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-	
-	                                        $mystring = str_replace(' ', '', $motif); // retire les espaces au cas ou le motif soit mal ecrit
-	                                        $findme = str_replace(' ', '', $returnMotif);
-	                                        $pos = strpos($mystring, $findme);
-	
-	                                        // on laisse en manuel
-	                                        if ($pos === false)
-	                                        {
-	                                            $retour_auto = false; //echo 'Recu';
-	                                        }
-	                                        // Automatique (on attribue le virement au preteur)
-	                                        else
-	                                        {
-	                                            $retour_auto = true; //echo 'Auto';
-	                                        }
-	                                    }
-	                                }
-	                            }
-							} //end else
+                                // DEBUT RECHERCHE DU MOTIF EN BDD //
+                                // On cherche une suite de chiffres
+                                preg_match_all('#[0-9]+#', $motif, $extract);
+                                //$nombre = (int)$extract[0][0]; // on retourne un int pour retirer les zeros devant
+
+
+
+
+                                $retour_auto = false;
+                                foreach ($extract[0] as $nombre)
+                                {
+                                    // ajout de la condition pour ne pas rerentrer dedans une fois qu'on a déjà trouvé
+                                    if ($retour_auto != true)
+                                    {
+                                        // si existe en bdd
+                                        if ($clients->get($nombre, 'id_client'))
+                                        {
+                                            // on créer le motif qu'on devrait avoir
+                                            $p = substr($this->ficelle->stripAccents(utf8_decode(trim($clients->prenom))), 0, 1);
+                                            $nom = $this->ficelle->stripAccents(utf8_decode(trim($clients->nom)));
+                                            $id_client = str_pad($clients->id_client, 6, 0, STR_PAD_LEFT);
+                                            $returnMotif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+
+                                            $mystring = str_replace(' ', '', $motif); // retire les espaces au cas ou le motif soit mal ecrit
+                                            $findme = str_replace(' ', '', $returnMotif);
+                                            $pos = strpos($mystring, $findme);
+
+                                            // on laisse en manuel
+                                            if ($pos === false)
+                                            {
+                                                $retour_auto = false; //echo 'Recu';
+                                            }
+                                            // Automatique (on attribue le virement au preteur)
+                                            else
+                                            {
+                                                $retour_auto = true; //echo 'Auto';
+                                            }
+                                        }
+                                    }
+                                }
+                            } //end else
                             // FIN RECHERCHE MOTIF EN BDD //
 
                             if ($retour_auto == true)
@@ -6066,7 +6070,8 @@ class cronController extends bootstrap
 
 
         file_put_contents($this->path . 'protected/sftp/etat_quotidien/' . $filename . '.xls', $tableau);
-
+        //mail('d.courtier@equinoa.com','unilend '.$this->Config['env'].' cron','etat quotidien date : '.date('d/m/y H:i:s'));
+        //die;
         //************************************//
         //*** ENVOI DU MAIL ETAT QUOTIDIEN ***//
         //************************************//
@@ -6956,7 +6961,7 @@ class cronController extends bootstrap
         
         if($this->Config['env'] != "dev")
         {
-            mail($this->sDestinatairesDebug, 'unilend ' . $this->Config['env'] . ' cron', 'etat quotidien date : ' . date('d/m/y H:i:s'), $this->sHeadersDebug);
+            mail('k1@david.equinoa.net', 'unilend ' . $this->Config['env'] . ' cron', 'etat quotidien date : ' . date('d/m/y H:i:s'));
         }
         
         
@@ -7137,6 +7142,7 @@ class cronController extends bootstrap
                 $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
 
                 // Additional headers
+                //$headers .= 'To: Damien <d.courtier@equinoa.com>, Kelly <kelly@example.com>' . "\r\n";
                 $headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
                 $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
 
@@ -7147,7 +7153,7 @@ class cronController extends bootstrap
                 }
                 else
                 {
-                    mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
+                    mail("k1@david.equinoa.net", $subject, $message, $headers);
                 }
                 
             }
@@ -7637,9 +7643,7 @@ class cronController extends bootstrap
         }
         else
         {
-            foreach($this->Config['DebugMailIt'] as $sEmailDebug){
-                $this->email->addRecipient($sEmailDebug);
-            }
+            $this->email->addRecipient('DCourtier.Auto@equinoa.fr');
         }
 
         $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
@@ -7954,7 +7958,7 @@ class cronController extends bootstrap
                 }
                 else
                 {
-                    mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
+                    mail("k1@david.equinoa.net", $subject, $message, $headers);
                 }
                 
                 //break;
@@ -8150,7 +8154,7 @@ class cronController extends bootstrap
                 }
                 else
                 {
-                    mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
+                    mail("k1@david.equinoa.net", $subject, $message, $headers);
                 }
                 
             }
@@ -8229,7 +8233,7 @@ class cronController extends bootstrap
                 }
                 else
                 {
-                    mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
+                    mail("k1@david.equinoa.net", $subject, $message, $headers);
                 }
                 //break;
             }
@@ -8290,7 +8294,7 @@ class cronController extends bootstrap
                 }
                 else
                 {
-                    mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
+                    mail("k1@david.equinoa.net", $subject, $message, $headers);
                 }
             }
         }
@@ -8655,7 +8659,7 @@ class cronController extends bootstrap
         }
         else
         {
-            mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
+            mail("k1@david.equinoa.net", $subject, $message, $headers);
         }
     }
 
@@ -9377,7 +9381,7 @@ class cronController extends bootstrap
                     }
                     else
                     {
-                        mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
+                        mail("k1@david.equinoa.net", $subject, $message, $headers);
                     }
 
                     $projects_check->status = 2;
@@ -9434,29 +9438,29 @@ class cronController extends bootstrap
             if ($ctrlCheckBids == 0 && strtotime($updateCheckBids) < $todayMoins1h)
             {
                 //echo 'alerte planté rejet bid';
-                mail($this->sDestinatairesDebug, '[ALERTE] Controle cron checkBids', '[ALERTE] Controle cron checkBids plante ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env'], $this->sHeadersDebug);
+                mail('k1@david.equinoa.net', '[ALERTE] Controle cron checkBids', '[ALERTE] Controle cron checkBids plante ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
             }
             // Si la valeur est a zero et que la derniere mise a jour date de plus d'une heure
             if ($ctrlCheckEmailBidKO == 0 && strtotime($updateCheckEmailBidKO) < $todayMoins1h)
             {
                 //echo 'alerte planté email rejet bid';
-                mail($this->sDestinatairesDebug, '[ALERTE] Controle cron checkEmailBidKO', '[ALERTE] Controle cron checkEmailBidKO plante ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env'], $this->sHeadersDebug);
+                mail('k1@david.equinoa.net', '[ALERTE] Controle cron checkEmailBidKO', '[ALERTE] Controle cron checkEmailBidKO plante ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
             }
             // si la valeur est a zero
             if ($ctrlCheck_projet_en_funding == 0 && strtotime($updateCheck_projet_en_funding) < $todayMoins1h)
             {
                 //echo 'alerte planté traitement fin projet';
-                mail($this->sDestinatairesDebug, '[ALERTE] Controle cron check_projet_en_fundings', '[ALERTE] Controle cron check_projet_en_fundings plante ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env'], $this->sHeadersDebug);
+                mail('unilend@equinoa.fr', '[ALERTE] Controle cron check_projet_en_fundings', '[ALERTE] Controle cron check_projet_en_fundings plante ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
             }
             if ($ctrlRemb == 0)
             {
                 //echo 'alerte planté traitement fin projet';
-                mail($this->sDestinatairesDebug, '[ALERTE] Controle statut remboursement', '[ALERTE] Controle statut remboursement planté ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env'], $this->sHeadersDebug);
+                mail('k1@david.equinoa.net', '[ALERTE] Controle statut remboursement', '[ALERTE] Controle statut remboursement planté ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
             }
             if ($ctrlRembPreteurs == 0)
             {
                 //echo 'alerte planté traitement fin projet';
-                mail($this->sDestinatairesDebug, '[ALERTE] Controle remboursements', '[ALERTE] Controle statut remboursements des prêteurs a plante ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env'], $this->sHeadersDebug);
+                mail('k1@david.equinoa.net', '[ALERTE] Controle remboursements', '[ALERTE] Controle statut remboursements des prêteurs a plante ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
             }
         }
         else
@@ -9999,7 +10003,7 @@ class cronController extends bootstrap
                         }
                         else
                         {
-                            mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
+                            mail("k1@david.equinoa.net", $subject, $message, $headers);
                         }
                         
                     }
@@ -10088,6 +10092,7 @@ class cronController extends bootstrap
         ini_set('max_execution_time', 3600); // hotbug 07/09/2015
         ini_set('memory_limit', '4096M'); // hotbug 07/09/2015
         
+        //mail('d.courtier@relance.fr', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee - ' . date('Y-m-d H:i:e'));
         // On recup le param
         $settingsControleQuotidiennne = $this->loadData('settings');
         $settingsControleQuotidiennne->get('Controle notification quotidienne', 'type');
@@ -10305,7 +10310,7 @@ class cronController extends bootstrap
             $settingsControleQuotidiennne->update();
         
         }
-        mail($this->sDestinatairesDebug, 'cron ' . $this->Config['env'] . ' fin alertes_quotidiennee', 'cron ' . $this->Config['env'] . ' fin alertes_quotidiennee - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
+        mail('k1@david.equinoa.net', 'cron ' . $this->Config['env'] . ' fin alertes_quotidiennee', 'cron ' . $this->Config['env'] . ' fin alertes_quotidiennee - ' . date('Y-m-d H:i:e'));
         die;
     }
 
@@ -10587,7 +10592,7 @@ class cronController extends bootstrap
     // Cron une fois par jour a (* 18-21 * * *) 
     function _alertes_quotidienne_old()
     {
-        mail($this->sDestinatairesDebug, 'cron debut alertes_quotidiene prod', 'cron fin alertes_quotidiennee prod - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
+        mail('k1@david.equinoa.net', 'cron debut alertes_quotidiene prod', 'cron fin alertes_quotidiennee prod - ' . date('Y-m-d H:i:e'));
         $timeDebut = time();
 
         $clients = $this->loadData('clients');
@@ -10774,7 +10779,7 @@ class cronController extends bootstrap
 
         //echo 'Durée : '.$time.' secondes';
 
-        mail($this->sDestinatairesDebug, 'cron fin alertes_quotidiene prod', 'cron fin alertes_quotidiennee prod - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
+        mail('k1@david.equinoa.net', 'cron fin alertes_quotidiene prod', 'cron fin alertes_quotidiennee prod - ' . date('Y-m-d H:i:e'));
         die;
     }
 
@@ -10919,7 +10924,7 @@ class cronController extends bootstrap
 
         echo 'Durée : ' . $time . ' secondes';
 
-        mail($this->sDestinatairesDebug, 'cron gestion_alertes_hebdomadaire', 'cron gestion_alertes_hebdomadaire - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
+        mail('k1@david.equinoa.net', 'cron gestion_alertes_hebdomadaire', 'cron gestion_alertes_hebdomadaire - ' . date('Y-m-d H:i:e'));
         die;
     }
 
@@ -10993,7 +10998,7 @@ class cronController extends bootstrap
         {
             $this->remb_synthese($array_remb, 'mensuelle');
         }
-        mail($this->sDestinatairesDebug, 'cron gestion_alertes_mensuelle', 'cron gestion_alertes_mensuelle - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
+        mail('k1@david.equinoa.net', 'cron gestion_alertes_mensuelle', 'cron gestion_alertes_mensuelle - ' . date('Y-m-d H:i:e'));
         die;
     }
 
@@ -11137,7 +11142,7 @@ class cronController extends bootstrap
             $this->remb_synthese($array_remb, 'quotidienne');
         }
 
-        mail($this->sDestinatairesDebug, 'cron gestion_alertes_quotidiene prod', 'cron gestion_alertes_quotidiene - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
+        mail('k1@david.equinoa.net', 'cron gestion_alertes_quotidiene prod', 'cron gestion_alertes_quotidiene - ' . date('Y-m-d H:i:e'));
         die;
     }
 
@@ -11259,7 +11264,7 @@ class cronController extends bootstrap
         {
             $this->remb_synthese($array_remb, 'hebdomadaire');
         }
-        mail($this->sDestinatairesDebug, 'cron gestion_alertes_hebdomadaire', 'cron gestion_alertes_hebdomadaire - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
+        mail('k1@david.equinoa.net', 'cron gestion_alertes_hebdomadaire', 'cron gestion_alertes_hebdomadaire - ' . date('Y-m-d H:i:e'));
         die;
     }
 
@@ -11313,7 +11318,7 @@ class cronController extends bootstrap
         {
             $this->remb_synthese($array_remb, 'mensuelle');
         }
-        mail($this->sDestinatairesDebug, 'cron gestion_alertes_mensuelle', 'cron gestion_alertes_mensuelle - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
+        mail('k1@david.equinoa.net', 'cron gestion_alertes_mensuelle', 'cron gestion_alertes_mensuelle - ' . date('Y-m-d H:i:e'));
         die;
     }
 
@@ -14471,7 +14476,7 @@ class cronController extends bootstrap
                     }//End si notif ok
                     else
                     {
-                        mail($this->sDestinatairesDebug,'DEBUG unilend 54564695','notif KO !', $this->sHeadersDebug);
+                        //mail('k1@david.equinoa.net','DEBUG unilend 54564695','notif KO !');
                     }
                     // fin mail pour preteur //
                     //////////////////// FIN EMAIL PRETEURS REMBOURSEMENTS /////////////////////////////
@@ -15286,7 +15291,7 @@ class cronController extends bootstrap
                 else
                 {
                     // on get pas le client donc erreur 
-                    mail($this->sDestinatairesDebug, 'UNILEND - Erreur cron indexage', 'Erreur de get sur le client :' . $clt['id_client'], $this->sHeadersDebug);
+                    mail('k1@david.equinoa.net', 'UNILEND - Erreur cron indexage', 'Erreur de get sur le client :' . $clt['id_client']);
                 }
             }
         }
@@ -15298,7 +15303,7 @@ class cronController extends bootstrap
         echo $html;
         if ($nb_maj > 0 or $nb_creation > 0)
         {
-            mail($this->sDestinatairesDebug, 'INDEXATION - UNILEND', $html, $this->sHeadersDebug);
+            mail('k1@david.equinoa.net', 'INDEXATION - UNILEND', $html);
         }
     }
 
@@ -15329,7 +15334,7 @@ class cronController extends bootstrap
         echo 'duree traitement : ' . $dureeS . ' secondes<br>';
         echo 'nb lignes effacées : ' . mysql_affected_rows();
 
-        mail($this->sDestinatairesDebug,'clean_mails_filer','clean_mails_filer : duree traitement : '.$dureeS.' secondes, nb lignes effacées : '.mysql_affected_rows(), $this->sHeadersDebug);
+        //mail('d.courtier@equinoa.com','clean_mails_filer','clean_mails_filer : duree traitement : '.$dureeS.' secondes, nb lignes effacées : '.mysql_affected_rows());
 
         die;
     }
