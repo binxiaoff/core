@@ -1312,8 +1312,7 @@ class profileController extends bootstrap
 					}*/	
 				}
 			}
-			
-			var_dump($_FILES);
+
 			/////////////////// PARTIE BANQUE /////////////////////////
 
 			// carte-nationale-didentite dirigeant
