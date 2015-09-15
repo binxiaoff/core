@@ -23,7 +23,6 @@ ini_set('session.gc_maxlifetime',3600); // 1h la session
 //if($_SERVER['REMOTE_ADDR'] == '93.26.42.99' || $_SERVER['REMOTE_ADDR'] == '90.62.110.115' )
 //if($_SERVER['REMOTE_ADDR'] != '93.26.42.99')
 
-
 //require('prepend.php');
 
 
