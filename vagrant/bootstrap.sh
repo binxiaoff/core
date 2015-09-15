@@ -78,3 +78,14 @@ chmod -R u+w /srv/sites/unilend
 
 #install composer
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/
+
+#install java, maven et dataloader
+add-apt-repository -y ppa:openjdk-r/ppa
+apt-get update
+apt-get install -y openjdk-8-jdk maven git
+
+yes | git clone https://www.github.com/forcedotcom/dataloader.git /srv/dataloader
+cd /srv/dataloader
+git submodule init
+git submodule update
+mvn clean package -DskipTests
