@@ -1,15 +1,15 @@
 <?php
 
 if(!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443){
-	$currentCookieParams = session_get_cookie_params(); 
+    $currentCookieParams = session_get_cookie_params(); 
 
-	session_set_cookie_params( 
-		$currentCookieParams["lifetime"], 
-		$currentCookieParams["path"], 
-		$currentCookieParams["domain"], 
-		true, 
-		true 
-	);	
+    session_set_cookie_params( 
+            $currentCookieParams["lifetime"], 
+            $currentCookieParams["path"], 
+            $currentCookieParams["domain"], 
+            true, 
+            true 
+    );	
 }
  
 
