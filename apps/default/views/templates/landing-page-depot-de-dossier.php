@@ -133,20 +133,7 @@ if($this->google_analytics != '')
                         
                         <em class="jusqua"><?=$this->lng['landing-page']['jusqua']?></em>
 					</div><!-- /.form-row -->
-					
 
-                    
-					<div class="form-row">
-						
-                        
-                        <select name="duree" id="duree" class="field field-large required custom-select selectbox_duree" >
-                            <option value="0"><?=$this->lng['landing-page']['duree-de-remboursement']?></option>
-							<?foreach($this->dureePossible as $duree):?>
-								<option value="<?=$duree?>"><?=$duree?> mois</option>
-							<?endforeach?>
-                        </select>
-                        
-					</div><!-- /.form-row -->
                     
                     <div style="clear:both;"></div>
 
