@@ -138,7 +138,7 @@
             	<ul class="sous_menu">
                     <li><a href="<?=$this->lurl?>/transferts" title="Virements">Virements</a></li>
                     <li><a href="<?=$this->lurl?>/transferts/prelevements" title="Prélèvements">Prélèvements</a></li>
-					<li><a href="<?= $this->lurl ?>/transferts/virements_ra" title="Virements remboursement anticipé">Virements RA</a></li>
+                    <li><a href="<?= $this->lurl ?>/transferts/virements_emprunteurs" title="Virements Emprunteurs">Virements Emprunteurs</a></li>
                 </ul>
             </li>
         <?
