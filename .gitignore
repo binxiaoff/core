@@ -19,7 +19,6 @@ backup3/
 tmp/
 public/admin/.htaccess
 public/default/var
-public/default/index.php
 public/default/.htaccess
 config.php
 
