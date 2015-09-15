@@ -215,7 +215,19 @@
                     	<label for="radio1-3-about"><?=$this->lng['etape2']['label-toutes-informations-utiles']?></label>
 						<textarea name="comments" cols="30" rows="10" title="<?=$this->lng['etape2']['toutes-informations-utiles']?>" id="comments" class="field field-mega"><?=($this->projects->comments!=''?$this->projects->comments:$this->lng['etape2']['toutes-informations-utiles'])?></textarea>
 					</div><!-- /.row -->
-	
+
+						<div class="row">
+							<select name="duree" id="duree" class="field field-large required custom-select">
+								<option value="0"><?=$this->lng['etape1']['duree']?></option>
+								<?foreach($this->dureePossible as $duree):?>
+									<option value="<?=$duree?>"><?=$duree?> mois</option>
+								<?endforeach?>
+							</select>
+						</div>
+
+
+
+
 					<div class="row">
 						<div class="cb-holder">
 							<label class="check" for="accept-cgu"><?=$this->lng['etape2']['je-reconnais-avoir-pris-connaissance']?> <a style="color:#A1A5A7; text-decoration: underline;" class="check" target="_blank" href="<?=$this->lurl.'/'.$this->tree->getSlug($this->lienConditionsGenerales,$this->language)?>"><?=$this->lng['etape2']['des-conditions-generales-de-vente']?></a></label>

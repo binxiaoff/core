@@ -68,33 +68,26 @@ class depot_de_dossierController extends bootstrap
         // Num page
         $this->page = 1;
 
-// load des durée des prêts autorisées
-        $this->settings->get('Durée des prêts autorisées', 'type');
-        $this->dureePossible = explode(',', $this->settings->value);
-        if (empty($this->settings->value)) {
-            $this->dureePossible = array(24, 36, 48, 60);
-        }
-
-// Somme à emprunter min
+        // Somme à emprunter min
         $this->settings->get('Somme à emprunter min', 'type');
         $this->sommeMin = $this->settings->value;
 
-// Somme à emprunter max
+        // Somme à emprunter max
         $this->settings->get('Somme à emprunter max', 'type');
         $this->sommeMax = $this->settings->value;
 
-//traduction
+        //traduction
         $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
 
-// source -> mets utm_source dans la session
+        // source -> mets utm_source dans la session
         $this->ficelle->source($_GET['utm_source'], $this->lurl . '/' . $this->params[0], $_GET['utm_source2']);
 
-////////////////////////////////
-// Initialisation variable
+        ////////////////////////////////
+        // Initialisation variable
         $this->preteurCreateEmprunteur = false;
 
-// Si on a une session active - version etape 1
+        // Si on a une session active - version etape 1
         if (isset($_SESSION['client'])) {
             // On recup le mec
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
@@ -115,29 +108,65 @@ class depot_de_dossierController extends bootstrap
                         header('location:' . $this->lurl . '/depot_de_dossier/etape' . ($this->clients->status_depot_dossier + 1) . '/' . $this->clients->hash);
                     }
                 }
+
             }
+            // dans tous les cas tant qu'on a pas le syteme preteur/emprunteur on redirige si on est connecté (a supprimer lors de la mise en place du systeme)
+            header('location:' . $this->lurl . '/lp-depot-de-dossier');
+            die;
         }
 
 
         $reponse_get = false;
-// Si on a les get en question
+        // Si on a les get en question
         if (isset($_GET['montant']) && $_GET['montant'] != '' &&
-            isset($_GET['duree']) && $_GET['duree'] != '' &&
             isset($_GET['siren']) && $_GET['siren'] != ''
         ) {
             $reponse_get = true;
         }
 
-// On récupère le formulaire d'inscription de la page
+
+
+        if (isset($email) && $this->ficelle->isEmail($email) && $this->clients->existEmail($email)){
+
+            $this->client = $this->client->get($email, 'email');
+
+        }
+
+
+
+
+
+
+
+        // Si c'est un preteur
+        if ($this->clients->status_pre_emp == 1) {
+            // On controle si personne physique
+            if ($this->clients->type == 1) {
+                // on cache tant qu'on met pas le systeme preteur/emprunteur
+                $_SESSION['error_pre_empr'] = 'Seule une personne morale peut créer un compte emprunteur';
+                header('location:' . $this->lurl . '/lp-depot-de-dossier');
+                die;
+            }
+        } // Si c'est un emprunteur ou deja un preteur/emprunteur
+        elseif ($this->clients->status_pre_emp == 2 || $this->clients->status_pre_emp == 3) {
+            // on cache tant qu'on met pas le systeme preteur/emprunteur
+            $_SESSION['error_pre_empr'] = 'Vous disposez déjà d\'un compte emprunteur';
+            // Si emprunteur pas le droit de créer un autre compte en etant connecté
+            header('location:' . $this->lurl . '/lp-depot-de-dossier');
+            die;
+        }
+
+
+
+
+        // On récupère le formulaire d'inscription de la page
         if (isset($_POST['spy_inscription_landing_page_depot_dossier']) || $reponse_get == true) {
             if ($reponse_get == true) {
                 $montant = str_replace(',', '.', str_replace(' ', '', $_GET['montant']));
-                $duree = $_GET['duree'];
                 $siren = $_GET['siren'];
                 $email = $_GET['email'];
             } else {
                 $montant = str_replace(',', '.', str_replace(' ', '', $_POST['montant']));
-                $duree = $_POST['duree'];
                 $siren = $_POST['siren'];
                 $email = ($_POST['email'] == 'Email')? '': $_POST['email'];
             }
@@ -148,17 +177,12 @@ class depot_de_dossierController extends bootstrap
                 $form_valid = false;
                 $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
             } // Si pas numerique
-            elseif (!is_numeric($montant)) {
+            if (!is_numeric($montant)) {
                 $form_valid = false;
                 $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
             } // montant < ou > au min et max
             elseif ($montant < $this->sommeMin || $montant > $this->sommeMax) {
                 $this->form_ok = false;
-            }
-
-            if (!isset($duree) or $duree == 0 or !in_array($duree, $this->dureePossible)) {
-                $form_valid = false;
-                $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
             }
 
             if (!isset($siren) or $siren == $this->lng['landing-page']['siren'] || strlen($siren) != 9) {
@@ -169,37 +193,22 @@ class depot_de_dossierController extends bootstrap
             if ($form_valid)
             {
                 //create client, company and project independent from eligibility
-                    //Check if company exists based on SIREN
-                    if($this->companies->exist($siren,$field='siren')) $this->companies->get($siren, 'siren');
 
-                    //then get the client from that company in case it has not already been found by email before
-                    if ($this->clients->id_client == '') $this->clients->get($this->companies->id_client_owner);
+                //Check if company exists based on SIREN
+                if($this->companies->exist($siren,$field='siren')) $this->companies->get($siren, 'siren');
 
-                    // Si c'est un preteur
-                    if ($this->clients->status_pre_emp == 1) {
-                        // On controle si personne physique
-                        if ($this->clients->type == 1) {
-                            // on cache tant qu'on met pas le systeme preteur/emprunteur
-                            //$_SESSION['error_pre_empr'] = 'Seule une personne morale peut créer un compte emprunteur';
-                            header('location:' . $this->lurl . '/lp-depot-de-dossier');
-                            die;
-                        }
-                    } // Si c'est un emprunteur ou deja un preteur/emprunteur
-                    elseif ($this->clients->status_pre_emp == 2 || $this->clients->status_pre_emp == 3) {
-                        // on cache tant qu'on met pas le systeme preteur/emprunteur
-                        //$_SESSION['error_pre_empr'] = 'Vous disposez déjà d\'un compte emprunteur';
-                        // Si emprunteur pas le droit de créer un autre compte en etant connecté
-                        header('location:' . $this->lurl . '/lp-depot-de-dossier');
-                        die;
-                    }
-                    $this->clients->id_langue = $this->language;
-                    $this->clients->status_depot_dossier = 1;
-                    if(isset($email)) $this->clients->email = $email;
+                //then get the client from that company in case it has not already been found by email before
+                if ($this->clients->id_client == '') $this->clients->get($this->companies->id_client_owner);
 
-                    // dans tous les cas tant qu'on a pas le syteme preteur/emprunteur on redirige si on est connecté (a supprimer lors de la mise en place du systeme)
-                    header('location:' . $this->lurl . '/lp-depot-de-dossier');
-                    die;
-                }
+
+
+
+                $this->clients->id_langue = $this->language;
+                $this->clients->status_depot_dossier = 1;
+
+                if(isset($email)) $this->clients->email = $email;
+
+
 
 
                 // 1 : activé 2 : activé mais prend pas en compte le resultat 3 : desactivé (DC)

@@ -56,9 +56,9 @@ class projects_crud
 	public $date_fin;
 	public $create_bo;
 	public $risk;
-	public $remb_auto;
 	public $status;
 	public $display;
+	public $remb_auto;
 	public $added;
 	public $updated;
 
@@ -97,9 +97,9 @@ class projects_crud
 		$this->date_fin = '';
 		$this->create_bo = '';
 		$this->risk = '';
-		$this->remb_auto = '';
 		$this->status = '';
 		$this->display = '';
+		$this->remb_auto = '';
 		$this->added = '';
 		$this->updated = '';
 
@@ -142,9 +142,9 @@ class projects_crud
 			$this->date_fin = $record['date_fin'];
 			$this->create_bo = $record['create_bo'];
 			$this->risk = $record['risk'];
-			$this->remb_auto = $record['remb_auto'];
 			$this->status = $record['status'];
 			$this->display = $record['display'];
+			$this->remb_auto = $record['remb_auto'];
 			$this->added = $record['added'];
 			$this->updated = $record['updated'];
 
@@ -187,14 +187,14 @@ class projects_crud
 		$this->date_fin = $this->bdd->escape_string($this->date_fin);
 		$this->create_bo = $this->bdd->escape_string($this->create_bo);
 		$this->risk = $this->bdd->escape_string($this->risk);
-		$this->remb_auto = $this->bdd->escape_string($this->remb_auto);
 		$this->status = $this->bdd->escape_string($this->status);
 		$this->display = $this->bdd->escape_string($this->display);
+		$this->remb_auto = $this->bdd->escape_string($this->remb_auto);
 		$this->added = $this->bdd->escape_string($this->added);
 		$this->updated = $this->bdd->escape_string($this->updated);
 
 		
-		$sql = 'UPDATE `projects` SET `slug`="'.$this->slug.'",`id_company`="'.$this->id_company.'",`id_partenaire`="'.$this->id_partenaire.'",`id_partenaire_subcode`="'.$this->id_partenaire_subcode.'",`amount`="'.$this->amount.'",`status_solde`="'.$this->status_solde.'",`period`="'.$this->period.'",`title`="'.$this->title.'",`title_bo`="'.$this->title_bo.'",`photo_projet`="'.$this->photo_projet.'",`lien_video`="'.$this->lien_video.'",`comments`="'.$this->comments.'",`nature_project`="'.$this->nature_project.'",`objectif_loan`="'.$this->objectif_loan.'",`presentation_company`="'.$this->presentation_company.'",`means_repayment`="'.$this->means_repayment.'",`type`="'.$this->type.'",`target_rate`="'.$this->target_rate.'",`stand_by`="'.$this->stand_by.'",`id_analyste`="'.$this->id_analyste.'",`date_publication`="'.$this->date_publication.'",`date_publication_full`="'.$this->date_publication_full.'",`date_retrait`="'.$this->date_retrait.'",`date_retrait_full`="'.$this->date_retrait_full.'",`date_fin`="'.$this->date_fin.'",`create_bo`="'.$this->create_bo.'",`risk`="'.$this->risk.'",`remb_auto`="'.$this->remb_auto.'",`status`="'.$this->status.'",`display`="'.$this->display.'",`added`="'.$this->added.'",`updated`=NOW() WHERE id_project="'.$this->id_project.'"';
+		$sql = 'UPDATE `projects` SET `slug`="'.$this->slug.'",`id_company`="'.$this->id_company.'",`id_partenaire`="'.$this->id_partenaire.'",`id_partenaire_subcode`="'.$this->id_partenaire_subcode.'",`amount`="'.$this->amount.'",`status_solde`="'.$this->status_solde.'",`period`="'.$this->period.'",`title`="'.$this->title.'",`title_bo`="'.$this->title_bo.'",`photo_projet`="'.$this->photo_projet.'",`lien_video`="'.$this->lien_video.'",`comments`="'.$this->comments.'",`nature_project`="'.$this->nature_project.'",`objectif_loan`="'.$this->objectif_loan.'",`presentation_company`="'.$this->presentation_company.'",`means_repayment`="'.$this->means_repayment.'",`type`="'.$this->type.'",`target_rate`="'.$this->target_rate.'",`stand_by`="'.$this->stand_by.'",`id_analyste`="'.$this->id_analyste.'",`date_publication`="'.$this->date_publication.'",`date_publication_full`="'.$this->date_publication_full.'",`date_retrait`="'.$this->date_retrait.'",`date_retrait_full`="'.$this->date_retrait_full.'",`date_fin`="'.$this->date_fin.'",`create_bo`="'.$this->create_bo.'",`risk`="'.$this->risk.'",`status`="'.$this->status.'",`display`="'.$this->display.'",`remb_auto`="'.$this->remb_auto.'",`added`="'.$this->added.'",`updated`=NOW() WHERE id_project="'.$this->id_project.'"';
 		$this->bdd->query($sql);
 		
 		if($cs=='')
@@ -247,14 +247,14 @@ class projects_crud
 		$this->date_fin = $this->bdd->escape_string($this->date_fin);
 		$this->create_bo = $this->bdd->escape_string($this->create_bo);
 		$this->risk = $this->bdd->escape_string($this->risk);
-		$this->remb_auto = $this->bdd->escape_string($this->remb_auto);
 		$this->status = $this->bdd->escape_string($this->status);
 		$this->display = $this->bdd->escape_string($this->display);
+		$this->remb_auto = $this->bdd->escape_string($this->remb_auto);
 		$this->added = $this->bdd->escape_string($this->added);
 		$this->updated = $this->bdd->escape_string($this->updated);
 
 		
-		$sql = 'INSERT INTO `projects`(`slug`,`id_company`,`id_partenaire`,`id_partenaire_subcode`,`amount`,`status_solde`,`period`,`title`,`title_bo`,`photo_projet`,`lien_video`,`comments`,`nature_project`,`objectif_loan`,`presentation_company`,`means_repayment`,`type`,`target_rate`,`stand_by`,`id_analyste`,`date_publication`,`date_publication_full`,`date_retrait`,`date_retrait_full`,`date_fin`,`create_bo`,`risk`,`remb_auto`,`status`,`display`,`added`,`updated`) VALUES("'.$this->slug.'","'.$this->id_company.'","'.$this->id_partenaire.'","'.$this->id_partenaire_subcode.'","'.$this->amount.'","'.$this->status_solde.'","'.$this->period.'","'.$this->title.'","'.$this->title_bo.'","'.$this->photo_projet.'","'.$this->lien_video.'","'.$this->comments.'","'.$this->nature_project.'","'.$this->objectif_loan.'","'.$this->presentation_company.'","'.$this->means_repayment.'","'.$this->type.'","'.$this->target_rate.'","'.$this->stand_by.'","'.$this->id_analyste.'","'.$this->date_publication.'","'.$this->date_publication_full.'","'.$this->date_retrait.'","'.$this->date_retrait_full.'","'.$this->date_fin.'","'.$this->create_bo.'","'.$this->risk.'","'.$this->remb_auto.'","'.$this->status.'","'.$this->display.'",NOW(),NOW())';
+		$sql = 'INSERT INTO `projects`(`slug`,`id_company`,`id_partenaire`,`id_partenaire_subcode`,`amount`,`status_solde`,`period`,`title`,`title_bo`,`photo_projet`,`lien_video`,`comments`,`nature_project`,`objectif_loan`,`presentation_company`,`means_repayment`,`type`,`target_rate`,`stand_by`,`id_analyste`,`date_publication`,`date_publication_full`,`date_retrait`,`date_retrait_full`,`date_fin`,`create_bo`,`risk`,`status`,`display`,`remb_auto`,`added`,`updated`) VALUES("'.$this->slug.'","'.$this->id_company.'","'.$this->id_partenaire.'","'.$this->id_partenaire_subcode.'","'.$this->amount.'","'.$this->status_solde.'","'.$this->period.'","'.$this->title.'","'.$this->title_bo.'","'.$this->photo_projet.'","'.$this->lien_video.'","'.$this->comments.'","'.$this->nature_project.'","'.$this->objectif_loan.'","'.$this->presentation_company.'","'.$this->means_repayment.'","'.$this->type.'","'.$this->target_rate.'","'.$this->stand_by.'","'.$this->id_analyste.'","'.$this->date_publication.'","'.$this->date_publication_full.'","'.$this->date_retrait.'","'.$this->date_retrait_full.'","'.$this->date_fin.'","'.$this->create_bo.'","'.$this->risk.'","'.$this->status.'","'.$this->display.'","'.$this->remb_auto.'",NOW(),NOW())';
 		$this->bdd->query($sql);
 		
 		$this->id_project = $this->bdd->insert_id();
@@ -303,9 +303,9 @@ class projects_crud
 		$this->date_fin = '';
 		$this->create_bo = '';
 		$this->risk = '';
-		$this->remb_auto = '';
 		$this->status = '';
 		$this->display = '';
+		$this->remb_auto = '';
 		$this->added = '';
 		$this->updated = '';
 
