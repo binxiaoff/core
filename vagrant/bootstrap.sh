@@ -43,6 +43,11 @@ echo "GRANT ALL ON pma.* TO 'pma'@'localhost'" | mysql -uroot -pROOTPASSWORD
 echo "flush privileges" | mysql -uroot -pROOTPASSWORD
 cat /vagrant/conf/phpmyadmin.conf.php > /srv/sites/phpmyadmin/config.inc.php
 
+# create external user
+echo "CREATE USER 'external'@'%' IDENTIFIED BY 'EXTERNALPASSWD'" | mysql -uroot -pROOTPASSWORD
+echo "GRANT ALL ON unilend.* TO 'external'@'%'" | mysql -uroot -pROOTPASSWORD
+echo "flush privileges" | mysql -uroot -pROOTPASSWORD
+
 #install apache2
 apt-get install -y apache2
 a2enmod deflate
