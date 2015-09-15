@@ -125,7 +125,7 @@
                                if($this->projects_status->status >=80)
                                {
                                ?>
-                               <a href="<?=$this->lurl.'/pdf/contrat/'.$this->clients->hash.'/'.$loan['id_loan']?>">Contrat PDF</a><br>
+                               <a href="<?=$this->lurl.'/preteurs/contratPdf/'.$this->clients->hash.'/'.$loan['id_loan']?>">Contrat PDF</a><br>
 
                                <?php if(in_array($l['id_project'],$this->arrayDeclarationCreance)){?>
                                <a href="<?=$this->lurl.'/pdf/declaration_de_creances/'.$this->clients->hash.'/'.$loan['id_loan']?>">Créances PDF</a><?php
@@ -179,7 +179,7 @@
                                                     if($this->projects_status->status >=80)
                                                     {
                                                         ?>
-                                                        <a style="background-color: #e3e4e5; color: black;" href="<?=$this->lurl.'/pdf/contrat/'.$this->clients->hash.'/'.$loan['id_loan']?>">Contrat PDF</a><br>
+                                                        <a style="background-color: #e3e4e5; color: black;" href="<?=$this->lurl.'/preteurs/contratPdf/'.$this->clients->hash.'/'.$loan['id_loan']?>">Contrat PDF</a><br>
 
                                                         <?php if(in_array($l['id_project'],$this->arrayDeclarationCreance)){?>
                                                         <a style="background-color: #e3e4e5; color: black;" href="<?=$this->lurl.'/pdf/declaration_de_creances/'.$this->clients->hash.'/'.$loan['id_loan']?>">Créances PDF</a><?php
