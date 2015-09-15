@@ -7,6 +7,9 @@ class preteursController extends bootstrap
 	function preteursController($command,$config,$app)
 	{
 		parent::__construct($command,$config,$app);
+
+		// Inclusion controller pdf
+		include($this->path.'/apps/default/controllers/pdf.php');
 		
 		$this->catchAll = true;
 		
@@ -2402,10 +2405,10 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 
 	public function _portefeuille(){
 
-        //On appelle la fonction de chargement des donnÃ©es
+        //On appelle la fonction de chargement des données
         $this->loadGestionData();
 
-        // on charge des donnÃ©es supplementaires nÃ©cessaires pour la mÃ©thode
+        // on charge des donnÃ©es supplementaires nécessaires pour la méthode
 		$this->projects_status = $this->loadData('projects_status');
 		$this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
 
@@ -2469,5 +2472,21 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 		return round($this->financial->XIRR($values, $dates, $guess = 0.1)*100, 2);
 	}
 
+	function _contratPdf()
+	{
+
+		// copie de CRON
+		// Génération pdf
+		$oCommandPdf = new Command('pdf','contrat',array(),$this->language);
+		var_dump($oCommandPdf);
+		include($this->path.'/apps/default/controllers/pdf.php');
+		$oPdf = new pdfController($oCommandPdf, $this->Config, 'admin');
+//		var_dump($oPdf);
+//		get_object_vars($oPdf);
+//		print_r($oPdf);
+		$oPdf->_contrat();
+
+
+	}
 
 }
