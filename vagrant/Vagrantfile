@@ -3,7 +3,7 @@
 
 unless Vagrant.has_plugin?("vagrant-hostsupdater")
   puts "--- WARNING ---"
-  puts "vagrant-hostsupdater is not installes."
+  puts "vagrant-hostsupdater is not installed"
   puts "Type : "
   puts "vagrant plugin install vagrant-hostsupdater"
   puts "to install it"
