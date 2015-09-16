@@ -45,12 +45,12 @@ class Controller
 	var $included_js;
 	var $included_css;
 
-	function __construct(&$command,$config,$app,$debug=false)
+	function __construct(&$command,$config,$app)
 	{
-		if (false === $debug) {
+
 		$this->initVendor();
 		$this->initUnilendAutoload();
-		}
+
 
 		//Variables de session pour la fenetre de debug
 		unset($_SESSION['error']);
