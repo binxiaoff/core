@@ -2474,16 +2474,45 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 
 	public function _contratPdf()
 	{
+		$this->loadGestionData();
+
+		$this->clients->get($this->params[0], 'hash');
+		$this->lenders_accounts = $this->lenders_accounts->get($this->client->id_client, 'id_client_owner');
+		$this->loans = $this->loans->get($this->lenders_accounts->id_lender, 'id_lender');
+		$iloan = $this->params[1];
+
 		// Génération pdf
-		$oCommandPdf = new Command('pdf','contrat',array($this->clients->hash, $loan['id_loan']),$this->language);
-		var_dump($oCommandPdf);
-		var_dump($this->path);
-		$oPdf = new pdfController($oCommandPdf, $this->Config, 'default', true);
-		var_dump($oPdf);
-//		get_object_vars($oPdf);
-//		print_r($oPdf);
+		$oCommandPdf = new Command('pdf','contrat',array($this->clients->hash, $iloan),$this->language);
+		$oPdf = new pdfController($oCommandPdf, $this->Config, 'default');
+		$oPdf->clients = $this->clients;
+		$oPdf->projects = $this->projects;
+		$oPdf->oLenders_accounts = $this->lenders_accounts;
+		$oPdf->clients_adresses = $this->clients_adresses;
+		$oPdf->params = $this->params;
 		$oPdf->_contrat();
 
+
+	}
+
+	public function _creancesPdf()
+	{
+		$this->loadGestionData();
+
+		$this->clients->get($this->params[0], 'hash');
+		$this->lenders_accounts = $this->lenders_accounts->get($this->client->id_client, 'id_client_owner');
+		$this->loans = $this->loans->get($this->lenders_accounts->id_lender, 'id_lender');
+		$iloan = $this->params[1];
+
+		// Génération pdf
+		$oCommandPdf = new Command('pdf','declaration_de_creances',array($this->clients->hash, $iloan),$this->language);
+		$oPdf = new pdfController($oCommandPdf, $this->Config, 'default');
+		$oPdf->clients = $this->clients;
+		$oPdf->projects = $this->projects;
+		$oPdf->oLenders_accounts = $this->lenders_accounts;
+		$oPdf->clients_adresses = $this->clients_adresses;
+		$oPdf->params = $this->params;
+		$oPdf->companies = $this->companies;
+		$oPdf->_declaration_de_creances();
 
 	}
 
