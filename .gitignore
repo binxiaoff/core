@@ -15,7 +15,7 @@ nb-configuration.xml
 
 ### Izinoa ###
 /protected/
-log/
+/log/
 backup2/
 backup3/
 tmp/
@@ -31,6 +31,9 @@ tmp/
 
 ###Vagrant###
 /vagrant/.vagrant/
+
+###Composer###
+/vendor/
 
 #sauf
 !public/default/styles/default/*
