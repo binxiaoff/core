@@ -125,10 +125,10 @@
                                if($this->projects_status->status >=80)
                                {
                                ?>
-                               <a href="<?=$this->lurl.'/preteurs/contratPdf/'.$this->clients->hash.'/'.$loan['id_loan']?>">Contrat PDF</a><br>
+                               <a href="<?=$this->lurl.'/preteurs/contratPdf/'.$this->clients->hash.'/'.$l['id_loan_if_one_loan']?>">Contrat PDF</a><br>
 
                                <?php if(in_array($l['id_project'],$this->arrayDeclarationCreance)){?>
-                               <a href="<?=$this->lurl.'/pdf/declaration_de_creances/'.$this->clients->hash.'/'.$loan['id_loan']?>">Créances PDF</a><?php
+                               <a href="<?=$this->lurl.'/preteurs/creancesPdf/'.$this->clients->hash.'/'.$l['id_loan_if_one_loan']?>">Créances PDF</a><?php
 
                                 }
                                 }
