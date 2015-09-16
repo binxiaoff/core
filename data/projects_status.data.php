@@ -51,7 +51,7 @@ class projects_status extends projects_status_crud
 	const PAS_3_BILANS = 6;
 	const ABANDON_ETAPE_2 = 7;
 	const REMBOURSEMENT_ANTICIPE = 130;
-	const PROBLEME_J_plus_X = 140;
+	const PROBLEME_J_PLUS_X = 140;
 
 
 	function projects_status($bdd,$params='')
