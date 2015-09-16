@@ -359,40 +359,79 @@ foreach ($this->lesmois as $key => $o)
                 // moyenne pondéré
                 $montantHaut = 0;
                 $montantBas = 0;
-                // si fundé ou remboursement
-                if ($this->projects_status->status == 60 || $this->projects_status->status == 80)
-                {
-                    foreach ($this->loans->select('id_project = ' . $f['id_project']) as $b)
-                    {
-                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                        $montantBas += ($b['amount'] / 100);
-                    }
-                }
-                // funding ko
-                elseif ($this->projects_status->status == 70)
-                {
-                    foreach ($this->bids->select('id_project = ' . $f['id_project']) as $b)
-                    {
-                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                        $montantBas += ($b['amount'] / 100);
-                    }
-                }
-                // emprun refusé
-                elseif ($this->projects_status->status == 75)
-                {
-                    foreach ($this->bids->select('id_project = ' . $f['id_project'] . ' AND status = 1') as $b)
-                    {
-                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                        $montantBas += ($b['amount'] / 100);
-                    }
-                }
-                else
-                {
-                    foreach ($this->bids->select('id_project = ' . $f['id_project'] . ' AND status = 0') as $b)
-                    {
-                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                        $montantBas += ($b['amount'] / 100);
-                    }
+
+                switch ($this->projects_status->status) {
+                    case projects_status::EN_FUNDING:
+                        foreach ($this->bids->select('id_project = ' . $f['id_project'] . ' AND status = 1') as $b) {
+                            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                            $montantBas += ($b['amount'] / 100);
+                        }
+                    break;
+                    case projects_status::FUNDE:
+                        foreach ($this->bids->select('id_project = ' . $f['id_project'] . ' AND status = 1') as $b) {
+                            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                            $montantBas += ($b['amount'] / 100);
+                        }
+                        break;
+                    case projects_status::FUNDING_KO:
+                        foreach ($this->bids->select('id_project = ' . $f['id_project'] . ' AND status = 1') as $b) {
+                            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                            $montantBas += ($b['amount'] / 100);
+                        }
+                        break;
+                    case projects_status::PRET_REFUSE:
+                        foreach ($this->bids->select('id_project = ' . $f['id_project'] . ' AND status = 1') as $b) {
+                            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                            $montantBas += ($b['amount'] / 100);
+                        }
+                        break;
+                    case projects_status::REMBOURSEMENT:
+                        foreach ($this->loans->select('id_project = ' . $f['id_project']) as $b) {
+                            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                            $montantBas += ($b['amount'] / 100);
+                        }
+                        break;
+                    case projects_status::REMBOURSE:
+                        foreach ($this->loans->select('id_project = ' . $f['id_project']) as $b) {
+                            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                            $montantBas += ($b['amount'] / 100);
+                        }
+                        break;
+                    case projects_status::PROBLEME:
+                        foreach ($this->loans->select('id_project = ' . $f['id_project']) as $b) {
+                            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                            $montantBas += ($b['amount'] / 100);
+                        }
+                        break;
+                    case projects_status::RECOUVREMENT:
+                        foreach ($this->loans->select('id_project = ' . $f['id_project']) as $b) {
+                            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                            $montantBas += ($b['amount'] / 100);
+                        }
+                        break;
+                    case projects_status::DEFAULT_STATUS:
+                        foreach ($this->bids->select('id_project = ' . $f['id_project'] . ' AND status = 1') as $b) {
+                            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                            $montantBas += ($b['amount'] / 100);
+                        }
+                        break;
+                    case projects_status::REMBOURSEMENT_ANTICIPE:
+                        foreach ($this->loans->select('id_project = ' . $f['id_project']) as $b) {
+                            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                            $montantBas += ($b['amount'] / 100);
+                        }
+                        break;
+                    case projects_status::PROBLEME_J_PLUS_X:
+                        foreach ($this->loans->select('id_project = ' . $f['id_project']) as $b) {
+                            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                            $montantBas += ($b['amount'] / 100);
+                        }
+                        break;
+                    default:
+                        foreach ($this->loans->select('id_project = ' . $f['id_project']) as $b) {
+                            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                            $montantBas += ($b['amount'] / 100);
+                        }
                 }
                 if ($montantHaut > 0 && $montantBas > 0)
                     $avgRate = ($montantHaut / $montantBas);
@@ -424,7 +463,7 @@ foreach ($this->lesmois as $key => $o)
                                 }
                                 ?>
                     <div class="info">
-                        <ul class="list">	
+                        <ul class="list">
                             <li><i class="icon-pig-gray"></i><?= number_format($f['amount'], 0, ',', ' ') ?> €</li>
                             <li><i class="icon-clock-gray"></i><?= ($reste == '' ? '' : $reste) ?><span id="valFav<?= $f['id_project'] ?>"><?= $dateRest ?></span></li>
                             <li><i class="icon-target"></i><?= $this->lng['preteur-synthese']['couvert-a'] ?> <?= number_format($pourcentage, $decimalesPourcentage, ',', ' ') ?> %</li>
@@ -449,7 +488,7 @@ foreach ($this->lesmois as $key => $o)
                         if ($fast_ok == true)
                         {
 
-                            // on check si on a coché les cgv ou pas 
+                            // on check si on a coché les cgv ou pas
                             // cgu societe
                             if (in_array($this->clients->type, array(2, 4)))
                             {
@@ -491,7 +530,7 @@ foreach ($this->lesmois as $key => $o)
         <?
     }
 }
-?>	
+?>
     </div>
 </div>
 
