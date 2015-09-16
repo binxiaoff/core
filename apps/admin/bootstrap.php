@@ -4,9 +4,9 @@ class bootstrap extends Controller
 	var $Command;
 
 
-	function bootstrap($command,$config,$app,$debug=false)
+	function bootstrap($command,$config,$app)
 	{
-		parent::__construct($command,$config,$app,$debug);
+		parent::__construct($command,$config,$app);
 
 		// Mise en session de l'url demandée pour un retour si deconnecté sauf pour la fonction login du controller root
 		if($this->current_function != 'login') { $_SESSION['request_url'] = $_SERVER['REQUEST_URI']; }
