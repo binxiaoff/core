@@ -776,11 +776,11 @@ class Controller
 	}
 
 	function initVendor(){
-		require __DIR__ . '/../vendor/autoload.php';
+		require_once __DIR__ . '/../vendor/autoload.php';
 	}
 
 	function initUnilendAutoload(){
-		require __DIR__ . '/../Autoloader.php';
+		require_once __DIR__ . '/../Autoloader.php';
 		Autoloader::register();
 	}
 
