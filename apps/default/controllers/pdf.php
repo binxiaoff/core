@@ -52,9 +52,9 @@ class pdfController extends bootstrap
     private $sDisplay;
 
 
-    public function pdfController($command, $config, $app)
+    public function pdfController($command, $config, $app, $debug=false)
     {
-        parent::__construct($command, $config, $app);
+        parent::__construct($command, $config, $app, $debug);
 
         // Recuperation du bloc
         $this->blocs->get('pdf-contrat', 'slug');
