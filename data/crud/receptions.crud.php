@@ -29,10 +29,12 @@ class receptions_crud
 {
 	
 	public $id_reception;
+	public $id_parent;
 	public $motif;
 	public $montant;
 	public $type;
 	public $remb_anticipe;
+	public $type_remb;
 	public $status_virement;
 	public $status_prelevement;
 	public $status_bo;
@@ -51,10 +53,12 @@ class receptions_crud
 			$params = array();
 		$this->params = $params;
 		$this->id_reception = '';
+		$this->id_parent = '';
 		$this->motif = '';
 		$this->montant = '';
 		$this->type = '';
 		$this->remb_anticipe = '';
+		$this->type_remb = '';
 		$this->status_virement = '';
 		$this->status_prelevement = '';
 		$this->status_bo = '';
@@ -77,10 +81,12 @@ class receptions_crud
 			$record = $this->bdd->fetch_array($result);
 		
 				$this->id_reception = $record['id_reception'];
+			$this->id_parent = $record['id_parent'];
 			$this->motif = $record['motif'];
 			$this->montant = $record['montant'];
 			$this->type = $record['type'];
 			$this->remb_anticipe = $record['remb_anticipe'];
+			$this->type_remb = $record['type_remb'];
 			$this->status_virement = $record['status_virement'];
 			$this->status_prelevement = $record['status_prelevement'];
 			$this->status_bo = $record['status_bo'];
@@ -103,10 +109,12 @@ class receptions_crud
 	function update($cs='')
 	{
 		$this->id_reception = $this->bdd->escape_string($this->id_reception);
+		$this->id_parent = $this->bdd->escape_string($this->id_parent);
 		$this->motif = $this->bdd->escape_string($this->motif);
 		$this->montant = $this->bdd->escape_string($this->montant);
 		$this->type = $this->bdd->escape_string($this->type);
 		$this->remb_anticipe = $this->bdd->escape_string($this->remb_anticipe);
+		$this->type_remb = $this->bdd->escape_string($this->type_remb);
 		$this->status_virement = $this->bdd->escape_string($this->status_virement);
 		$this->status_prelevement = $this->bdd->escape_string($this->status_prelevement);
 		$this->status_bo = $this->bdd->escape_string($this->status_bo);
@@ -118,7 +126,7 @@ class receptions_crud
 		$this->updated = $this->bdd->escape_string($this->updated);
 
 		
-		$sql = 'UPDATE `receptions` SET `motif`="'.$this->motif.'",`montant`="'.$this->montant.'",`type`="'.$this->type.'",`remb_anticipe`="'.$this->remb_anticipe.'",`status_virement`="'.$this->status_virement.'",`status_prelevement`="'.$this->status_prelevement.'",`status_bo`="'.$this->status_bo.'",`remb`="'.$this->remb.'",`id_client`="'.$this->id_client.'",`id_project`="'.$this->id_project.'",`ligne`="'.$this->ligne.'",`added`="'.$this->added.'",`updated`=NOW() WHERE id_reception="'.$this->id_reception.'"';
+		$sql = 'UPDATE `receptions` SET `id_parent`="'.$this->id_parent.'",`motif`="'.$this->motif.'",`montant`="'.$this->montant.'",`type`="'.$this->type.'",`remb_anticipe`="'.$this->remb_anticipe.'",`type_remb`="'.$this->type_remb.'",`status_virement`="'.$this->status_virement.'",`status_prelevement`="'.$this->status_prelevement.'",`status_bo`="'.$this->status_bo.'",`remb`="'.$this->remb.'",`id_client`="'.$this->id_client.'",`id_project`="'.$this->id_project.'",`ligne`="'.$this->ligne.'",`added`="'.$this->added.'",`updated`=NOW() WHERE id_reception="'.$this->id_reception.'"';
 		$this->bdd->query($sql);
 		
 		if($cs=='')
@@ -144,10 +152,12 @@ class receptions_crud
 	function create($cs='')
 	{
 		$this->id_reception = $this->bdd->escape_string($this->id_reception);
+		$this->id_parent = $this->bdd->escape_string($this->id_parent);
 		$this->motif = $this->bdd->escape_string($this->motif);
 		$this->montant = $this->bdd->escape_string($this->montant);
 		$this->type = $this->bdd->escape_string($this->type);
 		$this->remb_anticipe = $this->bdd->escape_string($this->remb_anticipe);
+		$this->type_remb = $this->bdd->escape_string($this->type_remb);
 		$this->status_virement = $this->bdd->escape_string($this->status_virement);
 		$this->status_prelevement = $this->bdd->escape_string($this->status_prelevement);
 		$this->status_bo = $this->bdd->escape_string($this->status_bo);
@@ -159,7 +169,7 @@ class receptions_crud
 		$this->updated = $this->bdd->escape_string($this->updated);
 
 		
-		$sql = 'INSERT INTO `receptions`(`motif`,`montant`,`type`,`remb_anticipe`,`status_virement`,`status_prelevement`,`status_bo`,`remb`,`id_client`,`id_project`,`ligne`,`added`,`updated`) VALUES("'.$this->motif.'","'.$this->montant.'","'.$this->type.'","'.$this->remb_anticipe.'","'.$this->status_virement.'","'.$this->status_prelevement.'","'.$this->status_bo.'","'.$this->remb.'","'.$this->id_client.'","'.$this->id_project.'","'.$this->ligne.'",NOW(),NOW())';
+		$sql = 'INSERT INTO `receptions`(`id_parent`,`motif`,`montant`,`type`,`remb_anticipe`,`type_remb`,`status_virement`,`status_prelevement`,`status_bo`,`remb`,`id_client`,`id_project`,`ligne`,`added`,`updated`) VALUES("'.$this->id_parent.'","'.$this->motif.'","'.$this->montant.'","'.$this->type.'","'.$this->remb_anticipe.'","'.$this->type_remb.'","'.$this->status_virement.'","'.$this->status_prelevement.'","'.$this->status_bo.'","'.$this->remb.'","'.$this->id_client.'","'.$this->id_project.'","'.$this->ligne.'",NOW(),NOW())';
 		$this->bdd->query($sql);
 		
 		$this->id_reception = $this->bdd->insert_id();
@@ -181,10 +191,12 @@ class receptions_crud
 	function unsetData()
 	{
 		$this->id_reception = '';
+		$this->id_parent = '';
 		$this->motif = '';
 		$this->montant = '';
 		$this->type = '';
 		$this->remb_anticipe = '';
+		$this->type_remb = '';
 		$this->status_virement = '';
 		$this->status_prelevement = '';
 		$this->status_bo = '';

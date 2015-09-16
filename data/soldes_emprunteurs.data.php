@@ -1,4 +1,5 @@
 <?php
+
 // **************************************************************************************************** //
 // ***************************************    ASPARTAM    ********************************************* //
 // **************************************************************************************************** //
@@ -25,103 +26,64 @@
 //  Coupable : CM
 //                                                                                   
 // **************************************************************************************************** //
-class attachment_type_crud
-{
-	
-	public $id;
-	public $label;
 
-	
-	function attachment_type($bdd,$params='')
-	{
-		$this->bdd = $bdd;
-		if($params=='')
-			$params = array();
-		$this->params = $params;
-		$this->id = '';
-		$this->label = '';
+class soldes_emprunteurs extends soldes_emprunteurs_crud {
 
-	}
-	
-	function get($id,$field='id')
-	{
-		$sql = 'SELECT * FROM  `attachment_type` WHERE '.$field.'="'.$id.'"';
-		$result = $this->bdd->query($sql);
-		
-		if($this->bdd->num_rows()==1)
-		{
-			$record = $this->bdd->fetch_array($result);
-		
-				$this->id = $record['id'];
-			$this->label = $record['label'];
+    function soldes_emprunteurs($bdd, $params = '') {
+        parent::soldes_emprunteurs($bdd, $params);
+    }
 
-			return true;
-		}
-		else
-		{
-			$this->unsetData();
-			return false;
-		}
-	}
-	
-	function update($cs='')
-	{
-		$this->id = $this->bdd->escape_string($this->id);
-		$this->label = $this->bdd->escape_string($this->label);
+    function get($id, $field = 'id') {
+        return parent::get($id, $field);
+    }
 
-		
-		$sql = 'UPDATE `attachment_type` SET `label`="'.$this->label.'" WHERE id="'.$this->id.'"';
-		$this->bdd->query($sql);
-		
-		if($cs=='')
-		{
-	
-		}
-		else
-		{
-		
-		}
-		
-		$this->get($this->id,'id');
-	}
-	
-	function delete($id,$field='id')
-	{
-		if($id=='')
-			$id = $this->id;
-		$sql = 'DELETE FROM `attachment_type` WHERE '.$field.'="'.$id.'"';
-		$this->bdd->query($sql);
-	}
-	
-	function create($cs='')
-	{
-		$this->id = $this->bdd->escape_string($this->id);
-		$this->label = $this->bdd->escape_string($this->label);
+    function update($cs = '') {
+        parent::update($cs);
+    }
 
-		
-		$sql = 'INSERT INTO `attachment_type`(`label`) VALUES("'.$this->label.'")';
-		$this->bdd->query($sql);
-		
-		$this->id = $this->bdd->insert_id();
-		
-		if($cs=='')
-		{
-	
-		}
-		else
-		{
-		
-		}
-		
-		$this->get($this->id,'id');
-		
-		return $this->id;
-	}
-	
-	function unsetData()
-	{
-		$this->id = '';
-		$this->label = '';
+    function delete($id, $field = 'id') {
+        parent::delete($id, $field);
+    }
 
-	}
+    function create($cs = '') {
+        $id = parent::create($cs);
+        return $id;
+    }
+
+    function select($where = '', $order = '', $start = '', $nb = '') {
+        if ($where != '')
+            $where = ' WHERE ' . $where;
+        if ($order != '')
+            $order = ' ORDER BY ' . $order;
+        $sql = 'SELECT * FROM `soldes_emprunteurs`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+
+        $resultat = $this->bdd->query($sql);
+        $result = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
+
+    function counter($where = '') {
+        if ($where != '')
+            $where = ' WHERE ' . $where;
+
+        $sql = 'SELECT count(*) FROM `soldes_emprunteurs` ' . $where;
+
+        $result = $this->bdd->query($sql);
+        return (int) ($this->bdd->result($result, 0, 0));
+    }
+
+    function exist($id, $field = 'id') {
+        $sql = 'SELECT * FROM `soldes_emprunteurs` WHERE ' . $field . '="' . $id . '"';
+        $result = $this->bdd->query($sql);
+        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+    }
+    
+    function lastSoldeEmprunteur($id_client) {
+        $sql = 'SELECT solde FROM `soldes_emprunteurs` WHERE id_client = '.$id_client.' ORDER BY date_transaction DESC LIMIT 1';
+        $result = $this->bdd->query($sql);
+        return (int) ($this->bdd->result($result, 0, 0));
+    }
 }

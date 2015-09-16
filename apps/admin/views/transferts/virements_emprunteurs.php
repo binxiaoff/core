@@ -40,8 +40,7 @@
 
         $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
 <?
-if ($this->nb_lignes != '')
-{
+if ($this->nb_lignes != '') {
     ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
     <?
@@ -51,8 +50,7 @@ if ($this->nb_lignes != '')
 
     });
 <?
-if (isset($_SESSION['freeow']))
-{
+if (isset($_SESSION['freeow'])) {
     ?>
         $(document).ready(function () {
             var title, message, opts, container;
@@ -74,8 +72,7 @@ if (isset($_SESSION['freeow']))
     </ul>
     <h1>Liste des Virements des remboursements emprunteur</h1>
     <?
-    if (count($this->lvirements) > 0)
-    {
+    if (count($this->lvirements) > 0) {
         ?>
         <table class="tablesorter">
             <thead>
@@ -92,8 +89,14 @@ if (isset($_SESSION['freeow']))
             <tbody>
                 <?
                 $i = 1;
-                foreach ($this->lvirements as $v)
-                {
+                foreach ($this->lvirements as $v) {
+                    $infos = '';
+                    if (in_array($v['type_remb'], array(2, 3))) {
+                        $this->receptions->get($v['id_reception'], 'id_parent');
+                        $infos = '(' . $this->types_remb[$v['type_remb']] . ' - prélèvement id : ' . $this->receptions->id_reception . ')';
+                    } elseif ($v['type_remb'] == 1) {
+                        $infos = '(' . $this->types_remb[$v['type_remb']] . ')';
+                    }
                     ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> >
                         <td><?= $v['id_reception'] ?></td>
@@ -103,25 +106,16 @@ if (isset($_SESSION['freeow']))
                         <td class="statut_virement_<?= $v['id_reception'] ?>" >
                             <?php /* ?><?=($v['id_client'] != 0?'Attribué':$this->statusVirement[$v['status_virement']])?><?php */ ?>
                             <?= $this->statusVirement[$v['status_bo']] ?>
-                            
+                            <?= $infos ?>          
                         </td>
 
 
                         <td class="num_client_<?= $v['id_reception'] ?>"><?= $v['id_project'] ?></td>
-                        <td><?= date('d/m/Y', strtotime($v['added']))?></td>
+                        <td><?= date('d/m/Y', strtotime($v['added'])) ?></td>
                         <td align="center">
-
-                            <a <?= ($v['id_project'] != 0 ? 'style="display:none;"' : '') ?> class="thickbox ajouter_<?= $v['id_reception'] ?>" href="<?= $this->lurl ?>/transferts/attribution_emprunteur/<?= $v['id_reception'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Attibution" />
-                            </a>
-                            <img class="annuler_<?= $v['id_reception'] ?>" <?= ($v['id_client'] == 0 ? 'style="display:none;cursor:pointer;"' : 'style="cursor:pointer;"') ?>  onclick="annulerAttribution(<?= $v['id_client'] ?>,<?= $v['id_reception'] ?>)" src="<?= $this->surl ?>/images/admin/delete.png" alt="Attibution" />
-
                             <a class='inline' href="#inline_content_<?= $v['id_reception'] ?>">
                                 <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Ligne" />
                             </a>
-                            <div style="display:none;">
-                                <div id='inline_content_<?= $v['id_reception'] ?>' style='white-space: nowrap; padding:10px; background:#fff;'><?= $v['ligne'] ?></div>
-                            </div>
                         </td>
                     </tr>   
                     <?
@@ -132,8 +126,7 @@ if (isset($_SESSION['freeow']))
         </table>
 
         <?
-        if ($this->nb_lignes != '')
-        {
+        if ($this->nb_lignes != '') {
             ?>
             <table>
                 <tr>
@@ -153,9 +146,7 @@ if (isset($_SESSION['freeow']))
         }
         ?>
         <?
-    }
-    else
-    {
+    } else {
         ?>
 
         <p>Il n'y a aucun virement recu.</p><?

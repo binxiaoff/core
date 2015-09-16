@@ -101,7 +101,7 @@
                     <td><?=$v['motif']?></td>
                     <td><?=number_format($v['montant']/100, 2, ',', ' ')?></td>
                     
-                    <td class="statut_prelevement_<?=$v['id_reception']?>" ><?=$this->statusPrelevement[$v['status_bo']]?></td>
+                    <td class="statut_prelevement_<?=$v['id_reception']?>" ><?=$this->statusPrelevement[$v['status_bo']]?> <?=$this->types_remb[$v['type_remb']]?></td>
                     <td class="num_client_<?=$v['id_reception']?>"><?=$v['id_client']?></td>
                     <td class="num_project_<?=$v['id_reception']?>"><?=$v['id_project']?></td>
                     <td class="preteur_projet_<?=$v['id_reception']?>" align="center"><?=($v['id_project'] != 0?'Remb projet '.$v['id_project']:($v['id_client'] != 0?'Prélèvement Prêteur':'-'))?></td>

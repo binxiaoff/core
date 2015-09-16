@@ -2895,7 +2895,7 @@ class cronController extends bootstrap
             $i = 0;
             while (($ligne = fgets($handle)) !== false)
             {
-                if (strpos($ligne, 'CANTONNEMENT') == true || strpos($ligne, 'DECANTON') == true || strpos($ligne, 'REGULARISATION DIGITAL') == true || strpos($ligne, '00374 REGULARISATION DIGITAL') == true || strpos($ligne, 'REGULARISATION') == true || strpos($ligne, 'régularisation') == true || strpos($ligne, '00374 régularisation') == true || strpos($ligne, 'REGULARISAT') == true)
+                if (strpos($ligne, 'CANTONNEMENT') == true || strpos($ligne, 'DECANTON') == true)
                 {
                     $codeEnregi = substr($ligne, 0, 2);
                     if ($codeEnregi == 04)
@@ -3021,8 +3021,8 @@ class cronController extends bootstrap
         // Lien
         //$lien = 'ssh2.sftp://'.$sftp.'/home/sfpmei/receptions/UNILEND-00040631007-'.date('Ymd').'.txt';
 
-        $lien = $this->path . 'protected/sftp/reception/UNILEND-00040631007-20150506.txt';
-
+        //$lien = $this->path . 'protected/sftp/reception/UNILEND-00040631007-20150506.txt';
+        $lien = $this->path.'protected/sftp/reception/unilend.txt';
         // enregistrement chez nous
         $file = file_get_contents($lien);
         if ($file === false)
@@ -3101,7 +3101,7 @@ class cronController extends bootstrap
         $lien = 'ssh2.sftp://' . $sftp . '/home/sfpmei/receptions/UNILEND-00040631007-' . date('Ymd') . '.txt';
 
         // test //
-        //$lien = $this->path.'protected/sftp/reception/test.txt';
+        $lien = $this->path.'protected/sftp/reception/unilend.txt';
         //$lien = $this->path.'protected/sftp/reception_test/test'.date('Ymd').'.txt';
         // test //
         // enregistrement chez nous
@@ -3165,7 +3165,7 @@ class cronController extends bootstrap
         {
             // lecture du fichier
             $lrecus = $this->recus2array($lien);
-
+           
 			/* EX : 
 
               0430004056802118EUR2 0004063100718230615  230615DELERY HELENE                    0000000  0000000000400{ZZ0X4VY7PFE69K8V
@@ -3204,12 +3204,12 @@ class cronController extends bootstrap
               echo '</pre>'; */
 
             // on regarde si on a deja des truc d'aujourd'hui
-            $recep = $receptions->select('LEFT(added,10) = "' . date('Y-m-d') . '"'); // <------------------------------------------------------------ a remettre
+            //$recep = $receptions->select('LEFT(added,10) = "' . date('Y-m-d') . '"'); // <------------------------------------------------------------ a remettre
             // si on a un fichier et qu'il n'est pas deja present en bdd
             // on enregistre qu'une fois par jour
             if ($lrecus != false && $recep == false)
             {
-                file_put_contents($this->path . 'protected/sftp/reception/UNILEND-00040631007-' . date('Ymd') . '.txt', $file); // <------------------ a remettre
+                //file_put_contents($this->path . 'protected/sftp/reception/UNILEND-00040631007-' . date('Ymd') . '.txt', $file); // <------------------ a remettre
 
                 $type = 0;
                 $status_virement = 0;
@@ -3310,7 +3310,7 @@ class cronController extends bootstrap
                         $receptions->ligne = $r['ligne1'];
                         $receptions->id_reception = $receptions->create();
 
-
+                       
                         /////////////////////////////// ATTRIBUTION AUTO PRELEVEMENT (VIREMENTS EMPRUNTEUR) /////////////////////////////
                         if ($type == 1 && $status_prelevement == 2)
                         {
@@ -3431,8 +3431,9 @@ class cronController extends bootstrap
                         // on fait ca que pour les virements recu
                         elseif ($type == 2 && $status_virement == 1)
                         {
-							$is_remboursement_anticipe = false;
-
+                            $is_remboursement_anticipe = false;
+                            $regularisation = false;
+                            
                             // On gère ici le Remboursement anticipé
                             if (strstr($r['libelleOpe3'], 'RA-'))
                             {
@@ -3448,56 +3449,140 @@ class cronController extends bootstrap
                                 }
                                 $is_remboursement_anticipe = true;
                             }
+                            elseif (strstr($r['libelleOpe3'], 'REGULARISATION')){
+                                $retour_auto = true;
+                                $regularisation = true;
+                                
+                                
+                            }
                             else
                             {
+                                // DEBUT RECHERCHE DU MOTIF EN BDD //
+                                // On cherche une suite de chiffres
+                                preg_match_all('#[0-9]+#', $motif, $extract);
+                                //$nombre = (int)$extract[0][0]; // on retourne un int pour retirer les zeros devant
 
-	                            // DEBUT RECHERCHE DU MOTIF EN BDD //
-	                            // On cherche une suite de chiffres
-	                            preg_match_all('#[0-9]+#', $motif, $extract);
-	                            //$nombre = (int)$extract[0][0]; // on retourne un int pour retirer les zeros devant
-	
-	
-	
-	
-	                            $retour_auto = false;
-	                            foreach ($extract[0] as $nombre)
-	                            {
-	                                // ajout de la condition pour ne pas rerentrer dedans une fois qu'on a déjà trouvé
-	                                if($retour_auto != true)
-	                                {
-	                                    // si existe en bdd
-	                                    if ($clients->get($nombre, 'id_client'))
-	                                    {
-	                                        // on créer le motif qu'on devrait avoir
-	                                        $p = substr($this->ficelle->stripAccents(utf8_decode(trim($clients->prenom))), 0, 1);
-	                                        $nom = $this->ficelle->stripAccents(utf8_decode(trim($clients->nom)));
-	                                        $id_client = str_pad($clients->id_client, 6, 0, STR_PAD_LEFT);
-	                                        $returnMotif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-	
-	                                        $mystring = str_replace(' ', '', $motif); // retire les espaces au cas ou le motif soit mal ecrit
-	                                        $findme = str_replace(' ', '', $returnMotif);
-	                                        $pos = strpos($mystring, $findme);
-	
-	                                        // on laisse en manuel
-	                                        if ($pos === false)
-	                                        {
-	                                            $retour_auto = false; //echo 'Recu';
-	                                        }
-	                                        // Automatique (on attribue le virement au preteur)
-	                                        else
-	                                        {
-	                                            $retour_auto = true; //echo 'Auto';
-	                                        }
-	                                    }
-	                                }
-	                            }
-							} //end else
+                                $retour_auto = false;
+                                foreach ($extract[0] as $nombre)
+                                {
+                                    // ajout de la condition pour ne pas rerentrer dedans une fois qu'on a déjà trouvé
+                                    if($retour_auto != true)
+                                    {
+                                        // si existe en bdd
+                                        if ($clients->get($nombre, 'id_client'))
+                                        {
+                                            // on créer le motif qu'on devrait avoir
+                                            $p = substr($this->ficelle->stripAccents(utf8_decode(trim($clients->prenom))), 0, 1);
+                                            $nom = $this->ficelle->stripAccents(utf8_decode(trim($clients->nom)));
+                                            $id_client = str_pad($clients->id_client, 6, 0, STR_PAD_LEFT);
+                                            $returnMotif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+
+                                            $mystring = str_replace(' ', '', $motif); // retire les espaces au cas ou le motif soit mal ecrit
+                                            $findme = str_replace(' ', '', $returnMotif);
+                                            $pos = strpos($mystring, $findme);
+
+                                            // on laisse en manuel
+                                            if ($pos === false)
+                                            {
+                                                $retour_auto = false; //echo 'Recu';
+                                            }
+                                            // Automatique (on attribue le virement au preteur)
+                                            else
+                                            {
+                                                $retour_auto = true; //echo 'Auto';
+                                            }
+                                        }
+                                    }
+                                }
+                            } //end else
                             // FIN RECHERCHE MOTIF EN BDD //
 
                             if ($retour_auto == true)
                             {
+                                // REGULARISATION
+                                if($regularisation == true){
+                                    preg_match_all('#[0-9]+#', $r['libelleOpe3'], $extractId_project);
+                                
+                                    foreach ($extractId_project[0] as $nombre)
+                                    {
+                                        if($projects->get($nombre, 'id_project'))
+                                        {
+                                            $companies = $this->loadData('companies');
+                                            $receptionPrelev = $this->loadData('receptions');
+                                            $transactions_types = $this->loadData('transactions_types');
+                                            $soldes_emprunteurs = $this->loadData('soldes_emprunteurs');
 
-                                if ($transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement') == false)
+                                            $companies->get($projects->id_company,'id_company');
+
+                                            // on met a jour le virement
+                                            $receptions->get($receptions->id_reception, 'id_reception');
+                                            $receptions->motif = $motif;
+                                            $receptions->id_client = $companies->id_client_owner;
+                                            $receptions->id_project = $nombre;
+                                            $receptions->status_bo = 2;
+                                            $receptions->type_remb = 2;
+                                            $receptions->remb = 1;
+                                            $receptions->update();
+
+                                            // on crée le prelevement
+                                            $receptionPrelev->id_parent = $receptions->id_reception; // fils d'une reception virement
+                                            $receptionPrelev->motif = $motif;
+                                            $receptionPrelev->montant = $receptions->montant;
+                                            $receptionPrelev->type = 1; // prelevement
+                                            $receptionPrelev->type_remb = 2; // regularisation
+                                            $receptionPrelev->status_prelevement = 2; // émis
+                                            $receptionPrelev->status_bo = 2; // attr manu
+                                            $receptionPrelev->remb = 1; // remboursé oui
+                                            $receptionPrelev->id_client = $companies->id_client_owner;
+                                            $receptionPrelev->id_project = $nombre;
+                                            $receptionPrelev->ligne = $receptions->ligne;
+                                            $receptionPrelev->id_reception = $receptionPrelev->create();
+
+                                            if ($transactions->get($receptionPrelev->id_reception, 'status = 1 AND etat = 1 AND type_transaction = 24 AND id_prelevement') == false)
+                                            {
+                                                // transact
+                                                $transactions->id_prelevement = $receptionPrelev->id_reception;
+                                                $transactions->id_client = $companies->id_client_owner;
+                                                $transactions->montant = $receptionPrelev->montant;
+                                                $transactions->id_langue = 'fr';
+                                                $transactions->date_transaction = date('Y-m-d H:i:s');
+                                                $transactions->status = 1;
+                                                $transactions->etat = 1;
+                                                $transactions->transaction = 1;
+                                                $transactions->type_transaction = 24; // Virement de régularisation (remb emprunteur)
+                                                $transactions->ip_client = $_SERVER['REMOTE_ADDR'];
+                                                $transactions->id_transaction = $transactions->create();
+
+                                                // bank unilend
+                                                $bank_unilend->id_transaction = $transactions->id_transaction;
+                                                $bank_unilend->id_project = $projects->id_project;
+                                                $bank_unilend->montant = $receptionPrelev->montant;
+                                                $bank_unilend->type = 1;
+                                                $bank_unilend->create();
+
+                                                $this->updateEcheances($projects->id_project, $receptionPrelev->montant, $projects->remb_auto);
+
+                                                ///// DEBUT SOLDE EMPRUNTEUR /////
+
+                                                $lastSolde = $soldes_emprunteurs->lastSoldeEmprunteur($companies->id_client_owner);
+                                                $newSolde = $lastSolde + $receptionPrelev->montant;
+
+                                                $transactions_types->get(24, 'id_transaction_type');
+
+                                                $soldes_emprunteurs->id_client = $companies->id_client_owner;
+                                                $soldes_emprunteurs->id_company = $companies->id_company;
+                                                $soldes_emprunteurs->id_transaction = $transactions->id_transaction;
+                                                $soldes_emprunteurs->type = $transactions_types->nom;
+                                                $soldes_emprunteurs->montant = $receptionPrelev->montant;
+                                                $soldes_emprunteurs->solde = $newSolde;
+                                                $soldes_emprunteurs->date_transaction = date('Y-m-d H:i:s');
+                                                $soldes_emprunteurs->create();
+                                            }
+                                            break;
+                                        }
+                                    }
+                                }
+                                elseif ($transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement') == false)
                                 {
 
 									if ($is_remboursement_anticipe)
@@ -3737,6 +3822,58 @@ class cronController extends bootstrap
             }
         }
     }
+    
+    
+    // Utilisé pour mettre a jours les echeances emprunteurs et preteurs suite a un prelevement emprunteur
+    function updateEcheances($id_project, $montant, $remb_auto) {
+
+        $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
+        $echeanciers = $this->loadData('echeanciers');
+        $projects_remb = $this->loadData('projects_remb');
+
+        // on parcourt les echeances
+        //$eche = $echeanciers->getSumRembEmpruntByMonths($projects->id_project,'','0');
+        $eche = $echeanciers_emprunteur->select('status_emprunteur = 0 AND id_project = ' . $id_project, 'ordre ASC');
+        $sumRemb = ($montant / 100);
+
+        $newsum = $sumRemb;
+        foreach ($eche as $e) {
+            $ordre = $e['ordre'];
+
+            // on récup le montant que l'emprunteur doit rembourser
+            $montantDuMois = $echeanciers->getMontantRembEmprunteur($e['montant'] / 100, $e['commission'] / 100, $e['tva'] / 100);
+            // On verifie si le montant a remb est inferieur ou égale a la somme récupéré
+            if ($montantDuMois <= $newsum) {
+                // On met a jour les echeances du mois
+                $echeanciers->updateStatusEmprunteur($id_project, $ordre);
+
+                $echeanciers_emprunteur->get($id_project, 'ordre = ' . $ordre . ' AND id_project');
+                $echeanciers_emprunteur->status_emprunteur = 1;
+                $echeanciers_emprunteur->date_echeance_emprunteur_reel = date('Y-m-d H:i:s');
+                $echeanciers_emprunteur->update();
+
+                // et on retire du wallet unilend 
+                $newsum = $newsum - $montantDuMois;
+
+                if ($projects_remb->counter('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" AND status IN(0,1)') <= 0) {
+
+                    $date_echeance_preteur = $echeanciers->select('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '"', '', 0, 1);
+                    // On regarde si le remb preteur auto est autorisé (eclatement preteur auto)
+                    if ($remb_auto == 0) {
+                        // file d'attente pour les remb auto preteurs
+                        $projects_remb->id_project = $id_project;
+                        $projects_remb->ordre = $ordre;
+                        $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
+                        $projects_remb->date_remb_preteurs = $date_echeance_preteur[0]['date_echeance'];
+                        $projects_remb->date_remb_preteurs_reel = '0000-00-00 00:00:00';
+                        $projects_remb->status = 0; // nom remb aux preteurs
+                        $projects_remb->create();
+                    }
+                }
+            } else
+                break;
+        }
+    }
 
     // 1 fois pr jour a  1h du matin
     function _etat_quotidien()
@@ -3833,6 +3970,9 @@ class cronController extends bootstrap
 
         // 6 : remb Emprunteur (prelevement)
         $rembEmprunteur = $transac->sumByday(6, $leMois, $lannee);
+        
+        // 24 : remb regularisation Emprunteur (prelevement)
+        $rembEmprunteurRegularisation = $transac->sumByday(24, $leMois, $lannee);
 
         // 15 : rejet remb emprunteur
         $rejetrembEmprunteur = $transac->sumByday(15, $leMois, $lannee);
@@ -4154,7 +4294,7 @@ class cronController extends bootstrap
                 //$offrePromo -= ;
                 // ADD $rejetrembEmprunteur[$date]['montant'] // 22/01/2015
                 // total Mouvements
-                $entrees = ($alimCB[$date]['montant'] + $alimVirement[$date]['montant'] + $alimPrelevement[$date]['montant'] + $rembEmprunteur[$date]['montant'] + $unilend_bienvenue[$date]['montant'] + $rejetrembEmprunteur[$date]['montant']);
+                $entrees = ($alimCB[$date]['montant'] + $alimVirement[$date]['montant'] + $alimPrelevement[$date]['montant'] + $rembEmprunteur[$date]['montant'] + $rembEmprunteurRegularisation[$date]['montant'] + $unilend_bienvenue[$date]['montant'] + $rejetrembEmprunteur[$date]['montant']);
                 $sorties = (str_replace('-', '', $virementEmprunteur[$date]['montant']) + $virementEmprunteur[$date]['montant_unilend'] + $commission + $retenuesFiscales + str_replace('-', '', $retraitPreteur[$date]['montant']));
 
                 // Total mouvementsc de la journée
@@ -4278,7 +4418,7 @@ class cronController extends bootstrap
 
 
 
-                $leRembEmprunteur = $rembEmprunteur[$date]['montant'] + $rejetrembEmprunteur[$date]['montant']; // update le 22/01/2015
+                $leRembEmprunteur = $rembEmprunteur[$date]['montant'] + $rembEmprunteurRegularisation[$date]['montant'] + $rejetrembEmprunteur[$date]['montant']; // update le 22/01/2015
                 // additions //
 
                 $totalAlimCB += $alimCB[$date]['montant'];
