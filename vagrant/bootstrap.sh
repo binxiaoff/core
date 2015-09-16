@@ -2,7 +2,7 @@
 
 locale-gen fr_FR.UTF-8
 
-#install percona (mysql)
+# install percona (MySQL)
 apt-key adv --keyserver 213.133.103.71 --recv-keys 1C4CBDCDCD2EFD2A #keys.gnupg.net
 add-apt-repository "deb http://repo.percona.com/apt precise main"
 add-apt-repository "deb-src http://repo.percona.com/apt precise main"
@@ -48,7 +48,7 @@ echo "CREATE USER 'external'@'%' IDENTIFIED BY 'EXTERNALPASSWD'" | mysql -uroot 
 echo "GRANT ALL ON unilend.* TO 'external'@'%'" | mysql -uroot -pROOTPASSWORD
 echo "flush privileges" | mysql -uroot -pROOTPASSWORD
 
-#install apache2
+# install apache2
 apt-get install -y apache2
 a2enmod deflate
 a2enmod filter
@@ -73,18 +73,19 @@ sed -i '/;date.timezone =/c date.timezone = "Europe/Paris"' /etc/php5/apache2/ph
 sed -i "s/display_errors = .*/display_errors = On/" /etc/php5/apache2/php.ini
 sed -i "s/html_errors = .*/html_errors = On/" /etc/php5/apache2/php.ini
 sed -i "s/upload_max_filesize = .*/upload_max_filesize = 64M/" /etc/php5/apache2/php.ini
-sed -i "/post_max_size =/c post_max_size = 64M \nzend_extension=/usr/lib/php5/20090626/xdebug.so \nxdebug.remote_enable=1 \nxdebug.remote_handler=dbgp \nxdebug.remote_mode=req \nxdebug.remote_host=127.0.0.1 \nxdebug.remote_port=9000/" /etc/php5/apache2/php.ini
+sed -i "s/post_max_size = .*/post_max_size = 64M/" /etc/php5/apache2/php.ini
+printf "\n[xdebug]\nzend_extension=/usr/lib/php5/20090626/xdebug.so \nxdebug.remote_enable=1 \nxdebug.remote_handler=dbgp \nxdebug.remote_mode=req \nxdebug.remote_host=127.0.0.1 \nxdebug.remote_port=9000 \nxdebug.var_display_max_data=65536 \nxdebug.var_display_max_depth=10" >> /etc/php5/apache2/php.ini
 
 service apache2 restart
 
-#copy unversioned files
+# copy unversioned files
 lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/files_outside_git  /srv/sites/unilend; bye' -u vagrantftp,X9d\@\$nsa -p 21 synology.corp.unilend.fr
 chmod -R u+w /srv/sites/unilend
 
-#install composer
+# install composer
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/
 
-#install java, maven et dataloader
+# install java, maven et dataloader
 add-apt-repository -y ppa:openjdk-r/ppa
 apt-get update
 apt-get install -y openjdk-8-jdk maven git
