@@ -57,7 +57,7 @@ class profileController extends bootstrap
 			header('Location:'.$this->lurl.'/profile/societe');
 			die;
 		}
-		
+
 		//Recuperation des element de traductions
 		$this->lng['etape1'] = $this->ln->selectFront('inscription-preteur-etape-1',$this->language,$this->App);
 		$this->lng['etape2'] = $this->ln->selectFront('inscription-preteur-etape-2',$this->language,$this->App);
@@ -278,16 +278,7 @@ class profileController extends bootstrap
 			$ville_naissance = $this->clients->ville_naissance;
 			$id_nationalite = $this->clients->id_nationalite;
 			$naissance = $this->clients->naissance;
-			
-			// fichier
-			/*$fichier_cni_passeport = $this->attachments[attachment_type::CNI_PASSPORTE]['path'];
-            $fichier_cni_passeport_verso = $this->attachments[attachment_type::CNI_PASSPORTE_VERSO]['path'];
-            $fichier_justificatif_domicile = $this->attachments[attachment_type::JUSTIFICATIF_DOMICILE]['path'];
-            $fichier_attestation_hebergement_tiers = $this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]['path'];
-            $fichier_cni_passport_tiers_hebergeant= $this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]['path'];
-            $fichier_autre= $this->attachments[attachment_type::AUTRE1]['path'];
-            if($this->etranger > 0) $fichier_document_fiscal = $this->attachments[attachment_type::JUSTIFICATIF_FISCAL]['path'];*/
-			
+
 			$this->form_ok = true;
 			
 			////////////////////////////////////
@@ -477,6 +468,7 @@ class profileController extends bootstrap
 			// RIB
 			if (false === is_numeric($fichier_rib)) {
 				$this->form_ok = false;
+                $this->error_rib = true;
 			}
 
 
