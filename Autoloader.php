@@ -3,19 +3,21 @@
 class Autoloader
 {
 
-    static function register()
+    public static function register()
     {
-        spl_autoload_register(array(__CLASS__, 'autoload'));
+        spl_autoload_register(array(__CLASS__, 'autoload'), true);
     }
 
     /**
      * Inclue le fichier correspondant à notre classe
      * @param $class string Le nom de la classe à charger
      */
-    static function autoload($class)
+    public static function autoload($class)
     {
-        $sPathClass = str_replace('\\', DIRECTORY_SEPARATOR, $class);
-        //Into librairies
-        require $sPathClass . '.php';
+        $aSearch = array('Unilend\\','\\');
+        $aReplace = array('',DIRECTORY_SEPARATOR);
+        $sPathClass = str_replace($aSearch, $aReplace, $class);
+
+        require_once $sPathClass . '.php';
     }
 }

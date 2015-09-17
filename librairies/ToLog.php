@@ -1,12 +1,12 @@
 <?php
 
-namespace librairies;
+namespace Unilend\librairies;
 
 use Monolog\Logger;
 use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\LineFormatter;
 
-class UnilendLogger
+class ToLog
 {
 
     /**
@@ -105,7 +105,27 @@ class UnilendLogger
         return $this;
     }
 
+    public function setStreamHandlerWarning()
+    {
+        $this->oStreamHandlerWarning = new StreamHandler($this->sFullPath, Logger::NOTICE);
+        $this->oStreamHandlerWarning->setFormatter($this->oFormatter);
+        $this->oLogger->pushHandler($this->oStreamHandlerWarning);
 
+        return $this;
+    }
+
+    public function setStreamHandlerCritical()
+    {
+        $this->oStreamHandlerCritical = new StreamHandler($this->sFullPath, Logger::NOTICE);
+        $this->oStreamHandlerCritical->setFormatter($this->oFormatter);
+        $this->oLogger->pushHandler($this->oStreamHandlerCritical);
+
+        return $this;
+    }
+
+    /**
+     * @param string $sNameLogger name of logger context
+     */
     public function setLogger($sNameLogger)
     {
         $this->oLogger = new Logger($sNameLogger);

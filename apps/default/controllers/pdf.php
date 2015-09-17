@@ -1,6 +1,6 @@
 <?php
 
-use librairies\UnilendLogger;
+use Unilend\librairies\ToLog;
 use Knp\Snappy\Pdf;
 
 class pdfController extends bootstrap
@@ -74,11 +74,11 @@ class pdfController extends bootstrap
         $this->autoFireDebug = false;
 
         $this->oSnapPdf = new Pdf($this->path . 'vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
-        $oUnilendLogger = new UnilendLogger('PdfManagement', $this->logPath, self::NAME_LOG);
-        $oUnilendLogger->setStreamHandlerInfo()
+        $oToLog = new ToLog('PdfManagement', $this->logPath, self::NAME_LOG);
+        $oToLog->setStreamHandlerInfo()
             ->setStreamHandlerDebug()
             ->setStreamHandlerError();
-        $this->oLogger = $oUnilendLogger->getLogger();
+        $this->oLogger = $oToLog->getLogger();
     }
 
 
@@ -147,7 +147,6 @@ class pdfController extends bootstrap
         $sPathPdf .= (!preg_match('/(\.pdf)$/i', $sPathPdf)) ? '.pdf' : '';
 
         $iTimeStartPdf = microtime(true);
-        $this->oLogger->addInfo('Start generation of ' . $sTypePdf . ' pdf', array(__FILE__ . ' on line ' . __LINE__));
 
         switch ($sTypePdf) {
             case 'authority':
@@ -534,9 +533,6 @@ class pdfController extends bootstrap
         // liste des encheres
         $this->lLenders = $this->oLoans->select('id_project = ' . $this->projects->id_project, 'rate ASC');
 
-        //if($this->oProjectsPouvoir->get($this->projects->id_project,'id_project'))
-        //$this->dateRemb = date('d/m/Y',strtotime($this->oProjectsPouvoir->updated));
-        //else
         $this->dateRemb = date('d/m/Y');
 
         $this->setDisplay('pouvoir_html');
