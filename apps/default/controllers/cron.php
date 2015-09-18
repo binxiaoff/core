@@ -3101,7 +3101,7 @@ class cronController extends bootstrap
         $lien = 'ssh2.sftp://' . $sftp . '/home/sfpmei/receptions/UNILEND-00040631007-' . date('Ymd') . '.txt';
 
         // test //
-        $lien = $this->path.'protected/sftp/reception/unilend.txt';
+        //$lien = $this->path.'protected/sftp/reception/unilend.txt';
         //$lien = $this->path.'protected/sftp/reception_test/test'.date('Ymd').'.txt';
         // test //
         // enregistrement chez nous
@@ -3204,12 +3204,12 @@ class cronController extends bootstrap
               echo '</pre>'; */
 
             // on regarde si on a deja des truc d'aujourd'hui
-            //$recep = $receptions->select('LEFT(added,10) = "' . date('Y-m-d') . '"'); // <------------------------------------------------------------ a remettre
+            $recep = $receptions->select('LEFT(added,10) = "' . date('Y-m-d') . '"'); // <------------------------------------------------------------ a remettre
             // si on a un fichier et qu'il n'est pas deja present en bdd
             // on enregistre qu'une fois par jour
             if ($lrecus != false && $recep == false)
             {
-                //file_put_contents($this->path . 'protected/sftp/reception/UNILEND-00040631007-' . date('Ymd') . '.txt', $file); // <------------------ a remettre
+                file_put_contents($this->path . 'protected/sftp/reception/UNILEND-00040631007-' . date('Ymd') . '.txt', $file); // <------------------ a remettre
 
                 $type = 0;
                 $status_virement = 0;

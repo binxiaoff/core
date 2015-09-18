@@ -124,6 +124,34 @@ class loans extends loans_crud
 		}
 		return $result;
 	}
+        
+        function getPreteursDetail($id_project,$dateDER)
+	{
+		$sql='
+                SELECT 
+                    c.id_client,
+                    c.email,
+                    l.id_lender,
+                    (SELECT SUM(capital) FROM echeanciers e WHERE e.id_lender = l.id_lender AND e.id_project = '.$id_project.' AND e.status = 0 AND LEFT(e.date_echeance,10) <= "' . $dateDER . '") as capital_echus,
+                    (SELECT SUM(interets) FROM echeanciers e WHERE e.id_lender = l.id_lender AND e.id_project = '.$id_project.' AND e.status = 0 AND LEFT(e.date_echeance,10) <= "' . $dateDER . '") as interets_echus,
+                    (SELECT SUM(capital) FROM echeanciers e WHERE e.id_lender = l.id_lender AND e.id_project = '.$id_project.' AND e.status = 0 AND LEFT(e.date_echeance,10) > "' . $dateDER . '") as capital_restant_du,
+                        (SELECT e.ordre FROM echeanciers e WHERE e.id_lender = l.id_lender AND e.id_project = '.$id_project.' AND e.status = 0 AND LEFT(e.date_echeance,10) > "' . $dateDER . '" ORDER BY e.date_echeance ASC LIMIT 1) as  ordre,
+                    (SELECT SUM(interets) FROM echeanciers e WHERE e.id_lender = l.id_lender AND e.id_project = '.$id_project.' AND e.ordre = (SELECT e.ordre FROM echeanciers e WHERE e.id_lender = l.id_lender AND e.id_project = '.$id_project.' AND e.status = 0 AND LEFT(e.date_echeance,10) > "' . $dateDER . '" ORDER BY e.date_echeance ASC LIMIT 1)  ) as interets_next
+                FROM loans l
+                LEFT JOIN lenders_accounts la ON l.id_lender = la.id_lender_account
+                LEFT JOIN clients c ON la.id_client_owner = c.id_client
+                WHERE l.id_project = '.$id_project.'
+                AND l.status = 0 
+                GROUP BY id_lender';
+
+		$resultat = $this->bdd->query($sql);
+		$result = array();
+		while($record = $this->bdd->fetch_array($resultat))
+		{
+			$result[] = $record;
+		}
+		return $result;
+	}
 	
 	function getNbPprojet($id_lender)
 	{

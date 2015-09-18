@@ -15,9 +15,9 @@ class transfertsController extends bootstrap {
 
         // Activation du menu
         $this->menu_admin = 'transferts';
-        
+
         // types de remb
-        $this->types_remb = array(0 => '',1 => 'Remb anticipé', 2 => 'Régularisation', 3 => 'Recouvrement');
+        $this->types_remb = array(0 => '', 1 => 'Remb anticipé', 2 => 'Régularisation', 3 => 'Recouvrement');
     }
 
     function _default() {
@@ -43,6 +43,7 @@ class transfertsController extends bootstrap {
     }
 
     function _virements_emprunteurs() {
+
         $this->receptions = $this->loadData('receptions');
         $this->projects = $this->loadData('projects');
 
@@ -54,18 +55,19 @@ class transfertsController extends bootstrap {
 
         // post d'attribution de projet
         if (isset($_POST['id']) && isset($_POST['id_reception'])) {
+
             if ($this->projects->get($_POST['id']) && $this->receptions->get($_POST['id_reception'])) {
 
                 // On recupere l'entreprise
                 $companies->get($this->projects->id_company, 'id_company');
 
+                // on check ici si le montant edité est rempli
+                if (isset($_POST['montant_edite']) && $_POST['montant_edite'] != "" && $_POST['montant_edite'] > 0) {
+                    $this->receptions->montant = ($_POST['montant_edite'] * 100);
+                }
+
                 // RA
                 if ($_POST['type_remb'] == 1) {
-
-                    // on check ici si le montant edité est rempli
-                    if (isset($_POST['montant_edite']) && $_POST['montant_edite'] != "" && $_POST['montant_edite'] > 0) {
-                        $this->receptions->montant = ($_POST['montant_edite'] * 100);
-                    }
 
                     // on met a jour le virement RA
                     $this->receptions->motif = $_POST['motif'];
@@ -116,37 +118,44 @@ class transfertsController extends bootstrap {
 
                     ///// FIN SOLDE EMPRUNTEUR /////
                 }
-                // Regularisation
-                elseif ($_POST['type_remb'] == 2) {
+                // 2 Regularisation /  3 recouvrement
+                elseif (in_array($_POST['type_remb'], array(2, 3))) {
 
-                    // on check ici si le montant edité est rempli
-                    if (isset($_POST['montant_edite']) && $_POST['montant_edite'] != "" && $_POST['montant_edite'] > 0) {
-                        $this->receptions->montant = ($_POST['montant_edite'] * 100);
+                    $motif = $_POST['motif'];
+                    $id_project = $_POST['id'];
+
+                    // Regularisation
+                    if ($_POST['type_remb'] == 2) {
+                        $type_remb = 2;
+                        $type_transaction = 24;
+                    }
+                    // Recouvrement
+                    else {
+                        $type_remb = 3;
+                        $type_transaction = 25;
                     }
 
-
-
                     // on met a jour le virement RA
-                    $this->receptions->motif = $_POST['motif'];
+                    $this->receptions->motif = $motif;
                     $this->receptions->id_client = $companies->id_client_owner;
-                    $this->receptions->id_project = $_POST['id'];
+                    $this->receptions->id_project = $id_project;
                     $this->receptions->status_bo = 1;
-                    $this->receptions->type_remb = 2;
+                    $this->receptions->type_remb = $type_remb;
                     $this->receptions->remb = 1;
                     $this->receptions->update();
 
                     // on créé le prelevement
                     $receptions = $this->loadData('receptions');
                     $receptions->id_parent = $this->receptions->id_reception; // fils d'une reception virement
-                    $receptions->motif = $_POST['motif'];
+                    $receptions->motif = $motif;
                     $receptions->montant = $this->receptions->montant;
                     $receptions->type = 1; // prelevement
-                    $receptions->type_remb = 2; // regularisation
+                    $receptions->type_remb = $type_remb; // regularisation / recouvrement
                     $receptions->status_prelevement = 2; // émis
                     $receptions->status_bo = 1; // attr manu
                     $receptions->remb = 1; // remboursé oui
                     $receptions->id_client = $companies->id_client_owner;
-                    $receptions->id_project = $_POST['id'];
+                    $receptions->id_project = $id_project;
                     $receptions->ligne = $this->receptions->ligne;
                     $receptions->id_reception = $receptions->create();
 
@@ -159,7 +168,7 @@ class transfertsController extends bootstrap {
                     $transactions->status = 1;
                     $transactions->etat = 1;
                     $transactions->transaction = 1;
-                    $transactions->type_transaction = 24; // Virement de régularisation (remb emprunteur)
+                    $transactions->type_transaction = $type_transaction; // Virement de régularisation (remb emprunteur)
                     $transactions->ip_client = $_SERVER['REMOTE_ADDR'];
                     $transactions->id_transaction = $transactions->create();
 
@@ -170,14 +179,16 @@ class transfertsController extends bootstrap {
                     $bank_unilend->type = 1;
                     $bank_unilend->create();
 
-                    $this->updateEcheances($this->projects->id_project, $this->receptions->montant, $this->projects->remb_auto);
-
+                    // on met a jour les echeances que pour les regularisations
+                    if ($_POST['type_remb'] == 2) {
+                        $this->updateEcheances($this->projects->id_project, $this->receptions->montant, $this->projects->remb_auto);
+                    }
                     ///// DEBUT SOLDE EMPRUNTEUR /////
 
                     $lastSolde = $soldes_emprunteurs->lastSoldeEmprunteur($companies->id_client_owner);
                     $newSolde = $lastSolde + $this->receptions->montant;
 
-                    $transactions_types->get(24, 'id_transaction_type');
+                    $transactions_types->get($type_transaction, 'id_transaction_type');
 
                     $soldes_emprunteurs->id_client = $companies->id_client_owner;
                     $soldes_emprunteurs->id_company = $companies->id_company;
@@ -190,10 +201,6 @@ class transfertsController extends bootstrap {
 
                     ///// FIN SOLDE EMPRUNTEUR /////
                 }
-                // Recouvrement
-                elseif ($_POST['type_remb'] == 3) {
-                    
-                }
 
                 header('location:' . $this->lurl . '/transferts/virements_emprunteurs');
                 die;
@@ -204,7 +211,6 @@ class transfertsController extends bootstrap {
         $this->lvirements = $this->receptions->select('type = 2 AND status_virement = 1 AND (type_remb != 0 OR id_client = 0)', 'id_reception DESC');
 
         // Status Virement
-        //$this->statusVirement = array(1 => 'Recu',2 => 'Emis', 3 => 'Rejeté');
         $this->statusVirement = array(0 => 'Reçu', 1 => 'Attribué manu', 2 => 'Attribué auto', 3 => 'Rejeté', 4 => 'Rejet');
     }
 
@@ -306,6 +312,333 @@ class transfertsController extends bootstrap {
         if ($this->receptions->id_client != 0) {
             header('location:' . $this->lurl . '/transferts/prelevements');
             die;
+        }
+    }
+
+    function _recouvrement() {
+        $this->receptions = $this->loadData('receptions');
+        $this->projects = $this->loadData('projects');
+        $this->projects_status_history = $this->loadData('projects_status_history');
+        $this->echeanciers = $this->loadData('echeanciers');
+        $this->receptions = $this->loadData('receptions');
+        $this->lenders_accounts = $this->loadData('lenders_accounts');
+        $this->transactions = $this->loadData('transactions');
+        $this->echeanciers_recouvrements_prorata = $this->loadData('echeanciers_recouvrements_prorata');
+
+        if (isset($this->params[0]) && $this->receptions->get($this->params[0], 'type = 1 AND type_remb = 3 AND id_reception')) {
+
+            // Projet
+            $this->projects->get($this->receptions->id_project, 'id_project');
+
+
+            // On rembourse les preteurs
+            if (isset($_POST['send_form_remb_preteurs'])) {
+
+                // csv
+                if (isset($_FILES['csv']) && $_FILES['csv']['name'] != '') {
+
+                    $this->upload->setUploadDir($this->path, 'protected/recouvrements/');
+
+                    // nom du csv avec : date, id_projet, id_reception (prelevement)
+                    $name = 'recouvrement_' . date('Ymd') . '_' . $this->projects->id_project . '_' . $this->receptions->id_reception;
+
+
+                    if ($this->upload->doUpload('csv', $name, true)) {
+                        // DEBUT LECTURE CSV TEMP//
+                        // Recouvrement - commission ht
+                        $this->settings->get('Recouvrement - commission ht', 'type');
+                        $commission_ht = $this->settings->value;
+
+                        // TVA
+                        $this->settings->get('TVA', 'type');
+                        $tva = $this->settings->value;
+
+                        if (($handle = fopen($this->path . 'protected/recouvrements/' . $name . '.csv', "r")) !== FALSE) {
+                            $i = 0;
+                            while (($data = fgetcsv($handle, 2000, ";")) !== FALSE) {
+                                if ($i > 0) {
+
+                                    $id_client = $data[0];
+                                    $recouvrement = $data[1];
+
+                                    // recup lender
+                                    $this->lenders_accounts->get($id_client, 'id_client_owner');
+
+                                    // recup des echeances non remb
+                                    $lEcheances = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND status = 0', 'date_echeance ASC');
+
+                                    $recouvrement_restant = $recouvrement;
+
+                                    if ($lEcheances != false) {
+                                        foreach ($lEcheances as $e) {
+
+                                            $montant_echeance = ($e['montant'] / 100);
+                                            $capital = ($e['capital'] / 100);
+                                            $interets = ($e['interets'] / 100);
+
+                                            echo '<br>----------------<br>';
+                                            echo 'montant echeance ' . $e['ordre'] . ' : ';
+
+                                            // si le recouvrement est superieur au montant de l'echeance
+                                            if ($recouvrement_restant >= $montant_echeance) {
+
+                                                // On verifie que la transaction n'existe pas
+                                                if ($this->transactions->get($e['id_echeancier'], 'id_echeancier') == false) {
+
+                                                    $Array_fiscals = array(
+                                                        'prelevements_obligatoires' => $e['prelevements_obligatoires'],
+                                                        'retenues_source' => $e['retenues_source'],
+                                                        'csg' => $e['csg'],
+                                                        'prelevements_sociaux' => $e['prelevements_sociaux'],
+                                                        'contributions_additionnelles' => $e['contributions_additionnelles'],
+                                                        'prelevements_solidarite' => $e['prelevements_solidarite'],
+                                                        'crds' => $e['crds']
+                                                    );
+
+                                                    // Remboursement echeance preteur
+                                                    //$this->rembEcheance($this->receptions->id_reception,$e['id_echeancier'], $id_client, $this->lenders_accounts->id_lender_account, $capital, $interets, $Array_fiscals);
+                                                    // On retire ce qu'on a pris pour remb l'echeance
+                                                    $recouvrement_restant -= $montant_echeance;
+                                                }
+                                                // Si on a deja une transaction on verifie si il ne s'agit pas d'un recouvrement au prorata
+                                                elseif ($this->echeanciers_recouvrements_prorata->counter('id_echeancier = ' . $e['id_echeancier']) > 0) {
+
+                                                    // on trouvé au moins un resultat du coup on va regarder si le montant est le meme ou pas
+                                                    $sum = $this->echeanciers_recouvrements_prorata->sumCapitalInterets('id_echeancier = ' . $e['id_echeancier']);
+
+                                                    // montant prorata trouvé
+                                                    $montant_echeance_recouvrement = $sum['capital'] + $sum['interets'];
+
+                                                    // si il manque de l'argent on recupere l'argent qu'il faut
+                                                    if ($montant_echeance_recouvrement < $montant_echeance) {
+
+                                                        // on recup la diff
+                                                        $montant_manquant = $montant_echeance - $montant_echeance_recouvrement;
+                                                        $capital_manquant = $montant_echeance - $sum['capital'];
+                                                        $interets_manquant = $montant_echeance - $sum['interets'];
+
+                                                        // array fiscal manquant <---- a faire
+                                                        $Array_fiscals = array();
+
+                                                        // Remboursement echeance preteur
+                                                        $this->rembEcheance($this->receptions->id_reception, $e['id_echeancier'], $id_client, $this->lenders_accounts->id_lender_account, $capital_prorata, $interets_prorata, $Array_fiscals, true);
+
+                                                        $recouvrement_restant -= $manquant;
+                                                    }
+                                                }
+
+                                                echo '<b>' . $montant_echeance . '</b> - Reste : ' . $recouvrement_restant;
+                                            }
+                                            // si il reste de l'argent mais pas suffisament pour une echeance entiere
+                                            elseif ($recouvrement_restant < $montant_echeance && $recouvrement_restant > 0) {
+
+                                                // On verifie que la transaction n'existe pas
+                                                if ($this->transactions->get($e['id_echeancier'], 'id_echeancier') == false) {
+
+                                                    // prorata
+                                                    $capital_prorata = round(($recouvrement_restant * $capital) / $montant_echeance, 2);
+                                                    $interets_prorata = round(($recouvrement_restant * $interets) / $montant_echeance, 2);
+
+                                                    $Array_fiscals = array(
+                                                        'prelevements_obligatoires' => round(($recouvrement_restant * $e['prelevements_obligatoires']) / $montant_echeance, 2),
+                                                        'retenues_source' => round(($recouvrement_restant * $e['retenues_source']) / $montant_echeance, 2),
+                                                        'csg' => round(($recouvrement_restant * $e['csg']) / $montant_echeance, 2),
+                                                        'prelevements_sociaux' => round(($recouvrement_restant * $e['prelevements_sociaux']) / $montant_echeance, 2),
+                                                        'contributions_additionnelles' => round(($recouvrement_restant * $e['contributions_additionnelles']) / $montant_echeance, 2),
+                                                        'prelevements_solidarite' => round(($recouvrement_restant * $e['prelevements_solidarite']) / $montant_echeance, 2),
+                                                        'crds' => round(($recouvrement_restant * $e['crds']) / $montant_echeance, 2)
+                                                    );
+
+                                                    // Remboursement echeance preteur
+                                                    $this->rembEcheance($this->receptions->id_reception, $e['id_echeancier'], $id_client, $this->lenders_accounts->id_lender_account, $capital_prorata, $interets_prorata, $Array_fiscals, true);
+
+                                                    // On retire ce qu'on a pris pour remb l'echeance
+                                                    $recouvrement_restant = 0;
+                                                }
+
+                                                echo '<b>' . $montant_echeance . '</b> (capital : <b>' . $capital_prorata . '</b> au lieu de ' . ($e['capital'] / 100) . ', interets : <b>' . $interets_prorata . '</b> au lieu de ' . ($e['interets'] / 100) . ') - Reste : ' . $recouvrement_restant . ' <----- ';
+                                            }
+                                        }
+                                    }
+                                    die;
+                                }
+                                $i++;
+                            }
+                            fclose($handle);
+                        }
+                        
+                        // FIN LECTURE CSV //
+                    }
+                }
+                die;
+            }
+
+
+            // last recouvrement
+            if ($this->params[1] == 'memory' && isset($_SESSION['DER']) && $_SESSION['DER'] != '') {
+                $this->lastDateRecouvrement = date('d/m/Y', strtotime($_SESSION['DER']));
+                $this->lastFormatSql = date('Y-m-d', strtotime($_SESSION['DER']));
+            } else {
+                $_SESSION['DER'] = '';
+
+                $retour = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 10', 'added DESC', 0, 1);
+
+                if ($retour != false) {
+                    $this->lastDateRecouvrement = date('d/m/Y', strtotime($retour[0]['added']));
+                    $this->lastFormatSql = date('Y-m-d', strtotime($retour[0]['added']));
+                    $_SESSION['DER'] = $this->lastFormatSql;
+                } else {
+                    $this->lastDateRecouvrement = date('d/m/Y');
+                    $this->lastFormatSql = date('Y-m-d');
+                    $_SESSION['DER'] = $this->lastFormatSql;
+                }
+            }
+
+
+            // capital echu
+            $this->CapitalEchu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) <= "' . $this->lastFormatSql . '"', 'capital');
+
+            // interets echu
+            $this->InteretsEchu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) <= "' . $this->lastFormatSql . '"', 'interets');
+
+            // Capital restant du
+            $this->CapitalRestantDu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) > "' . $this->lastFormatSql . '"', 'capital');
+
+            /// DEBUT INTERETS COURUS ///
+            // dernier echeance impayée
+            $lastEcheanceImpaye = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) <=  "' . $this->lastFormatSql . '"', 'date_echeance DESC', 0, 1);
+
+            // date dernier echeance impayée
+            $dateLastEcheanceImpaye = date('Y-m-d', strtotime($lastEcheanceImpaye[0]['date_echeance']));
+
+            // echeance du mois de DER (on récupere la premiere echeance apres le DER)
+            $echeanceMoisDER = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . ($lastEcheanceImpaye[0]['ordre'] + 1), 'date_echeance DESC', 0, 1);
+
+            // interets du mois de DER
+            $interetsMoisDER = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND ordre = ' . ($lastEcheanceImpaye[0]['ordre'] + 1), 'interets');
+
+            // nb jour dans le mois de l'echeance du mois de DER
+            $nbJourMoisDER = date('t', strtotime($echeanceMoisDER[0]['date_echeance']));
+
+            // nombre de jour entre la derniere date echeance impayée et la date de DER
+            $diff = $this->dates->nbJours($dateLastEcheanceImpaye, $this->lastFormatSql);
+
+            // Interets courus
+            $this->interetsCourus = round(($diff / $nbJourMoisDER) * $interetsMoisDER, 2);
+            /// FIN INTERETS COURUS ///
+            // Montant recouvré
+            $this->montantRecouvre = $this->receptions->sum('type_remb = 3 AND type = 1 AND remb = 1 AND id_project = ' . $this->projects->id_project);
+            $this->montantRecouvre = ($this->montantRecouvre / 100);
+        }
+    }
+
+    // remb preteur
+    function rembEcheance($id_reception, $id_echeancier, $id_client, $id_lender, $capital, $interet, $array_fiscal, $prorata = false) {
+
+        $echeanciers = $this->loadData('echeanciers');
+        $echeanciers_recouvrements_prorata = $this->loadData('echeanciers_recouvrements_prorata');
+        $transactions = $this->loadData('transactions');
+        $wallets_lines = $this->loadData('wallets_lines');
+
+        $remb_brut = ($capital + $interet);
+        $etat = array_sum($array_fiscal);
+        $remb_net = $remb_brut - $etat;
+
+        if ($prorata) {
+            $echeanciers_recouvrements_prorata->id_reception = $id_reception;
+            $echeanciers_recouvrements_prorata->id_echeancier = $id_echeancier;
+            $echeanciers_recouvrements_prorata->capital = ($capital * 100);
+            $echeanciers_recouvrements_prorata->interets = ($interet * 100);
+            $echeanciers_recouvrements_prorata->prelevements_obligatoires = $array_fiscal['prelevements_obligatoires'];
+            $echeanciers_recouvrements_prorata->retenues_source = $array_fiscal['retenues_source'];
+            $echeanciers_recouvrements_prorata->csg = $array_fiscal['csg'];
+            $echeanciers_recouvrements_prorata->prelevements_sociaux = $array_fiscal['prelevements_sociaux'];
+            $echeanciers_recouvrements_prorata->contributions_additionnelles = $array_fiscal['contributions_additionnelles'];
+            $echeanciers_recouvrements_prorata->prelevements_solidarite = $array_fiscal['prelevements_solidarite'];
+            $echeanciers_recouvrements_prorata->crds = $array_fiscal['crds'];
+            //$echeanciers_recouvrements_prorata->create();
+        }
+
+        ///////////////// ENREGISTREMENT DU REMB PRETEUR ///////////////
+        // echeance preteur
+        $echeanciers->get($id_echeancier, 'id_echeancier');
+        $echeanciers->status = 1; // remboursé
+        $echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
+        //$echeanciers->update();
+        // On enregistre la transaction
+        $transactions->id_client = $id_client;
+        $transactions->montant = ($remb_net * 100);
+        $transactions->id_echeancier = $id_echeancier; // id de l'echeance remb
+        $transactions->id_langue = 'fr';
+        $transactions->date_transaction = date('Y-m-d H:i:s');
+        $transactions->status = '1';
+        $transactions->etat = '1';
+        $transactions->ip_client = $_SERVER['REMOTE_ADDR'];
+        $transactions->type_transaction = 5; // remb enchere
+        $transactions->transaction = 2; // transaction virtuelle
+        //$transactions->id_transaction = $transactions->create();
+        // on enregistre la transaction dans son wallet
+        $wallets_lines->id_lender = $id_lender;
+        $wallets_lines->type_financial_operation = 40;
+        $wallets_lines->id_transaction = $transactions->id_transaction;
+        $wallets_lines->status = 1; // non utilisé
+        $wallets_lines->type = 2; // transaction virtuelle
+        $wallets_lines->amount = ($remb_net * 100);
+        //$wallets_lines->id_wallet_line = $wallets_lines->create();
+    }
+
+    function _recouvrement_preteurs() {
+        $this->receptions = $this->loadData('receptions');
+        $this->projects = $this->loadData('projects');
+        $this->projects_status_history = $this->loadData('projects_status_history');
+        $this->echeanciers = $this->loadData('echeanciers');
+        $this->receptions = $this->loadData('receptions');
+        $this->loans = $this->loadData('loans');
+
+        if (isset($this->params[0]) && $this->receptions->get($this->params[0], 'type = 1 AND type_remb = 3 AND id_reception')) {
+
+            // Projet
+            $this->projects->get($this->receptions->id_project, 'id_project');
+
+            // last recouvrement
+            if (isset($_SESSION['DER']) && $_SESSION['DER'] != '') {
+                $this->lastDateRecouvrement = date('d/m/Y', strtotime($_SESSION['DER']));
+                $this->lastFormatSql = date('Y-m-d', strtotime($_SESSION['DER']));
+            } else {
+                $retour = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 10', 'added DESC', 0, 1);
+                if ($retour != false) {
+                    $this->lastDateRecouvrement = date('d/m/Y', strtotime($retour[0]['added']));
+                    $this->lastFormatSql = date('Y-m-d', strtotime($retour[0]['added']));
+                } else {
+                    $this->lastDateRecouvrement = date('d/m/Y');
+                    $this->lastFormatSql = date('Y-m-d');
+                }
+            }
+
+            // liste des preteurs
+            $this->preteurs = $this->loans->getPreteursDetail($this->projects->id_project, $this->lastFormatSql);
+
+            /// DEBUT INTERETS COURUS ///
+            // dernier echeance impayée
+            $lastEcheanceImpaye = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) <=  "' . $this->lastFormatSql . '"', 'date_echeance DESC', 0, 1);
+
+            // date dernier echeance impayée
+            $dateLastEcheanceImpaye = date('Y-m-d', strtotime($lastEcheanceImpaye[0]['date_echeance']));
+
+            // echeance du mois de DER (on récupere la premiere echeance apres le DER)
+            $echeanceMoisDER = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . ($lastEcheanceImpaye[0]['ordre'] + 1), 'date_echeance DESC', 0, 1);
+
+            // nb jour dans le mois de l'echeance du mois de DER
+            $this->nbJourMoisDER = date('t', strtotime($echeanceMoisDER[0]['date_echeance']));
+
+            // nombre de jour entre la derniere date echeance impayée et la date de DER
+            $this->diff = $this->dates->nbJours($dateLastEcheanceImpaye, $this->lastFormatSql);
+
+            /// FIN INTERETS COURUS ///
+            //
+            // Montant recouvré
+            $this->montantRecouvre = $this->receptions->sum('type_remb = 3 AND type = 1 AND remb = 1 AND id_project = ' . $this->projects->id_project);
+            $this->montantRecouvre = ($this->montantRecouvre / 100);
         }
     }
 

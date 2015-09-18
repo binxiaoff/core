@@ -93,7 +93,11 @@ if (isset($_SESSION['freeow'])) {
                     $infos = '';
                     if (in_array($v['type_remb'], array(2, 3))) {
                         $this->receptions->get($v['id_reception'], 'id_parent');
-                        $infos = '(' . $this->types_remb[$v['type_remb']] . ' - prélèvement id : ' . $this->receptions->id_reception . ')';
+                        if ($v['type_remb'] == 2) {
+                            $infos = '(' . $this->types_remb[$v['type_remb']] . ' - prélèvement id : ' . $this->receptions->id_reception . ')';
+                        } else {
+                            $infos = '<a target="_blanck" href="'.$this->lurl.'/transferts/recouvrement/'.$this->receptions->id_reception.'">(' . $this->types_remb[$v['type_remb']] . ' - prélèvement id : ' . $this->receptions->id_reception . ')</a>';
+                        }
                     } elseif ($v['type_remb'] == 1) {
                         $infos = '(' . $this->types_remb[$v['type_remb']] . ')';
                     }
@@ -113,6 +117,15 @@ if (isset($_SESSION['freeow'])) {
                         <td class="num_client_<?= $v['id_reception'] ?>"><?= $v['id_project'] ?></td>
                         <td><?= date('d/m/Y', strtotime($v['added'])) ?></td>
                         <td align="center">
+                            <?php
+                            if ($v['id_project'] == 0) {
+                                ?>
+                                <a class="thickbox ajouter_<?= $v['id_reception'] ?>" href="<?= $this->lurl ?>/transferts/attribution_emprunteur/<?= $v['id_reception'] ?>">
+                                    <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Attibution" />
+                                </a>
+                                <?php
+                            }
+                            ?>
                             <a class='inline' href="#inline_content_<?= $v['id_reception'] ?>">
                                 <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Ligne" />
                             </a>
@@ -150,6 +163,6 @@ if (isset($_SESSION['freeow'])) {
         ?>
 
         <p>Il n'y a aucun virement recu.</p><?
-    }
+}
     ?>
 </div>

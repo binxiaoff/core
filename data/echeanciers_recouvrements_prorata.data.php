@@ -27,13 +27,13 @@
 //                                                                                   
 // **************************************************************************************************** //
 
-class receptions extends receptions_crud {
+class echeanciers_recouvrements_prorata extends echeanciers_recouvrements_prorata_crud {
 
-    function receptions($bdd, $params = '') {
-        parent::receptions($bdd, $params);
+    function echeanciers_recouvrements_prorata($bdd, $params = '') {
+        parent::echeanciers_recouvrements_prorata($bdd, $params);
     }
 
-    function get($id, $field = 'id_reception') {
+    function get($id, $field = 'id_echenacier_recouvrement_prorata') {
         return parent::get($id, $field);
     }
 
@@ -41,7 +41,7 @@ class receptions extends receptions_crud {
         parent::update($cs);
     }
 
-    function delete($id, $field = 'id_reception') {
+    function delete($id, $field = 'id_echenacier_recouvrement_prorata') {
         parent::delete($id, $field);
     }
 
@@ -55,7 +55,7 @@ class receptions extends receptions_crud {
             $where = ' WHERE ' . $where;
         if ($order != '')
             $order = ' ORDER BY ' . $order;
-        $sql = 'SELECT * FROM `receptions`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM `echeanciers_recouvrements_prorata`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result = array();
@@ -69,28 +69,31 @@ class receptions extends receptions_crud {
         if ($where != '')
             $where = ' WHERE ' . $where;
 
-        $sql = 'SELECT count(*) FROM `receptions` ' . $where;
+        $sql = 'SELECT count(*) FROM `echeanciers_recouvrements_prorata` ' . $where;
 
         $result = $this->bdd->query($sql);
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id, $field = 'id_reception') {
-        $sql = 'SELECT * FROM `receptions` WHERE ' . $field . '="' . $id . '"';
+    function exist($id, $field = 'id_echenacier_recouvrement_prorata') {
+        $sql = 'SELECT * FROM `echeanciers_recouvrements_prorata` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    function sum($where = '', $champ='montant') {
+    function sumCapitalInterets($where = '') {
         if ($where != '')
             $where = ' WHERE ' . $where;
 
-        $sql = 'SELECT SUM(' . $champ . ') FROM `receptions` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        $return = (int) ($this->bdd->result($result, 0, 0));
-
-        return $return;
+        $sql = 'SELECT sum(capital) as capital, sum(interets) as interets FROM `echeanciers_recouvrements_prorata` ' . $where;
+        
+        $resultat = $this->bdd->query($sql);
+        $result = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result['capital'] = $record['capital'];
+            $result['interets'] = $record['interets'];
+        }
+        return $result;
     }
 
 }
