@@ -3,6 +3,7 @@
 namespace Unilend\core;
 
 use Unilend\librairies\ToLog;
+use Unilend\core\Cron;
 
 require_once __DIR__ . '/bdd.class.php';
 
@@ -99,15 +100,21 @@ class Bootstrap
         return $this->oLogger;
     }
 
+    public function getCron()
+    {
+        return new Cron($this->setLogger('Cron', 'cron.log')->getLogger());
+    }
+
     /**
      * @param string $sFunction name of function where assert it's in error
      * @param string $sLine line of function
      * @param string $sError assert + detail of error (separate by //)
      */
-    private function errorAssert($sFunction, $sLine, $sError)
+    public function errorAssert($sFunction, $sLine, $sError)
     {
         $this->setLogger('ErrorAssertion', 'assert.log');
         $aErrorDetails = explode('//', $sError);
-        $this->oLogger->addError('Wrong Assertion in ' . $sFunction . ' at line ' . $sLine . '. ' . $aErrorDetails[1]);
+        $this->oLogger->addError('Wrong Assertion in ' . $sFunction . ' at line ' . $sLine . '. ' . $aErrorDetails[1],
+            array(__FILE__ . ' at ' . __LINE__));
     }
 }

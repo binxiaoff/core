@@ -4,21 +4,32 @@ require_once __DIR__ . '/../../../Autoloader.php';
 require_once __DIR__ . '/../../../config.php';
 
 Autoloader::register();
-/**
- * @var string Options mandatory -> d = dirname where found class, c = class name to call, f = function to call
- */
-$sOptions = "d:c:f:";
 
 /**
- * @var array Parameters with get all options from line command
+ * @object $oBootstrap Instance of Boostrap for log cron calls and set configuration
  */
-$aParameters = getopt($sOptions);
+$oBootstrap = \Unilend\core\Bootstrap::getInstance($config);
+$oBootstrap->setConfig($config);
 
-$sClassName = '\\' . $aParameters['d'] . '\\' . $aParameters['c'];
-$sFunctionToCall = $aParameters['f'];
+/**
+ * @object $oCron for manage parameters required and optional
+ */
+$oCron = $oBootstrap->getCron();
 
-$oClassCall = new $sClassName($config);
+$oCron->setOptions(
+    array('d' => Unilend\core\Cron::OPTION_REQUIRED,
+        'c' => Unilend\core\Cron::OPTION_REQUIRED,
+        'f' => Unilend\core\Cron::OPTION_OPTIONAL
+    ))
+    ->setDescription('d', 'directory name for load class')
+    ->setDescription('c', 'classname to use')
+    ->setDescription('f', 'function name to use if necessary')
+    ->setParameters();
 
-if (false === empty($sFunctionToCall)) {
-    $oClassCall->$sFunctionToCall();
+try {
+    $oCron->parseCommand();
+    $oCron->executeCron($oBootstrap);
+} catch (\UnexpectedValueException $e) {
+    echo $e->getMessage();
+    $oCron->getLogger->addCritical($e->getMessage(), array(__FILE__ . ' at ' . __LINE__));
 }
