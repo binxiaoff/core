@@ -11,18 +11,20 @@ debconf-set-selections <<< 'percona-server-server-5.5 percona-server-server/root
 debconf-set-selections <<< 'percona-server-server-5.5 percona-server-server/root_password_again password ROOTPASSWORD'
 apt-get install -y percona-server-server-5.5
 
-# install lftp for download fixture
+# install lftp for download database
 apt-get install -y lftp
 
-lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/fixture  /vagrant/fixture; bye' -u vagrantftp,X9d\@\$nsa -p 21 synology.corp.unilend.fr
+lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/database /vagrant/database; bye' -u vagrantftp,X9d\@\$nsa -p 21 synology.corp.unilend.fr
 
-if [ -f /vagrant/fixture/schemas.sql ];
-    then
-        echo "CREATE DATABASE unilend" | mysql -uroot -pROOTPASSWORD
-        mysql -uroot -pROOTPASSWORD unilend < /vagrant/fixture/schemas.sql
-        cat /vagrant/fixture/unilend.*.sql | mysql -uroot -pROOTPASSWORD unilend
+if [ -f /vagrant/database/schemas.sql ];
+then
+    mysql -uroot -pROOTPASSWORD -e "CREATE DATABASE unilend"
+    mysql -uroot -pROOTPASSWORD unilend < /vagrant/database/schemas.sql
+    rm /vagrant/database/schemas.sql
+    mysql -uroot -pROOTPASSWORD --max_allowed_packet=64M unilend < /vagrant/database/*.sql
+    mysql -uroot -pROOTPASSWORD unilend < /vagrant/anonymize.sql
 fi
-rm -rf /vagrant/fixture
+rm -rf /vagrant/database
 
 # install phpmyadmin
 mkdir /vagrant/phpmyadmin/
@@ -37,16 +39,16 @@ rm -rf /vagrant/phpmyadmin
 
 # configure phpmyadmin
 mv /srv/sites/phpmyadmin/config.sample.inc.php /srv/sites/phpmyadmin/config.inc.php
-echo "CREATE DATABASE pma" | mysql -uroot -pROOTPASSWORD
-echo "CREATE USER 'pma'@'localhost' IDENTIFIED BY 'PMAUSERPASSWD'" | mysql -uroot -pROOTPASSWORD
-echo "GRANT ALL ON pma.* TO 'pma'@'localhost'" | mysql -uroot -pROOTPASSWORD
-echo "flush privileges" | mysql -uroot -pROOTPASSWORD
+mysql -uroot -pROOTPASSWORD -e "CREATE DATABASE pma"
+mysql -uroot -pROOTPASSWORD -e "CREATE USER 'pma'@'localhost' IDENTIFIED BY 'PMAUSERPASSWD'"
+mysql -uroot -pROOTPASSWORD -e "GRANT ALL ON pma.* TO 'pma'@'localhost'"
+mysql -uroot -pROOTPASSWORD -e "flush privileges"
 cat /vagrant/conf/phpmyadmin.conf.php > /srv/sites/phpmyadmin/config.inc.php
 
 # create external user
-echo "CREATE USER 'external'@'%' IDENTIFIED BY 'EXTERNALPASSWD'" | mysql -uroot -pROOTPASSWORD
-echo "GRANT ALL ON unilend.* TO 'external'@'%'" | mysql -uroot -pROOTPASSWORD
-echo "flush privileges" | mysql -uroot -pROOTPASSWORD
+mysql -uroot -pROOTPASSWORD -e "CREATE USER 'external'@'%' IDENTIFIED BY 'EXTERNALPASSWD'"
+mysql -uroot -pROOTPASSWORD -e "GRANT ALL ON unilend.* TO 'external'@'%'"
+mysql -uroot -pROOTPASSWORD -e "flush privileges"
 
 # install apache2
 apt-get install -y apache2
