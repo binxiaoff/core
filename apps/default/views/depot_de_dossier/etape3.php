@@ -1,77 +1,170 @@
 <!--#include virtual="ssi-header.shtml"  -->
-		<div class="main">
-			<div class="shell">
+<div class="main">
+    <div class="shell">
 
-				<?=$this->fireView('../blocs/depot-de-dossier')?>
+        <!--				--><? //=$this->fireView('../blocs/depot-de-dossier')?>
 
-				<p><?=$this->lng['etape3']['contenu']?></p>
+        <p><?= printf($this->lng['etape3']['contenu'], $this->mensualite_min, $this->mensualite_max) ?></p>
 
-				<div class="register-form">
-                	<?
-					if(isset($_SESSION['confirmation']['valid']) && $_SESSION['confirmation']['valid'] != '')
-					{
-                		echo '<p id="valid-stand-by" style="color: #3FBD5D;text-align:center;">'.$_SESSION['confirmation']['valid'].'</p>';
-						unset($_SESSION['confirmation']['valid']);
-						
-						?><script>
-						setTimeout(function() {
-							$("#valid-stand-by").slideUp();
-						}, 8000);
-						</script><?
-					}
-					?>
-					<form action="" method="post" id="form_etape_3">
+        <div class="register-form">
+            <?
+            if (isset($_SESSION['confirmation']['valid']) && $_SESSION['confirmation']['valid'] != '') {
+                echo '<p id="valid-stand-by" style="color: #3FBD5D;text-align:center;">' . $_SESSION['confirmation']['valid'] . '</p>';
+                unset($_SESSION['confirmation']['valid']);
 
-						<div class="row rel">
-							<input type="text" name="montant" id="montant" title="<?=$this->lng['etape3']['montant']?>" value="<?=($this->projects->amount != 0?number_format($this->projects->amount,2,'.',' '):$this->lng['etape3']['montant'])?>" class="field field-large required euro-field" data-validators="Presence&amp;Numericality" onkeyup="lisibilite_nombre(this.value,this.id);">
-							<select name="duree" id="duree" class="field field-large <?=($this->projects->period != 0?'':'required')?> custom-select">
-								<option <?=($this->projects->period == 0?'selected':'')?> value="0"><?=$this->lng['etape3']['duree']?></option>
-                                <option value="0"><?=$this->lng['etape1']['duree']?></option>
-                                <option <?=($this->projects->period == '24'?'selected':'')?> value="24">24 mois</option>
-                                <option <?=($this->projects->period == '36'?'selected':'')?> value="36">36 mois</option>
-                                <option <?=($this->projects->period == '48'?'selected':'')?> value="48">48 mois</option>
-                                <option <?=($this->projects->period == '60'?'selected':'')?> value="60">60 mois</option>
-                                <option <?=($this->projects->period == '1000000'?'selected':'')?> value="1000000">je ne sais pas</option>
-							</select>
-						</div><!-- /.row -->
+                ?>
+                <script>
+                    setTimeout(function () {
+                        $("#valid-stand-by").slideUp();
+                    }, 8000);
+                </script><?
+            }
+            ?>
+            <!-- TODO modifier source des données, selon renseignement altares car seulement sur une année et plus dans une boucle foreach -->
 
-						<div class="row">
-							<i class="icon-help tooltip-anchor field-help-before" data-placement="right" title="<?=$this->lng['etape3']['info-titre-projet']?>"></i>
+            <form action="" method="post" id="form_etape_3">
+                <table class="form-table">
+                    <tr>
+                        <td>
+                            <label class="inline-text">
+                                <i class="icon-help tooltip-anchor field-help-before" data-placement="right"
+                                   title="<?= $this->lng['etape3']['info-fonds-propres'] ?>"></i>
+                                <?= $this->lng['etape3']['fonds-propres'] ?>
+                            </label>
+                        </td>
+                        <td>
+                            <div class="field-holder">
+                                <input type="text"
+                                       name="fonds_propres"
+                                       id="fonds_propres"
+                                       class="field field-large euro-field"
+                                       data-validators="Numericality"
+                                       value="<?= ($this->lBilans[$i]['ca'] == 0 ? '' : number_format($this->lBilans[$i]['ca'], 0, '.', ' ')) ?>"
+                                       onkeyup="lisibilite_nombre(this.value,this.id);">
+                            </div>
+                            <!-- /.field-holder -->
+                        </td>
 
-							<input type="text" name="project-title" id="project-title" value="<?=($this->projects->title != ''?$this->projects->title:$this->lng['etape3']['titre-projet'])?>" title="<?=$this->lng['etape3']['titre-projet']?>" class="field field-mega required" data-validators="Presence">
-						</div><!-- /.row -->
+                    </tr>
+                    <tr>
+                        <td>
+                            <label class="inline-text">
+                                <i class="icon-help tooltip-anchor field-help-before" data-placement="right"
+                                   title="<?= $this->lng['etape3']['info-chiffe-daffaires'] ?>"></i>
+                                <?= $this->lng['etape3']['chiffe-daffaires'] ?>
+                            </label>
+                        </td>
+                        <td>
+                            <div class="field-holder">
+                                <input type="text"
+                                       name="ca"
+                                       id="ca"
+                                       class="field field-large euro-field"
+                                       data-validators="Numericality"
+                                       value="<?= ($this->lBilans[$i]['ca'] == 0 ? '' : number_format($this->lBilans[$i]['ca'], 0, '.', ' ')) ?>"
+                                       onkeyup="lisibilite_nombre(this.value,this.id);">
+                            </div>
+                            <!-- /.field-holder -->
+                        </td>
+                    </tr>
+                    <tr>
 
-						<div class="row">
-							<i class="icon-help tooltip-anchor field-help-before" data-placement="right" title="<?=$this->lng['etape3']['info-objectif-du-credit']?>"></i>
+                        <td>
+                            <label class="inline-text">
+                                <i class="icon-help tooltip-anchor field-help-before" data-placement="right"
+                                   title="<?= $this->lng['etape3']['info-resultat-brut-dexploitation'] ?>"></i>
+                                <?= $this->lng['etape3']['resultat-brut-dexploitation'] ?>
+                            </label>
+                        </td>
+                        <td>
+                            <div class="field-holder">
+                                <input type="text"
+                                       name="resultat_brute_exploitation"
+                                       id="rbe"
+                                       class="field field-large euro-field"
+                                       data-validators="Numericality"
+                                       value="<?= ($this->lBilans[$i]['resultat_brute_exploitation'] == 0 ? '' : number_format($this->lBilans[$i]['resultat_brute_exploitation'], 0, '.', ' ')) ?>"
+                                       onkeyup="lisibilite_nombre(this.value,this.id);">
+                                <!-- /.field-holder -->
+                            </div>
+                        </td>
 
-							<textarea name="credit-objective" id="credit-objective" class="field field-mega required" title="<?=$this->lng['etape3']['objectif-du-credit']?>" data-validators="Presence" cols="30" rows="10"><?=($this->projects->objectif_loan != ''?$this->projects->objectif_loan:$this->lng['etape3']['objectif-du-credit'])?></textarea>
-						</div><!-- /.row -->
 
-						<div class="row">
-							<i class="icon-help tooltip-anchor field-help-before" data-placement="right" title="<?=$this->lng['etape3']['info-presentation-de-la-societe']?>"></i>
+                    </tr>
 
-							<textarea name="presentation" id="presentation" class="field field-mega required" title="<?=$this->lng['etape3']['presentation-de-la-societe']?>" data-validators="Presence" cols="30" rows="10"><?=($this->projects->presentation_company!=''?$this->projects->presentation_company:$this->lng['etape3']['presentation-de-la-societe'])?></textarea>
-						</div><!-- /.row -->
+                    <!-- TODO modifier source des données pour les fichiers joins -->
+                    <tr>
+                        <td>
+                            <label class="inline-text">
+                                <div class="row-upload file-uploaded">
+                                    <div class="uploader">
+                                        <?= $this->lng['etape3']['liasse-fiscal'] ?>
+                                    </div>
+                                </div>
+                            </label>
+                        </td>
+                        <td>
+                            <input id="liasse-fiscal"
+                                   type="text"
+                                   class="field field-large required field<?= ($this->error_autre == true ? 'LV_invalid_field' : '') ?>"
+                                   readonly="readonly"
+                                   value="<?= ($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"] != '' ? $this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"] : $this->lng['etape2']['aucun-fichier-selectionne']) ?>"/>
 
-						<div class="row">
-							<i class="icon-help tooltip-anchor field-help-before" data-placement="right" title="<?=$this->lng['etape3']['info-moyen-de-remboursement-prevu']?>"></i>
+                        </td>
+                        <td>
+                            <span class="btn btn-small">
+                                <?= $this->lng['etape2']['parcourir'] ?>
+                                <span class="file-upload">
+                                    <input type="file" class="file-field" name="liasse-fiscal">
+                                </span>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <label class="inline-text">
+                                <div class="row-upload file-uploaded">
+                                    <div class="uploader">
+                                        <?= $this->lng['etape3']['autre'] ?>
+                                    </div>
+                                    <!-- /.uploader -->
+                                </div>
+                                <!-- /.row -->
+                            </label>
+                        </td>
+                        <td>
 
-							<textarea name="moyen" id="moyen" class="field field-mega required" title="<?=$this->lng['etape3']['moyen-de-remboursement-prevu']?>" data-validators="Presence" cols="30" rows="10"><?=($this->projects->means_repayment!=''?$this->projects->means_repayment:$this->lng['etape3']['moyen-de-remboursement-prevu'])?></textarea>
-						</div><!-- /.row -->
+                            <input id="autre"
+                                   type="text"
+                                   class="field field-large required field<?= ($this->error_autre == true ? 'LV_invalid_field' : '') ?>"
+                                   readonly="readonly"
+                                   value="<?= ($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"] != '' ? $this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"] : $this->lng['etape2']['aucun-fichier-selectionne']) ?>"/>
+                        </td>
+                        <td>
+                            <div class="file-holder">
+                            <span class="btn btn-small">
+                                <?= $this->lng['etape2']['parcourir'] ?>
+                                <span class="file-upload">
+                                    <input type="file" class="file-field" name="autre">
+                                </span>
+                            </span>
+                            </div>
 
-						<span class="form-caption"><?=$this->lng['etape3']['champs-obligatoires']?></span>
-						<div class="form-foot row row-cols">
-							<div class="col">
-								<button onclick="$('#form_etape_3').attr('action', '<?=$this->lurl.'/depot_de_dossier/etape3/'.$this->clients->hash.'/stand-by'?>');" type="submit" class="btn btn-warning"><?=$this->lng['etape3']['stand-by']?></button>
-							</div><!-- /.col -->
-							<div class="col">
-                            	<input type="hidden" name="send_form_etape_3" />
-								<button class="btn" type="submit"><?=$this->lng['etape3']['suivant']?><i class="icon-arrow-next"></i></button>
-							</div><!-- /.col -->
-						</div><!-- /.form-foot foot-cols -->
-
-					</form>
-				</div><!-- /.register-form -->
-			</div><!-- /.shell -->
-		</div><!-- /.main -->
+                        </td>
+                        <!-- /.uploader -->
+                        <!-- /.row -->
+                    </tr>
+                </table>
+                <input type="hidden" name="send_form_etape_4" />
+                <button class="btn" style="height: 70px; line-height: 1.2em; width: 300px" type="submit"><?=$this->lng['etape3']['deposer-demande-financement']?><i class="icon-arrow-next"></i></button>
+                <span style="width: 100px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                <input type="hidden" name="send_form_etape_4" />
+                <input type="hidden" name="procedure_acceleree" />
+                <button class="btn"  style="height: 70px; line-height: 1.2em; width: 400px" type="submit"><?=$this->lng['etape3']['procedure-acceleree']?><i class="icon-arrow-next"></i
+            </form>
+        </div>
+        <!-- /.register-form -->
+    </div>
+    <!-- /.shell -->
+</div><!-- /.main -->
 <!--#include virtual="ssi-footer.shtml"  -->
