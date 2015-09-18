@@ -8,7 +8,6 @@ class depot_de_dossierController extends bootstrap
     function depot_de_dossierController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
-
         $this->catchAll = true;
 
 
@@ -21,7 +20,7 @@ class depot_de_dossierController extends bootstrap
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects                = $this->loadData('projects');
         $this->clients                 = $this->loadData('clients');
-        $this->prescripteurs            = $this->loadData('prescripteurs');
+        $this->prescripteurs           = $this->loadData('prescripteurs');
 
         $this->navigateurActive = 3;
 
@@ -133,13 +132,15 @@ class depot_de_dossierController extends bootstrap
                 $email   = ($_POST['email'] == 'Email') ? '' : $_POST['email'];
             }
 
-            if (isset($email) && $this->ficelle->isEmail($email) && $this->clients->existEmail($email)) {
-                $this->client = $this->client->get($email, 'email');
+
+            if (isset($email) && $this->ficelle->isEmail($email) === true && $this->clients->existEmail($email) === false) {
+                $this->clients = $this->clients->get($email, 'email');
+                var_dump(__LINE__);
 
             }// end if email
 
-            if (isset($email) && $this->ficelle->isEmail($email) && $this->prescripteur->exist($email, 'email_prescripteur')) {
-                $this->prescripteurs = $this->prescripteurs->get($email, 'email_prescripteur');
+            if (isset($email) && $this->ficelle->isEmail($email) && $this->prescripteurs->exist($email, 'email') === false ) {
+                $this->prescripteurs = $this->prescripteurs->get($email, 'email');
             }
 
             $form_valid = true;
@@ -171,7 +172,6 @@ class depot_de_dossierController extends bootstrap
                 if ($this->companies->exist($siren, $field = 'siren')) {
                     $this->companies->get($siren, 'siren');
                 }
-
                 //then get the client from that company in case it has not already been found by email before
                 if ($this->clients->id_client == '') {
                     $this->clients->get($this->companies->id_client_owner);
@@ -215,18 +215,16 @@ class depot_de_dossierController extends bootstrap
                 $this->companies->siren                         = $siren;
                 $this->companies->status_adresse_correspondance = '1';
 
-
-                if ($this->companies->id_company = '') {
-
+                if ($this->companies->id_company == '') {
                     $this->companies->id_company = $this->companies->create();
                 }
-
                 // projects //
                 $this->projects->id_company = $this->companies->id_company;
                 if ($this->prescripteurs->id_prescripteurs == '') {
                     $this->projects->id_prescripteur = $this->prescripteurs->id_prescripteur;
                 }
                 $this->projects->amount     = $montant;
+                $this->projects->id_company = $this->companies->id_company;
                 $this->projects->id_project = $this->projects->create();
                 // fin projects //
 
@@ -271,15 +269,13 @@ class depot_de_dossierController extends bootstrap
                 // si altares ok
                 if ($exception == '') {
 
-
-
                     // verif reponse
-                    $eligibility = $result->myInfo->eligibility;
+                    $sEligibility = $result->myInfo->eligibility;
                     //save status altares in the project
-                    $this->projects->retour_altares = $eligibility;
+                    $this->projects->retour_altares = $sEligibility;
                     $this->projects->update();
 
-                    switch ($eligibility) {
+                    switch ($sEligibility) {
                         case '1_Etablissement Inactif':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
                             header('location:' . $this->lurl . '/depot_de_dossier/nok/no-siren');
@@ -910,6 +906,8 @@ class depot_de_dossierController extends bootstrap
         //Recuperation des element de traductions
         $this->lng['etape1'] = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
         $this->lng['etape2'] = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
+        $this->lng['depot-de-dossier'] = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
+
 
 
         $this->settings->get('Lien conditions generales depot dossier', 'type');
@@ -979,9 +977,11 @@ class depot_de_dossierController extends bootstrap
             $this->companies->get($this->clients->id_client, 'id_client_owner');
 
             // le projet
-            $this->projects->get($this->companies->id_company, 'id_company');
-            $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
+            $this->projects->getFirstProject($this->companies->id_company);
 
+            if(is_numeric($this->projects->id_prescripteur)){
+                $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
+            }
 
             // Form depot de dossier etape 2
             if (isset($_POST['send_form_coordonnees'])) {
@@ -1034,10 +1034,10 @@ class depot_de_dossierController extends bootstrap
 
 
                 if (isset($_POST['gerant']) && $_POST['gerant'] == 3) {
-                    if (!isset($_POST['sex_prescripteur']) || $_POST['sex_prescripteur'] == '') {
+                    if (!isset($_POST['gender_prescripteur']) || $_POST['gender_prescripteur'] == '') {
                         $bForm_ok = false;
                     }
-                    if (!isset($_POST['prescripteur_nom']) || $_POST['prescripteur_nom'] == '' || $_POST['prescripteur_nom'] = $this->lng['etape2']['nom']) {
+                    if (!isset($_POST['prescripteur_nom']) || $_POST['prescripteur_nom'] == '' || $_POST['prescripteur_nom'] == $this->lng['etape2']['nom']) {
                         $bForm_ok = false;
                     }
                     if (!isset($_POST['prescripteur_prenom']) || $_POST['prescripteur_prenom'] == '' || $_POST['prescripteur_prenom'] == $this->lng['etape2']['prenom']) {
@@ -1054,7 +1054,7 @@ class depot_de_dossierController extends bootstrap
                         $bForm_ok = false;
                     }
 
-                    if (isset($_POST['prescripteur_phone']) ||
+                    if (!isset($_POST['prescripteur_phone']) ||
                         $_POST['prescripteur_phone'] == '' ||
                         $_POST['prescripteur_phone'] == $this->lng['etape2']['telephone'] ||
                         strlen($_POST['prescripteur_phone']) < 9 ||
@@ -1063,7 +1063,7 @@ class depot_de_dossierController extends bootstrap
                         $bForm_ok = false;
                     }
 
-                    $this->prescripteurs->civilite = $_POST['sex_prescripteur'];
+                    $this->prescripteurs->civilite = $_POST['gender_prescripteur'];
                     $this->prescripteurs->nom      = $_POST['prescripteur_nom'];
                     $this->prescripteurs->prenom   = $_POST['prescripteur_prenom'];
                     $this->prescripteurs->mobile   = $_POST['prescripteur_phone'];
@@ -1074,12 +1074,12 @@ class depot_de_dossierController extends bootstrap
                 if ($bForm_ok) {
 
                     if ($_POST['gerant'] == 3) {
-                        if ($this->prescripteur->id == '') {
-                            $this->prescripteur->update();
+                        if (is_numeric($this->prescripteurs->id_prescripteur)) {
+                            $this->prescripteurs->update();
                         } else {
-                            $this->prescripteur->id_prescripteur = $this->prescripteur->create();
+                            $this->prescripteurs->id_prescripteur = $this->prescripteurs->create();
                         }
-                        $this->projects->id_prescripteur = $this->prescripteur->id_prescripteur;
+                        $this->projects->id_prescripteur = $this->prescripteurs->id_prescripteur;
                     }
 
                     // -- acceptation des cgu -- //
@@ -1109,7 +1109,7 @@ class depot_de_dossierController extends bootstrap
                     $this->companies->update();
                     $this->companies_details->update();
                     $this->projects->update();
-                    $this->prescripteur->update();
+                    $this->prescripteurs->update();
 
                     // si good page confirmation
                     $this->projects_status_history->addStatus(-2, projects_status::PAS_3_BILANS, $this->projects->id_project);
