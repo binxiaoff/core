@@ -95,3 +95,12 @@ cd /srv/dataloader
 git submodule init
 git submodule update
 mvn clean package -DskipTests
+
+# install zsh et oh my zsh
+apt-get install -y zsh
+git clone git://github.com/robbyrussell/oh-my-zsh.git /home/vagrant/.oh-my-zsh
+cp /home/vagrant/.oh-my-zsh/templates/zshrc.zsh-template /home/vagrant/.zshrc
+sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="pygmalion"/g' /home/vagrant/.zshrc
+sed -i 's/plugins=.*/plugins=(git colored-man colorize github jira vagrant zsh-syntax-highlighting)/' /home/vagrant/.zshrc
+printf "\nalias composer=\"/usr/bin/composer.phar\"" >> /home/vagrant/.zshrc
+chsh -s /bin/zsh vagrant
