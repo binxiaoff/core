@@ -20,8 +20,12 @@ if [ -f /vagrant/database/schemas.sql ];
 then
     mysql -uroot -pROOTPASSWORD -e "CREATE DATABASE unilend"
     mysql -uroot -pROOTPASSWORD unilend < /vagrant/database/schemas.sql
-    rm /vagrant/database/schemas.sql
-    mysql -uroot -pROOTPASSWORD --max_allowed_packet=64M unilend < /vagrant/database/*.sql
+    rm -f /vagrant/database/schemas.sql
+    for sql in /vagrant/database/*.sql
+    do
+        echo "Import $sql"
+        mysql -uroot -pROOTPASSWORD --max_allowed_packet=64M unilend < $sql
+    done
     mysql -uroot -pROOTPASSWORD unilend < /vagrant/anonymize.sql
 fi
 rm -rf /vagrant/database
