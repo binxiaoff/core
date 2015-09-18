@@ -274,10 +274,6 @@ elseif($this->error_email_exist == true){
         $('#conf_prescripteur_email').bind('paste', function (e) { e.preventDefault(); });
     });
 
-    $('select#autre').on('change', function() {
-        if ($('option:selected', this).val() == '3') { $('#autre-preciser').show(); }
-        else { $('#autre-preciser').hide(); };
-    });
 
     $('input.file-field').on('change', function(){
         var $self = $(this),
