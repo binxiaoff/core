@@ -16,24 +16,13 @@ $this->companies_actif_passif = $this->loadData('companies_actif_passif');
 $this->projects_status_history = $this->loadData('projects_status_history');
 $this->projects = $this->loadData('projects');
 
-// load des durée des prêts autorisées
-$this->settings->get('Durée des prêts autorisées','type');
-$this->dureePossible = explode(',',$this->settings->value);
-
-if (empty($this->settings->value)) {
-	$this->dureePossible = array(24,36,48,60);
-}
-//traduction 
+//traduction
 $this->lng['landing-page'] = $this->ln->selectFront('landing-page',$this->language,$this->App);
+$this->lng['etape-1'] = $this->ln->selectFront('depot-de-dossier-etape1',$this->language,$this->App);
 
-	
-// page projet tri
-// 1 : terminé bientot
-// 2 : nouveauté
-//$this->tabOrdreProject[....] <--- dans le bootstrap pour etre accessible partout (page default et ajax)
 
-$this->ordreProject = 1; 
-$this->type = 0;		
+$this->ordreProject = 1;
+$this->type = 0;
 
 // Liste des projets en funding
 $this->lProjetsFunding = $this->projects->selectProjectsByStatus('50,60,80',' AND p.status = 0 AND p.display = 0',$this->tabOrdreProject[$this->ordreProject],0,6);
