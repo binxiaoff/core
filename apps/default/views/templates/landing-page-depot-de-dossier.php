@@ -29,7 +29,7 @@
 <?php
 if($this->google_analytics != '')
 {
-?>    
+?>
     <script type="text/javascript">
         var _gaq = _gaq || [];
         _gaq.push(['_setAccount', '<?=$this->google_analytics?>']);
@@ -40,8 +40,8 @@ if($this->google_analytics != '')
             var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
         })();
     </script>
-    
-    
+
+
     <!-- Google Tag Manager -->
     <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -51,8 +51,8 @@ if($this->google_analytics != '')
     '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-MB66VL');</script>
     <!-- End Google Tag Manager -->
-    
-    
+
+
 <?php
 }
 ?>
@@ -67,7 +67,7 @@ if($this->google_analytics != '')
 		<div class="container cf">
 			<section class="content left">
 				<header class="page-header cf">
-					<a target="_blank" href="<?=$this->content['lp-lien-logo-221']?>" class="logo left">                    	
+					<a target="_blank" href="<?=$this->content['lp-lien-logo-221']?>" class="logo left">
 						<img src="<?=$this->url?>/landing-page/css/images/logo.png" alt="" />
 					</a>
                     <?
@@ -110,7 +110,7 @@ if($this->google_analytics != '')
 							</p>
 						</li>
 					</ul><!-- /.cf -->
-					
+
 					<div class="button-cta emprunteur">
 						<?=$this->content['lp-creer-compte-232']?>
 
@@ -123,18 +123,18 @@ if($this->google_analytics != '')
 				<h2><?=$this->content['lp-titre-formulaire']?></h2>
 
 				<form action="/depot_de_dossier/interrogation" method="post" id="depot_de_dossier" name="depot_de_dossier">
-					
-                    <div class="form-row" style="display:inline;">                    	
+
+                    <div class="form-row" style="display:inline;">
                     	<span style="text-align:center; color:#C84747;"><?=$this->retour_form?></span>
                     </div>
                     <div class="form-row">
                     	<span class="euro-sign">€</span>
 						<input type="text" class="field required" value="<?=(isset($_POST['montant'])?$_POST['montant']:$this->lng['landing-page']['montant-souhaite'])?>" title="<?=$this->lng['landing-page']['montant-souhaite']?>" name="montant" id="montant" data-validators="Presence&amp;Numericality, { maximum:<?=$this->sommeMax?> }&amp;Numericality, { minimum:<?=$this->sommeMin?> }" onkeyup="lisibilite_nombre(this.value,this.id);" />
-                        
+
                         <em class="jusqua"><?=$this->lng['landing-page']['jusqua']?></em>
 					</div><!-- /.form-row -->
 
-                    
+
                     <div style="clear:both;"></div>
 
 					<div class="form-row">
@@ -143,11 +143,11 @@ if($this->google_analytics != '')
 					</div><!-- /.form-row -->
 
 					<div class="form-row">
-						<input type="text" value="<?=(isset($_POST['email'])?$_POST['email']:$this->lng['landing-page']['emailetape1'])?>" title="<?=$this->lng['landing-page']['emailetape1']?>" name="email" id="email" />
+						<input type="text" value="<?=(isset($_POST['email'])?$_POST['email']:$this->lng['etape-1']['email'])?>" title="<?=$this->lng['etape-1']['email']?>" name="email" id="email" />
 					</div><!-- /.form-row -->
 
-					
-					<input type="hidden" name="spy_inscription_landing_page_depot_dossier" value="1"/> 
+
+					<input type="hidden" name="spy_inscription_landing_page_depot_dossier" value="1"/>
 					<button type="submit" class="button" style="font-family: 'TrendSansOne'; font-weight:normal;text-transform: uppercase;">
 						<?=$this->content['lp-bouton-formulaire-241']?>
 						<span class="arrow"></span>
@@ -170,13 +170,13 @@ if($this->google_analytics != '')
 						{
 							?>
                             <li style="list-style:none;">
-                                <div class="slide">	
-                                	<img src="<?=$this->photos->display($project['photo_projet'],'photos_projets','img_carousel_landing_page')?>"  alt="<?=$project['photo_projet']?>">                     						
-                                    
+                                <div class="slide">
+                                	<img src="<?=$this->photos->display($project['photo_projet'],'photos_projets','img_carousel_landing_page')?>"  alt="<?=$project['photo_projet']?>">
+
                                     <strong><?=$project['title']?></strong>
-        
+
                                     <span></span>
-        
+
                                     <p><?=$project['nature_project']?></p>
                                 </div>
                             </li>
@@ -186,7 +186,7 @@ if($this->google_analytics != '')
                     </ul><!-- /.slides -->
                     <a href="#" class="prev-slide"></a>
 					<a href="#" class="next-slide"></a>
-                    
+
                 </div><!-- /.carousel -->
             </section><!-- /.featured-articles -->
             <?php
