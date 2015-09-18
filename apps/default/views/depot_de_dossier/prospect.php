@@ -5,7 +5,7 @@
 <div class="main">
     <div class="shell">
 
-        <p>Ici viendra le message dédié pour les "prospects"</p>
+        <p><?=$this->lng['depot-de-dossier']['prospect-720j']?></p>
 
         <?
         if(isset($this->params[0]) && $this->params[0] == 'nok'){
@@ -39,9 +39,6 @@
                     <!--					question si on est gerant ou pas de l'entreprise: -->
                     <div class="row">
                         <div class="form-choose fixed">
-                            <!--							<span class="title">-->
-                            <?//=$this->lng['etape2']['vous-etes']
-                            ?><!--</span>-->
 
                             <div class="radio-holder">
                                 <label style="width: 192px;"
@@ -54,7 +51,7 @@
                             <div class="radio-holder">
                                 <label style="width: 192px;"
                                        for="radio1-3-about"><?= $this->lng['etape2']['conseil-externe-entreprise'] ?></label>
-                                <input <?= ($this->companies->status_client == 3 ? 'checked' : '') ?>
+                                <input <?= (is_object($this->prescripteurs) ? 'checked' : '') ?>
                                     type="radio" class="custom-input" name="gerant" id="radio1-3-about" value="3"
                                     data-condition="show:.identification">
                             </div>
@@ -63,35 +60,35 @@
                         <!-- /.form-choose -->
                     </div>
                     <!-- /.row -->
+                    <div type=row">
+                        <p><?= $this->lng['etape2']['vos-coordonnees'] ?></p>
+                    </div>
 
                     <div class="about-sections">
 
-                        <div class="about-section">
-
-                        </div>
                         <!-- /.about-section -->
 
                         <div class="about-section identification">
 
                             <div class="row">
-                                <p><?= $this->lng['etape2']['vos-coordonnees'] ?></p>
+
 
                                 <div class="form-choose fixed radio_sex_prescripteur">
                                     <span class="title"><?= $this->lng['etape2']['civilite'] ?></span>
 
                                     <div class="radio-holder">
                                         <label for="female_prescripteur"><?= $this->lng['etape2']['madame'] ?></label>
-                                        <input type="radio" class="custom-input" name="sex_prescripteur"
+                                        <input type="radio" class="custom-input" name="gender_prescripteur"
                                                id="female_prescripteur"
-                                               value="Mme" <?= ($this->clients->civilite == 'Mme' ? 'checked="checked"' : '') ?>>
+                                               value="Mme" <?= ($this->prescripteurs->civilite == 'Mme' ? 'checked="checked"' : '') ?>>
                                     </div>
                                     <!-- /.radio-holder -->
 
                                     <div class="radio-holder">
                                         <label for="male_prescripteur"><?= $this->lng['etape2']['monsieur'] ?></label>
-                                        <input type="radio" class="custom-input" name="sex_prescripteur"
+                                        <input type="radio" class="custom-input" name="gender_prescripteur"
                                                id="male_prescripteur"
-                                               value="M." <?= ($this->clients->civilite == 'M.' ? 'checked="checked"' : '') ?>>
+                                               value="M." <?= ($this->prescripteurs->civilite == 'M.' ? 'checked="checked"' : '') ?>>
                                     </div>
                                     <!-- /.radio-holder -->
                                 </div>
@@ -100,30 +97,32 @@
                             <!-- /.row -->
 
                             <div class="row">
-                                <input type="text" name="prescripteur_nom" id="prescripteur_nom"
-                                       title="<?= $this->lng['etape2']['nom'] ?>"
-                                       value="<?= ($this->clients->nom != '' ? $this->clients->nom : $this->lng['etape2']['nom']) ?>"
+                                <input type="text" name="prescripteur_prenom" id="prescripteur_prenom"
+                                       title="<?= $this->lng['etape2']['prenom'] ?>"
+                                       value="<?= ($this->prescripteurs->prenom != '' ? $this->prescripteurs->prenom : $this->lng['etape2']['prenom']) ?>"
                                        class="field field-large required"
                                        data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
 
-                                <input type="text" name="prescripteur_prenom" id="prescripteur_prenom"
-                                       title="<?= $this->lng['etape2']['prenom'] ?>"
-                                       value="<?= ($this->clients->prenom != '' ? $this->clients->prenom : $this->lng['etape2']['prenom']) ?>"
+                                <input type="text" name="prescripteur_nom" id="prescripteur_nom"
+                                       title="<?= $this->lng['etape2']['nom'] ?>"
+                                       value="<?= ($this->prescripteurs->nom != '' ? $this->prescripteurs->nom : $this->lng['etape2']['nom']) ?>"
                                        class="field field-large required"
                                        data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
+
+
                             </div>
                             <!-- /.row -->
 
                             <div class="row">
                                 <input type="text" name="prescripteur_email" id="prescripteur_email"
                                        title="<?= $this->lng['etape2']['email'] ?>"
-                                       value="<?= ($this->clients->email != '' ? $this->clients->email : $this->lng['etape2']['email']) ?>"
+                                       value="<?= ($this->prescripteurs->email != '' ? $this->prescripteurs->email : $this->lng['etape2']['email']) ?>"
                                        class="field field-large required" data-validators="Presence&amp;Email"
                                        onkeyup="checkConf(this.value,'conf_email')">
 
                                 <input type="text" name="prescripteur_conf_email" id="prescripteur_conf_email"
                                        title="<?= $this->lng['etape2']['confirmation-email'] ?>"
-                                       value="<?= ($this->conf_email != '' ? $this->conf_email : $this->lng['etape2']['confirmation-email']) ?>"
+                                       value="<?= ($this->prescripteurs->email  != '' ? $this->prescripteurs->email  : $this->lng['etape2']['confirmation-email']) ?>"
                                        class="field field-large required"
                                        data-validators="Confirmation,{ match: 'email' }">
                             </div>
@@ -131,23 +130,24 @@
 
                             <div class="row">
                                 <input type="text" name="prescripteur_phone" id="prescripteur_phone"
-                                       value="<?= ($this->clients->telephone != '' ? $this->clients->telephone : $this->lng['etape2']['telephone']) ?>"
+                                       value="<?= ($this->prescripteurs->mobile != '' ? $this->prescripteurs->mobile : $this->lng['etape2']['telephone']) ?>"
                                        title="<?= $this->lng['etape2']['telephone'] ?>"
                                        class="field field-large required"
                                        data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 14}">
 
                             </div>
                             <!-- /.row -->
+                            <p><?= $this->lng['etape2']['identite-du-representant-de-la-societe'] ?></p>
+
                         </div>
                         <!-- /.about-section -->
+
                     </div>
                     <!-- /.about-sections -->
 
                     <!--	coordonnées du gérant-->
                     <div class="row">
                         <div class="row">
-                            <p><?= $this->lng['etape2']['identite-du-representant-de-la-societe'] ?></p>
-
                             <div class="form-choose fixed radio_sex_representative">
                                 <span class="title"><?= $this->lng['etape2']['civilite'] ?></span>
 
@@ -188,7 +188,7 @@
 
                         <div class="row">
                             <input
-                                type=<?= ($this->clients->email != '' ? ("hidden") : ("text")) ?> name="email_representative"
+                                type="email" name="email_representative"
                                 id="email_representative"
                                 title="<?= $this->lng['etape2']['email'] ?>"
                                 value="<?= ($this->clients->email != '' ? $this->clients->email : $this->lng['etape2']['email']) ?>"
@@ -196,7 +196,7 @@
                                 onkeyup="checkConf(this.value,'conf_email_representative')">
 
                             <input
-                                type=<?= ($this->clients->email != '' ? ("hidden") : ("text")) ?> name="conf_email_representative"
+                                type="email" name="conf_email_representative"
                                 title="Confirmation Email*" id="conf_email_representative"
                                 value="<?= ($this->clients->email != '' ? $this->clients->email : 'Confirmation Email*') ?>"
                                 class="field field-large required"
