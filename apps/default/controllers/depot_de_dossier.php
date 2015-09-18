@@ -603,6 +603,7 @@ class depot_de_dossierController extends bootstrap
 
         } elseif ($this->clients->get($this->params['0'], 'status = 0 AND hash') && $this->clients->status_depot_dossier >= 1) {
             $conditionOk = true;
+
         } else {
             header('location:' . $this->lurl . '/depot_de_dossier/etape1');
         }
@@ -613,12 +614,15 @@ class depot_de_dossierController extends bootstrap
             $this->companies->get($this->clients->id_client, 'id_client_owner');
 
             // le projet
-            $this->projects->get($this->companies->id_company, 'id_company');
-            $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
-
+            $this->projects->getFirstProject($this->companies->id_company);
+            if(is_numeric($this->projects->id_prescripteur)){
+                $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
+            }
 
             // Form depot de dossier etape 2
             if (isset($_POST['send_form_depot_dossier'])) {
+
+                $bForm_ok = true;
 
                 $bForm_ok = true;
 
@@ -667,17 +671,11 @@ class depot_de_dossierController extends bootstrap
                 $this->companies->name = $_POST['raison-sociale'];
 
 
-                if (isset($_POST['comments']) && $_POST['comments'] != $this->lng['etape2']['toutes-informations-utiles']) {
-                    $this->projects_comments = $_POST['comments'];
-                } else {
-                    $this->projects_comments = '';
-                }
-
                 if (isset($_POST['gerant']) && $_POST['gerant'] == 3) {
-                    if (!isset($_POST['sex_prescripteur']) || $_POST['sex_prescripteur'] == '') {
+                    if (!isset($_POST['gender_prescripteur']) || $_POST['gender_prescripteur'] == '') {
                         $bForm_ok = false;
                     }
-                    if (!isset($_POST['prescripteur_nom']) || $_POST['prescripteur_nom'] == '' || $_POST['prescripteur_nom'] = $this->lng['etape2']['nom']) {
+                    if (!isset($_POST['prescripteur_nom']) || $_POST['prescripteur_nom'] == '' || $_POST['prescripteur_nom'] == $this->lng['etape2']['nom']) {
                         $bForm_ok = false;
                     }
                     if (!isset($_POST['prescripteur_prenom']) || $_POST['prescripteur_prenom'] == '' || $_POST['prescripteur_prenom'] == $this->lng['etape2']['prenom']) {
@@ -694,7 +692,7 @@ class depot_de_dossierController extends bootstrap
                         $bForm_ok = false;
                     }
 
-                    if (isset($_POST['prescripteur_phone']) ||
+                    if (!isset($_POST['prescripteur_phone']) ||
                         $_POST['prescripteur_phone'] == '' ||
                         $_POST['prescripteur_phone'] == $this->lng['etape2']['telephone'] ||
                         strlen($_POST['prescripteur_phone']) < 9 ||
@@ -703,13 +701,20 @@ class depot_de_dossierController extends bootstrap
                         $bForm_ok = false;
                     }
 
-                    $this->prescripteurs->civilite = $_POST['sex_prescripteur'];
+                    $this->prescripteurs->civilite = $_POST['gender_prescripteur'];
                     $this->prescripteurs->nom      = $_POST['prescripteur_nom'];
                     $this->prescripteurs->prenom   = $_POST['prescripteur_prenom'];
                     $this->prescripteurs->mobile   = $_POST['prescripteur_phone'];
                     $this->prescripteurs->email    = $_POST['prescripteur_email'];
 
                 } // end if prescripteur
+
+
+                if (isset($_POST['comments']) && $_POST['comments'] != $this->lng['etape2']['toutes-informations-utiles']) {
+                    $this->projects_comments = $_POST['comments'];
+                } else {
+                    $this->projects_comments = '';
+                }
 
                 // if there is the question about 3 bilans, it needs to be answered
                 if (isset($_POST['trois_bilans'])) {
@@ -727,12 +732,12 @@ class depot_de_dossierController extends bootstrap
                 if ($bForm_ok) {
 
                     if ($_POST['gerant'] == 3) {
-                        if ($this->prescripteur->id == '') {
-                            $this->prescripteur->update();
+                        if (is_numeric($this->prescripteurs->id)) {
+                            $this->prescripteurs->update();
                         } else {
-                            $this->prescripteur->id_prescripteur = $this->prescripteur->create();
+                            $this->prescripteurs->id_prescripteur = $this->prescripteurs->create();
                         }
-                        $this->projects->id_prescripteur = $this->prescripteur->id_prescripteur;
+                        $this->projects->id_prescripteur = $this->prescripteurs->id_prescripteur;
                     }
 
                     $bComptables = true;
@@ -771,7 +776,7 @@ class depot_de_dossierController extends bootstrap
                     $this->companies->update();
                     $this->companies_details->update();
                     $this->projects->update();
-                    $this->prescripteur->update();
+                    $this->prescripteurs->update();
 
                     // si good page confirmation
                     $this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_2, $this->projects->id_project);
@@ -1131,17 +1136,6 @@ class depot_de_dossierController extends bootstrap
         $this->lng['etape3'] = $this->ln->selectFront('depot-de-dossier-etape-3', $this->language, $this->App);
 
 
-        $this->settings->get('Lien conditions generales depot dossier', 'type');
-        $this->lienConditionsGenerales = $this->settings->value;
-
-        // Somme à emprunter min
-        $this->settings->get('Somme à emprunter min', 'type');
-        $this->sommeMin = $this->settings->value;
-
-        // Somme à emprunter max
-        $this->settings->get('Somme à emprunter max', 'type');
-        $this->sommeMax = $this->settings->value;
-
         // Datas
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->companies               = $this->loadData('companies');
@@ -1151,6 +1145,14 @@ class depot_de_dossierController extends bootstrap
         $this->projects                = $this->loadData('projects');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->prescripteur            = $this->loadData('prescripteur');
+        $this->attachment              = $this->loadData('attachment');
+        $this->attachment_type         = $this->loadData('attachment_type');
+
+
+        //TODO calcul de la mensualite en tenant compte du montant/ duree / taux min et taux max et frais
+        // $this->mensualite_min, $this->mensualite_max
+
+
 
 
     }
@@ -1379,7 +1381,6 @@ class depot_de_dossierController extends bootstrap
 
     function _etape4()
     {
-        die;
         //////////////////////////////////
         // Initialisation variable
         $this->preteurCreateEmprunteur = false;
