@@ -269,6 +269,8 @@ class depot_de_dossierController extends bootstrap
                 }
                 // si altares ok
                 if ($exception == '') {
+                    var_dump($result);
+                    die;
 
                     // verif reponse
                     $sEligibility = $result->myInfo->eligibility;
@@ -618,6 +620,18 @@ class depot_de_dossierController extends bootstrap
             $this->projects->getFirstProject($this->companies->id_company);
             if(is_numeric($this->projects->id_prescripteur)){
                 $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
+            }
+
+            // TODO decide how data will be provided for the function
+            //data only for developement purposes. if data comes from settings or from a specia table needs to be decided
+            $aMinMaxDuree = array(array('min'=>0, 'max' => 50000, 'heures'=>96), array('min'=>50001,'max' => 80000, 'heures'=>192), array('min'=>80001, 'max' => 120000, 'heures'=>264), array('min'=>120001, 'max' => 1000000, 'heures'=> 5*24));
+
+            foreach($aMinMaxDuree as $line){
+                if($line['min']<= $this->projects->amount && $this->projects->amount <= $line['max']){
+                    $this->iDuree = ($line['heures']/24);
+                } else{
+                    $this->iDuree = 10;
+                }
             }
 
             // Form depot de dossier etape 2
@@ -1152,6 +1166,9 @@ class depot_de_dossierController extends bootstrap
 
         //TODO calcul de la mensualite en tenant compte du montant/ duree / taux min et taux max et frais
         // $this->mensualite_min, $this->mensualite_max
+
+
+
 
 
 
