@@ -2475,11 +2475,13 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 	public function _contratPdf()
 	{
 		$this->loadGestionData();
+		$iloan = $this->params[1];
 
 		$this->clients->get($this->params[0], 'hash');
-		$this->lenders_accounts = $this->lenders_accounts->get($this->client->id_client, 'id_client_owner');
-		$this->loans = $this->loans->get($this->lenders_accounts->id_lender, 'id_lender');
-		$iloan = $this->params[1];
+		$this->clients_adresses->get($this->clients->id_client, 'id_client');
+		$this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
+		$this->loans->get($iloan, 'id_loan');
+		$this->projects->get($this->loans->id_project, 'id_project');
 
 		// Génération pdf
 		$oCommandPdf = new Command('pdf','contrat',array($this->clients->hash, $iloan),$this->language);
@@ -2497,11 +2499,13 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 	public function _creancesPdf()
 	{
 		$this->loadGestionData();
+		$iloan = $this->params[1];
+
 
 		$this->clients->get($this->params[0], 'hash');
-		$this->lenders_accounts = $this->lenders_accounts->get($this->client->id_client, 'id_client_owner');
-		$this->loans = $this->loans->get($this->lenders_accounts->id_lender, 'id_lender');
-		$iloan = $this->params[1];
+		$this->clients_adresses->get($this->clients->id_client, 'id_client');
+		$this->lenders_accounts->get($this->client->id_client, 'id_client_owner');
+		$this->loans->get($iloan, 'id_loan');
 
 		// Génération pdf
 		$oCommandPdf = new Command('pdf','declaration_de_creances',array($this->clients->hash, $iloan),$this->language);
