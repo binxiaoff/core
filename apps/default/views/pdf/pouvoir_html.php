@@ -13,11 +13,11 @@
 
 			<!-- Page Break -->
 			<div class="page-break">
-				
+
 
 				<h3 class="pink"><?=$this->bloc_pouvoir['pouvoir']?></h3>
 				<h5><?=$this->bloc_pouvoir['je-soussigne']?></h5>
-				
+
 				<div class="list">
 					<ul>
 						<li>
@@ -99,7 +99,7 @@
 						</li>
 					</ul>
 				</div>
-				
+
 				<h5><?=$this->bloc_pouvoir['donne-pouvoir-a']?></h5>
 				<div class="list">
 					<ul>
@@ -120,7 +120,7 @@
 						</li>
 						<li>
 							<div class="col-long">
-                            	
+
 								<?=$this->bloc_pouvoir['taux-i-annuel']?>
 							</div>
 							<div class="col-small">
@@ -257,7 +257,7 @@
 						<li><?=$this->bloc_pdf_contrat['capitaux']?><div class="col-small"><?=number_format($this->l_AP[0]['capitaux_propres'], 2, ',', ' ')?> €</div></li>
 						<li><?=$this->bloc_pdf_contrat['provisions']?><div class="col-small"><?=number_format($this->l_AP[0]['provisions_pour_risques_et_charges'], 2, ',', ' ')?> €</div></li>
                         <li><?=$this->bloc_pdf_contrat['amortissements-sur-immo']?><div class="col-small"><?=number_format($this->l_AP[0]['amortissement_sur_immo'], 2, ',', ' ')?> €</div></li>
-                        
+
 						<li><?=$this->bloc_pdf_contrat['dettes-fi']?><div class="col-small"><?=number_format($this->l_AP[0]['dettes_financieres'], 2, ',', ' ')?> €</div></li>
 						<li><?=$this->bloc_pdf_contrat['dettes-fourn']?><div class="col-small"><?=number_format($this->l_AP[0]['dettes_fournisseurs'], 2, ',', ' ')?> €</div></li>
 						<li><?=$this->bloc_pdf_contrat['autres-dettes']?><div class="col-small"><?=number_format($this->l_AP[0]['autres_dettes'], 2, ',', ' ')?> €</div></li>
@@ -271,7 +271,7 @@
 				</div>
 			</div>
 			<!-- End Page Break -->
-			
+
             <?
             if($this->projects->period > 48)
 			{
@@ -290,20 +290,20 @@
                                 <th valign="bottom"><?=$this->bloc_pdf_contrat['total']?></th>
                                 <th valign="bottom"><?=$this->bloc_pdf_contrat['capital-restant']?></th>
                             </tr>
-                            
+
                             <?
-                            
-                            
+
+
                             $capRestant = $this->capital;
                             foreach($this->lRemb as $r)
                             {
 								if($r['ordre'] <= 48)
 								{
 									$montantEmprunteur = $this->echeanciers->getMontantRembEmprunteur($r['montant'],$r['commission'],$r['tva']);
-									
+
 									$capRestant -= $r['capital'];
 									if($capRestant < 0)$capRestant = 0;
-									
+
 									?>
 									<tr>
 										<td><?=$this->dates->formatDate($r['date_echeance_emprunteur'],'d/m/Y')?></td>
@@ -322,7 +322,7 @@
                     </div>
                 </div>
                 <!-- End Page Break -->
-                
+
                 <!-- Page Break -->
                 <div class="page-break" style="page-break-before:always; margin-top: 40px;padding-top: 20px;">
                     <div class="dates-table">
@@ -333,10 +333,10 @@
 								if($r['ordre'] > 48)
 								{
 									$montantEmprunteur = $this->echeanciers->getMontantRembEmprunteur($r['montant'],$r['commission'],$r['tva']);
-									
+
 									$capRestant -= $r['capital'];
 									if($capRestant < 0)$capRestant = 0;
-									
+
 									?>
 									<tr>
 										<td><?=$this->dates->formatDate($r['date_echeance_emprunteur'],'d/m/Y')?></td>
@@ -363,9 +363,9 @@
                 <!-- Page Break -->
                 <div class="page-break">
                     <h3 class="pink"><?=$this->bloc_pdf_contrat['echeancier-remboursements']?></h3>
-                    
-                    
-                    
+
+
+
                     <div class="dates-table">
                         <table width="100%" border="0" cellspacing="0" cellpadding="0" class="table-2">
                             <tr>
@@ -377,18 +377,18 @@
                                 <th valign="bottom"><?=$this->bloc_pdf_contrat['total']?></th>
                                 <th valign="bottom"><?=$this->bloc_pdf_contrat['capital-restant']?></th>
                             </tr>
-                            
+
                             <?
-                            
-                            
+
+
                             $capRestant = $this->capital;
                             foreach($this->lRemb as $r)
                             {
                                 $montantEmprunteur = $this->echeanciers->getMontantRembEmprunteur($r['montant'],$r['commission'],$r['tva']);
-                                
+
                                 $capRestant -= $r['capital'];
                                 if($capRestant < 0)$capRestant = 0;
-                                
+
                                 ?>
                                 <tr>
                                     <td><?=$this->dates->formatDate($r['date_echeance_emprunteur'],'d/m/Y')?></td>
@@ -409,7 +409,7 @@
                 <?
 			}
 			?>
-			
+
 			<?
 			$var = 0;
 			$nb = intval((count($this->lLenders)/26));
@@ -417,7 +417,7 @@
 			{
 				if($var == count($this->lLenders))
 				{
-					break;	
+					break;
 				}
 				?>
 				<!-- Page Break -->
@@ -428,13 +428,13 @@
 						?><h3><?=$this->bloc_pouvoir['liste-caracteristiques']?></h3><?
 					}
 					?>
-	
+
 					<div class="dates-table">
 						<table width="100%" border="0" cellspacing="0" cellpadding="0" class="table-3">
 							<?
 							if($var == 0)
 							{
-								
+
 								?>
 								<tr>
 									<th><?=$this->bloc_pouvoir['nom']?><br /> <?=$this->bloc_pouvoir['raison-sociale']?></th>
@@ -447,32 +447,32 @@
 								</tr>
 								<?
 							}
-							
+
 							$i=0;
 							foreach($this->lLenders as $key => $l)
 							{
-								
+
 								if($var == $key)
 								{
 									if($i <= 26)
 									{
-										$this->lenders_accounts->get($l['id_lender'],'id_lender_account');
-										$this->clients->get($this->lenders_accounts->id_client_owner,'id_client');
+										$this->oLendersAccounts->get($l['id_lender'],'id_lender_account');
+										$this->clients->get($this->oLendersAccounts->id_client_owner,'id_client');
 										$this->clients_adresses->get($this->clients->id_client,'id_client');
-										
-										
+
+
 										$nom = $this->clients->nom;
 										$prenom = $this->clients->prenom;
-										
+
 										if($this->clients->type==2)
 										{
-											$this->companies->get($this->clients->id_client,'id_client_owner');	
-											
+											$this->companies->get($this->clients->id_client,'id_client_owner');
+
 											$nom = $this->companies->name;
 											$prenom = $this->companies->rcs;
 										}
-										
-										
+
+
 										?>
 										<tr>
 											<td><?=$nom?></td>
@@ -488,12 +488,12 @@
 										$i++;
 									}
 								}
-								
+
 							}
 							?>
 						</table>
 					</div>
-	
+
 					<?php /*?><div class="footer">
 						<p style="text-align: center;font-size:8px;"><?=$this->bloc_pouvoir['mention1']?><br>
 						<?=$this->bloc_pouvoir['mention2']?></p>
@@ -501,7 +501,7 @@
 				</div>
 				<!-- End Page Break -->
 				<?
-				
+
 			}
 			?>
 
