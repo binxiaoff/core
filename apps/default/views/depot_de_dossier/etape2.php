@@ -9,7 +9,7 @@
 
         <p>
             <?php
-            printf($this->lng['etape2']['contenu'], $this->projects->amount, $this->jours_financement);
+            printf($this->lng['etape2']['contenu'], $this->projects->amount, $this->iDuree);
             ?>
         </p>
 
