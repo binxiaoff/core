@@ -17,7 +17,7 @@
 					<img src="<?=$this->surl?>/styles/default/pdf/images/logo.png" alt="" />
 				</div><?php */?>
 
-				<h3><?=$this->bloc_pdf_contrat['titre']?> - #<?=$this->loans->id_loan?></h3>
+				<h3><?=$this->bloc_pdf_contrat['titre']?> - #<?=$this->oLoans->id_loan?></h3>
 				<h5><?=$this->bloc_pdf_contrat['designation']?></h5>
 				<div class="list">
 					<ul>
@@ -72,23 +72,23 @@
 								<?=$this->bloc_pdf_contrat['montant']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->loans->amount/100, 2, ',', ' ')?> €
+								<?=number_format($this->oLoans->amount/100, 2, ',', ' ')?> €
 							</div>
 							<div class="cl">&nbsp;</div>
 							<br />
 						</li>
 						<li>
 							<div class="col-long">
-								<?=$this->bloc_pdf_contrat['taux-i']?> 
+								<?=$this->bloc_pdf_contrat['taux-i']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->loans->rate, 2, ',', ' ')?> %
+								<?=number_format($this->oLoans->rate, 2, ',', ' ')?> %
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
 						<li>
 							<div class="col-long">
-								<?=$this->bloc_pdf_contrat['date-de-creation']?> 
+								<?=$this->bloc_pdf_contrat['date-de-creation']?>
 							</div>
 							<div class="col-small">
 								<?=$this->dateRemb?>
@@ -108,14 +108,14 @@
 						<li>
 							<?=$this->bloc_pdf_contrat['bon-de-caisse']?><br />
 							<?=$this->bloc_pdf_contrat['lemetteur-certifie']?><br />
-							<?=$this->bloc_pdf_contrat['la-signature-des']?> 
+							<?=$this->bloc_pdf_contrat['la-signature-des']?>
 						</li>
 						<li>
 							<div class="col-long">
 								<?=$this->bloc_pdf_contrat['a-rembourser']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->loans->amount/100, 2, ',', ' ')?> €
+								<?=number_format($this->oLoans->amount/100, 2, ',', ' ')?> €
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -124,7 +124,7 @@
 								<?=$this->bloc_pdf_contrat['assortie-des-interets-a']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->loans->rate, 2, ',', ' ')?> %
+								<?=number_format($this->oLoans->rate, 2, ',', ' ')?> %
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -132,7 +132,7 @@
 							<div class="col-long">
 								<?=$this->bloc_pdf_contrat['selon-echeancier']?>
 							</div>
-							
+
 							<div class="cl">&nbsp;</div>
 							<br />
 						</li>
@@ -148,7 +148,7 @@
                                 </div>
 							</div>
 							<div class="cl">&nbsp;</div>
-							
+
 						</li>
 						<li>
 							<?=$this->bloc_pdf_contrat['le-present-bon']?>
@@ -189,7 +189,7 @@
 						<li><?=$this->bloc_pdf_contrat['capitaux']?><div class="col-small"><?=number_format($this->l_AP[0]['capitaux_propres'], 2, ',', ' ')?> €</div></li>
 						<li><?=$this->bloc_pdf_contrat['provisions']?><div class="col-small"><?=number_format($this->l_AP[0]['provisions_pour_risques_et_charges'], 2, ',', ' ')?> €</div></li>
                         <li><?=$this->bloc_pdf_contrat['amortissements-sur-immo']?><div class="col-small"><?=number_format($this->l_AP[0]['amortissement_sur_immo'], 2, ',', ' ')?> €</div></li>
-                        
+
 						<li><?=$this->bloc_pdf_contrat['dettes-fi']?><div class="col-small"><?=number_format($this->l_AP[0]['dettes_financieres'], 2, ',', ' ')?> €</div></li>
 						<li><?=$this->bloc_pdf_contrat['dettes-fourn']?><div class="col-small"><?=number_format($this->l_AP[0]['dettes_fournisseurs'], 2, ',', ' ')?> €</div></li>
 						<li><?=$this->bloc_pdf_contrat['autres-dettes']?><div class="col-small"><?=number_format($this->l_AP[0]['autres_dettes'], 2, ',', ' ')?> €</div></li>
@@ -205,7 +205,7 @@
 				<p><?=$this->bloc_pdf_contrat['conditions-contenu']?></p>
 			</div>
 			<!-- End Page Break -->
-			
+
 			<!-- Page Break -->
 			<div class="page-break">
 				<h3><?=$this->bloc_pdf_contrat['echeancier-remboursements']?></h3>
@@ -225,7 +225,7 @@
 						{
 							$capRestant -= $r['capital'];
 							if($capRestant < 0)$capRestant = 0;
-							
+
 							?>
 							<tr>
 								<td><?=$this->dates->formatDate($r['date_echeance'],'d/m/Y')?></td>
@@ -237,9 +237,9 @@
 							<?
 						}
 						?>
-						
+
 					</table>
-				</div>			
+				</div>
 			</div>
 			<!-- End Page Break -->
 
