@@ -129,7 +129,7 @@ if($this->google_analytics != '')
                     </div>
                     <div class="form-row">
                     	<span class="euro-sign">€</span>
-						<input type="text" class="field required" value="<?=(isset($_POST['montant'])?$_POST['montant']:$this->lng['landing-page']['montant-souhaite'])?>" title="<?=$this->lng['landing-page']['montant-souhaite']?>" name="montant" id="montant" data-validators="Presence&amp;Numericality, { maximum:<?=$this->sommeMax?> }&amp;Numericality, { minimum:<?=$this->sommeMin?> }" onkeyup="lisibilite_nombre(this.value,this.id);" />
+						<input type="text" class="field required" placeholder="<?=(isset($_POST['montant'])?$_POST['montant']:$this->lng['landing-page']['montant-souhaite'])?>" title="<?=$this->lng['landing-page']['montant-souhaite']?>" name="montant" id="montant" data-validators="Presence&amp;Numericality, { maximum:<?=$this->sommeMax?> }&amp;Numericality, { minimum:<?=$this->sommeMin?> }" onkeyup="lisibilite_nombre(this.value,this.id);" />
 
                         <em class="jusqua"><?=$this->lng['landing-page']['jusqua']?></em>
 					</div><!-- /.form-row -->
@@ -138,12 +138,12 @@ if($this->google_analytics != '')
                     <div style="clear:both;"></div>
 
 					<div class="form-row">
-						<input type="text" class="field required" value="<?=(isset($_POST['siren'])?$_POST['siren']:$this->lng['landing-page']['siren'])?>" title="<?=$this->lng['landing-page']['siren']?>" name="siren" id="siren" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 9}" />
+						<input type="text" class="field required" placeholder="<?=(isset($_POST['siren'])?$_POST['siren']:$this->lng['landing-page']['siren'])?>" title="<?=$this->lng['landing-page']['siren']?>" name="siren" id="siren" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 9}" />
                         <em class="caractmax"><?=$this->lng['landing-page']['9-caracteres-numeriques']?></em>
 					</div><!-- /.form-row -->
 
 					<div class="form-row">
-						<input type="text" value="<?=(isset($_POST['email'])?$_POST['email']:$this->lng['etape-1']['email'])?>" title="<?=$this->lng['etape-1']['email']?>" name="email" id="email" />
+						<input type="text" placeholder="<?=(isset($_POST['email'])?$_POST['email']:$this->lng['etape-1']['email'])?>" title="<?=$this->lng['etape-1']['email']?>" name="email" id="email" />
 					</div><!-- /.form-row -->
 
 
