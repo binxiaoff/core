@@ -27,7 +27,7 @@ then
         mysql -uroot -pROOTPASSWORD --max_allowed_packet=64M unilend < $sql
     done
     mysql -uroot -pROOTPASSWORD unilend < /vagrant/anonymize.sql
-    mysql -uroot -pROOTPASSWORD unilend -e "INSERT INTO users (id_user_type, firstname, name, phone, mobile, email, password, password_edited, id_tree, status, default_analyst, added, updated, lastlogin) VALUES ('1', 'Dev', 'Admin', '', '', 'admindev@unilend.fr', MD5('admindev'), NOW(), '0', '2', '0', NOW(), NOW(), NOW())"
+    cat /vagrant/fixture/unilend.*.sql | mysql -uroot -pROOTPASSWORD unilend
 fi
 rm -rf /vagrant/database
 
