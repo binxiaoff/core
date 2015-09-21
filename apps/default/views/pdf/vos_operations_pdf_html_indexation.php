@@ -20,9 +20,9 @@
 <b><?=$this->lng['preteur-operations-pdf']['paris-le']?> <?=(date('d/m/Y'))?></b>
 <br /><br /><br />
 <?
-if($this->lenders_accounts->id_company != 0){
-	
-	$this->companies->get($this->lenders_accounts->id_company,'id_company');
+if($this->oLendersAccounts->id_company != 0){
+
+	$this->companies->get($this->oLendersAccounts->id_company,'id_company');
 	?>
 	<b><?=$this->companies->name?></b><br />
     <?=$this->companies->adresse1?><br />
@@ -42,9 +42,9 @@ else{
 <div style="clear:both;"></div>
 <br />
 <b><?=$this->lng['preteur-operations-pdf']['objet-releve-doperations-de-votre-compte-unilend-n']?><?=$this->clients->id_client?></b><br />
-<?=$this->lng['preteur-operations-pdf']['titulaire']?> <?=($this->lenders_accounts->id_company != 0?$this->companies->name:$this->clients->prenom.' '.$this->clients->nom)?><br />
+<?=$this->lng['preteur-operations-pdf']['titulaire']?> <?=($this->oLendersAccounts->id_company != 0?$this->companies->name:$this->clients->prenom.' '.$this->clients->nom)?><br />
 <?
-if($this->lenders_accounts->id_company != 0){
+if($this->oLendersAccounts->id_company != 0){
 	?><?=$this->lng['preteur-operations-pdf']['Representant-legal']?> <?=$this->clients->civilite.' '.$this->clients->prenom.' '.$this->clients->nom?><br /><?
 }
 ?>
@@ -58,29 +58,29 @@ if($this->lenders_accounts->id_company != 0){
             <div class="th-wrap" style='top:-3px;width: 130px;'>
                 <i title="<?=$this->lng['preteur-operations-pdf']['info-titre-operation']?>" class="tooltip-anchor icon-double"></i>
                 <div class="title-ope"><?=$this->lng['preteur-operations-pdf']['operations']?>&nbsp;<i class="icon-arrows"></i></div>
-            </div>                
+            </div>
         </th>
-        
+
         <th width="200px" id="order_bdc" align="left" class="col1" style=" padding-left: 0px;">
                 <div class="th-wrap" style='top:-3px;width: 200px;'>
                 	<i title="<?=$this->lng['preteur-operations-pdf']['info-titre-bon-caisse']?>" class="tooltip-anchor icon-bdc"></i>
 					<div class="title-ope"><?=$this->lng['preteur-operations-pdf']['bdc']?>&nbsp;<i class="icon-arrows"></i></div>
-                </div>                
-            </th>    
-       
+                </div>
+            </th>
+
         <th width="150px" id="order_projects" align="center">
             <div class="th-wrap">
                 <i title="" class="icon-person tooltip-anchor" style="margin-left:-15px;" data-original-title="<?=$this->lng['preteur-operations-pdf']['info-titre-projets']?>"></i>
                 <div class="title-ope"><?=$this->lng['preteur-operations-pdf']['projets']?>&nbsp;<i class="icon-arrows"></i></div>
-            </div>            
-            
+            </div>
+
         </th>
         <th width="140px" id="order_date">
             <div class="th-wrap">
                 <i title="" class="icon-calendar tooltip-anchor" data-original-title="<?=$this->lng['preteur-operations-pdf']['info-titre-date-operation']?>"></i>
                 <div class="title-ope"><?=$this->lng['preteur-operations-pdf']['date-de-loperation']?>&nbsp;<i class="icon-arrows"></i></div>
             </div>
-        
+
         </th>
         <?php /*?><th width="80">
             <div class="th-wrap"><i title="" class="tooltip-anchor"><span class="iconplusmoins">+</span></i></div>
@@ -93,26 +93,26 @@ if($this->lenders_accounts->id_company != 0){
                 <i title="" class="icon-euro tooltip-anchor" data-original-title="<?=$this->lng['preteur-operations-pdf']['info-titre-montant-operation']?>"></i>
                 <div class="title-ope"><?=$this->lng['preteur-operations-pdf']['montant-de-loperation']?>&nbsp;<i class="icon-arrows"></i></div>
             </div>
-            
+
         </th>
         <th width="140px">
             <div class="th-wrap" >
                 <i title="" class="icon-bank tooltip-anchor" data-original-title="<?=$this->lng['preteur-operations-pdf']['info-titre-solde-compte']?>"></i>
                 <div class="title-ope"><?=$this->lng['preteur-operations-pdf']['solde-du-compte']?></div>
             </div>
-            
+
         </th>
     </tr>
-    
+
     <?
     $i=1;
 	$asterix_on = false;
     foreach($this->lTrans as $t)
 	{
-		
+
 		$t['solde'] = ($t['solde']/100);
 		$t['montant_prelevement'] = ($t['montant_prelevement']/100);
-        
+
         if($t['montant_operation'] > 0){
 			$plus = '<b style="color:#40b34f;">+</b>';
 			$moins = '';
@@ -120,7 +120,7 @@ if($this->lenders_accounts->id_company != 0){
 		}
 		else{
 			$plus = '';
-			$moins = '<b style="color:red;">-</b>';	
+			$moins = '<b style="color:red;">-</b>';
 			$couleur = 'style="color:red;"';
 		}
 
@@ -128,27 +128,27 @@ if($this->lenders_accounts->id_company != 0){
 		{
 			$solde = $t['solde'];
 		}
-		
+
         // Remb preteur
         if($t['type_transaction'] == 5 || $t['type_transaction'] == 23){
-            
+
 			// Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
 			$t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['remboursement'];
-			
+
             $this->echeanciers->get($t['id_echeancier'],'id_echeancier');
            // $this->projects->get($this->echeanciers->id_project,'id_project');
             //$this->companies->get($this->projects->id_company,'id_company');
-            
+
             $retenuesfiscals = $this->echeanciers->prelevements_obligatoires+$this->echeanciers->retenues_source+$this->echeanciers->csg+$this->echeanciers->prelevements_sociaux+$this->echeanciers->contributions_additionnelles+$this->echeanciers->prelevements_solidarite+$this->echeanciers->crds;
-            
+
 			// si on est dans le cas d'un RA on change quelques montant
 			/*if($t['type_transaction'] == 23)
 			{
 				// pas lié à une echeance donc on assigne les montants manuellement
 				$this->echeanciers->interets = $this->echeanciers->interets = 0;
-				$this->echeanciers->capital = $t['montant']; 
+				$this->echeanciers->capital = $t['montant'];
 			}*/
-			
+
             ?>
             <!-- debut transasction remb -->
             <tr class="transact remb_<?=$t['id_transaction']?> <?=($i%2 == 1?'':'odd')?>">
@@ -190,19 +190,19 @@ if($this->lenders_accounts->id_company != 0){
                             </tr>
                             <tr>
                                 <td colspan="4" style=" height:4px;"></td>
-                            </tr>                            
+                            </tr>
                             </tbody>
                         </table>
                         </div>
                     </td>
                 </tr>
-            <!-- fin transasction remb --> 
+            <!-- fin transasction remb -->
         <?
         $i++;
         }
         elseif(in_array($t['type_transaction'],array(8,1,3,4,16,17,19,20))){
-            
-			
+
+
 			// Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
 			switch($t['type_transaction'])
 			{
@@ -231,28 +231,28 @@ if($this->lenders_accounts->id_company != 0){
 					$t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-parrain'];
 				break;
 			}
-			
+
 			// ajout KLE 03/03/15 , pour un client à a du lui faire un retrait positif car :
 			/*
-			
+
 			Dans le fichier BNP Paribas, nous constatons en date du 25/02/2015 un rejet de virement de EUR 350,00 avec le libellé Christophe Voliotis au motif suivant « Compte clos ».
-			
-			Rep : 
+
+			Rep :
 			-	La régularisation devra s’effectuer en date du jour (et non pas en corrigeant la ligne correspondant à la date où avait été demandé ce virement).
-			
+
 			*/
-			
-			$type = "";				
+
+			$type = "";
 			if($t['type_transaction'] == 8 && $t['montant'] > 0)
 			{
 				$type = "Annulation retrait des fonds - compte bancaire clos";
 			}
 			else
 			{
-				$type = $t['libelle_operation'];					
+				$type = $t['libelle_operation'];
 			}
 			?>
-			
+
             <tr <?=($i%2 == 1?'':'class="odd"')?>>
                 <td><?=$type?></td>
                 <td></td>
@@ -268,7 +268,7 @@ if($this->lenders_accounts->id_company != 0){
         }
         elseif(in_array($t['type_transaction'],array(2)))
 		{
-            
+
             /*if($t['id_bid_remb'] != 0){
 				$this->bids->get($t['id_bid_remb'],'id_bid');
 				$id_loan = '';
@@ -276,19 +276,19 @@ if($this->lenders_accounts->id_company != 0){
 			else{
 				$this->wallets_lines->get($t['id_transaction'],'id_transaction');
 				$this->bids->get($this->wallets_lines->id_wallet_line,'id_lender_wallet_line');
-				
-				if($this->loans->get($this->bids->id_bid,'status = 0 AND id_bid')){
+
+				if($this->oLoans->get($this->bids->id_bid,'status = 0 AND id_bid')){
 					$id_loan = ' - '.$this->loans->id_loan;
 				}
 				else $id_loan = '';
 			}*/
-			
+
 			$bdc = $t['bdc'];
 			if($t['bdc'] == 0)
 			{
 				$bdc = "";
-			}			
-			
+			}
+
 			//asterix pour les offres acceptees
 			$asterix = "";
 			$offre_accepte = false;
@@ -298,9 +298,9 @@ if($this->lenders_accounts->id_company != 0){
 				$offre_accepte = true;
 				$asterix_on = true;
 			}
-			
-			
-            
+
+
+
             ?>
             <tr <?=($i%2 == 1?'':'class="odd"')?>>
                 <td><?=$t['libelle_operation']?></td>
@@ -316,7 +316,7 @@ if($this->lenders_accounts->id_company != 0){
             $i++;
         }
     }
-	
+
 	$soldetotal = $this->transactions->getSoldeDateLimite($t['id_client'],$this->date_fin);
     ?>
     <tr>
@@ -359,28 +359,28 @@ if($asterix_on)
 
  <script type="text/javascript">
 	$("#order_operations,#order_projects,#order_date").click(function() {
-		
+
 		if($(this).attr('id') == 'order_operations'){
 			var type = 'order_operations';
-			
+
 			if($("#order_operations.asc").length){ var order = 'desc';}
 			else{ var order = 'asc'; }
 		}
 		else if($(this).attr('id') == 'order_projects'){
 			var type = 'order_projects';
-			
+
 			if($("#order_projects.asc").length){ var order = 'desc';}
 			else{ var order = 'asc'; }
 		}
 		else if($(this).attr('id') == 'order_date'){
 			var type = 'order_date';
-			
+
 			if($("#order_date.asc").length){ var order = 'desc'; }
 			else{ var order = 'asc'; }
 		}
-		
+
 		$(".load_table_vos_operations").fadeIn();
-		
+
 		var val = {
 			debut 				: $("#debut").val(),
 			fin 				: $("#fin").val(),
@@ -392,7 +392,7 @@ if($asterix_on)
 			order 				: order,
 			type 				: type
 		}
-		
+
 		$.post(add_url+"/ajax/vos_operations",val).done(function( data ) {
 
 			$(".content_table_vos_operations").html(data);
