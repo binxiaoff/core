@@ -105,7 +105,8 @@ class SalesForce
                   FROM
                     companies co
                   LEFT JOIN
-                    pays_v2 acountry ON (co.id_pays = acountry.id_pays)";
+                    pays_v2 acountry ON (co.id_pays = acountry.id_pays)
+                    LIMIT 0,100";
 
         $this->tryIt($sQuery, 'companies');
     }
@@ -113,7 +114,7 @@ class SalesForce
     public function extractBorrowers()
     {
         $sQuery = "SELECT
-                    c.id_client as 'Id Client',
+                    c.id_client as 'IDClient',
                     c.id_langue as 'Langue',
                     CONVERT(CAST(REPLACE(c.civilite,',','') as BINARY) USING utf8) as 'Civilite',
                     CONVERT(CAST(REPLACE(c.nom,',','') as BINARY) USING utf8) as 'Nom',
@@ -123,20 +124,20 @@ class SalesForce
                     CASE c.naissance
                       WHEN '0000-00-00' then ''
                       ELSE c.naissance
-                    END as 'Date de naissance',
-                    CONVERT(CAST(REPLACE(ville_naissance,',','') as BINARY) USING utf8) as 'Ville de naissance',
-                    ccountry.fr as 'Pays de Naissance',
+                    END as 'DateNaissance',
+                    CONVERT(CAST(REPLACE(ville_naissance,',','') as BINARY) USING utf8) as 'VilleNaissance',
+                    ccountry.fr as 'PaysNaissance',
                     nv2.fr_f as 'Nationalite',
                     REPLACE(c.telephone,'\t','') as 'Telephone',
                     c.mobile as 'Mobile',
                     REPLACE(c.email,',','') as 'Email',
-                    c.etape_inscription_preteur as 'Etape inscription preteur',
+                    c.etape_inscription_preteur as 'EtapeInscriptionPreteur',
                     CASE c.type
                         WHEN 1 THEN 'Physique'
                         WHEN 2 THEN 'Morale'
                         WHEN 3 THEN 'Physique'
                         ELSE 'Morale'
-                    END as 'Type de contact',
+                    END as 'TypeContact',
                     CASE c.status
                         WHEN 1 THEN 'oui'
                         ELSE 'non'
@@ -148,14 +149,14 @@ class SalesForce
                     CASE c.updated
                       WHEN '0000-00-00 00:00:00' then ''
                       ELSE c.updated
-                    END as 'Date de derniere mise a jour',
+                    END as 'DateMiseJour',
                     CASE c.lastlogin
                       WHEN '0000-00-00 00:00:00' then ''
                       ELSE c.lastlogin
-                    END as 'Date de dernier login',
-                    CONVERT(CAST(REPLACE(ca.adresse1,',','') as BINARY) USING utf8) as 'Adresse 1',
-                    CONVERT(CAST(REPLACE(ca.adresse2,',','') as BINARY) USING utf8) as 'Adresse 2',
-                    CONVERT(CAST(REPLACE(ca.adresse3,',','') as BINARY) USING utf8) as 'Adresse 3',
+                    END as 'DateDernierLogin',
+                    CONVERT(CAST(REPLACE(ca.adresse1,',','') as BINARY) USING utf8) as 'Adresse1',
+                    CONVERT(CAST(REPLACE(ca.adresse2,',','') as BINARY) USING utf8) as 'Adresse2',
+                    CONVERT(CAST(REPLACE(ca.adresse3,',','') as BINARY) USING utf8) as 'Adresse3',
                     CONVERT(CAST(REPLACE(ca.cp,',','') as BINARY) USING utf8) as 'CP',
                     CONVERT(CAST(REPLACE(ca.ville,',','') as BINARY) USING utf8) as 'Ville',
                     acountry.fr as 'Pays'
@@ -173,7 +174,8 @@ class SalesForce
                 WHERE
                     c.status_pre_emp = 2
                     group by
-                        c.id_client";
+                        c.id_client
+                        LIMIT 0,100";
 
         $this->tryIt($sQuery, 'emprunteurs');
     }
@@ -181,34 +183,40 @@ class SalesForce
     public function extractProjects()
     {
         $sQuery = "SELECT
-                        p.id_project AS 'Id Projet',
-                        CONVERT(CAST(REPLACE(cl.source,',','') as BINARY) USING utf8) AS 'Source 1',
-                        CONVERT(CAST(REPLACE(cl.source2,',','') as BINARY) USING utf8) AS 'Source 2',
-                        p.id_company AS 'Id Company',
+                        p.id_project AS 'IDProjet',
+                        CONVERT(CAST(REPLACE(cl.source,',','') as BINARY) USING utf8) AS 'Source1',
+                        CONVERT(CAST(REPLACE(cl.source2,',','') as BINARY) USING utf8) AS 'Source2',
+                        p.id_company AS 'IDCompany',
                         p.amount AS 'Amount',
-                        p.period AS 'Nb de mois',
-                        p.date_publication AS 'Date de publication',
-                        p.date_retrait AS 'Date retrait',
+                        p.period AS 'NbMois',
+                        CASE p.date_publication
+                          WHEN '0000-00-00' then ''
+                          ELSE p.date_publication
+                        END AS 'Date_Publication',
+						CASE p.date_retrait
+                          WHEN '0000-00-00' then ''
+                          ELSE p.date_retrait
+                        END AS 'Date_Retrait',
                         CASE p.added
                           WHEN '0000-00-00 00:00:00' then ''
                           ELSE p.added
-                        END AS 'Date_ajout',
+                        END AS 'Date_Ajout',
                         CASE p.updated
                           WHEN '0000-00-00 00:00:00' then ''
                           ELSE p.updated
-                        END AS 'Date de mise a jour',
+                        END AS 'Date_Mise_Jour',
                         p.status AS 'Status',
                         pn.note AS 'Note',
                         CONVERT(CAST(REPLACE(co.name,',','') as BINARY) USING utf8) AS 'Nom_Societe',
                         CONVERT(CAST(REPLACE(co.forme,',','') as BINARY) USING utf8) AS 'Forme',
                         REPLACE(co.siren,'\t','') AS 'Siren',
-                        CONVERT(CAST(REPLACE(co.adresse1,',','') as BINARY) USING utf8) as 'Adresse 1',
-                        CONVERT(CAST(REPLACE(co.adresse2,',','') as BINARY) USING utf8) as 'Adresse 2',
+                        CONVERT(CAST(REPLACE(co.adresse1,',','') as BINARY) USING utf8) as 'Adresse1',
+                        CONVERT(CAST(REPLACE(co.adresse2,',','') as BINARY) USING utf8) as 'Adresse2',
                         REPLACE(co.zip,',','') AS 'CP',
                         CONVERT(CAST(REPLACE(co.city,',','') as BINARY) USING utf8) AS 'Ville',
-                        co.id_pays AS 'Id Pays',
+                        co.id_pays AS 'IdPays',
                         REPLACE(co.phone,'\t','') AS 'Telephone',
-                        CONVERT(CAST(co.status_client as BINARY) USING utf8) AS 'Status Client',
+                        CONVERT(CAST(co.status_client as BINARY) USING utf8) AS 'Status_Client',
                         CASE co.added
                           WHEN '0000-00-00 00:00:00' then ''
                           ELSE co.added
@@ -216,8 +224,8 @@ class SalesForce
                         CASE co.updated
                           WHEN '0000-00-00 00:00:00' then ''
                           ELSE co.updated
-                        END AS 'Date de mise a jour',
-                        co.id_client_owner AS 'Id Client'
+                        END AS 'Date_Mise_A_Jour',
+                        co.id_client_owner AS 'IDClient'
                     FROM
                         projects p
                             LEFT JOIN
@@ -225,7 +233,8 @@ class SalesForce
                             LEFT JOIN
                         clients cl ON (cl.id_client = co.id_client_owner)
                             LEFT JOIN
-                        projects_notes pn ON (p.id_project = pn.id_project)";
+                        projects_notes pn ON (p.id_project = pn.id_project)
+                        LIMIT 0,100";
 
         $this->tryIt($sQuery, 'projects', true);
     }
@@ -316,7 +325,8 @@ class SalesForce
                   WHERE
                     (c.status_pre_emp = 1 or c.status_pre_emp = 2)
                   GROUP BY
-                    c.id_client";
+                    c.id_client
+                    LIMIT 0,100";
 
         $this->tryIt($sQuery, 'preteurs');
         $this->extractProspects();
@@ -343,7 +353,8 @@ class SalesForce
                       WHEN '0000-00-00 00:00:00' then ''
                       ELSE updated
                     END as 'updated'
-                  FROM prospects p";
+                  FROM prospects p
+                  LIMIT 0,100";
 
         try {
             if ($rSql = $this->oDatabase->query($sQuery)) {
@@ -357,7 +368,7 @@ class SalesForce
                         $sValueRow = str_replace($that->aSearchCharacter, $that->aReplaceCharacter, $sValueRow);
                     });
                     if ($aRow['nom'] != $sNom && $aRow['prenom'] != $sPrenom && $aRow['email'] != $sEmail) {
-                        $aCsvProspect = array($aRow['id_prospect'],
+                        $aCsvProspect = array('P'.$aRow['id_prospect'],// We add the letter P to avoid error in the dataloader on duplicate key with lenders.
                             '',
                             $aRow['id_langue'],
                             $aRow['source'],

@@ -26,6 +26,9 @@ tmp/
 /route.php
 *.rej
 
+###DataLoader###
+/dataloader/extract/
+
 ###PHPStorm###
 .idea/
 

@@ -3,7 +3,6 @@
 namespace Unilend\core;
 
 use Monolog\Logger;
-use Unilend\librairies\ToLog;
 
 final class Cron
 {
