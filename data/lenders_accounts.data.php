@@ -153,7 +153,7 @@ class lenders_accounts extends lenders_accounts_crud
 
 	public function getAttachments($lender){
 
-		$sql = 'SELECT a.id_type, a.id_owner, a.type_owner, a.path, a.added, a.updated, a.archived
+		$sql = 'SELECT a.id, a.id_type, a.id_owner, a.type_owner, a.path, a.added, a.updated, a.archived
 				FROM attachment a
 				WHERE a.id_owner = '.$lender.'
 					AND a.type_owner = "lenders_accounts";';

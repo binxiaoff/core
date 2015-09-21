@@ -3,7 +3,6 @@
 <head>
 	<title>UNILEND</title>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-	<link rel="shortcut icon" href="<?=$this->surl?>/styles/default/pdf_facture/images/favicon.ico" />
 	<link rel="stylesheet" href="<?=$this->surl?>/styles/default/pdf_facture/style.css" type="text/css" media="all" />
 </head>
 <body>

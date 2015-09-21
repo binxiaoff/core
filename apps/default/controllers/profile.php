@@ -57,7 +57,7 @@ class profileController extends bootstrap
 			header('Location:'.$this->lurl.'/profile/societe');
 			die;
 		}
-		
+
 		//Recuperation des element de traductions
 		$this->lng['etape1'] = $this->ln->selectFront('inscription-preteur-etape-1',$this->language,$this->App);
 		$this->lng['etape2'] = $this->ln->selectFront('inscription-preteur-etape-2',$this->language,$this->App);
@@ -278,16 +278,7 @@ class profileController extends bootstrap
 			$ville_naissance = $this->clients->ville_naissance;
 			$id_nationalite = $this->clients->id_nationalite;
 			$naissance = $this->clients->naissance;
-			
-			// fichier
-			$fichier_cni_passeport = $this->attachments[attachment_type::CNI_PASSPORTE];
-            $fichier_cni_passeport_verso = $this->attachments[attachment_type::CNI_PASSPORTE_VERSO];
-            $fichier_justificatif_domicile = $this->attachments[attachment_type::JUSTIFICATIF_DOMICILE];
-            $fichier_attestation_hebergement_tiers = $this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS];
-            $fichier_cni_passport_tiers_hebergeant= $this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT];
-            $fichier_autre= $this->attachments[attachment_type::AUTRE1];
-            if($this->etranger > 0) $fichier_document_fiscal = $this->attachments[attachment_type::JUSTIFICATIF_FISCAL];
-			
+
 			$this->form_ok = true;
 			
 			////////////////////////////////////
@@ -424,11 +415,16 @@ class profileController extends bootstrap
 			
 			
 			// rib
-            $fichier_rib = $this->attachments[attachment_type::RIB];
-            if(isset($_FILES['rib']) && $_FILES['rib']['name'] != ''){
-                $fichier_rib = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
-            }
+			$bRibUpdated = false;
+            $fichier_rib =  isset($this->attachments[attachment_type::RIB]['id']) ? $this->attachments[attachment_type::RIB]['id'] : null;
 
+			if(isset($_FILES['rib']) && $_FILES['rib']['name'] != ''){
+                $fichier_rib = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
+				if (is_numeric($fichier_rib)) {
+
+					$bRibUpdated = true;
+				}
+            }
 					
 			$bic_old = $this->lenders_accounts->bic;
 			$iban_old = $this->lenders_accounts->iban;
@@ -446,16 +442,7 @@ class profileController extends bootstrap
 			
 			$this->form_ok = true;
 			$this->error_fichier = false;
-			
-			if($this->error_rib == true){
-				$this->form_ok = false;
-				$this->error_fichier = true;
-			}
-			
-			// on enregistre une partie pour avoir les images good
-			if($this->error_rib == false){
-				$this->lenders_accounts->update();
-			}
+
 			
 			// BIC
 			if(!isset($_POST['bic']) || $_POST['bic'] == $this->lng['etape2']['bic'] || $_POST['bic'] == ''){
@@ -479,8 +466,9 @@ class profileController extends bootstrap
 				$this->form_ok = false;
 			}
 			// RIB
-			if($fichier_rib == ''){
+			if (false === is_numeric($fichier_rib)) {
 				$this->form_ok = false;
+                $this->error_rib = true;
 			}
 
 
@@ -490,49 +478,72 @@ class profileController extends bootstrap
 			if($this->form_ok == true){
 				//////////////
 				// FICHIERS //
-				
+				$bDocumentFiscalUpdated                 = false;
+				$bCniPasseportUpdated                   = false;
+				$bCniPasseporVersotUpdated              = false;
+				$bJustificatifDomicileUpdated           = false;
+				$bAttestationHebergementTiersUpdated    = false;
+				$bCniPassportTiersHebergeantIUpdated    = false;
+				$bAutreUpdated                          = false;
+
 				// si etrangé
-				if($this->etranger == 1){
+				if ($this->etranger == 1 || $this->etranger == 2){
                     if(isset($_FILES['document_fiscal']) && $_FILES['document_fiscal']['name'] != ''){
                         $fichier_document_fiscal = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
-                    }
-				}
-				elseif($this->etranger == 2){
-                    if(isset($_FILES['document_fiscal']) && $_FILES['document_fiscal']['name'] != ''){
-                        $fichier_document_fiscal = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
+                        if (is_numeric($fichier_document_fiscal)) {
+                            $bDocumentFiscalUpdated = true;
+                        }
                     }
 				}
 				
 				// carte-nationale-didentite
                 if(isset($_FILES['cni_passeport']) && $_FILES['cni_passeport']['name'] != ''){
                     $fichier_cni_passeport = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
+                    if (is_numeric($fichier_cni_passeport)) {
+                        $bCniPasseportUpdated = true;
+                    }
                 }
 
 
                 // carte-nationale-didentite verso
                 if(isset($_FILES['cni_passeport_verso']) && $_FILES['cni_passeport_verso']['name'] != ''){
                     $fichier_cni_passeport_verso = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
+                    if (is_numeric($fichier_cni_passeport_verso)) {
+                        $bCniPasseporVersotUpdated = true;
+                    }
                  }
 
 
 				// justificatif-de-domicile
                 if(isset($_FILES['justificatif_domicile']) && $_FILES['justificatif_domicile']['name'] != '') {
                     $fichier_justificatif_domicile = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
+                    if (is_numeric($fichier_justificatif_domicile)) {
+                        $bJustificatifDomicileUpdated = true;
+                    }
                 }
 
                 // attestation hebergement tiers
                 if(isset($_FILES['attestation_hebergement_tiers']) && $_FILES['attestation_hebergement_tiers']['name'] != '') {
-                    $fichier = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::ATTESTATION_HEBERGEMENT_TIERS);
+                    $fichier_attestation_hebergement_tiers = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::ATTESTATION_HEBERGEMENT_TIERS);
+                    if (is_numeric($fichier_attestation_hebergement_tiers)) {
+                        $bAttestationHebergementTiersUpdated = true;
+                    }
                 }
 
                 // CNI passport tiers heberageant
                 if(isset($_FILES['cni_passport_tiers_hebergeant']) && $_FILES['cni_passport_tiers_hebergeant']['name'] != '') {
                     $fichier_cni_passport_tiers_hebergeant = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
+                    if (is_numeric($fichier_cni_passport_tiers_hebergeant)) {
+                        $bCniPassportTiersHebergeantIUpdated = true;
+                    }
                 }
 
                 // autre
                 if(isset($_FILES['autre1']) && $_FILES['autre1']['name'] != '') {
                     $fichier_autre = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
+                    if (is_numeric($fichier_autre)) {
+                        $bAutreUpdated = true;
+                    }
                 }
 
 				// FIN FICHIERS //
@@ -573,17 +584,17 @@ class profileController extends bootstrap
 				$id_pays_naissance != $this->clients->id_pays_naissance && strtotime($this->clients->added) >= $dateDepartControlPays || 
 				$id_nationalite != $this->clients->id_nationalite && strtotime($this->clients->added) >= $dateDepartControlPays || 
 				$naissance != $this->clients->naissance ||
-				$fichier_cni_passeport != '' ||
-				$fichier_justificatif_domicile != '' ||
-                $fichier_cni_passeport_verso !='' ||
-                $fichier_attestation_hebergement_tiers != '' ||
-                $fichier_cni_passport_tiers_hebergeant != ''||
-                $fichier_autre != '' ||
-				$this->etranger > 0 && $fichier_document_fiscal != '' ||
+                $bCniPasseportUpdated === true ||
+                $bJustificatifDomicileUpdated === true ||
+                $bCniPasseporVersotUpdated === true ||
+                $bAttestationHebergementTiersUpdated === true ||
+                $bCniPassportTiersHebergeantIUpdated === true ||
+                $bAutreUpdated === true ||
+				$this->etranger > 0 && $bDocumentFiscalUpdated === true ||
 				$origine_des_fonds_old != $this->lenders_accounts->origine_des_fonds || 
 				$bic_old != $this->lenders_accounts->bic || 
-				$iban_old != $this->lenders_accounts->iban || 
-				$fichier_rib == true
+				$iban_old != $this->lenders_accounts->iban ||
+                $bRibUpdated === true
 				){
 				
 					$contenu = '<ul>';
@@ -627,19 +638,19 @@ class profileController extends bootstrap
 					if($naissance != $this->clients->naissance)
 						$contenu .= '<li>date naissance</li>';
 					// fichier
-                    if ($fichier_cni_passeport != $this->attachments[attachment_type::CNI_PASSPORTE]["path"])
+                    if ($bCniPasseportUpdated)
                         $contenu .= '<li>fichier cni passeport</li>';
-                    if ($fichier_cni_passeport_verso != $this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"])
+                    if ($bCniPasseporVersotUpdated)
                         $contenu .= '<li>fichier cni passeport verso</li>';
-                    if ($fichier_justificatif_domicile != $this->attachments[attachment_type::JUSTIFICATIF_DOMICILE]["path"])
+                    if ($bJustificatifDomicileUpdated)
                         $contenu .= '<li>fichier justificatif domicile</li>';
-                    if ($fichier_attestation_hebergement_tiers != $this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]["path"])
+                    if ($bAttestationHebergementTiersUpdated)
                         $contenu .= '<li>fichier attestation hebergement tiers</li>';
-                    if ($fichier_cni_passport_tiers_hebergeant!= $this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]["path"])
+                    if ($bCniPassportTiersHebergeantIUpdated)
                         $contenu .= '<li>fichier cni passeport du tiers hebergeant</li>';
-                    if ($fichier_autre!= $this->attachments[attachment_type::AUTRE1]["path"])
+                    if ($bAutreUpdated)
                         $contenu .= '<li>fichier autre</li>';
-                    if ($this->etranger > 0 && $fichier_document_fiscal != $this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"])
+                    if ($bDocumentFiscalUpdated)
                         $contenu .= '<li>fichier document fiscal</li>';
 
 					////////////// PARTIE BANQUE ////////////////////////
@@ -650,7 +661,7 @@ class profileController extends bootstrap
 						$contenu .= '<li>BIC</li>';
 					if($iban_old != $this->lenders_accounts->iban)
 						$contenu .= '<li>IBAN</li>';
-					if($fichier_rib == true)
+					if($bRibUpdated)
 						$contenu .= '<li>Fichier RIB</li>';
 					
 					/////////////////////////////////////////////////////
@@ -1314,35 +1325,58 @@ class profileController extends bootstrap
 			}
 
 			/////////////////// PARTIE BANQUE /////////////////////////
+            $this->error_fichier = false;
+
+            $bCniDirigeantUpdated       = false;
+            $bKbisUpdated               = false;
+            $bRibUdated                 = false;
+            $bCniPasseportVersoUpdated  = false;
+            $bDelegationPouvoirUpdated  = false;
 
 			// carte-nationale-didentite dirigeant
-            $fichier_ci_dirigeant = $this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT];
-            if(isset($_FILES['ci_dirigeant']) && $_FILES['ci_dirigeant']['name'] != ''){
-                $fichier_ci_dirigeant = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
+            $fichier_cni_dirigeant = isset($this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]['id']) ? $this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]['id'] : null;
+            if (isset($_FILES['cni_passeport_dirigeant']) && $_FILES['cni_passeport_dirigeant']['name'] != ''){
+                $fichier_cni_dirigeant = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
+                if (is_numeric($fichier_cni_dirigeant)) {
+                    $bCniDirigeantUpdated = true;
+                }
             }
+
 			// Extrait Kbis
-            $fichier_kbis = $this->attachments[attachment_type::KBIS];
+            $fichier_kbis = isset($this->attachments[attachment_type::KBIS]['id']) ? $this->attachments[attachment_type::KBIS]['id'] : null;
             if(isset($_FILES['extrait_kbis']) && $_FILES['extrait_kbis']['name'] != ''){
                 $fichier_kbis = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
+                if (is_numeric($fichier_kbis)) {
+                    $bKbisUpdated = true;
+                }
 			}
 			// rib
-            $fichier_rib = $this->attachments[attachment_type::RIB];
+            $fichier_rib =  isset($this->attachments[attachment_type::RIB]['id']) ? $this->attachments[attachment_type::RIB]['id'] : null;
             if(isset($_FILES['rib']) && $_FILES['rib']['name'] != ''){
                 $fichier_rib= $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
+                if (is_numeric($fichier_rib)) {
+                    $bRibUdated = true;
+                }
 			}
 			
 			// CNI verso
-            $fichier_cni_passeport_verso = $this->attachments[attachment_type::CNI_PASSPORTE_VERSO];
+            $fichier_cni_passeport_verso = isset($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]['id']) ? $this->attachments[attachment_type::CNI_PASSPORTE_VERSO]['id'] : null;
             if(isset($_FILES['cni_passeport_verso']) && $_FILES['cni_passeport_verso']['name'] != ''){
                 $fichier_cni_passeport_verso = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
+                if (is_numeric($fichier_cni_passeport_verso)) {
+                    $bCniPasseportVersoUpdated = true;
+                }
 
             }
 			// Délégation de pouvoir
-            $fichier_delegation_pouvoir = $this->attachments[attachment_type::DELEGATION_POUVOIR];
+            $fichier_delegation_pouvoir = isset($this->attachments[attachment_type::DELEGATION_POUVOIR]['id']) ? $this->attachments[attachment_type::DELEGATION_POUVOIR]['id'] : null;
             if(isset($_FILES['delegation_pouvoir']) && $_FILES['delegation_pouvoir']['name'] != ''){
                 $fichier_delegation_pouvoir = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
+                if (is_numeric($fichier_delegation_pouvoir)) {
+                    $bDelegationPouvoirUpdated = true;
+                }
             }
-				
+
 			$bic_old = $this->lenders_accounts->bic;
 			$iban_old = $this->lenders_accounts->iban;
 			
@@ -1358,31 +1392,16 @@ class profileController extends bootstrap
 			
 
 			$this->form_ok = true;
-			$this->error_fichier = false;
 
-			if($fichier_ci_dirigeant == ''){
-				$this->form_ok = false;
-				$this->error_fichier = true;
+
+			if(false === is_numeric($fichier_cni_dirigeant)
+                || false === is_numeric($fichier_kbis)
+                || false === is_numeric($fichier_rib)
+                || false === is_numeric($fichier_delegation_pouvoir)
+            ){
+				//$this->form_ok = false;
+				//$this->error_fichier = true;
 			}
-			if($fichier_kbis == ''){
-				$this->form_ok = false;
-				$this->error_fichier = true;
-
-            }
-			if($fichier_rib == ''){
-				$this->form_ok = false;
-				$this->error_fichier = true;
-
-            }
-			if($fichier_delegation_pouvoir == ''){
-				$this->form_ok = false;
-				$this->error_fichier = true;
-
-            }
-			// on enregistre une partie pour avoir les images good ($this->error_cni_dirigent = dirigeant*)
-				if($this->error_cni_dirigent == false || $this->error_extrait_kbis == false || $this->error_rib == false || $this->error_autre == false || $this->error_delegation_pouvoir == false){
-					$this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-				}
 			
 			// BIC
 			if(!isset($_POST['bic']) || $_POST['bic'] == $this->lng['etape2']['bic'] || $_POST['bic'] == ''){
@@ -1457,16 +1476,14 @@ class profileController extends bootstrap
 				$origine_des_fonds_old != $this->lenders_accounts->origine_des_fonds || 
 				$bic_old != $this->lenders_accounts->bic || 
 				$iban_old != $this->lenders_accounts->iban ||
-				$fichier_ci_dirigeant == true ||
-				$fichier_kbis == true ||
-				$fichier_rib == true ||
-				$fichier_cni_passeport_verso == true ||
-				$fichier_delegation_pouvoir == true
+				$bCniDirigeantUpdated == true ||
+				$bKbisUpdated == true ||
+				$bRibUdated == true ||
+				$bCniPasseportVersoUpdated == true ||
+				$bDelegationPouvoirUpdated == true
 				)
 				{
-					
-					
-					
+
 					$contenu = '<ul>';
 					
 					
@@ -1539,15 +1556,15 @@ class profileController extends bootstrap
 						$contenu .= '<li>BIC</li>';
 					if($iban_old != $this->lenders_accounts->iban)
 						$contenu .= '<li>IBAN</li>';
-					if($fichier_ci_dirigeant == true)
+					if($bCniDirigeantUpdated == true)
 						$contenu .= '<li>Fichier cni passeport dirigent</li>';
-					if($fichier_kbis == true)
+					if($bKbisUpdated == true)
 						$contenu .= '<li>Fichier extrait kbis</li>';
-					if($fichier_rib == true)
+					if($bRibUdated == true)
 						$contenu .= '<li>Fichier RIB</li>';
-					if($fichier_cni_passeport_verso == true)
-						$contenu .= '<li>Fichier autre</li>';
-					if($fichier_delegation_pouvoir == true)
+					if($bCniPasseportVersoUpdated == true)
+						$contenu .= '<li>Fichier cni passeport verso</li>';
+					if($bDelegationPouvoirUpdated == true)
 						$contenu .= '<li>Fichier delegation de pouvoir</li>';
 					
 					//////////////////////////////////
@@ -1929,79 +1946,63 @@ class profileController extends bootstrap
 			$serialize = serialize(array('id_client' => $this->clients->id_client,'post' => $_POST));
 			$this->clients_history_actions->histo(12,'upload doc profile',$this->clients->id_client,$serialize);
 			////////////////
-			
+            $this->error_fichiers = false;
+
+            $bCniPasseportUpdated = false;
+            $bJustificatifDomicileUpdated = false;
+            $bRibUpdated = false;
+            $bCniPasseportVersoUpdated = false;
+
 			// carte-nationale-didentite
-            $fichier_cni_passeport = $this->attachments[attachment_type::CNI_PASSPORTE];
 			if(isset($_FILES['cni_passeport']) && $_FILES['cni_passeport']['name'] != '')
 			{
 				$fichier_cni_passeport = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
+                if(is_numeric($fichier_cni_passeport)) {
+                    $bCniPasseportUpdated = true;
+                }
                 $this->error_cni = false === $fichier_cni_passeport;
 			}
+
 			// justificatif-de-domicile
-            $fichier_justificatif_domicile = $this->attachments[attachment_type::JUSTIFICATIF_DOMICILE];
-			if(isset($_FILES['justificatif_de_domicile']) && $_FILES['justificatif_de_domicile']['name'] != '')
+			if(isset($_FILES['justificatif_domicile']) && $_FILES['justificatif_domicile']['name'] != '')
 			{
                 $fichier_justificatif_domicile = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
-                $this->error_justificatif_domicile = false === $fichier_justificatif_domicile;
-
+                if(is_numeric($fichier_justificatif_domicile)) {
+                    $bJustificatifDomicileUpdated = true;
+                }
 			}
 			// rib
-            $fichier_rib = $this->attachments[attachment_type::RIB];
 			if(isset($_FILES['rib']) && $_FILES['rib']['name'] != '')
 			{
                 $fichier_rib = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
-                $this->error_rib = false === $fichier_rib;
-			}
-			
-			// CNI verso
-            $fichier_cni_passeport_verso = $this->attachments[attachment_type::CNI_PASSPORTE_VERSO];
-			if(isset($_FILES['cni_passeport_verso']) && $_FILES['cni_passeport_verso']['name'] != '')
-			{
-                $fichier_cni_passeport_verso = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
-                $this->error_autre = false === $fichier_cni_passeport_verso;
+                if(is_numeric($fichier_rib)) {
+                    $bRibUpdated = true;
+                }
 
 			}
 			
-			
-			
-			$this->error_fichiers = false;
-			
-			
-			if($this->error_cni == true){
-				$this->error_fichiers = true;
-			}
-			if($this->error_justificatif_domicile == true){
-				$this->error_fichiers = true;
-			}
-			if($this->error_rib == true){
-				$this->error_fichiers = true;
-			}
-			if($this->error_autre == true){
-				$this->error_fichiers = true;
-			}
-			
-			// on enregistre une partie pour avoir les images good
-			if($this->error_cni == false || $this->error_justificatif_domicile == false || $this->error_rib == false || $this->error_autre == false){
-                $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+			// CNI verso
+			if(isset($_FILES['cni_passeport_verso']) && $_FILES['cni_passeport_verso']['name'] != '')
+			{
+                $fichier_cni_passeport_verso = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
+                if(is_numeric($fichier_cni_passeport_verso)) {
+                    $bCniPasseportVersoUpdated = true;
+                }
 			}
 			
 			if($this->error_fichiers == false){
 			
-				if($fichier_cni_passeport == true || $fichier_justificatif_domicile == true || $fichier_rib == true || $fichier_cni_passeport_verso == true){
-
-
-                    $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-					
+				if($bCniPasseportUpdated == true || $bJustificatifDomicileUpdated == true || $bRibUpdated == true || $bCniPasseportVersoUpdated == true){
 					
 					$contenu = '<ul>';
 					
-					if($fichier_cni_passeport == true)
+					if($bCniPasseportUpdated == true)
 						$contenu .= '<li>Fichier cni passeport</li>';
-					if($fichier_justificatif_domicile == true)
+					if($bJustificatifDomicileUpdated == true)
 						$contenu .= '<li>Fichier justificatif de domicile</li>';
-					if($fichier_rib == true)
+					if($bRibUpdated == true)
 						$contenu .= '<li>Fichier RIB</li>';
-					if($fichier_cni_passeport_verso == true)
+					if($bCniPasseportVersoUpdated == true)
 						$contenu .= '<li>Fichier cni passport verso</li>';
 					
 					$contenu .= '</ul>';
@@ -2184,87 +2185,74 @@ class profileController extends bootstrap
 			$serialize = serialize(array('id_client' => $this->clients->id_client,'post' => $_POST));
 			$this->clients_history_actions->histo(12,'upload doc profile',$this->clients->id_client,$serialize);
 			////////////////
-			
+            $this->error_fichiers = false;
+
+            $bCniPasseportDirigeantUpdated = false;
+            $bKbisUpdated = false;
+            $bRibUpdated = false;
+            $bCniPasseportVersoUpdated = false;
+            $bDelegationPouvoirUpdated = false;
+
 			// carte-nationale-didentite dirigeant
-            $fichier_cni_passeport_dirigent = $this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT];
             if(isset($_FILES['cni_passeport_dirigeant']) && $_FILES['cni_passeport_dirigeant']['name'] != ''){
                 $fichier_cni_passeport_dirigent = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
-                $this->error_cni_dirigent = false === $fichier_cni_passeport_dirigent;
+                if (is_numeric($fichier_cni_passeport_dirigent)) {
+                    $bCniPasseportDirigeantUpdated = true;
+                }
 			}
 			// Extrait Kbis
-            $fichier_extrait_kbis = $this->attachments[attachment_type::KBIS];
 			if(isset($_FILES['extrait_kbis']) && $_FILES['extrait_kbis']['name'] != ''){
                 $fichier_extrait_kbis = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
-                $this->error_extrait_kbis = false === $fichier_extrait_kbis;
+                if (is_numeric($fichier_extrait_kbis)) {
+                    $bKbisUpdated = true;
+                }
 			}
 			// rib
-            $fichier_rib = $this->attachments[attachment_type::RIB];
 			if(isset($_FILES['rib']) && $_FILES['rib']['name'] != ''){
                 $fichier_rib = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
-                $this->error_rib = false === $fichier_rib;
+                if (is_numeric($fichier_rib)) {
+                    $bRibUpdated = true;
+                }
             }
 			
 			// CNI passport verso
-            $fichier_cni_passeport_verso = $this->attachments[attachment_type::CNI_PASSPORTE_VERSO];
 			if(isset($_FILES['cni_passeport_verso']) && $_FILES['cni_passeport_verso']['name'] != ''){
                 $fichier_cni_passeport_verso = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
-                $this->error_autre = false === $fichier_cni_passeport_verso;
+                if (is_numeric($fichier_cni_passeport_verso)) {
+                    $bCniPasseportVersoUpdated = true;
+                }
             }
 			// Délégation de pouvoir
             $fichier_delegation_pouvoir = $this->attachments[attachment_type::DELEGATION_POUVOIR];
 			if(isset($_FILES['delegation_pouvoir']) && $_FILES['delegation_pouvoir']['name'] != ''){
                 $fichier_delegation_pouvoir  = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
-                $this->error_delegation_pouvoir = false === $fichier_delegation_pouvoir;
+                if (is_numeric($fichier_delegation_pouvoir)) {
+                    $bDelegationPouvoirUpdated = true;
+                }
             }
-			
-			
-			$this->error_fichiers = false;
-				
-			if($this->error_extrait_kbis == true){
-				$this->error_fichiers = true;
-			}
-			if($this->error_rib == true){
-				$this->error_fichiers = true;
-			}
-			if($this->error_autre == true){
-				$this->error_fichiers = true;
-			}
-			if($this->error_cni_dirigent == true){
-				$this->error_fichiers = true;
-			}
-			if($this->error_delegation_pouvoir == true){
-				$this->error_fichiers = true;
-			}
-			
-			// on enregistre une partie pour avoir les images good
-			if($this->error_cni_dirigent == false || $this->error_extrait_kbis == false || $this->error_rib == false || $this->error_autre == false || $this->error_delegation_pouvoir == false){
-                $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-			}
-			
+
 			if($this->error_fichiers == false){
 
-				if($fichier_cni_passeport_dirigent == true || $fichier_extrait_kbis == true || $fichier_rib == true || $fichier_cni_passeport_verso == true || $fichier_delegation_pouvoir == true){
+				if($bCniPasseportDirigeantUpdated == true || $bKbisUpdated == true || $bRibUpdated == true || $bCniPasseportVersoUpdated == true || $bDelegationPouvoirUpdated == true){
 					
-					
-					
-					$this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-					
-					if(in_array($this->clients_status->status,array(20,30,40))) $statut_client = 40;
-					else $statut_client = 50;
-					
-					
+					if(in_array($this->clients_status->status,array(20,30,40)))
+                    {
+                        $statut_client = 40;
+                    } else {
+                        $statut_client = 50;
+                    }
 					
 					$contenu = '<ul>';
 					
-					if($fichier_cni_passeport_dirigent == true)
+					if($bCniPasseportDirigeantUpdated == true)
 						$contenu .= '<li>Fichier cni passeport dirigent</li>';
-					if($fichier_extrait_kbis == true)
+					if($bKbisUpdated == true)
 						$contenu .= '<li>Fichier extrait kbis</li>';
-					if($fichier_rib == true)
+					if($bRibUpdated == true)
 						$contenu .= '<li>Fichier RIB</li>';
-					if($fichier_cni_passeport_verso == true)
-						$contenu .= '<li>Fichier autre</li>';
-					if($fichier_delegation_pouvoir == true)
+					if($bCniPasseportVersoUpdated == true)
+						$contenu .= '<li>Fichier cni passeport verso</li>';
+					if($bDelegationPouvoirUpdated == true)
 						$contenu .= '<li>Fichier delegation de pouvoir</li>';
 					
 					$contenu .= '</ul>';
@@ -2429,7 +2417,7 @@ class profileController extends bootstrap
                 break;
             case attachment_type::CNI_PASSPORTE_DIRIGEANT :
                 $field = 'cni_passeport_dirigeant';
-                $uploadPath = $basePath.'cni_passeport_dirigeant/';
+                $uploadPath = $basePath.'cni_passeport_dirigent/';
                 break;
             case attachment_type::DELEGATION_POUVOIR :
                 $field = 'delegation_pouvoir';
@@ -2445,7 +2433,7 @@ class profileController extends bootstrap
                 break;
             case attachment_type::AUTRE1 :
                 $field = 'autre1';
-                $uploadPath = $basePath.'autre1/';
+                $uploadPath = $basePath.'autre/';
                 break;
             case attachment_type::AUTRE2 :
                 $field = 'autre2';

@@ -2,7 +2,7 @@
 
 locale-gen fr_FR.UTF-8
 
-#install percona (mysql)
+# install percona (MySQL)
 apt-key adv --keyserver 213.133.103.71 --recv-keys 1C4CBDCDCD2EFD2A #keys.gnupg.net
 add-apt-repository "deb http://repo.percona.com/apt precise main"
 add-apt-repository "deb-src http://repo.percona.com/apt precise main"
@@ -11,18 +11,25 @@ debconf-set-selections <<< 'percona-server-server-5.5 percona-server-server/root
 debconf-set-selections <<< 'percona-server-server-5.5 percona-server-server/root_password_again password ROOTPASSWORD'
 apt-get install -y percona-server-server-5.5
 
-# install lftp for download fixture
+# install lftp for download database
 apt-get install -y lftp
 
-lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/fixture  /vagrant/fixture; bye' -u vagrantftp,X9d\@\$nsa -p 21 synology.corp.unilend.fr
+lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/database /vagrant/database; bye' -u vagrantftp,X9d\@\$nsa -p 21 synology.corp.unilend.fr
 
-if [ -f /vagrant/fixture/schemas.sql ];
-    then
-        echo "CREATE DATABASE unilend" | mysql -uroot -pROOTPASSWORD
-        mysql -uroot -pROOTPASSWORD unilend < /vagrant/fixture/schemas.sql
-        cat /vagrant/fixture/unilend.*.sql | mysql -uroot -pROOTPASSWORD unilend
+if [ -f /vagrant/database/schemas.sql ];
+then
+    mysql -uroot -pROOTPASSWORD -e "CREATE DATABASE unilend"
+    mysql -uroot -pROOTPASSWORD unilend < /vagrant/database/schemas.sql
+    rm -f /vagrant/database/schemas.sql
+    for sql in /vagrant/database/*.sql
+    do
+        echo "Import $sql"
+        mysql -uroot -pROOTPASSWORD --max_allowed_packet=64M unilend < $sql
+    done
+    mysql -uroot -pROOTPASSWORD unilend < /vagrant/anonymize.sql
+    cat /vagrant/fixture/unilend.*.sql | mysql -uroot -pROOTPASSWORD unilend
 fi
-rm -rf /vagrant/fixture
+rm -rf /vagrant/database
 
 # install phpmyadmin
 mkdir /vagrant/phpmyadmin/
@@ -37,13 +44,18 @@ rm -rf /vagrant/phpmyadmin
 
 # configure phpmyadmin
 mv /srv/sites/phpmyadmin/config.sample.inc.php /srv/sites/phpmyadmin/config.inc.php
-echo "CREATE DATABASE pma" | mysql -uroot -pROOTPASSWORD
-echo "CREATE USER 'pma'@'localhost' IDENTIFIED BY 'PMAUSERPASSWD'" | mysql -uroot -pROOTPASSWORD
-echo "GRANT ALL ON pma.* TO 'pma'@'localhost'" | mysql -uroot -pROOTPASSWORD
-echo "flush privileges" | mysql -uroot -pROOTPASSWORD
+mysql -uroot -pROOTPASSWORD -e "CREATE DATABASE pma"
+mysql -uroot -pROOTPASSWORD -e "CREATE USER 'pma'@'localhost' IDENTIFIED BY 'PMAUSERPASSWD'"
+mysql -uroot -pROOTPASSWORD -e "GRANT ALL ON pma.* TO 'pma'@'localhost'"
+mysql -uroot -pROOTPASSWORD -e "flush privileges"
 cat /vagrant/conf/phpmyadmin.conf.php > /srv/sites/phpmyadmin/config.inc.php
 
-#install apache2
+# create external user
+mysql -uroot -pROOTPASSWORD -e "CREATE USER 'external'@'%' IDENTIFIED BY 'EXTERNALPASSWD'"
+mysql -uroot -pROOTPASSWORD -e "GRANT ALL ON unilend.* TO 'external'@'%'"
+mysql -uroot -pROOTPASSWORD -e "flush privileges"
+
+# install apache2
 apt-get install -y apache2
 a2enmod deflate
 a2enmod filter
@@ -68,13 +80,34 @@ sed -i '/;date.timezone =/c date.timezone = "Europe/Paris"' /etc/php5/apache2/ph
 sed -i "s/display_errors = .*/display_errors = On/" /etc/php5/apache2/php.ini
 sed -i "s/html_errors = .*/html_errors = On/" /etc/php5/apache2/php.ini
 sed -i "s/upload_max_filesize = .*/upload_max_filesize = 64M/" /etc/php5/apache2/php.ini
-sed -i "/post_max_size =/c post_max_size = 64M \nzend_extension=/usr/lib/php5/20090626/xdebug.so \nxdebug.remote_enable=1 \nxdebug.remote_handler=dbgp \nxdebug.remote_mode=req \nxdebug.remote_host=127.0.0.1 \nxdebug.remote_port=9000/" /etc/php5/apache2/php.ini
+sed -i "s/post_max_size = .*/post_max_size = 64M/" /etc/php5/apache2/php.ini
+printf "\n[xdebug]\nzend_extension=/usr/lib/php5/20090626/xdebug.so \nxdebug.remote_enable=1 \nxdebug.remote_handler=dbgp \nxdebug.remote_mode=req \nxdebug.remote_host=127.0.0.1 \nxdebug.remote_port=9000 \nxdebug.var_display_max_data=65536 \nxdebug.var_display_max_depth=10" >> /etc/php5/apache2/php.ini
 
 service apache2 restart
 
-#copy unversioned files
+# copy unversioned files
 lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/files_outside_git  /srv/sites/unilend; bye' -u vagrantftp,X9d\@\$nsa -p 21 synology.corp.unilend.fr
 chmod -R u+w /srv/sites/unilend
 
-#install composer
+# install composer
 curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/bin/
+
+# install java, maven et dataloader
+add-apt-repository -y ppa:openjdk-r/ppa
+apt-get update
+apt-get install -y openjdk-8-jdk maven git
+
+yes | git clone https://www.github.com/forcedotcom/dataloader.git /srv/dataloader
+cd /srv/dataloader
+git submodule init
+git submodule update
+mvn clean package -DskipTests
+
+# install zsh et oh my zsh
+apt-get install -y zsh
+git clone git://github.com/robbyrussell/oh-my-zsh.git /home/vagrant/.oh-my-zsh
+cp /home/vagrant/.oh-my-zsh/templates/zshrc.zsh-template /home/vagrant/.zshrc
+sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="pygmalion"/g' /home/vagrant/.zshrc
+sed -i 's/plugins=.*/plugins=(git colored-man colorize github jira vagrant zsh-syntax-highlighting)/' /home/vagrant/.zshrc
+printf "\nalias composer=\"/usr/bin/composer.phar\"" >> /home/vagrant/.zshrc
+chsh -s /bin/zsh vagrant

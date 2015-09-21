@@ -36,6 +36,8 @@ textarea { overflow: auto; }
 
 .doc-wrapper .shell { width: 630px; margin: 0 auto; padding: 15px 0; }
 .doc-wrapper .logo { padding: 0 0 20px 0; }
+.doc-wrapper .logo { background:url(images/logo.png) no-repeat 0 0; width:252px; height:61px; text-indent:100%; white-space:nowrap; overflow:hidden; }
+
 
 .doc-wrapper h3 { padding: 0 0 20px 0; color: #7f7f7f; font-size: 14px; line-height: 16px; text-transform: uppercase; }
 .doc-wrapper h3.sm { text-transform: none; color: #b20066; }
@@ -92,6 +94,8 @@ textarea { overflow: auto; }
 .pdf-wrapper { padding: 0 0 30px 0; color: #848484; }
 .pdf-wrapper .shell { width: 718px; margin: 0 auto; padding: 15px 0; }
 .pdf-wrapper .logo { padding: 0 0 50px 0; }
+.pdf-wrapper .logo { background:url(images/logo.png) no-repeat 0 0; width:252px; height:61px; text-indent:100%; white-space:nowrap; overflow:hidden; }
+
 .pdf-wrapper h2 { text-align: center; font-size: 14px; line-height: 18px; display: block; color: #000000; padding: 0 0 5px 0; font-family: 'TrendSansOne', arial, sans-serif; }
 
 .pdf-wrapper .container { width: 716px; border: solid 1px #a1a5a7; margin: 0 auto; font-size: 13px; line-height: 16px; color: black; }
@@ -112,7 +116,7 @@ textarea { overflow: auto; }
 .pdf-wrapper .container .case-3 .col-1 { width: 140px; float: left; display: inline; padding-left: 5px; padding-right: 5px; font-size: 15px; line-height: 17px; }
 .pdf-wrapper .container .case-3 .col-2 { width: 20px; float: left; display: inline; font-size: 15px; line-height: 17px; }
 .pdf-wrapper .container .case-3 .col-3 { width: 520px; float: left; display: inline; }
-.pdf-wrapper .container .case-3 .col-4 { width: 20px; padding-right: 5px; float: left; display: inline; font-size: 11px; line-height: 14px; font-weight: bold; text-align: right; } 
+.pdf-wrapper .container .case-3 .col-4 { width: 20px; padding-right: 5px; float: left; display: inline; font-size: 11px; line-height: 14px; font-weight: bold; text-align: right; }
 .pdf-wrapper .container .case-3 .row { position: relative; padding: 0 0 7px 0; }
 .pdf-wrapper .container .case-3 .row .star { position: absolute; font-size: 15px; line-height: 17px; top: 0; left: -20px; }
 .pdf-wrapper .container .case-3 .row .number { position: absolute; right: -20px; top: 0; font-size: 11px; line-height: 14px; font-weight: bold; }

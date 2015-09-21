@@ -8,6 +8,7 @@ class depot_de_dossierController extends bootstrap
     function depot_de_dossierController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
+
         $this->catchAll = true;
 
 

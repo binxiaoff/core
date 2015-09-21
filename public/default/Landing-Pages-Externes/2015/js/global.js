@@ -139,7 +139,7 @@ $(function(){
 
 
     /**** select duree ****/
-
+/* a remettre à la remise en route du simulateur
     $('#dc_slider-step').noUiSlider({
         start: [ 60 ],
         connect: "lower",
@@ -151,7 +151,7 @@ $(function(){
         format: wNumb({
             decimals: 0
         })
-    });
+    });*/
 
     /**** calcul interets ****/
 

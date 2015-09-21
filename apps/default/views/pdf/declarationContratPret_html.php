@@ -3,7 +3,6 @@
 <head>
 	<title>SFF cerfa</title>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-	<link rel="shortcut icon" href="<?=$this->surl?>/styles/default/declarationContratPret/images/favicon.ico" />
 	<link rel="stylesheet" href="<?=$this->surl?>/styles/default/declarationContratPret/print.css" type="text/css" media="all" />
 </head>
 <body>
@@ -42,7 +41,7 @@
 							<tr>
 								<td><label>Adresse complète :</label> <span class="editable"><?=strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->adresse)))?></span></td>
 							</tr>
-							
+
 						</table>
 					</div><!-- /.section -->
 					<div class="section">
@@ -59,10 +58,10 @@
 								<td class="headings tc" width="62">Montant <br />en principal <small>4</small></td>
 							</tr>
 							<tr>
-								<td class="tc"><span class="date"><?=date('d/m/Y',strtotime($this->loans->added))?></span></td>
+								<td class="tc"><span class="date"><?=date('d/m/Y',strtotime($this->oLoans->added))?></span></td>
 								<td class="tc"><?=($this->projects->period/12)?></td>
-								<td class="tc"><small><?=number_format($this->loans->rate, 1, ',', ' ')?></small></td>
-								<td class="tc"><?=number_format(($this->loans->amount/100), 0, ',', ' ')?></td>
+								<td class="tc"><small><?=number_format($this->oLoans->rate, 1, ',', ' ')?></small></td>
+								<td class="tc"><?=number_format(($this->oLoans->amount/100), 0, ',', ' ')?></td>
 								<td class="large nopadding">
 									<table border="0" cellspacing="0" cellpadding="0" class="title">
 										<tr>
@@ -132,8 +131,8 @@
 									?><td><span class="editable"><?=($this->lEcheances[$i]==false?'..........':$this->lEcheances[$i]['annee'])?></span></td><?
 								}
 								?>
-								
-                               
+
+
 							</tr>
 							<tr>
 								<td colspan="2">Montant annuel des intérêts exigibles</td>
@@ -143,7 +142,7 @@
 									?><td><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':number_format(($this->lEcheances[$i]['interets']/100), 2, ',', ' '))?></span></td><?
 								}
 								?>
-								
+
 							</tr>
 							<tr>
 								<td colspan="2">Montant annuel du principal remboursé</td>
@@ -194,14 +193,14 @@
 				</div><!-- /.doc-body -->
 				<div class="doc-foot">
 					<div class="signiture">
-						<span>A</span><span class="city editable">PARIS</span><span>, le </span> <span class="date editable"><?=date('d/m/Y',strtotime($this->loans->added))?></span> <em>Signature :</em>
+						<span>A</span><span class="city editable">PARIS</span><span>, le </span> <span class="date editable"><?=date('d/m/Y',strtotime($this->oLoans->added))?></span> <em>Signature :</em>
                         <img src="<?=$this->surl?>/styles/default/images/logo.png" />
 					</div><!-- /.signiture -->
 					<div><a href="#"><img src="<?=$this->surl?>/styles/default/declarationContratPret/images/bottom-logo.png" alt="" /></a></div>
 				</div><!-- /.doc-foot -->
 			</div><!-- /.document -->
 		</div><!-- /.page-break -->
-        
+
 		<?php /*?><div class="page-break">
 			<div class="post">
 				<div class="two-cols">

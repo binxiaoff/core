@@ -44,14 +44,17 @@ class Controller
 	var $view;
 	var $included_js;
 	var $included_css;
-	
+
 	function __construct(&$command,$config,$app)
 	{
+		$this->initVendor();
+		$this->initUnilendAutoload();
+
 		//Variables de session pour la fenetre de debug
 		unset($_SESSION['error']);
 		unset($_SESSION['debug']);
 		unset($_SESSION['msg']);
-		
+
 		// Construction
 		$this->Command = $command;
 		$this->Config = $config;
@@ -59,7 +62,7 @@ class Controller
 		$this->included_js = array();
 		$this->included_css = array();
 		$this->bdd = new bdd($this->Config['bdd_config'][$this->Config['env']],$this->Config['bdd_option'][$this->Config['env']]);
-		
+
 		// Initialisation des propri�t�s n�cessaires au cache
 		$this->enableCache = $this->Config['cache'][$this->Config['env']];
 		$this->cacheDuration = $this->Config['cacheDuration'][$this->Config['env']];
@@ -73,10 +76,12 @@ class Controller
 		// Mise en place des chemins
 		$this->path = $this->Config['path'][$this->Config['env']];
 		$this->spath = $this->Config['user_path'][$this->Config['env']];
+		$this->staticPath = $this->Config['static_path'][$this->Config['env']];
+		$this->logPath = $this->Config['log_path'][$this->Config['env']];
 		$this->surl = $this->Config['static_url'][$this->Config['env']];
 		$this->url = $this->Config['url'][$this->Config['env']][$this->App];
 		$this->lurl = $this->Config['url'][$this->Config['env']][$this->App].($this->Config['multilanguage']['enabled']?'/'.$this->language:'');
-		
+
 		//admin 
 		$this->aurl = $this->Config['url'][$this->Config['env']]['admin'];
 		//fo 
@@ -208,7 +213,7 @@ class Controller
 			$view = $this->view;
 		if($view=='')
 			$view = 'index';
-		
+
 		if(!file_exists($this->path.'apps/'.$this->App.'/views/'.$this->Command->getControllerName().'/'.$view.'.php'))
 			call_user_func(array(&$this,'_error'),'view not found : views/'.$this->Command->getControllerName().'/'.$view.'.php');
 		else
@@ -769,7 +774,16 @@ class Controller
 		if($this->enableCache)
 			$this->cacheCurrentPage = true;	
 	}
-	
+
+	function initVendor(){
+		require_once __DIR__ . '/../vendor/autoload.php';
+	}
+
+	function initUnilendAutoload(){
+		require_once __DIR__ . '/../Autoloader.php';
+		Autoloader::register();
+	}
+
 	// Initialisation du cache
 	function initCache()
 	{

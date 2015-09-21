@@ -81,7 +81,7 @@ class binController extends bootstrap
                 }
 
                 if('' !== $lender['fichier_autre']) {
-                    $this->saveAttachment(attachment_type::CNI_PASSPORTE_VERSO, $lender['fichier_autre'], $ownerId, $ownerType, $added, $this->attachment);
+                    $this->saveAttachment(attachment_type::AUTRE1, $lender['fichier_autre'], $ownerId, $ownerType, $added, $this->attachment);
                 }
 
                 if('' !== $lender['fichier_document_fiscal']) {

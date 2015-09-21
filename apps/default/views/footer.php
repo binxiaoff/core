@@ -185,5 +185,77 @@
         
         
 	</div><!-- /.wrapper -->
+
+<?
+						if ($this->lurl == 'http://partenaire.unilend.challenges.fr'){			
+?>
+<!-- tagging challenges -->
+
+		<script src="http://referentiel.nouvelobs.com/js/nobs;,detect-adblock.js"></script>
+		<script>
+		  xtnv = document;
+		  xtsd = "http://logi150";
+		  xtdmc = ".challenges.fr";
+		  xtsite = "562191";
+		  xtn2 = "1";
+		  xtpage = "Services::Unilend";
+		  xtdi = "";
+		  xt_multc = "&x1=[Challenges]&x2=1&x4=2&x5=[Autres]&x8=[Unilend]&x15=[Services]";
+
+		(function (win) {
+			var doc = win.document,
+				fillXtMultc = function (xNumber, value) {
+				  var multcVar = '&x' + xNumber + '=' + value;
+				  win.xtparam = win.xtparam ? win.xtparam + multcVar : multcVar;
+				},
+				callXtcore = function () {
+				  // appel du script xtcore
+				  var script = doc.createElement('script');
+				  script.async = 1;
+				  script.src = "http://referentiel.nouvelobs.com/scripts/xiti/challenges.fr/xtcore.js";
+				  doc.body.appendChild(script);
+				},  
+				deviceDetect = function () {
+				  var userAgent = win.navigator.userAgent.toLowerCase(),
+					  isMobile = (/iphone|ipod|android|blackberry|opera|mini|windows\sce|palm|smartphone|iemobile/i.test(userAgent)),
+					  isTablet = (/ipad|android 3.0|xoom|sch-i800|playbook|tablet|kindle|silk/i.test(userAgent)),
+					  deviceDedected = '1';
+				  if (isMobile) {
+					if ((userAgent.search("android") > -1) && (userAgent.search("mobile") > -1)) deviceDedected = '2';
+					else if ((userAgent.search("android") > -1) && !(userAgent.search("mobile") > -1)) deviceDedected = '3';
+					else deviceDedected = '2';
+				  }
+				  if (isTablet) deviceDedected = '3';
+				  return deviceDedected;
+				},
+				handler = function (event) {
+				  // aprËs la dÈtection, on remplit l'indicateur x19
+				  var detected = event.detail.status || false;
+				  fillXtMultc(19, (detected === true ? '1' : '2'));
+				  callXtcore();
+				};
+			try {
+			  fillXtMultc(3, (deviceDetect() || '1'));
+			} catch (e) {
+			  console.debug('deviceDetect failed!');
+			}
+			if (doc.addEventListener) {
+			  doc.addEventListener('detectAdblock', handler, false);
+			} else { // IE8- 
+			  callXtcore();
+			}
+		  })(window);
+		</script>
+		<noscript>
+			<img width="1" height="1" alt="" src="http://logi150.xiti.com/hit.xiti?s=562191&amp;s2=1&amp;p=Services::Unilend&amp;di=&amp;" />
+		</noscript>
+
+
+<!-- fin tagging challenges -->
+
+<?php
+						}
+?>
+
 </body>
 </html>

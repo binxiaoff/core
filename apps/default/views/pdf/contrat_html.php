@@ -3,12 +3,7 @@
 <head>
 	<title>SFF docs</title>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-	<link rel="shortcut icon" href="<?=$this->surl?>/styles/default/pdf/images/favicon.ico" />
 	<link rel="stylesheet" href="<?=$this->surl?>/styles/default/pdf/style.css" type="text/css" media="all" />
-
-	<script src="<?=$this->surl?>/scripts/default/pdf/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
-	<script src="<?=$this->surl?>/scripts/default/pdf/functions.js" type="text/javascript" charset="utf-8"></script>
-
 </head>
 <body>
 	<!-- Doc Wrapper -->
@@ -22,13 +17,13 @@
 					<img src="<?=$this->surl?>/styles/default/pdf/images/logo.png" alt="" />
 				</div><?php */?>
 
-				<h3><?=$this->bloc_pdf_contrat['titre']?> - #<?=$this->loans->id_loan?></h3>
+				<h3><?=$this->bloc_pdf_contrat['titre']?> - #<?=$this->oLoans->id_loan?></h3>
 				<h5><?=$this->bloc_pdf_contrat['designation']?></h5>
 				<div class="list">
 					<ul>
 						<li>Raison sociale<div class="col-small"><?=$this->companiesEmprunteur->name?></div></li>
 						<li>Forme juridique<div class="col-small"><?=$this->companiesEmprunteur->forme?></div></li>
-						<li>Capital social<div class="col-small"><?=number_format($this->companiesEmprunteur->capital, 2, ',', ' ')?> €</div></li>
+						<li>Capital social<div class="col-small"><?=(0 < $this->companiesEmprunteur->capital) ? number_format($this->companiesEmprunteur->capital, 2, ',', ' ') : 0?> €</div></li>
 						<li>Adresse du siège social<div class="col-small"><?=$this->companiesEmprunteur->adresse1?></div></li>
 						<li>Code postal<div class="col-small"><?=$this->companiesEmprunteur->zip?></div></li>
 						<li>Ville<div class="col-small"><?=$this->companiesEmprunteur->city?></div></li>
@@ -77,23 +72,23 @@
 								<?=$this->bloc_pdf_contrat['montant']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->loans->amount/100, 2, ',', ' ')?> €
+								<?=number_format($this->oLoans->amount/100, 2, ',', ' ')?> €
 							</div>
 							<div class="cl">&nbsp;</div>
 							<br />
 						</li>
 						<li>
 							<div class="col-long">
-								<?=$this->bloc_pdf_contrat['taux-i']?> 
+								<?=$this->bloc_pdf_contrat['taux-i']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->loans->rate, 2, ',', ' ')?> %
+								<?=number_format($this->oLoans->rate, 2, ',', ' ')?> %
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
 						<li>
 							<div class="col-long">
-								<?=$this->bloc_pdf_contrat['date-de-creation']?> 
+								<?=$this->bloc_pdf_contrat['date-de-creation']?>
 							</div>
 							<div class="col-small">
 								<?=$this->dateRemb?>
@@ -113,14 +108,14 @@
 						<li>
 							<?=$this->bloc_pdf_contrat['bon-de-caisse']?><br />
 							<?=$this->bloc_pdf_contrat['lemetteur-certifie']?><br />
-							<?=$this->bloc_pdf_contrat['la-signature-des']?> 
+							<?=$this->bloc_pdf_contrat['la-signature-des']?>
 						</li>
 						<li>
 							<div class="col-long">
 								<?=$this->bloc_pdf_contrat['a-rembourser']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->loans->amount/100, 2, ',', ' ')?> €
+								<?=number_format($this->oLoans->amount/100, 2, ',', ' ')?> €
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -129,7 +124,7 @@
 								<?=$this->bloc_pdf_contrat['assortie-des-interets-a']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->loans->rate, 2, ',', ' ')?> %
+								<?=number_format($this->oLoans->rate, 2, ',', ' ')?> %
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -137,7 +132,7 @@
 							<div class="col-long">
 								<?=$this->bloc_pdf_contrat['selon-echeancier']?>
 							</div>
-							
+
 							<div class="cl">&nbsp;</div>
 							<br />
 						</li>
@@ -153,7 +148,7 @@
                                 </div>
 							</div>
 							<div class="cl">&nbsp;</div>
-							
+
 						</li>
 						<li>
 							<?=$this->bloc_pdf_contrat['le-present-bon']?>
@@ -194,7 +189,7 @@
 						<li><?=$this->bloc_pdf_contrat['capitaux']?><div class="col-small"><?=number_format($this->l_AP[0]['capitaux_propres'], 2, ',', ' ')?> €</div></li>
 						<li><?=$this->bloc_pdf_contrat['provisions']?><div class="col-small"><?=number_format($this->l_AP[0]['provisions_pour_risques_et_charges'], 2, ',', ' ')?> €</div></li>
                         <li><?=$this->bloc_pdf_contrat['amortissements-sur-immo']?><div class="col-small"><?=number_format($this->l_AP[0]['amortissement_sur_immo'], 2, ',', ' ')?> €</div></li>
-                        
+
 						<li><?=$this->bloc_pdf_contrat['dettes-fi']?><div class="col-small"><?=number_format($this->l_AP[0]['dettes_financieres'], 2, ',', ' ')?> €</div></li>
 						<li><?=$this->bloc_pdf_contrat['dettes-fourn']?><div class="col-small"><?=number_format($this->l_AP[0]['dettes_fournisseurs'], 2, ',', ' ')?> €</div></li>
 						<li><?=$this->bloc_pdf_contrat['autres-dettes']?><div class="col-small"><?=number_format($this->l_AP[0]['autres_dettes'], 2, ',', ' ')?> €</div></li>
@@ -210,7 +205,7 @@
 				<p><?=$this->bloc_pdf_contrat['conditions-contenu']?></p>
 			</div>
 			<!-- End Page Break -->
-			
+
 			<!-- Page Break -->
 			<div class="page-break">
 				<h3><?=$this->bloc_pdf_contrat['echeancier-remboursements']?></h3>
@@ -230,7 +225,7 @@
 						{
 							$capRestant -= $r['capital'];
 							if($capRestant < 0)$capRestant = 0;
-							
+
 							?>
 							<tr>
 								<td><?=$this->dates->formatDate($r['date_echeance'],'d/m/Y')?></td>
@@ -242,9 +237,9 @@
 							<?
 						}
 						?>
-						
+
 					</table>
-				</div>			
+				</div>
 			</div>
 			<!-- End Page Break -->
 

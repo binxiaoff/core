@@ -1,8 +1,10 @@
+###Mac###
+.DS_Store
+
+### NetBeans ###
 nbproject/*
 !nbproject/project.properties
 !nbproject/project.xml
-
-### NetBeans ###
 build/
 nbbuild/
 dist/
@@ -12,24 +14,28 @@ nb-configuration.xml
 .nb-gradle/
 
 ### Izinoa ###
-protected/
-log/
+/protected/
+/log/
 backup2/
 backup3/
 tmp/
-public/admin/.htaccess
-public/default/var
-public/default/.htaccess
-config.php
+/public/admin/.htaccess
+/public/default/var
+/public/default/.htaccess
+/config.php
+/route.php
+*.rej
 
 ###PHPStorm###
 .idea/
 
 ###Vagrant###
-vagrant/.vagrant/
+/vagrant/.vagrant/
+
+###Composer###
+/vendor/
 
 #sauf
 !public/default/styles/default/*
 !public/default/scripts/default/*
 !/dev/public/
-/route.php
