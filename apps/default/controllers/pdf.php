@@ -33,12 +33,12 @@ class pdfController extends bootstrap
     /**
      * @object data\crud\loans
      */
-    private $oLoans;
+    public $oLoans;
 
     /**
      * @object data\crud\lenders_accounts
      */
-    private $oLendersAccounts;
+    public $oLendersAccounts;
 
     /**
      * @object data\crud\echeanciers_emprunteur

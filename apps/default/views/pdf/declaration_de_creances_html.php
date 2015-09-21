@@ -9,13 +9,13 @@
 <body style="text-align:center;">
 
 <div class="img">
-	
+
 	<div class="creancier">
     	<?
 		// particulier
 		if(in_array($this->clients->type,array(1,4))){
 			?>
-            
+
 			<?=$this->clients->prenom?> <?=$this->clients->nom?>
 			<br />
 			<?=$this->clients_adresses->adresse_fiscal?>
@@ -23,13 +23,13 @@
 			<?=$this->clients_adresses->cp_fiscal?> <?=$this->clients_adresses->ville_fiscal?>
 			<br />
 			<?=$this->pays_fiscal?>
-			
+
 			<?
 		}
 		// entreprise
 		else{
 			?>
-            
+
 			<?=$this->companies->name?>
 			<br />
 			<?=$this->companies->adresse1?>
@@ -37,19 +37,19 @@
 			<?=$this->companies->zip?> <?=$this->companies->city?>
 			<br />
 			<?=$this->pays_fiscal?>
-			
+
 			<?
 		}
 		?>
-        
+
         <br /><br />
-        n° de bon caisse : <?=$this->loans->id_loan?>
+        n° de bon caisse : <?=$this->oLoans->id_loan?>
     </div>
-    
+
     <div class="mandataire_du_creancier">
 	<?=$this->mandataires_var?>
     </div>
-    
+
     <div class="debiteur">
         <?=$this->companiesEmpr->forme?> <?=$this->companiesEmpr->name?>
         <br />
@@ -59,46 +59,46 @@
         <br />
         <?=$this->companiesEmpr->rcs?>
     </div>
-    
+
     <div class="procedure">
         <?=$this->nature_var?>
         <br />
 
         <div style="margin-top:55px;"><?=$this->arrayDeclarationCreance[$this->projects->id_project]?></div>
     </div>
-	
+
     <div style="clear:both;"></div>
-    
+
     <div class="creance_declaree">
 		<div class="case1">
         	<?=number_format($this->echu, 2, ',', ' ')?>
         </div>
         <div class="case2">
-        	
+
         </div>
         <div class="case3">
-        	Bon de caisse à ordre, émis le  <?=date('d/m/Y',strtotime($this->loans->added))?>, échéance au <?=$this->lastEcheance?>, d’un montant de <?=number_format(($this->loans->amount/100), 2, ',', ' ')?>€ assorti d’un taux d’intérêt annuel de <?=number_format($this->loans->rate, 1, ',', ' ')?>%, amortissable mensuellement.
+        	Bon de caisse à ordre, émis le  <?=date('d/m/Y',strtotime($this->oLoans->added))?>, échéance au <?=$this->lastEcheance?>, d’un montant de <?=number_format(($this->oLoans->amount/100), 2, ',', ' ')?>€ assorti d’un taux d’intérêt annuel de <?=number_format($this->oLoans->rate, 1, ',', ' ')?>%, amortissable mensuellement.
         </div>
-        
+
         <div class="case4">
         	<?=number_format($this->echoir, 2, ',', ' ')?>
         </div>
         <div class="case5">
-        
+
         </div>
         <div class="case6">
         	<?=number_format($this->total, 2, ',', ' ')?>
         </div>
         <div class="case7"></div>
-        
+
     </div>
- 	
+
     <div style="clear:both;"></div>
-    
+
     <div class="fait_a">
     	<?
     	// particulier
-		if(in_array($this->clients->type,array(1,4))){	
+		if(in_array($this->clients->type,array(1,4))){
 			echo $this->clients_adresses->ville_fiscal;
 		}
 		// entreprise
@@ -107,18 +107,18 @@
 		}
 		?>
     </div>
-    
+
     <div class="fait_le">
     	<?=date('d/m/Y')?>
     </div>
-    
-    
+
+
     <div style="clear:both;"></div>
-    
+
     <div class="signataire">
     	<?
     	// particulier
-		if(in_array($this->clients->type,array(1,4))){	
+		if(in_array($this->clients->type,array(1,4))){
 			echo $this->clients->prenom.' '.$this->clients->nom;
 		}
 		// entreprise
@@ -127,19 +127,19 @@
 			if($this->companies->status_client != 1){
 				echo $this->companies->prenom_dirigeant.' '.$this->companies->nom_dirigeant.'<br> Fonction : '.$this->companies->fonction_dirigeant;
 			}
-			else{ 
+			else{
 				echo $this->clients->prenom.' '.$this->clients->nom.'<br> Fonction : '.$this->clients->fonction;
 			}
 		}
 		?>
     </div>
-    
+
     <div style="clear:both;"></div>
-    
+
     <div class="montant_total">
     	<?=number_format($this->total, 2, ',', ' ')?>
     </div>
-    
+
 </div>
 
 </body>
