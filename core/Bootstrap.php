@@ -2,7 +2,8 @@
 
 namespace Unilend\core;
 
-use Unilend\librairies\ToLog;
+use Psr\Log\LoggerInterface;
+use Unilend\librairies\ULogger;
 use Unilend\core\Cron;
 
 require_once __DIR__ . '/bdd.class.php';
@@ -20,9 +21,9 @@ class Bootstrap
     private $oDatabase;
 
     /**
-     * @object $oLogger Monolog\Logger()
+     * @var ULogger
      */
-    private $oLogger;
+    private $oUlogger;
 
     /**
      * @array $aConfig file config in root path
@@ -75,13 +76,7 @@ class Bootstrap
         //We check, and add if necessary, if log's name have extension .log
         $sNameLog .= (!preg_match('/(\.log)$/i', $sNameLog)) ? '.log' : '';
 
-        $oToLog = new ToLog($sNameChannel, self::$aConfig['log_path'][self::$aConfig['env']], $sNameLog);
-        $oToLog->setStreamHandlerInfo()
-            ->setStreamHandlerDebug()
-            ->setStreamHandlerError()
-            ->setStreamHandlerWarning()
-            ->setStreamHandlerCritical();
-        $this->oLogger = $oToLog->getLogger();
+        $this->oUlogger = new ULogger($sNameChannel, self::$aConfig['log_path'][self::$aConfig['env']], $sNameLog);
 
         return $this;
     }
@@ -95,9 +90,9 @@ class Bootstrap
 
     public function getLogger()
     {
-        assert('is_object($this->oLogger); //Logger is not an object');
+        assert('is_object($this->oUlogger); //Logger is not an object');
 
-        return $this->oLogger;
+        return $this->oUlogger;
     }
 
     public function getCron()
@@ -114,7 +109,7 @@ class Bootstrap
     {
         $this->setLogger('ErrorAssertion', 'assert.log');
         $aErrorDetails = explode('//', $sError);
-        $this->oLogger->addError('Wrong Assertion in ' . $sFunction . ' at line ' . $sLine . '. ' . $aErrorDetails[1],
+        $this->oUlogger->addRecord('error','Wrong Assertion in ' . $sFunction . ' at line ' . $sLine . '. ' . $aErrorDetails[1],
             array(__FILE__ . ' at ' . __LINE__));
     }
 }

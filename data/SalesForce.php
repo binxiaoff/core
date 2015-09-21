@@ -10,12 +10,12 @@ class SalesForce
     /**
      * constant to specify path for extract
      */
-    const PATH_EXTRACT = 'protected/dataloader/extract/';
+    const PATH_EXTRACT = 'dataloader/extract/';
 
     /**
      * constant to specify path dataloader conf
      */
-    const PATH_DATALOADER_CONF = 'protected/dataloader/conf/';
+    const PATH_DATALOADER_CONF = 'dataloader/conf/';
 
     /**
      * constant to specify path for load dataloader
@@ -28,37 +28,37 @@ class SalesForce
     const DATALOADER_VERSION = '26.0.0';
 
     /**
-     * @object $oBootstrap Unilend\core\Boostrap();
+     * @var Boostrap
      */
     private $oBoostrap;
 
     /**
-     * @object $oDatabase core\bdd();
+     * @var \core\bdd
      */
     private $oDatabase;
 
     /**
-     * @object $oLogger Monolog\Logger()
+     * @var Unilend\librairies\ULogger
      */
     private $oLogger;
 
     /**
-     * @array $aSearchCharacter array with character to replace
+     * @var array with character to replace
      */
     public $aSearchCharacter;
 
     /**
-     * @array $aReplaceCharacter array with character of replacement
+     * @var array with character of replacement
      */
     public $aReplaceCharacter;
 
     /**
-     * @array $aTypeDataloader array with types authorized for dataloader
+     * @var array with types authorized for dataloader
      */
     private static $aTypeDataloader;
 
     /**
-     * @param string $sConfig Configuration of Unilend Site from file config.php
+     * @param object $oBootstrap Unilend\core\Bootstrap
      */
     public function __construct(Bootstrap $oBootstrap)
     {
@@ -393,7 +393,7 @@ class SalesForce
                 }
                 fclose($oCsvFile);
                 $iTimeEndCsv = microtime(true) - $iTimeStartCsv;
-                $this->oLogger->addInfo('Generation of csv prospects in ' . round($iTimeEndCsv, 2),
+                $this->oLogger->addRecord('info','Generation of csv prospects in ' . round($iTimeEndCsv, 2),
                     array(__FILE__ . ' on line ' . __LINE__));
 
                 $this->oDatabase->free_result($rSql);
@@ -402,7 +402,8 @@ class SalesForce
                 throw new \Exception(mysql_error($this->oDatabase->connect_id));
             }
         } catch (\Exception $oException) {
-            $this->oLogger->addError('Error on query prospects : ' . $oException->getMessage());
+            $this->oLogger->addRecord('error','Error on query prospects : ' . $oException->getMessage(),
+                array(__FILE__ . ' on line ' . __LINE__));
         }
     }
 
@@ -437,7 +438,7 @@ class SalesForce
             fclose($oCsvFile);
 
             $iTimeEndCsv = microtime(true) - $iTimeStartCsv;
-            $this->oLogger->addInfo('Generation of csv ' . $sNameFile . ' in ' . round($iTimeEndCsv, 2),
+            $this->oLogger->addRecord('info','Generation of csv ' . $sNameFile . ' in ' . round($iTimeEndCsv, 2),
                 array(__FILE__ . ' on line ' . __LINE__));
         }
     }
@@ -446,7 +447,7 @@ class SalesForce
     {
         if (false === is_dir(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT)) {
             if (false === mkdir(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT, 0777, true)) {
-                $this->oLogger->addError('Error on create dir ' .
+                $this->oLogger->addRecord('info','Error on create dir ' .
                     Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT,
                     array(__FILE__ . ' on line ' . __LINE__));
 
@@ -472,7 +473,8 @@ class SalesForce
                 throw new \Exception(mysql_error($this->oDatabase->connect_id));
             }
         } catch (\Exception $oException) {
-            $this->oLogger->addError('Error on query ' . $sNameFile . ' : ' . $oException->getMessage());
+            $this->oLogger->addRecord('error','Error on query ' . $sNameFile . ' : ' . $oException->getMessage(),
+                array(__FILE__ . ' on line ' . __LINE__));
         }
     }
 
@@ -487,7 +489,7 @@ class SalesForce
         //TODO a passer en crontab
         exec('java -cp '.self::PATH_DATALOADER.'dataloader-'.self::DATALOADER_VERSION.'-uber.jar -Dsalesforce.config.dir='.Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']].self::PATH_DATALOADER_CONF.' com.salesforce.dataloader.process.ProcessRunner process.name='.escapeshellarg($sType), $aReturnDataloader);
         $iTimeEndDataloader = microtime(true) - $iTimeStartDataloader;
-        $this->oLogger->addInfo('Send to dataloader type ' . $sType . ' in ' . round($iTimeEndDataloader, 2),
+        $this->oLogger->addRecord('error','Send to dataloader type ' . $sType . ' in ' . round($iTimeEndDataloader, 2),
             array(__FILE__ . ' on line ' . __LINE__));
     }
 }

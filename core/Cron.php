@@ -2,7 +2,9 @@
 
 namespace Unilend\core;
 
-use Monolog\Logger;
+
+
+use Unilend\librairies\ULogger;
 
 final class Cron
 {
@@ -10,21 +12,21 @@ final class Cron
     const OPTION_OPTIONAL = 2;
 
     /**
-     * @array $aOptions array with options of cron
+     * @var array with options of cron
      */
     private $aOptions;
 
     /**
-     * @array $aParameters array with parameters of cron command
+     * @var array with parameters of cron command
      */
     private $aParameters;
 
     /**
-     * @object $oLoggerCron Unilend\librairies\ToLog()
+     * @var ULogger
      */
     private $oLoggerCron;
 
-    public function __construct(Logger $oLoggerCron){
+    public function __construct(ULogger $oLoggerCron){
         $this->oLoggerCron = $oLoggerCron;
     }
 
@@ -92,7 +94,7 @@ final class Cron
         }
 
         $iTimeEndCron = microtime(true) - $iTimeStartCron;
-        $this->oLoggerCron->addInfo('Call class ' . $sClassName . $sTextLogCron . ' and execute in '
+        $this->oLoggerCron->addRecord('info','Call class ' . $sClassName . $sTextLogCron . ' and execute in '
             . round($iTimeEndCron, 2), array(__FILE__ . ' at ' . __LINE__));
     }
 }

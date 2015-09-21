@@ -31,5 +31,5 @@ try {
     $oCron->executeCron($oBootstrap);
 } catch (\UnexpectedValueException $e) {
     echo $e->getMessage();
-    $oCron->getLogger->addCritical($e->getMessage(), array(__FILE__ . ' at ' . __LINE__));
+    $oCron->getLogger()->addRecord('critical',$e->getMessage(), array(__FILE__ . ' at ' . __LINE__));
 }
