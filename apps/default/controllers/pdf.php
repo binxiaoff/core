@@ -1,6 +1,6 @@
 <?php
 
-use librairies\UnilendLogger;
+use Unilend\librairies\ULogger;
 use Knp\Snappy\Pdf;
 
 class pdfController extends bootstrap
@@ -16,32 +16,32 @@ class pdfController extends bootstrap
     const TMP_PATH_FILE = '/tmp/pdfUnilend/';
 
     /**
-     * @object \Knp\Snappy\Pdf()
+     * @var Pdf()
      */
     private $oSnapPdf;
 
     /**
-     * @object \Monolog\Logger()
+     * @var ULogger
      */
     private $oLogger;
 
     /**
-     * @object data\crud\projects_pouvoir
+     * @var \data\crud\projects_pouvoir
      */
     private $oProjectsPouvoir;
 
     /**
-     * @object data\crud\loans
+     * @var \data\crud\loans
      */
     public $oLoans;
 
     /**
-     * @object data\crud\lenders_accounts
+     * @var \data\crud\lenders_accounts
      */
     public $oLendersAccounts;
 
     /**
-     * @object data\crud\echeanciers_emprunteur
+     * @var \data\crud\echeanciers_emprunteur
      */
     private $oEcheanciersEmprunteur;
 
@@ -74,11 +74,7 @@ class pdfController extends bootstrap
         $this->autoFireDebug = false;
 
         $this->oSnapPdf = new Pdf($this->path . 'vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
-        $oUnilendLogger = new UnilendLogger('PdfManagement', $this->logPath, self::NAME_LOG);
-        $oUnilendLogger->setStreamHandlerInfo()
-            ->setStreamHandlerDebug()
-            ->setStreamHandlerError();
-        $this->oLogger = $oUnilendLogger->getLogger();
+        $this->oLogger = new ULogger('PdfManagement', $this->logPath, self::NAME_LOG);
     }
 
 
@@ -102,7 +98,7 @@ class pdfController extends bootstrap
                 date("Y-m-d", filemtime($sPathPdf)) != date('Y-m-d')
             ) {
                 unlink($sPathPdf);
-                $this->oLogger->addInfo('File : ' . $sPathPdf . ' deleting.', array(__FILE__ . ' on line ' . __LINE__));
+                $this->oLogger->addRecord('info', 'File : ' . $sPathPdf . ' deleting.', array(__FILE__ . ' on line ' . __LINE__));
             }
             return true;
         }
@@ -147,7 +143,6 @@ class pdfController extends bootstrap
         $sPathPdf .= (!preg_match('/(\.pdf)$/i', $sPathPdf)) ? '.pdf' : '';
 
         $iTimeStartPdf = microtime(true);
-        $this->oLogger->addInfo('Start generation of ' . $sTypePdf . ' pdf', array(__FILE__ . ' on line ' . __LINE__));
 
         switch ($sTypePdf) {
             case 'authority':
@@ -173,7 +168,8 @@ class pdfController extends bootstrap
 
         $iTimeEndPdf = microtime(true) - $iTimeStartPdf;
 
-        $this->oLogger->addInfo('End generation of ' . $sTypePdf . ' pdf in ' . round($iTimeEndPdf, 2), array(__FILE__ . ' on line ' . __LINE__));
+        $this->oLogger->addRecord('info', 'End generation of ' . $sTypePdf . ' pdf in ' . round($iTimeEndPdf, 2),
+            array(__FILE__ . ' on line ' . __LINE__));
     }
 
     /**
@@ -188,7 +184,8 @@ class pdfController extends bootstrap
         header("Content-disposition: attachment; filename=" . $sNamePdf . ".pdf");
         header("Content-Type: application/force-download");
         if (!readfile($sPathPdf)) {
-            $this->oLogger->addDebug('File : ' . $sPathPdf . ' not readable.', array(__FILE__ . ' on line ' . __LINE__));
+            $this->oLogger->addRecord('debug', 'File : ' . $sPathPdf . ' not readable.',
+                array(__FILE__ . ' on line ' . __LINE__));
         }
     }
 
