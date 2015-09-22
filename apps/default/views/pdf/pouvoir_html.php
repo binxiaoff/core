@@ -25,7 +25,7 @@
 								Raison sociale
 							</div>
 							<div class="col-small">
-								<?=$this->companies->name?>
+								<?=utf8_decode($this->companies->name)?>
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -34,7 +34,7 @@
 								Adresse
 							</div>
 							<div class="col-small">
-								<?=$this->companies->adresse1?>
+								<?=utf8_decode($this->companies->adresse1)?>
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -52,7 +52,7 @@
 								Ville
 							</div>
 							<div class="col-small">
-								<?=$this->companies->city?>
+								<?=utf8_decode($this->companies->city)?>
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -75,7 +75,7 @@
 								Nom
 							</div>
 							<div class="col-small">
-								<?=$this->clients->nom?>
+								<?=utf8_decode($this->clients->nom)?>
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -84,7 +84,7 @@
 								Prénom
 							</div>
 							<div class="col-small">
-								<?=$this->clients->prenom?>
+								<?=utf8_decode($this->clients->prenom)?>
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -93,7 +93,7 @@
 								Fonction
 							</div>
 							<div class="col-small">
-								<?=$this->clients->fonction?>
+								<?=utf8_decode($this->clients->fonction)?>
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -114,7 +114,7 @@
 								<?=$this->bloc_pouvoir['montant-total']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->montantPrete, 2, ',', ' ')?> €
+								<?=number_format($this->montantPrete, 2, ',', ' ')?> &euro;
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -169,7 +169,7 @@
 								<?=$this->bloc_pouvoir['montant-mensualites']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->rembByMonth, 2, ',', ' ')?> €
+								<?=number_format($this->rembByMonth, 2, ',', ' ')?> &euro;
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -186,7 +186,7 @@
 								<?=$this->bloc_pouvoir['a-rembourser-153']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->montantPrete, 2, ',', ' ')?> €
+								<?=number_format($this->montantPrete, 2, ',', ' ')?> &euro;
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -239,32 +239,32 @@
 				<h5><?=$this->bloc_pdf_contrat['actif']?></h5>
 				<div class="list">
 					<ul>
-						<li><?=$this->bloc_pdf_contrat['immo-corpo']?><div class="col-small"><?=number_format($this->l_AP[0]['immobilisations_corporelles'], 2, ',', ' ')?> €</div></li>
-						<li><?=$this->bloc_pdf_contrat['immo-incorpo']?><div class="col-small"><?=number_format($this->l_AP[0]['immobilisations_incorporelles'], 2, ',', ' ')?> €</div></li>
-						<li><?=$this->bloc_pdf_contrat['immo-financieres']?><div class="col-small"><?=number_format($this->l_AP[0]['immobilisations_financieres'], 2, ',', ' ')?> €</div></li>
-						<li><?=$this->bloc_pdf_contrat['stocks']?><div class="col-small"><?=number_format($this->l_AP[0]['stocks'], 2, ',', ' ')?> €</div></li>
-						<li><?=$this->bloc_pdf_contrat['creances']?><div class="col-small"><?=number_format($this->l_AP[0]['creances_clients'], 2, ',', ' ')?> €</div></li>
-						<li><?=$this->bloc_pdf_contrat['dispo']?><div class="col-small"><?=number_format($this->l_AP[0]['disponibilites'], 2, ',', ' ')?> €</div></li>
-						<li><?=$this->bloc_pdf_contrat['valeurs-mobilieres']?><div class="col-small"><?=number_format($this->l_AP[0]['valeurs_mobilieres_de_placement'], 2, ',', ' ')?> €</div></li>
+						<li><?=$this->bloc_pdf_contrat['immo-corpo']?><div class="col-small"><?=number_format($this->l_AP[0]['immobilisations_corporelles'], 2, ',', ' ')?> &euro;</div></li>
+						<li><?=$this->bloc_pdf_contrat['immo-incorpo']?><div class="col-small"><?=number_format($this->l_AP[0]['immobilisations_incorporelles'], 2, ',', ' ')?> &euro;</div></li>
+						<li><?=$this->bloc_pdf_contrat['immo-financieres']?><div class="col-small"><?=number_format($this->l_AP[0]['immobilisations_financieres'], 2, ',', ' ')?> &euro;</div></li>
+						<li><?=$this->bloc_pdf_contrat['stocks']?><div class="col-small"><?=number_format($this->l_AP[0]['stocks'], 2, ',', ' ')?> &euro;</div></li>
+						<li><?=$this->bloc_pdf_contrat['creances']?><div class="col-small"><?=number_format($this->l_AP[0]['creances_clients'], 2, ',', ' ')?> &euro;</div></li>
+						<li><?=$this->bloc_pdf_contrat['dispo']?><div class="col-small"><?=number_format($this->l_AP[0]['disponibilites'], 2, ',', ' ')?> &euro;</div></li>
+						<li><?=$this->bloc_pdf_contrat['valeurs-mobilieres']?><div class="col-small"><?=number_format($this->l_AP[0]['valeurs_mobilieres_de_placement'], 2, ',', ' ')?> &euro;</div></li>
 					</ul>
 				</div>
 				<div class="total-row">
-					<?=$this->bloc_pdf_contrat['total-actif']?> : <?=number_format($this->totalActif, 2, ',', ' ')?> €
+					<?=$this->bloc_pdf_contrat['total-actif']?> : <?=number_format($this->totalActif, 2, ',', ' ')?> &euro;
 				</div>
 				<h5><?=$this->bloc_pdf_contrat['passif']?></h5>
 				<div class="list">
 					<ul>
-						<li><?=$this->bloc_pdf_contrat['capitaux']?><div class="col-small"><?=number_format($this->l_AP[0]['capitaux_propres'], 2, ',', ' ')?> €</div></li>
-						<li><?=$this->bloc_pdf_contrat['provisions']?><div class="col-small"><?=number_format($this->l_AP[0]['provisions_pour_risques_et_charges'], 2, ',', ' ')?> €</div></li>
-                        <li><?=$this->bloc_pdf_contrat['amortissements-sur-immo']?><div class="col-small"><?=number_format($this->l_AP[0]['amortissement_sur_immo'], 2, ',', ' ')?> €</div></li>
+						<li><?=$this->bloc_pdf_contrat['capitaux']?><div class="col-small"><?=number_format($this->l_AP[0]['capitaux_propres'], 2, ',', ' ')?> &euro;</div></li>
+						<li><?=$this->bloc_pdf_contrat['provisions']?><div class="col-small"><?=number_format($this->l_AP[0]['provisions_pour_risques_et_charges'], 2, ',', ' ')?> &euro;</div></li>
+                        <li><?=$this->bloc_pdf_contrat['amortissements-sur-immo']?><div class="col-small"><?=number_format($this->l_AP[0]['amortissement_sur_immo'], 2, ',', ' ')?> &euro;</div></li>
 
-						<li><?=$this->bloc_pdf_contrat['dettes-fi']?><div class="col-small"><?=number_format($this->l_AP[0]['dettes_financieres'], 2, ',', ' ')?> €</div></li>
-						<li><?=$this->bloc_pdf_contrat['dettes-fourn']?><div class="col-small"><?=number_format($this->l_AP[0]['dettes_fournisseurs'], 2, ',', ' ')?> €</div></li>
-						<li><?=$this->bloc_pdf_contrat['autres-dettes']?><div class="col-small"><?=number_format($this->l_AP[0]['autres_dettes'], 2, ',', ' ')?> €</div></li>
+						<li><?=$this->bloc_pdf_contrat['dettes-fi']?><div class="col-small"><?=number_format($this->l_AP[0]['dettes_financieres'], 2, ',', ' ')?> &euro;</div></li>
+						<li><?=$this->bloc_pdf_contrat['dettes-fourn']?><div class="col-small"><?=number_format($this->l_AP[0]['dettes_fournisseurs'], 2, ',', ' ')?> &euro;</div></li>
+						<li><?=$this->bloc_pdf_contrat['autres-dettes']?><div class="col-small"><?=number_format($this->l_AP[0]['autres_dettes'], 2, ',', ' ')?> &euro;</div></li>
 					</ul>
 				</div>
 				<div class="total-row">
-					<?=$this->bloc_pdf_contrat['total-passif']?> : <?=number_format($this->totalPassif, 2, ',', ' ')?> €
+					<?=$this->bloc_pdf_contrat['total-passif']?> : <?=number_format($this->totalPassif, 2, ',', ' ')?> &euro;
 				</div>
 				<div class="center-text">
 					<?=$this->bloc_pdf_contrat['certifie']?>
@@ -280,7 +280,7 @@
                 <div class="page-break">
                     <h3 class="pink"><?=$this->bloc_pdf_contrat['echeancier-remboursements']?></h3>
                     <div class="dates-table">
-                        <table width="100%" border="0" cellspacing="0" cellpadding="0" class="table-2">
+                        <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
                             <tr>
                                 <th valign="bottom"><?=$this->bloc_pdf_contrat['date']?></th>
                                 <th valign="bottom"><?=$this->bloc_pdf_contrat['capital']?></th>
@@ -306,13 +306,13 @@
 
 									?>
 									<tr>
-										<td><?=$this->dates->formatDate($r['date_echeance_emprunteur'],'d/m/Y')?></td>
-										<td><?=number_format($r['capital']/100,2,',',' ')?> €</td>
-										<td><?=number_format($r['interets']/100,2,',',' ')?> €</td>
-										<td><?=number_format($r['commission']/100,2,',',' ')?> €</td>
-										<td><?=number_format($r['tva']/100,2,',',' ')?> €</td>
-										<td><?=number_format($montantEmprunteur/100,2,',',' ')?> €</td>
-										<td><?=number_format($capRestant/100,2,',',' ')?> €</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=$this->dates->formatDate($r['date_echeance_emprunteur'],'d/m/Y')?></td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($r['capital']/100,2,',',' ')?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($r['interets']/100,2,',',' ')?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($r['commission']/100,2,',',' ')?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($r['tva']/100,2,',',' ')?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($montantEmprunteur/100,2,',',' ')?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($capRestant/100,2,',',' ')?> &euro;</td>
 									</tr>
 									<?
 								}
@@ -326,7 +326,7 @@
                 <!-- Page Break -->
                 <div class="page-break" style="page-break-before:always; margin-top: 40px;padding-top: 20px;">
                     <div class="dates-table">
-                        <table width="100%" border="0" cellspacing="0" cellpadding="0" class="table-2">
+                        <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
                             <?
                             foreach($this->lRemb as $r)
                             {
@@ -339,13 +339,13 @@
 
 									?>
 									<tr>
-										<td><?=$this->dates->formatDate($r['date_echeance_emprunteur'],'d/m/Y')?></td>
-										<td><?=number_format($r['capital']/100,2,',',' ')?> €</td>
-										<td><?=number_format($r['interets']/100,2,',',' ')?> €</td>
-										<td><?=number_format($r['commission']/100,2,',',' ')?> €</td>
-										<td><?=number_format($r['tva']/100,2,',',' ')?> €</td>
-										<td><?=number_format($montantEmprunteur/100,2,',',' ')?> €</td>
-										<td><?=number_format($capRestant/100,2,',',' ')?> €</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=$this->dates->formatDate($r['date_echeance_emprunteur'],'d/m/Y')?></td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($r['capital']/100,2,',',' ')?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($r['interets']/100,2,',',' ')?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($r['commission']/100,2,',',' ')?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($r['tva']/100,2,',',' ')?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($montantEmprunteur/100,2,',',' ')?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($capRestant/100,2,',',' ')?> &euro;</td>
 									</tr>
 									<?
 								}
@@ -367,7 +367,7 @@
 
 
                     <div class="dates-table">
-                        <table width="100%" border="0" cellspacing="0" cellpadding="0" class="table-2">
+                        <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
                             <tr>
                                 <th valign="bottom"><?=$this->bloc_pdf_contrat['date']?></th>
                                 <th valign="bottom"><?=$this->bloc_pdf_contrat['capital']?></th>
@@ -391,13 +391,13 @@
 
                                 ?>
                                 <tr>
-                                    <td><?=$this->dates->formatDate($r['date_echeance_emprunteur'],'d/m/Y')?></td>
-                                    <td><?=number_format($r['capital']/100,2,',',' ')?> €</td>
-                                    <td><?=number_format($r['interets']/100,2,',',' ')?> €</td>
-                                    <td><?=number_format($r['commission']/100,2,',',' ')?> €</td>
-                                    <td><?=number_format($r['tva']/100,2,',',' ')?> €</td>
-                                    <td><?=number_format($montantEmprunteur/100,2,',',' ')?> €</td>
-                                    <td><?=number_format($capRestant/100,2,',',' ')?> €</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=$this->dates->formatDate($r['date_echeance_emprunteur'],'d/m/Y')?></td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($r['capital']/100,2,',',' ')?> &euro;</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($r['interets']/100,2,',',' ')?> &euro;</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($r['commission']/100,2,',',' ')?> &euro;</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($r['tva']/100,2,',',' ')?> &euro;</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($montantEmprunteur/100,2,',',' ')?> &euro;</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=number_format($capRestant/100,2,',',' ')?> &euro;</td>
                                 </tr>
                                 <?
                             }
@@ -430,20 +430,20 @@
 					?>
 
 					<div class="dates-table">
-						<table width="100%" border="0" cellspacing="0" cellpadding="0" class="table-3">
+						<table width="100%" cellspacing="0" cellpadding="0" class="table-3">
 							<?
 							if($var == 0)
 							{
 
 								?>
 								<tr>
-									<th><?=$this->bloc_pouvoir['nom']?><br /> <?=$this->bloc_pouvoir['raison-sociale']?></th>
-									<th><?=$this->bloc_pouvoir['prenom']?><br /> <?=$this->bloc_pouvoir['rcs']?></th>
-									<th><?=$this->bloc_pouvoir['adresse']?></th>
-									<th><?=$this->bloc_pouvoir['code']?><br /> <?=$this->bloc_pouvoir['postal']?></th>
-									<th><?=$this->bloc_pouvoir['ville']?></th>
-									<th><?=$this->bloc_pouvoir['montant-172']?></th>
-									<th><?=$this->bloc_pouvoir['taux']?><br /> <?=$this->bloc_pouvoir['interet-174']?></th>
+									<th><?=utf8_decode($this->bloc_pouvoir['nom'])?><br /> <?=utf8_decode($this->bloc_pouvoir['raison-sociale'])?></th>
+									<th><?=utf8_decode($this->bloc_pouvoir['prenom'])?><br /> <?=utf8_decode($this->bloc_pouvoir['rcs'])?></th>
+									<th><?=utf8_decode($this->bloc_pouvoir['adresse'])?></th>
+									<th><?=utf8_decode($this->bloc_pouvoir['code'])?><br /> <?=utf8_decode($this->bloc_pouvoir['postal'])?></th>
+									<th><?=utf8_decode($this->bloc_pouvoir['ville'])?></th>
+									<th><?=utf8_decode($this->bloc_pouvoir['montant-172'])?></th>
+									<th><?=utf8_decode($this->bloc_pouvoir['taux'])?><br /> <?=utf8_decode($this->bloc_pouvoir['interet-174'])?></th>
 								</tr>
 								<?
 							}
@@ -475,13 +475,13 @@
 
 										?>
 										<tr>
-											<td><?=$nom?></td>
-											<td><?=$prenom?></td>
-											<td><?=$this->clients_adresses->adresse1?></td>
-											<td><?=$this->clients_adresses->cp?></td>
-											<td><?=$this->clients_adresses->ville?></td>
-											<td class="nowrap"><?=number_format($l['amount']/100,2,',',' ')?> €</td>
-											<td class="nowrap"><?=number_format($l['rate'],2,',',' ')?> %</td>
+											<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=utf8_decode($nom)?></td>
+											<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=utf8_decode($prenom)?></td>
+											<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=utf8_decode($this->clients_adresses->adresse1)?></td>
+											<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=$this->clients_adresses->cp?></td>
+											<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=utf8_decode($this->clients_adresses->ville)?></td>
+											<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($l['amount']/100,2,',',' ')?> &euro;</td>
+											<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($l['rate'],2,',',' ')?> %</td>
 										</tr>
 										<?
 										$var++;
