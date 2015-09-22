@@ -27,7 +27,7 @@ then
         mysql -uroot -pROOTPASSWORD --max_allowed_packet=64M unilend < $sql
     done
     mysql -uroot -pROOTPASSWORD unilend < /vagrant/anonymize.sql
-    cat /vagrant/fixture/unilend.*.sql | mysql -uroot -pROOTPASSWORD unilend
+    cat /vagrant/fixture/*.sql | mysql -uroot -pROOTPASSWORD unilend
 fi
 rm -rf /vagrant/database
 
