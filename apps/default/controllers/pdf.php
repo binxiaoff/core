@@ -55,6 +55,10 @@ class pdfController extends bootstrap
     public function pdfController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
+
+        //If we don't pass by execute.
+        $this->params = (isset($this->params)) ? $this->params : $command->getParameters();
+
         // Recuperation du bloc
         $this->blocs->get('pdf-contrat', 'slug');
         $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');

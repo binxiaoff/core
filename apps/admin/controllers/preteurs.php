@@ -2484,16 +2484,9 @@ $string = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,253
 		$this->projects->get($this->loans->id_project, 'id_project');
 
 		// Génération pdf
-		$oCommandPdf = new Command('pdf','contrat',array($this->clients->hash, $iloan),$this->language);
+		$oCommandPdf = new Command('pdf','contrat',$this->params,$this->language);
 		$oPdf = new pdfController($oCommandPdf, $this->Config, 'default');
-		$oPdf->clients = $this->clients;
-		$oPdf->projects = $this->projects;
-		$oPdf->oLenders_accounts = $this->lenders_accounts;
-		$oPdf->clients_adresses = $this->clients_adresses;
-		$oPdf->params = $this->params;
 		$oPdf->_contrat();
-
-
 	}
 
 	public function _creancesPdf()

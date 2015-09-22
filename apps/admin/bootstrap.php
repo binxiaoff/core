@@ -17,7 +17,6 @@ class bootstrap extends Controller
 		$this->ficelle = $this->loadLib('ficelle');
 		$this->upload = $this->loadLib('upload');
 		$this->photos = $this->loadLib('photos',array($this->spath,$this->surl));
-		$this->Web2Pdf = $this->loadLib('Web2Pdf');
 
 
 		// Chargements des datas
@@ -32,6 +31,9 @@ class bootstrap extends Controller
 		$this->users_zones = $this->loadData('users_zones');
 		$this->routages = $this->loadData('routages',array('url'=>$this->lurl));
 		$this->users_history = $this->loadData('users_history');
+		$this->clients = $this->loadData('clients');
+		$this->clients_adresses = $this->loadData('clients_adresses');
+		$this->projects = $this->loadData('projects');
 
 
 		// Chargements des datas pour la gestion des emailings
