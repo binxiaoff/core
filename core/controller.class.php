@@ -827,4 +827,12 @@ class Controller
         header('location:' . $url);
         die();
     }
+
+    protected function hideDecoration()
+    {
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+    }
 }
