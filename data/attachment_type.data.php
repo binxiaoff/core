@@ -122,9 +122,32 @@ class attachment_type extends attachment_type_crud
 		return ($this->bdd->fetch_array($result,0,0)>0);
 	}
 
-	public function getAll(){
+	public function getAllTypesForProjects(){
 
-		$sql = 'SELECT * FROM `attachment_type`';
+        $aTypes = array(self::RELEVE_BANCAIRE_MOIS_N,
+            self::RELEVE_BANCAIRE_MOIS_N_1,
+            self::RELEVE_BANCAIRE_MOIS_N_2,
+            self::KBIS,
+            self::PRESENTATION_ENTRERPISE,
+            self::ETAT_ENDETTEMENT,
+            self::RIB,
+            self::DERNIERE_LIASSE_FISCAL,
+            self::LIASSE_FISCAL_N_1,
+            self::LIASSE_FISCAL_N_2,
+            self::RAPPORT_CAC,
+            self::PREVISIONNEL,
+            self::BALANCE_CLIENT,
+            self::BALANCE_FOURNISSEUR,
+            self::ETAT_PRIVILEGES_NANTISSEMENTS,
+            self::AUTRE1,
+            self::AUTRE2,
+            self::AUTRE3,
+            self::CNI_PASSPORTE_DIRIGEANT,
+            self::CNI_PASSPORTE_VERSO
+            );
+
+
+		$sql = 'SELECT * FROM `attachment_type` WHERE `id` IN ('.$aTypes.');';
 		$resultat = $this->bdd->query($sql);
 		$result = array();
 		while($record = $this->bdd->fetch_array($resultat))
