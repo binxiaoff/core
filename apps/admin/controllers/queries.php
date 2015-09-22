@@ -2,9 +2,12 @@
 
 class queriesController extends bootstrap
 {
-    var $Command;
+    /**
+     * @var queries
+     */
+    protected $queries;
 
-    function queriesController(&$command, $config, $app)
+    public function __construct(&$command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
@@ -14,22 +17,16 @@ class queriesController extends bootstrap
         $this->menu_admin = 'stats';
     }
 
-    function _add()
+    public function _add()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $_SESSION['request_url'] = $this->lurl;
     }
 
-    function _edit()
+    public function _edit()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $_SESSION['request_url'] = $this->lurl;
 
@@ -37,12 +34,12 @@ class queriesController extends bootstrap
         $this->queries->get($this->params[0], 'id_query');
     }
 
-    function _default()
+    public function _default()
     {
         $this->queries   = $this->loadData('queries');
         $this->lRequetes = $this->queries->select(($this->cms == 'iZinoa' ? 'cms = "iZinoa" || cms = ""' : ''), 'executed DESC');
 
-        // Formulaire edition d'une requete
+        // Formulaire édition d'une requête
         if (isset($_POST['form_edit_requete'])) {
             $this->queries->get($this->params[0], 'id_query');
             $this->queries->name   = $_POST['name'];
@@ -57,7 +54,7 @@ class queriesController extends bootstrap
             die;
         }
 
-        // Formulaire d'ajout d'une requete
+        // Formulaire d'ajout d'une requête
         if (isset($_POST['form_add_requete'])) {
             $this->queries->name   = $_POST['name'];
             $this->queries->paging = $_POST['paging'];
@@ -71,7 +68,7 @@ class queriesController extends bootstrap
             die;
         }
 
-        // Suppression d'une requete
+        // Suppression d'une requête
         if (isset($this->params[0]) && $this->params[0] == 'delete') {
             $this->queries->delete($this->params[1], 'id_query');
 
@@ -83,12 +80,9 @@ class queriesController extends bootstrap
         }
     }
 
-    function _params()
+    public function _params()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $_SESSION['request_url'] = $this->lurl;
 
@@ -100,15 +94,15 @@ class queriesController extends bootstrap
         $this->sqlParams = $this->queries->super_unique($this->sqlParams);
     }
 
-    function _execute()
+    public function _execute()
     {
         $this->queries = $this->loadData('queries');
         $this->queries->get($this->params[0], 'id_query');
-
-        // On rajoute ca pour recuperer la variable de session int�gr� dans la requete
-        $str = $this->queries->sql;
-        eval( "\$str = \"$str\";" );
-        $this->queries->sql = $str;
+        $this->queries->sql = str_replace(
+            array('[ID_USER]'),
+            array($this->sessionIdUser),
+            $this->queries->sql
+        );
 
         preg_match_all("/@[_a-zA-Z1-9]+@/", $this->queries->sql, $this->sqlParams, PREG_SET_ORDER);
 
@@ -121,20 +115,17 @@ class queriesController extends bootstrap
         $this->result = $this->queries->run($this->params[0], $this->queries->sql);
     }
 
-    function _excel()
+    public function _excel()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $this->queries = $this->loadData('queries');
         $this->queries->get($this->params[0], 'id_query');
-
-        // On rajoute ca pour recuperer la variable de session intégré dans la requête
-        $str = $this->queries->sql;
-        eval( "\$str = \"$str\";" );
-        $this->queries->sql = $str;
+        $this->queries->sql = str_replace(
+            array('[ID_USER]'),
+            array($this->sessionIdUser),
+            $this->queries->sql
+        );
 
         preg_match_all("/@[_a-zA-Z1-9]+@/", $this->queries->sql, $this->sqlParams, PREG_SET_ORDER);
 
@@ -147,21 +138,19 @@ class queriesController extends bootstrap
         $this->result = $this->queries->run($this->params[0], $this->queries->sql);
     }
 
-    function _export()
+    public function _export()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireview   = false;
+        $this->hideDecoration();
+
+        $this->autoFireview = false;
 
         $this->queries = $this->loadData('queries');
         $this->queries->get($this->params[0], 'id_query');
-
-        // On rajoute ca pour recuperer la variable de session int�gr� dans la requete
-        $str = $this->queries->sql;
-        eval( "\$str = \"$str\";" );
-        $this->queries->sql = $str;
+        $this->queries->sql = str_replace(
+            array('[ID_USER]'),
+            array($this->sessionIdUser),
+            $this->queries->sql
+        );
 
         preg_match_all("/@[_a-zA-Z1-9]+@/", $this->queries->sql, $this->sqlParams, PREG_SET_ORDER);
 
@@ -206,4 +195,3 @@ class queriesController extends bootstrap
         echo utf8_decode($csv);
     }
 }
-

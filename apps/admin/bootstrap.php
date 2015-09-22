@@ -2,9 +2,7 @@
 
 class bootstrap extends Controller
 {
-    var $Command;
-
-    function bootstrap($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
@@ -181,13 +179,13 @@ class bootstrap extends Controller
         $this->settings->get('Paging Tableaux', 'type');
         $this->nb_lignes = $this->settings->value;
 
-        // Recuperation de l'url du front
+        // Recuperation de l'URL du front
         $this->urlfront = $this->Config['url'][$this->Config['env']]['default'];
 
-        // Recuperation de la liste des langue disponibles
+        // Recuperation de la liste des langues disponibles
         $this->lLangues = $this->Config['multilanguage']['allowed_languages'];
 
-        // Recuperation de la langue par defaut
+        // Recuperation de la langue par défaut
         $array           = array_keys($this->Config['multilanguage']['allowed_languages']);
         $this->dLanguage = $array[0];
 
@@ -200,7 +198,7 @@ class bootstrap extends Controller
             $this->equinoa = true;
         }
 
-        // on vérifie ici si le mot de passe du user date de moins de 3 mois sinon on le redirige sur la page d'édition de mot de passe.
+        // On vérifie ici si le mot de passe du user date de moins de 3 mois sinon on le redirige sur la page d'édition de mot de passe
         if (
             $this->current_function != 'edit_password'
             && $this->current_function != 'login'
