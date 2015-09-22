@@ -4,7 +4,7 @@
 
         <!--				--><? //=$this->fireView('../blocs/depot-de-dossier')?>
 
-        <p><?= printf($this->lng['etape3']['contenu'], $this->mensualite_min, $this->mensualite_max) ?></p>
+        <p><?php printf($this->lng['etape3']['contenu'], $this->mensualite_min, $this->mensualite_max) ?></p>
 
         <div class="register-form">
             <?
@@ -140,12 +140,10 @@
                     </td>
                 </table>
 
-                <input type="hidden" name="send_form_etape_4" />
                 <button class="btn" style="height: 70px; line-height: 1.2em; width: 300px" type="submit"><?=$this->lng['etape3']['deposer-demande-financement']?><i class="icon-arrow-next"></i></button>
                 <span style="width: 100px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
                 <input type="hidden" name="send_form_etape_3" />
-                <input type="hidden" name="procedure_acceleree" />
-                <button class="btn"  style="height: 70px; line-height: 1.2em; width: 400px" type="submit"><?=$this->lng['etape3']['procedure-acceleree']?><i class="icon-arrow-next"></i
+                <button class="btn"  name="procedure_acceleree" style="height: 70px; line-height: 1.2em; width: 400px" type="submit"><?=$this->lng['etape3']['procedure-acceleree']?><i class="icon-arrow-next"></i
             </form>
         </div>
         <!-- /.register-form -->
