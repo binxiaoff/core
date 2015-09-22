@@ -304,20 +304,35 @@ abstract class Mailer
                     }
                 }
 
-                if (!ini_get('safe_mode') && !is_null($rPath)) {
-                    $result = mail($recipients, $subject, $message, $headers, '-f' . $rPath);
-                } else {
-                    $result = mail($recipients, $subject, $message, $headers);
+                if (defined('ENVIRONMENT') && ENVIRONMENT !== 'prod') {
+                    $aRecipients = explode(', ', $recipients);
+
+                    foreach ($aRecipients as $iIndex => $sRecipient) {
+                        if (1 !== preg_match('/@(dev|)unilend.fr$/', $sRecipient)) {
+                            unset($aRecipients[$iIndex]);
+                        }
+                    }
+
+                    $recipients = implode(', ', $aRecipients);
+                    $subject    = '[' . ENVIRONMENT . '] ' . $subject;
                 }
 
-                if ($filer != '') {
-                    $filer->from         = trim(str_replace('From:', '', $email->headers->get('From')));
-                    $filer->to           = $recipients;
-                    $filer->headers      = $headers;
-                    $filer->subject      = $subject;
-                    $filer->content      = addslashes($message);
-                    $filer->id_textemail = $id_textemail;
-                    $filer->create();
+                if (! empty($recipients)) {
+                    if (!ini_get('safe_mode') && !is_null($rPath)) {
+                        $result = mail($recipients, $subject, $message, $headers, '-f' . $rPath);
+                    } else {
+                        $result = mail($recipients, $subject, $message, $headers);
+                    }
+
+                    if ($filer != '') {
+                        $filer->from         = trim(str_replace('From:', '', $email->headers->get('From')));
+                        $filer->to           = $recipients;
+                        $filer->headers      = $headers;
+                        $filer->subject      = $subject;
+                        $filer->content      = addslashes($message);
+                        $filer->id_textemail = $id_textemail;
+                        $filer->create();
+                    }
                 }
 
                 if (!PHP_USE_SENDMAIL) {

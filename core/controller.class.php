@@ -47,10 +47,10 @@ class Controller
 
 	function __construct(&$command,$config,$app)
 	{
+		define('ENVIRONMENT', $config['env']);
 
 		$this->initVendor();
 		$this->initUnilendAutoload();
-
 
 		//Variables de session pour la fenetre de debug
 		unset($_SESSION['error']);
@@ -89,8 +89,8 @@ class Controller
 		//fo
 		$this->furl = $this->Config['url'][$this->Config['env']]['default'];
 
-                // Bypass le htaccess
-                $this->bp_url = $this->Config['bypass_htaccess_url'][$this->Config['env']];
+		// Bypass le htaccess
+		$this->bp_url = $this->Config['bypass_htaccess_url'][$this->Config['env']];
 
 		// Recuperation du type de plateforme
 		$this->cms = $this->Config['cms'];
