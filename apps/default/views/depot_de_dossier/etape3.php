@@ -22,7 +22,7 @@
             ?>
             <!-- TODO modifier source des données, selon renseignement altares car seulement sur une année et plus dans une boucle foreach -->
 
-            <form action="" method="post" id="form_etape_3">
+            <form action="" method="post" id="form_etape_3" enctype="multipart/form-data">
                 <table class="form-table">
                     <tr>
                         <td>
@@ -94,71 +94,56 @@
 
                     <!-- TODO modifier source des données pour les fichiers joins -->
                     <tr>
-                        <td>
-                            <label class="inline-text">
-                                <div class="row-upload file-uploaded">
-                                    <div class="uploader">
-                                        <?= $this->lng['etape3']['liasse-fiscal'] ?>
-                                    </div>
-                                </div>
-                            </label>
-                        </td>
-                        <td>
-                            <input id="liasse-fiscal"
-                                   type="text"
-                                   class="field field-large required field<?= ($this->error_autre == true ? 'LV_invalid_field' : '') ?>"
-                                   readonly="readonly"
-                                   value="<?= ($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"] != '' ? $this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"] : $this->lng['etape2']['aucun-fichier-selectionne']) ?>"/>
-
-                        </td>
-                        <td>
-                            <span class="btn btn-small">
-                                <?= $this->lng['etape2']['parcourir'] ?>
-                                <span class="file-upload">
-                                    <input type="file" class="file-field" name="liasse-fiscal">
+                        <td colspan="2">
+                            <div class="row row-upload">
+                                <label class="inline-text"><?=$this->lng['etape3']['liasse-fiscal']?></label>
+                                <div class="uploader">
+                                    <input id="liasse_fiscal"
+                                           type="text"
+                                           class="field required <?=($this->error_liasse_fiscal==true?'LV_invalid_field':'')?>"
+                                           readonly="readonly"
+                                           value="<?=$this->lng['etape3']['aucun-fichier-selectionne']?>" />
+                                    <div class="file-holder">
+                                    <span class="btn btn-small">
+                                        <?=$this->lng['etape2']['parcourir']?>
+                                        <span class="file-upload">
+                                    <input type="file" class="file-field" name="liasse_fiscal">
                                 </span>
                             </span>
-                        </td>
+                                    </div>
+                                </div><!-- /.uploader -->
+                            </div><!-- /.row -->
+                    </tr>
                     </tr>
                     <tr>
-                        <td>
-                            <label class="inline-text">
-                                <div class="row-upload file-uploaded">
-                                    <div class="uploader">
-                                        <?= $this->lng['etape3']['autre'] ?>
-                                    </div>
-                                    <!-- /.uploader -->
-                                </div>
-                                <!-- /.row -->
-                            </label>
-                        </td>
-                        <td>
+                        <td colspan="2">
+                        <div class="row row-upload">
+                            <label class="inline-text"><?=$this->lng['etape3']['autre']?></label>
 
-                            <input id="autre"
-                                   type="text"
-                                   class="field field-large required field<?= ($this->error_autre == true ? 'LV_invalid_field' : '') ?>"
-                                   readonly="readonly"
-                                   value="<?= ($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"] != '' ? $this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"] : $this->lng['etape2']['aucun-fichier-selectionne']) ?>"/>
-                        </td>
-                        <td>
-                            <div class="file-holder">
-                            <span class="btn btn-small">
-                                <?= $this->lng['etape2']['parcourir'] ?>
-                                <span class="file-upload">
+                            <div class="uploader">
+                                <input id="autre"
+                                       type="text"
+                                       class="field required <?=($this->error_extrait_kbis==true?'LV_invalid_field':'')?>"
+                                       readonly="readonly"
+                                       value="<?=$this->lng['etape3']['aucun-fichier-selectionne']?>" />
+                                <div class="file-holder">
+                                    <span class="btn btn-small">
+                                        <?=$this->lng['etape2']['parcourir']?>
+                                        <span class="file-upload">
                                     <input type="file" class="file-field" name="autre">
                                 </span>
                             </span>
-                            </div>
-
-                        </td>
-                        <!-- /.uploader -->
-                        <!-- /.row -->
+                                </div>
+                            </div><!-- /.uploader -->
+                        </div><!-- /.row -->
                     </tr>
+                    </td>
                 </table>
+
                 <input type="hidden" name="send_form_etape_4" />
                 <button class="btn" style="height: 70px; line-height: 1.2em; width: 300px" type="submit"><?=$this->lng['etape3']['deposer-demande-financement']?><i class="icon-arrow-next"></i></button>
                 <span style="width: 100px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                <input type="hidden" name="send_form_etape_4" />
+                <input type="hidden" name="send_form_etape_3" />
                 <input type="hidden" name="procedure_acceleree" />
                 <button class="btn"  style="height: 70px; line-height: 1.2em; width: 400px" type="submit"><?=$this->lng['etape3']['procedure-acceleree']?><i class="icon-arrow-next"></i
             </form>
@@ -168,3 +153,14 @@
     <!-- /.shell -->
 </div><!-- /.main -->
 <!--#include virtual="ssi-footer.shtml"  -->
+<script>
+    $(document).on('change', 'input.file-field', function(){
+        var $self = $(this);
+        var val = $self.val();
+
+        if ( val.length != 0 || val != '' ) {
+            val = val.replace(/\\/g, '/').replace(/.*\//, '');
+            $self.closest('.uploader').find('input.field').val(val).addClass('LV_valid_field').addClass('file-uploaded');
+        }
+    });
+</script>
