@@ -221,18 +221,6 @@
 
                         </div>
                         <!-- /.row -->
-                        <div class="row">
-                            <div class="cb-holder">
-                                <label class="check"
-                                       for="accept-cgu"><?= $this->lng['etape2']['je-reconnais-avoir-pris-connaissance'] ?>
-                                    <a style="color:#A1A5A7; text-decoration: underline;" class="check" target="_blank"
-                                       href="<?= $this->lurl . '/' . $this->tree->getSlug($this->lienConditionsGenerales, $this->language) ?>"><?= $this->lng['etape2']['des-conditions-generales-de-vente'] ?></a></label>
-                                <input type="checkbox" class="custom-input required" name="accept-cgu" id="accept-cgu">
-                            </div>
-                            <!-- /.cb-holder -->
-                        </div>
-                        <!-- /.row -->
-
                         <span class="form-caption"><?= $this->lng['etape2']['champs-obligatoires'] ?></span>
 
                         <div class="form-foot row row-cols centered">
