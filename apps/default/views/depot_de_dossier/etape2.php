@@ -1,8 +1,3 @@
-<style type="text/css">
-    .uploader input.field {
-        width: 280px;
-    }
-</style>
 
 <div class="main">
     <div class="shell">
@@ -40,7 +35,7 @@
                     </div>
                     <!-- /.row raison sociale-->
 
-                    <!--					question si on est gerant ou pas de l'entreprise: -->
+                    <!-- question si on est gerant ou pas de l'entreprise: -->
                     <div class="row">
                         <div class="form-choose fixed">
 
@@ -48,7 +43,8 @@
                                 <label style="width: 192px;"
                                        for="radio1-1-about"><?= $this->lng['etape2']['dirigeant-entreprise'] ?></label>
                                 <input <?= (isset($_POST['send_form_depot_dossier']) ? ($this->companies->status_client == 1 ? 'checked' : '') : 'checked') ?>
-                                    type="radio" class="custom-input" name="gerant" id="radio1-1-about" value="1">
+                                    type="radio" class="custom-input" name="gerant" id="radio1-1-about" value="1"
+                                    data-condition="show:.check" >
                             </div>
                             <!-- /.radio-holder -->
 
