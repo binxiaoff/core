@@ -31,6 +31,7 @@ class attachment extends attachment_crud
 	const LENDER = 'lenders_accounts';
 	const COMPANY = 'companies';
 	const PRESCRIPTEUR = 'prescripteurs';
+	const PROJECT = 'projects';
 
 	function attachment($bdd,$params='')
     {
@@ -51,7 +52,7 @@ class attachment extends attachment_crud
     {
     	parent::delete($id,$field);
     }
-    
+
     function create($cs='')
     {
         $id = parent::create($cs);
