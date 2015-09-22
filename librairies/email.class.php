@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Copyright (c) 2002-2006 Aurélien Maille
  *
@@ -62,7 +63,6 @@ unset($hostname);
  */
 abstract class Mailer
 {
-
     /**
      * Version courante de Wamailer
      */
@@ -331,142 +331,31 @@ abstract class Mailer
 
     public static function sendNMP(Email $email, $filer = '', $id_textemail = '', $email_nmp = '', &$tabFiler = '')
     {
+        if (false == self::$sendmail_mode && false == self::$smtp_mode) {
+            $subject    = $email->headers->get('Subject');
+            $recipients = $email->headers->get('To');
+            list($headers, $message) = explode("\r\n\r\n", $email->__toString(), 2);
 
-        /*$email->headers->set('X-Mailer', sprintf('Wamailer/%s', self::VERSION));
-        $rPath = $email->headers->get('Return-Path');
+            if ($filer != '') {
+                // On creer la ligne du filer
+                $filer->id_textemail  = $id_textemail;
+                $filer->email_nmp     = $email_nmp;
+                $filer->from          = trim(str_replace('From:', '', $email->headers->get('From')));
+                $filer->to            = $recipients;
+                $filer->subject       = $subject;
+                $filer->content       = addslashes($message);
+                $filer->headers       = $headers;
+                $filer->id_filermails = $filer->create();
 
+                // On complete avec la clef pour le desabo
+                $filer->get($filer->id_filermails, 'id_filermails');
+                $filer->desabo = md5('EQ' . $filer->id_filermails . $filer->email_nmp . 'EQ');
+                $filer->update();
 
-        if(!is_null($rPath))
-        {
-            $rPath = trim($rPath->value, '<>');
-        }
-        */
-
-        if (self::$sendmail_mode == true) {
-
-            /*$email->headers->get('X-Mailer')->append(' (Sendmail mode)');
-            $result = self::sendmail($email->__toString(), null, $rPath);*/
-        } else {
-            if (self::$smtp_mode == true) {
-                /*if(!class_exists('Mailer_SMTP'))
-                {
-                    require dirname(__FILE__) . '/smtp.class.php';
-                }
-
-                // Nous devons passer directement les adresses email des destinataires au serveur SMTP.
-                // On récupère ces adresses des entêtes To, Cc et Bcc.
-                $recipients = array();
-
-                foreach(array('to','cc','bcc') as $name)
-                {
-                    $header = $email->headers->get($name);
-
-                    if(!is_null($header))
-                    {
-                        $addressList = $header->__toString();
-                        $recipients = array_merge($recipients,self::clearAddressList($addressList));
-                    }
-                }
-
-                $email->headers->get('X-Mailer')->append(' (SMTP mode)');
-
-                // L'entête Bcc ne doit pas apparaitre dans l'email envoyé.
-                // On le supprime donc.
-
-                $email->headers->remove('Bcc');
-                $result = self::smtpmail($email->__toString(), $recipients, $rPath);*/
-            } else {
-                $subject    = $email->headers->get('Subject');
-                $recipients = $email->headers->get('To');
-                list($headers, $message) = explode("\r\n\r\n", $email->__toString(), 2);
-
-                /*if(!is_null($subject))
-                {
-                    $subject = $subject->__toString();
-                    $headers = str_replace($subject."\r\n", '', $headers);
-                    $subject = substr($subject, 9); // on skip le nom de l'en-tête
-                }*/
-
-                /*if(!is_null($recipients))
-                {
-                    $recipients = $recipients->__toString();
-
-                    if(PHP_USE_SENDMAIL)
-                    {
-                        $headers = str_replace($recipients."\r\n", '', $headers);
-                        $recipients = substr($recipients, 4); // on skip le nom de l'en-tête
-                    }
-                    else
-                    {
-                        $recipients = implode(', ', self::clearAddressList($recipients));
-                    }
-                }*/
-
-                /*if(PHP_USE_SENDMAIL)
-                {
-                    $headers = str_replace("\r\n", MAILER_MIME_EOL, $headers);
-                    $message = str_replace("\r\n", MAILER_MIME_EOL, $message);
-
-                    if(strncasecmp(PHP_OS, 'Win', 3) != 0)
-                    {
-                        $subject = str_replace("\r\n\t", ' ', $subject);
-                        $recipients = str_replace("\r\n\t", ' ', $recipients);
-                    }
-                }
-                else
-                {
-                    if(!is_null($rPath))
-                    {
-                        ini_set('sendmail_from', $rPath);
-                    }
-
-                    $header_cc = $email->headers->get('Cc');
-
-                    if(!is_null($header_cc))
-                    {
-                        $header_cc = $header_cc->__toString();
-                        $new_header_cc = new Mime_Header('Cc',implode(', ', self::clearAddressList($header_cc)));
-                        $headers = str_replace($header_cc, $new_header_cc->__toString(), $headers);
-                    }
-                }*/
-
-                /*if(!ini_get('safe_mode') && !is_null($rPath))
-                {
-                    $result = mail($recipients, $subject, $message, $headers, '-f' . $rPath);
-                }
-                else
-                {
-                    $result = mail($recipients, $subject, $message, $headers);
-                }*/
-
-                if ($filer != '') {
-                    // On creer la ligne du filer
-                    $filer->id_textemail  = $id_textemail;
-                    $filer->email_nmp     = $email_nmp;
-                    $filer->from          = trim(str_replace('From:', '', $email->headers->get('From')));
-                    $filer->to            = $recipients;
-                    $filer->subject       = $subject;
-                    $filer->content       = addslashes($message);
-                    $filer->headers       = $headers;
-                    $filer->id_filermails = $filer->create();
-
-                    // On complete avec la clef pour le desabo
-                    $filer->get($filer->id_filermails, 'id_filermails');
-                    $filer->desabo = md5('EQ' . $filer->id_filermails . $filer->email_nmp . 'EQ');
-                    $filer->update();
-
-                    // On rempli le tableau de retour
-                    $tabFiler = array('id_filermails' => $filer->id_filermails, 'id_textemail' => $filer->id_textemail, 'desabo' => $filer->desabo, 'email_nmp' => $filer->email_nmp);
-                }
-
-                /*if(!PHP_USE_SENDMAIL)
-                {
-                    ini_restore('sendmail_from');
-                }*/
+                // On rempli le tableau de retour
+                $tabFiler = array('id_filermails' => $filer->id_filermails, 'id_textemail' => $filer->id_textemail, 'desabo' => $filer->desabo, 'email_nmp' => $filer->email_nmp);
             }
         }
-
-        return $result;
     }
 
     /**
@@ -537,7 +426,6 @@ abstract class Mailer
         $smtp->connect(self::$smtp_server);
 
         if (!$smtp->from($rPath)) {
-//			$this->error($smtp->msg_error);
             $GLOBALS['php_errormsg'] = $smtp->responseData;
             $smtp->quit();
             return false;
@@ -545,7 +433,6 @@ abstract class Mailer
 
         foreach ($recipients as $recipient) {
             if (!$smtp->to($recipient)) {
-//				$this->error($smtp->msg_error);
                 $GLOBALS['php_errormsg'] = $smtp->responseData;
                 $smtp->quit();
                 return false;
@@ -553,7 +440,6 @@ abstract class Mailer
         }
 
         if (!$smtp->send($email)) {
-//			$this->error($smtp->msg_error);
             $GLOBALS['php_errormsg'] = $smtp->responseData;
             $smtp->quit();
             return false;
@@ -711,46 +597,7 @@ class Email
             }
         }
 
-        /*		if( $fullParse ) {
-                    $sender = $email->headers->get('Return-Path');
-                    if( !is_null($sender) ) {
-                        $email->sender = trim($sender->value, '<>');
-                    }
-
-                    // @todo
-                    // Récupération charset "global"
-                    // + structure, si compatible
-                    // + attention, headers du premier mime_part se trouvent dans
-                    // le Mime_Headers de l'objet Email
-
-                    $contentType = $email->headers->get('Content-Type');
-                    $boundary = $contentType->param('boundary');
-                    $charset  = $contentType->param('charset');
-
-                    if( !is_null($contentType) && strncasecmp($contentType->value, 'multipart', 9) == 0 ) {
-                        if( is_null($boundary) ) {
-                            throw new Exception("Bad mime part (missed boundary)");
-                        }
-
-
-                    }
-                    else {
-                        switch( $contentType->value ) {
-                            case 'text/plain':
-                                $email->setTextBody($message, $charset);
-                                break;
-                            case 'text/html':
-                                $email->setHTMLBody($message, $charset);
-                                break;
-                            default:
-                                // C'est donc un fichier attaché seul
-                                break;
-                        }
-                    }
-                }
-                else {*/
         $email->message_txt = "\r\n" . $message;
-//		}
 
         return $returnBool ? true : $email;
     }
