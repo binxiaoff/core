@@ -443,4 +443,23 @@ class projects extends projects_crud
 
         return $record;
     }
+
+
+    public function getAttachments($project)
+    {
+
+        $sql = 'SELECT a.id, a.id_type, a.id_owner, a.type_owner, a.path, a.added, a.updated, a.archived
+				FROM attachment a
+				WHERE a.id_owner = ' . $project . '
+					AND a.type_owner = "projects";';
+
+        $result      = $this->bdd->query($sql);
+        $attachments = array();
+        while ($record = $this->bdd->fetch_array($result)) {
+
+            $attachments[$record["id_type"]] = $record;
+        }
+        return $attachments;
+
+    }
 }
