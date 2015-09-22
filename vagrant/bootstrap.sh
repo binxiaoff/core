@@ -99,6 +99,7 @@ apt-get install -y openjdk-8-jdk maven git
 
 yes | git clone https://www.github.com/forcedotcom/dataloader.git /srv/dataloader
 cd /srv/dataloader
+git checkout tags/26.0.0
 git submodule init
 git submodule update
 mvn clean package -DskipTests
