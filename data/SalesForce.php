@@ -23,9 +23,19 @@ class SalesForce
     const PATH_DATALOADER = '/srv/dataloader/target/';
 
     /**
+     * constant to specify path for status log csv send by the dataloader
+     */
+    const PATH_SUCCESS_LOG = 'dataloader/status';
+
+    /**
      * constant to specify dataloader version
      */
     const DATALOADER_VERSION = '26.0.0';
+
+    /**
+     * constant to specify the name of prospect's file for check if become client or not
+     */
+    const FILE_PROSPECTS_ONLY = 'tempProspect.csv';
 
     /**
      * @var Boostrap
@@ -67,12 +77,15 @@ class SalesForce
         $this->oDatabase = $this->oBoostrap->getDatabase();
         $this->oLogger = $this->oBoostrap->setLogger('SalesForce', 'salesforce.log')->getLogger();
         $this->setSearchAndReplace()
-            ->setTypeDataloader();
+            ->setTypeDataloader()
+            ->DeleteStatusLog();
     }
 
     public function setTypeDataloader()
     {
         self::$aTypeDataloader = array('preteurs', 'emprunteurs', 'companies', 'projects');
+
+        return $this;
     }
 
     public function setSearchAndReplace()
@@ -81,11 +94,6 @@ class SalesForce
         $this->aReplaceCharacter = array('/', '/', '', '', '', '');
 
         return $this;
-    }
-
-    public function setBootstrap($sConfig)
-    {
-        $this->oBoostrap = Bootstrap::getInstance($sConfig);
     }
 
     public function extractCompanies()
@@ -236,7 +244,7 @@ class SalesForce
                         projects_notes pn ON (p.id_project = pn.id_project)
                         LIMIT 0,100";
 
-        $this->tryIt($sQuery, 'projects', true);
+        $this->tryIt($sQuery, 'projects');
     }
 
     public function extractLenders()
@@ -305,6 +313,7 @@ class SalesForce
                     CONVERT(CAST(REPLACE(ca.ville,',','') as BINARY) USING utf8) as 'Ville',
                     acountry.fr as 'Pays',
                     SUM(l.amount)/100 as 'TotalPretEur',
+                    '' as 'DeletingProspect',
                     '0012400000F6xvT' as 'Sfcompte'
                   FROM
                     clients c
@@ -326,10 +335,10 @@ class SalesForce
                     (c.status_pre_emp = 1 or c.status_pre_emp = 2)
                   GROUP BY
                     c.id_client
-                    LIMIT 0,100";
+                    LIMIT 0, 100";
 
         $this->tryIt($sQuery, 'preteurs');
-        $this->extractProspects();
+//        $this->extractProspects();
     }
 
     /**
@@ -359,7 +368,8 @@ class SalesForce
         try {
             if ($rSql = $this->oDatabase->query($sQuery)) {
                 $iTimeStartCsv = microtime(true);
-                $oCsvFile = fopen(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT . 'preteurs.csv', 'a');
+                $rCsvFile = fopen(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT . 'preteurs.csv', 'a');
+                $rCsvFileCheck = fopen(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT . 'tempProspect.csv', 'w');
                 $sNom = $sPrenom = $sEmail = '';
                 $that = $this;
                 while ($aRow = $this->oDatabase->fetch_assoc($rSql)) {
@@ -368,7 +378,8 @@ class SalesForce
                         $sValueRow = str_replace($that->aSearchCharacter, $that->aReplaceCharacter, $sValueRow);
                     });
                     if ($aRow['nom'] != $sNom && $aRow['prenom'] != $sPrenom && $aRow['email'] != $sEmail) {
-                        $aCsvProspect = array('P'.$aRow['id_prospect'],// We add the letter P to avoid error in the dataloader on duplicate key with lenders.
+                        //Array adding in file preteur.csv
+                        $aCsvProspect = array('P' . $aRow['id_prospect'],// We add the letter P to avoid error in the dataloader on duplicate key with lenders.
                             '',
                             $aRow['id_langue'],
                             $aRow['source'],
@@ -383,17 +394,23 @@ class SalesForce
                             '', '', 'Prospect', '',
                             $aRow['added'],
                             $aRow['updated'],
-                            '', '', '', '', '', '', '', '', '', '', 0,
+                            '', '', '', '', '', '', '', '', '', '', 0, '',
                             '0012400000F6xvT');
-                        fputs($oCsvFile, '""' . implode('"", ""', $aCsvProspect) . '""' . "\n");
+                        fputs($rCsvFile, '""' . implode('"", ""', $aCsvProspect) . '""' . "\n");
+
+                        //Array adding in file tempProspect.csv for check if become a client (deleting or not)
+                        $aCsvProspectCheck = array($aRow['id_prospect'], $aRow['email']);
+                        fputs($rCsvFileCheck, implode(',', $aCsvProspectCheck) . "\n");
+
                     }
                     $sNom = $aRow['nom'];
                     $sPrenom = $aRow['prenom'];
                     $sEmail = $aRow['email'];
                 }
-                fclose($oCsvFile);
+                fclose($rCsvFile);
+                fclose($rCsvFileCheck);
                 $iTimeEndCsv = microtime(true) - $iTimeStartCsv;
-                $this->oLogger->addRecord('info','Generation of csv prospects in ' . round($iTimeEndCsv, 2),
+                $this->oLogger->addRecord('info', 'Generation of csv prospects in ' . round($iTimeEndCsv, 2),
                     array(__FILE__ . ' on line ' . __LINE__));
 
                 $this->oDatabase->free_result($rSql);
@@ -402,23 +419,43 @@ class SalesForce
                 throw new \Exception(mysql_error($this->oDatabase->connect_id));
             }
         } catch (\Exception $oException) {
-            $this->oLogger->addRecord('error','Error on query prospects : ' . $oException->getMessage(),
+            $this->oLogger->addRecord('error', 'Error on query prospects : ' . $oException->getMessage(),
                 array(__FILE__ . ' on line ' . __LINE__));
         }
     }
 
     /**
-     * @param ressource $rSql ressource of query sql
-     * @param string $sNameFile name of csv file to write
-     * @param bool|false $bSpecialTreatments boolean for know if a treatment specific exist
+     * @param string $sEmail client email
      */
-    private function createFileFromQuery($rSql, $sNameFile, $bSpecialTreatments = false)
+    private function checkDeletingProspect($sEmail)
     {
+        $rCsvProspects = fopen(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT . self::FILE_PROSPECTS_ONLY, 'r');
+        if (false === $rCsvProspects) {
+            $this->oLogger->addRecord('error', 'Opening of file ' . self::FILE_PROSPECTS_ONLY . ' return an error',
+                array(__FILE__ . ' at line' . __LINE__));
+        } else {
+            while (false !== ($aData = fgetcsv($rCsvProspects))) {
+                if ($sEmail == $aData[1]) {
+                    return 'P' . $aData[0];
+                }
+            }
 
+            fclose($rCsvProspects);
+
+            return false;
+        }
+    }
+
+    /**
+     * @param resource $rSql resource of query sql
+     * @param string $sNameFile name of csv file to write
+     */
+    private function createFileFromQuery($rSql, $sNameFile)
+    {
         if (true === $this->createExtractDir()) {
             $iTimeStartCsv = microtime(true);
             $sNameFile .= (!preg_match('/(\.csv)$/i', $sNameFile)) ? '.csv' : '';
-            $oCsvFile = fopen(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT . $sNameFile, 'w');
+            $rCsvFile = fopen(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT . $sNameFile, 'w');
             $iCountLine = 0;
             $that = $this;
             while ($aRow = $this->oDatabase->fetch_assoc($rSql)) {
@@ -426,28 +463,38 @@ class SalesForce
                     $sValueRow = html_entity_decode($sValueRow, ENT_QUOTES, 'UTF-8');
                     $sValueRow = str_replace($that->aSearchCharacter, $that->aReplaceCharacter, $sValueRow);
                 });
+
                 switch ($sNameFile) {
-                    case 'preteurs':
-                        $aRow['Valide'] = ('Valide' == $aRow['Status_Completude']) ? 'Oui' : 'Non';
+                    case 'preteurs.csv':
+                        $aRow['Valide'] = ('Valide' == $aRow['StatusCompletude']) ? 'Oui' : 'Non';
+                        $mDeleteProspect = $this->checkDeletingProspect($aRow['Email']);
+                        $aRow['DeletingProspect'] = (false === $mDeleteProspect) ? '' : $mDeleteProspect;
                         break;
                 }
-                if (0 === $iCountLine) fputs($oCsvFile, '""' . implode('"", ""', array_keys($aRow)) . '""' . "\n");
-                fputs($oCsvFile, '""' . implode('"", ""', $aRow) . '""' . "\n");
+                if (0 === $iCountLine) {
+                    fputs($rCsvFile, '""' . implode('"", ""', array_keys($aRow)) . '""' . "\n");
+                }
+
+                fputs($rCsvFile, '""' . implode('"", ""', $aRow) . '""' . "\n");
                 $iCountLine++;
             }
-            fclose($oCsvFile);
+            fclose($rCsvFile);
 
             $iTimeEndCsv = microtime(true) - $iTimeStartCsv;
-            $this->oLogger->addRecord('info','Generation of csv ' . $sNameFile . ' in ' . round($iTimeEndCsv, 2),
+            $this->oLogger->addRecord('info', 'Generation of csv ' . $sNameFile . ' in ' . round($iTimeEndCsv, 2),
                 array(__FILE__ . ' on line ' . __LINE__));
+
+            return true;
         }
+
+        return false;
     }
 
     private function createExtractDir()
     {
         if (false === is_dir(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT)) {
             if (false === mkdir(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT, 0777, true)) {
-                $this->oLogger->addRecord('info','Error on create dir ' .
+                $this->oLogger->addRecord('info', 'Error on create dir ' .
                     Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT,
                     array(__FILE__ . ' on line ' . __LINE__));
 
@@ -463,18 +510,41 @@ class SalesForce
      * @param string $sNameFile File Name to generate
      * @param bool|false $bSpecialTreatments true if treat html special content
      */
-    private function tryIt($sQuery, $sNameFile, $bSpecialTreatments = false)
+    private function tryIt($sQuery, $sNameFile)
     {
         try {
             if ($rSql = $this->oDatabase->query($sQuery)) {
-                $this->createFileFromQuery($rSql, $sNameFile . '.csv', $bSpecialTreatments);
+                $this->createFileFromQuery($rSql, $sNameFile . '.csv');
                 $this->oDatabase->free_result($rSql);
             } else {
                 throw new \Exception(mysql_error($this->oDatabase->connect_id));
             }
         } catch (\Exception $oException) {
-            $this->oLogger->addRecord('error','Error on query ' . $sNameFile . ' : ' . $oException->getMessage(),
+            $this->oLogger->addRecord('error', 'Error on query ' . $sNameFile . ' : ' . $oException->getMessage(),
                 array(__FILE__ . ' on line ' . __LINE__));
+        }
+    }
+
+    /**
+     * @param string $sPath path of directory to unlink. If null, path of success log.
+     */
+    private function DeleteStatusLog($sPath = null)
+    {
+        $sPath = (true === is_null($sPath)) ?
+            Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_SUCCESS_LOG : $sPath;
+        if (true === is_dir($sPath)) {
+            $aFiles = array_diff(
+                scandir(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_SUCCESS_LOG),
+                array('.', '..'));
+            foreach ($aFiles as $sFile) {
+                (is_dir($sPath . '/' . $sFile)) ? delTree($sPath . '/' . $sFile) : unlink($sPath . '/' . $sFile);
+            }
+
+            $bUnlinkSuccessLog = rmdir($sPath);
+            $sTextLog = (true === $bUnlinkSuccessLog) ? 'success.' : 'error.';
+            $this->oLogger->addRecord('info',
+                'Deleting ' . self::PATH_SUCCESS_LOG . ' with message ' . $sTextLog,
+                array(__FILE__ . ' at line ' . __LINE__));
         }
     }
 
@@ -487,9 +557,9 @@ class SalesForce
 
         $iTimeStartDataloader = microtime(true);
         //TODO a passer en crontab
-        exec('java -cp '.self::PATH_DATALOADER.'dataloader-'.self::DATALOADER_VERSION.'-uber.jar -Dsalesforce.config.dir='.Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']].self::PATH_DATALOADER_CONF.' com.salesforce.dataloader.process.ProcessRunner process.name='.escapeshellarg($sType), $aReturnDataloader);
+        exec('java -cp ' . self::PATH_DATALOADER . 'dataloader-' . self::DATALOADER_VERSION . '-uber.jar -Dsalesforce.config.dir=' . Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_DATALOADER_CONF . ' com.salesforce.dataloader.process.ProcessRunner process.name=' . escapeshellarg($sType), $aReturnDataloader);
         $iTimeEndDataloader = microtime(true) - $iTimeStartDataloader;
-        $this->oLogger->addRecord('error','Send to dataloader type ' . $sType . ' in ' . round($iTimeEndDataloader, 2),
+        $this->oLogger->addRecord('error', 'Send to dataloader type ' . $sType . ' in ' . round($iTimeEndDataloader, 2),
             array(__FILE__ . ' on line ' . __LINE__));
     }
 }

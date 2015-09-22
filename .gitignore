@@ -28,6 +28,7 @@ tmp/
 
 ###DataLoader###
 /dataloader/extract/
+/dataloader/status/
 
 ###PHPStorm###
 .idea/

@@ -56,6 +56,9 @@ class pdfController extends bootstrap
     {
         parent::__construct($command, $config, $app);
 
+        //If we don't pass by execute.
+        $this->params = (isset($this->params)) ? $this->params : $command->getParameters();
+
         // Recuperation du bloc
         $this->blocs->get('pdf-contrat', 'slug');
         $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
@@ -163,7 +166,6 @@ class pdfController extends bootstrap
             default:
                 $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/style.css');
         }
-
         $this->oSnapPdf->generateFromHtml($this->sDisplay, $sPathPdf, array(), true);
 
         $iTimeEndPdf = microtime(true) - $iTimeStartPdf;
@@ -554,7 +556,7 @@ class pdfController extends bootstrap
         $this->oLendersAccounts = $this->loadData('lenders_accounts');
 
         $this->clients->get($this->params[0], 'hash');
-        $this->projects->get($ths->oLoans->id_project, 'id_project');
+        $this->projects->get($this->oLoans->id_project, 'id_project');
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
         $this->oLoans->get($this->params[1], 'id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_loan');
 

@@ -47,8 +47,10 @@ class Controller
 
 	function __construct(&$command,$config,$app)
 	{
+
 		$this->initVendor();
 		$this->initUnilendAutoload();
+
 
 		//Variables de session pour la fenetre de debug
 		unset($_SESSION['error']);
