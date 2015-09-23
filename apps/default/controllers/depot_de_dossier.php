@@ -2,17 +2,12 @@
 
 class depot_de_dossierController extends bootstrap
 {
-
-    var $Command;
-
-    function depot_de_dossierController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
         $this->catchAll = true;
 
-
-        // Chargement des datas
         $this->companies               = $this->loadData('companies');
         $this->companies_bilans        = $this->loadData('companies_bilans');
         $this->companies_details       = $this->loadData('companies_details');
@@ -25,70 +20,49 @@ class depot_de_dossierController extends bootstrap
 
         $this->navigateurActive = 3;
 
-
-        //Recuperation des element de traductions
         $this->lng['depot-de-dossier-header'] = $this->ln->selectFront('depot-de-dossier-header', $this->language, $this->App);
 
-
-
-        //*********************//
-        //*** Infos Altares ***//
-        //*********************//
-        // Login altares
+        // Altares
         $this->settings->get('Altares login', 'type');
         $login = $this->settings->value;
-        // Mdp altares
+
         $this->settings->get('Altares mot de passe', 'type');
         $mdp = $this->settings->value; // mdp en sha1
-        // Url wsdl
+
         $this->settings->get('Altares wsdl', 'type');
         $this->wsdl = $this->settings->value;
-        // Identification
+
         $this->identification = $login . '|' . $mdp;
-
-        //*************************//
-        //*** Fin Infos Altares ***//
-        //*************************//
     }
 
-    function _default()
+    public function _default()
     {
-        header('location:' . $this->lurl . '/lp-depot-de-dossier');
+        header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
     }
 
-    function _etape1()
+    public function _etape1()
     {
-        header('location:' . $this->lurl . '/lp-depot-de-dossier');
+        header('location: ' . $this->lurl . '/lp-depot-de-dossier');
     }
 
-    function _interrogation()
+    public function _interrogation()
     {
-
-        // Num page
         $this->page = 1;
 
-        // Somme à emprunter min
         $this->settings->get('Somme à emprunter min', 'type');
         $this->sommeMin = $this->settings->value;
 
-        // Somme à emprunter max
         $this->settings->get('Somme à emprunter max', 'type');
         $this->sommeMax = $this->settings->value;
 
-        //traduction
         $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
-
 
         // source -> mets utm_source dans la session
         $this->ficelle->source($_GET['utm_source'], $this->lurl . '/' . $this->params[0], $_GET['utm_source2']);
 
-        ////////////////////////////////
-        // Initialisation variable
         $this->preteurCreateEmprunteur = false;
 
-        //Si on a une session client
         if (isset($_SESSION['client'])) {
-            // On recup le mec
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
 
             switch ($this->clients->status_pre_emp) {
@@ -102,14 +76,15 @@ class depot_de_dossierController extends bootstrap
                     $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
                     break;
             }
-            header('location:' . $this->lurl . '/lp-depot-de-dossier');
+            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
         }
 
         $reponse_get = false;
 
         // Si on a les get en question
         if (isset($_GET['montant']) && $_GET['montant'] != '' &&
-            isset($_GET['siren']) && $_GET['siren'] != '') {
+            isset($_GET['siren']) && $_GET['siren'] != ''
+        ) {
             $reponse_get = true;
         }
 
@@ -127,9 +102,9 @@ class depot_de_dossierController extends bootstrap
 
             if (isset($email) && $this->ficelle->isEmail($email) === true && $this->clients->existEmail($email) === false) {
                 $this->clients->get($email, 'email');
-            }// end if email
+            }
 
-            if (isset($email) && $this->ficelle->isEmail($email) && $this->prescripteurs->exist($email, 'email') === false ) {
+            if (isset($email) && $this->ficelle->isEmail($email) && $this->prescripteurs->exist($email, 'email') === false) {
                 $this->prescripteurs->get($email, 'email');
             }
 
@@ -139,13 +114,11 @@ class depot_de_dossierController extends bootstrap
                 $form_valid        = false;
                 $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
             }
-            // Si pas numerique
+
             if (!is_numeric($montant)) {
                 $form_valid        = false;
                 $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
-            }
-            // montant < ou > au min et max
-            elseif ($montant < $this->sommeMin || $montant > $this->sommeMax) {
+            } elseif ($montant < $this->sommeMin || $montant > $this->sommeMax) {
                 $this->form_ok = false;
             }
 
@@ -155,10 +128,8 @@ class depot_de_dossierController extends bootstrap
             }
 
             if ($form_valid) {
-
                 //create client, company and project independent from eligibility
 
-                //Check if company exists based on SIREN
                 if ($this->companies->exist($siren, $field = 'siren')) {
                     $this->companies->get($siren, 'siren');
                     //then get the client from that company in case it has not already been found by email before
@@ -167,10 +138,10 @@ class depot_de_dossierController extends bootstrap
                     }
                 }
                 //if there is a client, check if the client is not already a "preteur", in this case send back with error message
-                if(is_numeric($this->clients->id_client) && $this->clients->status_pre_emp === 1){
+                if (is_numeric($this->clients->id_client) && $this->clients->status_pre_emp === 1) {
 
                     $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
-                    header('location:' . $this->lurl . '/depot_de_dossier/lp-depot-de-dossier');
+                    header('Location: ' . $this->lurl . '/depot_de_dossier/lp-depot-de-dossier');
                 }
 
                 $this->clients->id_langue            = $this->language;
@@ -191,7 +162,6 @@ class depot_de_dossierController extends bootstrap
                     $this->clients->id_client = $this->clients->create();
                 }
 
-
                 $this->companies->id_client_owner               = $this->clients->id_client; // id client
                 $this->companies->siren                         = $siren;
                 $this->companies->status_adresse_correspondance = '1';
@@ -199,7 +169,7 @@ class depot_de_dossierController extends bootstrap
                 if ($this->companies->id_company == '') {
                     $this->companies->id_company = $this->companies->create();
                 }
-                // projects //
+
                 $this->projects->id_company = $this->companies->id_company;
                 if ($this->prescripteurs->id_prescripteurs == '') {
                     $this->projects->id_prescripteur = $this->prescripteurs->id_prescripteur;
@@ -207,7 +177,6 @@ class depot_de_dossierController extends bootstrap
                 $this->projects->amount     = $montant;
                 $this->projects->id_company = $this->companies->id_company;
                 $this->projects->id_project = $this->projects->create();
-                // fin projects //
 
                 // 1 : activé 2 : activé mais prend pas en compte le resultat 3 : desactivé (DC)
                 $this->settings->get('Altares debrayage', 'type');
@@ -218,7 +187,6 @@ class depot_de_dossierController extends bootstrap
 
                 // 1 : activé 2 : on prend pas en compte les filtres.(DC)
                 if (in_array($AltaresDebrayage, array(1, 2))) {
-                    // Web Service Altares
                     $result = '';
                     try {
                         $result = $this->ficelle->ws($this->wsdl, $this->identification, $siren);
@@ -242,60 +210,51 @@ class depot_de_dossierController extends bootstrap
                     if ($AltaresDebrayage == 2) {
                         mail($AltaresEmailAlertes, '[ALERTE] Altares Tentative evaluation', 'Date ' . date('Y-m-d H:i:s') . ' siren : ' . $siren);
                     }
-
                 } // debrayage statut 3 : altares desactivé
                 else {
                     $exception = '';
                 }
+
                 // si altares ok
                 if ($exception == '') {
-
-
-                    // verif reponse
                     $sEligibility = $result->myInfo->eligibility;
-                    //save status altares in the project
                     $this->projects->retour_altares = $sEligibility;
                     $this->projects->update();
 
                     switch ($sEligibility) {
                         case '1_Etablissement Inactif':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                            header('location:' . $this->lurl . '/depot_de_dossier/nok/no-siren');
+                            header('Location: ' . $this->lurl . '/depot_de_dossier/nok/no-siren');
                             break;
                         case '2_Etablissement sans RCS':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                            header('location:' . $this->lurl . '/depot_de_dossier/nok/no-rcs');
+                            header('Location: ' . $this->lurl . '/depot_de_dossier/nok/no-rcs');
                             break;
                         case '3_Procedure Active':
                         case '4_Bilan de plus de 450 jours':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                            header('location:' . $this->lurl . '/depot_de_dossier/nok');
+                            header('Location: ' . $this->lurl . '/depot_de_dossier/nok');
                             break;
                         case '5_Fonds Propres Négatifs':
                         case '6_EBE Négatif':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                            header('location:' . $this->lurl . '/depot_de_dossier/nok/rex-nega');
+                            header('Location: ' . $this->lurl . '/depot_de_dossier/nok/rex-nega');
                             break;
                         case '7_SIREN inconnu':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                            header('location:' . $this->lurl . '/depot_de_dossier/nok/no-siren');
+                            header('Location: ' . $this->lurl . '/depot_de_dossier/nok/no-siren');
                             break;
                         case '9_bilan sup 450 jours':
-                        $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                        header('location:' . $this->lurl . '/depot_de_dossier/nok');
-                        break;
+                            $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
+                            header('Location: ' . $this->lurl . '/depot_de_dossier/nok');
+                            break;
                         case '8_Eligible':
-
-                            //clients_adresses //
                             $this->clients_adresses->id_client = $this->clients->id_client;
                             $this->clients_adresses->create();
-                            // clients_adresses //
 
                             $oIdentite = $result->myInfo->identite;
                             $oScore    = $result->myInfo->score;
 
-
-                            // Companie //
                             $this->companies->name                          = $oIdentite->raisonSociale;
                             $this->companies->forme                         = $oIdentite->formeJuridique;
                             $this->companies->capital                       = $oIdentite->capital;
@@ -308,23 +267,14 @@ class depot_de_dossierController extends bootstrap
                             $this->companies->rcs                           = $oIdentite->rcs;
                             $this->companies->siret                         = $oIdentite->siret;
                             $this->companies->status_adresse_correspondance = '1';
+                            $this->companies->date_creation                 = substr($oIdentite->dateCreation, 0, 10);
+                            $this->companies->altares_eligibility           = $eligibility;
+                            $this->companies->altares_niveauRisque          = $score->niveauRisque;
+                            $this->companies->altares_scoreVingt            = $score->scoreVingt;
+                            $this->companies->score_sectoriel_altatres      = $score->scoreSectorielVingt;
+                            $this->companies->score_sectoriel_xerfirisk     = $score->scoreSectorielCent;
+                            $this->companies->altares_dateValeur            = substr($score->dateValeur, 0, 10);
 
-                            $dateCreation                   = substr($oIdentite->dateCreation, 0, 10);
-                            $this->companies->date_creation = $dateCreation;
-
-
-                            $this->companies->altares_eligibility       = $eligibility;
-                            $this->companies->altares_niveauRisque      = $score->niveauRisque;
-                            $this->companies->altares_scoreVingt        = $score->scoreVingt;
-                            $this->companies->score_sectoriel_altatres  = $score->scoreSectorielVingt;
-                            $this->companies->score_sectoriel_xerfirisk = $score->scoreSectorielCent;
-
-                            $dateValeur                          = substr($score->dateValeur, 0, 10);
-                            $this->companies->altares_dateValeur = $dateValeur;
-
-                            // Fin companie //
-
-                            // dernier bilan (companies_details) //
                             $dateDernierBilanString                             = substr($identite->dateDernierBilan, 0, 10);
                             $dateDernierBilan                                   = explode('-', $dateDernierBilanSting);
                             $this->companies_details->date_dernier_bilan        = $dateDernierBilanString;
@@ -338,8 +288,6 @@ class depot_de_dossierController extends bootstrap
                             } else {
                                 $this->companies_details->create();
                             }
-                            // fin companies_details //
-
 
                             // On génère 5 lignes dans la base pour les bilans
                             $lesdates = array(date('Y') - 3, date('Y') - 2, date('Y') - 1, date('Y'), date('Y') + 1);
@@ -361,8 +309,6 @@ class depot_de_dossierController extends bootstrap
                                 $this->companies_actif_passif->id_company = $this->companies->id_company;
                                 $this->companies_actif_passif->create();
                             }
-
-                            ///////////////////////////////////////////////////////////////
 
 
                             $syntheseFinanciereInfo = $result->myInfo->syntheseFinanciereInfo;
@@ -457,10 +403,8 @@ class depot_de_dossierController extends bootstrap
                                 }
                                 $i++;
                             }
-                            // Fin actif/passif
 
                             //check on creation date
-
                             $sAnneecreation = substr($oIdentite->dateCreation, 0, 10);
                             $oDatetime1     = date_create_from_format('Y-m-d', $sAnneecreation);
                             $oDatetime2     = date_create();
@@ -469,43 +413,40 @@ class depot_de_dossierController extends bootstrap
                             //if création moins de 720 jours -> demande de coordonnées puis message dédié
                             if ($oInterval->days < 720) {
                                 $this->projects_status_history->addStatus(-2, projects_status::PAS_3_BILANS, $this->projects->id_project);
-                                header('location:' . $this->lurl . '/depot_de_dossier/prospect/' . $this->projects->hash);
+                                header('Location: ' . $this->lurl . '/depot_de_dossier/prospect/' . $this->projects->hash);
                             } //ifelse création entre 720 et 1080 jours -> question 3 bilans
                             elseif ($oInterval->days > 720 && $interval->days < 1080) {
                                 $this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_2, $this->projects->id_project);
-                                header('location:' . $this->lurl . '/depot_de_dossier/etape2/' . $this->projects->hash . '/1080');
+                                header('Location: ' . $this->lurl . '/depot_de_dossier/etape2/' . $this->projects->hash . '/1080');
                             } else {
                                 sleep(1);
                                 $this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_2, $this->projects->id_project);
-                                header('location:' . $this->lurl . '/depot_de_dossier/etape2/' . $this->projects->hash);
+                                header('Location: ' . $this->lurl . '/depot_de_dossier/etape2/' . $this->projects->hash);
                             }
                             // end eligible
                             break;
                         default:
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                            header('location:' . $this->lurl . '/depot_de_dossier/nok');
+                            header('Location: ' . $this->lurl . '/depot_de_dossier/nok');
                             break;
-                    }// end switch status atares
-                }// fin altares
-                else {
+                    }
+                } else {
                     // ajout du statut dans l'historique
                     $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
 
                     //on envoie email erreur
                     $this->emailAltares($this->projects->id_project, $this->projects->title);
 
-                    header('location:' . $this->lurl . '/depot_de_dossier/nok');
+                    header('Location: ' . $this->lurl . '/depot_de_dossier/nok');
                 }
             }
         }
     }
 
-    function _etape2()
+    public function _etape2()
     {
-        // Num page
         $this->page = 2;
 
-        //Recuperation des element de traductions
         $this->lng['etape1'] = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
         $this->lng['etape2'] = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
 
@@ -516,14 +457,9 @@ class depot_de_dossierController extends bootstrap
         $this->settings->get('Lien conditions generales depot dossier', 'type');
         $this->lienConditionsGenerales = $this->settings->value;
 
-        // load des durée des prêts autorisées
         $this->settings->get('Durée des prêts autorisées', 'type');
-        $this->dureePossible = explode(',', $this->settings->value);
-        if (empty($this->settings->value)) {
-            $this->dureePossible = array(24, 36, 48, 60);
-        }
+        $this->dureePossible = empty($this->settings->value) ? array(24, 36, 48, 60) : explode(',', $this->settings->value);
 
-        // Datas
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->companies               = $this->loadData('companies');
         $this->companies_details       = $this->loadData('companies_details');
@@ -533,13 +469,9 @@ class depot_de_dossierController extends bootstrap
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->prescripteurs           = $this->loadData('prescripteurs');
 
-        //////////////////////////////////
-        // Initialisation variable
         $this->preteurCreateEmprunteur = false;
 
-        // Si on a une session active
         if (isset($_SESSION['client'])) {
-            // On recup le mec
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
 
             switch ($this->clients->status_pre_emp) {
@@ -553,14 +485,14 @@ class depot_de_dossierController extends bootstrap
                     $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
                     break;
             }
-            header('location:' . $this->lurl . '/depot_de_dossier/lp-depot-de-dossier');
+            header('Location: ' . $this->lurl . '/depot_de_dossier/lp-depot-de-dossier');
         }
-        //////////////////////////////////
 
         $this->projects->get($this->params['0'], 'hash');
         $this->companies->get($this->projects->id_company);
         $this->clients->get($this->companies->id_client_owner);
-        if(is_numeric($this->projects->id_prescripteur)){
+
+        if (is_numeric($this->projects->id_prescripteur)) {
             $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
         }
 
@@ -569,27 +501,25 @@ class depot_de_dossierController extends bootstrap
 
         } elseif ($this->clients->status === 0 && $this->clients->status_depot_dossier >= 1) {
             $conditionOk = true;
-
         } else {
             var_dump(__LINE__);
             die;
-            header('location:' . $this->lurl . '/depot_de_dossier/lp-depot-de-dossier');
+            header('Location: ' . $this->lurl . '/depot_de_dossier/lp-depot-de-dossier');
         }
 
         // TODO decide how data will be provided for the function
         //data only for developement purposes. if data comes from settings or from a specia table needs to be decided
-        $aMinMaxDuree = array(array('min'=>0, 'max' => 50000, 'heures'=>96), array('min'=>50001,'max' => 80000, 'heures'=>192), array('min'=>80001, 'max' => 120000, 'heures'=>264), array('min'=>120001, 'max' => 1000000, 'heures'=> 5*24));
+        $aMinMaxDuree = array(array('min' => 0, 'max' => 50000, 'heures' => 96), array('min' => 50001, 'max' => 80000, 'heures' => 192), array('min' => 80001, 'max' => 120000, 'heures' => 264), array('min' => 120001, 'max' => 1000000, 'heures' => 5 * 24));
 
-        foreach($aMinMaxDuree as $line){
-            if($line['min']<= $this->projects->amount && $this->projects->amount <= $line['max']){
-                $this->iDuree = ($line['heures']/24);
-            } else{
+        foreach ($aMinMaxDuree as $line) {
+            if ($line['min'] <= $this->projects->amount && $this->projects->amount <= $line['max']) {
+                $this->iDuree = ($line['heures'] / 24);
+            } else {
                 $this->iDuree = 10;
             }
         }
 
         if ($conditionOk == true) {
-
             // Form depot de dossier etape 2
             if (isset($_POST['send_form_depot_dossier'])) {
 
@@ -673,7 +603,6 @@ class depot_de_dossierController extends bootstrap
                     $this->prescripteurs->prenom   = $_POST['prescripteur_prenom'];
                     $this->prescripteurs->mobile   = $_POST['prescripteur_phone'];
                     $this->prescripteurs->email    = $_POST['prescripteur_email'];
-
                 } else {
                     if (!isset($_POST['accept-cgu']) || $_POST['accept-cgu'] != true) {
                         $bForm_ok = false;
@@ -699,7 +628,6 @@ class depot_de_dossierController extends bootstrap
                 $this->projects->period = $_POST['duree'];
 
                 if ($bForm_ok) {
-
                     // if it is not the gerant, update the prescripteur data and if it is the gerant save legal docs (no legal docs for prescripteur)
                     if ($_POST['gerant'] == 3) {
                         if (is_numeric($this->prescripteurs->id)) {
@@ -758,17 +686,14 @@ class depot_de_dossierController extends bootstrap
                     $this->clients->status_transition    = 1;
                     $this->clients->status               = 1;
 
-                    // On fait une mise à jour
                     $this->companies->update();
                     $this->companies_details->update();
                     $this->projects->update();
                     $this->prescripteurs->update();
                     $this->clients->id_client = $this->clients->update();
 
-
                     // if 3 bilans are ok, we send the email, otherwise redirect to "not eligible page" but all data is saved. No email is sent.
-                    if($bComptables) {
-
+                    if ($bComptables) {
                         //**********************************************//
                         //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION ***//
                         //**********************************************//
@@ -780,11 +705,10 @@ class depot_de_dossierController extends bootstrap
                         $url   = $this->lurl;
                         $login = $this->clients->email;
                         //$mdp = $lemotdepasse;
-                        // FB
+
                         $this->settings->get('Facebook', 'type');
                         $lien_fb = $this->settings->value;
 
-                        // Twitter
                         $this->settings->get('Twitter', 'type');
                         $lien_tw = $this->settings->value;
 
@@ -809,7 +733,6 @@ class depot_de_dossierController extends bootstrap
                         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                         $this->email->setSubject(stripslashes($sujetMail));
                         $this->email->setHTMLBody(stripslashes($texteMail));
-
 
                         if ($this->Config['env'] == 'prod') // nmp
                         {
@@ -864,41 +787,34 @@ class depot_de_dossierController extends bootstrap
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                         // fin mail
                         // Page confirmation
-                        header('location:' . $this->lurl . '/depot_de_dossier/etape3/' . $this->projects->hash);
+                        header('Location: ' . $this->lurl . '/depot_de_dossier/etape3/' . $this->projects->hash);
                     } else {
                         $this->projects_status_history->addStatus(-2, projects_status::PAS_3_BILANS, $this->projects->id_project);
-                        header('location:' . $this->lurl . '/depot_de_dossier/nok/pas-3-bilans');
+                        header('Location: ' . $this->lurl . '/depot_de_dossier/nok/pas-3-bilans');
                     }
                 }
             }
         }
     }
 
-    function _prospect()
+    public function _prospect()
     {
-
-        //Recuperation des element de traductions
-        $this->lng['etape1'] = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
-        $this->lng['etape2'] = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
+        $this->lng['etape1']           = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
+        $this->lng['etape2']           = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
         $this->lng['depot-de-dossier'] = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
 
         $this->settings->get('Lien conditions generales depot dossier', 'type');
         $this->lienConditionsGenerales = $this->settings->value;
 
-        // Datas
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->companies               = $this->loadData('companies');
         $this->projects                = $this->loadData('projects');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->prescripteurs           = $this->loadData('prescripteurs');
 
-        //////////////////////////////////
-        // Initialisation variable
         $this->preteurCreateEmprunteur = false;
 
-        //Si on a une session client
         if (isset($_SESSION['client'])) {
-            // On recup le mec
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
 
             switch ($this->clients->status_pre_emp) {
@@ -912,32 +828,29 @@ class depot_de_dossierController extends bootstrap
                     $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
                     break;
             }
-            header('location:' . $this->lurl . '/lp-depot-de-dossier');
+            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
         }
-        //////////////////////////////////
+
         $this->projects->get($this->params['0'], 'hash');
         $this->companies->get($this->projects->id_company);
         $this->clients->get($this->companies->id_client_owner);
-        if(is_numeric($this->projects->id_prescripteur)){
+
+        if (is_numeric($this->projects->id_prescripteur)) {
             $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
         }
 
         if ($this->preteurCreateEmprunteur == true && $this->clients->status_depot_dossier >= 1) {
             $conditionOk = true;
-
         } elseif ($this->clients->status == 0 && $this->clients->status_depot_dossier >= 1) {
             $conditionOk = true;
-
         } else {
-            header('location:' . $this->lurl . '/lp-depot-de-dossier');
+            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
         }
 
         // load date for form (client, company, project and prescripteur
         if ($conditionOk == true) {
-
             // Form depot de dossier etape 2
             if (isset($_POST['send_form_coordonnees'])) {
-
                 $bForm_ok = true;
 
                 if (!isset($_POST['sex_representative']) || $_POST['sex_representative'] == '') {
@@ -1047,24 +960,20 @@ class depot_de_dossierController extends bootstrap
 
                     // si good page confirmation
                     $this->projects_status_history->addStatus(-2, projects_status::PAS_3_BILANS, $this->projects->id_project);
-// TODO redirect ot thank you page (create page)
+                    // TODO redirect to thank you page (create page)
                 }
             }
         }
     }
 
-    function _etape3()
+    public function _etape3()
     {
-        // Num page
         $this->page = 3;
 
-        //Recuperation des element de traductions
         $this->lng['etape1'] = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
         $this->lng['etape2'] = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
         $this->lng['etape3'] = $this->ln->selectFront('depot-de-dossier-etape-3', $this->language, $this->App);
 
-
-        // Datas
         $this->companies               = $this->loadData('companies');
         $this->companies_details       = $this->loadData('companies_details');
         $this->companies_bilans        = $this->loadData('companies_bilans');
@@ -1075,18 +984,12 @@ class depot_de_dossierController extends bootstrap
         $this->attachment              = $this->loadData('attachment');
         $this->attachment_type         = $this->loadData('attachment_type');
 
-
         //TODO calcul de la mensualite en tenant compte du montant/ duree / taux min et taux max et frais
         // $this->mensualite_min, $this->mensualite_max
 
-
-        //////////////////////////////////
-        // Initialisation variable
         $this->preteurCreateEmprunteur = false;
 
-        //Si on a une session client
         if (isset($_SESSION['client'])) {
-            // On recup le mec
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
 
             switch ($this->clients->status_pre_emp) {
@@ -1100,9 +1003,8 @@ class depot_de_dossierController extends bootstrap
                     $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
                     break;
             }
-            header('location:' . $this->lurl . '/lp-depot-de-dossier');
+            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
         }
-        //////////////////////////////////
 
         $this->projects->get($this->params['0'], 'hash');
         $this->companies->get($this->projects->id_company);
@@ -1112,96 +1014,79 @@ class depot_de_dossierController extends bootstrap
 
         if ($this->preteurCreateEmprunteur === true && $this->clients->status_depot_dossier >= 1) {
             $conditionOk = true;
-
         } elseif ($this->clients->status == 0 && $this->clients->status_depot_dossier >= 1) {
             $conditionOk = true;
-
         } else {
-            header('location:' . $this->lurl . '/lp-depot-de-dossier');
+            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
         }
 
-        if($conditionOk && isset($_POST['send_form_etape_3'])){
-
+        if ($conditionOk && isset($_POST['send_form_etape_3'])) {
             $bFormOk = true;
 
-            if(!isset($_POST['fonds_propres']) || $_POST['fonds_propres'] == ''){
+            if (!isset($_POST['fonds_propres']) || $_POST['fonds_propres'] == '') {
                 $bFormOk = false;
             }
-            if(!isset($_POST['ca']) || $_POST['ca'] == ''){
+            if (!isset($_POST['ca']) || $_POST['ca'] == '') {
                 $bFormOk = false;
-
             }
-            if(!isset($_POST['resultat_brute_exploitation']) || $_POST['resultat_brute_exploitation'] == ''){
+            if (!isset($_POST['resultat_brute_exploitation']) || $_POST['resultat_brute_exploitation'] == '') {
                 $bFormOk = false;
-
             }
-            if(!isset($_POST['fonds_propres']) || $_POST['fonds_propres'] == ''){
+            if (!isset($_POST['fonds_propres']) || $_POST['fonds_propres'] == '') {
                 $bFormOk = false;
-
             }
-            if($_FILES['liasse_fiscal'] == false){
+            if ($_FILES['liasse_fiscal'] == false) {
                 $bFormOk = false;
             }
 
-            if($bFormOk){
-
+            if ($bFormOk) {
                 $this->uploadAttachment($this->projects->id_project, attachment_type::DERNIERE_LIASSE_FISCAL);
 
-                if(isset($_FILES['autre'])){
+                if (isset($_FILES['autre'])) {
                     $this->uploadAttachment($this->projects->id_project, attachment_type::AUTRE1);
                 }
 
-                $iRex = $_POST['resultat_brute_exploitation'];
-                $iCa = $_POST['ca'];
+                $iRex          = $_POST['resultat_brute_exploitation'];
+                $iCa           = $_POST['ca'];
                 $iFondsPropres = $_POST['fonds_propres'];
 
-                if($iRex < 0 || $iCa < 100000 || $iFondsPropres < 10000){
+                if ($iRex < 0 || $iCa < 100000 || $iFondsPropres < 10000) {
                     $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                    header('location:' . $this->lurl . '/depot_de_dossier/nok/rex-nega');
-                }// end if check values
+                    header('Location: ' . $this->lurl . '/depot_de_dossier/nok/rex-nega');
+                }
 
-                if(isset($_POST['procedure_acceleree'])){
+                if (isset($_POST['procedure_acceleree'])) {
                     $this->projects->process_fast = 1;
                     $this->projects_status_history->addStatus(-2, projects_status::A_TRAITER, $this->projects->id_project);
-                    header('location:' . $this->lurl . '/depot_de_dossier/fichiers');
+                    header('Location: ' . $this->lurl . '/depot_de_dossier/fichiers');
                 } else {
                     //TODO envoi de mail pour reprise de dossier
                     die;
                 }
-            }// end if $bFormOk
-        }// end $conditionOk
+            }
+        }
     }
 
     public function _fichiers()
     {
-        //Recuperation des element de traductions
-        $this->lng['etape1'] = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
-        $this->lng['etape2'] = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
-        $this->lng['etape3'] = $this->ln->selectFront('depot-de-dossier-etape-3', $this->language, $this->App);
+        $this->lng['etape1']            = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
+        $this->lng['etape2']            = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
+        $this->lng['etape3']            = $this->ln->selectFront('depot-de-dossier-etape-3', $this->language, $this->App);
         $this->lng['espace-emprunteur'] = $this->ln->selectFront('depot-de-dossier-espace-emprunteur', $this->language, $this->App);
 
-
-
-        // Datas
         $this->companies               = $this->loadData('companies');
         $this->projects                = $this->loadData('projects');
-        $this->projects_status = $this->loadData('projects_status');
+        $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->attachment              = $this->loadData('attachment');
         $this->attachment_type         = $this->loadData('attachment_type');
 
-
         //TODO calcul de la mensualite en tenant compte du montant/ duree / taux min et taux max et frais
         // $this->mensualite_min, $this->mensualite_max
 
-
-        //////////////////////////////////
-        // Initialisation variable
         $this->preteurCreateEmprunteur = false;
 
-        //Si on a une session client
         if (isset($_SESSION['client'])) {
-            // On recup le mec
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
 
             switch ($this->clients->status_pre_emp) {
@@ -1215,58 +1100,37 @@ class depot_de_dossierController extends bootstrap
                     $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
                     break;
             }
-            header('location:' . $this->lurl . '/lp-depot-de-dossier');
+            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
         }
-        //////////////////////////////////
 
         $this->projects->get($this->params['0'], 'hash');
         $this->companies->get($this->projects->id_company);
         $this->clients->get($this->companies->id_client_owner);
 
-
         if ($this->preteurCreateEmprunteur === true && $this->clients->status_depot_dossier >= 1) {
             $conditionOk = true;
-
         } elseif ($this->clients->status == 0 && $this->clients->status_depot_dossier >= 1) {
             $conditionOk = true;
-
         } else {
-            header('location:' . $this->lurl . '/lp-depot-de-dossier');
+            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
         }
 
-        if($this->projects_status->getLastStatut($this->projects->id_project) === projects_status::ABANDON) {
-                //TODO redirect to page with message to contact commercial
-
+        if ($this->projects_status->getLastStatut($this->projects->id_project) === projects_status::ABANDON) {
+            //TODO redirect to page with message to contact commercial
         }
 
-        $this->aAttachmentTypes =$this->attachment_type->getAllTypesForProjects();
-
-
-
-
-
-
-
+        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects();
     }
 
-
-
-
-    function _etape5()
+    public function _etape5()
     {
         die;
-        // Chargement des datas
         $this->users                   = $this->loadData('users');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
 
-        //////////////////////////////////
-        // Initialisation variable
         $this->preteurCreateEmprunteur = false;
 
-        // Si on a une session active
         if (isset($_SESSION['client'])) {
-
-            // On recup le mec
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
 
             // Si c'est un preteur
@@ -1279,18 +1143,18 @@ class depot_de_dossierController extends bootstrap
                     $this->companies->get($this->clients->id_client, 'id_client_owner');
                 } else {
                     // Si personne physique pas le droit
-                    header('location:' . $this->lurl . '/depot_de_dossier/etape1');
+                    header('Location: ' . $this->lurl . '/depot_de_dossier/etape1');
                     die;
                 }
             } // Si c'est un emprunteur
             elseif ($this->clients->status_pre_emp == 2) {
                 // Si emprunteur pas le droit de créer un autre compte en etant connecté
-                header('location:' . $this->lurl . '/depot_de_dossier/etape1');
+                header('Location: ' . $this->lurl . '/depot_de_dossier/etape1');
                 die;
             } // Si deja preteur/emprunteur
             else {
                 // Si emprunteur pas le droit de créer un autre compte en etant connecté
-                header('location:' . $this->lurl . '/depot_de_dossier/etape1');
+                header('Location: ' . $this->lurl . '/depot_de_dossier/etape1');
                 die;
             }
         }
@@ -1318,7 +1182,6 @@ class depot_de_dossierController extends bootstrap
             // recup projet (GET car lors de l'inscription il n'y a qu'un projet)
             $this->projects->get($this->companies->id_company, 'id_company ');
 
-            //Recuperation des element de traductions
             $this->lng['etape5'] = $this->ln->selectFront('depot-de-dossier-etape-5', $this->language, $this->App);
 
             // Num page
@@ -1461,7 +1324,6 @@ class depot_de_dossierController extends bootstrap
                     }
                 }
 
-
                 // Enregistrement des images
                 $this->companies_details->update();
             }
@@ -1477,7 +1339,6 @@ class depot_de_dossierController extends bootstrap
                 if ($this->preteurCreateEmprunteur == true) {
                     $this->clients->status_pre_emp = 3;
                 }
-
 
                 // On recupere l'analyste par defaut
                 // Default analyst
@@ -1516,8 +1377,8 @@ class depot_de_dossierController extends bootstrap
                     'surl' => $surl,
                     'url' => $url,
                     'lien_fb' => $lien_fb,
-                    'lien_tw' => $lien_tw);
-
+                    'lien_tw' => $lien_tw
+                );
 
                 // Construction du tableau avec les balises EMV
                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
@@ -1602,51 +1463,41 @@ class depot_de_dossierController extends bootstrap
                 }
                 // -- fin partie cgu -- //
 
-                header('location:' . $this->lurl . '/' . $this->tree->getSlug(48, $this->language));
+                header('Location: ' . $this->lurl . '/' . $this->tree->getSlug(48, $this->language));
                 die;
             }
         } else {
-            header('location:' . $this->lurl . '/depot_de_dossier/etape1');
+            header('Location: ' . $this->lurl . '/depot_de_dossier/etape1');
             die;
         }
     }
 
-    function _stand_by()
+    public function _stand_by()
     {
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
-            header('location:' . $this->lurl . '/depot_de_dossier/etape' . ($this->clients->status_depot_dossier + 1) . '/' . $this->clients->hash);
+            header('Location: ' . $this->lurl . '/depot_de_dossier/etape' . ($this->clients->status_depot_dossier + 1) . '/' . $this->clients->hash);
             die;
         } else {
-            header('location:' . $this->lurl);
+            header('Location: ' . $this->lurl);
             die;
         }
     }
 
-    function _error()
+    public function _error()
     {
-        //Recuperation des element de traductions
         $this->lng['etape1'] = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
     }
 
     public function _nok()
     {
-
-        //Recuperation des element de traductions
         $this->lng['etape1']               = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
         $this->lng['etape2']               = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
         $this->lng['depot-de-dossier-nok'] = $this->ln->selectFront('depot-de-dossier-nok', $this->language, $this->App);
-
-
     }
 
     private function emailAltares($id_project, $project_title)
     {
-
-        //on envoi un MAIL ALERTE
-        // subject
         $subject = '[Alerte] Webservice Altares sans reponse';
-
-        // message
         $message = '
                         <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
                         <html xmlns="http://www.w3.org/1999/xhtml">
@@ -1678,28 +1529,17 @@ class depot_de_dossierController extends bootstrap
                             Nom : ' . $project_title . '
 
                         </body>
-                        </html>
-                        ';
+                        </html>';
 
-
-        // To send HTML mail, the Content-type header must be set
         $headers = 'MIME-Version: 1.0' . "\r\n";
         $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-        // Additional headers
         $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
 
-        // Recupération du destinataire
         $this->settings->get('Adresse alerte altares erreur', 'type');
         $to = $this->settings->value;
 
-        // Mail it
         mail($to, $subject, $message, $headers);
-
-        // FIN ENVOI MAIL ALERTE
-
     }
-
 
     /**
      * @param integer $iOwnerId
@@ -1739,7 +1579,7 @@ class depot_de_dossierController extends bootstrap
                 $uploadPath = $basePath . 'extrait_kbis/';
                 break;
             case attachment_type::DERNIERE_LIASSE_FISCAL :
-                $field = 'liasse_fiscal';
+                $field      = 'liasse_fiscal';
                 $uploadPath = $basePath . 'liasse_fiscal/';
                 break;
             case attachment_type::AUTRE1 :
@@ -1766,13 +1606,5 @@ class depot_de_dossierController extends bootstrap
         }
 
         return $resultUpload;
-
     }
-
-
-
-
-
-
-
 }
