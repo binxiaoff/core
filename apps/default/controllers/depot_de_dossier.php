@@ -102,9 +102,7 @@ class depot_de_dossierController extends bootstrap
                     $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
                     break;
             }
-            var_dump(__LINE__);
-            die;
-            header('location:' . $this->lurl . '/depot_de_dossier/lp-depot-de-dossier');
+            header('location:' . $this->lurl . '/lp-depot-de-dossier');
         }
 
         $reponse_get = false;
@@ -128,11 +126,11 @@ class depot_de_dossierController extends bootstrap
             }
 
             if (isset($email) && $this->ficelle->isEmail($email) === true && $this->clients->existEmail($email) === false) {
-                $this->clients = $this->clients->get($email, 'email');
+                $this->clients->get($email, 'email');
             }// end if email
 
             if (isset($email) && $this->ficelle->isEmail($email) && $this->prescripteurs->exist($email, 'email') === false ) {
-                $this->prescripteurs = $this->prescripteurs->get($email, 'email');
+                $this->prescripteurs->get($email, 'email');
             }
 
             $form_valid = true;
@@ -163,7 +161,6 @@ class depot_de_dossierController extends bootstrap
                 //Check if company exists based on SIREN
                 if ($this->companies->exist($siren, $field = 'siren')) {
                     $this->companies->get($siren, 'siren');
-
                     //then get the client from that company in case it has not already been found by email before
                     if ($this->clients->id_client == '') {
                         $this->clients->get($this->companies->id_client_owner);
@@ -173,8 +170,6 @@ class depot_de_dossierController extends bootstrap
                 if(is_numeric($this->clients->id_client) && $this->clients->status_pre_emp === 1){
 
                     $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
-                    var_dump(__LINE__);
-                    die;
                     header('location:' . $this->lurl . '/depot_de_dossier/lp-depot-de-dossier');
                 }
 
@@ -188,13 +183,14 @@ class depot_de_dossierController extends bootstrap
                     $this->clients->source2 = $_SESSION['utm_source2'];
                 }
 
-                if (isset($email) && $this->clients->email = '') {
+                if (isset($email) && $this->clients->email == '') {
                     $this->clients->email = $email;
                 }
 
                 if ($this->clients->id_client == '') {
                     $this->clients->id_client = $this->clients->create();
                 }
+
 
                 $this->companies->id_client_owner               = $this->clients->id_client; // id client
                 $this->companies->siren                         = $siren;
