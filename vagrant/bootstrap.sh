@@ -27,17 +27,17 @@ then
         mysql -uroot -pROOTPASSWORD --max_allowed_packet=64M unilend < $sql
     done
     mysql -uroot -pROOTPASSWORD unilend < /vagrant/anonymize.sql
-    cat /vagrant/fixture/unilend.*.sql | mysql -uroot -pROOTPASSWORD unilend
+    cat /vagrant/fixture/*.sql | mysql -uroot -pROOTPASSWORD unilend
 fi
 rm -rf /vagrant/database
 
-# install phpmyadmin
+# install phpmyadmin 4.4.15 (last version compatible php 5.3)
 mkdir /vagrant/phpmyadmin/
-wget -O /vagrant/phpmyadmin/index.html http://www.phpmyadmin.net/
-awk 'BEGIN{ RS="<a *href *= *\""} NR>2 {sub(/".*/,"");print; }' /vagrant/phpmyadmin/index.html >> /vagrant/phpmyadmin/url-list.txt
-grep "https://files.phpmyadmin.net/phpMyAdmin/" /vagrant/phpmyadmin/url-list.txt > /vagrant/phpmyadmin/phpmyadmin.url
-sed -i 's/.zip/.tar.bz2/' /vagrant/phpmyadmin/phpmyadmin.url
-wget --no-check-certificate --output-document=/vagrant/phpmyadmin/phpMyAdmin.tar.bz2 `cat /vagrant/phpmyadmin/phpmyadmin.url`
+#wget -O /vagrant/phpmyadmin/index.html http://www.phpmyadmin.net/
+#awk 'BEGIN{ RS="<a *href *= *\""} NR>2 {sub(/".*/,"");print; }' /vagrant/phpmyadmin/index.html >> /vagrant/phpmyadmin/url-list.txt
+#grep "https://files.phpmyadmin.net/phpMyAdmin/" /vagrant/phpmyadmin/url-list.txt > /vagrant/phpmyadmin/phpmyadmin.url
+#sed -i 's/.zip/.tar.bz2/' /vagrant/phpmyadmin/phpmyadmin.url
+wget --no-check-certificate --output-document=/vagrant/phpmyadmin/phpMyAdmin.tar.bz2 https://files.phpmyadmin.net/phpMyAdmin/4.4.15/phpMyAdmin-4.4.15-all-languages.tar.bz2
 mkdir /srv/sites/phpmyadmin
 tar jxvf /vagrant/phpmyadmin/phpMyAdmin.tar.bz2 -C /srv/sites/phpmyadmin --strip 1
 rm -rf /vagrant/phpmyadmin
@@ -81,7 +81,7 @@ sed -i "s/display_errors = .*/display_errors = On/" /etc/php5/apache2/php.ini
 sed -i "s/html_errors = .*/html_errors = On/" /etc/php5/apache2/php.ini
 sed -i "s/upload_max_filesize = .*/upload_max_filesize = 64M/" /etc/php5/apache2/php.ini
 sed -i "s/post_max_size = .*/post_max_size = 64M/" /etc/php5/apache2/php.ini
-printf "\n[xdebug]\nzend_extension=/usr/lib/php5/20090626/xdebug.so \nxdebug.remote_enable=1 \nxdebug.remote_handler=dbgp \nxdebug.remote_mode=req \nxdebug.remote_host=127.0.0.1 \nxdebug.remote_port=9000 \nxdebug.var_display_max_data=65536 \nxdebug.var_display_max_depth=10" >> /etc/php5/apache2/php.ini
+printf "\n[xdebug]\nzend_extension=/usr/lib/php5/20090626/xdebug.so\nxdebug.remote_enable=1\nxdebug.remote_handler=dbgp\nxdebug.remote_mode=req\nxdebug.remote_host=127.0.0.1\nxdebug.remote_port=9000\nxdebug.profiler_enable_trigger=1\nxdebug.profiler_output_dir=/home/vagrant/xdebug\nxdebug.var_display_max_data=65536\nxdebug.var_display_max_depth=10\n" >> /etc/php5/apache2/php.ini
 
 service apache2 restart
 
@@ -99,6 +99,7 @@ apt-get install -y openjdk-8-jdk maven git
 
 yes | git clone https://www.github.com/forcedotcom/dataloader.git /srv/dataloader
 cd /srv/dataloader
+git checkout tags/26.0.0
 git submodule init
 git submodule update
 mvn clean package -DskipTests
