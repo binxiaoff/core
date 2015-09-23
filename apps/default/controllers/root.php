@@ -7,7 +7,7 @@ class rootController extends bootstrap
     function rootController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
-
+        $this->Command = $command;
         $this->catchAll = true;
     }
 
@@ -1422,8 +1422,10 @@ class rootController extends bootstrap
     // Enregistrement et lecture du pdf cgv
     function _pdf_cgv_preteurs()
     {
+        // Inclusion controller pdf
+        include($this->path.'/apps/default/controllers/pdf.php');
         // Si connecté
-        if ($this->clients->checkAccess()) {
+        if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
 
             // on regarde si c'est bien un preteur
             $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'preteur', $this->clients->id_client);
@@ -1451,47 +1453,31 @@ class rootController extends bootstrap
                 header("Content-Type: application/force-download");
                 @readfile($this->surl . '/var/fichiers/' . $this->content['pdf-cgu']);
             } else {
-                // Path du dossier
-                $pathDossier = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client;
-
-
-                // Si exite pas on créer le dossier
-                if (!file_exists($pathDossier)) {
-                    mkdir($pathDossier);
-                    chmod($pathDossier, 0777);
-                }
 
                 $path = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client . '/';
-                $slug = $this->clients->hash;
-                $urlsite = $this->lurl . '/cgv_preteurs/' . $this->clients->hash;
-                $name = 'cgv_preteurs';
-                $vraisNom = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
-                $param = $id_tree_cgu;
-                $signe = '';
-                //$entete = $this->lurl.'/pdf/entete/';
-                $entete = '';
-                $piedpage = $this->lurl . '/pdf/piedpage_cgv/';
-                $piedpage = '';
+                $sNamePdf = 'CGV-UNILEND-PRETEUR-' . $this->clients->hash . '-' . $id_tree_cgu;
+                $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
 
                 $this->tree->get(array('id_tree' => $id_tree_cgu, 'id_langue' => 'fr'));
 
-                $dateUpdate = strtotime($this->tree->updated);
-                $month = $this->dates->tableauMois['fr'][date('n', $dateUpdate)];
+                // Génération pdf
+                $oCommandPdf = new Command('pdf','cgv_preteurs',array($this->clients->hash),$this->language);
+                $oPdf = new pdfController($oCommandPdf, $this->Config, 'default');
 
-                $footer = '&FooterTextLeft="Conditions générales de vente prêteur - Version du ' . date('d', $dateUpdate) . ' ' . $month . ' ' . date('Y', $dateUpdate) . '"';
-                //$footer = '';
-                $paramCovertapi = '&MarginLeft=25&MarginRight=25&MarginBottom=10';
+                $this->_cgv_preteurs(true, $oPdf, array($this->clients->hash));
 
-                // On lance la fonction pdf qui fait tout
-                $this->Web2Pdf->convert($path, $slug, $urlsite, $name, $vraisNom, $param, $signe, $entete, $piedpage, '', $paramCovertapi);
+                $oPdf->WritePdf($path . $sNamePdf, 'cgv_preteurs');
+                $oPdf->ReadPdf($path . $sNamePdf, $sNamePdfClient);
             }
         }
         die;
     }
 
     // lecture page du cgv en html
-    function _cgv_preteurs()
+    function _cgv_preteurs($bPdf = false, pdfController $oPdf = null, array $aParams = null)
     {
+        $this->params = (false === is_null($aParams)) ? $aParams : $this->params;
+
         // DATAS
         $this->pays = $this->loadData('pays_v2');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
@@ -1508,7 +1494,6 @@ class rootController extends bootstrap
             $this->content[$this->elements->slug] = $elt['value'];
             $this->complement[$this->elements->slug] = $elt['complement'];
         }
-
 
         // Si connecté ou si on a le hash du client
         if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
@@ -1555,7 +1540,6 @@ class rootController extends bootstrap
                     $this->clients_adresses->adresse_fiscal . ', ' . $this->clients_adresses->ville_fiscal . ', ' . $this->clients_adresses->cp_fiscal . ', ' . $pays_fiscal,
                     $dateAccept);
 
-
                 $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement']);
             } else { // Entreprise
 
@@ -1599,6 +1583,11 @@ class rootController extends bootstrap
                 $contentVariables = $tabVariables;
                 $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement']);
             }
+        }
+
+        if(true === $bPdf && false === is_null($oPdf)){
+            $this->content['mandatRecouvrement'] = $this->mandat_de_recouvrement;
+            $oPdf->setDisplay('cgv_preteurs', $this->content);
         }
     }
 }

@@ -49,7 +49,7 @@ class pdfController extends bootstrap
      * @desc contains html returns ($this->execute())
      * @var    string $sDisplay
      */
-    private $sDisplay;
+    public $sDisplay;
 
 
     public function pdfController($command, $config, $app)
@@ -112,14 +112,14 @@ class pdfController extends bootstrap
     /**
      * @param string $sView name of view file
      */
-    private function setDisplay($sView = '')
+    public function setDisplay($sView = '', $sContent = null)
     {
+        $this->content = (false === is_null($sContent)) ? $sContent : '';
 
         //Change view name for generate document
         $this->view = $sView;
 
         ob_start();
-
         if ($this->autoFireHead)
             $this->fireHead();
         if ($this->autoFireHeader)
@@ -140,7 +140,7 @@ class pdfController extends bootstrap
      * @param string $sPathPdf full path with name of pdf
      * @param string $sTypePdf for log and css
      */
-    private function WritePdf($sPathPdf, $sTypePdf = 'authority')
+    public function WritePdf($sPathPdf, $sTypePdf = 'authority')
     {
         // We check if PathPdf get pdf extension
         $sPathPdf .= (!preg_match('/(\.pdf)$/i', $sPathPdf)) ? '.pdf' : '';
@@ -165,6 +165,7 @@ class pdfController extends bootstrap
                 break;
             default:
                 $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/style.css');
+                break;
         }
         $this->oSnapPdf->generateFromHtml($this->sDisplay, $sPathPdf, array(), true);
 
@@ -613,9 +614,6 @@ class pdfController extends bootstrap
             $this->date_dernier_bilan_jour = $date_dernier_bilan[2];
 
             // Liste des actif passif
-            //$this->l_AP = $this->companies_actif_passif->select('id_company = "'.$this->companies->id_company.'" AND annee = '.$this->date_dernier_bilan_annee,'annee DESC');
-
-            // Liste des actif passif
             $this->l_AP = $this->companies_actif_passif->select('id_company = "' . $this->companiesEmprunteur->id_company . '" AND annee = ' . $this->date_dernier_bilan_annee, 'annee DESC');
 
             $this->totalActif = ($this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement']);
@@ -633,11 +631,11 @@ class pdfController extends bootstrap
 
             // si on a le pouvoir
             if ($this->oProjectsPouvoir->get($this->projects->id_project, 'id_project')) {
-                //$this->dateContrat = date('d/m/Y',strtotime($this->oProjectsPouvoir->updated));
-                //$this->dateRemb = date('d/m/Y',strtotime($this->oProjectsPouvoir->updated));
+                $this->dateContrat = date('d/m/Y',strtotime($this->oProjectsPouvoir->updated));
+                $this->dateRemb = date('d/m/Y',strtotime($this->oProjectsPouvoir->updated));
             } else {
-                //$this->dateContrat = date('d/m/Y');
-                //$this->dateRemb = date('d/m/Y');
+                $this->dateContrat = date('d/m/Y');
+                $this->dateRemb = date('d/m/Y');
             }
 
             // On recup la date de statut remb
