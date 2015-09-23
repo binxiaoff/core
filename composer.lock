@@ -88,16 +88,16 @@
         },
         {
             "name": "knplabs/knp-snappy",
-            "version": "0.4.1",
+            "version": "0.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/KnpLabs/snappy.git",
-                "reference": "cada5a1ddcf6dc7d4c848b257c2bab580f99e542"
+                "reference": "99941b6f8475e2f02b8b89748504e5d471bded73"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/KnpLabs/snappy/zipball/cada5a1ddcf6dc7d4c848b257c2bab580f99e542",
-                "reference": "cada5a1ddcf6dc7d4c848b257c2bab580f99e542",
+                "url": "https://api.github.com/repos/KnpLabs/snappy/zipball/99941b6f8475e2f02b8b89748504e5d471bded73",
+                "reference": "99941b6f8475e2f02b8b89748504e5d471bded73",
                 "shasum": ""
             },
             "require": {
@@ -147,7 +147,7 @@
                 "thumbnail",
                 "wkhtmltopdf"
             ],
-            "time": "2015-08-10 10:24:04"
+            "time": "2015-09-16 12:34:39"
         },
         {
             "name": "monolog/monolog",
@@ -316,16 +316,16 @@
         },
         {
             "name": "symfony/process",
-            "version": "v2.7.3",
+            "version": "v2.7.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/Process.git",
-                "reference": "48aeb0e48600321c272955132d7606ab0a49adb3"
+                "reference": "f7b3f73f70a7f8f49a1c838dc3debbf054732d8e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Process/zipball/48aeb0e48600321c272955132d7606ab0a49adb3",
-                "reference": "48aeb0e48600321c272955132d7606ab0a49adb3",
+                "url": "https://api.github.com/repos/symfony/Process/zipball/f7b3f73f70a7f8f49a1c838dc3debbf054732d8e",
+                "reference": "f7b3f73f70a7f8f49a1c838dc3debbf054732d8e",
                 "shasum": ""
             },
             "require": {
@@ -361,7 +361,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "https://symfony.com",
-            "time": "2015-07-01 11:25:50"
+            "time": "2015-08-27 06:45:45"
         }
     ],
     "packages-dev": [],

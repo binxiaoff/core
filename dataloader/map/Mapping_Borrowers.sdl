@@ -1,0 +1,25 @@
+#Mapping values
+#Fri Sep 18 18:10:53 CEST 2015
+Adresse1=MailingStreet
+Langue=ID_Langue__c
+Ville=MailingCity
+Mobile=MobilePhone
+date_inscription=Date_de_creation_du_compte__c
+DateNaissance=Birthdate
+CP=MailingPostalCode
+DateDernierLogin=Date_de_derniere_connexion__c
+Pays=MailingCountry
+Valide=Validation__c
+Prenom=FirstName
+DateMiseJour=Date_de_mise_jour__c
+PaysNaissance=Naissance_Pays__c
+Nom_usage=Nom_D_usage__c
+Nom=LastName
+Fonction=Title
+IDClient=ID_Client__c
+VilleNaissance=Naissance_Ville__c
+Nationalite=Nationalite_Client__c
+Email=Email
+TypeContact=Type__c
+Civilite=Salutation
+Telephone=Phone
