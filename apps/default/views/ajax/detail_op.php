@@ -22,7 +22,7 @@
 <th class="col4 <?= ($this->type == 'order_interet' && $this->order == "asc" ? "asc" : "") ?>" id="order_interet">
 <div class="th-wrap">
     <i title="<?= $this->lng['preteur-operations-detail']['info-titre-interet'] ?>" class="icon-graph tooltip-anchor"></i>
-    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-interet'] ?>&nbsp;<i class="icon-arrows"></i></div>    
+    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-interet'] ?>&nbsp;<i class="icon-arrows"></i></div>
 </div>
 </th>
 <th>
@@ -39,7 +39,7 @@
 <th class="col6 <?= ($this->type == 'order_mensualite' && $this->order == "asc" ? "asc" : "") ?>" id="order_mensualite">
 <div class="th-wrap">
     <i title="<?= $this->lng['preteur-operations-detail']['info-titre-mensualite'] ?>" class="icon-bank tooltip-anchor"></i>
-    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-mensualite'] ?>&nbsp;<i class="icon-arrows"></i></div>    
+    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-mensualite'] ?>&nbsp;<i class="icon-arrows"></i></div>
 </div>
 </th>
 <th>
@@ -74,12 +74,24 @@ if ($this->lSumLoans != false)
                 <td><div class="cadreEtoiles"><div class="etoile <?= $this->lNotes[$l['risk']] ?>"></div></div></td>
                 <td style="white-space: nowrap;"><?= number_format($l['amount'], 2, ',', ' ') ?> €</td>
                 <td style="white-space: nowrap;"><?= number_format($l['rate'], 2, ',', ' ') ?> %</td>
-                <td>
-                    <span class="calandar-ech"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
-                    <span class="calandar-ech"><?= $this->dates->formatDate($l['next_echeance'], 'd/m/Y') ?></span>
-                    <span class="calandar-ech"><?= $this->dates->formatDate($l['fin'], 'd/m/Y') ?></span>
-                </td>
-                <td><?= number_format($l['mensuel'], 2, ',', ' ') ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
+
+                    <?php
+                    if($l['project_status'] == projects_status::REMBOURSEMENT_ANTICIPE){
+                        ?>
+                        <td colspan="2">
+                        <span class="calandar-ech" style="width: 79px;"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
+                        <span class="calandar-ech" style="width: 237px; font-size: 100%">Remboursé intégralement le <?= $this->dates->formatDate($l['status_change'], 'd/m/Y')?></span>
+                        </td>
+                        <?
+                    } else {?>
+                        <td><span class="calandar-ech"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
+                        <span class="calandar-ech"><?= $this->dates->formatDate($l['next_echeance'], 'd/m/Y') ?></span>
+                        <span class="calandar-ech"><?= $this->dates->formatDate($l['fin'], 'd/m/Y') ?></span>
+                        </td>
+                        <td><?= number_format($l['mensuel'], 2, ',', ' ') ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
+                    <?}
+                    ?>
+
                 <td>
             <?php
             if ($this->projects_status->status >= 80)
@@ -139,16 +151,26 @@ if ($this->lSumLoans != false)
                 <td><div class="cadreEtoiles"><div class="etoile <?= $this->lNotes[$l['risk']] ?>"></div></div></td>
                 <td style="white-space: nowrap;"><?= number_format($l['amount'], 2, ',', ' ') ?> €</td>
                 <td style="white-space: nowrap;"><?= number_format($l['rate'], 2, ',', ' ') ?> %</td>
-                <td>
-                    <span class="calandar-ech"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
-                    <span class="calandar-ech"><?= $this->dates->formatDate($l['next_echeance'], 'd/m/Y') ?></span>
-                    <span class="calandar-ech"><?= $this->dates->formatDate($l['fin'], 'd/m/Y') ?></span>
-                </td>
-                <td><?= number_format($l['mensuel'], 2, ',', ' ') ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
+                <?php
+                if($l['project_status'] == projects_status::REMBOURSEMENT_ANTICIPE){
+                    ?>
+                    <td colspan="2">
+                        <span class="calandar-ech" style="width: 79px;"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
+                        <span class="calandar-ech" style="width: 237px; font-size: 100%">Remboursé intégralement le <?= $this->dates->formatDate($l['status_change'], 'd/m/Y')?></span>
+                    </td>
+                    <?
+                } else {?>
+                    <td><span class="calandar-ech"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
+                        <span class="calandar-ech"><?= $this->dates->formatDate($l['next_echeance'], 'd/m/Y') ?></span>
+                        <span class="calandar-ech"><?= $this->dates->formatDate($l['fin'], 'd/m/Y') ?></span>
+                    </td>
+                    <td><?= number_format($l['mensuel'], 2, ',', ' ') ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
+                <?}
+                ?>
                 <td>
                     <?php /* ?><a class="btn btn-info btn-small btn-detailLoans_<?=$k?>"><?=$this->lng['profile']['details']?></a><?php */ ?>
-                    <?php /* ?><a class="btn btn-info btn-small btn-detailLoans_<?=$k?>" style="line-height: 27px; padding: 0px 7px 2px 7px; height:20px; width: 9px; ">+</a><?php */ ?>    
-                    <img src="<?= $this->surl ?>/styles/default/images/pdf50.png" class="btn-detailLoans_<?= $k ?>"/>                 
+                    <?php /* ?><a class="btn btn-info btn-small btn-detailLoans_<?=$k?>" style="line-height: 27px; padding: 0px 7px 2px 7px; height:20px; width: 9px; ">+</a><?php */ ?>
+                    <img src="<?= $this->surl ?>/styles/default/images/pdf50.png" class="btn-detailLoans_<?= $k ?>"/>
                     <a class="btn btn-info btn-small btn-detailLoans_<?= $k ?> override_plus">+</a>
                 </td>
             </tr>
@@ -243,13 +265,13 @@ if ($this->lSumLoans != false)
                     </td>
                     <td><?= number_format($l['mensuel'], 2, ',', ' ') ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
                     <?php /* ?><a class="btn btn-info btn-small btn-detailLoans_<?=$k?>"><?=$this->lng['profile']['details']?></a><?php */ ?>
-                    <?php /* ?><a class="btn btn-info btn-small btn-detailLoans_<?=$k?>" style="line-height: 27px; padding: 0px 7px 2px 7px; height:20px; width: 9px; ">+</a><?php */ ?>    
+                    <?php /* ?><a class="btn btn-info btn-small btn-detailLoans_<?=$k?>" style="line-height: 27px; padding: 0px 7px 2px 7px; height:20px; width: 9px; ">+</a><?php */ ?>
 
-                    <td>     
+                    <td>
 
 
 
-                        <a class="btn btn-info btn-small btn-detailLoans_declaration_creances_<?= $k ?> override_plus override_plus_<?= $k ?>" style="float:right;margin-right: 15px;">+</a><br /><br />  
+                        <a class="btn btn-info btn-small btn-detailLoans_declaration_creances_<?= $k ?> override_plus override_plus_<?= $k ?>" style="float:right;margin-right: 15px;">+</a><br /><br />
                         <a style="font-size: 10px;vertical-align: middle;margin-right: 13px;" class="btn-detailLoans_declaration_creances_<?= $k ?> btn btn-info btn-small multi"><?= $this->lng['preteur-operations-detail']['declaration-de-creances'] ?></a>
 
                     </td>
@@ -328,7 +350,7 @@ if ($this->lSumLoans != false)
         }
     }
 }
-?> 
+?>
 </table>
 <script type="text/javascript">
     $('.tooltip-anchor').tooltip();
