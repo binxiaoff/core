@@ -117,81 +117,90 @@ class queriesController extends bootstrap
 
     public function _excel()
     {
-        $this->hideDecoration();
+        $oDocument    = $this->exportDocument();
+        $oActiveSheet = $oDocument->getActiveSheet();
+        $oActiveSheet->insertNewRowBefore(1, 2)
+            ->setCellValueByColumnAndRow(0, 1, $this->queries->name)
+            ->mergeCells('A1:' . $oActiveSheet->getHighestColumn() . '1')
+            ->getStyle('A1')
+            ->applyFromArray(array(
+                'font' => array(
+                    'bold' => true,
+                    'size' => 16
+                )
+            ))
+            ->getAlignment()
+            ->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
 
-        $this->queries = $this->loadData('queries');
-        $this->queries->get($this->params[0], 'id_query');
-        $this->queries->sql = str_replace(
-            array('[ID_USER]'),
-            array($this->sessionIdUser),
-            $this->queries->sql
-        );
+        // As long as we use $this->queries in order to name file, headers must be sent after calling $this->export()
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename=' . $this->bdd->generateSlug($this->queries->name) . '.xls');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
 
-        preg_match_all("/@[_a-zA-Z1-9]+@/", $this->queries->sql, $this->sqlParams, PREG_SET_ORDER);
-
-        $this->sqlParams = $this->queries->super_unique($this->sqlParams);
-
-        foreach ($this->sqlParams as $param) {
-            $this->queries->sql = str_replace($param[0], $_POST['param_' . str_replace('@', '', $param[0])], $this->queries->sql);
-        }
-
-        $this->result = $this->queries->run($this->params[0], $this->queries->sql);
+        $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'Excel5');
+        $oWriter->save('php://output');
     }
 
     public function _export()
+    {
+        $oDocument = $this->exportDocument();
+
+        // As long as we use $this->queries in order to name file, headers must be sent after calling $this->export()
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename=' . $this->bdd->generateSlug($this->queries->name) . '.csv');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
+
+        $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
+        $oWriter->setDelimiter(';');
+        $oWriter->save('php://output');
+    }
+
+    /**
+     * @return PHPExcel
+     * @throws PHPExcel_Exception
+     */
+    private function exportDocument()
     {
         $this->hideDecoration();
 
         $this->autoFireview = false;
 
-        $this->queries = $this->loadData('queries');
-        $this->queries->get($this->params[0], 'id_query');
-        $this->queries->sql = str_replace(
-            array('[ID_USER]'),
-            array($this->sessionIdUser),
-            $this->queries->sql
-        );
+        $this->_execute();
 
-        preg_match_all("/@[_a-zA-Z1-9]+@/", $this->queries->sql, $this->sqlParams, PREG_SET_ORDER);
+        $aHeaders       = array_keys($this->result[0]);
+        $sLastColLetter = PHPExcel_Cell::stringFromColumnIndex(count($aHeaders) - 1);
+        $oDocument      = new PHPExcel();
+        $oActiveSheet   = $oDocument->setActiveSheetIndex(0);
 
-        $this->sqlParams = $this->queries->super_unique($this->sqlParams);
+        $oActiveSheet->getStyle('A1:' . $sLastColLetter . '1')
+            ->applyFromArray(array(
+                'fill' => array(
+                    'type' => PHPExcel_Style_Fill::FILL_SOLID,
+                    'color' => array('rgb' => '2672A2')
+                ),
+                'font' => array(
+                    'bold' => true,
+                    'color' => array('rgb' => 'FFFFFF')
+                )
+            ))
+            ->getAlignment()
+            ->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
 
-        foreach ($this->sqlParams as $param) {
-            $this->queries->sql = str_replace($param[0], $_POST['param_' . str_replace('@', '', $param[0])], $this->queries->sql);
+        foreach ($aHeaders as $iIndex => $sColumnName) {
+            $oActiveSheet->setCellValueByColumnAndRow($iIndex, 1, $sColumnName)
+                ->getColumnDimension(PHPExcel_Cell::stringFromColumnIndex($iIndex))
+                ->setAutoSize(true);
         }
 
-        $this->result       = $this->queries->run($this->params[0], $this->queries->sql);
-        $this->resultEntete = $this->result[0];
-
-        // Création des colonnes
-        // Entete du CSV
-        $entete = '';
-        $sep    = '';
-
-        foreach ($this->resultEntete as $key => $line) {
-            if (!is_numeric($key)) {
-                $entete .= $sep . $key;
-                $sep = ";";
+        foreach ($this->result as $iRowIndex => $aRow) {
+            $iColIndex = 0;
+            foreach ($aRow as $sCellValue) {
+                $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $sCellValue);
             }
         }
-        $entete .= " \n";
 
-        $csv = $entete;
-
-        foreach ($this->result as $result) {
-            foreach ($result as $key => $details) {
-                if (! is_numeric($key)) { //on supp les doublons d'info dans les select
-                    $csv .= $sep . str_replace(';', ',', $details);
-                    $sep = ";";
-                }
-            }
-            $sep = "";
-            $csv .= " \n";
-        }
-
-        header('Content-type: text/csv');
-        header('Content-disposition: attachment; filename="' . $this->bdd->generateSlug($this->queries->name) . '.csv"');
-
-        echo utf8_decode($csv);
+        return $oDocument;
     }
 }
