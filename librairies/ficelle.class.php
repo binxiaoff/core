@@ -108,18 +108,19 @@ return strtr($string,'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï
 	{
 		ini_set('default_socket_timeout', 60);
 
-		$client = new SoapClient($wsdl,array("trace"=>1,"exception"=>TRUE));
+		$oClient = new SoapClient($wsdl,array("trace"=>1,"exception"=>TRUE));
+
 		// Appel WS
-		$result = $client->__soapCall("getEligibility",array(
+		$oResult = $oClient->__soapCall("getEligibility",array(
 			"getEligibility"=>array(
 				"identification" => $identification,
-				"nbBilans" => "3",
-				"refClient" => "sffpme",
+                "refClient" => "sffpme",
+                "nbBilans" => "3",
 				"siren" => $siren
 			)
 		));
 
-		return $result->return;
+		return $oResult->return;
 	}
 
 	// met des majuscules sur les noms composï¿½s
