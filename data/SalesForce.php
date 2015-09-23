@@ -43,7 +43,7 @@ class SalesForce
     private $oBoostrap;
 
     /**
-     * @var \core\bdd
+     * @var \bdd
      */
     private $oDatabase;
 
@@ -213,7 +213,7 @@ class SalesForce
                           WHEN '0000-00-00 00:00:00' then ''
                           ELSE p.updated
                         END AS 'Date_Mise_Jour',
-                        p.status AS 'Status',
+                        CONVERT(CAST(REPLACE(ps.label,',','') as BINARY) USING utf8) AS 'Status',
                         pn.note AS 'Note',
                         CONVERT(CAST(REPLACE(co.name,',','') as BINARY) USING utf8) AS 'Nom_Societe',
                         CONVERT(CAST(REPLACE(co.forme,',','') as BINARY) USING utf8) AS 'Forme',
@@ -236,13 +236,15 @@ class SalesForce
                         co.id_client_owner AS 'IDClient'
                     FROM
                         projects p
-                            LEFT JOIN
+                    LEFT JOIN
                         companies co ON (p.id_company = co.id_company)
-                            LEFT JOIN
+                    LEFT JOIN
                         clients cl ON (cl.id_client = co.id_client_owner)
-                            LEFT JOIN
+                    LEFT JOIN
                         projects_notes pn ON (p.id_project = pn.id_project)
-                        LIMIT 0,100";
+                    LEFT JOIN
+                        projects_status ps ON (p.status = ps.id_project_status)
+                    LIMIT 0,100";
 
         $this->tryIt($sQuery, 'projects');
     }
