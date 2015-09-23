@@ -31,13 +31,13 @@ then
 fi
 rm -rf /vagrant/database
 
-# install phpmyadmin
+# install phpmyadmin 4.4.15 (last version compatible php 5.3)
 mkdir /vagrant/phpmyadmin/
-wget -O /vagrant/phpmyadmin/index.html http://www.phpmyadmin.net/
-awk 'BEGIN{ RS="<a *href *= *\""} NR>2 {sub(/".*/,"");print; }' /vagrant/phpmyadmin/index.html >> /vagrant/phpmyadmin/url-list.txt
-grep "https://files.phpmyadmin.net/phpMyAdmin/" /vagrant/phpmyadmin/url-list.txt > /vagrant/phpmyadmin/phpmyadmin.url
-sed -i 's/.zip/.tar.bz2/' /vagrant/phpmyadmin/phpmyadmin.url
-wget --no-check-certificate --output-document=/vagrant/phpmyadmin/phpMyAdmin.tar.bz2 `cat /vagrant/phpmyadmin/phpmyadmin.url`
+#wget -O /vagrant/phpmyadmin/index.html http://www.phpmyadmin.net/
+#awk 'BEGIN{ RS="<a *href *= *\""} NR>2 {sub(/".*/,"");print; }' /vagrant/phpmyadmin/index.html >> /vagrant/phpmyadmin/url-list.txt
+#grep "https://files.phpmyadmin.net/phpMyAdmin/" /vagrant/phpmyadmin/url-list.txt > /vagrant/phpmyadmin/phpmyadmin.url
+#sed -i 's/.zip/.tar.bz2/' /vagrant/phpmyadmin/phpmyadmin.url
+wget --no-check-certificate --output-document=/vagrant/phpmyadmin/phpMyAdmin.tar.bz2 https://files.phpmyadmin.net/phpMyAdmin/4.4.15/phpMyAdmin-4.4.15-all-languages.tar.bz2
 mkdir /srv/sites/phpmyadmin
 tar jxvf /vagrant/phpmyadmin/phpMyAdmin.tar.bz2 -C /srv/sites/phpmyadmin --strip 1
 rm -rf /vagrant/phpmyadmin
