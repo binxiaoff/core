@@ -27,6 +27,24 @@ a { color: #0252aa; text-decoration: none; cursor: pointer; }
 a:hover { text-decoration: underline; }
 a img { border: 0; }
 
+.cgu-wrapper { font-size:18px; line-height:1.43; font-family:'Arial', sans-serif; color:#727272; background:#fff; }
+.cgu-wrapper a { color:#b10366; text-decoration:none; cursor:pointer; }
+.cgu-wrapper .main { padding-bottom:510px; }
+.cgu-wrapper h1 { padding: 0 0 20px 0; }
+.cgu-wrapper p, ul, ol { padding-bottom:1.43em; }
+.cgu-wrapper ul, ol { list-style-position:outside; padding-left:130px; color:#b10366; }
+.cgu-wrapper ul p , ol p { padding:0; color:#a1a5a7; }
+.cgu-wrapper h1, h2, h3, h4, h5, h6 { font-family:'TrendSansOne', sans-serif; color:#b10366; padding:0.4em 0 0.7em; font-weight:normal; letter-spacing:-0.12em; text-transform: uppercase;}
+.cgu-wrapper h1 { font-size:28px; }
+.cgu-wrapper h2 { font-size:24px; }
+.cgu-wrapper h3 { font-size:22px; }
+.cgu-wrapper h4 { font-size:20px; }
+.cgu-wrapper h5 { font-size:18px; }
+.cgu-wrapper h6 { font-size:16px; }
+
+
+
+
 input, textarea, select { font-size: 11px; font-family: arial, sans-serif; }
 textarea { overflow: auto; }
 
