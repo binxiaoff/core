@@ -208,25 +208,19 @@ class projects extends projects_crud
 
     function countSelectProjectsByStatus($status, $where = '')
     {
-        if ($where != '')
+        if ($where != '') {
             $where = ' WHERE 1 = 1 ' . $where . ' ';
-
-        $sql = 'SELECT p.*,(SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status
-				FROM projects p
-				' . $where . '
-				HAVING status IN (' . $status . ')
-				ORDER BY p.added DESC
-				';
-
-        $resultat = $this->bdd->query($sql);
-        $result = array();
-
-        $positionStart = $start + $nb;
-        $i = 0;
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $i++;
         }
-        return $i;
+
+        $sql = '
+            SELECT COUNT(*) FROM (
+                SELECT (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status
+                FROM projects p
+                ' . $where . '
+                HAVING status IN (' . $status . ')
+            ) c';
+
+        return current($this->bdd->fetch_assoc($this->bdd->query($sql)));
     }
 
     function searchDossiersRemb($siren = '', $societe = '', $nom = '', $prenom = '', $projet = '', $email = '', $start = '', $nb = '')
