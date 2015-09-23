@@ -47,6 +47,8 @@ class depot_de_dossierController extends bootstrap
 
     public function _interrogation()
     {
+        $this->checkClient();
+
         $this->page = 1;
 
         $this->settings->get('Somme à emprunter min', 'type');
@@ -59,25 +61,6 @@ class depot_de_dossierController extends bootstrap
 
         // source -> mets utm_source dans la session
         $this->ficelle->source($_GET['utm_source'], $this->lurl . '/' . $this->params[0], $_GET['utm_source2']);
-
-        $this->preteurCreateEmprunteur = false;
-
-        if (isset($_SESSION['client'])) {
-            $this->clients->get($_SESSION['client']['id_client'], 'id_client');
-
-            switch ($this->clients->status_pre_emp) {
-                case '1':
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
-                    break;
-                case '2':
-                case '3':
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['vous-disposez-deja-dun-compte-emprunteur'];
-                default:
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
-                    break;
-            }
-            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
-        }
 
         $reponse_get = false;
 
@@ -191,13 +174,11 @@ class depot_de_dossierController extends bootstrap
                     try {
                         $result = $this->ficelle->ws($this->wsdl, $this->identification, $siren);
                     } catch (Exception $e) {
-
                         mail($AltaresEmailAlertes, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $e->getMessage());
                         error_log("[" . date('Y-m-d H:i:s') . "] " . $e->getMessage(), 3, $this->path . '/log/error_altares.txt');
-
                     }
-                    if ($result->exception != false) {
 
+                    if ($result->exception != false) {
                         $erreur = 'Siren fourni : ' . $siren . ' | ' . $result->exception->code . ' | ' . $result->exception->description . ' | ' . $result->exception->erreur;
                         mail($AltaresEmailAlertes, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . '' . $erreur);
                         error_log("[" . date('Y-m-d H:i:s') . "] " . $erreur . "\n", 3, $this->path . '/log/error_altares.txt');
@@ -268,15 +249,15 @@ class depot_de_dossierController extends bootstrap
                             $this->companies->siret                         = $oIdentite->siret;
                             $this->companies->status_adresse_correspondance = '1';
                             $this->companies->date_creation                 = substr($oIdentite->dateCreation, 0, 10);
-                            $this->companies->altares_eligibility           = $eligibility;
-                            $this->companies->altares_niveauRisque          = $score->niveauRisque;
-                            $this->companies->altares_scoreVingt            = $score->scoreVingt;
-                            $this->companies->score_sectoriel_altatres      = $score->scoreSectorielVingt;
-                            $this->companies->score_sectoriel_xerfirisk     = $score->scoreSectorielCent;
-                            $this->companies->altares_dateValeur            = substr($score->dateValeur, 0, 10);
+                            $this->companies->altares_eligibility           = $sEligibility;
+                            $this->companies->altares_niveauRisque          = $oScore->niveauRisque;
+                            $this->companies->altares_scoreVingt            = $oScore->scoreVingt;
+                            $this->companies->score_sectoriel_altatres      = $oScore->scoreSectorielVingt;
+                            $this->companies->score_sectoriel_xerfirisk     = $oScore->scoreSectorielCent;
+                            $this->companies->altares_dateValeur            = substr($oScore->dateValeur, 0, 10);
 
-                            $dateDernierBilanString                             = substr($identite->dateDernierBilan, 0, 10);
-                            $dateDernierBilan                                   = explode('-', $dateDernierBilanSting);
+                            $dateDernierBilanString                             = substr($oIdentite->dateDernierBilan, 0, 10);
+                            $dateDernierBilan                                   = explode('-', $dateDernierBilanString);
                             $this->companies_details->date_dernier_bilan        = $dateDernierBilanString;
                             $this->companies_details->date_dernier_bilan_mois   = $dateDernierBilan[1];
                             $this->companies_details->date_dernier_bilan_annee  = $dateDernierBilan[0];
@@ -445,6 +426,8 @@ class depot_de_dossierController extends bootstrap
 
     public function _etape2()
     {
+        $this->checkClient();
+
         $this->page = 2;
 
         $this->lng['etape1'] = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
@@ -468,25 +451,6 @@ class depot_de_dossierController extends bootstrap
         $this->projects                = $this->loadData('projects');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->prescripteurs           = $this->loadData('prescripteurs');
-
-        $this->preteurCreateEmprunteur = false;
-
-        if (isset($_SESSION['client'])) {
-            $this->clients->get($_SESSION['client']['id_client'], 'id_client');
-
-            switch ($this->clients->status_pre_emp) {
-                case '1':
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
-                    break;
-                case '2':
-                case '3':
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['vous-disposez-deja-dun-compte-emprunteur'];
-                default:
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
-                    break;
-            }
-            header('Location: ' . $this->lurl . '/depot_de_dossier/lp-depot-de-dossier');
-        }
 
         $this->projects->get($this->params['0'], 'hash');
         $this->companies->get($this->projects->id_company);
@@ -799,6 +763,8 @@ class depot_de_dossierController extends bootstrap
 
     public function _prospect()
     {
+        $this->checkClient();
+
         $this->lng['etape1']           = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
         $this->lng['etape2']           = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
         $this->lng['depot-de-dossier'] = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
@@ -811,25 +777,6 @@ class depot_de_dossierController extends bootstrap
         $this->projects                = $this->loadData('projects');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->prescripteurs           = $this->loadData('prescripteurs');
-
-        $this->preteurCreateEmprunteur = false;
-
-        if (isset($_SESSION['client'])) {
-            $this->clients->get($_SESSION['client']['id_client'], 'id_client');
-
-            switch ($this->clients->status_pre_emp) {
-                case '1':
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
-                    break;
-                case '2':
-                case '3':
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['vous-disposez-deja-dun-compte-emprunteur'];
-                default:
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
-                    break;
-            }
-            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
-        }
 
         $this->projects->get($this->params['0'], 'hash');
         $this->companies->get($this->projects->id_company);
@@ -968,6 +915,8 @@ class depot_de_dossierController extends bootstrap
 
     public function _etape3()
     {
+        $this->checkClient();
+
         $this->page = 3;
 
         $this->lng['etape1'] = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
@@ -986,25 +935,6 @@ class depot_de_dossierController extends bootstrap
 
         //TODO calcul de la mensualite en tenant compte du montant/ duree / taux min et taux max et frais
         // $this->mensualite_min, $this->mensualite_max
-
-        $this->preteurCreateEmprunteur = false;
-
-        if (isset($_SESSION['client'])) {
-            $this->clients->get($_SESSION['client']['id_client'], 'id_client');
-
-            switch ($this->clients->status_pre_emp) {
-                case '1':
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
-                    break;
-                case '2':
-                case '3':
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['vous-disposez-deja-dun-compte-emprunteur'];
-                default:
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
-                    break;
-            }
-            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
-        }
 
         $this->projects->get($this->params['0'], 'hash');
         $this->companies->get($this->projects->id_company);
@@ -1069,6 +999,8 @@ class depot_de_dossierController extends bootstrap
 
     public function _fichiers()
     {
+        $this->checkClient();
+
         $this->lng['etape1']            = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
         $this->lng['etape2']            = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
         $this->lng['etape3']            = $this->ln->selectFront('depot-de-dossier-etape-3', $this->language, $this->App);
@@ -1083,25 +1015,6 @@ class depot_de_dossierController extends bootstrap
 
         //TODO calcul de la mensualite en tenant compte du montant/ duree / taux min et taux max et frais
         // $this->mensualite_min, $this->mensualite_max
-
-        $this->preteurCreateEmprunteur = false;
-
-        if (isset($_SESSION['client'])) {
-            $this->clients->get($_SESSION['client']['id_client'], 'id_client');
-
-            switch ($this->clients->status_pre_emp) {
-                case '1':
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
-                    break;
-                case '2':
-                case '3':
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['vous-disposez-deja-dun-compte-emprunteur'];
-                default:
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
-                    break;
-            }
-            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
-        }
 
         $this->projects->get($this->params['0'], 'hash');
         $this->companies->get($this->projects->id_company);
@@ -1127,8 +1040,6 @@ class depot_de_dossierController extends bootstrap
         die;
         $this->users                   = $this->loadData('users');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
-
-        $this->preteurCreateEmprunteur = false;
 
         if (isset($_SESSION['client'])) {
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
@@ -1606,5 +1517,28 @@ class depot_de_dossierController extends bootstrap
         }
 
         return $resultUpload;
+    }
+
+    private function checkClient()
+    {
+        $this->preteurCreateEmprunteur = false;
+
+        if (isset($_SESSION['client'])) {
+            $this->clients->get($_SESSION['client']['id_client'], 'id_client');
+
+            switch ($this->clients->status_pre_emp) {
+                case '1':
+                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
+                    break;
+                case '2':
+                case '3':
+                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['vous-disposez-deja-dun-compte-emprunteur'];
+                    break;
+                default:
+                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
+                    break;
+            }
+            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
+        }
     }
 }
