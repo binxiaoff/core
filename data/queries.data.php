@@ -28,20 +28,14 @@
 
 class queries extends queries_crud
 {
-
-    function queries($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::queries($bdd, $params);
     }
 
-    function get($id, $field = 'id_query')
+    public function get($id, $field = 'id_query')
     {
         return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
     }
 
     function delete($id, $field = 'id_query')
@@ -49,13 +43,7 @@ class queries extends queries_crud
         parent::delete($id, $field);
     }
 
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -73,7 +61,7 @@ class queries extends queries_crud
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -85,7 +73,7 @@ class queries extends queries_crud
         return (int)($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id, $field = 'id_query')
+    public function exist($id, $field = 'id_query')
     {
         $sql    = 'SELECT * FROM `queries` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
@@ -96,62 +84,17 @@ class queries extends queries_crud
     //**************************************** AJOUTS ******************************************//
     //******************************************************************************************//
 
-    function run($id, $sequel)
+    public function run($id, $sequel)
     {
-        $sql = 'UPDATE queries SET executed = NOW(), executions = executions+1 WHERE id_query = ' . $id;
-        $this->bdd->query($sql);
-
-
-        $sql = $sequel;
-
-        $resultat = $this->bdd->query($sql);
+        $this->bdd->query('UPDATE queries SET executed = NOW(), executions = executions + 1 WHERE id_query = ' . $id);
+        $resultat = $this->bdd->query($sequel);
         $result   = array();
 
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
 
         return $result;
-    }
-
-    function runV2($id, $sequel)
-    {
-
-        $sql = 'UPDATE queries SET executed = NOW(), executions = executions+1 WHERE id_query = ' . $id;
-        $this->bdd->query($sql);
-
-        $sql = $sequel;
-
-
-        $resultat = $this->bdd->query($sql);
-
-        header('Content-Type: text/csv');
-        header('Content-Disposition: attachment;filename=export.csv');
-
-        $row = mysql_fetch_assoc($resultat);
-        if ($row) {
-            $this->echocsv(array_keys($row));
-        }
-
-        while ($row) {
-            $this->echocsv($row);
-            $row = mysql_fetch_assoc($resultat);
-        }
-
-        die;
-    }
-
-    function echocsv($fields)
-    {
-        $separator = '';
-        foreach ($fields as $field) {
-            if (preg_match('/\\r|\\n|,|"/', $field)) {
-                $field = '"' . str_replace('"', '""', $field) . '"';
-            }
-            echo $separator . $field;
-            $separator = ';';
-        }
-        echo "\r\n";
     }
 
     function super_unique($array)
