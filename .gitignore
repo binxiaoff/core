@@ -22,6 +22,7 @@ tmp/
 /public/admin/.htaccess
 /public/default/var
 /public/default/.htaccess
+/public/default/Landing-Pages-Externes/
 /config.php
 /route.php
 *.rej
