@@ -80,7 +80,7 @@ if ($this->lSumLoans != false)
                         ?>
                         <td colspan="2">
                         <span class="calandar-ech" style="width: 79px;"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
-                        <span class="calandar-ech" style="width: 237px; font-size: 100%">Remboursé intégralement le <?= $this->dates->formatDate($l['status_change'], 'd/m/Y')?></span>
+                        <span class="calandar-ech" style="width: 237px; "><p>Remboursé intégralement <br />le <?= $this->dates->formatDate($l['status_change'], 'd/m/Y')?></p></span>
                         </td>
                         <?
                     } else {?>
@@ -156,7 +156,7 @@ if ($this->lSumLoans != false)
                     ?>
                     <td colspan="2">
                         <span class="calandar-ech" style="width: 79px;"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
-                        <span class="calandar-ech" style="width: 237px; font-size: 100%">Remboursé intégralement le <?= $this->dates->formatDate($l['status_change'], 'd/m/Y')?></span>
+                        <span class="calandar-ech" style="width: 237px;"><p>Remboursé intégralement <br />le <?= $this->dates->formatDate($l['status_change'], 'd/m/Y')?></p></span>
                     </td>
                     <?
                 } else {?>
