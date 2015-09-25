@@ -685,17 +685,8 @@ class rootController extends bootstrap
 
                 $_SESSION['ordreProject'] = $this->ordreProject;
 
-                // Nb projets en funding. 2015-08-22 : ajout du statut 75 en comptage
-                $statutsACompterTotalProjets = $this->tabProjectDisplay;
-                $statutsACompterTotalProjets .= ',75';
-
-
-                // Liste des projets en funding
-                $this->lProjetsFunding = $this->projects->selectProjectsByStatus($statutsACompterTotalProjets, ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
-
-
-                $this->nbProjects = $this->projects->countSelectProjectsByStatus($statutsACompterTotalProjets, ' AND p.status = 0 AND p.display = 0');
-
+                $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
+                $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', 75', ' AND p.status = 0 AND p.display = 0');
 
                 // ensemblee des fonds recupérés
                 $compteurFonds = $this->transactions->sum('type_transaction = 9', 'montant_unilend-montant');
