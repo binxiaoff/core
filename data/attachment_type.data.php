@@ -134,10 +134,14 @@ class attachment_type extends attachment_type_crud
             self::CNI_PASSPORTE_VERSO
         );
 
-        $resultat = $this->bdd->query('SELECT * FROM `attachment_type` WHERE `id` IN (' . $aTypes . ')');
+        $sql = 'SELECT * FROM `attachment_type` ORDER BY `label`  DESC';
+        $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
+
+            if(in_array($record['id'], $aTypes)){
+                $result[] = $record;
+            }
         }
         return $result;
     }
