@@ -10,25 +10,31 @@ class attachment_helper
      * @param string $uploadPath
      * @param upload $upload
      * @param attachment $attachment
+     * @param string $sNewName
+     * @param array $aFiles
      * @return bool|string
      */
-    public function upload($ownerId, $ownerType, $attachmentType, $field, $path, $uploadPath, $upload, $attachment)
+    public function upload($ownerId, $ownerType, $attachmentType, $field, $path, $uploadPath, $upload, $attachment, $sNewName = '', $aFiles = null)
     {
+        if($aFiles === null) {
+            $aFiles = $_FILES;
+        }
+
         if (false === $upload instanceof upload) {
             return false;
         }
-        
+
         if (false === $attachment instanceof attachment) {
             return false;
         }
-                
-        if (false === isset($_FILES[$field]) || $_FILES[$field]['name'] == '') {
+
+        if (false === isset($aFiles[$field]) || $aFiles[$field]['name'] == '') {
             return ''; // the filed is empty, NOT an error
         }
 
         $upload->setUploadDir($path, $uploadPath);
 
-        if (false === $upload->doUpload($field)) {
+        if (false === $upload->doUpload($field, $aFiles, $sNewName)) {
             return false;
         }
 
@@ -52,7 +58,6 @@ class attachment_helper
         $attachment_id = $attachment->save();
 
         if (false === is_numeric($attachment_id)) {
-
             return false;
         }
 
