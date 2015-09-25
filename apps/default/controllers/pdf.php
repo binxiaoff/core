@@ -76,7 +76,7 @@ class pdfController extends bootstrap
         $this->autoFireFooter = false;
         $this->autoFireDebug = false;
 
-        $this->oSnapPdf = new Pdf($this->path . 'vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64');
+        $this->oSnapPdf = new Pdf('/usr/bin/wkhtmltopdf');
         $this->oLogger = new ULogger('PdfManagement', $this->logPath, self::NAME_LOG);
     }
 
@@ -162,6 +162,9 @@ class pdfController extends bootstrap
                 break;
             case 'operations':
                 $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/styleOperations.css');
+                break;
+            case 'dec_pret':
+                $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/declarationContratPret/print.css');
                 break;
             default:
                 $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/style.css');
@@ -670,7 +673,6 @@ class pdfController extends bootstrap
 
     public function _declarationContratPret_html($iIdLoan, $sPath)
     {
-
         $this->oLoans = $this->loadData('loans');
         $this->companiesEmp = $this->loadData('companies');
         $this->emprunteur = $this->loadData('clients');
@@ -725,7 +727,6 @@ class pdfController extends bootstrap
 
 
             $this->setDisplay('declarationContratPret_html');
-
             $sNamePdfClient = 'Unilend_declarationContratPret_' . $iIdLoan . '.pdf';
             $this->WritePdf($sPath . $sNamePdfClient, 'dec_pret');
         }
