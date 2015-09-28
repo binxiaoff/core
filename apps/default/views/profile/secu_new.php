@@ -1,18 +1,46 @@
+<style>
+    .separateur_secu{padding: 0 0 10px 0;  border-bottom: 1px solid #e3e4e4;  margin-bottom: 14px;}
+    .ss_titre{
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 24px;
+        line-height: 30px;
+        color: #b10366;
+        font-weight: normal;
+        text-transform: none;
+        letter-spacing: 0;
+        padding: 0 0 10px 0;
+        margin-bottom: 14px;
+    }
+    .retour_form{
+        width:300px;
+        margin: 0 auto;
+        padding: 0 30px;        
+        text-align: center;
+    }
+    
+    .bloc_success{
+        border: 1px solid #40b34f;
+        color: #40b34f;
+    }
+    .bloc_error{
+        border: 1px solid #c84747;
+        color: #c84747;
+    }
+    
+    .btn{
+        height: 50px !important;
+        padding-top: 3px !important;
+    }
+    
+</style>
+
 <div class="account-data">
     <h2><?=$this->lng['profile']['titre-3']?></h2>
     
-    <?
-	if(isset($_SESSION['reponse_profile_secu']) && $_SESSION['reponse_profile_secu'] != ''){
-		?><div class="reponseProfile"><?=$_SESSION['reponse_profile_secu']?></div><br /><?
-		unset($_SESSION['reponse_profile_secu']);
-	}
-	elseif(isset($_SESSION['reponse_profile_secu_error']) && $_SESSION['reponse_profile_secu_error'] != ''){
-		?><div class="reponseProfile" style="color:#c84747;"><?=$_SESSION['reponse_profile_secu_error']?></div><br /><?
-		unset($_SESSION['reponse_profile_secu_error']);
-	}
-	
-	?>
     <form action="" method="post" id="form_mdp">
+        
+        <div class="ss_titre"><?=$this->lng['profile']['changer-mdp']?></div>
+        
         <div class="row">
             <span class="pass-field-holder">
                 <input type="password" name="passOld" id="passOld" title="<?=$this->lng['etape1']['ancien-mot-de-passe']?>" value="" class="field field-large required" data-validators="Presence">
@@ -30,6 +58,38 @@
             </span>
         </div><!-- /.row -->
         
+        <?php
+        if(isset($_SESSION['reponse_profile_secu']))
+        {
+            ?>        
+            <div class="retour_form bloc_success">
+                <?=$_SESSION['reponse_profile_secu']?>
+            </div>
+            <?php
+            unset($_SESSION['reponse_profile_secu']);
+        }
+        elseif(isset($_SESSION['reponse_profile_secu_error']) && $_SESSION['reponse_profile_secu_error'] != ''){
+		?><div class="retour_form bloc_error"><?=$_SESSION['reponse_profile_secu_error']?></div><br /><?
+		unset($_SESSION['reponse_profile_secu_error']);
+	}
+        ?>
+                
+        <div class="form-foot row row-cols centered">
+            <input type="hidden" name="send_form_mdp" id="send_form_mdp" value="">
+            <button class="btn" id="sub_form_mdp" type="button" onClick='$( "#form_mdp" ).submit();' ><?=$this->lng['etape1']['valider-les-modifications']?><i class="icon-arrow-next"></i></button>
+        </div><!-- /.form-foot foot-cols -->
+        
+    </form>
+                              
+    <div class="separateur_secu">&nbsp;</div>
+    
+                
+    <form action="" method="post" id="form_question">  
+        
+        <div class="ss_titre"><?=$this->lng['profile']['changer-question']?></div>   
+        
+        
+        
         <div class="row">
             <i class="icon-help tooltip-anchor field-help-before" data-placement="right" title="" data-original-title="<?=$this->lng['etape1']['info-question-secrete']?>"></i>
             <input type="text" id="secret-question" name="secret-question" title="<?=$this->lng['etape1']['question-secrete']?>" value="<?=$this->lng['etape1']['question-secrete']?>" class="field field-mega">
@@ -39,9 +99,27 @@
             <input type="text" id="secret-response" name="secret-response" title="<?=$this->lng['etape1']['response']?>" value="<?=$this->lng['etape1']['response']?>" class="field field-mega">
         </div><!-- /.row -->
         
+        <?php
+        if(isset($_SESSION['reponse_profile_secu_question']))
+        {
+            ?>        
+            <div class="retour_form bloc_success">
+                <?=$_SESSION['reponse_profile_secu_question']?>
+            </div>
+            <?php
+            unset($_SESSION['reponse_profile_secu_question']);
+        } 
+        elseif(isset($_SESSION['reponse_profile_secu_question_error']) && $_SESSION['reponse_profile_secu_question_error'] != ''){
+		?><div class="retour_form bloc_error"><?=$_SESSION['reponse_profile_secu_question_error']?></div><br /><?
+		unset($_SESSION['reponse_profile_secu_question_error']);
+	}
+        ?>
+        
+        
+        
         <div class="form-foot row row-cols centered">
-            <input type="hidden" name="send_form_mdp" id="send_form_mdp" value="">
-            <button class="btn" id="sub_form_mdp" type="button" onClick='$( "#form_mdp" ).submit();' ><?=$this->lng['etape1']['valider-les-modifications']?><i class="icon-arrow-next"></i></button>
+            <input type="hidden" name="send_form_question" id="send_form_mdp" value="">
+            <button class="btn" id="sub_form_mdp" type="button" onClick='$( "#form_question" ).submit();' ><?=$this->lng['etape1']['valider-les-modifications']?><i class="icon-arrow-next"></i></button>
         </div><!-- /.form-foot foot-cols -->
     
     </form>
@@ -73,9 +151,23 @@
 	$("#form_mdp").submit(function( event ) {
 		
 		var form_ok = true;
+                
+                var newpass = $('#passNew');		
+		
+		// controle mdp
+		if(controleMdp(newpass.val(),'passNew') == false){form_ok = false}
+		
+
+		if(form_ok == false){event.preventDefault(); }
+	});
+        
+        
+        $("#form_question").submit(function( event ) {
+		
+		var form_ok = true;
+                
 		var question = $("#secret-question");
 		var reponse = $("#secret-response");
-		var newpass = $('#passNew');
 		
 		// question secrete /reponse secrete
 		if(question.val() != '' && question.val() != question.attr('title') || reponse.val() != '' && reponse.val() != reponse.attr('title')){
@@ -88,8 +180,7 @@
 				question.addClass('LV_invalid_field');question.removeClass('LV_valid_field');form_ok = false;}
 			else { question.addClass('LV_valid_field');question.removeClass('LV_invalid_field'); }
 		}
-		// controle mdp
-		if(controleMdp(newpass.val(),'passNew') == false){form_ok = false}
+		
 		
 
 		if(form_ok == false){event.preventDefault(); }
