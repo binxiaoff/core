@@ -2,9 +2,6 @@
 
 class cronController extends bootstrap
 {
-
-    var $Command;
-
     /**
      * @var string $sHeadersDebug headers for mail to debug
      */
@@ -15,7 +12,7 @@ class cronController extends bootstrap
      */
     private $sDestinatairesDebug;
 
-    function cronController($command, $config)
+    public function __construct($command, $config)
     {
         parent::__construct($command, $config, 'default');
 
@@ -49,12 +46,12 @@ class cronController extends bootstrap
     //*** A LA DEMANDE ***//
     //********************//
 
-    function _default()
+    public function _default()
     {
         die;
     }
 
-    function _killTransports()
+    public function _killTransports()
     {
 
         // Chargement du data
@@ -88,7 +85,7 @@ class cronController extends bootstrap
     //*************************************//
     //*** ENVOI DE LA QUEUE DE MAIL NMP ***//
     //*************************************//
-    function _queueNMP()
+    public function _queueNMP()
     {
 
         if ($this->Config['env'] == 'prod') {
@@ -98,7 +95,7 @@ class cronController extends bootstrap
     }
 
     // Les taches executées toutes les minutes
-    function _minute()
+    public function _minute()
     {
 
         // on check si on a des nouveaux IFU dans le dossier sur le ftp pour les enregistrers en BDD
@@ -110,7 +107,7 @@ class cronController extends bootstrap
     }
 
     // Les taches executées tous les jours
-    function _jour()
+    public function _jour()
     {
         // Si changement de cgv on envoie un mail d'alerte
         $this->relance_cgv_non_signee(1);
@@ -134,7 +131,7 @@ class cronController extends bootstrap
 
     // toutes les minute on check //
     // on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
-    function _check_projet_a_funder()
+    public function _check_projet_a_funder()
     {
 
         // chargement des datas
@@ -185,7 +182,7 @@ class cronController extends bootstrap
 
     // toutes les 5 minutes on check // (old 10 min)
     // On check les projet a faire passer en fundé ou en funding ko
-    function _check_projet_en_funding()
+    public function _check_projet_en_funding()
     {
 
         //$this->fonct_clean_mails_filer();
@@ -1075,7 +1072,7 @@ class cronController extends bootstrap
         }
     }
 
-    function _testecheanceeepreteur()
+    public function _testecheanceeepreteur()
     {
 
         //$this->create_echeances('2784');
@@ -1083,7 +1080,7 @@ class cronController extends bootstrap
     }
 
     // On créer les echeances des futures remb
-    function create_echeances($id_project)
+    public function create_echeances($id_project)
     {
         ini_set('max_execution_time', 300); //300 seconds = 5 minutes
         mail($this->sDestinatairesDebug, 'alerte create echeance', 'Verification des jours ouvrées sur le projet : ' . $id_project, $this->sHeadersDebug);
@@ -1283,7 +1280,7 @@ class cronController extends bootstrap
     }
 
     // fonction create echeances emprunteur
-    function createEcheancesEmprunteur($id_project)
+    public function createEcheancesEmprunteur($id_project)
     {
         mail($this->sDestinatairesDebug, 'alerte create echeance emprunteur', 'Verification des jours ouvrées sur le projet : ' . $id_project, $this->sHeadersDebug);
         // chargement des datas
@@ -1361,7 +1358,7 @@ class cronController extends bootstrap
     }
 
     // fonction create echeances emprunteur
-    function createEcheancesEmprunteur_old($id_project)
+    public function createEcheancesEmprunteur_old($id_project)
     {
         // chargement des datas
         $loans                  = $this->loadData('loans');
@@ -1430,7 +1427,7 @@ class cronController extends bootstrap
     }
 
     // check les statuts remb
-    function _check_status()
+    public function _check_status()
     {
         // die temporaire pour eviter de changer le statut du prelevement en retard
         die;
@@ -1663,7 +1660,7 @@ class cronController extends bootstrap
 
     // On check les virements a envoyer sur le sftp (une fois par jour)
     // les virements sont pour retirer largent du compte unilend vers le true compte client
-    function _virements()
+    public function _virements()
     {
 
         // chargement des datas
@@ -1889,7 +1886,7 @@ class cronController extends bootstrap
     }
 
     // On check les prelevements a envoyer sur le sftp (une fois par jour)
-    function _prelevements()
+    public function _prelevements()
     {
         // chargement des datas
         $this->prelevements            = $this->loadData('prelevements');
@@ -2282,7 +2279,7 @@ class cronController extends bootstrap
     }
 
     // xml prelevement
-    function xmPrelevement($table)
+    public function xmPrelevement($table)
     {
         $id_lot         = $table['id_lot'];
         $montant        = $table['montant'];
@@ -2384,7 +2381,7 @@ class cronController extends bootstrap
 
     // cron toutes les heures
     // On relance le mail stand by plusieur fois H+12, H+24, J+3, J+7 (stand by plus present dans la derniere version depot de dossier)
-    function _relance_stand_by()
+    public function _relance_stand_by()
     {
 
         die;
@@ -2510,7 +2507,7 @@ class cronController extends bootstrap
 
     // cron toutes les heures
     // lors des virements si on a toujours pas recu on relance le client
-    function _relance_payment_preteur()
+    public function _relance_payment_preteur()
     {
         // relance retiré apres demande
         die;
@@ -2634,7 +2631,7 @@ class cronController extends bootstrap
     }
 
     // (cron passe toujours dessus chez oxeva  0 * * * * )
-    function _check_prelevement_remb()
+    public function _check_prelevement_remb()
     {
         // plus utilisé
         die;
@@ -2720,7 +2717,7 @@ class cronController extends bootstrap
     }
 
     // transforme le fichier txt format truc en tableau
-    function recus2array($file)
+    public function recus2array($file)
     {
 
         $tablemontant = array(
@@ -2856,7 +2853,7 @@ class cronController extends bootstrap
         }
     }
 
-    function _letest()
+    public function _letest()
     {
         //echo 'test';
         //die;
@@ -2886,7 +2883,7 @@ class cronController extends bootstrap
     }
 
     // reception virements/prelevements (toutes les 30 min)
-    function _reception()
+    public function _reception()
     {
 
         // chargement des datas
@@ -3525,7 +3522,7 @@ class cronController extends bootstrap
     }
 
     // 1 fois pr jour a  1h du matin
-    function _etat_quotidien()
+    public function _etat_quotidien()
     {
         $jour = date('d');
 
@@ -4762,7 +4759,7 @@ class cronController extends bootstrap
     }
 
     // 1 fois pr jour a  1h du matin
-    function _etat_quotidien_old2()
+    public function _etat_quotidien_old2()
     {
         $jour = date('d');
 
@@ -5828,7 +5825,7 @@ class cronController extends bootstrap
     }
 
     // 1 fois pr jour a  1h du matin (old n'est plus en place)
-    function _etat_quotidien_old()
+    public function _etat_quotidien_old()
     {
         $jour = date('d');
 
@@ -6686,7 +6683,7 @@ class cronController extends bootstrap
     }
 
     // check  le 1 er et le 15 du mois si y a un virement a faire  (1h du matin)
-    function _retraitUnilend()
+    public function _retraitUnilend()
     {
 
         $jour = date('d');
@@ -6747,7 +6744,7 @@ class cronController extends bootstrap
     }
 
     // 1 fois par jour on check 12 jours avant si la demande de prelevement est parti (01:00:00)
-    function _alertePrelevement()
+    public function _alertePrelevement()
     {
         // chargement des datas
         $prelevements = $this->loadData('prelevements');
@@ -6832,7 +6829,7 @@ class cronController extends bootstrap
     }
 
     // passe a 1h30 (pour decaler avec l'etat fiscal) du matin le 1er du mois
-    function _echeances_par_mois()
+    public function _echeances_par_mois()
     {
         // les echeances du mois passé
         $dateMoins1Mois = mktime(date("H"), date("i"), 0, date("m") - 1, date("d"), date("Y"));
@@ -6930,7 +6927,7 @@ class cronController extends bootstrap
     }
 
     // passe a 1h30 (pour decaler avec l'etat fiscal) du matin le 1er du mois
-    function _echeances_par_mois_old()
+    public function _echeances_par_mois_old()
     {
         // les echeances du mois passé
         $dateMoins1Mois = mktime(date("H"), date("i"), 0, date("m") - 1, date("d"), date("Y"));
@@ -6972,7 +6969,7 @@ class cronController extends bootstrap
     }
 
     // passe a 1h du matin le 1er du mois
-    function _etat_fiscal()
+    public function _etat_fiscal()
     {
         // chargement des datas
         $echeanciers  = $this->loadData('echeanciers');
@@ -7351,522 +7348,8 @@ class cronController extends bootstrap
         }
     }
 
-    // On verifie toutes a 17h le solde des preteurs
-    function _checkSoldes()
-    {
-        // die pour linstant
-        //die;
-        // chargement des datas
-        $transactions     = $this->loadData('transactions');
-        $clients          = $this->loadData('clients');
-        $lenders_accounts = $this->loadData('lenders_accounts');
-        $loans            = $this->loadData('loans');
-        $bids             = $this->loadData('bids');
-        $echeanciers      = $this->loadData('echeanciers');
-
-        //$lClients = $clients->select('status = 1 AND status_pre_emp IN(1,3)');
-        $lClients = $clients->selectPreteursByStatus('10,20,30,40,50,60');
-        //$listBids = $bids->select('id_project = 796');
-
-        foreach ($lClients as $c) {
-
-            if ($c['id_client'] == 23896) {
-                $lenders_accounts->get($c['id_client'], 'id_client_owner');
-
-                // on recup l'alimentation du compte
-                $alimentation = $transactions->sum('id_client = ' . $c['id_client'] . ' AND type_transaction IN(1,3,4,7) AND etat = 1 AND status = 1', 'montant');
-                $alimentation = ($alimentation / 100);
-
-                // les interets sans les retenues fiscales
-                $sumRemb                   = $echeanciers->getSumRembV2($lenders_accounts->id_lender_account);
-                $sumInteretSansfiscale     = round($sumRemb['interets'], 2);
-                $sumMontantRembSansfiscale = round($sumRemb['montant'], 2);
-
-                // total argent
-                $total = $alimentation + $sumInteretSansfiscale;
-
-                // argent dispo sur compte
-                $solde = $transactions->getSolde($c['id_client']);
-
-                // somme prêté
-                $sumPrets = $loans->sumPrets($lenders_accounts->id_lender_account);
-
-                // somme des bids en cours
-                $sumBidsEncours = $bids->sumBidsEncours($lenders_accounts->id_lender_account);
-
-                $sumMouv = $transactions->sum('id_client = ' . $c['id_client'] . ' AND etat = 1 AND status = 1', 'montant');
-                $sumMouv = ($sumMouv / 100);
-
-                $sumRetrait = $transactions->sum('id_client = ' . $c['id_client'] . ' AND etat = 1 AND status = 1 AND type_transaction = 8', 'montant');
-                $sumRetrait = ($sumRetrait / 100);
-
-                $sumOffres = $transactions->sum('id_client = ' . $c['id_client'] . ' AND etat = 1 AND status = 1 AND type_transaction IN (16,17)', 'montant');
-                $sumOffres = ($sumOffres / 100);
-
-                // solde reel du compte
-                $soldeReel = $alimentation - $sumPrets - $sumBidsEncours + $sumMontantRembSansfiscale + $sumRetrait + $sumOffres;
-
-                /* echo '------------------------------ <br>';
-                  echo 'client : '.$c['id_client'].'<br>';
-                  echo 'solde :'.$solde.' euros<br><br>';
-                  echo 'alimentation : '.$alimentation.' euros<br>';
-                  echo 'sumRemb : '.$sumMontantRembSansfiscale.' euros<br>';
-                  echo 'interets : '.$sumInteretSansfiscale.' euros<br>';
-                  echo 'total : '.$total.' euros<br>';
-                  echo 'sumRetraits : '.$sumRetrait.' euros<br>';
-                  echo '<br>';
-                  echo 'sumPrets : '.$sumPrets.' euros<br>';
-                  echo 'sumBidsEncours : '.$sumBidsEncours.' euros<br>';
-                  echo '<br>';
-                  echo 'sumMouv : '.$sumMouv.' euros<br>';
-                  echo 'soldeReel : '.$soldeReel.' euros<br>'; */
-
-
-                $cond1 = round($soldeReel, 2);
-                $cond2 = round($sumMouv, 2);
-
-
-                if ($cond1 < $cond2) {
-
-                    echo '------------------------------ <br>';
-                    echo 'client : ' . $c['id_client'] . '<br>';
-                    echo 'solde :' . $solde . ' euros<br><br>';
-                    echo 'alimentation : ' . $alimentation . ' euros<br>';
-                    echo 'sumRemb : ' . $sumMontantRembSansfiscale . ' euros<br>';
-                    echo 'interets : ' . $sumInteretSansfiscale . ' euros<br>';
-                    echo 'total : ' . $total . ' euros<br>';
-                    echo 'sumRetraits : ' . $sumRetrait . ' euros<br>';
-                    echo '<br>';
-                    echo 'sumPrets : ' . $sumPrets . ' euros<br>';
-                    echo 'sumBidsEncours : ' . $sumBidsEncours . ' euros<br>';
-                    echo '<br>';
-                    echo 'sumMouv : ' . $sumMouv . ' euros<br>';
-                    echo 'soldeReel : ' . $soldeReel . ' euros<br>';
-
-
-                    echo '--------------------<br>';
-
-                    echo '<br>';
-
-                    echo $c['id_client'] . ' - trop<br>';
-
-
-                    $to = 'unilend@equinoa.fr';
-                    //$to  = 'courtier.damien@gmail.com';
-                    // subject
-                    $subject = '[Alerte] Solde preteur';
-
-                    // message
-                    $message = '
-					<html>
-					<head>
-					  <title>[Alerte] Solde preteur</title>
-					</head>
-					<body>
-					  <p>Le solde du client est plus eleve que le solde theorique</p>
-					  <table>
-						<tr>
-						  <th>Id client : </th><td>' . $c['id_client'] . '</td>
-						</tr>
-						<tr>
-						  <th>Alimentation : </th><td>' . $alimentation . '</td>
-						</tr>
-						<tr>
-						  <th>Somme des remboursements : </th><td>' . $sumMontantRembSansfiscale . ' euros</td>
-						</tr>
-						<tr>
-						  <th>Interets (sans retenue fiscale) : </th><td>' . $sumInteretSansfiscale . '</td>
-						</tr>
-						<tr>
-						  <th>Total (alim + interets) : </th><td>' . $total . '</td>
-						</tr>
-						<tr>
-						  <th>Somme des retraits : </th><td>' . $sumRetrait . '</td>
-						</tr>
-						<tr>
-						  <th>Somme des prets : </th><td>' . $sumPrets . '</td>
-						</tr>
-						<tr>
-						  <th>Somme des Bids en cours : </th><td>' . $sumBidsEncours . '</td>
-						</tr>
-						<tr>
-						  <th>Somme des mouvement d\'argent : </th><td>' . $sumMouv . '</td>
-						</tr>';
-
-                    if ($soldeReel < 0) {
-                        $message .= '
-							<tr>
-							  <th>Somme manquante sur le compte : </th><td style="color:red;">' . str_replace('-', '', $soldeReel) . '</td>
-							</tr>';
-                    } else {
-                        $message .= '
-						<tr>
-						  <th>Somme en trop  : </th><td style="color:red;">' . ($sumMouv - $soldeReel) . '</td>
-						</tr>';
-                    }
-
-                    $message .= '
-						<tr>
-						  <th>Solde du compte errone : </th><td>' . $solde . '</td>
-						</tr>
-					  	<tr>
-						  <th>Solde reel du compte : </th><td>' . $soldeReel . '</td>
-						</tr>
-					  </table>
-					</body>
-					</html>
-					';
-
-                    // To send HTML mail, the Content-type header must be set
-                    $headers = 'MIME-Version: 1.0' . "\r\n";
-                    $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-                    // Additional headers
-                    //$headers .= 'To: equinoa <courtier.damien@gmail.com>' . "\r\n";
-                    $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
-
-
-                    // Mail it
-                    //mail($to, $subject, $message, $headers);
-                }
-            }
-        }
-
-
-        // On regarde si y a des doubles degel
-
-        $lesRejets = $transactions->select('id_bid_remb <> 0');
-        /* echo '<pre>';
-          print_r($lesRejets);
-          echo '</pre>'; */
-
-        foreach ($lesRejets as $r) {
-
-            $lsDoubles = $transactions->counter('id_bid_remb = ' . $r['id_bid_remb']);
-            if ($lsDoubles > 1) {
-
-                echo 'id_client : ' . $r['id_client'] . ' bid ' . $r['id_bid_remb'] . '<br>';
-
-                $bids->get($r['id_bid_remb'], 'id_bid');
-
-                $to = 'unilend@equinoa.fr';
-                //$to  = 'courtier.damien@gmail.com';
-                //$to  = 'd.courtier@equinoa.com';
-                // subject
-                $subject = '[Alerte] Degel en double';
-
-                // message
-                $message = '
-				<html>
-				<head>
-				  <title>[Alerte] Degel en double</title>
-				</head>
-				<body>
-					<p>Un degel a ete effectue en double sur un bid</p>
-					<table>
-						<tr>
-							<th>Id client : </th><td>' . $r['id_client'] . '</td>
-						</tr>
-						<tr>
-							<th>Id bid Remb : </th><td>' . $r['id_bid_remb'] . '</td>
-						</tr>
-						<tr>
-							<th>Id projet : </th><td>' . $bids->id_project . '</td>
-						</tr>
-						<tr>
-							<th>Montant : </th><td>' . ($r['montant'] / 100) . '</td>
-						</tr>
-						<tr>
-							<th>Date degel : </th><td>' . $r['added'] . '</td>
-						</tr>
-					</table>
-				</body>
-				</html>
-				';
-
-                // To send HTML mail, the Content-type header must be set
-                $headers = 'MIME-Version: 1.0' . "\r\n";
-                $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-                // Additional headers
-
-                $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
-                //$headers .= 'From: Unilend <courtier.damien@gmail.com>' . "\r\n";
-                //$headers .= 'From: Unilend <d.courtier@equinoa.com>' . "\r\n";
-                // Mail it
-                if ($this->Config['env'] != "dev") {
-                    mail($to, $subject, $message, $headers);
-                } else {
-                    mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
-                }
-
-                //break;
-            }
-        }
-    }
-
-    function _checkSoldesV2()
-    {
-        // die pour linstant
-        //die;
-        // chargement des datas
-        $transactions     = $this->loadData('transactions');
-        $clients          = $this->loadData('clients');
-        $lenders_accounts = $this->loadData('lenders_accounts');
-        $loans            = $this->loadData('loans');
-        $bids             = $this->loadData('bids');
-        $echeanciers      = $this->loadData('echeanciers');
-
-        //$lClients = $clients->select('status = 1 AND status_pre_emp IN(1,3)');
-
-        $listBids = $bids->select('id_project = 796');
-
-        foreach ($listBids as $b) {
-
-            //if($c['id_client'] == 330)
-            //{
-            $lenders_accounts->get($b['id_lender_account'], 'id_lender_account');
-
-            $c = $clients->select('status = 1 AND status_pre_emp IN(1,3) AND id_client = ' . $lenders_accounts->id_client_owner);
-            $c = $c[0];
-
-            // on recup l'alimentation du compte
-            $alimentation = $transactions->sum('id_client = ' . $c['id_client'] . ' AND type_transaction IN(1,3,4,7) AND etat = 1 AND status = 1', 'montant');
-            $alimentation = ($alimentation / 100);
-
-            // les interets sans les retenues fiscales
-            $sumRemb                   = $echeanciers->getSumRembV2($lenders_accounts->id_lender_account);
-            $sumInteretSansfiscale     = round($sumRemb['interets'], 2);
-            $sumMontantRembSansfiscale = round($sumRemb['montant'], 2);
-
-            // total argent
-            $total = $alimentation + $sumInteretSansfiscale;
-
-            // argent dispo sur compte
-            $solde = $transactions->getSolde($c['id_client']);
-
-            // somme prêté
-            $sumPrets = $loans->sumPrets($lenders_accounts->id_lender_account);
-
-            // somme des bids en cours
-            $sumBidsEncours = $bids->sumBidsEncours($lenders_accounts->id_lender_account);
-
-            $sumMouv = $transactions->sum('id_client = ' . $c['id_client'] . ' AND etat = 1 AND status = 1', 'montant');
-            $sumMouv = ($sumMouv / 100);
-
-            $sumRetrait = $transactions->sum('id_client = ' . $c['id_client'] . ' AND etat = 1 AND status = 1 AND type_transaction = 8', 'montant');
-            $sumRetrait = ($sumRetrait / 100);
-
-            // solde reel du compte
-            $soldeReel = $alimentation - $sumPrets - $sumBidsEncours + $sumMontantRembSansfiscale + $sumRetrait;
-
-            /* echo '------------------------------ <br>';
-              echo 'client : '.$c['id_client'].'<br>';
-              echo 'solde :'.$solde.' euros<br><br>';
-              echo 'alimentation : '.$alimentation.' euros<br>';
-              echo 'sumRemb : '.$sumMontantRembSansfiscale.' euros<br>';
-              echo 'interets : '.$sumInteretSansfiscale.' euros<br>';
-              echo 'total : '.$total.' euros<br>';
-              echo 'sumRetraits : '.$sumRetrait.' euros<br>';
-              echo '<br>';
-              echo 'sumPrets : '.$sumPrets.' euros<br>';
-              echo 'sumBidsEncours : '.$sumBidsEncours.' euros<br>';
-              echo '<br>';
-              echo 'sumMouv : '.$sumMouv.' euros<br>';
-              echo 'soldeReel : '.$soldeReel.' euros<br>'; */
-
-
-            $cond1 = round($soldeReel, 2);
-            $cond2 = round($sumMouv, 2);
-
-
-            if ($cond1 < $cond2) {
-
-                echo '------------------------------ <br>';
-                echo 'client : ' . $c['id_client'] . '<br>';
-                echo 'solde :' . $solde . ' euros<br><br>';
-                echo 'alimentation : ' . $alimentation . ' euros<br>';
-                echo 'sumRemb : ' . $sumMontantRembSansfiscale . ' euros<br>';
-                echo 'interets : ' . $sumInteretSansfiscale . ' euros<br>';
-                echo 'total : ' . $total . ' euros<br>';
-                echo 'sumRetraits : ' . $sumRetrait . ' euros<br>';
-                echo '<br>';
-                echo 'sumPrets : ' . $sumPrets . ' euros<br>';
-                echo 'sumBidsEncours : ' . $sumBidsEncours . ' euros<br>';
-                echo '<br>';
-                echo 'sumMouv : ' . $sumMouv . ' euros<br>';
-                echo 'soldeReel : ' . $soldeReel . ' euros<br>';
-
-
-                echo '--------------------<br>';
-
-                echo '<br>';
-
-                echo $c['id_client'] . ' - trop<br>';
-
-
-                $to = 'unilend@equinoa.fr';
-                //$to  = 'courtier.damien@gmail.com';
-                // subject
-                $subject = '[Alerte] Solde preteur';
-
-                // message
-                $message = '
-					<html>
-					<head>
-					  <title>[Alerte] Solde preteur</title>
-					</head>
-					<body>
-					  <p>Le solde du client est plus eleve que le solde theorique</p>
-					  <table>
-						<tr>
-						  <th>Id client : </th><td>' . $c['id_client'] . '</td>
-						</tr>
-						<tr>
-						  <th>Alimentation : </th><td>' . $alimentation . '</td>
-						</tr>
-						<tr>
-						  <th>Somme des remboursements : </th><td>' . $sumMontantRembSansfiscale . ' euros</td>
-						</tr>
-						<tr>
-						  <th>Interets (sans retenue fiscale) : </th><td>' . $sumInteretSansfiscale . '</td>
-						</tr>
-						<tr>
-						  <th>Total (alim + interets) : </th><td>' . $total . '</td>
-						</tr>
-						<tr>
-						  <th>Somme des retraits : </th><td>' . $sumRetrait . '</td>
-						</tr>
-						<tr>
-						  <th>Somme des prets : </th><td>' . $sumPrets . '</td>
-						</tr>
-						<tr>
-						  <th>Somme des Bids en cours : </th><td>' . $sumBidsEncours . '</td>
-						</tr>
-						<tr>
-						  <th>Somme des mouvement d\'argent : </th><td>' . $sumMouv . '</td>
-						</tr>';
-
-                if ($soldeReel < 0) {
-                    $message .= '
-							<tr>
-							  <th>Somme manquante sur le compte : </th><td style="color:red;">' . str_replace('-', '', $soldeReel) . '</td>
-							</tr>';
-                } else {
-                    $message .= '
-						<tr>
-						  <th>Somme en trop  : </th><td style="color:red;">' . ($sumMouv - $soldeReel) . '</td>
-						</tr>';
-                }
-
-                $message .= '
-						<tr>
-						  <th>Solde du compte errone : </th><td>' . $solde . '</td>
-						</tr>
-					  	<tr>
-						  <th>Solde reel du compte : </th><td>' . $soldeReel . '</td>
-						</tr>
-					  </table>
-					</body>
-					</html>
-					';
-
-                // To send HTML mail, the Content-type header must be set
-                $headers = 'MIME-Version: 1.0' . "\r\n";
-                $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-                // Additional headers
-                //$headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
-                $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
-
-
-                // Mail it
-                if ($this->Config['env'] != "dev") {
-                    mail($to, $subject, $message, $headers);
-                } else {
-                    mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
-                }
-
-            }
-
-            //break;
-            //}
-        }
-
-
-        // On regarde si y a des doubles degel
-
-        $lesRejets = $transactions->select('id_bid_remb <> 0');
-        /* echo '<pre>';
-          print_r($lesRejets);
-          echo '</pre>'; */
-
-        foreach ($lesRejets as $r) {
-
-            $lsDoubles = $transactions->counter('id_bid_remb = ' . $r['id_bid_remb']);
-            if ($lsDoubles > 1) {
-
-                echo 'id_client : ' . $r['id_client'] . ' bid ' . $r['id_bid_remb'] . '<br>';
-
-                $bids->get($r['id_bid_remb'], 'id_bid');
-
-                $to = 'unilend@equinoa.fr';
-                //$to  = 'courtier.damien@gmail.com';
-                //$to  = 'd.courtier@equinoa.com';
-                // subject
-                $subject = '[Alerte] Degel en double';
-
-                // message
-                $message = '
-				<html>
-				<head>
-				  <title>[Alerte] Degel en double</title>
-				</head>
-				<body>
-					<p>Un degel a ete effectue en double sur un bid</p>
-					<table>
-						<tr>
-							<th>Id client : </th><td>' . $r['id_client'] . '</td>
-						</tr>
-						<tr>
-							<th>Id bid Remb : </th><td>' . $r['id_bid_remb'] . '</td>
-						</tr>
-						<tr>
-							<th>Id projet : </th><td>' . $bids->id_project . '</td>
-						</tr>
-						<tr>
-							<th>Montant : </th><td>' . ($r['montant'] / 100) . '</td>
-						</tr>
-						<tr>
-							<th>Date degel : </th><td>' . $r['added'] . '</td>
-						</tr>
-					</table>
-				</body>
-				</html>
-				';
-
-                // To send HTML mail, the Content-type header must be set
-                $headers = 'MIME-Version: 1.0' . "\r\n";
-                $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-                // Additional headers
-
-                $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
-                //$headers .= 'From: Unilend <courtier.damien@gmail.com>' . "\r\n";
-                //$headers .= 'From: Unilend <d.courtier@equinoa.com>' . "\r\n";
-                // Mail it
-                if ($this->Config['env'] != "dev") {
-                    mail($to, $subject, $message, $headers);
-                } else {
-                    mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
-                }
-                //break;
-            }
-        }
-    }
-
     // part une fois par jour a 1h du matin afin de checker les mail de la veille
-    function _checkMailNoDestinataire()
+    public function _checkMailNoDestinataire()
     {
         // chargement des datas
         $nmp = $this->loadData('nmp');
@@ -7921,13 +7404,13 @@ class cronController extends bootstrap
     }
 
     // Toutes les minutes de 21h à 7h
-    function _declarationContratPret()
+    public function _declarationContratPret()
     {
 
         /* $this->lesdeclarationContratPret();
           }
 
-          function lesdeclarationContratPret()
+          public function lesdeclarationContratPret()
           { */
         ini_set('memory_limit', '1024M');
         ini_set('max_execution_time', 300); //300 seconds = 5 minutes
@@ -8032,7 +7515,7 @@ class cronController extends bootstrap
     }
 
     // Fonctions Annexes
-    function ftp_is_dir($connexion, $dir)
+    public function ftp_is_dir($connexion, $dir)
     {
         if (ftp_chdir($connexion, $dir)) {
             ftp_chdir($connexion, '..');
@@ -8046,7 +7529,7 @@ class cronController extends bootstrap
     /// POUR LA DEMO ONLY ///
     /////////////////////////
     // On copie le backup recu pas oxeva
-    function copyBackup()
+    public function copyBackup()
     {
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
@@ -8105,7 +7588,7 @@ class cronController extends bootstrap
     }
 
     // Mise a jour de la bdd demo tous les jours a 2h du matin
-    function _updateDemoBDD()
+    public function _updateDemoBDD()
     {
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
@@ -8256,7 +7739,7 @@ class cronController extends bootstrap
     }
 
     // Toutes les minutes on check les bids pour les passer en ENCOURS/OK/NOK (check toutes les 5 min et toutes les minutes de 15h30 à 16h00)
-    function _checkBids()
+    public function _checkBids()
     {
         $debut = time();
 
@@ -8618,7 +8101,7 @@ class cronController extends bootstrap
     }
 
     // On check bid ko si oui ou non un mail de degel est parti. Si c'est non on envoie un mail
-    function _checkEmailBidKO()
+    public function _checkEmailBidKO()
     {
 
         //die;// a retirer <<<-----------------------------------------------|
@@ -8818,7 +8301,7 @@ class cronController extends bootstrap
     }
 
     // a 16 h 10 (10 16 * * *)
-    function _checkFinProjet()
+    public function _checkFinProjet()
     {
         // Chargement des datas
         $projects       = $this->loadData('projects');
@@ -8952,7 +8435,7 @@ class cronController extends bootstrap
     }
 
     // cron journalier (00h00  0 0 * * *) new => 0 * * * * (toutes les heures)
-    function _checkControles()
+    public function _checkControles()
     {
         // Chargement des datas
         $settings = $this->loadData('settings');
@@ -9017,7 +8500,7 @@ class cronController extends bootstrap
 
     // relance une completude a j+8 (add le 22/07/2014)
     // Passe tous les jours (tous les matin à 6h du matin) 0  6  *  *  *
-    function _relance_completude()
+    public function _relance_completude()
     {
         $this->clients                = $this->loadData('clients');
         $this->clients_status         = $this->loadData('clients_status');
@@ -9201,7 +8684,7 @@ class cronController extends bootstrap
         }
     }
 
-    function _relance_completude_old080615()
+    public function _relance_completude_old080615()
     {
 
         die;
@@ -9289,7 +8772,7 @@ class cronController extends bootstrap
     }
 
     // généré à 1h du matin
-    function _xmlProjects()
+    public function _xmlProjects()
     {
         $projects  = $this->loadData('projects');
         $companies = $this->loadData('companies');
@@ -9351,7 +8834,7 @@ class cronController extends bootstrap
 
     // passe a 1h du matin tous les jours
     // check les remb qui n'ont pas de factures
-    function _genere_factures()
+    public function _genere_factures()
     {
 
         $projects               = $this->loadData('projects');
@@ -9392,7 +8875,7 @@ class cronController extends bootstrap
     }
 
     // 1 fois par jour et on check les transactions non validés sur une journée (00:30)
-    function _check_alim_cb()
+    public function _check_alim_cb()
     {
         //echo $_SERVER['REMOTE_ADDR'];
         //die;
@@ -9540,7 +9023,7 @@ class cronController extends bootstrap
     }
 
     // Une fois par jour (crée le 27/04/2015)
-    function check_remboursement_preteurs()
+    public function check_remboursement_preteurs()
     {
         $echeanciers = $this->loadData('echeanciers');
         $projects    = $this->loadData('projects');
@@ -9613,7 +9096,7 @@ class cronController extends bootstrap
     }
 
     // Cron une fois par jour a 19h30 (* 18-20 * * *)
-    function _alertes_quotidienne()
+    public function _alertes_quotidienne()
     {
         ini_set('max_execution_time', 3600); // hotbug 07/09/2015
         ini_set('memory_limit', '4096M'); // hotbug 07/09/2015
@@ -9808,7 +9291,7 @@ class cronController extends bootstrap
     }
 
     // chaque samedi matin à 9h00  (0 9 * * 6 )
-    function _alertes_hebdomadaire()
+    public function _alertes_hebdomadaire()
     {
         mail($this->sDestinatairesDebug, 'cron ' . $this->Config['env'] . ' debut gestion_alertes_hebdomadaire', 'cron ' . $this->Config['env'] . ' debut alertes_hebdomadaire - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
 
@@ -9961,7 +9444,7 @@ class cronController extends bootstrap
     }
 
     // Cron le 1er de chaque mois à 9h00 (0 9 1 * * )
-    function _alertes_mensuelle()
+    public function _alertes_mensuelle()
     {
         mail($this->sDestinatairesDebug, 'cron ' . $this->Config['env'] . ' debut alertes_mensuelle', 'cron ' . $this->Config['env'] . ' debut alertes_mensuelle - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
 
@@ -10049,7 +9532,7 @@ class cronController extends bootstrap
     }
 
     // Cron une fois par jour a (* 18-21 * * *)
-    function _alertes_quotidienne_old()
+    public function _alertes_quotidienne_old()
     {
         mail($this->sDestinatairesDebug, 'cron debut alertes_quotidiene prod', 'cron fin alertes_quotidiennee prod - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
         $timeDebut = time();
@@ -10212,7 +9695,7 @@ class cronController extends bootstrap
     }
 
     // chaque samedi matin à 9h00  (* 9-11 * * 6)
-    function _alertes_hebdomadaire_old()
+    public function _alertes_hebdomadaire_old()
     {
         $timeDebut = time();
 
@@ -10338,7 +9821,7 @@ class cronController extends bootstrap
     }
 
     // Cron le 1er de chaque mois à (* 10-12 1 * * )
-    function _alertes_mensuelle_old()
+    public function _alertes_mensuelle_old()
     {
         // si on est le dernier jour du mois
         $last_day_of_month = date('t');
@@ -10401,7 +9884,7 @@ class cronController extends bootstrap
     }
 
     // Cron une fois par jour a 19h30 (30 19 * * *)
-    function _gestion_alertes_quotidiene()
+    public function _gestion_alertes_quotidiene()
     {
         die;
         ini_set('max_execution_time', 300);
@@ -10527,7 +10010,7 @@ class cronController extends bootstrap
     }
 
     // chaque samedi matin à 9h00  (0 9 * * 6 )
-    function _gestion_alertes_hebdomadaire()
+    public function _gestion_alertes_hebdomadaire()
     {
         die;
         ini_set('max_execution_time', 300);
@@ -10638,7 +10121,7 @@ class cronController extends bootstrap
     }
 
     // Cron le 1er de chaque mois à 9h00 (0 9 1 * * )
-    function _gestion_alertes_mensuelle()
+    public function _gestion_alertes_mensuelle()
     {
         die;
         ini_set('max_execution_time', 300);
@@ -10686,7 +10169,7 @@ class cronController extends bootstrap
     }
 
     // Fonction qui crée les notification nouveaux projet pour les prêteurs (immediatement)(OK)
-    function nouveau_projet($id_project)
+    public function nouveau_projet($id_project)
     {
         $this->clients                       = $this->loadData('clients');
         $this->notifications                 = $this->loadData('notifications');
@@ -10790,7 +10273,7 @@ class cronController extends bootstrap
 
     // fonction synhtese nouveaux projets
     // $type = quotidienne,hebdomadaire,mensuelle
-    function nouveaux_projets_synthese($array_mail_nouveaux_projects, $type)
+    public function nouveaux_projets_synthese($array_mail_nouveaux_projects, $type)
     {
 
         $this->clients       = $this->loadData('clients');
@@ -11060,7 +10543,7 @@ class cronController extends bootstrap
         }
     }
 
-    function offres_placees_synthese($array_offres_placees, $type)
+    public function offres_placees_synthese($array_offres_placees, $type)
     {
         $this->clients       = $this->loadData('clients');
         $this->notifications = $this->loadData('notifications');
@@ -11353,7 +10836,7 @@ class cronController extends bootstrap
     }
 
     // offres refusées
-    function offres_refusees_synthese($array_offres_refusees, $type)
+    public function offres_refusees_synthese($array_offres_refusees, $type)
     {
         $this->clients       = $this->loadData('clients');
         $this->notifications = $this->loadData('notifications');
@@ -11541,7 +11024,7 @@ class cronController extends bootstrap
     }
 
     // offres acceptées
-    function offres_acceptees_synthese($array_offres_acceptees, $type)
+    public function offres_acceptees_synthese($array_offres_acceptees, $type)
     {
         $this->clients       = $this->loadData('clients');
         $this->notifications = $this->loadData('notifications');
@@ -11845,7 +11328,7 @@ class cronController extends bootstrap
     }
 
     // remb
-    function remb_synthese($array_remb, $type)
+    public function remb_synthese($array_remb, $type)
     {
 
         $this->clients       = $this->loadData('clients');
@@ -12121,7 +11604,7 @@ class cronController extends bootstrap
 
     // fonction synhtese nouveaux projets
     // $type = quotidienne,hebdomadaire,mensuelle
-    function nouveaux_projets_synthese_old($array_mail_nouveaux_projects, $type)
+    public function nouveaux_projets_synthese_old($array_mail_nouveaux_projects, $type)
     {
 
         $this->clients       = $this->loadData('clients');
@@ -12335,7 +11818,7 @@ class cronController extends bootstrap
         }
     }
 
-    function offres_placees_synthese_old($array_offres_placees, $type)
+    public function offres_placees_synthese_old($array_offres_placees, $type)
     {
         $this->clients       = $this->loadData('clients');
         $this->notifications = $this->loadData('notifications');
@@ -12578,7 +12061,7 @@ class cronController extends bootstrap
     }
 
     // offres refusées
-    function offres_refusees_synthese_old($array_offres_refusees, $type)
+    public function offres_refusees_synthese_old($array_offres_refusees, $type)
     {
         $this->clients       = $this->loadData('clients');
         $this->notifications = $this->loadData('notifications');
@@ -12737,7 +12220,7 @@ class cronController extends bootstrap
     }
 
     // offres acceptées
-    function offres_acceptees_synthese_old($array_offres_acceptees, $type)
+    public function offres_acceptees_synthese_old($array_offres_acceptees, $type)
     {
         $this->clients       = $this->loadData('clients');
         $this->notifications = $this->loadData('notifications');
@@ -12984,7 +12467,7 @@ class cronController extends bootstrap
     }
 
     // remb
-    function remb_synthese_old($array_remb, $type)
+    public function remb_synthese_old($array_remb, $type)
     {
 
         $this->clients       = $this->loadData('clients');
@@ -13160,7 +12643,7 @@ class cronController extends bootstrap
     }
 
     // 1 fois par jour on regarde si on a une offre de parrainage a traiter pour donner l'argent
-    function _offre_parrainage()
+    public function _offre_parrainage()
     {
         die;
         $offres_parrains_filleuls     = $this->loadData('offres_parrains_filleuls'); // offre parrainage
@@ -13395,7 +12878,7 @@ class cronController extends bootstrap
     }
 
     // Toutes les minutes (cron en place) le 27/01/2015
-    function _send_email_remb_auto()
+    public function _send_email_remb_auto()
     {
 
         $echeanciers             = $this->loadData('echeanciers');
@@ -13599,7 +13082,7 @@ class cronController extends bootstrap
 
 
     // Toutes les 5 minutes (cron en place)	le 27/01/2015
-    function _remboursement_preteurs_auto()
+    public function _remboursement_preteurs_auto()
     {
         $projects                = $this->loadData('projects');
         $echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
@@ -13897,7 +13380,7 @@ class cronController extends bootstrap
     }
 
     // check les projets n'ayant pas eu de remb a la date theorique emprunteur
-    function check_remb_emprunteur()
+    public function check_remb_emprunteur()
     {
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $echeanciers            = $this->loadData('echeanciers');
@@ -13969,7 +13452,7 @@ class cronController extends bootstrap
         }
     }
 
-    function relance_cgv_non_signee($type)
+    public function relance_cgv_non_signee($type)
     {
 
         //$type = 1; // particulier
@@ -14118,13 +13601,13 @@ class cronController extends bootstrap
     }
 
     // Enregistrement des fichiers ifu dans les dossiers pour les ajouter en base
-    function get_ifu_from_folder()
+    public function get_ifu_from_folder()
     {
         $path = $this->path . 'protected/IFU';
         $this->ScanDirectory($path);
     }
 
-    function ScanDirectory($Directory, $annee_current = 0)
+    public function ScanDirectory($Directory, $annee_current = 0)
     {
 
         //var
@@ -14170,7 +13653,7 @@ class cronController extends bootstrap
         closedir($MyDirectory);
     }
 
-    function _indexation()
+    public function _indexation()
     {
 
         ini_set('max_execution_time', 3600);
@@ -14353,12 +13836,12 @@ class cronController extends bootstrap
         }
     }
 
-    function _clean_mails_filer()
+    public function _clean_mails_filer()
     {
         $this->fonct_clean_mails_filer();
     }
 
-    function fonct_clean_mails_filer()
+    public function fonct_clean_mails_filer()
     {
         die;
         $debut  = microtime();
@@ -14387,7 +13870,7 @@ class cronController extends bootstrap
 
     // Passe toutes les 5 minutes la nuit de 3h à 4h
     // copie données table -> enregistrement table backup -> suppression données table
-    function _stabilisation_mails()
+    public function _stabilisation_mails()
     {
         //die; // <------------------------------------
 
@@ -14475,7 +13958,7 @@ class cronController extends bootstrap
     }
 
     // Lors que les offres acceptées évoluent après l'indexation, on à un soucis avec les offres acceptées qui n'ont pas de date d'opération. Cette fonction va donc chercher une date dans la table loan pour mettre à jour celle de l'indexation
-    function correction_offre_accepte_aucune_date()
+    public function correction_offre_accepte_aucune_date()
     {
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
         $this->loans                   = $this->loadData('loans');
@@ -14503,7 +13986,7 @@ class cronController extends bootstrap
         }
     }
 
-    function deleteOldFichiers()
+    public function deleteOldFichiers()
     {
         $path  = $this->path . 'protected/sftp_groupama/';
         $duree = 30; // jours
@@ -14524,7 +14007,7 @@ class cronController extends bootstrap
         }
     }
 
-    function zippage($id_project)
+    public function zippage($id_project)
     {
 
         //$id_project = 7;
@@ -14599,7 +14082,7 @@ class cronController extends bootstrap
      *
      * On va checker dans la table "remboursement_anticipe_mail_a_envoyer" si il y a des mails pour un remb anticiper a envoyer
      *  */
-    function _RA_email()
+    public function _RA_email()
     {
 
         $this->projects                      = $this->loadData('projects');
@@ -14793,8 +14276,7 @@ class cronController extends bootstrap
                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                             }
                         }
-                    }//End si notif ok
-
+                    }
                 }
 
                 // on passe la file d'attente de ce projet RA en statut = envoyé
@@ -14802,19 +14284,16 @@ class cronController extends bootstrap
                 $remboursement_anticipe_mail_a_envoyer->get($ra_email['id_remboursement_anticipe_mail_a_envoyer']);
                 $remboursement_anticipe_mail_a_envoyer->statut = 1;
                 $remboursement_anticipe_mail_a_envoyer->update();
-
-            } // end foreach
-        }//end if count
-
+            }
+        }
     }
 
     // fonction qui envoie les mails en differé (pour eviter la surchage au CTA)
     /* Executé toutes les minutes avec une limite de nb/minute
      *
      */
-    function _traitement_file_attente_envoi_mail()
+    public function _traitement_file_attente_envoi_mail()
     {
-
         // Récuperation des mails à envoyer
         $liste_attente_mail      = $this->loadData('liste_attente_mail');
         $liste_attente_mail_temp = $this->loadData('liste_attente_mail');
@@ -14866,11 +14345,7 @@ class cronController extends bootstrap
                 $liste_attente_mail_temp->get($mail['id']);
                 $liste_attente_mail_temp->statut = 1; //envoyé
                 $liste_attente_mail_temp->update();
-
             }
         }
-
-
     }
-
 }
