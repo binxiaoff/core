@@ -34,7 +34,7 @@ class attachment_helper
 
         $upload->setUploadDir($path, $uploadPath);
 
-        if (false === $upload->doUpload($field, $aFiles, $sNewName)) {
+        if (false === $upload->doUpload($field, $sNewName, $erase=false, $aFiles)) {
             return false;
         }
 
