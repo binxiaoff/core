@@ -52,7 +52,6 @@ class universignController extends bootstrap
 				$uni_id = $clients_mandats->id_universign; // a collection id
 
 				//create the request
-				var_dump($uni_url);
 				$c = new Client($uni_url);
 				$f = new Request('requester.getDocumentsByTransactionId', array(new Value($uni_id, "string")));
 
@@ -351,7 +350,6 @@ class universignController extends bootstrap
 				$y = 314;
 
 				//create the request
-				var_dump($uni_url);
 				$c = new Client($uni_url);
 
 				$docSignatureField = array(
