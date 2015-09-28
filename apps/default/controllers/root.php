@@ -7,7 +7,6 @@ class rootController extends bootstrap
     function rootController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
-        $this->Command = $command;
         $this->catchAll = true;
     }
 

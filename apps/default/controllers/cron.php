@@ -8406,7 +8406,7 @@ class cronController extends bootstrap
                         // On met a jour le loan pour savoir qu'on la deja enregistré
                         $loans->get($l['id_loan'], 'id_loan');
                         $loans->fichier_declarationContratPret = $nom;
-                        //$loans->update();
+                        $loans->update();
                     }
                 }
                 echo "Toutes les d&eacute;clarations sont g&eacute;n&eacute;r&eacute;es <br />";
