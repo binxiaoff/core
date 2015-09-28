@@ -147,8 +147,12 @@ class upload {
 	// $file_form_name -> Nom du champ file du formulaire (obligatoire)
 	// $new_name -> Nouveau nom du fichier sans extension (facultatif)
 	// $erase -> true -> Permet de remplacer le fichier sur le serveur s'il existe deja (facultatif)
-	public function doUpload($field, $aFiles, $new_name, $erase=false)
+	public function doUpload($field, $new_name='', $erase=false, $aFiles = null)
 	{
+		if($aFiles === null) {
+			$aFiles = $_FILES;
+		}
+
 		// Recuperation de l'extension du fichier
 		$extension = pathinfo($aFiles[$field]['name']);
 		$extension = $extension['extension'];
