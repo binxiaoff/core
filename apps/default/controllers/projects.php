@@ -10,7 +10,6 @@ class projectsController extends bootstrap
 
         $this->catchAll = true;
 
-
         //Recuperation des element de traductions
         $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
 
@@ -19,15 +18,12 @@ class projectsController extends bootstrap
         $this->heureFinFunding = $this->settings->value;
 
         $this->page = 'projects';
-
     }
 
     function _default()
     {
-
         // On prend le header account
         $this->setHeader('header_account');
-
 
         $_SESSION['page_projet'] = $this->page;
 
@@ -38,9 +34,7 @@ class projectsController extends bootstrap
         } else {
             // check preteur ou emprunteur (ou les deux)
             $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'preteur');
-
         }
-
 
         // Chargement des datas
         $this->projects = $this->loadData('projects');
@@ -61,12 +55,9 @@ class projectsController extends bootstrap
         $this->triPartxInt = $this->settings->value;
         $this->triPartxInt = explode(';', $this->triPartxInt);
 
-
         // page projet tri
         // 1 : terminé bientot
         // 2 : nouveauté
-        //$this->tabOrdreProject[....] <--- dans le bootstrap pour etre accessible partout (page default et ajax)
-
         $this->ordreProject = 1;
         $this->type = 0;
 
@@ -81,8 +72,6 @@ class projectsController extends bootstrap
 
     function _detail()
     {
-
-
         // restriction pour capital
         if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' || $this->lurl == 'http://partenaire.unilend.challenges.fr') {
             //if($this->lurl == 'http://capital.unilend.fr' || $this->lurl == 'http://challenges.unilend.fr'){
@@ -91,13 +80,13 @@ class projectsController extends bootstrap
             $this->autoFireHead = true;
             $this->autoFireFooter = true;
 
-            $this->url_form = 'https://www.unilend.fr';
+            $this->url_form = $this->Config['url'][$this->Config['env']]['default'];
 
-
-            if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr') $this->utm_source = '/?utm_source=capital';
-            //if($this->lurl == 'http://capital.unilend.fr') $this->utm_source = '/?utm_source=capital';
-            else $this->utm_source = '/?utm_source=challenge';
-
+            if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr') {
+                $this->utm_source = '/?utm_source=capital';
+            } else {
+                $this->utm_source = '/?utm_source=challenge';
+            }
         } else {
             $this->url_form = $this->lurl;
             $this->utm_source = '';
@@ -142,7 +131,6 @@ class projectsController extends bootstrap
             $this->restriction_ip = false;
         }
 
-        //isset($this->params[0]) && $this->projects->get($this->params[0],'id_project') && $this->projects->status == '0' ||
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'slug') && $this->projects->status == '0') {
             //title de la page
             $this->meta_title = $this->projects->title . ' - Unilend';
@@ -167,7 +155,6 @@ class projectsController extends bootstrap
                 $i++;
             }
 
-
             // On recup la companie
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->companies_details->get($this->companies->id_company, 'id_company');
@@ -190,13 +177,6 @@ class projectsController extends bootstrap
                 die;
             }
 
-
-            // today
-            $today = date('Y-m-d H:i:s');
-            //$today = '2014-01-28 15:59:59';
-            // date de retrait
-            //$dateRetrait = $this->projects->date_retrait.' '.$this->heureFinFunding.':00';
-
             // On récupère desormais la date full et pas la date avec l'heure en params
             $tabdateretrait = explode(':', $this->projects->date_retrait_full);
             $dateRetrait = $tabdateretrait[0] . ':' . $tabdateretrait[1];
@@ -208,23 +188,11 @@ class projectsController extends bootstrap
             $today = strtotime($today);
             $dateRetrait = strtotime($dateRetrait);
 
-            // On ajoute 30 min a la date de retrait
-            //$dateretraitPlus30Min = mktime (date("H",$dateRetrait),date("i",$dateRetrait)+$this->minutesEnPlus,0,date("m",$dateRetrait),date("d",$dateRetrait),date("Y",$dateRetrait));
-
-            // On reorganise la date de retrait au bon format avec les 30 minutes en plus
-            //$dateretraitPlus30Min = date('Y-m-d H:i',$dateretraitPlus30Min);
-
             // page d'attente entre la cloture du projet et le traitement de cloture du projet
             $this->page_attente = false;
             if ($dateRetrait <= $today && $this->projects_status->status == 50) {
                 $this->page_attente = true;
             }
-
-            // Offres en cours resction date de fin d'affichage
-            //$this->restrictionDateEnd = false;
-            //$dateFinDiplayOffresencours = strtotime($this->projects->date_fin_display);
-            //if($dateFinDiplayOffresencours < time())$this->restrictionDateEnd = true;
-
 
             ////////////////////////
             // Formulaire de pret //
@@ -246,8 +214,7 @@ class projectsController extends bootstrap
 
                     header('location:' . $this->lurl . '/projects/detail/' . $this->projects->slug);
                     die;
-                } // preteur non activé
-                elseif ($this->clients_status->status < 60) {
+                } elseif ($this->clients_status->status < 60) { // preteur non activé
                     header('location:' . $this->lurl . '/projects/detail/' . $this->projects->slug);
                     die;
                 }
@@ -262,18 +229,15 @@ class projectsController extends bootstrap
 
                 $this->form_ok = true;
 
-                //echo '$tx_p : '.$tx_p.'<br>';
-                //echo '$montant_p : '.$montant_p.'<br>';
-
                 // On verifie les champs
                 if (!isset($_POST['taux_pret']) || $_POST['taux_pret'] == '') {
                     $this->form_ok = false;
                 } elseif ($_POST['taux_pret'] == '-') {
                     $this->form_ok = false;
-                } elseif ($_POST['taux_pret'] > 10) // taux a 10% max
-                {
+                } elseif ($_POST['taux_pret'] > 10) { // taux a 10% max
                     $this->form_ok = false;
                 }
+
                 if (!isset($_POST['montant_pret']) || $_POST['montant_pret'] == '' || $_POST['montant_pret'] == '0') {
                     $this->form_ok = false;
                 } elseif (!is_numeric($montant_p)) {
@@ -288,7 +252,6 @@ class projectsController extends bootstrap
                 if ($this->projects_status->status != 50) {
                     $this->form_ok = false;
                 }
-
 
                 if (isset($this->params['1']) && $this->params['1'] == 'fast' && $this->form_ok == false) {
                     header('location:' . $this->lurl . '/synthese');
@@ -343,7 +306,7 @@ class projectsController extends bootstrap
                     if ($lOffres != false) {
 
                         $totaux_restant = $montant_p;
-                        $totauxOffres = 0;
+                        $totaux_offres = 0;
                         foreach ($lOffres as $o) {
 
                             // Tant que le total des offres est infèrieur
@@ -377,8 +340,6 @@ class projectsController extends bootstrap
                         }
 
                     }
-
-                    //////////////////////////
 
                     ///// NOTIFICATION OFFRE PLACEE ///////
 
@@ -481,19 +442,13 @@ class projectsController extends bootstrap
                     header('location:' . $this->lurl . '/projects/detail/' . $this->projects->slug);
                     die;
                 }
-            }
-            ////// FIN ENREGISTREMENT BID /////
-
-            // INSCRIPTION PRETEUR //
-            elseif (isset($_POST['send_inscription_project_detail'])) {
+                ////// FIN ENREGISTREMENT BID /////
+            } elseif (isset($_POST['send_inscription_project_detail'])) {
+                // INSCRIPTION PRETEUR //
                 $nom = $_POST['nom'];
                 $prenom = $_POST['prenom'];
                 $email = $_POST['email'];
                 $email2 = $_POST['conf_email'];
-
-                //if(isset($_GET['utm_source'])){
-
-                //}
 
                 $form_valid = true;
 
@@ -511,20 +466,16 @@ class projectsController extends bootstrap
                 if (!isset($email) || $email == '' || $email == $this->lng['landing-page']['email']) {
                     $form_valid = false;
                     $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
-                } // verif format mail
-                elseif (!$this->ficelle->isEmail($email)) {
+                } elseif (!$this->ficelle->isEmail($email)) {// verif format mail
                     $form_valid = false;
                     $this->retour_form = $this->lng['landing-page']['email-erreur-format'];
-                } // conf email good/pas
-                elseif ($email != $email2) {
+                } elseif ($email != $email2) {// conf email good/pas
                     $form_valid = false;
                     $this->retour_form = $this->lng['landing-page']['confirmation-email-erreur'];
-                } // si exite ou pas
-                elseif ($this->clients->existEmail($email) == false) {
+                } elseif ($this->clients->existEmail($email) == false) {// si exite ou pas
                     $form_valid = false;
                     $this->retour_form = $this->lng['landing-page']['email-existe-deja'];
                 }
-
 
                 if ($form_valid) {
                     $_SESSION['landing_client']['prenom'] = $prenom;
@@ -547,7 +498,6 @@ class projectsController extends bootstrap
                 }
             }
             // FIN INSCRIPTION PRETEUR //
-
 
             // Nb projets en funding
             $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', 75', ' AND p.status = 0 AND p.display = 0');
@@ -579,21 +529,17 @@ class projectsController extends bootstrap
             $this->positionProject = $this->projects->positionProject($this->projects->id_project, $this->tabProjectDisplay, $this->tabOrdreProject[$this->ordreProject]);
 
             // favori
-            if ($this->favoris->get($this->clients->id_client, 'id_project = ' . $this->projects->id_project . ' AND id_client'))
+            if ($this->favoris->get($this->clients->id_client, 'id_project = ' . $this->projects->id_project . ' AND id_client')) {
                 $this->favori = 'active';
-            else
+            } else {
                 $this->favori = '';
-
-
-            $anneePublication = explode('-', $this->projects->date_publication);
-            $anneePublication = $anneePublication[0];
+            }
 
             $dateDernierBilan = explode('-', $this->companies_details->date_dernier_bilan);
             $dateDernierBilan = $dateDernierBilan[0];
 
             // Liste des actif passif
             $this->listAP = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '" AND annee <= ' . $dateDernierBilan, 'annee DESC');
-
 
             // Totaux actif/passif
             $this->totalAnneeActif = array();
@@ -611,10 +557,6 @@ class projectsController extends bootstrap
                 $this->lBilans[$b['date']] = $b;
             }
 
-            // les 3 dernieres vrais années
-            /*$this->anneeToday[1] = ($anneePublication-1);
-            $this->anneeToday[2] = ($anneePublication-2);
-            $this->anneeToday[3] = ($anneePublication-3);*/
             $dateBilan = $lBilans[0]['date'];
 
             $this->anneeToday[1] = ($dateBilan);
@@ -642,15 +584,11 @@ class projectsController extends bootstrap
                 $this->decimales = 0;
                 $this->decimalesPourcentage = 0;
 
-
                 $this->lEnchereRate = $this->bids->select('id_project = ' . $this->projects->id_project, 'rate ASC,added ASC');
                 $leSoldeE = 0;
                 foreach ($this->lEnchereRate as $k => $e) {
                     // on parcour les encheres jusqu'au montant de l'emprunt
                     if ($leSoldeE < $this->projects->amount) {
-                        // le montant preteur (x100)
-                        $amount = $e['amount'];
-
                         // le solde total des encheres
                         $leSoldeE += ($e['amount'] / 100);
                         $this->txLenderMax = $e['rate'];
@@ -665,7 +603,6 @@ class projectsController extends bootstrap
 
             $this->avgAmount = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
             if ($this->avgAmount == false) $this->avgAmount = 0;
-            //$this->avgRate = $this->bids->getAVG($this->projects->id_project,'rate');
 
             // moyenne pondéré
             $montantHaut = 0;
@@ -674,14 +611,12 @@ class projectsController extends bootstrap
             // funding ko
 
             if ($this->projects_status->status == 70) {
-
                 foreach ($this->bids->select('id_project = ' . $this->projects->id_project) as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
                     $tauxBas += $b['rate'];
                 }
-            } // emprun refusé
-            elseif ($this->projects_status->status == 75) {
+            } elseif ($this->projects_status->status == 75) {// emprunt refusé
                 foreach ($this->bids->select('id_project = ' . $this->projects->id_project . ' AND status = 1') as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
@@ -694,12 +629,11 @@ class projectsController extends bootstrap
                     $montantBas += ($b['amount'] / 100);
                 }
             }
-            if ($montantHaut > 0 && $montantBas > 0)
+            if ($montantHaut > 0 && $montantBas > 0) {
                 $this->avgRate = ($montantHaut / $montantBas);
-            else $this->avgRate = 0;
-            /*if($montantHaut > 0 && $tauxBas > 0)
-            $this->avgAmount = ($montantHaut/$tauxBas)*100;
-            else $this->avgAmount = 0;*/
+            } else {
+                $this->avgRate = 0;
+            }
 
             // status enchere
             $this->status = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
@@ -713,16 +647,11 @@ class projectsController extends bootstrap
             // Si le projet est en fundé // ou remb
             ///////////////////////////////
             if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
-
-
                 // Retourne un tableau avec le nb d'encheres valides et le solde des encheres validées
                 if ($this->lenders_accounts->id_lender_account != false) $this->bidsvalid = $this->loans->getBidsValid($this->projects->id_project, $this->lenders_accounts->id_lender_account);
 
                 // Nb preteurs validés
                 $this->NbPreteurs = $this->loans->getNbPreteurs($this->projects->id_project);
-
-                // Taux moyen des encheres validés (all du projet)
-                //$this->AvgLoans = $this->loans->getAvgLoans($this->projects->id_project,'rate');
 
                 $montantHaut = 0;
                 $montantBas = 0;
@@ -733,40 +662,30 @@ class projectsController extends bootstrap
                 $this->AvgLoans = ($montantHaut / $montantBas);
 
                 // Taux moyen des encheres validés du preteur
-                if ($this->lenders_accounts->id_lender_account != false) $this->AvgLoansPreteur = $this->loans->getAvgLoansPreteur($this->projects->id_project, $this->lenders_accounts->id_lender_account, 'rate');
-                if ($this->projects->date_publication_full != '0000-00-00 00:00:00') $date1 = strtotime($this->projects->date_publication_full);
-                else $date1 = strtotime($this->projects->date_publication . ' 00:00:00');
+                if ($this->lenders_accounts->id_lender_account != false) {
+                    $this->AvgLoansPreteur = $this->loans->getAvgLoansPreteur($this->projects->id_project, $this->lenders_accounts->id_lender_account, 'rate');
+                }
+                if ($this->projects->date_publication_full != '0000-00-00 00:00:00') {
+                    $date1 = strtotime($this->projects->date_publication_full);
+                } else {
+                    $date1 = strtotime($this->projects->date_publication . ' 00:00:00');
+                }
 
-                if ($this->projects->date_retrait_full != '0000-00-00 00:00:00') $date2 = strtotime($this->projects->date_retrait_full);
-                else $date2 = strtotime($this->projects->date_fin);
+                if ($this->projects->date_retrait_full != '0000-00-00 00:00:00') {
+                    $date2 = strtotime($this->projects->date_retrait_full);
+                } else {
+                    $date2 = strtotime($this->projects->date_fin);
+                }
                 $this->interDebutFin = $this->dates->dateDiff($date1, $date2);
 
-
-                //$lProjetAvecBids = $this->bids->getProjetAvecBid();
-                //print_r($lProjetAvecBids);
-
                 // Si en remboursement
-                //if($this->projects_status->status == 80)
-                //{
                 if ($this->lenders_accounts->id_lender_account != false) {
-
-
                     $this->sumRemb = $this->echeanciers->sumARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 0');
-
-
                     $this->sumRemb += $this->echeanciers->sumARembByProjectCapital($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 1'); // (add 17/07/2015)
-
-
                     $this->sumRestanteARemb = $this->echeanciers->getSumRestanteARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project);
-
                     $this->nbPeriod = $this->echeanciers->counterPeriodRestantes($this->lenders_accounts->id_lender_account, $this->projects->id_project);
                 }
-                //}
-
-
             }
-
-
         } else {
             header('location:' . $this->lurl . '/projects');
             die;
