@@ -51,7 +51,7 @@
                             <div class="radio-holder">
                                 <label style="width: 192px;"
                                        for="radio1-3-about"><?= $this->lng['etape2']['conseil-externe-entreprise'] ?></label>
-                                <input <?= (is_object($this->prescripteurs) ? 'checked' : '') ?>
+                                <input <?= ($this->companies->status_conseil_externe_entreprise == 1 ? 'checked' : '')  ?>
                                     type="radio" class="custom-input" name="gerant" id="radio1-3-about" value="3"
                                     data-condition="show:.identification">
                             </div>
