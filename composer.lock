@@ -4,101 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "4df16b59c9aa55eaf6a94ff42d036a20",
-    "content-hash": "af6127e65483e3230255f17d0890c797",
+    "hash": "37b83f582182bd7cccbc01249467728f",
     "packages": [
         {
-            "name": "h4cc/wkhtmltoimage-amd64",
-            "version": "0.12.2.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/h4cc/wkhtmltoimage-amd64.git",
-                "reference": "ecc84a3684732e874002ae40665504e8b2f64768"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/h4cc/wkhtmltoimage-amd64/zipball/ecc84a3684732e874002ae40665504e8b2f64768",
-                "reference": "ecc84a3684732e874002ae40665504e8b2f64768",
-                "shasum": ""
-            },
-            "bin": [
-                "bin/wkhtmltoimage-amd64"
-            ],
-            "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "LGPL Version 3"
-            ],
-            "authors": [
-                {
-                    "name": "Julius Beckmann",
-                    "email": "github@h4cc.de"
-                }
-            ],
-            "description": "Convert html to image using webkit (qtwebkit). Static linked linux binary for amd64 systems.",
-            "homepage": "http://wkhtmltopdf.org/",
-            "keywords": [
-                "binary",
-                "convert",
-                "image",
-                "snapshot",
-                "thumbnail",
-                "wkhtmltoimage"
-            ],
-            "time": "2015-01-22 08:00:47"
-        },
-        {
-            "name": "h4cc/wkhtmltopdf-amd64",
-            "version": "0.12.2.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/h4cc/wkhtmltopdf-amd64.git",
-                "reference": "9ea617154cf88b81c7c0f5e5fa2d2f731ba0ae6c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/h4cc/wkhtmltopdf-amd64/zipball/9ea617154cf88b81c7c0f5e5fa2d2f731ba0ae6c",
-                "reference": "9ea617154cf88b81c7c0f5e5fa2d2f731ba0ae6c",
-                "shasum": ""
-            },
-            "bin": [
-                "bin/wkhtmltopdf-amd64"
-            ],
-            "type": "library",
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "LGPL Version 3"
-            ],
-            "authors": [
-                {
-                    "name": "Julius Beckmann",
-                    "email": "github@h4cc.de"
-                }
-            ],
-            "description": "Convert html to pdf using webkit (qtwebkit). Static linked linux binary for amd64 systems.",
-            "homepage": "http://wkhtmltopdf.org/",
-            "keywords": [
-                "binary",
-                "convert",
-                "pdf",
-                "snapshot",
-                "thumbnail",
-                "wkhtmltopdf"
-            ],
-            "time": "2015-01-22 08:01:37"
-        },
-        {
             "name": "knplabs/knp-snappy",
-            "version": "0.4.1",
+            "version": "0.4.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/KnpLabs/snappy.git",
-                "reference": "cada5a1ddcf6dc7d4c848b257c2bab580f99e542"
+                "reference": "99941b6f8475e2f02b8b89748504e5d471bded73"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/KnpLabs/snappy/zipball/cada5a1ddcf6dc7d4c848b257c2bab580f99e542",
-                "reference": "cada5a1ddcf6dc7d4c848b257c2bab580f99e542",
+                "url": "https://api.github.com/repos/KnpLabs/snappy/zipball/99941b6f8475e2f02b8b89748504e5d471bded73",
+                "reference": "99941b6f8475e2f02b8b89748504e5d471bded73",
                 "shasum": ""
             },
             "require": {
@@ -148,7 +67,7 @@
                 "thumbnail",
                 "wkhtmltopdf"
             ],
-            "time": "2015-08-10 10:24:04"
+            "time": "2015-09-16 12:34:39"
         },
         {
             "name": "monolog/monolog",
@@ -374,16 +293,16 @@
         },
         {
             "name": "symfony/process",
-            "version": "v2.7.3",
+            "version": "v2.7.5",
             "source": {
                 "type": "git",
-                "url": "https://github.com/symfony/Process.git",
-                "reference": "48aeb0e48600321c272955132d7606ab0a49adb3"
+                "url": "https://github.com/symfony/process.git",
+                "reference": "b27c8e317922cd3cdd3600850273cf6b82b2e8e9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/Process/zipball/48aeb0e48600321c272955132d7606ab0a49adb3",
-                "reference": "48aeb0e48600321c272955132d7606ab0a49adb3",
+                "url": "https://api.github.com/repos/symfony/process/zipball/b27c8e317922cd3cdd3600850273cf6b82b2e8e9",
+                "reference": "b27c8e317922cd3cdd3600850273cf6b82b2e8e9",
                 "shasum": ""
             },
             "require": {
@@ -419,7 +338,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "https://symfony.com",
-            "time": "2015-07-01 11:25:50"
+            "time": "2015-09-19 19:59:23"
         }
     ],
     "packages-dev": [],
