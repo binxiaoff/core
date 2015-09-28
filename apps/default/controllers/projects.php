@@ -304,7 +304,6 @@ class projectsController extends bootstrap
                     // Liste des offres non utilisées
                     $lOffres = $offres_bienvenues_details->select('id_client = ' . $this->clients->id_client . ' AND status = 0');
                     if ($lOffres != false) {
-
                         $totaux_restant = $montant_p;
                         $totaux_offres = 0;
                         foreach ($lOffres as $o) {
@@ -322,10 +321,8 @@ class projectsController extends bootstrap
 
                                 // Apres addition de la derniere offre on se rend compte que le total depasse
                                 if ($totaux_offres > $montant_p) {
-
                                     // On fait la diff et on créer un remb du trop plein d'offres
                                     $montant_coupe_a_remb = $totaux_offres - $montant_p;
-
                                     $offres_bienvenues_details->id_offre_bienvenue = 0;
                                     $offres_bienvenues_details->id_client = $this->lenders_accounts->id_client_owner;
                                     $offres_bienvenues_details->id_bid = 0;
@@ -336,9 +333,10 @@ class projectsController extends bootstrap
                                     $offres_bienvenues_details->create();
                                 }
 
-                            } else break;
+                            } else {
+                                break;
+                            }
                         }
-
                     }
 
                     ///// NOTIFICATION OFFRE PLACEE ///////
