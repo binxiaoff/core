@@ -1,7 +1,7 @@
-###Mac###
+# Mac
 .DS_Store
 
-### NetBeans ###
+# NetBeans
 nbproject/*
 !nbproject/project.properties
 !nbproject/project.xml
@@ -13,7 +13,7 @@ nbactions.xml
 nb-configuration.xml
 .nb-gradle/
 
-### Izinoa ###
+# iZinoa
 /protected/
 /log/
 backup2/
@@ -27,16 +27,16 @@ tmp/
 /route.php
 *.rej
 
-###PHPStorm###
+# PHPStorm
 .idea/
 
-###Vagrant###
+# Vagrant
 /vagrant/.vagrant/
 
-###Composer###
+# Composer
 /vendor/
 
-#sauf
+# Exceptions
 !public/default/styles/default/*
 !public/default/scripts/default/*
 !/dev/public/
