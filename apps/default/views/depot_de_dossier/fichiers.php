@@ -4,86 +4,64 @@
 
         <!--				--><? //=$this->fireView('../blocs/depot-de-dossier')?>
 
-        <p><?php printf($this->lng['espace-emprunteur']['contenu'], $this->mensualite_min, $this->mensualite_max) ?></p>
+        <?php
+        if ($this->projects->process_fast == 1) {
+            echo "<div>" . $this->lng['espace-emprunteur']['liste-des-docs-procedure-rapide'] . "</div>";
+        } else {
+            echo "<p>" . $this->lng['espace-emprunteur']['contenu'] . "</p>";
+        }
+        ?>
+        <h1><?= $this->companies->name ?></h1>
 
         <div class="register-form">
-            <?
-            if (isset($_SESSION['confirmation']['valid']) && $_SESSION['confirmation']['valid'] != '') {
-                echo '<p id="valid-stand-by" style="color: #3FBD5D;text-align:center;">' . $_SESSION['confirmation']['valid'] . '</p>';
-                unset($_SESSION['confirmation']['valid']);
-
-                ?>
-                <script>
-                    setTimeout(function () {
-                        $("#valid-stand-by").slideUp();
-                    }, 8000);
-                </script><?
-            }
-            ?>
-
-            <form action="" method="post" id="form_espace_emptunteur" enctype="multipart/form-data">
+            <form action="" method="post" id="form_espace_emprunteur" enctype="multipart/form-data">
                 <div class="row">
-                    <p><?= $this->lng['etape1']['identite-de-la-societe'] ?></p>
-
-                    <input type="text" name="raison-sociale" id="raison-sociale"
-                           title="<?= $this->lng['etape2']['raison-sociale'] ?>"
-                           value="<?= ($this->companies->name != '' ? $this->companies->name : $this->lng['etape2']['raison-sociale']) ?>"
-                           class="field field-large required" data-validators="Presence">
+                    <p><?= $this->lng['espace-emprunteur']['vous-pouvez-nous-envoyer'] ?></p>
                 </div>
                 <div class="row">
-                    <p><?=$this->lng['espace-emprunteur']['vous-pouvez-nous-envoyer']?></p>
+                    <div class="field-large"
+                        style="display: inline-block; background-color: #b10366; color: white; margin-outside: 5px; height: 35px; width: 300px; border-radius: 4px; text-align: center;text-transform: uppercase; line-height: 35px;"><?= $this->lng['espace-emprunteur']['type-de-document'] ?></div>
+                    <div class="field-large"
+                        style="display: inline-block; background-color: #b10366; color: white; margin-outside: 5px; height: 35px; width: 460px; border-radius: 4px; text-align: center;text-transform: uppercase; line-height: 35px;"><?= $this->lng['espace-emprunteur']['champs-dupload'] ?></div>
                 </div>
-                <div class="row">
-                    <span class="btn btn-medium">Type de document</span>
 
-                </div>
+                <div class="row row-upload">
+                    <select name="type_document[]"
+                            class="custom-select required field">
+                        <option value=""> <?= $this->lng['espace-emprunteur']['selectionnez-un-document'] ?></option>
+                        <?
+                        foreach ($this->aAttachmentTypes as $k => $a) {
+                            ?>
+                            <option value="<?= $a['id'] ?>"><?= $a['label'] ?></option><?
+                        }
+                        ?>
+                    </select>
+                    <div class="uploader">
+                        <input id=""
+                               type="text"
+                               class="field required <?= ($this->error_extrait_kbis == true ? 'LV_invalid_field' : '') ?>"
+                               readonly="readonly"
+                               value="<?= $this->lng['etape3']['aucun-fichier-selectionne'] ?>">
 
-
-
-                    <!-- TODO modifier source des données pour les fichiers joins -->
-
-                            <div class="row row-upload">
-                                <label class="inline-text"><?=$this->lng['etape3']['liasse-fiscal']?></label>
-                                <div class="uploader">
-                                    <input id="liasse_fiscal"
-                                           type="text"
-                                           class="field required <?=($this->error_liasse_fiscal==true?'LV_invalid_field':'')?>"
-                                           readonly="readonly"
-                                           value="<?=$this->lng['etape3']['aucun-fichier-selectionne']?>" />
-                                    <div class="file-holder">
-                                    <span class="btn btn-small">
-                                        <?=$this->lng['etape2']['parcourir']?>
-                                        <span class="file-upload">
-                                    <input type="file" class="file-field" name="liasse_fiscal">
+                        <div class="file-holder">
+                            <span class="btn btn-small" style=" float: left; margin: 5px;">
+                                <?= $this->lng['etape2']['parcourir'] ?>
+                                <span class="file-upload">
+                                    <input type="file" class="file-field" name="files[]" id="file-field">
                                 </span>
                             </span>
-                                    </div>
-                                </div><!-- /.uploader -->
-                            </div><!-- /.row -->
-
-                            <div class="row row-upload">
-                                <label class="inline-text"><?=$this->lng['etape3']['autre']?></label>
-
-                                <div class="uploader">
-                                    <input id="autre"
-                                           type="text"
-                                           class="field required <?=($this->error_extrait_kbis==true?'LV_invalid_field':'')?>"
-                                           readonly="readonly"
-                                           value="<?=$this->lng['etape3']['aucun-fichier-selectionne']?>" />
-                                    <div class="file-holder">
-                                    <span class="btn btn-small">
-                                        <?=$this->lng['etape2']['parcourir']?>
-                                        <span class="file-upload">
-                                    <input type="file" class="file-field" name="autre">
-                                </span>
-                            </span>
-                                    </div>
-                                </div><!-- /.uploader -->
-                            </div><!-- /.row -->
-
-
-                <input type="hidden" name="submit_files" />
-                <button class="btn" type="submit"><?=$this->lng['espace-emprunteur']['valider']?><i class="icon-arrow-next"></i
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="display: inline-block;">
+                    <span class="btn btn-small btn-add-new-row" style="font-size: 120%;">+</span>
+                    <span style="float: right; margin-left: 5px; "><p><?= $this->lng['espace-emprunteur']['cliquez-pour-ajouter'] ?></p></span>
+                </div>
+                <div class="row">
+                    <input type="hidden" name="submit_files"/>
+                    <button class="btn btn-large" type="submit"><?= $this->lng['espace-emprunteur']['envoyer'] ?>
+                        <i class="icon-arrow-next"></i>
+                </div>
             </form>
         </div>
         <!-- /.register-form -->
@@ -92,13 +70,26 @@
 </div><!-- /.main -->
 <!--#include virtual="ssi-footer.shtml"  -->
 <script>
-    $(document).on('change', 'input.file-field', function(){
+    $(function() {
+        $uploadRow = $('.row.row-upload').first().clone().hide().prop('id', 'upload-row-pattern');
+        $uploadRow.children('select').removeClass('custom-select');
+        $('#form_espace_emprunteur').append($uploadRow);
+    });
+
+    $(document).on('change', 'input.file-field', function () {
         var $self = $(this);
         var val = $self.val();
 
-        if ( val.length != 0 || val != '' ) {
+        if (val.length != 0 || val != '') {
             val = val.replace(/\\/g, '/').replace(/.*\//, '');
             $self.closest('.uploader').find('input.field').val(val).addClass('LV_valid_field').addClass('file-uploaded');
         }
+    });
+
+
+    $('.btn-add-new-row').click(function () {
+        $uploadRow = $('#upload-row-pattern').clone().show();
+        $uploadRow.children('select').addClass('custom-select').c2Selectbox();
+        $(this).parent('.row').before($uploadRow);
     });
 </script>
