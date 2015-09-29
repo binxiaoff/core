@@ -1516,7 +1516,7 @@ class rootController extends bootstrap
                 } else {
                     // liste des cgv accpeté
                     $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC');
-                    $dateAccept = 'Signé électroniquement le ' . date('d/m/Y', strtotime($listeAccept[0]['added'])); // date dernier CGV
+                    $dateAccept = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($listeAccept[0]['added'])); // date dernier CGV
                 }
                 $variables = array('[Civilite]', '[Prenom]', '[Nom]', '[date]', '[ville_naissance]', '[adresse_fiscale]', '[date_validation_cgv]');
 
@@ -1545,7 +1545,7 @@ class rootController extends bootstrap
                 } else {
                     // liste des cgv accpeté
                     $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC');
-                    $dateAccept = 'Signé électroniquement le ' . date('d/m/Y', strtotime($listeAccept[0]['added'])); // date dernier CGV
+                    $dateAccept = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($listeAccept[0]['added'])); // date dernier CGV
                 }
                 $variables = array('[Civilite]', '[Prenom]', '[Nom]', '[Fonction]', '[Raison_sociale]', '[adresse_fiscale]', '[date_validation_cgv]');
 
