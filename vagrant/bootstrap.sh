@@ -104,6 +104,13 @@ git submodule init
 git submodule update
 mvn clean package -DskipTests
 
+#instal wkhtmltopdf for snappy
+apt-get install xfonts-75dpi
+wget http://download.gna.org/wkhtmltopdf/0.12/0.12.2.1/wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+dpkg -i wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+ln -s /usr/local/bin/wkhtmltopdf /usr/bin/wkhtmltopdf
+rm -rf wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+
 # install zsh et oh my zsh
 apt-get install -y zsh
 git clone git://github.com/robbyrussell/oh-my-zsh.git /home/vagrant/.oh-my-zsh
