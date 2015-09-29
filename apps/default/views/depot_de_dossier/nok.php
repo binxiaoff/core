@@ -1,11 +1,7 @@
-<!--#include virtual="ssi-header.shtml"  -->
 <div class="main">
     <div class="shell">
 
         <?
-
-        $this->fireView('../blocs/depot-de-dossier');
-
         switch($this->params[0]){
             case 'pas-3-bilans':
                 echo  "<p>".$this->lng['depot-de-dossier-nok']['pas-3-bilans']."</p>";
@@ -21,8 +17,8 @@
                 break;
             default:
                 echo  "<p>".$this->lng['depot-de-dossier-nok']['contenu-non-eligible']."</p>";
+                break;
         }
         ?>
     </div><!-- /.shell -->
 </div><!-- /.main -->
-<!--#include virtual="ssi-footer.shtml"  -->
