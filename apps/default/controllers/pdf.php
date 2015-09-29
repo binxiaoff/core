@@ -26,22 +26,22 @@ class pdfController extends bootstrap
     private $oLogger;
 
     /**
-     * @var \data\crud\projects_pouvoir
+     * @var projects_pouvoir
      */
     private $oProjectsPouvoir;
 
     /**
-     * @var \data\crud\loans
+     * @var loans
      */
     public $oLoans;
 
     /**
-     * @var \data\crud\lenders_accounts
+     * @var lenders_accounts
      */
     public $oLendersAccounts;
 
     /**
-     * @var \data\crud\echeanciers_emprunteur
+     * @var echeanciers_emprunteur
      */
     private $oEcheanciersEmprunteur;
 
@@ -634,8 +634,8 @@ class pdfController extends bootstrap
 
             // si on a le pouvoir
             if ($this->oProjectsPouvoir->get($this->projects->id_project, 'id_project')) {
-                $this->dateContrat = date('d/m/Y',strtotime($this->oProjectsPouvoir->updated));
-                $this->dateRemb = date('d/m/Y',strtotime($this->oProjectsPouvoir->updated));
+                $this->dateContrat = date('d/m/Y', strtotime($this->oProjectsPouvoir->updated));
+                $this->dateRemb = date('d/m/Y', strtotime($this->oProjectsPouvoir->updated));
             } else {
                 $this->dateContrat = date('d/m/Y');
                 $this->dateRemb = date('d/m/Y');
@@ -732,8 +732,12 @@ class pdfController extends bootstrap
         }
     }
 
-    public function _facture_EF($sHash, $iIdProject)
+    public function _facture_EF($sHash = null, $iIdProject = null)
     {
+        $sHash = (false === is_null($sHash)) ? $sHash : $this->params[0];
+        $iIdProject = (false === is_null($iIdProject)) ? $iIdProject : $this->params[1];
+        $bRead = (true === isset($this->params)) ?: false;
+
         // si le client existe
         if ($this->clients->get($sHash, 'hash') && isset($iIdProject)) {
 
@@ -751,6 +755,9 @@ class pdfController extends bootstrap
                 $this->GenerateInvoiceEFHtml($iIdProject);
                 //We generate pdf file
                 $this->WritePdf($path . $nom_fichier, 'invoice');
+                if(true === $bRead){
+                    $this->ReadPdf($path . $nom_fichier, $sNamePdfClient);
+                }
             }
         }
     }
@@ -860,8 +867,14 @@ class pdfController extends bootstrap
         }
     }
 
-    public function _facture_ER($sHash, $iIdProject, $iOrdre)
+    public function _facture_ER($sHash = null, $iIdProject = null, $iOrdre = null)
     {
+        $sHash = (false === is_null($sHash)) ? $sHash : $this->params[0];
+        $iIdProject = (false === is_null($iIdProject)) ? $iIdProject : $this->params[1];
+        $iOrdre = (false === is_null($iOrdre)) ? $iOrdre : $this->params[2];
+
+        $bRead = (true === isset($this->params)) ?: false;
+
         // si le client existe
         if ($this->clients->get($sHash, 'hash') && isset($iIdProject)) {
             $this->oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
@@ -881,6 +894,9 @@ class pdfController extends bootstrap
                     $this->GenerateInvoiceERHtml($iIdProject, $iOrdre);
                     //We generate pdf file
                     $this->WritePdf($path . $nom_fichier, 'invoice');
+                    if(true === $bRead){
+                        $this->ReadPdf($path . $nom_fichier, $sNamePdfClient);
+                    }
                 }
             }
         }

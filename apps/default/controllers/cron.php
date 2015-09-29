@@ -1,7 +1,14 @@
 <?php
 
+use Unilend\librairies\ULogger;
+
 class cronController extends bootstrap
 {
+    /**
+     * File's name for logger
+     */
+    const NAME_LOG = 'cronEquinoa.log';
+
     /**
      * @var string $sHeadersDebug headers for mail to debug
      */
@@ -11,6 +18,11 @@ class cronController extends bootstrap
      * @var string $sDestinatairesDebug Destinataires for mail to debug
      */
     private $sDestinatairesDebug;
+
+    /**
+     * @var ULogger
+     */
+    private $oLogger;
 
     public function __construct($command, $config)
     {
@@ -31,15 +43,7 @@ class cronController extends bootstrap
         $this->sHeadersDebug .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
         $this->sHeadersDebug .= 'From: ' . key($this->Config['DebugMailFrom']) . ' <' . $this->Config['DebugMailFrom'][key($this->Config['DebugMailFrom'])] . '>' . "\r\n";
 
-        // Securisation des acces
-        if (isset($_SERVER['REMOTE_ADDR']) && !in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']])) {
-            //die;
-        }
-
-        //blocage sur dev
-        if ($this->Config['env'] == "dev") {
-            //die;
-        }
+        $this->oLogger = new ULogger('CronEquinoa', $this->logPath, self::NAME_LOG);
     }
 
     //********************//
@@ -1083,7 +1087,9 @@ class cronController extends bootstrap
     public function create_echeances($id_project)
     {
         ini_set('max_execution_time', 300); //300 seconds = 5 minutes
-        mail($this->sDestinatairesDebug, 'alerte create echeance', 'Verification des jours ouvrées sur le projet : ' . $id_project, $this->sHeadersDebug);
+        $this->oLogger->addRecord('INFO',
+            'Cron : ' . __METHOD__ . ' Verification des jours ouvrées sur le projet : ' . $id_project,
+            array($this->Config['env']));
         // chargement des datas
         $this->loans = $this->loadData('loans');
         $this->projects = $this->loadData('projects');
@@ -1282,7 +1288,10 @@ class cronController extends bootstrap
     // fonction create echeances emprunteur
     public function createEcheancesEmprunteur($id_project)
     {
-        mail($this->sDestinatairesDebug, 'alerte create echeance emprunteur', 'Verification des jours ouvrées sur le projet : ' . $id_project, $this->sHeadersDebug);
+        $this->oLogger->addRecord('INFO',
+            'Cron : ' . __METHOD__ . ' Verification des jours ouvrées sur le projet : ' . $id_project,
+            array(__FILE__ . 'at line ' . __LINE__));
+
         // chargement des datas
         $loans = $this->loadData('loans');
         $projects = $this->loadData('projects');
@@ -1811,7 +1820,9 @@ class cronController extends bootstrap
             file_put_contents($this->path . 'protected/sftp/virements/' . $filename . '.xml', $xml);
 
             if ($this->Config['env'] != "dev") {
-                mail($this->sDestinatairesDebug, 'unilend ' . $this->Config['env'] . ' cron', 'virements date : ' . date('d/m/y H:i:s'), $this->sHeadersDebug);
+                $this->oLogger->addRecord('INFO',
+                    'Cron : ' . __METHOD__ . 'virements date : ' . date('d/m/y H:i:s'),
+                    array($this->Config['env']));
             }
         }
     }
@@ -2858,6 +2869,9 @@ class cronController extends bootstrap
             $dossier = 'ssh2.sftp://' . $sftp . '/home/sfpmei/receptions';
             if (!file_exists($dossier)) {
                 if ($this->Config['env'] != "dev") {
+                    $this->oLogger->addRecord('ERROR',
+                        'Cron : ' . __METHOD__ . ' Unilend error connexion ssh',
+                        array($this->Config['env']));
                     mail($this->sDestinatairesDebug, '[Alert] Unilend error connexion ssh ' . $this->Config['env'], '[Alert] Unilend error connexion ssh ' . $this->Config['env'] . ' cron reception', $this->sHeadersDebug);
                 }
 
@@ -3021,7 +3035,9 @@ class cronController extends bootstrap
                         //if(5 == 6){
 
                         if ($this->Config['env'] != "dev") {
-                            mail($this->sDestinatairesDebug, 'virement offre de bienvenue', 'virement offre de bienvenue effectue', $this->sHeadersDebug);
+                            $this->oLogger->addRecord('INFO',
+                                'Cron : ' . __METHOD__ . ' virement offre de bienvenue',
+                                array($this->Config['env']));
                         }
 
                         // transact
@@ -4750,91 +4766,6 @@ class cronController extends bootstrap
         }
     }
 
-    // 1 fois par jour on check 12 jours avant si la demande de prelevement est parti (01:00:00)
-    public function _alertePrelevement()
-    {
-        // chargement des datas
-        $prelevements = $this->loadData('prelevements');
-
-        // today
-        $today = time();
-
-        //$today = '2014-01-15 00:00:00';
-        //$today = strtotime($today);
-        // today +12j
-        $todayPlus12 = mktime(0, 0, 0, date("m", $today), date("d", $today) + 15, date("Y", $today));
-
-        $todayPlus12 = date('Y-m-d', $todayPlus12);
-
-        // On recupere la liste des prelevements en cours preteur recurrent
-        $lPrelevements = $prelevements->select('type = 2 AND type_prelevement = 1 AND status = 0 AND date_echeance_emprunteur <= "' . $todayPlus12 . '"');
-
-
-        if (count($lPrelevements) > 0) {
-            foreach ($lPrelevements as $p) {
-                // multiple recipients
-                //$to  = 'aidan@example.com' . ', '; // note the comma
-                //$to .= 'wez@example.com';
-                $to = 'unilend@equinoa.fr';
-
-                // subject
-                $subject = '[Alerte] ordre de prelevement';
-
-                // message
-                $message = '
-				<html>
-				<head>
-				  <title>[Alerte] ordre de prelevement</title>
-				</head>
-				<body>
-				  <p>Un ordre de prelevement doit partir ce soir</p>
-				  <table>
-					<tr>
-					  <th>Id prelevement : </th><td>' . $p['id_prelevement'] . '</td>
-					</tr>
-					<tr>
-					  <th>Id client : </th><td>' . $p['id_client'] . '</td>
-					</tr>
-					<tr>
-					  <th>id project : </th><td>' . $p['id_project'] . '</td>
-					</tr>
-					<tr>
-					  <th>motif : </th><td>' . $p['motif'] . '</td>
-					</tr>
-					<tr>
-					  <th>montant : </th><td>' . ($p['montant'] / 100) . ' euros</td>
-					</tr>
-					<tr>
-					  <th>Date execution <br>de l\'ordre de virement : </th><td>' . $p['date_execution_demande_prelevement'] . '</td>
-					</tr>
-					<tr>
-					  <th>Date echeance Emprunteur : </th><td>' . $p['date_echeance_emprunteur'] . '</td>
-					</tr>
-				  </table>
-				</body>
-				</html>
-				';
-
-                // To send HTML mail, the Content-type header must be set
-                $headers = 'MIME-Version: 1.0' . "\r\n";
-                $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-                // Additional headers
-                //$headers .= 'To: Damien <d.courtier@equinoa.com>, Kelly <kelly@example.com>' . "\r\n";
-                $headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
-                $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
-
-                // Mail it
-                if ($this->Config['env'] != "dev") {
-                    mail($to, $subject, $message, $headers);
-                } else {
-                    mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
-                }
-
-            }
-        }
-    }
-
     // passe a 1h30 (pour decaler avec l'etat fiscal) du matin le 1er du mois
     public function _echeances_par_mois()
     {
@@ -4845,7 +4776,6 @@ class cronController extends bootstrap
         $dateMoins1Mois = date('Y-m', $dateMoins1Mois);
 
         $csv = "id_client;id_lender_account;type;iso_pays;exonere;debut_exoneration;fin_exoneration;id_project;id_loan;ordre;montant;capital;interets;prelevements_obligatoires;retenues_source;csg;prelevements_sociaux;contributions_additionnelles;prelevements_solidarite;crds;date_echeance;date_echeance_reel;status_remb_preteur;date_echeance_emprunteur;date_echeance_emprunteur_reel;\n";
-
 
         $sql = '
 		SELECT
@@ -5712,7 +5642,6 @@ class cronController extends bootstrap
         //$to  = 'aidan@example.com' . ', '; // note the comma
         //$to .= 'wez@example.com';
         $to = 'unilend@equinoa.fr';
-        //$to  = 'courtier.damien@gmail.com';
         // subject
         $subject = '[UNILEND DEMO] La BDD a ete mise à jour';
 
@@ -6478,26 +6407,31 @@ class cronController extends bootstrap
 
             // Si la valeur est a zero et que la derniere mise a jour date de plus d'une heure
             if ($ctrlCheckBids == 0 && strtotime($updateCheckBids) < $todayMoins1h) {
-                //echo 'alerte planté rejet bid';
-                mail($this->sDestinatairesDebug, '[ALERTE] Controle cron checkBids', '[ALERTE] Controle cron checkBids plante ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env'], $this->sHeadersDebug);
+                $this->oLogger->addRecord('ERROR',
+                    'Cron : ' . __METHOD__ . ' Controle cron checkBids value 0 in settings at date : '.date('Y-m-d H:i:s'),
+                    array($this->Config['env']));
             }
             // Si la valeur est a zero et que la derniere mise a jour date de plus d'une heure
             if ($ctrlCheckEmailBidKO == 0 && strtotime($updateCheckEmailBidKO) < $todayMoins1h) {
-                //echo 'alerte planté email rejet bid';
-                mail($this->sDestinatairesDebug, '[ALERTE] Controle cron checkEmailBidKO', '[ALERTE] Controle cron checkEmailBidKO plante ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env'], $this->sHeadersDebug);
+                $this->oLogger->addRecord('ERROR',
+                    'Cron : ' . __METHOD__ . ' Controle cron checkEmailBidKO value 0 in settings at date : '.date('Y-m-d H:i:s'),
+                    array($this->Config['env']));
             }
             // si la valeur est a zero
             if ($ctrlCheck_projet_en_funding == 0 && strtotime($updateCheck_projet_en_funding) < $todayMoins1h) {
-                //echo 'alerte planté traitement fin projet';
-                mail($this->sDestinatairesDebug, '[ALERTE] Controle cron check_projet_en_fundings', '[ALERTE] Controle cron check_projet_en_fundings plante ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env'], $this->sHeadersDebug);
+                $this->oLogger->addRecord('ERROR',
+                    'Cron : ' . __METHOD__ . ' Controle cron check_projet_en_fundings value 0 in settings at date : '.date('Y-m-d H:i:s'),
+                    array($this->Config['env']));
             }
             if ($ctrlRemb == 0) {
-                //echo 'alerte planté traitement fin projet';
-                mail($this->sDestinatairesDebug, '[ALERTE] Controle statut remboursement', '[ALERTE] Controle statut remboursement planté ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env'], $this->sHeadersDebug);
+                $this->oLogger->addRecord('ERROR',
+                    'Cron : ' . __METHOD__ . ' Controle cron remboursement value 0 in settings at date : '.date('Y-m-d H:i:s'),
+                    array($this->Config['env']));
             }
             if ($ctrlRembPreteurs == 0) {
-                //echo 'alerte planté traitement fin projet';
-                mail($this->sDestinatairesDebug, '[ALERTE] Controle remboursements', '[ALERTE] Controle statut remboursements des prêteurs a plante ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env'], $this->sHeadersDebug);
+                $this->oLogger->addRecord('ERROR',
+                    'Cron : ' . __METHOD__ . ' Controle cron statut remboursements des prêteurs value 0 in settings at date : '.date('Y-m-d H:i:s'),
+                    array($this->Config['env']));
             }
         } else {
             echo 'OK';
@@ -6687,93 +6621,6 @@ class cronController extends bootstrap
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
                 }
-            }
-        }
-    }
-
-    public function _relance_completude_old080615()
-    {
-
-        die;
-        $this->clients = $this->loadData('clients');
-        $this->clients_status = $this->loadData('clients_status');
-        $this->clients_status_history = $this->loadData('clients_status_history');
-
-        // time  - 8 jours
-        $timeMoins8 = mktime(0, 0, 0, date("m"), date("d") - 8, date("Y"));
-        // les preteurs en completude
-        $lPreteurs = $this->clients->selectPreteursByStatus('20', '', 'added_status DESC');
-
-        // Variables du mailing
-        $surl = $this->surl;
-        $url = $this->lurl;
-
-        // FB
-        $this->settings->get('Facebook', 'type');
-        $lien_fb = $this->settings->value;
-
-        // Twitter
-        $this->settings->get('Twitter', 'type');
-        $lien_tw = $this->settings->value;
-
-        /* echo '<pre>';
-          print_r($lPreteurs);
-          echo '</pre>'; */
-
-        foreach ($lPreteurs as $p) {
-            if ($p['added_status'] <= $timeMoins8) {
-
-                // histo actions
-                $this->clients_status_history->get($p['id_client_status_history'], 'id_client_status_history');
-
-
-                // Recuperation du modele de mail
-                $this->mails_text->get('completude', 'lang = "' . $this->language . '" AND type');
-
-                $timeCreate = strtotime($p['added_status']);
-                $month = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
-
-                // Variables du mailing
-                $varMail = array(
-                    'surl' => $surl,
-                    'url' => $url,
-                    'prenom_p' => $p['prenom'],
-                    'date_creation' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
-                    'content' => $this->clients_status_history->content,
-                    'lien_fb' => $lien_fb,
-                    'lien_tw' => $lien_tw
-                );
-                // Construction du tableau avec les balises EMV
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                // Attribution des données aux variables
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $sujetMail = 'RAPPEL : ' . $sujetMail;
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                // Envoi du mail
-                $this->email = $this->loadLib('email', array());
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                // Pas de mail si le compte est desactivé
-                if ($p['status'] == 1) {
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $p['email'], $tabFiler);
-                        // Injection du mail NMP dans la queue
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
-                        $this->email->addRecipient(trim($p['email']));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
-                }
-
-                // creation du statut "Modification"
-                $this->clients_status_history->addStatus('-1', 30, $p['id_client'], $this->clients_status_history->content);
             }
         }
     }
@@ -7055,8 +6902,6 @@ class cronController extends bootstrap
 				</tr>';
         }
 
-        // <td>' . ($l['status'] == 1 ? 'Oui' : 'Non') . '</td> // statut remb preteur
-
         //************************************//
         //*** ENVOI DU MAIL NOTIFICATION  check remb preteurs ***//
         //************************************//
@@ -7086,8 +6931,6 @@ class cronController extends bootstrap
         $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
         $exp_name = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-        //echo $texteMail;
-
         // Envoi du mail
         $this->email = $this->loadLib('email', array());
         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
@@ -7096,10 +6939,6 @@ class cronController extends bootstrap
         $this->email->setHTMLBody($texteMail);
         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
         // fin mail
-
-        /* echo '<pre>';
-          print_r($liste);
-          echo '</pre>'; */
     }
 
     // Cron une fois par jour a 19h30 (* 18-20 * * *)
@@ -7293,14 +7132,18 @@ class cronController extends bootstrap
             $settingsControleQuotidiennne->update();
 
         }
-        mail($this->sDestinatairesDebug, 'cron ' . $this->Config['env'] . ' fin alertes_quotidiennee', 'cron ' . $this->Config['env'] . ' fin alertes_quotidiennee - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
+        $this->oLogger->addRecord('INFO',
+            'Cron : ' . __METHOD__ . ' Fin de la cron',
+            array($this->Config['env']));
         die;
     }
 
     // chaque samedi matin à 9h00  (0 9 * * 6 )
     public function _alertes_hebdomadaire()
     {
-        mail($this->sDestinatairesDebug, 'cron ' . $this->Config['env'] . ' debut gestion_alertes_hebdomadaire', 'cron ' . $this->Config['env'] . ' debut alertes_hebdomadaire - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
+        $this->oLogger->addRecord('INFO',
+            'Cron : ' . __METHOD__ . ' Debut de la cron',
+            array($this->Config['env']));
 
         // On recup le param
         $settingsControleHebdomadaire = $this->loadData('settings');
@@ -7445,15 +7288,18 @@ class cronController extends bootstrap
             $settingsControleHebdomadaire->value = 1;
             $settingsControleHebdomadaire->update();
         }
-
-        mail($this->sDestinatairesDebug, 'cron ' . $this->Config['env'] . ' fin gestion_alertes_hebdomadaire', 'cron ' . $this->Config['env'] . ' fin alertes_hebdomadaire - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
+        $this->oLogger->addRecord('INFO',
+            'Cron : ' . __METHOD__ . ' Fin de la cron',
+            array($this->Config['env']));
         die;
     }
 
     // Cron le 1er de chaque mois à 9h00 (0 9 1 * * )
     public function _alertes_mensuelle()
     {
-        mail($this->sDestinatairesDebug, 'cron ' . $this->Config['env'] . ' debut alertes_mensuelle', 'cron ' . $this->Config['env'] . ' debut alertes_mensuelle - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
+        $this->oLogger->addRecord('INFO',
+            'Cron : ' . __METHOD__ . ' Debut de la cron',
+            array($this->Config['env']));
 
         // On recup le param
         $settingsControleMensuelle = $this->loadData('settings');
@@ -7533,360 +7379,9 @@ class cronController extends bootstrap
             $settingsControleMensuelle->value = 1;
             $settingsControleMensuelle->update();
         }
-
-        mail($this->sDestinatairesDebug, 'cron ' . $this->Config['env'] . ' fin alertes_mensuelle', 'cron ' . $this->Config['env'] . ' alertes_mensuelle - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
-        die;
-    }
-
-    // Cron une fois par jour a (* 18-21 * * *)
-    public function _alertes_quotidienne_old()
-    {
-        mail($this->sDestinatairesDebug, 'cron debut alertes_quotidiene prod', 'cron fin alertes_quotidiennee prod - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
-        $timeDebut = time();
-
-        $clients = $this->loadData('clients');
-        $lenders_accounts = $this->loadData('lenders_accounts');
-        $clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
-        $clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $notifications = $this->loadData('notifications');
-        $projects = $this->loadData('projects');
-
-        // Remboursement
-        $dateDebutRemboursement = mktime(18, 0, 0, date('m'), date('d'), date('Y'));
-        $dateFinRemboursement = mktime(19, 30, 0, date('m'), date('d'), date('Y'));
-
-        // Nouveau projet
-        $dateDebutNewProject = mktime(19, 30, 0, date('m'), date('d'), date('Y'));
-        $dateFinNewProject = mktime(20, 0, 0, date('m'), date('d'), date('Y'));
-
-        // Offre realisée
-        $dateDebutOffreRealisee = mktime(20, 0, 0, date('m'), date('d'), date('Y'));
-        $dateFinOffreRealisee = mktime(20, 15, 0, date('m'), date('d'), date('Y'));
-
-        // Offre refusée
-        $dateDebutOffreRefusee = mktime(20, 15, 0, date('m'), date('d'), date('Y'));
-        $dateFinOffreRefusee = mktime(20, 30, 0, date('m'), date('d'), date('Y'));
-
-        // Offre Acceptee
-        $dateDebutOffreAcceptee = mktime(20, 30, 0, date('m'), date('d'), date('Y'));
-        $dateFinOffreAcceptee = mktime(21, 0, 0, date('m'), date('d'), date('Y'));
-
-
-        // Nouveau projet
-        if (time() >= $dateDebutNewProject && time() < $dateFinNewProject) {
-            $id_notif = 1;
-
-            //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
-
-            $lPreteurs = $clients->selectPreteursByStatusSlim(60);
-            //$lPreteurs = $clients->selectPreteursByStatus(60,"c.id_client IN (2015,1,12)"); // mode test <------------------
-            //$lPreteurs = $clients->selectPreteursByStatus(60,"c.id_client IN (12)"); // mode test <------------------
-            // Liste des projets
-            $lProjects = $projects->selectProjectsByStatusSlim(50);
-
-            // on check tous les preteurs
-            foreach ($lPreteurs as $preteur) {
-
-
-                // on regarde les projets concernés
-                foreach ($lProjects as $projet) {
-
-
-                    // si existe pas on crée
-                    //if(!$clients_gestion_mails_notif->get($projet['id_project'],'id_client = '.$preteur['id_client'].' AND id_project')){
-                    if ($clients_gestion_mails_notif->counter('id_client = ' . $preteur['id_client'] . ' AND id_project = ' . $projet['id_project']) <= 0) {
-
-                        //$clients_gestion_mails_notif->get($projet['id_project'],'id_client = '.$preteur['id_client'].' AND id_project');
-
-                        $notifications->type = 8; // nouveau projet
-                        $notifications->id_lender = $preteur['id_lender'];
-                        $notifications->id_project = $projet['id_project'];
-                        $notifications->status = 1; // on le fait passé en deja lu car pas forcement du jour meme
-                        $notifications->id_notification = $notifications->create();
-
-                        //////// GESTION ALERTES //////////
-                        $clients_gestion_mails_notif->id_client = $preteur['id_client'];
-                        $clients_gestion_mails_notif->id_notif = 1; // type nouveau projet
-                        $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
-                        $clients_gestion_mails_notif->id_project = $projet['id_project'];
-                        $clients_gestion_mails_notif->date_notif = $projet['date_publication_full'];
-                        $clients_gestion_mails_notif->id_clients_gestion_mails_notif = $clients_gestion_mails_notif->create();
-
-                        //////// FIN GESTION ALERTES //////////
-                    }
-                }
-            }
-            ///////////////////////////////////////////////////////////////////////////////////////////////
-        } // Offre realisée
-        elseif (time() >= $dateDebutOffreRealisee && time() < $dateFinOffreRealisee) {
-            $id_notif = 2;
-        } // Offre refusée
-        elseif (time() >= $dateDebutOffreRefusee && time() < $dateFinOffreRefusee) {
-            $id_notif = 3;
-        } // Offre Acceptée
-        elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {
-            $id_notif = 4;
-        } // Remboursement
-        elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {
-            $id_notif = 5;
-        } else {
-            die;
-        }
-
-        // On recup les mails non envoyés aujourd'hui
-        $mails_notif = $clients_gestion_notifications->selectNotifs('quotidienne', $id_notif, 0, 250);
-
-        //echo '/////////// EMAILS NOTIF ////////////<br>';
-
-        /* echo '<pre>';
-          print_r($mails_notif);
-          echo '</pre>';
-          die; */
-
-        $array_mail_nouveaux_projects = false;
-        $array_offres_placees = false;
-        $array_offres_refusees = false;
-        $array_offres_acceptees = false;
-        $array_remb = false;
-
-        foreach ($mails_notif as $mail) {
-
-            // Nouveaux projets
-            if ($mail['id_notif'] == 1) {
-                $array_mail_nouveaux_projects[$mail['id_client']][$mail['id_clients_gestion_mails_notif']] = $mail;
-            } // Offres placées
-            elseif ($mail['id_notif'] == 2) {
-                $array_offres_placees[$mail['id_client']][$mail['id_clients_gestion_mails_notif']] = $mail;
-            } // Offres refusées
-            elseif ($mail['id_notif'] == 3) {
-                $array_offres_refusees[$mail['id_client']][$mail['id_clients_gestion_mails_notif']] = $mail;
-            } // Offres accpectées
-            elseif ($mail['id_notif'] == 4) {
-                $array_offres_acceptees[$mail['id_client']][$mail['id_clients_gestion_mails_notif']] = $mail;
-            } // remb
-            elseif ($mail['id_notif'] == 5) {
-                $array_remb[$mail['id_client']][$mail['id_clients_gestion_mails_notif']] = $mail;
-            }
-        }
-
-        //// ON RECUPERE LES TABLEAUX ////
-        // On a regroupé les notifs nouveaux projet dans une table
-        if ($array_mail_nouveaux_projects != false) {
-            $this->nouveaux_projets_synthese($array_mail_nouveaux_projects, 'quotidienne');
-        }
-        // les offres passées
-        if ($array_offres_placees != false) {
-            $this->offres_placees_synthese($array_offres_placees, 'quotidienne');
-        }
-        // les offres refusées
-        if ($array_offres_refusees != false) {
-            $this->offres_refusees_synthese($array_offres_refusees, 'quotidienne');
-        }
-        // les offres acceptees
-        if ($array_offres_acceptees != false) {
-            $this->offres_acceptees_synthese($array_offres_acceptees, 'quotidienne');
-        }
-        // les remb
-        if ($array_remb != false) {
-            $this->remb_synthese($array_remb, 'quotidienne');
-        }
-
-        $timeFin = time();
-
-        $time = $timeFin - $timeDebut;
-
-        //echo 'Durée : '.$time.' secondes';
-
-        mail($this->sDestinatairesDebug, 'cron fin alertes_quotidiene prod', 'cron fin alertes_quotidiennee prod - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
-        die;
-    }
-
-    // chaque samedi matin à 9h00  (* 9-11 * * 6)
-    public function _alertes_hebdomadaire_old()
-    {
-        $timeDebut = time();
-
-        $clients = $this->loadData('clients');
-        $lenders_accounts = $this->loadData('lenders_accounts');
-        $clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
-        $clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $notifications = $this->loadData('notifications');
-        $projects = $this->loadData('projects');
-
-        // Nouveau projet
-        $dateDebutNewProject = mktime(9, 0, 0, date('m'), date('d'), date('Y'));
-        $dateFinNewProject = mktime(9, 30, 0, date('m'), date('d'), date('Y'));
-
-        // Offre Acceptee
-        $dateDebutOffreAcceptee = mktime(9, 30, 0, date('m'), date('d'), date('Y'));
-        $dateFinOffreAcceptee = mktime(10, 0, 0, date('m'), date('d'), date('Y'));
-
-        // Remboursement
-        $dateDebutRemboursement = mktime(10, 0, 0, date('m'), date('d'), date('Y'));
-        $dateFinRemboursement = mktime(10, 30, 0, date('m'), date('d'), date('Y'));
-
-
-        // Nouveau projet
-        if (time() >= $dateDebutNewProject && time() < $dateFinNewProject) {
-            $id_notif = 1;
-
-            //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
-
-            $lPreteurs = $clients->selectPreteursByStatusSlim(60);
-            //$lPreteurs = $clients->selectPreteursByStatusSlim(60,"c.id_client IN (2015,1,12)"); // mode test <------------------
-            //$lPreteurs = $clients->selectPreteursByStatus(60,"c.id_client IN (12)"); // mode test <------------------
-            // Liste des projets
-            $lProjects = $projects->selectProjectsByStatusSlim(50);
-
-            // on check tous les preteurs
-            foreach ($lPreteurs as $preteur) {
-
-
-                // on regarde les projets concernés
-                foreach ($lProjects as $projet) {
-
-
-                    // si existe pas on crée
-                    if (!$clients_gestion_mails_notif->get($projet['id_project'], 'id_client = ' . $preteur['id_client'] . ' AND id_project')) {
-
-                        $notifications->type = 8; // nouveau projet
-                        $notifications->id_lender = $preteur['id_lender'];
-                        $notifications->id_project = $projet['id_project'];
-                        $notifications->status = 1; // on le fait passé en deja lu car pas forcement du jour meme
-                        $notifications->id_notification = $notifications->create();
-
-                        //////// GESTION ALERTES //////////
-                        $clients_gestion_mails_notif->id_client = $preteur['id_client'];
-                        $clients_gestion_mails_notif->id_notif = 1; // type nouveau projet
-                        $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
-                        $clients_gestion_mails_notif->id_project = $projet['id_project'];
-                        $clients_gestion_mails_notif->date_notif = $projet['date_publication_full'];
-                        $clients_gestion_mails_notif->id_clients_gestion_mails_notif = $clients_gestion_mails_notif->create();
-
-                        //////// FIN GESTION ALERTES //////////
-                    }
-                }
-            }
-            ///////////////////////////////////////////////////////////////////////////////////////////////
-        } // Offre Acceptée
-        elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {
-            $id_notif = 4;
-        } // Remboursement
-        elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {
-            $id_notif = 5;
-        } else {
-            die;
-        }
-
-
-        // On recup les mails non envoyés aujourd'hui
-        $mails_notif = $clients_gestion_notifications->selectNotifs('hebdomadaire', $id_notif, 0, 250);
-
-        //echo '/////////// EMAILS NOTIF ////////////<br>';
-
-        $array_mail_nouveaux_projects = false;
-        $array_offres_placees = false;
-        $array_offres_refusees = false;
-        $array_offres_acceptees = false;
-        $array_remb = false;
-
-        foreach ($mails_notif as $mail) {
-            // Nouveau projet
-            if ($mail['id_notif'] == 1) {
-                $array_mail_nouveaux_projects[$mail['id_client']][$mail['id_clients_gestion_mails_notif']] = $mail;
-            } // Offres accpectées
-            elseif ($mail['id_notif'] == 4) {
-                $array_offres_acceptees[$mail['id_client']][$mail['id_clients_gestion_mails_notif']] = $mail;
-            } // remb
-            elseif ($mail['id_notif'] == 5) {
-                $array_remb[$mail['id_client']][$mail['id_clients_gestion_mails_notif']] = $mail;
-            }
-        }
-
-        //// ON RECUPERE LES TABLEAUX ////
-        // On a regroupé les notifs nouveaux projet dans une table
-        if ($array_mail_nouveaux_projects != false) {
-            $this->nouveaux_projets_synthese($array_mail_nouveaux_projects, 'hebdomadaire');
-        }
-        // les offres acceptees
-        if ($array_offres_acceptees != false) {
-            $this->offres_acceptees_synthese($array_offres_acceptees, 'hebdomadaire');
-        }
-        // les remb
-        if ($array_remb != false) {
-            $this->remb_synthese($array_remb, 'hebdomadaire');
-        }
-
-        $timeFin = time();
-
-        $time = $timeFin - $timeDebut;
-
-        echo 'Durée : ' . $time . ' secondes';
-
-        mail($this->sDestinatairesDebug, 'cron gestion_alertes_hebdomadaire', 'cron gestion_alertes_hebdomadaire - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
-        die;
-    }
-
-    // Cron le 1er de chaque mois à (* 10-12 1 * * )
-    public function _alertes_mensuelle_old()
-    {
-        // si on est le dernier jour du mois
-        $last_day_of_month = date('t');
-        //if(date('d') == $last_day_of_month || 5 == 5)
-
-        $clients = $this->loadData('clients');
-        $lenders_accounts = $this->loadData('lenders_accounts');
-        $clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
-        $clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $projects = $this->loadData('projects');
-
-
-        // Offre Acceptee
-        $dateDebutOffreAcceptee = mktime(10, 30, 0, date('m'), date('d'), date('Y'));
-        $dateFinOffreAcceptee = mktime(11, 0, 0, date('m'), date('d'), date('Y'));
-
-        // Remboursement
-        $dateDebutRemboursement = mktime(11, 0, 0, date('m'), date('d'), date('Y'));
-        $dateFinRemboursement = mktime(11, 30, 0, date('m'), date('d'), date('Y'));
-
-        // Offre Acceptée
-        if (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {
-            $id_notif = 4;
-        } // Remboursement
-        elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {
-            $id_notif = 5;
-        } else {
-            die;
-        }
-
-        // On recup les mails non envoyés aujourd'hui
-        $mails_notif = $clients_gestion_notifications->selectNotifs('mensuelle', $id_notif, 0, 250);
-
-        //echo '/////////// EMAILS NOTIF ////////////<br>';
-
-        $array_offres_acceptees = false;
-        $array_remb = false;
-
-        foreach ($mails_notif as $mail) {
-            // Offres accpectées
-            if ($mail['id_notif'] == 4) {
-                $array_offres_acceptees[$mail['id_client']][$mail['id_clients_gestion_mails_notif']] = $mail;
-            } // remb
-            elseif ($mail['id_notif'] == 5) {
-                $array_remb[$mail['id_client']][$mail['id_clients_gestion_mails_notif']] = $mail;
-            }
-        }
-
-        //// ON RECUPERE LES TABLEAUX ////
-        // les offres acceptees
-        if ($array_offres_acceptees != false) {
-            $this->offres_acceptees_synthese($array_offres_acceptees, 'mensuelle');
-        }
-        // les remb
-        if ($array_remb != false) {
-            $this->remb_synthese($array_remb, 'mensuelle');
-        }
-        mail($this->sDestinatairesDebug, 'cron gestion_alertes_mensuelle', 'cron gestion_alertes_mensuelle - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
+        $this->oLogger->addRecord('INFO',
+            'Cron : ' . __METHOD__ . ' Fin de la cron',
+            array($this->Config['env']));
         die;
     }
 
@@ -8011,8 +7506,10 @@ class cronController extends bootstrap
 
             $this->remb_synthese($array_remb, 'quotidienne');
         }
+        $this->oLogger->addRecord('INFO',
+            'Cron : ' . __METHOD__ . ' Fin de la cron',
+            array($this->Config['env']));
 
-        mail($this->sDestinatairesDebug, 'cron gestion_alertes_quotidiene prod', 'cron gestion_alertes_quotidiene - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
         die;
     }
 
@@ -8171,7 +7668,10 @@ class cronController extends bootstrap
         if ($array_remb != false) {
             $this->remb_synthese($array_remb, 'mensuelle');
         }
-        mail($this->sDestinatairesDebug, 'cron gestion_alertes_mensuelle', 'cron gestion_alertes_mensuelle - ' . date('Y-m-d H:i:e'), $this->sHeadersDebug);
+        $this->oLogger->addRecord('INFO',
+            'Cron : ' . __METHOD__ . ' Fin de la cron',
+            array($this->Config['env']));
+
         die;
     }
 
@@ -9350,7 +8850,9 @@ class cronController extends bootstrap
 
         //Recuperation des element de traductions
         $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
-        mail($this->sDestinatairesDebug, 'DEBUG CRON remb_synthese', serialize($array_remb) . ' --- ' . $type, $this->sHeadersDebug);
+        $this->oLogger->addRecord('INFO',
+            'Cron : ' . __METHOD__ . ' Debut de la cron',
+            array($this->Config['env']));
         // on regarde si on a bien quelque chose
         if ($array_remb != false) {
 
@@ -10099,8 +9601,6 @@ class cronController extends bootstrap
                     if ($type == 'quotidienne') {
                         $this->mails_text->get('synthese-quotidienne-offres-non-retenues', 'lang = "' . $this->language . '" AND type');
                     }
-                    //else
-                    //$this->mails_text->get('synthese-hebdomadaire-offres-non-retenues','lang = "'.$this->language.'" AND type');
 
                     $liste_offres = '';
                     $i = 1;
@@ -10889,9 +10389,10 @@ class cronController extends bootstrap
                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                             }
                         }
-                    }//End si notif ok
-                    else {
-                        mail($this->sDestinatairesDebug, 'DEBUG unilend 54564695', 'notif KO !', $this->sHeadersDebug);
+                    } else { //End si notif ok
+                        $this->oLogger->addRecord('INFO',
+                            'Cron : ' . __METHOD__ . ' Notifications Clients non immediate',
+                            array($this->Config['env']));
                     }
                     // fin mail pour preteur //
                     //////////////////// FIN EMAIL PRETEURS REMBOURSEMENTS /////////////////////////////
@@ -10946,26 +10447,16 @@ class cronController extends bootstrap
             $settingsDebutRembAuto->get('Heure de début de traitement des remboursements auto prêteurs', 'type');
             $paramDebut = $settingsDebutRembAuto->value;
 
-            // pour les testes
-            //$paramDebut = '11:00';
-
             $timeDebut = strtotime(date('Y-m-d') . ' ' . $paramDebut . ':00'); // on commence le traitement du cron a l'heure demandé
             $timeFin = mktime(0, 0, 0, date("m"), date("d") + 1, date("Y")); // on termine le cron a minuit
 
             // A l'heure de debut de traitement on lance une fonction check remb
             if (date('H:i') == $paramDebut) {
                 $this->check_remboursement_preteurs();
-            } // Traitement des remb toutes les 5mins
-            elseif ($timeDebut <= time() && $timeFin >= time()) {
+            } elseif ($timeDebut <= time() && $timeFin >= time()) { // Traitement des remb toutes les 5mins
 
                 // Une seule echeance emprunteur à la fois
                 $lProjetsAremb = $projects_remb->select('status = 0 AND LEFT(date_remb_preteurs,10) <= "' . date('Y-m-d') . '"', '', 0, 1);
-
-                /* echo '<pre>';
-                  print_r($lProjetsAremb);
-                  echo '</pre>'; */
-                //die;
-                // si remb auto preteur autorisé
                 if ($lProjetsAremb != false) {
                     foreach ($lProjetsAremb as $r) {
 
@@ -10994,11 +10485,6 @@ class cronController extends bootstrap
 
                         // On recup les echeanches non remboursé aux preteurs mais remb par l'emprunteur
                         $lEcheances = $echeanciers->selectEcheances_a_remb('id_project = ' . $r['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $r['ordre'] . ' AND status = 0');
-
-
-                        /* echo '<pre>';
-                          print_r($r['ordre']);
-                          echo '</pre>'; */
 
                         if ($lEcheances != false) {
                             $Total_rembNet = 0;
@@ -11050,22 +10536,8 @@ class cronController extends bootstrap
                                     $wallets_lines->type = 2; // transaction virtuelle
                                     $wallets_lines->amount = ($rembNet * 100);
                                     $wallets_lines->id_wallet_line = $wallets_lines->create();
-
-                                    // On enregistre la notification pour le preteur
-                                    //$notifications->type = 2; // remb
-                                    //$notifications->id_lender = $lenders->id_lender_account;
-                                    //$notifications->id_project = $r['id_project'];
-                                    //$notifications->amount = ($rembNet * 100);
-                                    //$notifications->create();
-
-                                    /////////////// FIN ENREGISTREMENT DU REMB PRETEUR ///////////////
-                                    // old
-                                    //////////////////// FIN EMAIL PRETEURS REMBOURSEMENTS /////////////////////////////
                                 } // fin check transasction existante
                             } // fin boucle echeances preteurs
-                        } // Fin condition lEcheances
-                        else {
-
                         }
 
                         // On regarde qu'on a bien de l'argent a mettre dans la transaction
@@ -11137,7 +10609,8 @@ class cronController extends bootstrap
                                 'mois' => strtolower($this->dates->tableauMois['fr'][date('n')]),
                                 'annee' => date('Y'),
                                 'lien_fb' => $lien_fb,
-                                'lien_tw' => $lien_tw
+                                'lien_tw' => $lien_tw,
+                                'montantRemb' => $Total_rembNet
                             );
 
                             // Construction du tableau avec les balises EMV
@@ -11146,14 +10619,10 @@ class cronController extends bootstrap
                             $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                             $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
                             // Envoi du mail
                             $this->email = $this->loadLib('email', array());
                             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                            if ($this->Config['env'] == 'prod') {
-                                //$this->email->addBCCRecipient('nicolas.lesur@unilend.fr');
-                                //$this->email->addBCCRecipient('d.nandji@equinoa.com');
-                                //$this->email->addBCCRecipient('k1@david.equinoa.net');
-                            }
                             $this->email->setSubject(stripslashes($sujetMail));
                             $this->email->setHTMLBody(stripslashes($texteMail));
 
@@ -11165,9 +10634,9 @@ class cronController extends bootstrap
                             } else // non nmp
                             {
                                 $this->email->addRecipient(trim($companies->email_facture));
-                                //Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                             }
-                            //////////////////////////////////////////////
+
                             // bank_unilend
                             $lesRembEmprun = $bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $r['id_project']);
                             // On parcourt les remb non reversé aux preteurs dans bank unilend et on met a jour le satut pour dire que c'est remb
@@ -11190,17 +10659,6 @@ class cronController extends bootstrap
                             $projects_remb_log->nb_pret_remb = $nb_pret_remb;
                             $projects_remb_log->update();
                         } // Fin check montant remb
-                        else {
-                            //$projects_remb->get($r['id_project_remb'], 'id_project_remb');
-                            //$projects_remb->status = 3; // pb car na pas trouvé d'echeance nom remb (deja remb)
-                            //$projects_remb->update();
-
-                            // on ajoute l'alerte pour cette erreur
-                            //$alerte_erreur_remb_auto = $this->loadData('alerte_erreur_remb_auto');
-                            //$alerte_erreur_remb_auto->id_projet = $r['id_project_remb'];
-                            //$alerte_erreur_remb_auto->liste_id_echeancier = implode(',',$tab_echeancier);
-                            //$alerte_erreur_remb_auto->create();
-                        }
                     } // Fin boucle lProjectsAremb
                 } // Fin condition lProjectsAremb
             } // Fin condition heure de traitement
@@ -11694,7 +11152,9 @@ class cronController extends bootstrap
         echo 'duree traitement : ' . $dureeS . ' secondes<br>';
         echo 'nb lignes effacées : ' . mysql_affected_rows();
 
-        mail($this->sDestinatairesDebug, 'clean_mails_filer', 'clean_mails_filer : duree traitement : ' . $dureeS . ' secondes, nb lignes effacées : ' . mysql_affected_rows(), $this->sHeadersDebug);
+        $this->oLogger->addRecord('INFO',
+            'Cron : ' . __METHOD__ . ' Duree : '.$dureeS. 'sec, nb lignes effacées : ' . mysql_affected_rows(),
+            array($this->Config['env']));
 
         die;
     }
