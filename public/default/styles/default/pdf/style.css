@@ -1,14 +1,3 @@
-@font-face {
-    font-family: 'TrendSansOne';
-    src: url('fonts/trendsans-one-webfont.eot');
-    src: url('fonts/trendsans-one-webfont.eot?#iefix') format('embedded-opentype'),
-         url('fonts/trendsans-one-webfont.woff') format('woff'),
-         url('fonts/trendsans-one-webfont.ttf') format('truetype'),
-         url('fonts/trendsans-one-webfont.svg#trend_sansone') format('svg');
-    font-weight: normal;
-    font-style: normal;
-}
-
 * { margin: 0; padding: 0; outline: 0; }
 
 body, html { height: 100%; }
@@ -27,20 +16,21 @@ a { color: #0252aa; text-decoration: none; cursor: pointer; }
 a:hover { text-decoration: underline; }
 a img { border: 0; }
 
-.cgu-wrapper { font-size:18px; line-height:1.43; font-family:'Arial', sans-serif; color:#727272; background:#fff; }
-.cgu-wrapper a { color:#b10366; text-decoration:none; cursor:pointer; }
+.cgu-wrapper { line-height:1.43; font-family:'Arial', 'Sans-Serif'; color:#727272; background:#fff; }
+.cgu-wrapper a { font-size:18px; color:#b10366; text-decoration:none; cursor:pointer; font-weight:bold;}
 .cgu-wrapper .main { padding-bottom:510px; }
 .cgu-wrapper h1 { padding: 0 0 20px 0; }
 .cgu-wrapper p, ul, ol { padding-bottom:1.43em; }
 .cgu-wrapper ul, ol { list-style-position:outside; padding-left:130px; color:#b10366; }
 .cgu-wrapper ul p , ol p { padding:0; color:#a1a5a7; }
-.cgu-wrapper h1, h2, h3, h4, h5, h6 { font-family:'TrendSansOne', sans-serif; color:#b10366; padding:0.4em 0 0.7em; font-weight:normal; letter-spacing:-0.12em; text-transform: uppercase;}
-.cgu-wrapper h1 { font-size:28px; }
+.cgu-wrapper h1 { font-size:36px; }
 .cgu-wrapper h2 { font-size:24px; }
 .cgu-wrapper h3 { font-size:22px; }
 .cgu-wrapper h4 { font-size:20px; }
 .cgu-wrapper h5 { font-size:18px; }
 .cgu-wrapper h6 { font-size:16px; }
+.cgu-wrapper .logo { padding: 0 0 20px 0; }
+.cgu-wrapper .logo { background:url(images/logo.png) no-repeat 0 0; width:252px; height:61px; text-indent:100%; }
 
 
 
@@ -58,12 +48,12 @@ textarea { overflow: auto; }
 .doc-wrapper .logo { background:url(images/logo.png) no-repeat 0 0; width:252px; height:61px; text-indent:100%; }
 
 
-.doc-wrapper h3 { padding: 0 0 20px 0; letter-spacing: 0px; color: #7f7f7f; font-size: 12px; line-height: 16px; text-transform: uppercase; }
+.doc-wrapper h3 { padding: 0 0 20px 0; letter-spacing: 0px; color: #7f7f7f; font-size: 12px; line-height: 16px;font-weight: bold; }
 .doc-wrapper h3.sm { text-transform: none; color: #b20066; }
 .doc-wrapper h3 .red-text { display: block; color: #ff0000; text-transform: none; font-weight: normal; }
 .doc-wrapper h3 .red-text-in { color: #ff0000; }
 .doc-wrapper h3.pink { color: #b20066; }
-.doc-wrapper h5 { padding: 0 6px; background: #c0c0c0; font-size: 11px; line-height: 17px; color: #000000; font-weight: normal; }
+.doc-wrapper h5 { padding: 0 6px; background: #c0c0c0; font-size: 11px; line-height: 17px; color: #000000; font-weight: bold;letter-spacing: 1.5px; }
 .doc-wrapper h5 .red-text { color: #ff0000; }
 .doc-wrapper p { padding: 0 0 18px 0; font-size: 13px; line-height: 17px; }
 
@@ -78,6 +68,7 @@ textarea { overflow: auto; }
 .doc-wrapper .list li a.btn-blue { background: #4600a5; }
 .doc-wrapper .list li .orange-text,
 .doc-wrapper .list li .red-text { color: #ff0000; }
+.doc-wrapper ol { color: #000000; }
 
 .doc-wrapper .total-row { position: relative; display: block; padding: 0 6px; background: #c0c0c0; font-size: 10px; line-height: 17px; color: #000000; font-weight: normal; text-align: right; margin: -15px 0 1px 0; }
 
@@ -115,13 +106,13 @@ textarea { overflow: auto; }
 .pdf-wrapper .logo { padding: 0 0 50px 0; }
 .pdf-wrapper .logo { background:url(images/logo.png) no-repeat 0 0; width:252px; height:61px; text-indent:100%; }
 
-.pdf-wrapper h2 { text-align: center; font-size: 14px; line-height: 18px; display: block; color: #000000; padding: 0 0 5px 0; font-family: 'TrendSansOne', arial, sans-serif; }
+.pdf-wrapper h2 { text-align: center; font-size: 14px; line-height: 18px; display: block; color: #000000; padding: 0 0 5px 0; font-family: 'Calibri', arial, sans-serif; }
 
 .pdf-wrapper .container { width: 716px; border: solid 1px #a1a5a7; margin: 0 auto; font-size: 13px; line-height: 16px; color: black; }
 .pdf-wrapper .container .case-1 { border-bottom: solid 1px #a1a5a7; }
 .pdf-wrapper .container .case-1 .col-1 { width: 162px; border-right: solid 1px #a1a5a7; }
 .pdf-wrapper .container .case-1 .col-2 { width: 434px; padding: 0 0 0 18px; border-right: solid 1px #a1a5a7; }
-.pdf-wrapper .container .case-1 .col-2 h4 { font-size: 11px; line-height: 16px; font-family: 'TrendSansOne', arial, sans-serif; padding-top: 2px; color: #b10366; }
+.pdf-wrapper .container .case-1 .col-2 h4 { font-size: 11px; line-height: 16px; font-family: 'Calibri', arial, sans-serif; padding-top: 2px; color: #b10366; }
 .pdf-wrapper .container .case-1 .col-2 .block-1 { display: block; width: 405px; height: 14px; background: url(images/box-bg.png) repeat-x 0 0; font-size: 10px; line-height: 14px; border-left: solid 1px #010101; margin: 3px 0; }
 .pdf-wrapper .container .case-1 .col-3 { width: 100px; text-align: center; font-size: 11px; line-height: 15px; }
 
@@ -166,6 +157,7 @@ textarea { overflow: auto; }
 .pdf-wrapper .case-5 { font-size: 11px; line-height: 14px; padding: 5px; color: #848484; }
 
 
-.page-break { page-break-after: always; }
+.pageBreakAfter { page-break-after: always; }
+.pageBreakBefore { page-break-before: always; }
 
 
