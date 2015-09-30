@@ -1,0 +1,10 @@
+{
+  "minimum-stability": "alpha",
+  "prefer-stable": true,
+  "require": {
+    "knplabs/knp-snappy": "0.4.*",
+    "monolog/monolog": "1.17.*",
+    "phpxmlrpc/phpxmlrpc": "^4.0@alpha",
+    "phpoffice/phpexcel": "1.8.*"
+  }
+}

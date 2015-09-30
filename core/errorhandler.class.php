@@ -28,21 +28,29 @@
 
 class ErrorHandler
 {
-	function __construct($file,$allow_display,$allow_log,$report)
-	{
-		//on verifie que le fichier existe, et on le cree sinon
-		if(!file_exists($file))
-		{
-			touch($file);
-			chmod($file, 0766);
-		}
-		
-		//on lance la machine
-		ini_set('display_errors', $allow_display); 
-		ini_set('log_errors', $allow_log);
-		ini_set('error_log', $file); 
-		error_reporting($report);
+    function __construct($file, $allow_display, $allow_log, $report)
+    {
+        $aDir = explode('/', $file);
+        $sDirLog = '';
+        for ($iCount = 0; $iCount < (count($aDir) - 1); $iCount++) {
+            $sDirLog .= $aDir[$iCount] . '/';
+        }
+        if (!is_dir($sDirLog)) {
+            mkdir($sDirLog, 0777, true);
+        }
+        //on verifie que le fichier existe, et on le cree sinon
+        if (!file_exists($file)) {
+            touch($file);
+            chmod($file, 0766);
+        }
 
-	}
+        //on lance la machine
+        ini_set('display_errors', $allow_display);
+        ini_set('log_errors', $allow_log);
+        ini_set('error_log', $file);
+        error_reporting($report);
+
+    }
 }
+
 ?>
