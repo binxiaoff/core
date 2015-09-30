@@ -4,26 +4,26 @@
 // **************************************************************************************************** //
 //
 // Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
-// associated documentation files (the "Software"), to deal in the Software without restriction, 
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+// associated documentation files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
 // subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies 
+// The above copyright notice and this permission notice shall be included in all copies
 // or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but 
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. 
-// In no event shall the authors or copyright holders equinoa be liable for any claim, 
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from, 
+// The Software is provided "as is", without warranty of any kind, express or implied, including but
+// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
+// In no event shall the authors or copyright holders equinoa be liable for any claim,
+// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
 // out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising 
-// or otherwise to promote the sale, use or other dealings in this Software without 
+// Except as contained in this notice, the name of equinoa shall not be used in advertising
+// or otherwise to promote the sale, use or other dealings in this Software without
 // prior written authorization from equinoa.
 //
 //  Version : 2.4.0
 //  Date : 21/03/2011
 //  Coupable : CM
-//                                                                                   
+//
 // **************************************************************************************************** //
 
 class tree extends tree_crud
@@ -107,10 +107,10 @@ class tree extends tree_crud
         if ($order != '')
             $order = ' ORDER BY ' . $order;
 
-        $sql = 'SELECT produits.*, produits_elements.value AS nom_produit 
-				FROM `produits` 
-				JOIN elements ON (elements.id_template > 0 AND elements.id_template = produits.id_template AND elements.ordre = 3) 
-				JOIN produits_elements ON (elements.id_element = produits_elements.id_element AND produits.id_produit = produits_elements.id_produit) 
+        $sql = 'SELECT produits.*, produits_elements.value AS nom_produit
+				FROM `produits`
+				JOIN elements ON (elements.id_template > 0 AND elements.id_template = produits.id_template AND elements.ordre = 3)
+				JOIN produits_elements ON (elements.id_element = produits_elements.id_element AND produits.id_produit = produits_elements.id_produit)
 				WHERE produits_elements.id_langue = "' . $langue . '" ' . $order;
 
         $res = $this->bdd->query($sql);
@@ -191,7 +191,7 @@ class tree extends tree_crud
                         echo '<option value="' . $tree['id_tree'] . '"' . ($this->params['tree_elements']->value == $tree['id_tree'] ? ' selected="selected"' : '') . '>' . $tree['title'] . '</option>';
                     }
                     echo '
-							</select>	
+							</select>
 						</th>
 					</tr>';
                     break;
@@ -220,7 +220,7 @@ class tree extends tree_crud
                         echo '<option value="' . $prod['id_produit'] . '"' . ($this->params['tree_elements']->value == $prod['id_produit'] ? ' selected="selected"' : '') . '>' . $prod['nom_produit'] . '</option>';
                     }
                     echo '
-							</select>	
+							</select>
 						</th>
 					</tr>';
                     break;
@@ -240,7 +240,7 @@ class tree extends tree_crud
                         echo '<option value="' . $tree['id_tree'] . '"' . (($this->params['tree_elements']->value == $tree['id_tree'] && $this->params['tree_elements']->complement == 'L') ? ' selected="selected"' : '') . '>' . $tree['title'] . '</option>';
                     }
                     echo '
-							</select>	
+							</select>
 							&nbsp;&nbsp;ou&nbsp;&nbsp;
 							<select name="P-' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" class="select">
 								<option value="">Lien vers un produit</option>';
@@ -269,7 +269,7 @@ class tree extends tree_crud
                     }
                     echo '
 							</select>
-							&nbsp;&nbsp;ou&nbsp;&nbsp;	
+							&nbsp;&nbsp;ou&nbsp;&nbsp;
 							<select name="P-' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" class="select">
 								<option value="">Lien vers un produit</option>';
                     foreach ($this->selectProducts($langue) as $prod) {
@@ -353,7 +353,7 @@ class tree extends tree_crud
 					<tr>
 						<th colspan="2" class="bas">
 							<input type="file" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" />
-							<input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['tree_elements']->value . '" />	
+							<input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['tree_elements']->value . '" />
 							&nbsp;&nbsp;<label for="nom_' . $element['slug'] . '_' . $langue . '">Nom du fichier :</label>
 							<input class="input_large" type="text" name="nom_' . $element['slug'] . '_' . $langue . '" id="nom_' . $element['slug'] . '_' . $langue . '" value="' . $this->params['tree_elements']->complement . '" />
 						</th>
@@ -362,8 +362,8 @@ class tree extends tree_crud
                     if ($this->params['tree_elements']->value != '') {
                         echo '
 							<th class="bas">
-								<label>Fichier actuel</label> : 
-								<a href="' . $this->params['surl'] . '/var/fichiers/' . $this->params['tree_elements']->value . '" target="blank">' . $this->params['surl'] . '/var/fichiers/' . $this->params['tree_elements']->value . '</a> 
+								<label>Fichier actuel</label> :
+								<a href="' . $this->params['surl'] . '/var/fichiers/' . $this->params['tree_elements']->value . '" target="blank">' . $this->params['surl'] . '/var/fichiers/' . $this->params['tree_elements']->value . '</a>
 								&nbsp;&nbsp;
 								<a onclick="if(confirm(\'Etes vous sur de vouloir supprimer ce fichier ?\')){deleteFichierElement(' . $this->params['tree_elements']->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
 									<img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer" />
@@ -387,7 +387,7 @@ class tree extends tree_crud
 					<tr>
 						<th class="bas">
 							<input type="file" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" />
-							<input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['tree_elements']->value . '" />	
+							<input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['tree_elements']->value . '" />
 							&nbsp;&nbsp;<label for="nom_' . $element['slug'] . '_' . $langue . '">Nom du fichier :</label>
 							<input class="input_large" type="text" name="nom_' . $element['slug'] . '_' . $langue . '" id="nom_' . $element['slug'] . '_' . $langue . '" value="' . $this->params['tree_elements']->complement . '" />
 						</th>
@@ -396,8 +396,8 @@ class tree extends tree_crud
                     if ($this->params['tree_elements']->value != '') {
                         echo '
 							<th class="bas">
-								<label>Fichier actuel</label> : 
-								<a href="' . $this->params['url'] . '/protected/templates/' . $this->params['tree_elements']->value . '" target="blank">' . $this->params['tree_elements']->value . '</a> 
+								<label>Fichier actuel</label> :
+								<a href="' . $this->params['url'] . '/protected/templates/' . $this->params['tree_elements']->value . '" target="blank">' . $this->params['tree_elements']->value . '</a>
 								&nbsp;&nbsp;
 								<a onclick="if(confirm(\'Etes vous sur de vouloir supprimer ce fichier ?\')){deleteFichierProtectedElement(' . $this->params['tree_elements']->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
 									<img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer" />
@@ -429,7 +429,7 @@ class tree extends tree_crud
                     echo '
 					<tr>
 						<th class="bas">
-							<label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . '</label> : 
+							<label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . '</label> :
 							<input type="checkbox" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" value="1"' . ($this->params['tree_elements']->value == 1 ? ' checked="checked"' : '') . ' />
 						</th>
 					</tr>';
@@ -511,7 +511,7 @@ class tree extends tree_crud
                         echo '<option value="' . $tree['id_tree'] . '"' . ($this->params['blocs_elements']->value == $tree['id_tree'] ? ' selected="selected"' : '') . '>' . $tree['title'] . '</option>';
                     }
                     echo '
-							</select>	
+							</select>
 						</th>
 					</tr>';
                     break;
@@ -540,7 +540,7 @@ class tree extends tree_crud
                         echo '<option value="' . $prod['id_produit'] . '"' . ($this->params['blocs_elements']->value == $prod['id_produit'] ? ' selected="selected"' : '') . '>' . $prod['nom_produit'] . '</option>';
                     }
                     echo '
-							</select>	
+							</select>
 						</th>
 					</tr>';
                     break;
@@ -560,7 +560,7 @@ class tree extends tree_crud
                         echo '<option value="' . $tree['id_tree'] . '"' . (($this->params['blocs_elements']->value == $tree['id_tree'] && $this->params['blocs_elements']->complement == 'L') ? ' selected="selected"' : '') . '>' . $tree['title'] . '</option>';
                     }
                     echo '
-							</select>	
+							</select>
 							&nbsp;&nbsp;ou&nbsp;&nbsp;
 							<select name="P-' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" class="select">
 								<option value="">Lien vers un produit</option>';
@@ -589,7 +589,7 @@ class tree extends tree_crud
                     }
                     echo '
 							</select>
-							&nbsp;&nbsp;ou&nbsp;&nbsp;	
+							&nbsp;&nbsp;ou&nbsp;&nbsp;
 							<select name="P-' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" class="select">
 								<option value="">Lien vers un produit</option>';
                     foreach ($this->selectProducts($langue) as $prod) {
@@ -613,7 +613,7 @@ class tree extends tree_crud
 					<tr>
 						<th class="bas">
 							<input type="file" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" />
-							<input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['blocs_elements']->value . '" />	
+							<input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['blocs_elements']->value . '" />
 							&nbsp;&nbsp;<label for="nom_' . $element['slug'] . '_' . $langue . '">Nom du fichier image :</label>
 							<input class="input_large" type="text" name="nom_' . $element['slug'] . '_' . $langue . '" id="nom_' . $element['slug'] . '_' . $langue . '" value="' . $this->params['blocs_elements']->complement . '" />
 						</th>
@@ -673,7 +673,7 @@ class tree extends tree_crud
 					<tr>
 						<th class="bas">
 							<input type="file" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" />
-							<input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['blocs_elements']->value . '" />	
+							<input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['blocs_elements']->value . '" />
 							&nbsp;&nbsp;<label for="nom_' . $element['slug'] . '_' . $langue . '">Nom du fichier :</label>
 							<input class="input_large" type="text" name="nom_' . $element['slug'] . '_' . $langue . '" id="nom_' . $element['slug'] . '_' . $langue . '" value="' . $this->params['blocs_elements']->complement . '" />
 						</th>
@@ -682,8 +682,8 @@ class tree extends tree_crud
                     if ($this->params['blocs_elements']->value != '') {
                         echo '
 							<th class="bas">
-								<label>Fichier actuel</label> : 
-								<a href="' . $this->params['surl'] . '/var/fichiers/' . $this->params['blocs_elements']->value . '" target="blank">' . $this->params['surl'] . '/var/fichiers/' . $this->params['blocs_elements']->value . '</a> 
+								<label>Fichier actuel</label> :
+								<a href="' . $this->params['surl'] . '/var/fichiers/' . $this->params['blocs_elements']->value . '" target="blank">' . $this->params['surl'] . '/var/fichiers/' . $this->params['blocs_elements']->value . '</a>
 								&nbsp;&nbsp;
 								<a onclick="if(confirm(\'Etes vous sur de vouloir supprimer ce fichier ?\')){deleteFichierElementBloc(' . $this->params['blocs_elements']->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
 									<img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer" />
@@ -707,7 +707,7 @@ class tree extends tree_crud
 					<tr>
 						<th class="bas">
 							<input type="file" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" />
-							<input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['blocs_elements']->value . '" />	
+							<input type="hidden" name="' . $element['slug'] . '_' . $langue . '-old" id="' . $element['slug'] . '_' . $langue . '-old" value="' . $this->params['blocs_elements']->value . '" />
 							&nbsp;&nbsp;<label for="nom_' . $element['slug'] . '_' . $langue . '">Nom du fichier :</label>
 							<input class="input_large" type="text" name="nom_' . $element['slug'] . '_' . $langue . '" id="nom_' . $element['slug'] . '_' . $langue . '" value="' . $this->params['blocs_elements']->complement . '" />
 						</th>
@@ -716,8 +716,8 @@ class tree extends tree_crud
                     if ($this->params['blocs_elements']->value != '') {
                         echo '
 							<th class="bas">
-								<label>Fichier actuel</label> : 
-								<a href="' . $this->params['url'] . '/protected/templates/' . $this->params['blocs_elements']->value . '" target="blank">' . $this->params['blocs_elements']->value . '</a> 
+								<label>Fichier actuel</label> :
+								<a href="' . $this->params['url'] . '/protected/templates/' . $this->params['blocs_elements']->value . '" target="blank">' . $this->params['blocs_elements']->value . '</a>
 								&nbsp;&nbsp;
 								<a onclick="if(confirm(\'Etes vous sur de vouloir supprimer ce fichier ?\')){deleteFichierProtectedElementBloc(' . $this->params['blocs_elements']->id . ',\'' . $element['slug'] . '_' . $langue . '\');return false;}">
 									<img src="' . $this->params['surl'] . '/images/admin/delete.png" alt="Supprimer" />
@@ -749,7 +749,7 @@ class tree extends tree_crud
                     echo '
 					<tr>
 						<th class="bas">
-							<label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . '</label> : 
+							<label for="' . $element['slug'] . '_' . $langue . '">' . $element['name'] . '</label> :
 							<input type="checkbox" name="' . $element['slug'] . '_' . $langue . '" id="' . $element['slug'] . '_' . $langue . '" value="1"' . ($this->params['blocs_elements']->value == 1 ? ' checked="checked"' : '') . ' />
 						</th>
 					</tr>';
@@ -1191,7 +1191,7 @@ class tree extends tree_crud
             } else {
                 $up = '<a href="' . $this->params['url'] . '/tree/up/' . $rub['id_tree'] . '" title="Up"><img src="' . $this->params['surl'] . '/images/admin/up.png" alt="Up" /></a>';
             }
-            // On recupere la derniere position pour voir si on affiche la fleche down			
+            // On recupere la derniere position pour voir si on affiche la fleche down
             if ($rub['ordre'] == $this->getLastPosition($rub['id_parent'], $type)) {
                 $down = '';
             } else {
@@ -1437,8 +1437,8 @@ class tree extends tree_crud
     // Récupération des menus de la navigation principale
     function getNavigation($id_parent, $langue = 'fr', $result = array())
     {
-        $sql = 'SELECT * FROM tree 
-				WHERE status = 1 AND status_menu = 1 AND id_langue = "' . $langue . '" AND id_parent = "' . $id_parent . '" 
+        $sql = 'SELECT * FROM tree
+				WHERE status = 1 AND status_menu = 1 AND id_langue = "' . $langue . '" AND id_parent = "' . $id_parent . '"
 				ORDER BY tree.ordre ASC';
 
         $resultat = $this->bdd->query($sql);
@@ -1454,12 +1454,12 @@ class tree extends tree_crud
     function getMenu($slug, $langue = 'fr', $lurl)
     {
         $sql = 'SELECT tm.*, m.id_menu, (IF(tm.complement="LX", (IF(tm.value LIKE "https://%", tm.value, IF(tm.value LIKE "http://%", tm.value, CONCAT("http://",tm.value)))), CONCAT("' . $lurl . '/",(SELECT slug FROM tree WHERE id_tree = tm.value AND id_langue= "' . $langue . '")))) as url
-			   FROM menus m 
-			   LEFT JOIN tree_menu tm ON m.id_menu = tm.id_menu 
-			   WHERE m.status = 1 
-			   AND tm.id_langue = "' . $langue . '" 
-			   AND m.slug = "' . $slug . '" 
-			   AND tm.status = 1  
+			   FROM menus m
+			   LEFT JOIN tree_menu tm ON m.id_menu = tm.id_menu
+			   WHERE m.status = 1
+			   AND tm.id_langue = "' . $langue . '"
+			   AND m.slug = "' . $slug . '"
+			   AND tm.status = 1
 			   ORDER BY tm.ordre ASC';
 
         $resultat = $this->bdd->query($sql);
@@ -1510,10 +1510,10 @@ class tree extends tree_crud
     // Récupération du parent avec template unlock
     function getFirstUnlock($id, $langue = 'fr')
     {
-        $sql = 'SELECT 
+        $sql = 'SELECT
 					t.id_tree AS id_tree,
-					t.id_parent AS id_parent, 
-					(SELECT tp.affichage FROM templates tp WHERE t.id_template = tp.id_template) AS affichage 
+					t.id_parent AS id_parent,
+					(SELECT tp.affichage FROM templates tp WHERE t.id_template = tp.id_template) AS affichage
 				FROM tree t WHERE t.id_langue = "' . $langue . '" AND t.id_tree = ' . $id;
         $result = $this->bdd->query($sql);
 
@@ -1528,7 +1528,7 @@ class tree extends tree_crud
         return $tmp;
     }
 
-    // Récupération du premier parent qu'on choisi 
+    // Récupération du premier parent qu'on choisi
     function getSelectedParent($id, $langue = 'fr', $id_parent = 1)
     {
         $sql = 'SELECT id_tree,id_parent FROM tree WHERE id_langue = "' . $langue . '" AND id_tree = ' . $id;
@@ -1729,17 +1729,17 @@ class tree extends tree_crud
     function listeProduits($id_langue = 'fr', $status = '1')
     {
         $sql = 'SELECT
-					p.id_produit AS id_produit, 
-					p.status AS status, 
-					(SELECT t.title FROM tree t JOIN produits_tree pt ON t.id_tree = pt.id_tree WHERE pt.id_produit = p.id_produit AND t.id_langue = "' . $id_langue . '" AND pt.ordre_tree = 1) AS categorie, 
-					(SELECT t.slug FROM tree t JOIN produits_tree pt ON t.id_tree = pt.id_tree WHERE pt.id_produit = p.id_produit AND t.id_langue = "' . $id_langue . '" AND pt.ordre_tree = 1) AS slug_categorie, 
-					(SELECT pi.fichier FROM produits_images pi WHERE pi.id_produit = p.id_produit AND pi.fichier != "" ORDER BY pi.ordre ASC LIMIT 1) AS image, 		
-					(SELECT pe.value FROM produits_elements pe JOIN elements e ON (e.id_element = pe.id_element AND e.ordre = 3) WHERE pe.id_produit = p.id_produit AND pe.id_langue = "' . $id_langue . '") AS nom, 
+					p.id_produit AS id_produit,
+					p.status AS status,
+					(SELECT t.title FROM tree t JOIN produits_tree pt ON t.id_tree = pt.id_tree WHERE pt.id_produit = p.id_produit AND t.id_langue = "' . $id_langue . '" AND pt.ordre_tree = 1) AS categorie,
+					(SELECT t.slug FROM tree t JOIN produits_tree pt ON t.id_tree = pt.id_tree WHERE pt.id_produit = p.id_produit AND t.id_langue = "' . $id_langue . '" AND pt.ordre_tree = 1) AS slug_categorie,
+					(SELECT pi.fichier FROM produits_images pi WHERE pi.id_produit = p.id_produit AND pi.fichier != "" ORDER BY pi.ordre ASC LIMIT 1) AS image,
+					(SELECT pe.value FROM produits_elements pe JOIN elements e ON (e.id_element = pe.id_element AND e.ordre = 3) WHERE pe.id_produit = p.id_produit AND pe.id_langue = "' . $id_langue . '") AS nom,
 					(SELECT pe.complement FROM produits_elements pe JOIN elements e ON (e.id_element = pe.id_element AND e.ordre = 3) WHERE pe.id_produit = p.id_produit AND pe.id_langue = "' . $id_langue . '") AS slug
-				FROM 
-					produits p 
-				WHERE 
-					p.status IN (' . $status . ') 
+				FROM
+					produits p
+				WHERE
+					p.status IN (' . $status . ')
 				';
 
         $resultat = $this->bdd->query($sql);
@@ -1806,19 +1806,19 @@ class tree extends tree_crud
     {
         $search = $this->bdd->escape_string($search);
 
-        $sql = 'SELECT t.slug as slug, 
+        $sql = 'SELECT t.slug as slug,
 				t.title as title ,
 				t.id_template as id_template ,
 				t.id_parent as id_parent,
 				te.value as value
-				FROM ((tree_elements te 
-				LEFT JOIN tree t ON t.id_tree = te.id_tree) 
-				LEFT JOIN elements e ON e.id_element  = te.id_element)   
-				WHERE t.status = 1 
-				AND t.id_langue = "' . $langue . '" 
-				AND lcase(te.value) LIKE "%' . strtolower($search) . '%" 
-				
-				
+				FROM ((tree_elements te
+				LEFT JOIN tree t ON t.id_tree = te.id_tree)
+				LEFT JOIN elements e ON e.id_element  = te.id_element)
+				WHERE t.status = 1
+				AND t.id_langue = "' . $langue . '"
+				AND lcase(te.value) LIKE "%' . strtolower($search) . '%"
+
+
 				AND t.id_tree NOT IN(16,130)';
         if ($filtre_recherche != '')
             $sql .= 'AND e.name IN (' . $filtre_recherche . ') ';
@@ -1827,7 +1827,7 @@ class tree extends tree_crud
 
         $resultat = $this->bdd->query($sql);
 
-        // OR t.title LIKE "%'.$search.'%" 
+        // OR t.title LIKE "%'.$search.'%"
         while ($record = $this->bdd->fetch_array($resultat)) {
             $replace = strip_tags($record['value']);
             $mystring = strtolower($replace);
@@ -1849,16 +1849,16 @@ class tree extends tree_crud
         }
 
         // les projets
-        $sql = 'SELECT 
-		p.slug as slug, 
+        $sql = 'SELECT
+		p.slug as slug,
 		p.title as title,
 		(SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status
 		FROM projects p
-		WHERE p.status = 0 
-		AND p.display = 0 
-		AND p.title LIKE "%' . $search . '%" 
+		WHERE p.status = 0
+		AND p.display = 0
+		AND p.title LIKE "%' . $search . '%"
 		HAVING status > 40
-		ORDER BY p.title ASC 
+		ORDER BY p.title ASC
 		';
 
         $resultatProjects = $this->bdd->query($sql);
@@ -1875,12 +1875,12 @@ class tree extends tree_crud
     // --- recherche ---
     function search_old($search, $filtre_recherche, $langue = 'fr')
     {
-        $sql = 'SELECT t.slug as slug, t.title as title 
-				FROM ((tree_elements te 
-				LEFT JOIN tree t ON t.id_tree = te.id_tree) 
-				LEFT JOIN elements e ON e.id_element  = te.id_element)   
-				WHERE t.status = 1 
-				AND t.id_langue = "' . $langue . '" 
+        $sql = 'SELECT t.slug as slug, t.title as title
+				FROM ((tree_elements te
+				LEFT JOIN tree t ON t.id_tree = te.id_tree)
+				LEFT JOIN elements e ON e.id_element  = te.id_element)
+				WHERE t.status = 1
+				AND t.id_langue = "' . $langue . '"
 				AND te.value LIKE "%' . $search . '%" ';
         if ($filtre_recherche != '')
             $sql .= 'AND e.name IN (' . $filtre_recherche . ') ';
@@ -1910,7 +1910,7 @@ class tree extends tree_crud
 				AND te.id_element = e.id_element
 				AND e.slug = "date-publication"
 				AND t.status = 0
-				AND t.id_parent = ' . $id_parent_dossier_presse . '				
+				AND t.id_parent = ' . $id_parent_dossier_presse . '
 				';
 
         $resultat = $this->bdd->query($sql);
@@ -1925,40 +1925,41 @@ class tree extends tree_crud
     function select_enfant_presse($id_parent_dossier_presse)
     {
         $sql = "SELECT  t.id_tree,
-                                        IFNULL((SELECT CAST(STR_TO_DATE(te.value, '%d/%c/%Y') as DATETIME)
+                                        (SELECT CAST(STR_TO_DATE(te.value, '%d/%c/%Y') as DATETIME)
                                             FROM elements e , tree_elements te
-                                            WHERE t.id_tree = te.id_tree 
+                                            WHERE t.id_tree = te.id_tree
                                             AND te.id_element = e.id_element
-                                            AND e.slug = 'datepublication'), t.added) as 'datepublication',
-                                            
-                                        (SELECT te.value 
+                                            AND e.slug = 'datepublication') as 'datepublication',
+
+                                        (SELECT te.value
                                             FROM elements e , tree_elements te
-                                            WHERE t.id_tree = te.id_tree 
+                                            WHERE t.id_tree = te.id_tree
                                             AND te.id_element = e.id_element
                                             AND e.slug = 'image') as 'image',
-                                            
-                                        (SELECT te.value 
+
+                                        (SELECT te.value
                                             FROM elements e , tree_elements te
-                                            WHERE t.id_tree = te.id_tree 
+                                            WHERE t.id_tree = te.id_tree
                                             AND te.id_element = e.id_element
                                             AND e.slug = 'call-to-action-27') as 'call-to-action-27',
-                                            
-                                        (SELECT te.value 
+
+                                        (SELECT te.value
                                             FROM elements e , tree_elements te
-                                            WHERE t.id_tree = te.id_tree 
+                                            WHERE t.id_tree = te.id_tree
                                             AND te.id_element = e.id_element
                                             AND e.slug = 'contenu-30') as 'contenu-30',
-                                            
-                                        (SELECT te.value 
+
+                                        (SELECT te.value
                                             FROM elements e , tree_elements te
-                                            WHERE t.id_tree = te.id_tree 
+                                            WHERE t.id_tree = te.id_tree
                                             AND te.id_element = e.id_element
                                             AND e.slug = 'redirection-28') as 'redirection-28'
-                                            
+
 				FROM tree t
 				WHERE t.status = 1
 				AND t.id_parent = " . $id_parent_dossier_presse . "
-                                ORDER BY datepublication DESC, t.added
+				HAVING `contenu-30` IS NOT NULL
+                ORDER BY datepublication DESC, t.added
 				";
 
         $resultat = $this->bdd->query($sql);
