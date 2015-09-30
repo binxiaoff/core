@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\librairies\ULogger;
+
 class cronController extends bootstrap
 {
     /**
@@ -13872,89 +13874,40 @@ class cronController extends bootstrap
     // copie données table -> enregistrement table backup -> suppression données table
     public function _stabilisation_mails()
     {
-        //die; // <------------------------------------
+        $this->oLogger      = new ULogger('Cron', $this->logPath, 'stabilisation_mails');
+        $this->autoFireView = false;
 
-        $debut = time();
+        $debut            = time();
+        $nbJOursEnMOins   = 30;
+        $limite           = 2000;
+        $dateMoinsNbJours = date('Y-m-d', mktime(0, 0, 0, date('m'), date('d') - $nbJOursEnMOins, date('Y')));
 
-        $mails_filer = $this->loadData('mails_filer');
-        $nmp         = $this->loadData('nmp');
+        // Start date is used as an identifier for current cron
+        $this->oLogger->addRecord('INFO', 'Start cron', array('ID' => $debut));
+        $this->oLogger->addRecord('INFO', 'Current date with an offset of ' . $nbJOursEnMOins . ' days: ' . $dateMoinsNbJours, array('ID' => $debut));
 
+        $this->bdd->query("
+            INSERT IGNORE INTO mails_filer_backup (`id_filermails`, `id_textemail`, `desabo`, `email_nmp`, `from`, `to`, `subject`, `content`, `headers`, `added`, `updated`)
+            SELECT m1.* FROM mails_filer m1 WHERE LEFT(m1.added, 10) <= '" . $dateMoinsNbJours . "' ORDER BY m1.added ASC LIMIT " . $limite
+        );
 
-        $mails_filer_backup = $this->loadData('mails_filer_backup');
-        $nmp_backup         = $this->loadData('nmp_backup');
+        $this->oLogger->addRecord('INFO', '`mails_filer` backuped lines: ' . mysql_affected_rows(), array('ID' => $debut));
 
+        $this->bdd->query('DELETE FROM `mails_filer` WHERE LEFT(added, 10) <= "' . $dateMoinsNbJours . '" ORDER BY added ASC LIMIT ' . $limite);
 
-        $date           = date('Y-m-d');
-        $nbJOursEnMOins = 60;
-        $limite         = 2000;
+        $this->oLogger->addRecord('INFO', '`mails_filer` deleted lines: ' . mysql_affected_rows(), array('ID' => $debut));
 
-        $time             = mktime(0, 0, 0, date('m'), date('d') - $nbJOursEnMOins, date('Y'));
-        $dateMoinsNbJours = date('Y-m-d', $time);
+        $this->bdd->query("
+            INSERT IGNORE INTO nmp_backup (`id_nmp`, `serialize_content`, `date`, `mailto`, `reponse`, `erreur`, `status`, `date_sent`, `added`, `updated`)
+            SELECT n1.* FROM nmp n1  WHERE LEFT(n1.added, 10) <= '" . $dateMoinsNbJours . "' ORDER BY n1.added ASC LIMIT " . $limite
+        );
 
-        $NBmails_filer_insert = 0;
-        $NBmails_filer_delete = 0;
-        $NBnmp_insert         = 0;
-        $NBnmp_delete         = 0;
+        $this->oLogger->addRecord('INFO', '`nmp` backuped lines: ' . mysql_affected_rows(), array('ID' => $debut));
 
-        echo 'date now : ' . $date . '<br>';
-        echo 'date moins ' . $nbJOursEnMOins . ' jours : ' . $dateMoinsNbJours . '<br>';
+        $this->bdd->query('DELETE FROM `nmp` WHERE LEFT(added, 10) <= "' . $dateMoinsNbJours . '" ORDER BY added ASC LIMIT ' . $limite);
 
-        $oldMails    = $mails_filer->select('LEFT(added,10) <= "' . $dateMoinsNbJours . '"', 'added ASC', 0, $limite);
-        $oldMailsNmp = $nmp->select('LEFT(added,10) <= "' . $dateMoinsNbJours . '"', 'added ASC', 0, $limite);
-
-        // Mails filer
-        if ($oldMails != false) {
-            foreach ($oldMails as $mail) {
-
-                // on verifie si on a pas deja ca dans la table
-                //if($mails_filer_backup->counter('id_filermails = '.$mail['id_filermails']) <= 0){
-                //echo 'ok - '.$mail['id_filermails'].'<br>';
-                // Enregistrment dans la table mails_filer_backup
-                $sql = "INSERT INTO mails_filer_backup (`id_filermails`, `id_textemail`, `desabo`, `email_nmp`, `from`, `to`, `subject`, `content`, `headers`, `added`, `updated`) SELECT m1.* FROM mails_filer m1 WHERE m1.id_filermails = " . $mail['id_filermails'] . " ON DUPLICATE KEY UPDATE id_filermails = m1.id_filermails";
-                $this->bdd->query($sql);
-                $NBmails_filer_insert += mysql_affected_rows();
-
-                // Suppression de la table mails_filer
-                $sql = 'DELETE FROM `mails_filer` WHERE id_filermails = ' . $mail['id_filermails'];
-                $this->bdd->query($sql);
-                $NBmails_filer_delete += mysql_affected_rows();
-                //}else{
-                //echo $mail['id_filermails'].'<br>';
-                //}
-            }
-        }
-
-        // NMP
-        if ($oldMailsNmp != false) {
-
-            foreach ($oldMailsNmp as $mailNmp) {
-                // on verifie si on a pas deja ca dans la table
-                //if($nmp_backup->counter('id_filermails = '.$mailNmp['id_filermails']) <= 0){
-                // Enregistrment dans la table nmp_backup
-                $sql = "INSERT INTO nmp_backup (`id_nmp`,`serialize_content`,`date`,`mailto`,`reponse`,`erreur`,`status`,`date_sent`,`added`,`updated`) SELECT n1.* FROM nmp n1  WHERE n1.id_nmp = " . $mailNmp['id_nmp'] . " ON DUPLICATE KEY UPDATE id_nmp = n1.id_nmp";
-                $this->bdd->query($sql);
-                $NBnmp_insert += mysql_affected_rows();
-
-                // Suppression de la table nmp
-                $sql = 'DELETE FROM `nmp` WHERE id_nmp = ' . $mailNmp['id_nmp'];
-                $this->bdd->query($sql);
-                $NBnmp_delete += mysql_affected_rows();
-                //}
-            }
-        }
-
-        $fin = time();
-
-        $duree = $fin - $debut;
-
-        echo '<br>duree traitement : ' . $duree . '<br><br>';
-        echo 'nb lignes mails_filer insert : ' . $NBmails_filer_insert . '<br>';
-        echo 'nb lignes mails_filer delete : ' . $NBmails_filer_delete . '<br>';
-        echo '<br>';
-        echo 'nb lignes nmp insert : ' . $NBnmp_insert . '<br>';
-        echo 'nb lignes nmp delete : ' . $NBnmp_delete . '<br>';
-
-        die;
+        $this->oLogger->addRecord('INFO', '`nmp` deleted lines: ' . mysql_affected_rows(), array('ID' => $debut));
+        $this->oLogger->addRecord('INFO', 'Stop cron', array('ID' => $debut));
     }
 
     // Lors que les offres acceptées évoluent après l'indexation, on à un soucis avec les offres acceptées qui n'ont pas de date d'opération. Cette fonction va donc chercher une date dans la table loan pour mettre à jour celle de l'indexation
@@ -13963,7 +13916,6 @@ class cronController extends bootstrap
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
         $this->loans                   = $this->loadData('loans');
         $this->transactions            = $this->loadData('transactions');
-
 
         $this->L_offres_acceptees_no_dated = $this->indexage_vos_operations->select('libelle_operation = "Offre acceptée" AND date_operation = "0000-00-00 00:00:00"', '', 0, 500);
 
@@ -13978,7 +13930,6 @@ class cronController extends bootstrap
                 $this->indexage_vos_operations_boucle = $this->loadData('indexage_vos_operations');
 
                 $this->indexage_vos_operations_boucle->get($offre['id'], 'id');
-
                 $this->indexage_vos_operations_boucle->date_operation = $this->loans->updated;
                 $this->indexage_vos_operations_boucle->solde          = $solde * 100;
                 $this->indexage_vos_operations_boucle->update();
