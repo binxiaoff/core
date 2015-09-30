@@ -14,6 +14,7 @@ apt-get install -y percona-server-server-5.5
 # install lftp for download database
 apt-get install -y lftp
 
+lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/fixture /vagrant/fixture; bye' -u vagrantftp,X9d\@\$nsa -p 21 synology.corp.unilend.fr
 lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/database /vagrant/database; bye' -u vagrantftp,X9d\@\$nsa -p 21 synology.corp.unilend.fr
 
 if [ -f /vagrant/database/schemas.sql ];
