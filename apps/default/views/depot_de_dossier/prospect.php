@@ -1,9 +1,8 @@
-<style type="text/css">
-    .uploader input.field { width: 280px;}
-</style>
+<?=$this->fireView('../blocs/depot-de-dossier')?>
 
-<div class="main">
-    <div class="shell">
+
+<!--<div class="main">-->
+<!--    <div class="shell">-->
 
         <p><?=$this->lng['depot-de-dossier']['prospect-720j']?></p>
 
@@ -146,7 +145,6 @@
                     <!-- /.about-sections -->
 
                     <!--	coordonnées du gérant-->
-                    <div class="row">
                         <div class="row">
                             <div class="form-choose fixed radio_sex_representative">
                                 <span class="title"><?= $this->lng['etape2']['civilite'] ?></span>
@@ -225,8 +223,8 @@
 
                         <div class="form-foot row row-cols centered">
                             <input type="hidden" name="send_form_coordonnees"/>
-                            <button class="btn" style="height: 70px; line-height: 1.2em;"
-                                    type="submit"><?= $this->lng['etape2']['deposer-son-dossier'] ?></button>
+                            <button class="btn"
+                                    type="submit"><?= $this->lng['depot-de-dossier']['valider'] ?></button>
                         </div>
                         <!-- /.form-foot foot-cols -->
                 </form>
