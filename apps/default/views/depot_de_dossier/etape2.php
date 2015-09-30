@@ -7,20 +7,6 @@
             printf($this->lng['etape2']['contenu'], $this->projects->amount, $this->iDuree);
             ?>
         </p>
-
-        <?
-        if (isset($this->params[0]) && $this->params[0] == 'nok') {
-            echo $this->lng['etape1']['contenu-non-eligible'];
-        } elseif (isset($_SESSION['error_pre_empr'])) {
-            echo $_SESSION['error_pre_empr'];
-            unset($_SESSION['error_pre_empr']);
-        } else {
-
-            if ($this->error_email_representative_exist == true || $this->error_email_exist == true) {
-                ?><p style="color:#c84747;text-align:center;"><?= $this->lng['etape2']['erreur-email'] ?></p><?
-            }
-            ?>
-
             <div class="register-form">
                 <form action="" method="post" id="form_depot_dossier" name="form_depot_dossier"
                       enctype="multipart/form-data">
@@ -146,7 +132,6 @@
                     <!-- /.about-sections -->
 
                     <!--	coordonnées du gérant-->
-                    <div class="row">
                         <div class="row">
                             <div class="form-choose fixed radio_sex_representative">
                                 <span class="title"><?= $this->lng['etape2']['civilite'] ?></span>
@@ -222,24 +207,25 @@
                         </div>
                         <!-- /.row -->
 
-                        <?
+                        <?php
 
                         if ((isset($this->params[1]) && $this->params[1] == '1080')) {
+
 
                             ?>
                             <div class="row">
                                 <div class="form-choose radio_comptables">
-                                    <span class="title"><?= $this->lng['etape1']['exercices-comptables'] ?></span>
+                                    <span class="title"><?= $this->lng['etape2']['exercices-comptables'] ?></span>
 
                                     <div class="radio-holder">
-                                        <label for="comptables-oui"><?= $this->lng['etape1']['oui'] ?></label>
+                                        <label for="comptables-oui"><?= $this->lng['etape2']['oui'] ?></label>
                                         <input type="radio" class="custom-input" name="comptables" id="comptables-oui"
                                                value="1">
                                     </div>
                                     <!-- /.radio-holder -->
 
                                     <div class="radio-holder">
-                                        <label for="comptables-non"><?= $this->lng['etape1']['non'] ?></label>
+                                        <label for="comptables-non"><?= $this->lng['etape2']['non'] ?></label>
                                         <input type="radio" class="custom-input" name="comptables" id="comptables-non"
                                                value="0">
                                     </div>
@@ -249,7 +235,7 @@
                                 <!-- /.form-choose -->
                                 <input type="hidden" name="trois_bilans" />
                             </div><!-- /.row -->
-                        <?
+                        <?php
                         } ?>
 
                         <div class="row">
@@ -298,9 +284,7 @@
                         <!-- /.form-foot foot-cols -->
                 </form>
             </div><!-- /.register-form -->
-            <?
-        }
-        ?>
+
     </div>
     <!-- /.shell -->
 </div>
