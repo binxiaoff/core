@@ -782,8 +782,8 @@ class dossiersController extends bootstrap
                             $mess .= '</ul>';
 
                             if (strlen($mess) > 9) {
-                                $to = 'unilend@equinoa.fr' . ', ';
-                                $to .= ($this->Config['env'] == 'prod') ? ', nicolas.lesur@unilend.fr' : '';
+                                $to      = implode(',', $this->Config['DebugAlertesBusiness']);
+                                $to     .= ($this->Config['env'] == 'prod') ? ', nicolas.lesur@unilend.fr' : '';
                                 $subject = '[Rappel] Donnees projet manquantes';
                                 $message = '
                                 <html>

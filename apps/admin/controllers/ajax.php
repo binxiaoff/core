@@ -500,24 +500,10 @@ class ajaxController extends bootstrap
 						
 						if(strlen($mess) > 9)
 						{
-							//mail('courtier.damien@gmail.com','test alert mail info manquantes','test alert mail info manquantes projet : '.$this->projects->id_project);
-                                                        if($this->Config['env'] == 'prod') // nmp
-                                                        {
-                                                                $to  = 'unilend@equinoa.fr , nicolas.lesur@unilend.fr';
-                                                        }
-                                                        else // non nmp
-                                                        {
-                                                                $to  = 'unilend@equinoa.fr';
-                                                        }
-                                                    
-                                                    
-							$to  = 'unilend@equinoa.fr , nicolas.lesur@unilend.fr';
-							//$to  = 'courtier.damien@gmail.com , d.courtier@equinoa.com';
-							
-						
+							$to  = implode(',', $this->Config['DebugAlertesBusiness']);
+							$to .= ($this->Config['env'] == 'prod') ? ', nicolas.lesur@unilend.fr' : '';
 							// subject
 							$subject = '[Rappel] Donnees projet manquantes';
-							
 							// message
 							$message = '
 							<html>
