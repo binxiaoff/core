@@ -99,7 +99,7 @@ class upload
     // **************************************************************** //
     private function clean_name($name_file)
     {
-        $name_file = strtr($name_file, '����������������������������������������������������', 'AAAAAACEEEEIIIIOOOOOUUUUYaaaaaaceeeeiiiioooooouuuuyy');
+        $name_file = strtr($name_file, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyyNn');
         return strtolower(preg_replace('/([^.a-z0-9]+)/i', '-', $name_file));
     }
 
