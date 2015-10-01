@@ -9,7 +9,6 @@ Autoloader::register();
  * @object $oBootstrap Instance of Boostrap for log cron calls and set configuration
  */
 $oBootstrap = \Unilend\core\Bootstrap::getInstance($config);
-$oBootstrap->setConfig($config);
 
 /**
  * @object $oCron for manage parameters required and optional

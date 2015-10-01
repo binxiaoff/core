@@ -2,11 +2,10 @@
 
 namespace Unilend\core;
 
-use Psr\Log\LoggerInterface;
 use Unilend\librairies\ULogger;
-use Unilend\core\Cron;
 
 require_once __DIR__ . '/bdd.class.php';
+require_once 'errorhandler.class.php';
 
 class Bootstrap
 {
@@ -30,11 +29,17 @@ class Bootstrap
      */
     public static $aConfig;
 
-    public static function getInstance()
+    /**
+     * @param array $aConfig
+     * @return Bootstrap
+     */
+    public static function getInstance($aConfig)
     {
         if (true === is_null(self::$oInstance)) {
             self::$oInstance = new Bootstrap();
             self::$oInstance->setAssert();
+            self::$oInstance->setConfig($aConfig);
+            self::$oInstance->ErrorHandler();
         }
 
         return self::$oInstance;
@@ -109,7 +114,17 @@ class Bootstrap
     {
         $this->setLogger('ErrorAssertion', 'assert.log');
         $aErrorDetails = explode('//', $sError);
-        $this->oUlogger->addRecord('error','Wrong Assertion in ' . $sFunction . ' at line ' . $sLine . '. ' . $aErrorDetails[1],
+        $this->oUlogger->addRecord('error', 'Wrong Assertion in ' . $sFunction . ' at line ' . $sLine . '. ' . $aErrorDetails[1],
             array(__FILE__ . ' at ' . __LINE__));
+    }
+
+    private static function ErrorHandler()
+    {
+        new \ErrorHandler(self::$aConfig['error_handler'][self::$aConfig['env']]['file'],
+            0,
+            self::$aConfig['error_handler'][self::$aConfig['env']]['allow_log'],
+            self::$aConfig['error_handler'][self::$aConfig['env']]['report']);
+
+        return true;
     }
 }
