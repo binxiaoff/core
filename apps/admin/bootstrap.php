@@ -19,6 +19,7 @@ class bootstrap extends Controller
         $this->ln             = $this->loadData('textes');
         $this->settings       = $this->loadData('settings');
         $this->tree_elements  = $this->loadData('tree_elements');
+        $this->blocs          = $this->loadData('blocs');
         $this->blocs_elements = $this->loadData('blocs_elements');
         $this->elements       = $this->loadData('elements');
         $this->tree           = $this->loadData('tree', array('url' => $this->lurl, 'front' => $this->Config['url'][$this->Config['env']]['default'], 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath, 'path' => $this->path));
@@ -64,7 +65,7 @@ class bootstrap extends Controller
             }
         }
 
-        if (! empty($_POST['connect']) && ! empty($_POST['password'])) {
+        if (!empty($_POST['connect']) && !empty($_POST['password'])) {
             if (isset($_POST['captcha']) && $content_captcha == 'ko') {
                 $_SESSION['login_user']['displayCaptchaError'] = $this->displayCaptchaError;
             } else {
@@ -189,7 +190,7 @@ class bootstrap extends Controller
         $array           = array_keys($this->Config['multilanguage']['allowed_languages']);
         $this->dLanguage = $array[0];
 
-        if (isset($_SESSION['user']) && ! empty($_SESSION['user']['id_user'])) {
+        if (isset($_SESSION['user']) && !empty($_SESSION['user']['id_user'])) {
             $this->sessionIdUser = $_SESSION['user']['id_user'];
             $this->lZonesHeader  = $this->users_zones->selectZonesUser($_SESSION['user']['id_user']);
         }
@@ -205,7 +206,7 @@ class bootstrap extends Controller
             && $this->current_function != 'logout'
             && $this->current_controller != 'thickbox'
             && $this->current_controller != 'ajax'
-            && ! empty($_SESSION['user']['id_user'])
+            && !empty($_SESSION['user']['id_user'])
         ) {
             $ilya3mois             = mktime(0, 0, 0, date('m') - 3, date('d'), date('Y'));
             $tab_date_pass         = explode(' ', $_SESSION['user']['password_edited']);
