@@ -33,8 +33,7 @@ class cronController extends bootstrap
     {
         parent::__construct($command, $config, 'default');
 
-        // Inclusion controller pdf
-        include($this->path . '/apps/default/controllers/pdf.php');
+        include_once $this->path . '/apps/default/controllers/pdf.php';
 
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
@@ -9096,8 +9095,6 @@ class cronController extends bootstrap
         $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
         $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-        //echo $texteMail;
-
         // Envoi du mail
         $this->email = $this->loadLib('email', array());
         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
@@ -9105,11 +9102,6 @@ class cronController extends bootstrap
         $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
         $this->email->setHTMLBody($texteMail);
         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-        // fin mail
-
-        /* echo '<pre>';
-          print_r($liste);
-          echo '</pre>'; */
     }
 
     // Cron une fois par jour a 19h30 (* 18-20 * * *)
@@ -9118,7 +9110,6 @@ class cronController extends bootstrap
         ini_set('max_execution_time', 3600); // hotbug 07/09/2015
         ini_set('memory_limit', '4096M'); // hotbug 07/09/2015
 
-        //mail('d.courtier@relance.fr', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee - ' . date('Y-m-d H:i:e'));
         // On recup le param
         $settingsControleQuotidiennne = $this->loadData('settings');
         $settingsControleQuotidiennne->get('Controle notification quotidienne', 'type');
@@ -9224,18 +9215,8 @@ class cronController extends bootstrap
                 die;
             }
 
-            // On recup les mails non envoyés aujourd'hui
-            //$mails_notif = $clients_gestion_notifications->selectNotifs('quotidienne',$id_notif,0,50);
             // On recupere les clients qui ont des notifs a recevoir
             $list_id_client = $clients_gestion_notifications->selectIdclientNotifs('quotidienne', $id_notif, 0, 50);
-
-
-            //echo '/////////// EMAILS NOTIF ////////////<br>';
-
-            /* echo '<pre>';
-              print_r($list_id_client);
-              echo '</pre>';
-              die; */
 
             $array_mail_nouveaux_projects = false;
             $array_offres_placees         = false;
@@ -9266,11 +9247,6 @@ class cronController extends bootstrap
                     }
                 }
             }
-
-            /* 		echo '<pre>';
-              print_r($array_offres_placees);
-              echo '</pre>';
-              die; */
 
             //// ON RECUPERE LES TABLEAUX ////
             // On a regroupé les notifs nouveaux projet dans une table
@@ -10292,15 +10268,14 @@ class cronController extends bootstrap
     // $type = quotidienne,hebdomadaire,mensuelle
     public function nouveaux_projets_synthese($array_mail_nouveaux_projects, $type)
     {
-
-        $this->clients       = $this->loadData('clients');
-        $this->notifications = $this->loadData('notifications');
-        $this->projects      = $this->loadData('projects');
-        $this->companies     = $this->loadData('companies');
-
+        $this->clients                       = $this->loadData('clients');
+        $this->notifications                 = $this->loadData('notifications');
+        $this->projects                      = $this->loadData('projects');
+        $this->companies                     = $this->loadData('companies');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
 
+        $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
 
         // on regarde si on a bien quelque chose
         if ($array_mail_nouveaux_projects != false) {
@@ -10399,16 +10374,24 @@ class cronController extends bootstrap
                             if ($nb_arrayoffres <= 1) {
                                 if ($type == 'quotidienne') {
                                     $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                                    $sujet                     = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
                                     $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
+                                    $objet                     = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
                                 } elseif ($type == 'hebdomadaire') {
                                     $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                                    $sujet                     = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
                                     $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
+                                    $objet                     = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
                                 }
                             } else {
                                 if ($type == 'quotidienne') {
+                                    $sujet     = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
+                                    $objet     = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
                                 } elseif ($type == 'hebdomadaire') {
+                                    $sujet     = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
+                                    $objet     = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
                                 }
                             }
 
@@ -10422,7 +10405,9 @@ class cronController extends bootstrap
                                 'projet-p'        => $this->lurl . '/projets-a-financer',
                                 'motif_virement'  => $motif,
                                 'gestion_alertes' => $this->lurl . '/profile',
+                                'objet'           => $objet,
                                 'contenu'         => $lecontenu,
+                                'sujet'           => $sujet,
                                 'lien_fb'         => $lien_fb,
                                 'lien_tw'         => $lien_tw
                             );
@@ -10562,14 +10547,15 @@ class cronController extends bootstrap
 
     public function offres_placees_synthese($array_offres_placees, $type)
     {
-        $this->clients       = $this->loadData('clients');
-        $this->notifications = $this->loadData('notifications');
-        $this->projects      = $this->loadData('projects');
-        $this->companies     = $this->loadData('companies');
-        $this->bids          = $this->loadData('bids');
-
+        $this->clients                       = $this->loadData('clients');
+        $this->notifications                 = $this->loadData('notifications');
+        $this->projects                      = $this->loadData('projects');
+        $this->companies                     = $this->loadData('companies');
+        $this->bids                          = $this->loadData('bids');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+
+        $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
 
         // on regarde si on a bien quelque chose
         if ($array_offres_placees != false) {
@@ -10675,22 +10661,23 @@ class cronController extends bootstrap
                             if ($type == 'quotidienne') {
                                 $this->mails_text->get('vos-offres-du-jour', 'lang = "' . $this->language . '" AND type');
                             }
-                            //else
-                            //$this->mails_text->get('vos-offres-de-la-semaine','lang = "'.$this->language.'" AND type');
-
 
                             // on gère ici le cas du singulier/pluriel
                             // contenu
                             $lecontenu = '';
                             // on gère ici le cas du singulier/pluriel
-                            if ($nb_arrayRemb <= 1) {
+                            if ($nb_arrayoffres <= 1) {
                                 if ($type == 'quotidienne') {
+                                    $sujet                     = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
                                     $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
                                     $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-singulier'];
+                                    $objet                     = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-singulier'];
                                 }
                             } else {
                                 if ($type == 'quotidienne') {
+                                    $sujet     = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-pluriel'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-pluriel'];
+                                    $objet     = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-pluriel'];
                                 }
                             }
 
@@ -10703,7 +10690,9 @@ class cronController extends bootstrap
                                 'liste_offres'    => $liste_offres,
                                 'motif_virement'  => $motif,
                                 'gestion_alertes' => $this->lurl . '/profile',
+                                'objet'           => $objet,
                                 'contenu'         => $lecontenu,
+                                'sujet'           => $sujet,
                                 'lien_fb'         => $lien_fb,
                                 'lien_tw'         => $lien_tw
                             );
@@ -10855,14 +10844,15 @@ class cronController extends bootstrap
     // offres refusées
     public function offres_refusees_synthese($array_offres_refusees, $type)
     {
-        $this->clients       = $this->loadData('clients');
-        $this->notifications = $this->loadData('notifications');
-        $this->projects      = $this->loadData('projects');
-        $this->companies     = $this->loadData('companies');
-        $this->bids          = $this->loadData('bids');
-
+        $this->clients                       = $this->loadData('clients');
+        $this->notifications                 = $this->loadData('notifications');
+        $this->projects                      = $this->loadData('projects');
+        $this->companies                     = $this->loadData('companies');
+        $this->bids                          = $this->loadData('bids');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+
+        $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
 
         // on regarde si on a bien quelque chose
         if ($array_offres_refusees != false) {
@@ -10969,12 +10959,16 @@ class cronController extends bootstrap
                     // on gère ici le cas du singulier/pluriel
                     if ($nb_arrayoffres <= 1) {
                         if ($type == 'quotidienne') {
+                            $sujet                     = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
                             $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
                             $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-singulier'];
+                            $objet                     = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-singulier'];
                         }
                     } else {
                         if ($type == 'quotidienne') {
+                            $sujet     = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-pluriel'];
                             $lecontenu = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-pluriel'];
+                            $objet     = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-pluriel'];
                         }
                     }
 
@@ -10988,6 +10982,8 @@ class cronController extends bootstrap
                         'motif_virement'  => $motif,
                         'gestion_alertes' => $this->lurl . '/profile',
                         'contenu'         => $lecontenu,
+                        'objet'           => $objet,
+                        'sujet'           => $sujet,
                         'lien_fb'         => $lien_fb,
                         'lien_tw'         => $lien_tw
                     );
@@ -11043,15 +11039,16 @@ class cronController extends bootstrap
     // offres acceptées
     public function offres_acceptees_synthese($array_offres_acceptees, $type)
     {
-        $this->clients       = $this->loadData('clients');
-        $this->notifications = $this->loadData('notifications');
-        $this->projects      = $this->loadData('projects');
-        $this->companies     = $this->loadData('companies');
-        $this->loans         = $this->loadData('loans');
-        $echeanciers         = $this->loadData('echeanciers');
-
+        $this->clients                       = $this->loadData('clients');
+        $this->notifications                 = $this->loadData('notifications');
+        $this->projects                      = $this->loadData('projects');
+        $this->companies                     = $this->loadData('companies');
+        $this->loans                         = $this->loadData('loans');
+        $echeanciers                         = $this->loadData('echeanciers');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+
+        $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
 
         // on regarde si on a bien quelque chose
         if ($array_offres_acceptees != false) {
@@ -11168,21 +11165,33 @@ class cronController extends bootstrap
                             if ($nb_arrayoffres <= 1) {
                                 if ($type == 'quotidienne') {
                                     $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
+                                    $sujet                     = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
                                     $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-singulier'];
+                                    $objet                     = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-singulier'];
                                 } elseif ($type == 'hebdomadaire') {
                                     $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
+                                    $sujet                     = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
                                     $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-singulier'];
+                                    $objet                     = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-singulier'];
                                 } elseif ($type == 'mensuelle') {
                                     $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
+                                    $sujet                     = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
                                     $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-singulier'];
+                                    $objet                     = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-singulier'];
                                 }
                             } else {
                                 if ($type == 'quotidienne') {
+                                    $sujet     = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-pluriel'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-pluriel'];
+                                    $objet     = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-pluriel'];
                                 } elseif ($type == 'hebdomadaire') {
+                                    $sujet     = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-pluriel'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-pluriel'];
+                                    $objet     = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-pluriel'];
                                 } elseif ($type == 'mensuelle') {
+                                    $sujet     = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-pluriel'];
                                     $lecontenu = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-pluriel'];
+                                    $objet     = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-pluriel'];
                                 }
                             }
 
@@ -11194,6 +11203,9 @@ class cronController extends bootstrap
                                 'prenom_p'        => $this->clients->prenom,
                                 'liste_offres'    => $liste_offres,
                                 'motif_virement'  => $motif,
+                                'contenu'         => $lecontenu,
+                                'objet'           => $objet,
+                                'sujet'           => $sujet,
                                 'gestion_alertes' => $this->lurl . '/profile',
                                 'lien_fb'         => $lien_fb,
                                 'lien_tw'         => $lien_tw
@@ -11316,7 +11328,7 @@ class cronController extends bootstrap
                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                                 } else // non nmp
                                 {
-                                    $this->email->addRecipient(trim($preteur->email));
+                                    $this->email->addRecipient(trim($this->clients->email));
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 }
                             }
@@ -11347,20 +11359,17 @@ class cronController extends bootstrap
     // remb
     public function remb_synthese($array_remb, $type)
     {
-
-        $this->clients       = $this->loadData('clients');
-        $this->notifications = $this->loadData('notifications');
-        $this->projects      = $this->loadData('projects');
-        $this->companies     = $this->loadData('companies');
-        $this->echeanciers   = $this->loadData('echeanciers');
-        $this->loans         = $this->loadData('loans');
-
+        $this->clients                       = $this->loadData('clients');
+        $this->notifications                 = $this->loadData('notifications');
+        $this->projects                      = $this->loadData('projects');
+        $this->companies                     = $this->loadData('companies');
+        $this->echeanciers                   = $this->loadData('echeanciers');
+        $this->loans                         = $this->loadData('loans');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
 
-        //Recuperation des element de traductions
         $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
-        mail($this->sDestinatairesDebug, 'DEBUG CRON remb_synthese', serialize($array_remb) . ' --- ' . $type, $this->sHeadersDebug);
+
         // on regarde si on a bien quelque chose
         if ($array_remb != false) {
 
@@ -11539,20 +11548,26 @@ class cronController extends bootstrap
                     if ($nb_arrayRemb <= 1) {
                         if ($type == 'quotidienne') {
                             $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
+                            $sujet                     = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
                             $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
                         } elseif ($type == 'hebdomadaire') {
                             $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
-                            $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
+                            $sujet                     = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
+                            $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-singulier'];
                         } elseif ($type == 'mensuelle') {
                             $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
-                            $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
+                            $sujet                     = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
+                            $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-mensuelle-singulier'];
                         }
                     } else {
                         if ($type == 'quotidienne') {
+                            $sujet     = $this->lng['email-synthese']['sujet-synthese-quotidienne-pluriel'];
                             $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-pluriel'];
                         } elseif ($type == 'hebdomadaire') {
+                            $sujet     = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-pluriel'];
                             $lecontenu = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-pluriel'];
                         } elseif ($type == 'mensuelle') {
+                            $sujet     = $this->lng['email-synthese']['sujet-synthese-mensuelle-pluriel'];
                             $lecontenu = $this->lng['email-synthese']['contenu-synthese-mensuelle-pluriel'];
                         }
                     }
@@ -11568,6 +11583,7 @@ class cronController extends bootstrap
                         'montant_dispo'          => number_format($getsolde, 2, ',', ' '),
                         'remboursement_anticipe' => $contenu_remboursement_anticipe,
                         'contenu'                => $lecontenu,
+                        'sujet'                  => $sujet,
                         'lien_fb'                => $lien_fb,
                         'lien_tw'                => $lien_tw
                     );
