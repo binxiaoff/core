@@ -311,7 +311,7 @@ class pdfController extends bootstrap
             $p           = substr($this->ficelle->stripAccents(utf8_decode($this->clients->prenom)), 0, 1);
             $nom         = $this->ficelle->stripAccents(utf8_decode($this->clients->nom));
             $id_project  = str_pad($this->projects->id_project, 6, 0, STR_PAD_LEFT);
-            $this->motif = mb_strtoupper($id_project . 'E' . $p . preg_replace('/\s/', '',$nom), 'UTF-8');
+            $this->motif = mb_strtoupper($id_project . 'E' . $p . preg_replace('/\s/', '', $nom), 'UTF-8');
             $this->motif = $this->ficelle->str_split_unicode('UNILEND' . $this->motif);
         } else {
             // Motif mandat preteur
@@ -540,7 +540,7 @@ class pdfController extends bootstrap
 
     public function _contrat()
     {
-        if((false === $this->clients->checkAccess() || $this->clients->hash != $this->params[0]) && (false === isset($_SESSION['user']['id_user']) || $_SESSION['user']['id_user'] == '')) {
+        if ((false === $this->clients->checkAccess() || $this->clients->hash != $this->params[0]) && (false === isset($_SESSION['user']['id_user']) || $_SESSION['user']['id_user'] == '')) {
             header('Location:' . $this->lurl);
             exit;
         }
@@ -1103,10 +1103,12 @@ class pdfController extends bootstrap
             $this->mandataires_var = "";
 
 
-            $this->arrayDeclarationCreance = array(1456 => '27/11/2014',
-                                                   1009 => '15/04/2015',
-                                                   1614 => '27/05/2015',
-                                                   3089 => '29/06/2015');
+            $this->arrayDeclarationCreance = array(1456  => '27/11/2014',
+                                                   1009  => '15/04/2015',
+                                                   1614  => '27/05/2015',
+                                                   3089  => '29/06/2015',
+                                                   10971 => '06/08/2015',
+                                                   970   => '30/09/2015');
 
             if ($this->oLoans->id_project == 1614) {
                 //plus de mandataire dans le pdf, on l'aura que dans le mail (Note BT: 17793)
