@@ -2,7 +2,7 @@
 
 class ficelle
 {
-    function generatePassword($nb)
+    public function generatePassword($nb)
     {
         $liste_chars  = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
         $maxi         = strlen($liste_chars) - 1;
@@ -15,10 +15,10 @@ class ficelle
         return $new_password;
     }
 
-    function generateSlug($string)
+    public function generateSlug($string)
     {
         $string = strip_tags(utf8_decode($string));
-        $string = strtr($string, '�����������������������������������������������������', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
+        $string = strtr($string, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
         $string = strtolower($string); // lower-case the string
         $string = preg_replace('/[ ]/', '-', $string); // replace special characters by score
         $string = preg_replace('/[^a-z0-9-.]/', '', $string); // replace all non-alphanumeric characters by void
@@ -28,7 +28,7 @@ class ficelle
     }
 
     // Verifie que la chaine passee en parametre est au format email
-    function isEmail($value)
+    public function isEmail($value)
     {
         if (preg_match('#^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,5}$#', $value)) {
             return true;
@@ -38,49 +38,48 @@ class ficelle
     }
 
     // Encode les caracteres speciaux
-    function speChar2HtmlEntities($string)
+    public function speChar2HtmlEntities($string)
     {
         $str_trans = array(
-            '�' => '&Agrave;', '�' => '&agrave;', '�' => '&Aacute;', '�' => '&aacute;', '�' => '&Acirc;',
-            '�' => '&acirc;', '�' => '&Atilde;', '�' => '&atilde;', '�' => '&Auml;', '�' => '&auml;', '�' => '&Aring;',
-            '�' => '&aring;', '�' => '&AElig;', '�' => '&aelig;', '�' => '&Ccedil;', '�' => '&ccedil;', '�' => '&ETH;',
-            '�' => '&eth;', '�' => '&Egrave;', '�' => '&egrave;', '�' => '&Eacute;', '�' => '&eacute;',
-            '�' => '&Ecirc;', '�' => '&ecirc;', '�' => '&Euml;', '�' => '&euml;', '�' => '&Igrave;', '�' => '&igrave;',
-            '�' => '&Iacute;', '�' => '&iacute;', '�' => '&Icirc;', '�' => '&icirc;', '�' => '&Iuml;', '�' => '&iuml;',
-            '�' => '&Ntilde;', '�' => '&ntilde;', '�' => '&Ograve;', '�' => '&ograve;', '�' => '&Oacute;',
-            '�' => '&oacute;', '�' => '&Ocirc;', '�' => '&ocirc;', '�' => '&Otilde;', '�' => '&otilde;',
-            '�' => '&Ouml;', '�' => '&ouml;', '�' => '&Oslash;', '�' => '&oslash;', '�' => '&OElig;', '�' => '&oelig;',
-            '�' => '&szlig;', '�' => '&THORN;', '�' => '&thorn;', '�' => '&Ugrave;', '�' => '&ugrave;',
-            '�' => '&Uacute;', '�' => '&uacute;', '�' => '&Ucirc;', '�' => '&ucirc;', '�' => '&Uuml;', '�' => '&uuml;',
-            '�' => '&Yacute;', '�' => '&yacute;', '�' => '&Yuml;', '�' => '&yuml;'
+            'À' => '&Agrave;', 'à' => '&agrave;', 'Á' => '&Aacute;', 'á' => '&aacute;', 'Â' => '&Acirc;',
+            'â' => '&acirc;', 'Ã' => '&Atilde;', 'ã' => '&atilde;', 'Ä' => '&Auml;', 'ä' => '&auml;', 'Å' => '&Aring;',
+            'å' => '&aring;', 'Æ' => '&AElig;', 'æ' => '&aelig;', 'Ç' => '&Ccedil;', 'ç' => '&ccedil;', 'Ð' => '&ETH;',
+            'ð' => '&eth;', 'È' => '&Egrave;', 'è' => '&egrave;', 'É' => '&Eacute;', 'é' => '&eacute;',
+            'Ê' => '&Ecirc;', 'ê' => '&ecirc;', 'Ë' => '&Euml;', 'ë' => '&euml;', 'Ì' => '&Igrave;', 'ì' => '&igrave;',
+            'Í' => '&Iacute;', 'í' => '&iacute;', 'Î' => '&Icirc;', 'î' => '&icirc;', 'Ï' => '&Iuml;', 'ï' => '&iuml;',
+            'Ñ' => '&Ntilde;', 'ñ' => '&ntilde;', 'Ò' => '&Ograve;', 'ò' => '&ograve;', 'Ó' => '&Oacute;',
+            'ó' => '&oacute;', 'Ô' => '&Ocirc;', 'ô' => '&ocirc;', 'Õ' => '&Otilde;', 'õ' => '&otilde;',
+            'Ö' => '&Ouml;', 'ö' => '&ouml;', 'Ø' => '&Oslash;', 'ø' => '&oslash;', 'Œ' => '&OElig;', 'œ' => '&oelig;',
+            'ß' => '&szlig;', 'Þ' => '&THORN;', 'þ' => '&thorn;', 'Ù' => '&Ugrave;', 'ù' => '&ugrave;',
+            'Ú' => '&Uacute;', 'ú' => '&uacute;', 'Û' => '&Ucirc;', 'û' => '&ucirc;', 'Ü' => '&Uuml;', 'ü' => '&uuml;',
+            'Ý' => '&Yacute;', 'ý' => '&yacute;', 'Ÿ' => '&Yuml;', 'ÿ' => '&yuml;'
         );
-
         return strtr($string, $str_trans);
     }
 
     // Enleve les accents
-    function speCharNoAccent($string)
+    public function speCharNoAccent($string)
     {
         $str_trans = array(
-            '�' => 'A', '�' => 'a', '�' => 'A', '�' => 'a', '�' => 'A', '�' => 'a', '�' => 'A', '�' => 'a', '�' => 'A',
-            '�' => 'a', '�' => 'A', '�' => 'a', '�' => 'C', '�' => 'c', '�' => 'E', '�' => 'e', '�' => 'E', '�' => 'e',
-            '�' => 'E', '�' => 'e', '�' => 'E', '�' => 'e', '�' => 'I', '�' => 'i', '�' => 'I', '�' => 'i', '�' => 'I',
-            '�' => 'i', '�' => 'I', '�' => 'i', '�' => 'N', '�' => 'n', '�' => 'O', '�' => 'o', '�' => 'O', '�' => 'o',
-            '�' => 'O', '�' => 'o', '�' => 'O', '�' => 'o', '�' => 'O', '�' => 'o', '�' => 'OE', '�' => 'oe',
-            '�' => 'U', '�' => 'u', '�' => 'U', '�' => 'u', '�' => 'U', '�' => 'u', '�' => 'U', '�' => 'u', '�' => 'Y',
-            '�' => 'y', '�' => 'Y', '�' => 'y'
+            'À' => 'A', 'à' => 'a', 'Á' => 'A', 'á' => 'a', 'Â' => 'A', 'â' => 'a', 'Ã' => 'A', 'ã' => 'a', 'Ä' => 'A',
+            'ä' => 'a', 'Å' => 'A', 'å' => 'a', 'Æ' => 'A', 'æ' => 'a', 'Ç' => 'C', 'ç' => 'c', 'È' => 'E', 'è' => 'e',
+            'É' => 'E', 'é' => 'e', 'Ê' => 'E', 'ê' => 'e', 'Ë' => 'E', 'ë' => 'e', 'Ì' => 'I', 'ì' => 'i', 'Í' => 'I',
+            'í' => 'i', 'Î' => 'I', 'î' => 'i', 'Ï' => 'I', 'ï' => 'i', 'Ñ' => 'N', 'ñ' => 'n', 'Ò' => 'O', 'ò' => 'o',
+            'Ó' => 'O', 'ó' => 'o', 'Ô' => 'O', 'ô' => 'o', 'Õ' => 'O', 'õ' => 'o', 'Ö' => 'O', 'ö' => 'o', 'Ø' => 'O',
+            'ø' => 'o', 'Œ' => 'OE', 'œ' => 'oe', 'ß' => 'B', 'Ù' => 'U', 'ù' => 'u', 'Ú' => 'U', 'ú' => 'u',
+            'Û' => 'U', 'û' => 'u', 'Ü' => 'U', 'ü' => 'u', 'Ý' => 'Y', 'ý' => 'y', 'Ÿ' => 'Y', 'ÿ' => 'y'
         );
 
         return strtr($string, $str_trans);
     }
 
-    function stripAccents($string)
+    public function stripAccents($string)
     {
-        return strtr($string, '���������������������������������������������������', 'aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY');
+        return $this->speCharNoAccent($string);
     }
 
     // Nettoie une chaine pour l'inserer dans un csv
-    function nettoyageCsv($string)
+    public function nettoyageCsv($string)
     {
         $new_string = str_replace(";", "-", $string);
         $new_string = str_replace("\n\r", " ", $new_string);
@@ -92,7 +91,7 @@ class ficelle
     }
 
     // Coupe la chaine $str avec une limite max de $limite, mais sans couper au milieu d'un mot ou d'une entite HTML
-    function subword($str, $limite)
+    public function subword($str, $limite)
     {
         $str       = trim(strip_tags($str));
         $tableWord = str_word_count($str, 1, '0123456789�&;');
@@ -114,12 +113,11 @@ class ficelle
     }
 
     // SOAP Client
-    function ws($wsdl, $identification, $siren)
+    public function ws($wsdl, $identification, $siren)
     {
         ini_set('default_socket_timeout', 60);
 
         $client = new SoapClient($wsdl, array("trace" => 1, "exception" => TRUE));
-        // Appel WS
         $result = $client->__soapCall("getEligibility", array(
             "getEligibility" => array(
                 "identification" => $identification,
@@ -132,7 +130,7 @@ class ficelle
     }
 
     // met des majuscules sur les noms composés
-    function majNom($nom)
+    public function majNom($nom)
     {
         $nom = strtolower($nom);
 
@@ -152,7 +150,7 @@ class ficelle
 
     }
 
-    function str_split_unicode($str, $l = 0)
+    public function str_split_unicode($str, $l = 0)
     {
         if ($l > 0) {
             $ret = array();
@@ -165,7 +163,7 @@ class ficelle
         return preg_split("//u", $str, -1, PREG_SPLIT_NO_EMPTY);
     }
 
-    function swift_validate($swift)
+    public function swift_validate($swift)
     {
         if (!eregi("^([a-zA-Z]){4}([a-zA-Z]){2}([0-9a-zA-Z]){2}([0-9a-zA-Z]{3})?$", $swift)) {
             return false;
@@ -174,7 +172,7 @@ class ficelle
         }
     }
 
-    function isIBAN($iban)
+    public function isIBAN($iban)
     {
         $charConvert = array(
             "A" => "10", "B" => "11", "C" => "12", "D" => "13", "E" => "14", "F" => "15", "G" => "16", "H" => "17",
@@ -191,7 +189,7 @@ class ficelle
 
     // convertit une chaine en tableau avec key personalisable (mis en place le 04/07/2014)
     // ex : $string = "1=>toto;2=>tata;5=>damien"
-    function explodeStr2array($string)
+    public function explodeStr2array($string)
     {
         $string = explode(';', $string); // on explose aux points virgules
         $array  = array();
@@ -207,7 +205,7 @@ class ficelle
 
     // fonction qui check la complexité d'un mot de passe
     // 10 caractères mini / 1 chiffre / 1 caractère spécial
-    function password_bo($mdp)    // $mdp le mot de passe passé en paramètre
+    public function password_bo($mdp)    // $mdp le mot de passe passé en paramètre
     {
         // On récupère la longueur du mot de passe
         $longueur = strlen($mdp);
@@ -263,7 +261,7 @@ class ficelle
     }
 
     //fonction qui check la complexité d'un mot de passe
-    function testpassword($mdp)    // $mdp le mot de passe passé en paramètre
+    public function testpassword($mdp)    // $mdp le mot de passe passé en paramètre
     {
         // On récupère la longueur du mot de passe
         $longueur = strlen($mdp);
@@ -340,7 +338,7 @@ class ficelle
     }
 
     // min, maj, caracteres speciaux obligatoire (chiffres obligatoire si true)
-    function password_fo($mdp, $length, $chiffres = false)    // $mdp le mot de passe passé en paramètre
+    public function password_fo($mdp, $length, $chiffres = false)    // $mdp le mot de passe passé en paramètre
     {
         // On récupère la longueur du mot de passe
         $longueur = strlen($mdp);
@@ -402,7 +400,7 @@ class ficelle
     }
 
     // Source
-    function source_old($utm_source = '', $url = '')
+    public function source_old($utm_source = '', $url = '')
     {
         if (!isset($_SESSION['utm_source'])) {
             if ($utm_source != '' || $url != '') {
@@ -419,7 +417,7 @@ class ficelle
     }
 
     // Source
-    function source($utm_source = '', $url = '', $utm_source2 = '')
+    public function source($utm_source = '', $url = '', $utm_source2 = '')
     {
         // source1
         if ($utm_source != '') {
@@ -445,7 +443,7 @@ class ficelle
     }
 
     // Générateur de token avec une clé unique
-    function genere_token($key)
+    public function genere_token($key)
     {
         $key   = md5($key);
         $time  = time();
@@ -457,7 +455,7 @@ class ficelle
     // token receptionné
     // key = clé unique
     // temps = durée de validité (en secondes)
-    function verifier_token($token, $key, $temps)
+    public function verifier_token($token, $key, $temps)
     {
         $valide = false;
 
@@ -481,7 +479,7 @@ class ficelle
 
 
     // mobile ou pas mobile
-    function is_mobile()
+    public function is_mobile()
     {
         $SymbianOS  = stripos($_SERVER['HTTP_USER_AGENT'], 'SymbianOS');
         $IEMobile   = stripos($_SERVER['HTTP_USER_AGENT'], 'IEMobile');
@@ -500,7 +498,7 @@ class ficelle
         }
     }
 
-    function is_mobile_v2()
+    public function is_mobile_v2()
     {
         $useragent = $_SERVER['HTTP_USER_AGENT'];
         $isMobile  = false;
@@ -513,7 +511,7 @@ class ficelle
     }
 
     // Motif mandat emprunteur
-    function motif_mandat($prenom, $nom, $id_project)
+    public function motif_mandat($prenom, $nom, $id_project)
     {
         $p          = substr($this->generateSlug(trim($prenom)), 0, 1);
         $nom        = $this->generateSlug(trim($nom));
@@ -521,12 +519,12 @@ class ficelle
         return $motif = mb_strtoupper('UNILEND' . $id_project . 'E' . $p . $nom, 'UTF-8');
     }
 
-    function base64url_encode($data)
+    public function base64url_encode($data)
     {
         return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
     }
 
-    function base64url_decode($data)
+    public function base64url_decode($data)
     {
         return base64_decode(str_pad(strtr($data, '-_', '+/'), strlen($data) % 4, '=', STR_PAD_RIGHT));
     }
