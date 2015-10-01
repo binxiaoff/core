@@ -17,14 +17,12 @@ include __DIR__ . '/../../config.php';
 /**
  * @var array $config
  */
-if ($config['error_handler'][$config['env']]['activate']) {
-    $handler = new ErrorHandler(
-        $config['error_handler'][$config['env']]['file'],
-        $config['error_handler'][$config['env']]['allow_display'],
-        $config['error_handler'][$config['env']]['allow_log'],
-        $config['error_handler'][$config['env']]['report']
-    );
-}
+$handler = new ErrorHandler(
+    $config['error_handler'][$config['env']]['file'],
+    $config['error_handler'][$config['env']]['allow_display'],
+    $config['error_handler'][$config['env']]['allow_log'],
+    $config['error_handler'][$config['env']]['report']
+);
 
 try {
     if (1 !== preg_match('#images/dyn/([^/]+)/([0-9]+)/(.+\.(jpg|jpeg|png))#i', $_SERVER['REQUEST_URI'], $aMatches)) {
