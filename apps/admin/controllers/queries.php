@@ -96,6 +96,9 @@ class queriesController extends bootstrap
 
     public function _execute()
     {
+        ini_set('memory_limit', '2G');
+        ini_set('max_execution_time', 1200);
+
         $this->queries = $this->loadData('queries');
         $this->queries->get($this->params[0], 'id_query');
         $this->queries->sql = str_replace(
@@ -168,6 +171,11 @@ class queriesController extends bootstrap
         $this->autoFireview = false;
 
         $this->_execute();
+
+        PHPExcel_Settings::setCacheStorageMethod(
+            PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
+            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+        );
 
         $aHeaders       = array_keys($this->result[0]);
         $sLastColLetter = PHPExcel_Cell::stringFromColumnIndex(count($aHeaders) - 1);
