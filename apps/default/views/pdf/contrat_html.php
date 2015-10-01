@@ -10,8 +10,7 @@
 	<div class="doc-wrapper">
 		<!-- Shell -->
 		<div class="shell">
-			<!-- Page Break -->
-			<div class="page-break">
+			<div>
 				<h3><?=$this->bloc_pdf_contrat['titre']?> - #<?=$this->oLoans->id_loan?></h3>
 				<h5><?=$this->bloc_pdf_contrat['designation']?></h5>
 				<div class="list">
@@ -149,10 +148,7 @@
 					</ul>
 				</div>
 			</div>
-			<!-- End Page Break -->
-
-			<!-- Page Break -->
-			<div class="page-break">
+			<div>
 				<h3><?=$this->bloc_pdf_contrat['dernier-bilan']?></h3>
 				<div class="list">
 					<ul>
@@ -200,7 +196,7 @@
 			<!-- End Page Break -->
 
 			<!-- Page Break -->
-			<div class="page-break">
+			<div class="pageBreakBefore">
 				<h3><?=$this->bloc_pdf_contrat['echeancier-remboursements']?></h3>
 
 				<div class="dates-table">
@@ -235,7 +231,6 @@
 				</div>
 			</div>
 			<!-- End Page Break -->
-
 		</div>
 		<!-- End Shell -->
 	</div>

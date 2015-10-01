@@ -5,11 +5,6 @@ use Unilend\librairies\ULogger;
 class cronController extends bootstrap
 {
     /**
-     * File's name for logger
-     */
-    const NAME_LOG = 'cronEquinoa.log';
-
-    /**
      * @var string $sHeadersDebug headers for mail to debug
      */
     private $sHeadersDebug;
@@ -18,6 +13,16 @@ class cronController extends bootstrap
      * @var string $sDestinatairesDebug Destinataires for mail to debug
      */
     private $sDestinatairesDebug;
+
+    /**
+     * @var int
+     */
+    private $iStartTime;
+
+    /**
+     * @var settings
+     */
+    private $oSemaphore;
 
     /**
      * @var ULogger
@@ -11255,7 +11260,6 @@ class cronController extends bootstrap
         $this->loans                   = $this->loadData('loans');
         $this->transactions            = $this->loadData('transactions');
 
-
         $this->L_offres_acceptees_no_dated = $this->indexage_vos_operations->select('libelle_operation = "Offre acceptée" AND date_operation = "0000-00-00 00:00:00"', '', 0, 500);
 
         if (count($this->L_offres_acceptees_no_dated) > 0) {
@@ -11269,7 +11273,6 @@ class cronController extends bootstrap
                 $this->indexage_vos_operations_boucle = $this->loadData('indexage_vos_operations');
 
                 $this->indexage_vos_operations_boucle->get($offre['id'], 'id');
-
                 $this->indexage_vos_operations_boucle->date_operation = $this->loans->updated;
                 $this->indexage_vos_operations_boucle->solde          = $solde * 100;
                 $this->indexage_vos_operations_boucle->update();
@@ -11638,5 +11641,48 @@ class cronController extends bootstrap
                 $liste_attente_mail_temp->update();
             }
         }
+    }
+
+    /**
+     * @param $sName  Cron name (used for settings name)
+     * @param $iDelay Minimum delay (in minutes) before we consider cron has crashed and needs to be restarted
+     */
+    private function startCron($sName, $iDelay)
+    {
+        $this->iStartTime = time();
+        $this->oLogger    = new ULogger($sName, $this->logPath, 'cron.log');
+        $this->oSemaphore = $this->loadData('settings');
+        $this->oSemaphore->get('Controle cron ' . $sName, 'type');
+
+        if ($this->oSemaphore->value == 0) {
+            $iUpdatedDateTime      = strtotime($this->oSemaphore->updated);
+            $iMinimumDelayDateTime = mktime(date('H'), date('i') - $iDelay, 0, date('m'), date('d'), date('Y'));
+
+            if ($iUpdatedDateTime <= $iMinimumDelayDateTime) {
+                $this->oSemaphore->value = 1;
+                $this->oSemaphore->update();
+            }
+        }
+
+        if ($this->oSemaphore->value == 1) {
+            $this->oSemaphore->value = 0;
+            $this->oSemaphore->update();
+
+            $this->oLogger->addRecord('INFO', 'Start cron', array('ID' => $this->iStartTime));
+
+            return true;
+        }
+
+        $this->oLogger->addRecord('INFO', 'Semaphore locked', array('ID' => $this->iStartTime));
+
+        return false;
+    }
+
+    private function stopCron()
+    {
+        $this->oSemaphore->value = 1;
+        $this->oSemaphore->update();
+
+        $this->oLogger->addRecord('INFO', 'End cron', array('ID' => $this->iStartTime));
     }
 }

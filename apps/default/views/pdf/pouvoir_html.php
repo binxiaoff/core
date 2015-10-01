@@ -319,7 +319,7 @@
                 <!-- End Page Break -->
 
                 <!-- Page Break -->
-                <div class="page-break" style="page-break-before:always; margin-top: 40px;padding-top: 20px;">
+                <div class="pageBreakBefore" style="margin-top: 40px;padding-top: 20px;">
                     <div class="dates-table">
                         <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
                             <?
@@ -409,7 +409,7 @@
 				}
 				?>
 				<!-- Page Break -->
-				<div class="page-break" style="page-break-before:always; padding-top: 30px;">
+				<div class="pageBreakBefore" style="padding-top: 30px;">
                 	<?
 					if($var == 0)
 					{
