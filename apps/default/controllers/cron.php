@@ -16,8 +16,7 @@ class cronController extends bootstrap
     {
         parent::__construct($command, $config, 'default');
 
-        // Inclusion controller pdf
-        include($this->path . '/apps/default/controllers/pdf.php');
+        include_once $this->path . '/apps/default/controllers/pdf.php';
 
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
@@ -9079,8 +9078,6 @@ class cronController extends bootstrap
         $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
         $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-        //echo $texteMail;
-
         // Envoi du mail
         $this->email = $this->loadLib('email', array());
         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
@@ -9088,11 +9085,6 @@ class cronController extends bootstrap
         $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
         $this->email->setHTMLBody($texteMail);
         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-        // fin mail
-
-        /* echo '<pre>';
-          print_r($liste);
-          echo '</pre>'; */
     }
 
     // Cron une fois par jour a 19h30 (* 18-20 * * *)
@@ -9101,7 +9093,6 @@ class cronController extends bootstrap
         ini_set('max_execution_time', 3600); // hotbug 07/09/2015
         ini_set('memory_limit', '4096M'); // hotbug 07/09/2015
 
-        //mail('d.courtier@relance.fr', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee', 'cron ' . $this->Config['env'] . ' debut alertes_quotidiennee - ' . date('Y-m-d H:i:e'));
         // On recup le param
         $settingsControleQuotidiennne = $this->loadData('settings');
         $settingsControleQuotidiennne->get('Controle notification quotidienne', 'type');
@@ -9207,18 +9198,8 @@ class cronController extends bootstrap
                 die;
             }
 
-            // On recup les mails non envoyés aujourd'hui
-            //$mails_notif = $clients_gestion_notifications->selectNotifs('quotidienne',$id_notif,0,50);
             // On recupere les clients qui ont des notifs a recevoir
             $list_id_client = $clients_gestion_notifications->selectIdclientNotifs('quotidienne', $id_notif, 0, 50);
-
-
-            //echo '/////////// EMAILS NOTIF ////////////<br>';
-
-            /* echo '<pre>';
-              print_r($list_id_client);
-              echo '</pre>';
-              die; */
 
             $array_mail_nouveaux_projects = false;
             $array_offres_placees         = false;
@@ -9249,11 +9230,6 @@ class cronController extends bootstrap
                     }
                 }
             }
-
-            /* 		echo '<pre>';
-              print_r($array_offres_placees);
-              echo '</pre>';
-              die; */
 
             //// ON RECUPERE LES TABLEAUX ////
             // On a regroupé les notifs nouveaux projet dans une table
@@ -10275,15 +10251,14 @@ class cronController extends bootstrap
     // $type = quotidienne,hebdomadaire,mensuelle
     public function nouveaux_projets_synthese($array_mail_nouveaux_projects, $type)
     {
-
-        $this->clients       = $this->loadData('clients');
-        $this->notifications = $this->loadData('notifications');
-        $this->projects      = $this->loadData('projects');
-        $this->companies     = $this->loadData('companies');
-
+        $this->clients                       = $this->loadData('clients');
+        $this->notifications                 = $this->loadData('notifications');
+        $this->projects                      = $this->loadData('projects');
+        $this->companies                     = $this->loadData('companies');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
 
+        $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
 
         // on regarde si on a bien quelque chose
         if ($array_mail_nouveaux_projects != false) {
@@ -10545,14 +10520,15 @@ class cronController extends bootstrap
 
     public function offres_placees_synthese($array_offres_placees, $type)
     {
-        $this->clients       = $this->loadData('clients');
-        $this->notifications = $this->loadData('notifications');
-        $this->projects      = $this->loadData('projects');
-        $this->companies     = $this->loadData('companies');
-        $this->bids          = $this->loadData('bids');
-
+        $this->clients                       = $this->loadData('clients');
+        $this->notifications                 = $this->loadData('notifications');
+        $this->projects                      = $this->loadData('projects');
+        $this->companies                     = $this->loadData('companies');
+        $this->bids                          = $this->loadData('bids');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+
+        $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
 
         // on regarde si on a bien quelque chose
         if ($array_offres_placees != false) {
@@ -10658,15 +10634,12 @@ class cronController extends bootstrap
                             if ($type == 'quotidienne') {
                                 $this->mails_text->get('vos-offres-du-jour', 'lang = "' . $this->language . '" AND type');
                             }
-                            //else
-                            //$this->mails_text->get('vos-offres-de-la-semaine','lang = "'.$this->language.'" AND type');
-
 
                             // on gère ici le cas du singulier/pluriel
                             // contenu
                             $lecontenu = '';
                             // on gère ici le cas du singulier/pluriel
-                            if ($nb_arrayRemb <= 1) {
+                            if ($nb_arrayoffres <= 1) {
                                 if ($type == 'quotidienne') {
                                     $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
                                     $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-singulier'];
@@ -10838,14 +10811,15 @@ class cronController extends bootstrap
     // offres refusées
     public function offres_refusees_synthese($array_offres_refusees, $type)
     {
-        $this->clients       = $this->loadData('clients');
-        $this->notifications = $this->loadData('notifications');
-        $this->projects      = $this->loadData('projects');
-        $this->companies     = $this->loadData('companies');
-        $this->bids          = $this->loadData('bids');
-
+        $this->clients                       = $this->loadData('clients');
+        $this->notifications                 = $this->loadData('notifications');
+        $this->projects                      = $this->loadData('projects');
+        $this->companies                     = $this->loadData('companies');
+        $this->bids                          = $this->loadData('bids');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+
+        $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
 
         // on regarde si on a bien quelque chose
         if ($array_offres_refusees != false) {
@@ -11026,15 +11000,16 @@ class cronController extends bootstrap
     // offres acceptées
     public function offres_acceptees_synthese($array_offres_acceptees, $type)
     {
-        $this->clients       = $this->loadData('clients');
-        $this->notifications = $this->loadData('notifications');
-        $this->projects      = $this->loadData('projects');
-        $this->companies     = $this->loadData('companies');
-        $this->loans         = $this->loadData('loans');
-        $echeanciers         = $this->loadData('echeanciers');
-
+        $this->clients                       = $this->loadData('clients');
+        $this->notifications                 = $this->loadData('notifications');
+        $this->projects                      = $this->loadData('projects');
+        $this->companies                     = $this->loadData('companies');
+        $this->loans                         = $this->loadData('loans');
+        $echeanciers                         = $this->loadData('echeanciers');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+
+        $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
 
         // on regarde si on a bien quelque chose
         if ($array_offres_acceptees != false) {
@@ -11299,7 +11274,7 @@ class cronController extends bootstrap
                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                                 } else // non nmp
                                 {
-                                    $this->email->addRecipient(trim($preteur->email));
+                                    $this->email->addRecipient(trim($this->clients->email));
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 }
                             }
@@ -11330,20 +11305,17 @@ class cronController extends bootstrap
     // remb
     public function remb_synthese($array_remb, $type)
     {
-
-        $this->clients       = $this->loadData('clients');
-        $this->notifications = $this->loadData('notifications');
-        $this->projects      = $this->loadData('projects');
-        $this->companies     = $this->loadData('companies');
-        $this->echeanciers   = $this->loadData('echeanciers');
-        $this->loans         = $this->loadData('loans');
-
+        $this->clients                       = $this->loadData('clients');
+        $this->notifications                 = $this->loadData('notifications');
+        $this->projects                      = $this->loadData('projects');
+        $this->companies                     = $this->loadData('companies');
+        $this->echeanciers                   = $this->loadData('echeanciers');
+        $this->loans                         = $this->loadData('loans');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
 
-        //Recuperation des element de traductions
         $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
-        mail($this->sDestinatairesDebug, 'DEBUG CRON remb_synthese', serialize($array_remb) . ' --- ' . $type, $this->sHeadersDebug);
+
         // on regarde si on a bien quelque chose
         if ($array_remb != false) {
 
