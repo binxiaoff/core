@@ -38,10 +38,6 @@ class bootstrap extends Controller
 		$this->mails_filer = $this->loadData('mails_filer');
 		$this->mails_text = $this->loadData('mails_text');
 		$this->ln = $this->loadData('textes');
-		//$this->produits_elements = $this->loadData('produits_elements');
-		//$this->produits = $this->loadData('produits',array('url'=>$this->url,'surl'=>$this->surl,'produits_elements'=>$this->produits_elements,'upload'=>$this->upload,'spath'=>$this->spath));
-		//$this->produits_images = $this->loadData('produits_images');
-		//$this->produits_details = $this->loadData('produits_details');
 		$this->routages = $this->loadData('routages',array('url'=>$this->lurl,'route'=>$this->Config['route_url']));
 		$this->nmp = $this->loadData('nmp');
 		$this->nmp_desabo = $this->loadData('nmp_desabo');
@@ -64,7 +60,6 @@ class bootstrap extends Controller
 		$this->photos = $this->loadLib('photos',array($this->spath,$this->surl));
 		$this->tnmp = $this->loadLib('tnmp',array($this->nmp,$this->nmp_desabo,$this->Config['env']));
 		$this->dates = $this->loadLib('dates');
-		$this->Web2Pdf = $this->loadLib('Web2Pdf',$this->convert_api_compteur);
 
 		// Recuperation de la liste des langue disponibles
 		$this->lLangues = $this->Config['multilanguage']['allowed_languages'];
