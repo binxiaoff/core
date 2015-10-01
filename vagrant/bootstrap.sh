@@ -82,7 +82,7 @@ sed -i "s/display_errors = .*/display_errors = On/" /etc/php5/apache2/php.ini
 sed -i "s/html_errors = .*/html_errors = On/" /etc/php5/apache2/php.ini
 sed -i "s/upload_max_filesize = .*/upload_max_filesize = 64M/" /etc/php5/apache2/php.ini
 sed -i "s/post_max_size = .*/post_max_size = 64M/" /etc/php5/apache2/php.ini
-printf "\n[xdebug]\nzend_extension=/usr/lib/php5/20090626/xdebug.so\nxdebug.remote_enable=1\nxdebug.remote_handler=dbgp\nxdebug.remote_mode=req\nxdebug.remote_host=127.0.0.1\nxdebug.remote_port=9000\nxdebug.profiler_enable_trigger=1\nxdebug.profiler_output_dir=/home/vagrant/xdebug\nxdebug.var_display_max_data=65536\nxdebug.var_display_max_depth=10\n" >> /etc/php5/apache2/php.ini
+printf "\n[xdebug]\nzend_extension=/usr/lib/php5/20090626/xdebug.so\nxdebug.remote_enable=1\nxdebug.remote_handler=dbgp\nxdebug.remote_mode=req\nxdebug.remote_host=127.0.0.1\nxdebug.remote_port=9000\nxdebug.profiler_enable_trigger=1\nxdebug.profiler_output_dir=/home/vagrant/xdebug\nxdebug.var_display_max_data=65536\nxdebug.var_display_max_depth=10\nxdebug.var_display_max_children=1024\n" >> /etc/php5/apache2/php.ini
 
 service apache2 restart
 
