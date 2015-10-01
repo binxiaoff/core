@@ -27,42 +27,43 @@ if ($config['error_handler'][$config['env']]['activate']) {
 }
 
 try {
-    if (1 !== preg_match('#images/([^/]+)/([^/]+)/([^/]+)\.jpg#', $_SERVER['REQUEST_URI'], $aMatches)) {
+    if (1 !== preg_match('#images/dyn/([^/]+)/([0-9]+)/(.+\.(jpg|jpeg|png))#i', $_SERVER['REQUEST_URI'], $aMatches)) {
         throw new \ResizableImageException('URL does not match pattern');
     }
 
-    if (!isset($config['images'][$aMatches[1]])) {
+    if (! isset($config['images'][$aMatches[1]])) {
+        $oImagick = new \Imagick($config['static_path'][$config['env']] . 'images/dyn/default.jpg');
         throw new \ResizableImageException('Unknown image type');
     }
 
-    $sImageType = $aMatches[1];
-
-    if (!isset($config['images'][$sImageType]['formats'][$aMatches[2]])) {
-        throw new \ResizableImageException('Unknown format');
-    }
-
-    $sImageFormat     = $aMatches[2];
+    $sImageType       = $aMatches[1];
+    $iImageHeight     = $aMatches[2];
+    $iImageWidth      = round($iImageHeight * $config['images'][$sImageType]['width'] / $config['images'][$sImageType]['height']);
     $sFileName        = $aMatches[3];
-    $sTypeRootPath    = $config['static_path'][$config['env']] . 'images/' . $sImageType;
-    $sSourceImagePath = $sTypeRootPath . '/source/' . $sFileName . '.jpg';
+    $sTypeRootPath    = $config['static_path'][$config['env']] . 'images/dyn/' . $sImageType;
+    $sSourceImagePath = $sTypeRootPath . '/source/' . $sFileName;
 
     if (false === file_exists($sSourceImagePath)) {
+        $oImagick = new \Imagick($config['static_path'][$config['env']] . 'images/dyn/default.jpg');
+        $oImagick->scaleImage($iImageWidth, $iImageHeight);
         throw new \ResizableImageException('Unable to find source image');
     }
 
-    if (false === is_dir($sTypeRootPath . '/' . $sImageFormat)) {
-        mkdir($sTypeRootPath . '/' . $sImageFormat);
+    if (false === is_dir($sTypeRootPath . '/' . $iImageHeight)) {
+        mkdir($sTypeRootPath . '/' . $iImageHeight);
     }
 
     $oImagick = new \Imagick($sSourceImagePath);
-    $oImagick->scaleImage($config['images'][$sImageType]['formats'][$sImageFormat]['width'], $config['images'][$sImageType]['formats'][$sImageFormat]['height']);
+    $oImagick->scaleImage($iImageWidth, $iImageHeight);
     $oImagick->setImageFormat('jpg');
     $oImagick->setImageCompression(Imagick::COMPRESSION_JPEG);
     $oImagick->setImageCompressionQuality(90);
     $oImagick->stripImage();
-    $oImagick->writeImage($sTypeRootPath . '/' . $sImageFormat . '/' . $sFileName . '.jpg');
+    $oImagick->writeImage($sTypeRootPath . '/' . $iImageHeight . '/' . $sFileName);
 } catch (\Exception $oException) {
-    $oImagick = new \Imagick($config['static_path'][$config['env']] . 'images/default.jpg');
+    if (! isset($oImagick)) {
+        $oImagick = new \Imagick($config['static_path'][$config['env']] . 'images/dyn/default.jpg');
+    }
 }
 
 header('Content-Type: image/jpeg');
