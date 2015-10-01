@@ -69,7 +69,6 @@ class dossiersController extends bootstrap
 
     public function _edit()
     {
-        // Chargement du data
         $this->projects                      = $this->loadData('projects');
         $this->projects_notes                = $this->loadData('projects_notes');
         $this->companies                     = $this->loadData('companies');
@@ -464,7 +463,7 @@ class dossiersController extends bootstrap
 
                         // dernier bilan
                         $dateDernierBilanString = substr($identite->dateDernierBilan, 0, 10);
-                        $dateDernierBilan       = explode('-', $dateDernierBilanSting);
+                        $dateDernierBilan       = explode('-', $dateDernierBilanString);
 
                         if ($dateDernierBilanString == false || $dateDernierBilanString == '0000-00-00') {
                             $this->date_dernier_bilan_jour  = '31';
