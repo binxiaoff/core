@@ -59,6 +59,6 @@ class ULogger
 
     public function addRecord($sType, $sMessage, array $aContext = array())
     {
-        return $this->oLogger->addRecord(constant('Monolog\Logger::' . strtoupper($sType)), $sMessage, $aContext);
+        return $this->oLogger->addRecord(constant('\Monolog\Logger::' . strtoupper($sType)), $sMessage, $aContext);
     }
 }
