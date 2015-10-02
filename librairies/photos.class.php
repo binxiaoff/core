@@ -22,22 +22,19 @@ class photos
     private $uploadedFileName;
     private $uploadedFileExtension;
 
-    public function photos($params)
+    public function __construct($params)
     {
         $this->spath   = $params[0];
         $this->surl    = $params[1];
         $this->formats = array(
-            'admin_comp'                => array('w' => 50, 'h' => 50),
-            'admin_imgs'                => array('w' => 100, 'h' => 60),
-            'img_contenu2'              => array('w' => 226, 'h' => 157),
-            'img_contenu1'              => array('w' => 270, 'h' => 158),
-            'img_contact'               => array('w' => 386, 'h' => 238),
-            'bloc_home'                 => array('w' => 148, 'h' => 47),
-            'photo_projet_min'          => array('w' => 109, 'h' => 75),
-            'photo_projet_moy'          => array('w' => 300, 'h' => 169),
-            'picto_landing_page'        => array('w' => 105, 'h' => 93),
-            'img_carousel_landing_page' => array('w' => 109, 'h' => 72),
-            'partenaires_landing_page'  => array('w' => 97, 'h' => 49)
+            'admin_comp'               => array('w' => 50, 'h' => 50),
+            'admin_imgs'               => array('w' => 100, 'h' => 60),
+            'img_contenu2'             => array('w' => 226, 'h' => 157),
+            'img_contenu1'             => array('w' => 270, 'h' => 158),
+            'img_contact'              => array('w' => 386, 'h' => 238),
+            'bloc_home'                => array('w' => 148, 'h' => 47),
+            'picto_landing_page'       => array('w' => 105, 'h' => 93),
+            'partenaires_landing_page' => array('w' => 97, 'h' => 49)
         );
     }
 
@@ -51,7 +48,7 @@ class photos
     // $h -> hauteur max que l'on souhaite si pas dans format pour du one shot
     // $url -> utile si on a les tempaltes dans une appli mais qu'on appelle les pages dans une autre appli
 
-    function display($file, $type = '', $format = '', $w = '', $h = '', $url = '', $cadre_fixe = false)
+    public function display($file, $type = '', $format = '', $w = '', $h = '', $url = '', $cadre_fixe = false)
     {
         if ($url == '') {
             $url = $this->surl;
