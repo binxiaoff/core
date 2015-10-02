@@ -142,37 +142,34 @@ class projects extends projects_crud
         return $result;
     }
 
-    function selectProjectsByStatus($status, $where = '', $order = '', $start = '', $nb = '')
+    public function selectProjectsByStatus($status, $where = '', $order = '', $start = '', $nb = '')
     {
-        if ($where != '')
-            $where = ' WHERE 1 = 1 ' . $where . ' ';
-
-        //if($order == '') $order = 'lestatut ASC,IF(lestatut = 2, p.date_retrait ,(select sum(amount*rate) FROM bids b where b.id_project = p.id_project)/(select sum(amount) FROM bids b where b.id_project = p.id_project)) DESC';
-        if ($order == '')
+        if ($order == '') {
             $order = 'lestatut ASC, p.date_retrait DESC';
+        }
 
-        $sql = 'SELECT
-				p.*,
-				(SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status,
-				CASE
-					WHEN  (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) = 50
-					THEN "1"
-					ELSE "2"
-					END as lestatut
-				FROM projects p
-				' . $where . '
-				HAVING status IN (' . $status . ')
-				ORDER BY '
-            . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-        //mail('d.courtier@equinoa.com','test unilend sql',$sql);
-        $resultat = $this->bdd->query($sql);
-        $result = array();
+        $sql = '
+          SELECT p.*,
+              projects_status.status,
+              CASE WHEN projects_status.status = 50
+                THEN "1"
+                ELSE "2"
+              END AS lestatut
+            FROM projects p
+            LEFT JOIN projects_last_status_history USING (id_project)
+            LEFT JOIN projects_status_history USING (id_project_status_history)
+            LEFT JOIN projects_status USING (id_project_status)
+            WHERE projects_status.status IN (' . $status . ')' .
+            $where . '
+            ORDER BY ' . $order .
+            ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
+        $result        = array();
+        $resultat      = $this->bdd->query($sql);
         $positionStart = $start + $nb;
 
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
-
             // on récupere la derniere position pour demarrer une autre requete au meme niveau
             $result[0]['positionStart'] = $positionStart;
         }
@@ -188,7 +185,7 @@ class projects extends projects_crud
         if ($order != '')
             $order = ' ORDER BY ' . $order;
 
-        $sql = '
+          $sql = '
 			SELECT
 			p.id_project,
 			p.date_publication_full
@@ -206,25 +203,22 @@ class projects extends projects_crud
         return $result;
     }
 
-    function countSelectProjectsByStatus($status, $where = '')
+    public function countSelectProjectsByStatus($status, $where = '')
     {
-        if ($where != '') {
-            $where = ' WHERE 1 = 1 ' . $where . ' ';
-        }
-
         $sql = '
-            SELECT COUNT(*) FROM (
-                SELECT (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status
-                FROM projects p
-                ' . $where . '
-                HAVING status IN (' . $status . ')
-            ) c';
+            SELECT COUNT(*)
+            FROM projects p
+            LEFT JOIN projects_last_status_history ON p.id_project = projects_last_status_history.id_project
+            LEFT JOIN projects_status_history ON projects_last_status_history.id_project_status_history = projects_status_history.id_project_status_history
+            LEFT JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
+            WHERE projects_status.status IN (' . $status . ')' . $where;
 
         return current($this->bdd->fetch_assoc($this->bdd->query($sql)));
     }
 
     function searchDossiersRemb($siren = '', $societe = '', $nom = '', $prenom = '', $projet = '', $email = '', $start = '', $nb = '')
     {
+        $where = '';
         if ($siren != '') {
             $where .= ' AND co.siren = "' . $siren . '"';
         }
