@@ -278,9 +278,9 @@ class ajaxController extends bootstrap
 						</script>";
             }
 
-            if ($pf['photo_projet'] != '') {
-                $affichage .= "<a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'><img src='" . $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_min') . "' alt='" . $pf['photo_projet'] . "' class='thumb'></a>";
-            }
+					if ($pf['photo_projet'] != '') {
+						$affichage .= "<a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug']."'><img src='" . $this->surl . '/images/dyn/projets/72/' . $pf['photo_projet'] . "' alt='" . $pf['photo_projet'] . "' class='thumb'></a>";
+					}
 
             $affichage .= "
 					<div class='description'>";

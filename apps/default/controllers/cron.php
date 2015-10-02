@@ -5736,7 +5736,7 @@ class cronController extends bootstrap
             $xml .= '<titre><![CDATA["' . $p['title'] . '"]]></titre>';
             $xml .= '<description><![CDATA["' . $p['nature_project'] . '"]]></description>';
             $xml .= '<url><![CDATA["' . $this->lurl . '/projects/detail/' . $p['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent"]]></url>';
-            $xml .= '<url_photo><![CDATA["' . $this->surl . '/var/images/photos_projets/photo_projet_moy_' . $p['photo_projet'] . '"]]></url_photo>'; // http://unilend.demo2.equinoa.net/var/images/photos_projets/photo_projet_moy_montage.png
+            $xml .= '<url_photo><![CDATA["' . $this->surl . '/images/dyn/projets/169/' . $p['photo_projet'] . '"]]></url_photo>';
             $xml .= '<date_debut_collecte>' . $p['date_publication'] . '</date_debut_collecte>';
             $xml .= '<date_fin_collecte>' . $p['date_retrait'] . '</date_fin_collecte>';
             $xml .= '<montant_recherche>' . $p['amount'] . '</montant_recherche>';
