@@ -48,7 +48,7 @@ class rootController extends bootstrap
                 $this->clients = $this->loadData('clients');
 
                 // On regarde si on a un client dans la salle
-                if (!$this->clients->checkAccess()) {
+                if (! $this->clients->checkAccess()) {
                     $this->etatLogin = false;
                 }
             }
@@ -172,7 +172,7 @@ class rootController extends bootstrap
 
             // Si on n'est pas connecté, on n'a pas acces aux pages preteur et emprunteur
             if ($this->tree->arbo == 1 || $this->tree->arbo == 2) {
-                if (!$this->clients->checkAccess()) {
+                if (! $this->clients->checkAccess()) {
                     header('Location:' . $this->lurl);
                     die;
                 } else {
@@ -338,9 +338,9 @@ class rootController extends bootstrap
                 header('location: http://prets-entreprises-unilend.capital.fr/capital/');
                 die;
             } /*if($this->lurl == 'http://capital.unilend.fr' && $this->tree->id_template != 14){
-					header('location: http://capital.unilend.fr/capital/');
-             		die;
-				}*/
+                header('location: http://capital.unilend.fr/capital/');
+                 die;
+            }*/
             elseif ($this->lurl == 'http://partenaire.unilend.challenges.fr' && $this->tree->id_template != 14) {
                 header('location: http://partenaire.unilend.challenges.fr/challenges/');
                 die;
@@ -374,11 +374,11 @@ class rootController extends bootstrap
                         $form_ok = true;
 
                         // pass
-                        if (!isset($_POST['pass']) || $_POST['pass'] == '' || $_POST['pass'] == $this->lng['etape1']['mot-de-passe']) {
+                        if (! isset($_POST['pass']) || $_POST['pass'] == '' || $_POST['pass'] == $this->lng['etape1']['mot-de-passe']) {
                             $form_ok = false;
                         }
                         // pass2
-                        if (!isset($_POST['pass2']) || $_POST['pass2'] == '' || $_POST['pass2'] == $this->lng['etape1']['confirmation-de-mot-de-passe']) {
+                        if (! isset($_POST['pass2']) || $_POST['pass2'] == '' || $_POST['pass2'] == $this->lng['etape1']['confirmation-de-mot-de-passe']) {
                             $form_ok = false;
                         }
                         // pass et pass2
@@ -386,7 +386,7 @@ class rootController extends bootstrap
                             $form_ok = false;
                         }
                         // repionse secrete
-                        if (!isset($_POST['secret-response']) || $_POST['secret-response'] == '' || $_POST['secret-response'] == $this->lng['etape1']['response']) {
+                        if (! isset($_POST['secret-response']) || $_POST['secret-response'] == '' || $_POST['secret-response'] == $this->lng['etape1']['response']) {
                             $form_ok = false;
                         } elseif (md5($_POST['secret-response']) != $this->clients->secrete_reponse) {
                             $form_ok                      = false;
@@ -490,8 +490,6 @@ class rootController extends bootstrap
                 if (isset($_POST['send_form_contact'])) {
                     $this->contact();
                 }
-
-
             }
 
             //////////////////////////
@@ -526,17 +524,9 @@ class rootController extends bootstrap
 
                 $_SESSION['ordreProject'] = $this->ordreProject;
 
-                // Nb projets en funding. 2015-08-22 : ajout du statut 75 en comptage
-                $statutsACompterTotalProjets = $this->tabProjectDisplay;
-                $statutsACompterTotalProjets .= ',75';
-
-
                 // Liste des projets en funding
-                $this->lProjetsFunding = $this->projects->selectProjectsByStatus($statutsACompterTotalProjets, ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
-
-
-                $this->nbProjects = $this->projects->countSelectProjectsByStatus($statutsACompterTotalProjets, ' AND p.status = 0 AND p.display = 0');
-
+                $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
+                $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', 75', ' AND p.status = 0 AND p.display = 0');
 
                 // ensemblee des fonds recupérés
                 $compteurFonds = $this->transactions->sum('type_transaction = 9', 'montant_unilend-montant');
@@ -566,9 +556,7 @@ class rootController extends bootstrap
                         $this->compteur .= '
 							</div>';
                     }
-
                 }
-
             }
 
             ///////////////////////
@@ -715,7 +703,7 @@ class rootController extends bootstrap
                 //header("HTTP/1.0 404 Not Found");
                 header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
                 $this->setView('../root/404');
-            } elseif ($this->tree->status == 0 && !isset($_SESSION['user'])) {
+            } elseif ($this->tree->status == 0 && ! isset($_SESSION['user'])) {
                 //header("HTTP/1.0 404 Not Found");
                 header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
                 $this->setView('../root/404');
@@ -967,7 +955,7 @@ class rootController extends bootstrap
     public function _changeCompte()
     {
         // On check si y a un compte
-        if (!$this->clients->checkAccess()) {
+        if (! $this->clients->checkAccess()) {
             header('Location:' . $this->lurl);
             die;
         }
@@ -1326,7 +1314,7 @@ class rootController extends bootstrap
 
 
                 // Si exite pas on créer le dossier
-                if (!file_exists($pathDossier)) {
+                if (! file_exists($pathDossier)) {
                     mkdir($pathDossier);
                     chmod($pathDossier, 0777);
                 }
@@ -1430,8 +1418,8 @@ class rootController extends bootstrap
                     $naissance,
                     $this->clients->ville_naissance,
                     $this->clients_adresses->adresse_fiscal . ', ' . $this->clients_adresses->ville_fiscal . ', ' . $this->clients_adresses->cp_fiscal . ', ' . $pays_fiscal,
-                    $dateAccept);
-
+                    $dateAccept
+                );
 
                 $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement']);
             } // Entreprise
@@ -1462,7 +1450,8 @@ class rootController extends bootstrap
                     $this->clients->fonction,
                     $this->companies->name,
                     $this->companies->adresse1 . ', ' . $this->companies->zip . ', ' . $this->companies->city . ', ' . $pays_fiscal,
-                    $dateAccept);
+                    $dateAccept
+                );
 
                 $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement-personne-morale']);
             }
@@ -1493,11 +1482,7 @@ class rootController extends bootstrap
                 $contentVariables             = $tabVariables;
                 $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement']);
             }
-
-
         }
-
-
     }
 
     public function contact()
@@ -1526,41 +1511,41 @@ class rootController extends bootstrap
         if (isset($_POST['telephone']) && $_POST['telephone'] != '' && $_POST['telephone'] != $this->lng['contact']['telephone']) {
             $this->error_telephone = 'ok';
 
-            if (!is_numeric($_POST['telephone'])) {
+            if (! is_numeric($_POST['telephone'])) {
                 $this->form_ok         = false;
                 $this->error_telephone = 'nok';
             }
         }
 
-        if (!isset($_POST['demande']) || $_POST['demande'] == '' || $_POST['demande'] == 0) {
+        if (! isset($_POST['demande']) || $_POST['demande'] == '' || $_POST['demande'] == 0) {
             $this->form_ok       = false;
             $this->error_demande = 'nok';
         }
 
-        if (!isset($_POST['nom']) || $_POST['nom'] == '' || $_POST['nom'] == $this->lng['contact']['nom']) {
+        if (! isset($_POST['nom']) || $_POST['nom'] == '' || $_POST['nom'] == $this->lng['contact']['nom']) {
             $this->form_ok   = false;
             $this->error_nom = 'nok';
         }
 
-        if (!isset($_POST['prenom']) || $_POST['prenom'] == '' || $_POST['prenom'] == $this->lng['contact']['prenom']) {
+        if (! isset($_POST['prenom']) || $_POST['prenom'] == '' || $_POST['prenom'] == $this->lng['contact']['prenom']) {
             $this->form_ok      = false;
             $this->error_prenom = 'nok';
         }
 
-        if (!isset($_POST['email']) || $_POST['email'] == '' || $_POST['email'] == $this->lng['contact']['email']) {
+        if (! isset($_POST['email']) || $_POST['email'] == '' || $_POST['email'] == $this->lng['contact']['email']) {
             $this->form_ok     = false;
             $this->error_email = 'nok';
-        } elseif (!$this->ficelle->isEmail($_POST['email'])) {
+        } elseif (! $this->ficelle->isEmail($_POST['email'])) {
             $this->form_ok     = false;
             $this->error_email = 'nok';
         }
 
-        if (!isset($_POST['message']) || $_POST['message'] == '' || $_POST['message'] == $this->lng['contact']['message']) {
+        if (! isset($_POST['message']) || $_POST['message'] == '' || $_POST['message'] == $this->lng['contact']['message']) {
             $this->form_ok       = false;
             $this->error_message = 'nok';
         }
 
-        if (!isset($_POST['captcha']) || $_POST['captcha'] == '' || $_POST['captcha'] == $this->lng['contact']['captcha']) {
+        if (! isset($_POST['captcha']) || $_POST['captcha'] == '' || $_POST['captcha'] == $this->lng['contact']['captcha']) {
             $this->form_ok       = false;
             $this->error_captcha = 'nok';
         } elseif ($_SESSION['securecode'] != strtolower($_POST['captcha'])) {
@@ -1625,16 +1610,16 @@ class rootController extends bootstrap
 
             // Variables du mailing
             $varMail = array(
-                'surl' => $surl,
-                'url' => $url,
-                'email_c' => $email,
+                'surl'     => $surl,
+                'url'      => $url,
+                'email_c'  => $email,
                 'prenom_c' => $prenom,
-                'nom_c' => $nom,
-                'objet' => $objet,
-                'projets' => $this->lurl . '/' . $pageProjets,
-                'lien_fb' => $lien_fb,
-                'lien_tw' => $lien_tw);
-
+                'nom_c'    => $nom,
+                'objet'    => $objet,
+                'projets'  => $this->lurl . '/' . $pageProjets,
+                'lien_fb'  => $lien_fb,
+                'lien_tw'  => $lien_tw
+            );
 
             // Construction du tableau avec les balises EMV
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
@@ -1739,9 +1724,6 @@ class rootController extends bootstrap
             $this->error_prenom  = '';
             $this->error_email   = '';
             $this->error_captcha = '';
-
-
         }
     }
-
 }
