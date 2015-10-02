@@ -1,4 +1,4 @@
-<?
+<?php
 
 class bootstrap extends Controller
 {
@@ -24,10 +24,8 @@ class bootstrap extends Controller
             $_SESSION['redirection_url'] = $_SERVER['REQUEST_URI'];
         }
 
-        // Chargement des librairies
         $this->upload = $this->loadLib('upload');
 
-        // Chargement des datas
         $this->settings                = $this->loadData('settings');
         $this->tree_elements           = $this->loadData('tree_elements');
         $this->blocs_elements          = $this->loadData('blocs_elements');
@@ -56,7 +54,6 @@ class bootstrap extends Controller
         $this->companies               = $this->loadData('companies');
         $this->projects                = $this->loadData('projects');
 
-        // Chargement des librairies
         $this->ficelle = $this->loadLib('ficelle');
         $this->photos  = $this->loadLib('photos', array($this->spath, $this->surl));
         $this->tnmp    = $this->loadLib('tnmp', array($this->nmp, $this->nmp_desabo, $this->Config['env']));
@@ -77,8 +74,6 @@ class bootstrap extends Controller
             $this->ln->updateTextTranslations($_POST['section'], $_POST['nom'], $values);
         }
 
-        // Chargement des fichiers CSS
-        //$this->loadCss('../scripts/default/colorbox/colorbox');
         $this->loadCss('default/izicom');
         $this->loadCss('default/colorbox');
         $this->loadCss('default/fonts');
@@ -88,9 +83,7 @@ class bootstrap extends Controller
         $this->loadCss('default/style', 0, 'all', 'css', date('Ymd')); // permet d'avoir un nouveau cache de js par jour chez l'utilisateur
         $this->loadCss('default/style-edit', 0, 'all', 'css', date('Ymd'));
 
-        // Chargement des fichier JS
         $this->loadJs('default/jquery/jquery-1.10.2.min');
-        //$this->loadJs('default/colorbox/jquery.colorbox-min');
         $this->loadJs('default/bootstrap-tooltip');
         $this->loadJs('default/jquery.carouFredSel-6.2.1-packed');
         $this->loadJs('default/jquery.c2selectbox');
@@ -153,7 +146,8 @@ class bootstrap extends Controller
             'G' => 'etoile7',
             'H' => 'etoile8',
             'I' => 'etoile9',
-            'J' => 'etoile10');
+            'J' => 'etoile10'
+        );
 
         // Recuperation du bloc nos-partenaires
         $this->blocs->get('nos-partenaires', 'slug');
@@ -238,6 +232,7 @@ class bootstrap extends Controller
                         } // On renvoi chez l'emprunteur
                         elseif ($_SESSION['client']['status_pre_emp'] == 2) {
                             header('Location:' . $this->lurl . '/synthese_emprunteur');
+                            die;
                         } elseif ($_SESSION['client']['status_pre_emp'] == 3) {
                             $_SESSION['status_pre_emp'] = 1;
                             $statut_preteur             = true;
@@ -290,6 +285,7 @@ class bootstrap extends Controller
                             if ($_SESSION['client']['etape_inscription_preteur'] < 3) {
                                 $etape = ($_SESSION['client']['etape_inscription_preteur'] + 1);
                                 header('Location:' . $this->lurl . '/inscription_preteur/etape' . $etape);
+                                die;
                             } // Sinon
                             else {
 
@@ -304,6 +300,7 @@ class bootstrap extends Controller
                                     }
 
                                     header('Location:' . $this->lurl . '/profile/' . $lapage);
+                                    die;
                                 } // Sinon
                                 else {
 
@@ -323,8 +320,9 @@ class bootstrap extends Controller
                                     $listeAccept = $this->acceptations_legal_docs->selectAccepts('id_client = ' . $this->clients->id_client);
 
                                     // On cherche si on a d�j� le cgv (si pas sign� on redirige sur la page synthese pour qu'il signe)
-                                    if (!in_array($this->lienConditionsGenerales, $listeAccept)) {
+                                    if (! in_array($this->lienConditionsGenerales, $listeAccept)) {
                                         header('Location:' . $this->lurl . '/synthese');
+                                        die;
                                     } // Sinon
                                     else {
                                         // On va sur la session de redirection
@@ -333,12 +331,15 @@ class bootstrap extends Controller
                                             $redirect = explode('/', $_SESSION['redirection_url']);
                                             if ($redirect[1] == 'projects') {
                                                 header('location:' . $_SESSION['redirection_url']);
+                                                die;
                                             } else {
                                                 header('Location:' . $this->lurl . '/synthese');
+                                                die;
                                             }
                                         } // Sinon page synthese si pas de session
                                         else {
                                             header('Location:' . $this->lurl . '/synthese');
+                                            die;
                                         }
                                     }
 
@@ -410,7 +411,6 @@ class bootstrap extends Controller
                 }
             } // end if isset($_POST["captcha"])
         }// fin login
-
 
         $this->connect_ok = false;
         if ($this->clients->checkAccess()) {
@@ -516,8 +516,9 @@ class bootstrap extends Controller
 
         $this->tabOrdreProject = array(
             '',
-            'lestatut ASC, IF(lestatut = 2, p.date_retrait ,"") DESC, IF(lestatut = 1, p.date_retrait ,"") ASC,status DESC',
-            'p.date_publication DESC');
+            'lestatut ASC, IF(lestatut = 2, p.date_retrait ,"") DESC, IF(lestatut = 1, p.date_retrait ,"") ASC, p.status DESC',
+            'p.date_publication DESC'
+        );
 
 
         // Afficher les projets termin�s ? (1 : oui | 0 : non)
@@ -641,7 +642,7 @@ class bootstrap extends Controller
                     // On regarde si on trouve un partenaire
                     if ($partenaires->get($params[$indexPart], 'hash')) {
                         // on controle qu'on a pas un double clique
-                        if (!isset($_SESSION['partenaire_click'][$partenaires->id_partenaire]) || $_SESSION['partenaire_click'][$partenaires->id_partenaire] != $partenaires->id_partenaire) {
+                        if (! isset($_SESSION['partenaire_click'][$partenaires->id_partenaire]) || $_SESSION['partenaire_click'][$partenaires->id_partenaire] != $partenaires->id_partenaire) {
                             $_SESSION['partenaire_click'][$partenaires->id_partenaire] = $partenaires->id_partenaire;
 
                             // On ajoute un clic
@@ -693,7 +694,7 @@ class bootstrap extends Controller
             }
 
             // Si il a rien trouv� on regarde si on a un cookie et pas de session
-            if (!isset($_SESSION['partenaire']['id_partenaire']) && isset($_COOKIE['izicom_partenaire']) && !$getta) {
+            if (! isset($_SESSION['partenaire']['id_partenaire']) && isset($_COOKIE['izicom_partenaire']) && ! $getta) {
                 // On regarde si on trouve toujours un partenaire
                 if ($partenaires->get($_COOKIE['izicom_partenaire'], 'hash')) {
                     // On met le partenaire en session
