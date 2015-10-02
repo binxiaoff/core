@@ -608,23 +608,34 @@ class dossiersController extends bootstrap
                     $this->retour_dates_valides = "La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus de 24h.";
                 } // si date valide
                 else {
-                    // Histo user //
+                    $_SESSION['freeow']['title']   = 'Sauvegarde du r&eacute;sum&eacute;';
+                    $_SESSION['freeow']['message'] = '';
+
                     $serialize = serialize(array('id_project' => $this->projects->id_project, 'post' => $_POST));
                     $this->users_history->histo(10, 'dossier edit Resume & actions', $_SESSION['user']['id_user'], $serialize);
-                    ////////////////
-                    // Projects
-                    // photo_projet
+
                     if (isset($_FILES['photo_projet']) && $_FILES['photo_projet']['name'] != '') {
-                        $this->upload->setUploadDir($this->path, 'public/default/var/images/photos_projets/');
-                        if ($this->upload->doUpload('photo_projet')) {
-                            if ($this->projects->photo_projet != '') {
-                                @unlink($this->path . 'public/default/var/images/photos_projets/' . $this->projects->photo_projet);
+                        $this->upload->setUploadDir($this->path, 'public/default/images/dyn/projets/source/');
+                        $this->upload->setExtValide(array('jpeg', 'JPEG', 'jpg', 'JPG'));
+
+                        $oImagick = new \Imagick($_FILES['photo_projet']['tmp_name']);
+
+                        if (
+                            $oImagick->getImageWidth() > $this->Config['images']['projets']['width']
+                            || $oImagick->getImageHeight() > $this->Config['images']['projets']['height']
+                        ) {
+                            $_SESSION['freeow']['message'] .= 'Erreur upload photo : taille max dépassée (' . $this->Config['images']['projets']['width'] . 'x' . $this->Config['images']['projets']['height'] . ')<br>';
+                        } elseif ($this->upload->doUpload('photo_projet', '', true)) {
+                            // Delete previous image of the name was different from the new one
+                            if (! empty($this->projects->photo_projet) && $this->projects->photo_projet != $this->upload->getName()) {
+                                @unlink($this->path . 'public/default/images/dyn/projets/source/' . $this->projects->photo_projet);
                             }
                             $this->projects->photo_projet = $this->upload->getName();
+                        } else {
+                            $_SESSION['freeow']['message'] .= 'Erreur upload photo : ' . $this->upload->getErrorType() . '<br>';
                         }
                     }
 
-                    // photo_projet
                     if (isset($_FILES['upload_pouvoir']) && $_FILES['upload_pouvoir']['name'] != '') {
                         $this->upload->setUploadDir($this->path, 'protected/pdf/pouvoir/');
                         if ($this->upload->doUpload('upload_pouvoir')) {
@@ -637,6 +648,8 @@ class dossiersController extends bootstrap
                             $this->projects_pouvoir->url_pdf       = '/pdf/pouvoir/' . $this->clients->hash . '/' . $this->projects->id_project;
                             $this->projects_pouvoir->status        = 1;
                             $this->projects_pouvoir->create();
+                        } else {
+                            $_SESSION['freeow']['message'] .= 'Erreur upload pouvoir : ' . $this->upload->getErrorType() . '<br>';
                         }
                     }
 
@@ -1657,61 +1670,30 @@ class dossiersController extends bootstrap
                                 if ($this->Config['env'] == 'prod') {
                                     $this->email->addBCCRecipient('nicolas.lesur@unilend.fr');
                                     $this->email->addBCCRecipient('d.nandji@equinoa.com');
-
-                                    //$this->email->addBCCRecipient('d.courtier@equinoa.com');
-                                    //$this->email->addBCCRecipient('courtier.damien@gmail.com');
                                 }
                                 $this->email->setSubject(stripslashes($sujetMail));
                                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                if ($this->Config['env'] == 'prod') // nmp
-                                {
+                                if ($this->Config['env'] == 'prod') {
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($laCompanie->email_facture), $tabFiler);
-                                    // Injection du mail NMP dans la queue
                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else // non nmp
-                                {
+                                } else {
                                     $this->email->addRecipient(trim($laCompanie->email_facture));
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 }
-
-
-                                // creation pdf facture financement //
-                                // Nom du fichier
-                                /* $vraisNom = 'FACTURE-UNILEND-'. $leProject->slug;
-
-                                  $hashclient = $lemprunteur->hash;
-                                  $id_project = $leProject->id_project;
-
-                                  $url = $this->furl.'/pdf/facture_EF_html/'.$hashclient.'/'.$id_project.'/';
-
-                                  $path = $this->path.'protected/pdf/facture/';
-                                  $footer = $this->furl.'/pdf/footer_facture/';
-
-                                  // fonction pdf
-                                  $this->Web2Pdf->convert($path,$hashclient,$url,'facture_EF',$vraisNom,$id_project,'','',$footer,'nodisplay');
-
-                                  ///////////////////////////////
-
-                                 */
 
                                 $settingsControleRemb->value = 1;
                                 $settingsControleRemb->update();
                                 mail('unilend@equinoa.fr', '[ALERTE] Controle statut remboursement OK', '[ALERTE] Controle statut remboursement est bien passe pour le projet : ' . $this->projects->id_project . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
                             }
-                            // fin processe changement statut remboursement
                         }
-
-                        ////////////////////////////
                     }
 
-                    // Mise en session du message
-                    $_SESSION['freeow']['title']   = 'Sauvegarde du r&eacute;sum&eacute;';
-                    $_SESSION['freeow']['message'] = 'La sauvegarde du r&eacute;sum&eacute; a bien &eacute;t&eacute; faite !';
+                    $_SESSION['freeow']['message'] .= 'La sauvegarde du r&eacute;sum&eacute; a bien &eacute;t&eacute; faite !';
 
                     header('Location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                     die;
-                }// end if dates_valide
+                }
             }
 
 
