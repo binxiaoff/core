@@ -529,7 +529,7 @@ class cronController extends bootstrap
                             if ($preteur->status == 1) {
                                 if ($this->Config['env'] == 'prod') {
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteur->email, $tabFiler);
-                                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                                 } else {
                                     $this->email->addRecipient(trim($preteur->email));
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
@@ -697,7 +697,7 @@ class cronController extends bootstrap
                             if ($this->clients->status == 1) {
                                 if ($this->Config['env'] == 'prod') {
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                                 } else {
                                     $this->email->addRecipient(trim($this->clients->email));
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
@@ -3042,7 +3042,7 @@ class cronController extends bootstrap
                                                 {
 
                                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
-                                                                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                                                 } else
                                                 {
                                                     $this->email->addRecipient(trim($clients->email));
@@ -6789,7 +6789,7 @@ class cronController extends bootstrap
                             if ($this->clients->status == 1) {
                                 if ($this->Config['env'] == 'prod') {
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                                 } else {
                                     $this->email->addRecipient($this->clients->email);
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
@@ -7144,7 +7144,7 @@ class cronController extends bootstrap
                             if ($this->clients->status == 1) {
                                 if ($this->Config['env'] == 'prod') {
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                                 } else {
                                     $this->email->addRecipient($this->clients->email);
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
@@ -8455,140 +8455,120 @@ class cronController extends bootstrap
         $this->stopCron();
     }
 
-    /* Envoi des mails pour le remboursement anticipe
-     *
+    /**
+     * Envoi des mails pour le remboursement anticipe
      * On va checker dans la table "remboursement_anticipe_mail_a_envoyer" si il y a des mails pour un remb anticiper a envoyer
-     *  */
+     **/
     public function _RA_email()
     {
-        $this->startCron('RAMail', 5);
+        if ($this->startCron('RAMail', 5)) {
+            $this->projects                        = $this->loadData('projects');
+            $this->echeanciers                     = $this->loadData('echeanciers');
+            $this->receptions                      = $this->loadData('receptions');
+            $this->echeanciers_emprunteur          = $this->loadData('echeanciers_emprunteur');
+            $this->transactions                    = $this->loadData('transactions');
+            $this->lenders_accounts                = $this->loadData('lenders_accounts');
+            $this->clients                         = $this->loadData('clients');
+            $this->wallets_lines                   = $this->loadData('wallets_lines');
+            $this->notifications                   = $this->loadData('notifications');
+            $this->clients_gestion_mails_notif     = $this->loadData('clients_gestion_mails_notif');
+            $this->projects_status_history         = $this->loadData('projects_status_history');
+            $this->clients_gestion_notifications   = $this->loadData('clients_gestion_notifications');
+            $this->mails_text                      = $this->loadData('mails_text');
+            $this->companies                       = $this->loadData('companies');
+            $this->loans                           = $this->loadData('loans');
+            $loans                                 = $this->loadData('loans');
+            $remboursement_anticipe_mail_a_envoyer = $this->loadData('remboursement_anticipe_mail_a_envoyer');
 
-        $this->projects                      = $this->loadData('projects');
-        $this->echeanciers                   = $this->loadData('echeanciers');
-        $this->receptions                    = $this->loadData('receptions');
-        $this->echeanciers_emprunteur        = $this->loadData('echeanciers_emprunteur');
-        $this->transactions                  = $this->loadData('transactions');
-        $this->lenders_accounts              = $this->loadData('lenders_accounts');
-        $this->clients                       = $this->loadData('clients');
-        $this->wallets_lines                 = $this->loadData('wallets_lines');
-        $this->notifications                 = $this->loadData('notifications');
-        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
-        $this->projects_status_history       = $this->loadData('projects_status_history');
-        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $this->mails_text                    = $this->loadData('mails_text');
-        $this->companies                     = $this->loadData('companies');
-        $this->loans                         = $this->loadData('loans');
-        $loans                               = $this->loadData('loans');
+            // recup des mails à envoyer pour les projets en ra en attente, 1 seul à la fois car traitement pouvant etre lourd
+            $L_mail_ra_en_attente = $remboursement_anticipe_mail_a_envoyer->select('statut = 0', 'added ASC', '', 1);
 
-        $remboursement_anticipe_mail_a_envoyer = $this->loadData('remboursement_anticipe_mail_a_envoyer');
+            $this->settings->get('Facebook', 'type');
+            $lien_fb = $this->settings->value;
 
-        $L_mail_ra_en_attente = $remboursement_anticipe_mail_a_envoyer->select('statut = 0', 'added ASC', '', 1);
-        if (count($L_mail_ra_en_attente) > 0) {
+            $this->settings->get('Twitter', 'type');
+            $lien_tw = $this->settings->value;
+
+            $this->mails_text->get('preteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
+
             foreach ($L_mail_ra_en_attente as $ra_email) {
+                $this->oLogger->addRecord('INFO', 'Start email ' . $ra_email['id_reception'], array('ID' => $this->iStartTime,'time' => time() - $this->iStartTime));
+
+                // Tout se base sur cette variable !
                 $id_reception = $ra_email['id_reception'];
+
                 $this->receptions->get($id_reception);
                 $this->projects->get($this->receptions->id_project);
                 $this->companies->get($this->projects->id_company, 'id_company');
 
-                $this->settings->get('Facebook', 'type');
-
-                // Twitter
-                $this->settings->get('Twitter', 'type');
-
                 $L_preteur_on_projet = $this->echeanciers->get_liste_preteur_on_project($this->projects->id_project);
-
-                $sum_ech_restant = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');
+                $sum_ech_restant     = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');
 
                 foreach ($L_preteur_on_projet as $preteur) {
+                    $this->oLogger->addRecord('INFO', 'Lender ' . $preteur['id_lender'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
+
                     $reste_a_payer_pour_preteur = $this->echeanciers->getSumRestanteARembByProject_capital(' AND id_lender =' . $preteur['id_lender'] . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status_ra = 1 AND id_project = ' . $this->projects->id_project);
+
                     $this->lenders_accounts->get($preteur['id_lender'], 'id_lender_account');
                     $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
-                    $this->mails_text->get('preteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
-                    $sum_interet = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status_ra = 0 AND status = 1 AND id_lender =' . $preteur['id_lender'], 'interets');
+                    if ($this->clients->status == 1) {
+                        $notifications                  = $this->loadData('notifications');
+                        $notifications->type            = 2; // remb
+                        $notifications->id_lender       = $preteur['id_lender'];
+                        $notifications->id_project      = $this->projects->id_project;
+                        $notifications->amount          = ($reste_a_payer_pour_preteur * 100);
+                        $notifications->id_notification = $notifications->create();
 
-                    if ($reste_a_payer_pour_preteur >= 2) {
-                        $euros = ' euros';
-                    } else {
-                        $euros = ' euro';
-                    }
+                        $this->transactions->get($preteur['id_loan'], 'id_loan_remb');
 
-                    $rembNetEmail = number_format($reste_a_payer_pour_preteur, 2, ',', ' ') . $euros;
+                        $this->clients_gestion_mails_notif                                 = $this->loadData('clients_gestion_mails_notif');
+                        $this->clients_gestion_mails_notif->id_client                      = $this->clients->id_client;
+                        $this->clients_gestion_mails_notif->id_notif                       = 5; // remb preteur
+                        $this->clients_gestion_mails_notif->date_notif                     = date('Y-m-d H:i:s');
+                        $this->clients_gestion_mails_notif->id_notification                = $notifications->id_notification;
+                        $this->clients_gestion_mails_notif->id_transaction                 = $this->transactions->id_transaction;
+                        $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
 
-                    $getsolde = $this->transactions->getSolde($this->clients->id_client);
-                    if ($getsolde > 1) {
-                        $euros = ' euros';
-                    } else {
-                        $euros = ' euro';
-                    }
-                    $solde = number_format($getsolde, 2, ',', ' ') . $euros;
+                        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
 
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
+                        if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 5, 'immediatement') == true) {
+                            $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
+                            $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                            $this->clients_gestion_mails_notif->update();
 
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
+                            $loans->get($preteur['id_loan'], 'id_loan');
 
-                    $loans->get($preteur['id_loan'], 'id_loan');
+                            $getsolde = $this->transactions->getSolde($this->clients->id_client);
+                            $varMail  = array(
+                                'surl'                 => $this->surl,
+                                'url'                  => $this->furl,
+                                'prenom_p'             => $this->clients->prenom,
+                                'nomproject'           => $this->projects->title,
+                                'nom_entreprise'       => $this->companies->name,
+                                'taux_bid'             => number_format($loans->rate, 2, ',', ' '),
+                                'nbecheancesrestantes' => $sum_ech_restant,
+                                'interetsdejaverses'   => number_format($this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status_ra = 0 AND status = 1 AND id_lender =' . $preteur['id_lender'], 'interets'), 2, ',', ' '),
+                                'crdpreteur'           => number_format($reste_a_payer_pour_preteur, 2, ',', ' ') . (($reste_a_payer_pour_preteur >= 2) ? ' euros' : ' euro'),
+                                'Datera'               => date('d/m/Y'),
+                                'solde_p'              => number_format($getsolde, 2, ',', ' ') . (($getsolde >= 2) ? ' euros' : ' euro'),
+                                'motif_virement'       => $motif,
+                                'lien_fb'              => $lien_fb,
+                                'lien_tw'              => $lien_tw
+                            );
+                            $tabVars  = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    $this->transactions->get($preteur['id_loan'], 'id_loan_remb');
+                            $this->email = $this->loadLib('email', array());
+                            $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
+                            $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
+                            $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
 
-                    $varMail = array(
-                        'surl'                 => $this->surl,
-                        'url'                  => $this->furl,
-                        'prenom_p'             => $this->clients->prenom,
-                        'nomproject'           => $this->projects->title,
-                        'nom_entreprise'       => $this->companies->name,
-                        'taux_bid'             => number_format($loans->rate, 2, ',', ' '),
-                        'nbecheancesrestantes' => $sum_ech_restant,
-                        'interetsdejaverses'   => number_format($sum_interet, 2, ',', ' '),
-                        'crdpreteur'           => $rembNetEmail,
-                        'Datera'               => date('d/m/Y'),
-                        'solde_p'              => $solde,
-                        'motif_virement'       => $motif,
-                        'lien_fb'              => $lien_fb,
-                        'lien_tw'              => $lien_tw
-                    );
-
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email', array());
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    $notifications                  = $this->loadData('notifications');
-                    $notifications->type            = 2; // remb
-                    $notifications->id_lender       = $preteur['id_lender'];
-                    $notifications->id_project      = $this->projects->id_project;
-                    $notifications->amount          = ($reste_a_payer_pour_preteur * 100);
-                    $notifications->id_notification = $notifications->create();
-
-                    $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
-                    $this->clients_gestion_mails_notif->id_client                      = $this->clients->id_client;
-                    $this->clients_gestion_mails_notif->id_notif                       = 5; // remb preteur
-                    $this->clients_gestion_mails_notif->date_notif                     = date('Y-m-d H:i:s');
-                    $this->clients_gestion_mails_notif->id_notification                = $notifications->id_notification;
-                    $this->clients_gestion_mails_notif->id_transaction                 = $this->transactions->id_transaction;
-                    $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
-                    $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-
-                    if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 5, 'immediatement') == true) {
-                        $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                        $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
-                        $this->clients_gestion_mails_notif->update();
-
-                        if ($this->clients->status == 1) {
-                            if ($this->Config['env'] == 'prod') {
+                            if ($this->Config['env'] === 'prod') {
                                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                             } else {
                                 $this->email->addRecipient(trim($this->clients->email));
-                                $this->email->addBCCRecipient('k1@david.equinoa.net');
+                                $this->email->addBCCRecipient($this->sDestinatairesDebug);
                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                             }
                         }
@@ -8599,10 +8579,12 @@ class cronController extends bootstrap
                 $remboursement_anticipe_mail_a_envoyer->get($ra_email['id_remboursement_anticipe_mail_a_envoyer']);
                 $remboursement_anticipe_mail_a_envoyer->statut = 1;
                 $remboursement_anticipe_mail_a_envoyer->update();
-            }
-        }
 
-        $this->stopCron();
+                $this->oLogger->addRecord('INFO', 'End email ' . $ra_email['id_reception'], array('ID'   => $this->iStartTime, 'time' => time() - $this->iStartTime));
+            }
+
+            $this->stopCron();
+        }
     }
 
     /**
@@ -8653,8 +8635,9 @@ class cronController extends bootstrap
     }
 
     /**
-     * @param $sName  Cron name (used for settings name)
-     * @param $iDelay Minimum delay (in minutes) before we consider cron has crashed and needs to be restarted
+     * @param $sName  string Cron name (used for settings name)
+     * @param $iDelay int    Minimum delay (in minutes) before we consider cron has crashed and needs to be restarted
+     * @return bool
      */
     private function startCron($sName, $iDelay)
     {
