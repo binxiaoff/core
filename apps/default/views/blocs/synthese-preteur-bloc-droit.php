@@ -336,7 +336,6 @@
                     case projects_status::PROBLEME:
                     case projects_status::RECOUVREMENT:
                     case projects_status::REMBOURSEMENT_ANTICIPE:
-                    case projects_status::PROBLEME_J_PLUS_X:
                         foreach ($this->loans->select('id_project = ' . $f['id_project']) as $b) {
                             $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                             $montantBas += ($b['amount'] / 100);
