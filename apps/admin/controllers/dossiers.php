@@ -306,7 +306,7 @@ class dossiersController extends bootstrap
                 }
             }
             if ($creationbilansmanquant == true) {
-                header('location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                header('Location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                 die;
             }
 
@@ -2094,7 +2094,7 @@ class dossiersController extends bootstrap
                 header('Location:' . $this->lurl . '/dossiers/add/create_etape2');
                 die;
             } else {
-                header('location:' . $this->lurl . '/dossiers/add/create');
+                header('Location:' . $this->lurl . '/dossiers/add/create');
                 die;
             }
         }
@@ -2173,7 +2173,7 @@ class dossiersController extends bootstrap
                 }
             }
 
-            header('location:' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
+            header('Location:' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
             die;
         } elseif (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
 
@@ -3478,7 +3478,7 @@ class dossiersController extends bootstrap
                         $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 24, $this->projects->id_project);
                     }
 
-                    header('location:' . $this->lurl . '/dossiers/detail_remb/' . $this->projects->id_project);
+                    header('Location:' . $this->lurl . '/dossiers/detail_remb/' . $this->projects->id_project);
                     die;
                 }
             }

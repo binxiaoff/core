@@ -339,7 +339,7 @@
                     <?php
 
                     if ($this->virement_recu) {
-                     } else {
+                    } else {
                         ?>
                         <tr>
                             <th>Motif à indiquer sur le virement :</th>
@@ -733,11 +733,9 @@
             <br/><br/>
             <input type="hidden" name="statut_encours" id="statut_encours" value="0">
             <input type="hidden" name="send_form_dossier_resume">
-
             <div class="btnDroite submitdossier">
                 <button type="submit" class="btn">Sauvegarder</button>
             </div>
-
         </div>
     </form>
     <hr style="border: 2px solid #B10366;">
@@ -2318,7 +2316,6 @@
             ?>
         </div>
         <br/>
-
         <div id="content_etape7"><?php
             // si statut revueA
             if ($this->current_projects_status->status >= 33) {
@@ -2461,27 +2458,17 @@
                             <input type="button" onclick="valid_rejete_etape7(1,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">
                             <input type="button" onclick="valid_rejete_etape7(2,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
                             <input type="button" onclick="valid_rejete_etape7(4,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" value="Plus d'informations">
-
-
                             <?php
                         }
                         ?>
                     </div>
-
                 </div>
                 <?php
             }
             ?></div>
-
-
     </div>
-
-
 </div>
-
 <script>
-
-
     <?php
     for ($i = 1; $i <= 7; $i++)
     {
@@ -2494,7 +2481,6 @@
 ?>
 
     $("#dossier_resume").submit(function (event) {
-
         if ($("#statut_encours").val() == '0') {
             $("#statut_encours").val('1');
             $(".submitdossier").remove();
@@ -2519,18 +2505,18 @@
             $('.statut_dirigeant3_etape2').hide('slow');
         }
     });
+
     $('#enterprise2_etape2').click(function () {
         if ($(this).attr('checked') == true) {
             $('.statut_dirigeant_etape2').show('slow');
             $('.statut_dirigeant3_etape2').hide('slow');
         }
     });
+
     $('#enterprise3_etape2').click(function () {
         if ($(this).attr('checked') == true) {
             $('.statut_dirigeant_etape2').show('slow');
             $('.statut_dirigeant3_etape2').show('slow');
         }
     });
-
-
 </script>

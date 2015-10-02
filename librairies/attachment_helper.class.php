@@ -16,15 +16,15 @@ class attachment_helper
      */
     public function upload($ownerId, $ownerType, $attachmentType, $field, $path, $uploadPath, $upload, $attachment, $sNewName = '', $aFiles = null)
     {
-        if($aFiles === null) {
+        if (is_null($aFiles)) {
             $aFiles = $_FILES;
         }
 
-        if (false === $upload instanceof upload) {
+        if (false === ($upload instanceof \upload)) {
             return false;
         }
 
-        if (false === $attachment instanceof attachment) {
+        if (false === ($attachment instanceof \attachment)) {
             return false;
         }
 

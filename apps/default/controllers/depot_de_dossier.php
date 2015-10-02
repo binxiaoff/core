@@ -216,34 +216,28 @@ class depot_de_dossierController extends bootstrap
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
                             header('Location: ' . $this->lurl . '/depot_de_dossier/nok/no-siren');
                             die;
-                            break;
                         case '2_Etablissement sans RCS':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
                             header('Location: ' . $this->lurl . '/depot_de_dossier/nok/no-rcs');
                             die;
-                            break;
                         case '3_Procédure Active':
                         case '4_Bilan de plus de 450 jours':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
                             header('Location: ' . $this->lurl . '/depot_de_dossier/nok');
                             die;
-                            break;
                         case '5_Fonds Propres Négatifs':
                         case '6_EBE Négatif':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
                             header('Location: ' . $this->lurl . '/depot_de_dossier/nok/rex-nega');
                             die;
-                            break;
                         case '7_SIREN inconnu':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
                             header('Location: ' . $this->lurl . '/depot_de_dossier/nok/no-siren');
                             die;
-                            break;
                         case '9_bilan sup 450 jours':
                             $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
                             header('Location: ' . $this->lurl . '/depot_de_dossier/nok');
                             die;
-                            break;
                         case '8_Eligible':
                             $this->clients_adresses->id_client = $this->clients->id_client;
                             $this->clients_adresses->create();

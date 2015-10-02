@@ -139,7 +139,7 @@ class attachment_type extends attachment_type_crud
         $result   = array();
         while ($record = $this->bdd->fetch_assoc($resultat)) {
 
-            if(in_array($record['id'], $aTypes)){
+            if (in_array($record['id'], $aTypes)){
                 $result[] = $record;
             }
         }

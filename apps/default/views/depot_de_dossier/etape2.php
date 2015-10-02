@@ -365,10 +365,9 @@ elseif($this->error_email_exist == true){
     });
 </script>
 
-<?
+<?php
 if ($this->Config['env'] == 'prod') {
     // TAG Unilend -Ligatus
     ?>
     <img src="https://ext.ligatus.com/conversion/?c=65835&a=7195" width="1" height="1"/><?
 }
-?>
