@@ -195,9 +195,7 @@
                     </tr>
                     <tr>
                         <th><label for="photo_projet">Photo projet :</label></th>
-                        <td>
-                            <input type="file" name="photo_projet" id="photo_projet"/><br/><a target="_blank" href="<?= $this->surl ?>/var/images/photos_projets/<?= $this->projects->photo_projet ?>"><?= $this->projects->photo_projet ?></a>
-                        </td>
+                        <td><input type="file" name="photo_projet" id="photo_projet" /><br /><a target="_blank" href="<?= $this->surl ?>/images/dyn/projets/source/<?= $this->projects->photo_projet ?>"><?= $this->projects->photo_projet ?></a></td>
                     </tr>
                     <tr>
                         <th><label for="lien_video">Lien vidéo :</label></th>
@@ -719,8 +717,7 @@
                         if ($("#status").val() == 40) {
                             $(".change_statut").hide();
                         }
-                        elseif($("#status").val() == 80)
-                        {
+                        else if ($("#status").val() == 80) {
                             /* dans le cas d'un changement vers probleme, on affiche une box de conf */
 
                         }
@@ -762,11 +759,11 @@
             ?>
             <table class="tablesorter">
                 <thead>
-                <tr>
-                    <th width="120" align="center">Date ajout</th>
-                    <th align="center">Contenu</th>
-                    <th width="50" align="center">&nbsp;</th>
-                </tr>
+                    <tr>
+                        <th width="120" align="center">Date ajout</th>
+                        <th align="center">Contenu</th>
+                        <th width="50" align="center">&nbsp;</th>
+                    </tr>
                 </thead>
                 <tbody>
                 <?php
@@ -1887,7 +1884,7 @@
 
                     </table>
                 </div>
-                <br/><br/>
+                <br /><br />
 
                 <div id="valid_etape4">Données sauvegardées</div>
                 <div class="btnDroite">
@@ -2226,9 +2223,7 @@
                                     </tr>
                                     <tr>
                                         <th><label for="individuel">Individuel</label></th>
-                                        <td>
-                                            <input tabindex="5" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
-                                        </td>
+                                        <td><input tabindex="5" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10</td>
                                     </tr>
                                 </table>
                             </td>
@@ -2370,9 +2365,7 @@
                                     </tr>
                                     <tr>
                                         <th><label for="tresorerie2">Trésorerie</label></th>
-                                        <td>
-                                            <input tabindex="11" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie ?>" name="tresorerie2" id="tresorerie2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
-                                        </td>
+                                        <td><input tabindex="11" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie ?>" name="tresorerie2" id="tresorerie2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10</td>
                                     </tr>
                                 </table>
                             </td>
@@ -2386,9 +2379,7 @@
                                     </tr>
                                     <tr>
                                         <th><label for="individuel2">Individuel</label></th>
-                                        <td>
-                                            <input tabindex="13" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel2" id="individuel2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
-                                        </td>
+                                        <td><input tabindex="13" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel2" id="individuel2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10</td>
                                     </tr>
                                 </table>
                             </td>

@@ -116,12 +116,10 @@ class dossiersController extends bootstrap
 
             // On recup le detail de l'entreprise
             if (!$this->companies_details->get($this->projects->id_company, 'id_company')) {
-                $this->companies_details->id_company = $this->projects->id_company;
-
+                $this->companies_details->id_company               = $this->projects->id_company;
                 $this->companies_details->date_dernier_bilan       = (date('Y') - 1) . '-12-31';
                 $this->companies_details->date_dernier_bilan_mois  = '12';
                 $this->companies_details->date_dernier_bilan_annee = (date('Y') - 1);
-
                 $this->companies_details->create();
             }
 
@@ -170,7 +168,7 @@ class dossiersController extends bootstrap
                     }
                 }
 
-                header('location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                header('Location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                 die;
             }
 
@@ -180,8 +178,6 @@ class dossiersController extends bootstrap
             // On verifie si on a bien les 3 dernieres années
             $a = 1;
             foreach ($this->lCompanies_actif_passif as $k => $cap) {
-                // recuperation des années en bdd
-                //$lesDates[$cap['ordre']] = $cap['annee'];
                 $lesDates[$k] = $cap['annee'];
                 $a++;
             }
@@ -215,7 +211,6 @@ class dossiersController extends bootstrap
 
             // Récupération des infos pour le tableau de REMBOURSEMENT ANTICIPE - Tout se gère dans cette fonction
             $this->recup_info_remboursement_anticipe($this->projects->id_project);
-
             //END REMBOURSEMENT ANTICIPE
 
             if ($dates_nok == true) {
@@ -240,7 +235,7 @@ class dossiersController extends bootstrap
                       $this->companies_actif_passif->delete($this->companies->id_company,'annee = "'.$cap['annee'].'" AND id_company');
                       } */
                 }
-                header('location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                header('Location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                 die;
             }
 
@@ -253,7 +248,6 @@ class dossiersController extends bootstrap
             //$anneeProjet = $anneeProjet[0];
             /// date dernier bilan ///
             if ($this->companies_details->date_dernier_bilan == '0000-00-00') {
-
                 $this->date_dernier_bilan_jour  = '31';
                 $this->date_dernier_bilan_mois  = '12';
                 $this->date_dernier_bilan_annee = (date('Y') - 1);
@@ -315,6 +309,7 @@ class dossiersController extends bootstrap
                 header('location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                 die;
             }
+
             ////////////////////////////////////////////////
             // liste les status
             // les statuts dispo sont conditionnés par le statut courant
@@ -366,7 +361,7 @@ class dossiersController extends bootstrap
                         $_SESSION['freeow']['title']   = 'Donn&eacute;es Altares';
                         $_SESSION['freeow']['message'] = 'soci&eacute;t&eacute; non &eacute;ligible';
 
-                        header('location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                        header('Location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                         die;
                     }
                     // si pas ok 2
@@ -376,18 +371,16 @@ class dossiersController extends bootstrap
                         $_SESSION['freeow']['title']   = 'Donn&eacute;es Altares';
                         $_SESSION['freeow']['message'] = 'soci&eacute;t&eacute; non &eacute;ligible';
 
-                        header('location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                        header('Location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                         die;
                     } else {
                         $this->altares_ok = true;
 
-                        $siege = $result->myInfo->siege;
-
+                        $siege    = $result->myInfo->siege;
                         $identite = $result->myInfo->identite;
 
                         $syntheseFinanciereInfo = $result->myInfo->syntheseFinanciereInfo;
                         $syntheseFinanciereList = $result->myInfo->syntheseFinanciereInfo->syntheseFinanciereList;
-
                         $posteActifList         = array();
                         $postePassifList        = array();
                         $syntheseFinanciereInfo = array();
@@ -412,11 +405,10 @@ class dossiersController extends bootstrap
                             $i++;
                         }
 
-                        $this->companies->name    = $identite->raisonSociale;
-                        $this->companies->forme   = $identite->formeJuridique;
-                        $this->companies->capital = $identite->capital;
-                        $this->companies->siret   = $identite->siret;
-
+                        $this->companies->name     = $identite->raisonSociale;
+                        $this->companies->forme    = $identite->formeJuridique;
+                        $this->companies->capital  = $identite->capital;
+                        $this->companies->siret    = $identite->siret;
                         $this->companies->adresse1 = $identite->rue;
                         $this->companies->city     = $identite->ville;
                         $this->companies->zip      = $identite->codePostal;
@@ -449,7 +441,6 @@ class dossiersController extends bootstrap
                             $this->date_dernier_bilan_annee = $dateDernierBilan[0];
                         }
 
-                        // Mise a jour
                         $this->companies_details->update();
                         $this->companies->update();
 
@@ -461,10 +452,10 @@ class dossiersController extends bootstrap
                         $ldate[0] = date('Y') - 3;
 
                         // on génère un tableau avec les données
-                        for ($i = 0; $i < 5; $i++) // on parcourt les 5 années
-                        {
-                            for ($a = 0; $a < 3; $a++)// on parcourt les 3 dernieres années
-                            {
+                        // on parcourt les 5 années
+                        for ($i = 0; $i < 5; $i++) {
+                            // on parcourt les 3 dernieres années
+                            for ($a = 0; $a < 3; $a++) {
                                 // si y a une année du bilan qui correxpond a une année du tableau
                                 if ($derniersBilans[$a] == $ldate[$i]) {
                                     // On recup les données de cette année
@@ -485,7 +476,6 @@ class dossiersController extends bootstrap
                         }
 
                         // Debut actif/passif
-
                         foreach ($derniersBilans as $annees) {
                             foreach ($posteActifList[$annees] as $a) {
                                 $ActifPassif[$annees][$a->posteCle] = $a->montant;
@@ -496,8 +486,11 @@ class dossiersController extends bootstrap
                         }
 
                         $i = 0;
+
                         foreach ($this->lCompanies_actif_passif as $k => $ap) {
                             if ($this->companies_actif_passif->get($ap['annee'], 'id_company = ' . $ap['id_company'] . ' AND annee')) {
+                                //$this->companies_actif_passif->annee = $derniersBilans[$i];
+                                //$this->companies_actif_passif->ordre = $i+1;
                                 // Actif
                                 $this->companies_actif_passif->immobilisations_corporelles   = $ActifPassif[$ap['annee']]['posteBR_IMCOR'];
                                 $this->companies_actif_passif->immobilisations_incorporelles = $ActifPassif[$ap['annee']]['posteBR_IMMINC'];
@@ -539,7 +532,7 @@ class dossiersController extends bootstrap
                     $_SESSION['freeow']['message'] = 'Donn&eacute;es Altares &eacute;rreur !';
                 }
 
-                header('location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                header('Location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                 die;
             }
 
@@ -550,19 +543,16 @@ class dossiersController extends bootstrap
             // Là dedans on traite plein de truc important
             // Formulaire sauvegarder resume et actions
             if (isset($_POST['send_form_dossier_resume'])) {
-
                 // On check avant la validation que la date de publication & date de retrait sont OK sinon on bloque(KLE)
                 /* La date de publication doit être au minimum dans 5min et la date de retrait à plus de 5min (pas de contrainte) */
                 $tab_date_pub_post          = explode('/', $_POST['date_publication']);
                 $date_publication_full_test = $tab_date_pub_post[2] . '-' . $tab_date_pub_post[1] . '-' . $tab_date_pub_post[0] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute'] . ':00';
+                $tab_date_retrait_post      = explode('/', $_POST['date_retrait']);
+                $date_retrait_full_test     = $tab_date_retrait_post[2] . '-' . $tab_date_retrait_post[1] . '-' . $tab_date_retrait_post[0] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':00';
+                $date_auj_plus_5min         = date("Y-m-d H:i:s", mktime(date('H'), date('i') + 5, date('s'), date("m"), date("d"), date("Y")));
+                $date_auj_plus_1jour        = date("Y-m-d H:i:s", mktime(date('H'), date('i'), date('s'), date("m"), date("d") + 1, date("Y")));
+                $dates_valide               = false;
 
-                $tab_date_retrait_post  = explode('/', $_POST['date_retrait']);
-                $date_retrait_full_test = $tab_date_retrait_post[2] . '-' . $tab_date_retrait_post[1] . '-' . $tab_date_retrait_post[0] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':00';
-
-                $date_auj_plus_5min  = date("Y-m-d H:i:s", mktime(date('H'), date('i') + 5, date('s'), date("m"), date("d"), date("Y")));
-                $date_auj_plus_1jour = date("Y-m-d H:i:s", mktime(date('H'), date('i'), date('s'), date("m"), date("d") + 1, date("Y")));
-
-                $dates_valide = false;
                 if ($date_publication_full_test > $date_auj_plus_5min && $date_retrait_full_test > $date_auj_plus_1jour) {
                     $dates_valide = true;
                 }
@@ -573,23 +563,34 @@ class dossiersController extends bootstrap
                     $this->retour_dates_valides = "La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus de 24h.";
                 } // si date valide
                 else {
-                    // Histo user //
+                    $_SESSION['freeow']['title']   = 'Sauvegarde du r&eacute;sum&eacute;';
+                    $_SESSION['freeow']['message'] = '';
+
                     $serialize = serialize(array('id_project' => $this->projects->id_project, 'post' => $_POST));
                     $this->users_history->histo(10, 'dossier edit Resume & actions', $_SESSION['user']['id_user'], $serialize);
-                    ////////////////
-                    // Projects
-                    // photo_projet
+
                     if (isset($_FILES['photo_projet']) && $_FILES['photo_projet']['name'] != '') {
-                        $this->upload->setUploadDir($this->path, 'public/default/var/images/photos_projets/');
-                        if ($this->upload->doUpload('photo_projet')) {
-                            if ($this->projects->photo_projet != '') {
-                                @unlink($this->path . 'public/default/var/images/photos_projets/' . $this->projects->photo_projet);
+                        $this->upload->setUploadDir($this->path, 'public/default/images/dyn/projets/source/');
+                        $this->upload->setExtValide(array('jpeg', 'JPEG', 'jpg', 'JPG'));
+
+                        $oImagick = new \Imagick($_FILES['photo_projet']['tmp_name']);
+
+                        if (
+                            $oImagick->getImageWidth() > $this->Config['images']['projets']['width']
+                            || $oImagick->getImageHeight() > $this->Config['images']['projets']['height']
+                        ) {
+                            $_SESSION['freeow']['message'] .= 'Erreur upload photo : taille max dépassée (' . $this->Config['images']['projets']['width'] . 'x' . $this->Config['images']['projets']['height'] . ')<br>';
+                        } elseif ($this->upload->doUpload('photo_projet', '', true)) {
+                            // Delete previous image of the name was different from the new one
+                            if (! empty($this->projects->photo_projet) && $this->projects->photo_projet != $this->upload->getName()) {
+                                @unlink($this->path . 'public/default/images/dyn/projets/source/' . $this->projects->photo_projet);
                             }
                             $this->projects->photo_projet = $this->upload->getName();
+                        } else {
+                            $_SESSION['freeow']['message'] .= 'Erreur upload photo : ' . $this->upload->getErrorType() . '<br>';
                         }
                     }
 
-                    // photo_projet
                     if (isset($_FILES['upload_pouvoir']) && $_FILES['upload_pouvoir']['name'] != '') {
                         $this->upload->setUploadDir($this->path, 'protected/pdf/pouvoir/');
                         if ($this->upload->doUpload('upload_pouvoir')) {
@@ -601,8 +602,9 @@ class dossiersController extends bootstrap
                             $this->projects_pouvoir->id_universign = 'no_universign';
                             $this->projects_pouvoir->url_pdf       = '/pdf/pouvoir/' . $this->clients->hash . '/' . $this->projects->id_project;
                             $this->projects_pouvoir->status        = 1;
-
                             $this->projects_pouvoir->create();
+                        } else {
+                            $_SESSION['freeow']['message'] .= 'Erreur upload pouvoir : ' . $this->upload->getErrorType() . '<br>';
                         }
                     }
 
@@ -613,7 +615,6 @@ class dossiersController extends bootstrap
                     $this->projects->amount         = str_replace(' ', '', str_replace(',', '.', $_POST['montant']));
                     $this->projects->target_rate    = '-';
                     $this->projects->id_analyste    = $_POST['analyste'];
-                    $this->projects->id_commercial  = $_POST['commercial'];
                     $this->projects->lien_video     = $_POST['lien_video'];
                     $this->projects->display        = $_POST['display_project'];
 
@@ -744,11 +745,9 @@ class dossiersController extends bootstrap
                             $mess .= '</ul>';
 
                             if (strlen($mess) > 9) {
-                                $to = implode(',', $this->Config['DebugAlertesBusiness']);
-                                $to .= ($this->Config['env'] == 'prod') ? ', nicolas.lesur@unilend.fr' : '';
-                                // subject
+                                $to      = implode(',', $this->Config['DebugAlertesBusiness']);
+                                $to     .= ($this->Config['env'] == 'prod') ? ', nicolas.lesur@unilend.fr' : '';
                                 $subject = '[Rappel] Donnees projet manquantes';
-                                // message
                                 $message = '
                                 <html>
                                 <head>
@@ -759,25 +758,18 @@ class dossiersController extends bootstrap
                                     <p>Listes des informations manquantes sur le projet ' . $this->projects->id_project . ' : </p>
                                     ' . $mess . '
                                 </body>
-                                </html>
-                                ';
+                                </html>';
 
                                 // To send HTML mail, the Content-type header must be set
                                 $headers = 'MIME-Version: 1.0' . "\r\n";
                                 $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-                                // Additional headers
-
                                 $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
-                                //$headers .= 'From: Unilend <courtier.damien@gmail.com>' . "\r\n";
-                                // Mail it
                                 mail($to, $subject, $message, $headers);
                             }
                         }
 
                         // si statut = default
                         if ($_POST['status'] == '120') {
-
                             // on envoie un mail aux preteurs
                             $lPreteurs = $this->loans->select('id_project = ' . $this->projects->id_project);
 
@@ -1049,6 +1041,7 @@ class dossiersController extends bootstrap
                                 // On recup lender
                                 $projects->get($l['id_project'], 'id_project');
                                 // On recup l'entreprise
+
 
                                 // On recup lender
                                 $lenders->get($l['id_lender'], 'id_lender_account');
@@ -1454,13 +1447,10 @@ class dossiersController extends bootstrap
                                 $this->email->setSubject(stripslashes($sujetMail));
                                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                if ($this->Config['env'] == 'prod') // nmp
-                                {
+                                if ($this->Config['env'] == 'prod') {
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($laCompanie->email_facture), $tabFiler);
-                                    // Injection du mail NMP dans la queue
                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else // non nmp
-                                {
+                                } else {
                                     $this->email->addRecipient(trim($laCompanie->email_facture));
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 }
@@ -1472,11 +1462,9 @@ class dossiersController extends bootstrap
                         }
                     }
 
-                    // Mise en session du message
-                    $_SESSION['freeow']['title']   = 'Sauvegarde du r&eacute;sum&eacute;';
-                    $_SESSION['freeow']['message'] = 'La sauvegarde du r&eacute;sum&eacute; a bien &eacute;t&eacute; faite !';
+                    $_SESSION['freeow']['message'] .= 'La sauvegarde du r&eacute;sum&eacute; a bien &eacute;t&eacute; faite !';
 
-                    header('location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                    header('Location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                     die;
                 }
             }
@@ -2096,14 +2084,14 @@ class dossiersController extends bootstrap
                 //$this->clients->nom = $this->ficelle->majNom($_POST['nom']);
                 //$this->clients->update();
 
-                header('location:' . $this->lurl . '/dossiers/add/create_etape2/' . $_POST['id_client']);
+                header('Location:' . $this->lurl . '/dossiers/add/create_etape2/' . $_POST['id_client']);
                 die;
             } // Si le client n'existe pas
             elseif ($_POST['leclient'] == 2) {
                 //$_POST['newPrenom']
                 //$_POST['newNom']
 
-                header('location:' . $this->lurl . '/dossiers/add/create_etape2');
+                header('Location:' . $this->lurl . '/dossiers/add/create_etape2');
                 die;
             } else {
                 header('location:' . $this->lurl . '/dossiers/add/create');
@@ -2323,7 +2311,7 @@ class dossiersController extends bootstrap
                         $_SESSION['freeow']['title']   = 'Donn&eacute;es Altares';
                         $_SESSION['freeow']['message'] = 'soci&eacute;t&eacute; non &eacute;ligible';
 
-                        header('location:' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
+                        header('Location:' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
                         die;
                     }
                     // si pas ok 2
@@ -2333,7 +2321,7 @@ class dossiersController extends bootstrap
                         $_SESSION['freeow']['title']   = 'Donn&eacute;es Altares';
                         $_SESSION['freeow']['message'] = 'soci&eacute;t&eacute; non &eacute;ligible';
 
-                        header('location:' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
+                        header('Location:' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
                         die;
                     } // si ok
                     else {
@@ -2485,7 +2473,7 @@ class dossiersController extends bootstrap
                     $_SESSION['freeow']['message'] = 'Donn&eacute;es Altares &eacute;rreur !';
                 }
 
-                header('location:' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
+                header('Location:' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
                 die;
             }
         }
@@ -2851,13 +2839,11 @@ class dossiersController extends bootstrap
                                                 $this->email->setSubject(stripslashes($sujetMail));
                                                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                                if ($this->Config['env'] == 'prod') // nmp
-                                                {
+                                                if ($this->Config['env'] == 'prod') {
                                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                                                     // Injection du mail NMP dans la queue
                                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                                } else // non nmp
-                                                {
+                                                } else {
                                                     $this->email->addRecipient(trim($this->clients->email));
                                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                                 }
@@ -3191,7 +3177,7 @@ class dossiersController extends bootstrap
                     $settingsControleRemb->value = 1;
                     $settingsControleRemb->update();
                 }
-                header('location:' . $this->lurl . '/dossiers/detail_remb/' . $this->params[0]);
+                header('Location:' . $this->lurl . '/dossiers/detail_remb/' . $this->params[0]);
 
                 die;
 
@@ -3493,7 +3479,6 @@ class dossiersController extends bootstrap
                     }
 
                     header('location:' . $this->lurl . '/dossiers/detail_remb/' . $this->projects->id_project);
-
                     die;
                 }
             }

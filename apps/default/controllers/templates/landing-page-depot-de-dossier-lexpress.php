@@ -203,7 +203,7 @@ if(isset($_POST['spy_inscription_landing_page_depot_dossier']) || $reponse_get =
 
 			// dernier bilan (companies_details) //
 			$dateDernierBilanString = substr($identite->dateDernierBilan,0,10);
-			$dateDernierBilan = explode('-',$dateDernierBilanString);
+			$dateDernierBilan = explode('-', $dateDernierBilanString);
 			$this->companies_details->date_dernier_bilan = $dateDernierBilanString;
 			$this->companies_details->date_dernier_bilan_mois = $dateDernierBilan[1];
 			$this->companies_details->date_dernier_bilan_annee = $dateDernierBilan[0];

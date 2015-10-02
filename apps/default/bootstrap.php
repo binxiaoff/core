@@ -16,7 +16,7 @@ class bootstrap extends Controller
      */
     public $projects;
 
-    public function bootstrap($command, $config, $app)
+    function bootstrap($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
         // Mise en session de l'url demand�e pour un retour si deconnect� sauf pour la fonction login du controller root
@@ -24,8 +24,10 @@ class bootstrap extends Controller
             $_SESSION['redirection_url'] = $_SERVER['REQUEST_URI'];
         }
 
+        // Chargement des librairies
         $this->upload = $this->loadLib('upload');
 
+        // Chargement des datas
         $this->settings                = $this->loadData('settings');
         $this->tree_elements           = $this->loadData('tree_elements');
         $this->blocs_elements          = $this->loadData('blocs_elements');
@@ -54,11 +56,11 @@ class bootstrap extends Controller
         $this->companies               = $this->loadData('companies');
         $this->projects                = $this->loadData('projects');
 
+        // Chargement des librairies
         $this->ficelle = $this->loadLib('ficelle');
         $this->photos  = $this->loadLib('photos', array($this->spath, $this->surl));
         $this->tnmp    = $this->loadLib('tnmp', array($this->nmp, $this->nmp_desabo, $this->Config['env']));
         $this->dates   = $this->loadLib('dates');
-        $this->Web2Pdf = $this->loadLib('Web2Pdf', $this->convert_api_compteur);
 
         // Recuperation de la liste des langue disponibles
         $this->lLangues = $this->Config['multilanguage']['allowed_languages'];
@@ -74,6 +76,8 @@ class bootstrap extends Controller
             $this->ln->updateTextTranslations($_POST['section'], $_POST['nom'], $values);
         }
 
+        // Chargement des fichiers CSS
+        //$this->loadCss('../scripts/default/colorbox/colorbox');
         $this->loadCss('default/izicom');
         $this->loadCss('default/colorbox');
         $this->loadCss('default/fonts');
@@ -83,7 +87,10 @@ class bootstrap extends Controller
         $this->loadCss('default/style', 0, 'all', 'css', date('Ymd')); // permet d'avoir un nouveau cache de js par jour chez l'utilisateur
         $this->loadCss('default/style-edit', 0, 'all', 'css', date('Ymd'));
 
+
+        // Chargement des fichier JS
         $this->loadJs('default/jquery/jquery-1.10.2.min');
+        //$this->loadJs('default/colorbox/jquery.colorbox-min');
         $this->loadJs('default/bootstrap-tooltip');
         $this->loadJs('default/jquery.carouFredSel-6.2.1-packed');
         $this->loadJs('default/jquery.c2selectbox');
@@ -98,10 +105,10 @@ class bootstrap extends Controller
         $this->loadJs('default/ajax', 0, date('Ymd'));
 
         // Lutte contre le XSS
-        if (false === empty($_POST)) {
-            array_walk_recursive($_POST, function (&$sData, $mKey) {
-                $sData = htmlspecialchars(strip_tags($sData));
-            });
+        if (is_array($_POST)) {
+            foreach ($_POST as $key => $value) {
+                $_POST[$key] = htmlspecialchars(strip_tags($value));
+            }
         }
 
         // Mise en tableau de l'url
@@ -178,6 +185,7 @@ class bootstrap extends Controller
         if (isset($_POST['login']) && isset($_POST['password'])) {
             $this->login     = $_POST['login'];
             $this->passsword = $_POST['password'];
+
 
             // SI on a le captcha d'actif, et qu'il est faux, on bloque avant tout pour ne pas laisser de piste sur le couple login/mdp
             if (isset($_POST["captcha"]) && $content_captcha == "ko") {
@@ -412,6 +420,76 @@ class bootstrap extends Controller
             } // end if isset($_POST["captcha"])
         }// fin login
 
+        //print_r($_SESSION['login']);
+        // On recupere le formulaire de connexion s'il est pass�
+        //if($this->clients->handleLogin('connect','login','password'))
+//        {
+//
+//
+//            $this->clients_history->id_client = $_SESSION['client']['id_client'];
+//            $this->clients_history->type = $_SESSION['client']['status_pre_emp'];
+//            $this->clients_history->status = 1; // statut login
+//            $this->clients_history->create();
+//
+//            $statut_preteur = false;
+//
+//            // On renvoi chez le preteur
+//            if($_SESSION['client']['status_pre_emp'] == 1){
+//                $statut_preteur = true;
+//            }
+//            // On renvoi chez l'emprunteur
+//            elseif($_SESSION['client']['status_pre_emp'] == 2){
+//                header('Location:'.$this->lurl.'/synthese_emprunteur');
+//                die;
+//            }
+//            elseif($_SESSION['client']['status_pre_emp'] == 3){
+//                $_SESSION['status_pre_emp'] = 1;
+//                $statut_preteur = true;
+//            }
+//
+//            if($statut_preteur == true)
+//            {
+//
+//                // Si on est en cours d'inscription on redirige sur le form
+//                if($_SESSION['client']['etape_inscription_preteur'] < 3){
+//                    $etape = ($_SESSION['client']['etape_inscription_preteur']+1);
+//                    header('Location:'.$this->lurl.'/inscription_preteur/etape'.$etape);
+//                    die;
+//                }
+//                else{
+//
+//
+//
+//                    // on check le statut du preteur
+//                    $this->clients_status->getLastStatut($_SESSION['client']['id_client']);
+//                    if(in_array($this->clients_status->status,array(20,30))){
+//
+//                        if(in_array($_SESSION['client']['type'],array(1,3))) $lapage = 'particulier_doc';
+//                        else $lapage = 'societe_doc';
+//
+//                        header('Location:'.$this->lurl.'/profile/'.$lapage);
+//                        die;
+//                    }
+//                    /*elseif($this->clients_status->status < 60){
+//                        header('Location:'.$this->lurl.'/profile');
+//                        die;
+//                    }*/
+//                    else{
+//                        header('Location:'.$this->lurl.'/synthese');
+//                        die;
+//                    }
+//                }
+//
+//
+//            }
+//
+//        }
+//        elseif(isset($_POST['login']) && isset($_POST['password']))
+//        {
+//            $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
+//
+//        }
+
         $this->connect_ok = false;
         if ($this->clients->checkAccess()) {
             $this->connect_ok = true;
@@ -516,7 +594,7 @@ class bootstrap extends Controller
 
         $this->tabOrdreProject = array(
             '',
-            'lestatut ASC, IF(lestatut = 2, p.date_retrait ,"") DESC, IF(lestatut = 1, p.date_retrait ,"") ASC, p.status DESC',
+            'lestatut ASC, IF(lestatut = 2, p.date_retrait ,"") DESC, IF(lestatut = 1, p.date_retrait ,"") ASC,status DESC',
             'p.date_publication DESC'
         );
 
@@ -614,7 +692,7 @@ class bootstrap extends Controller
         }
     }
 
-    public function handlePartenaire($params)
+    function handlePartenaire($params)
     {
         // Chargement des datas
         $partenaires       = $this->loadData('partenaires');

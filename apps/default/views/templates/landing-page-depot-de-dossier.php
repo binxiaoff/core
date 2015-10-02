@@ -22,7 +22,6 @@
 	<script src="<?=$this->url?>/landing-page/js/jquery.c2selectbox.js"></script>
     <script src="<?=$this->url?>/landing-page/js/functions.js"></script>
     <script src="<?=$this->url?>/scripts/default/main.js"></script>
-
 </head>
 <body>
 
@@ -122,8 +121,7 @@ if($this->google_analytics != '')
 			<aside class="signup right">
 				<h2><?=$this->content['lp-titre-formulaire']?></h2>
 
-				<form action="/depot_de_dossier/etape1" method="post" id="depot_de_dossier" name="depot_de_dossier">
-
+				<form action="" method="post" id="depot_de_dossier" name="depot_de_dossier">
                     <div class="form-row" style="display:inline;">
                     	<span style="text-align:center; color:#C84747;"><?=$this->retour_form?></span>
                     </div>
@@ -171,7 +169,7 @@ if($this->google_analytics != '')
 							?>
                             <li style="list-style:none;">
                                 <div class="slide">
-                                	<img src="<?=$this->photos->display($project['photo_projet'],'photos_projets','img_carousel_landing_page')?>"  alt="<?=$project['photo_projet']?>">
+									<img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $project['photo_projet'] ?>"  alt="<?= $project['photo_projet'] ?>">
 
                                     <strong><?=$project['title']?></strong>
 

@@ -1,12 +1,12 @@
 <?php
+
 // ********************************************************************************* //
 // **************************** CLASSE D'UPLOAD EQUINOA **************************** //
 // ********************************************************************************* //
 //
-//
 // Version 4.1
 //
-// La classe upload d�sormais se limite a l'upload de fichiers.
+// La classe upload désormais se limite a l'upload de fichiers.
 // Le check se fait sur les extensions et non plus sur les types.
 // La fonction doUpload renvoi true ou false.
 // La fonction getErrorType vous permet de retourner le type de l'erreur.
@@ -15,7 +15,7 @@
 // 4.1 : Modification du renommage de fichier avec le time(), ajout d'un sleep pour laisser au time le temps de s'incrementer.
 // 4.1 : Ajout de la fonction doRetrieval() qui fait tout comme la doUpload mais a partir d'un fichier sur le grand Internet.
 //
-// La classe upload est d�sormais accompagn� d'une classe photo pour les images.
+// La classe upload est désormais accompagné d'une classe photo pour les images.
 //
 //
 // ********************************************************************************* //
@@ -37,12 +37,11 @@ class upload
     // Repertoire de destination pour les fichiers
     private $upload_dir = '/';
 
-    // Taille max des fichiers pouvant �tres upload�s en octets (rappel : 1Ko -> 1024 octets)
+    // Taille max des fichiers pouvant êtres uploadés en octets (rappel : 1Ko -> 1024 octets)
     // Par defaut la valeur est de 8Mo
-    //private	$taille_max = 8192000;
     private $taille_max = 20971520; // 20Mo
 
-    // Tableau des extensions que l'on autorise a etre upload�
+    // Tableau des extensions que l'on autorise à être uploadé
     private $ext_valides = array(
         'jpeg', 'JPEG', 'jpg', 'JPG', 'png', 'PNG', 'gif', 'GIF', 'pdf', 'PDF', 'doc', 'DOC', 'xls', 'XLS', 'ppt',
         'PPT', 'csv', 'CSV', 'swf', 'SWF', 'pptx', 'PPTX', 'docx', 'DOCX', 'xlsx', 'XLSX', 'TXT', 'txt', 'TIFF', 'tiff'
@@ -53,9 +52,9 @@ class upload
     // Constructeur
     public function __construct()
     {
-        // Je pr�f�re d�finir mes param�tres d'upload dans la m�thode doUpload()
-        // comme �a je peux construire mon objet Upload() avant m�me de recevoir un fichier d'un formulaire
-        // et balancer l'upload quand je veux avec cette m�thode
+        // Je préfère définir mes paramètres d'upload dans la méthode doUpload()
+        // comme ça je peux construire mon objet Upload() avant même de recevoir un fichier d'un formulaire
+        // et balancer l'upload quand je veux avec cette méthode
     }
 
     // *********************************************** //
@@ -88,7 +87,7 @@ class upload
     }
 
     // ******************************************** //
-    // Fonction pour definir le nom fichier upload� //
+    // Fonction pour definir le nom fichier uploadé //
     // ******************************************** //
     public function setUploadedFileName($uploadedFileName)
     {
@@ -100,7 +99,7 @@ class upload
     // **************************************************************** //
     private function clean_name($name_file)
     {
-        $name_file = strtr($name_file, '����������������������������������������������������', 'AAAAAACEEEEIIIIOOOOOUUUUYaaaaaaceeeeiiiioooooouuuuyy');
+        $name_file = strtr($name_file, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyyNn');
         return strtolower(preg_replace('/([^.a-z0-9]+)/i', '-', $name_file));
     }
 
@@ -113,7 +112,7 @@ class upload
     }
 
     // ************************************************ //
-    // Fonction qui r�cup�re le nom du fichier uploader //
+    // Fonction qui récupère le nom du fichier uploader //
     // ************************************************ //
     public function getName()
     {
@@ -121,7 +120,7 @@ class upload
     }
 
     // ************************************************* //
-    // Fonction qui r�cup�re le type du fichier uploader //
+    // Fonction qui récupère le type du fichier uploader //
     // ************************************************* //
     public function getTypeMine()
     {
@@ -129,7 +128,7 @@ class upload
     }
 
     // ***************************************************** //
-    // Fonction qui r�cup�re l'extension du fichier uploader //
+    // Fonction qui récupère l'extension du fichier uploader //
     // ***************************************************** //
     public function getExtension()
     {
@@ -137,7 +136,7 @@ class upload
     }
 
     // ************************************************** //
-    // Fonction qui r�cup�re le poids du fichier uploader //
+    // Fonction qui récupère le poids du fichier uploader //
     // ************************************************** //
     public function getFileSize()
     {
@@ -150,21 +149,17 @@ class upload
     // $file_form_name -> Nom du champ file du formulaire (obligatoire)
     // $new_name -> Nouveau nom du fichier sans extension (facultatif)
     // $erase -> true -> Permet de remplacer le fichier sur le serveur s'il existe deja (facultatif)
-    public function doUpload($field, $new_name = '', $erase = false, $aFiles = null)
+    public function doUpload($file_form_name, $new_name = '', $erase = false)
     {
-        if ($aFiles === null) {
-            $aFiles = $_FILES;
-        }
-
         // Recuperation de l'extension du fichier
-        $extension = pathinfo($aFiles[$field]['name']);
+        $extension = pathinfo($_FILES[$file_form_name]['name']);
         $extension = $extension['extension'];
 
         // Recuperation du nom sans l'extension
-        $nom_tmp = explode('.', $aFiles[$field]['name']);
+        $nom_tmp = explode('.', $_FILES[$file_form_name]['name']);
         $nom_tmp = $nom_tmp[0];
 
-        // Si l'on a pas donn� un nouveau nom au fichier, il garde le nom d'origine
+        // Si l'on a pas donné un nouveau nom au fichier, il garde le nom d'origine
         if ($new_name == '') {
             // On clean le nom d'origine
             $this->uploadedFileName = $this->clean_name($nom_tmp) . '.' . $extension;
@@ -173,21 +168,21 @@ class upload
             $this->uploadedFileName = $new_name . '.' . $extension;
         }
 
-        // R�cup�ration du nom temporaire sur le serveur, de la taille du fichier, son type et son extension
-        $this->uploadedFile          = $aFiles[$field]['tmp_name'];
-        $this->uploadedFileSize      = $aFiles[$field]['size'];
-        $this->uploadedFileType      = $aFiles[$field]['type'];
+        // Récupération du nom temporaire sur le serveur, de la taille du fichier, son type et son extension
+        $this->uploadedFile          = $_FILES[$file_form_name]['tmp_name'];
+        $this->uploadedFileSize      = $_FILES[$file_form_name]['size'];
+        $this->uploadedFileType      = $_FILES[$file_form_name]['type'];
         $this->uploadedFileExtension = $extension;
 
-        // On commence par verifier que le dossier d'upload existe sinon on le cr��
+        // On commence par verifier que le dossier d'upload existe sinon on le crée
         $this->file_dir = explode('/', $this->file_dir);
 
         for ($i = 0; $i < count($this->file_dir); $i++) {
             if ($this->file_dir[$i] != '') {
                 $this->path_dir .= '/' . $this->file_dir[$i];
 
-                if (! is_dir($this->path_dir)) {
-                    if (! mkdir($this->path_dir, 0777)) {
+                if (!is_dir($this->path_dir)) {
+                    if (!mkdir($this->path_dir, 0777)) {
                         $this->msg_erreur = 'Impossible de creer le repertoire : ' . $this->path_dir;
                         return false;
                     }
@@ -196,14 +191,14 @@ class upload
         }
 
         // On verifie que le fichier soit bien uploader pour des questions de securite
-        if (is_uploaded_file($this->uploadedFile) && ! empty($this->uploadedFile)) {
+        if (is_uploaded_file($this->uploadedFile) && !empty($this->uploadedFile)) {
             // On verifie que le fichier n'est pas trop lourd
             if ($this->uploadedFileSize < $this->taille_max) {
                 // On verifie que le fichier est bien d'une extension valide
                 if (in_array($this->uploadedFileExtension, $this->ext_valides)) {
-                    // On v�rifie que le nom de fichier n'est pas d�ja utilis� sinon on lui rajoute le timestamp a la fin seulement si le erase est a false
+                    // On vérifie que le nom de fichier n'est pas déjà utilisé sinon on lui rajoute le timestamp a la fin seulement si le erase est a false
                     if (file_exists($this->upload_dir . $this->uploadedFileName) && $erase == false) {
-                        sleep(1); // Temporisation du script pour eviter d'avoir une image avec le m�me nom (time() s'increment toutes les secondes)
+                        sleep(1); // Temporisation du script pour eviter d'avoir une image avec le même nom (time() s'increment toutes les secondes)
                         $this->uploadedFileName = time() . '-' . $this->uploadedFileName;
                     }
 
@@ -248,7 +243,7 @@ class upload
         $this->uploadedFileExtension = $ext_tmp[1];
         $this->uploadedFileName      = $ext_tmp[0];
 
-        // Si l'on a pas donn� un nouveau nom au fichier, il garde le nom d'origine
+        // Si l'on a pas donné un nouveau nom au fichier, il garde le nom d'origine
         if ($new_name == '') {
             // On clean le nom d'origine
             $this->uploadedFileName = $this->clean_name($this->uploadedFileName);
@@ -257,15 +252,15 @@ class upload
             $this->uploadedFileName = $new_name . '.' . $this->uploadedFileExtension;
         }
 
-        // On commence par verifier que le dossier d'upload existe sinon on le cr��
+        // On commence par verifier que le dossier d'upload existe sinon on le crée
         $this->file_dir = explode('/', $this->file_dir);
 
         for ($i = 0; $i < count($this->file_dir); $i++) {
             if ($this->file_dir[$i] != '') {
                 $this->path_dir .= '/' . $this->file_dir[$i];
 
-                if (! is_dir($this->path_dir)) {
-                    if (! mkdir($this->path_dir, 0777)) {
+                if (!is_dir($this->path_dir)) {
+                    if (!mkdir($this->path_dir, 0777)) {
                         $this->msg_erreur = 'Impossible de creer le repertoire : ' . $this->path_dir;
                         return false;
                     }
@@ -277,9 +272,9 @@ class upload
         if (@file_get_contents($url)) {
             // On verifie que le fichier est bien d'une extension valide
             if (in_array($this->uploadedFileExtension, $this->ext_valides)) {
-                // On v�rifie que le nom de fichier n'est pas d�ja utilis� sinon on lui rajoute le timestamp a la fin seulement si le erase est a false
+                // On vérifie que le nom de fichier n'est pas déjà utilisé sinon on lui rajoute le timestamp a la fin seulement si le erase est a false
                 if (file_exists($this->upload_dir . $this->uploadedFileName) && $erase == false) {
-                    sleep(1); // Temporisation du script pour eviter d'avoir une image avec le m�me nom (time() s'increment toutes les secondes)
+                    sleep(1); // Temporisation du script pour eviter d'avoir une image avec le même nom (time() s'increment toutes les secondes)
                     $this->uploadedFileName = $this->uploadedFileName . '-' . time();
                 }
 

@@ -14,6 +14,7 @@ apt-get install -y percona-server-server-5.5
 # install lftp for download database
 apt-get install -y lftp
 
+lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/fixture /vagrant/fixture; bye' -u vagrantftp,X9d\@\$nsa -p 21 synology.corp.unilend.fr
 lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/database /vagrant/database; bye' -u vagrantftp,X9d\@\$nsa -p 21 synology.corp.unilend.fr
 
 if [ -f /vagrant/database/schemas.sql ];
@@ -70,7 +71,7 @@ service apache2 restart
 update-rc.d apache2 defaults
 
 # install php
-apt-get install -y php5 libapache2-mod-php5 php5-mcrypt php5-mysql php5-cli php5-gd php5-curl php5-memcache php5-intl php5-geoip memcached php5-xdebug
+apt-get install -y php5 libapache2-mod-php5 php5-mcrypt php5-mysql php5-cli php5-gd php5-curl php5-memcache php5-intl php5-geoip memcached php5-xdebug php5-imagick
 
 # modify php.ini
 sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php5/apache2/php.ini
@@ -81,7 +82,7 @@ sed -i "s/display_errors = .*/display_errors = On/" /etc/php5/apache2/php.ini
 sed -i "s/html_errors = .*/html_errors = On/" /etc/php5/apache2/php.ini
 sed -i "s/upload_max_filesize = .*/upload_max_filesize = 64M/" /etc/php5/apache2/php.ini
 sed -i "s/post_max_size = .*/post_max_size = 64M/" /etc/php5/apache2/php.ini
-printf "\n[xdebug]\nzend_extension=/usr/lib/php5/20090626/xdebug.so\nxdebug.remote_enable=1\nxdebug.remote_handler=dbgp\nxdebug.remote_mode=req\nxdebug.remote_host=127.0.0.1\nxdebug.remote_port=9000\nxdebug.profiler_enable_trigger=1\nxdebug.profiler_output_dir=/home/vagrant/xdebug\nxdebug.var_display_max_data=65536\nxdebug.var_display_max_depth=10\n" >> /etc/php5/apache2/php.ini
+printf "\n[xdebug]\nzend_extension=/usr/lib/php5/20090626/xdebug.so\nxdebug.remote_enable=1\nxdebug.remote_handler=dbgp\nxdebug.remote_mode=req\nxdebug.remote_host=127.0.0.1\nxdebug.remote_port=9000\nxdebug.profiler_enable_trigger=1\nxdebug.profiler_output_dir=/home/vagrant/xdebug\nxdebug.var_display_max_data=65536\nxdebug.var_display_max_depth=10\nxdebug.var_display_max_children=1024\n" >> /etc/php5/apache2/php.ini
 
 service apache2 restart
 
@@ -103,6 +104,13 @@ git checkout tags/26.0.0
 git submodule init
 git submodule update
 mvn clean package -DskipTests
+
+#instal wkhtmltopdf for snappy
+apt-get install xfonts-75dpi
+wget http://download.gna.org/wkhtmltopdf/0.12/0.12.2.1/wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+dpkg -i wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
+ln -s /usr/local/bin/wkhtmltopdf /usr/bin/wkhtmltopdf
+rm -rf wkhtmltox-0.12.2.1_linux-trusty-amd64.deb
 
 # install zsh et oh my zsh
 apt-get install -y zsh
