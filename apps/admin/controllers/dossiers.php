@@ -2,48 +2,35 @@
 
 class dossiersController extends bootstrap
 {
-    var $Command;
-
-    function dossiersController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
         $this->catchAll = true;
 
-        // Controle d'acces à la rubrique.
         $this->users->checkAccess('dossiers');
 
-        // Activation du menu
         $this->menu_admin = 'emprunteurs';
 
-        // Login altares
         $this->settings->get('Altares login', 'type');
         $login = $this->settings->value;
-        // Mdp altares
         $this->settings->get('Altares mot de passe', 'type');
         $mdp = $this->settings->value;
-        // Url wsdl
         $this->settings->get('Altares wsdl', 'type');
         $this->wsdl = $this->settings->value;
-        // Identification
         $this->identification = $login . '|' . $mdp;
 
-        // Liste deroulante conseil externe de l'entreprise
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $this->conseil_externe = $this->ficelle->explodeStr2array($this->settings->value);
     }
 
-    function _default()
+    public function _default()
     {
-        // Chargement du data
         $this->projects_status = $this->loadData('projects_status');
         $this->projects        = $this->loadData('projects');
 
-        // liste les status
         $this->lProjects_status = $this->projects_status->select('', ' status ASC ');
-
-        // liste des users bo
-        $this->lUsers = $this->users->select('status = 1 AND id_user_type = 2');
+        $this->lUsers           = $this->users->select('status = 1 AND id_user_type = 2');
 
         if (isset($_POST['form_search_dossier'])) {
             if ($_POST['date1'] != '') {
@@ -61,32 +48,29 @@ class dossiersController extends bootstrap
             }
 
             $this->lProjects = $this->projects->searchDossiers($date1, $date2, $_POST['montant'], $_POST['duree'], $_POST['status'], $_POST['analyste'], $_POST['siren'], $_POST['id'], $_POST['raison-sociale']);
-        } // statut
-        elseif (isset($this->params[0])) {
+        } elseif (isset($this->params[0])) {
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
     }
 
-    function _edit()
+    public function _edit()
     {
-        // Chargement du data
-        $this->projects                = $this->loadData('projects');
-        $this->projects_notes          = $this->loadData('projects_notes');
-        $this->companies               = $this->loadData('companies');
-        $this->companies_bilans        = $this->loadData('companies_bilans');
-        $this->companies_details       = $this->loadData('companies_details');
-        $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
-        $this->clients                 = $this->loadData('clients');
-        $this->clients_adresses        = $this->loadData('clients_adresses');
-        $this->projects_comments       = $this->loadData('projects_comments');
-        $this->projects_status         = $this->loadData('projects_status');
-        $this->current_projects_status = $this->loadData('projects_status');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->loans                   = $this->loadData('loans');
-        $this->projects_pouvoir        = $this->loadData('projects_pouvoir');
-        $this->lenders_accounts        = $this->loadData('lenders_accounts');
-        $this->echeanciers             = $this->loadData('echeanciers');
-
+        $this->projects                      = $this->loadData('projects');
+        $this->projects_notes                = $this->loadData('projects_notes');
+        $this->companies                     = $this->loadData('companies');
+        $this->companies_bilans              = $this->loadData('companies_bilans');
+        $this->companies_details             = $this->loadData('companies_details');
+        $this->companies_actif_passif        = $this->loadData('companies_actif_passif');
+        $this->clients                       = $this->loadData('clients');
+        $this->clients_adresses              = $this->loadData('clients_adresses');
+        $this->projects_comments             = $this->loadData('projects_comments');
+        $this->projects_status               = $this->loadData('projects_status');
+        $this->current_projects_status       = $this->loadData('projects_status');
+        $this->projects_status_history       = $this->loadData('projects_status_history');
+        $this->loans                         = $this->loadData('loans');
+        $this->projects_pouvoir              = $this->loadData('projects_pouvoir');
+        $this->lenders_accounts              = $this->loadData('lenders_accounts');
+        $this->echeanciers                   = $this->loadData('echeanciers');
         $this->notifications                 = $this->loadData('notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
@@ -100,11 +84,9 @@ class dossiersController extends bootstrap
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->projects_notes->get($this->params[0], 'id_project');
 
-            // Liste deroulante secteurs
             $this->settings->get('Liste deroulante secteurs', 'type');
             $this->lSecteurs = explode(';', $this->settings->value);
 
-            // Cabinet de recouvrement
             $this->settings->get('Cabinet de recouvrement', 'type');
             $this->cab = $this->settings->value;
 
@@ -143,14 +125,11 @@ class dossiersController extends bootstrap
                 $this->companies_details->create();
             }
 
-            // On recup le client
             $this->clients->get($this->companies->id_client_owner, 'id_client');
-
-            //On recup adresses client
             $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
 
-            // liste des users bo
-            $this->lUsers = $this->users->select('status = 1 AND id_user_type = 2');
+            $this->aAnalysts     = $this->users->select('status = 1 AND id_user_type = 2');
+            $this->aSalesPersons = $this->users->select('status = 1 AND id_user_type = 3');
 
             // meme adresse que le siege
             if ($this->companies->status_adresse_correspondance == 1) {
@@ -179,8 +158,8 @@ class dossiersController extends bootstrap
             // Si existe pas on créer les champs
             if ($this->lCompanies_actif_passif == false) {
                 $i = 1;
-                foreach ($this->lCompanies_actif_passif as $c) //for($i=1;$i<=3;$i++)
-                {
+                foreach ($this->lCompanies_actif_passif as $c) {
+                //for($i=1;$i<=3;$i++)
                     if ($c['annee'] <= $dernierBilan) {
                         $a                                        = 0;
                         $this->companies_actif_passif->ordre      = $i;
@@ -452,7 +431,7 @@ class dossiersController extends bootstrap
 
                         // dernier bilan
                         $dateDernierBilanString = substr($identite->dateDernierBilan, 0, 10);
-                        $dateDernierBilan       = explode('-', $dateDernierBilanSting);
+                        $dateDernierBilan       = explode('-', $dateDernierBilanString);
 
                         if ($dateDernierBilanString == false || $dateDernierBilanString == '0000-00-00') {
                             $this->date_dernier_bilan_jour  = '31';
@@ -634,6 +613,7 @@ class dossiersController extends bootstrap
                     $this->projects->amount         = str_replace(' ', '', str_replace(',', '.', $_POST['montant']));
                     $this->projects->target_rate    = '-';
                     $this->projects->id_analyste    = $_POST['analyste'];
+                    $this->projects->id_commercial  = $_POST['commercial'];
                     $this->projects->lien_video     = $_POST['lien_video'];
                     $this->projects->display        = $_POST['display_project'];
 
@@ -1544,7 +1524,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _changeClient()
+    public function _changeClient()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -1560,7 +1540,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _addMemo()
+    public function _addMemo()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -1578,7 +1558,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _upload_csv()
+    public function _upload_csv()
     {
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
@@ -1870,7 +1850,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _file()
+    public function _file()
     {
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
@@ -2096,7 +2076,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _add()
+    public function _add()
     {
         // Chargement du data
         $this->projects_status        = $this->loadData('projects_status');
@@ -2511,7 +2491,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _funding()
+    public function _funding()
     {
         // Chargement du data
         $this->projects  = $this->loadData('projects');
@@ -2522,7 +2502,7 @@ class dossiersController extends bootstrap
         $this->lProjects = $this->projects->selectProjectsByStatus(50);
     }
 
-    function _remboursements()
+    public function _remboursements()
     {
         // Chargement du data
         $this->projects               = $this->loadData('projects');
@@ -2544,7 +2524,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _no_remb()
+    public function _no_remb()
     {
         // Chargement du data
         $this->projects               = $this->loadData('projects');
@@ -2566,7 +2546,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _detail_remb()
+    public function _detail_remb()
     {
         ini_set('memory_limit', '1024M');
         ini_set('max_execution_time', 600); //300 seconds = 5 minutes
@@ -2598,11 +2578,8 @@ class dossiersController extends bootstrap
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->companies->get($this->projects->id_company, 'id_company');
-
             $this->clients->get($this->companies->id_client_owner, 'id_client');
-
             $this->users->get($this->projects->id_analyste, 'id_user');
-
             $this->projects_status->getLastStatut($this->projects->id_project);
 
             $this->nbPeteurs = $this->loans->getNbPreteurs($this->projects->id_project);
@@ -3525,7 +3502,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _detail_remb_preteur()
+    public function _detail_remb_preteur()
     {
         // Chargement du data
         $this->clients          = $this->loadData('clients');
@@ -3567,7 +3544,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _detail_echeance_preteur()
+    public function _detail_echeance_preteur()
     {
         // Chargement du data
         $this->clients                 = $this->loadData('clients');
@@ -3595,7 +3572,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _echeancier_emprunteur()
+    public function _echeancier_emprunteur()
     {
         // Chargement du data
         $this->clients                 = $this->loadData('clients');
@@ -3650,7 +3627,7 @@ class dossiersController extends bootstrap
     }
 
     //utilisé pour récup les infos affichées dans le cadre
-    function recup_info_remboursement_anticipe($id_project)
+    public function recup_info_remboursement_anticipe($id_project)
     {
 
         // REMBOURSEMENT ANTICIPE

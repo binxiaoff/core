@@ -407,9 +407,23 @@
                             <select name="analyste" id="analyste" class="select">
                                 <option value="0">Choisir</option>
                                 <?php
-                                foreach ($this->lUsers as $u) {
+                                foreach ($this->aAnalysts as $aAnalyst) {
                                     ?>
-                                    <option <?= ($this->projects->id_analyste == $u['id_user'] ? 'selected' : '') ?> value="<?= $u['id_user'] ?>"><?= $u['firstname'] ?> <?= $u['name'] ?></option><?php
+                                    <option <?= ($this->projects->id_analyste == $aAnalyst['id_user'] ? 'selected' : '') ?> value="<?= $aAnalyst['id_user'] ?>"><?= $aAnalyst['firstname'] ?> <?= $aAnalyst['name'] ?></option><?php
+                                }
+                                ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="commercial">Commercial :</label></th>
+                        <td>
+                            <select name="commercial" id="commercial" class="select">
+                                <option value="0">Choisir</option>
+                                <?php
+                                foreach ($this->aSalesPersons as $aSalesPerson) {
+                                    ?>
+                                    <option <?= ($this->projects->id_commercial == $aSalesPerson['id_user'] ? 'selected' : '') ?> value="<?= $aSalesPerson['id_user'] ?>"><?= $aSalesPerson['firstname'] ?> <?= $aSalesPerson['name'] ?></option><?php
                                 }
                                 ?>
                             </select>
