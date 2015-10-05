@@ -196,7 +196,7 @@
 						<span>A</span><span class="city editable">PARIS</span><span>, le </span> <span class="date editable"><?=date('d/m/Y',strtotime($this->oLoans->added))?></span> <em>Signature :</em>
                         <div class="footLogo"></div>
 					</div><!-- /.signiture -->
-					<div class="logoministere"></a></div>
+					<div class="logoministere"></div>
 				</div><!-- /.doc-foot -->
 			</div><!-- /.document -->
 		</div><!-- /.page-break -->
