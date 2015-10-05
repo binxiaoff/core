@@ -5449,6 +5449,7 @@ class cronController extends bootstrap
                     $month      = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
 
                     $varMail = array(
+                        'furl'          => $url,
                         'surl'          => $surl,
                         'url'           => $url,
                         'prenom_p'      => $p['prenom'],
@@ -5512,6 +5513,7 @@ class cronController extends bootstrap
                     $month      = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
 
                     $varMail = array(
+                        'furl'          => $url,
                         'surl'          => $surl,
                         'url'           => $url,
                         'prenom_p'      => $p['prenom'],
