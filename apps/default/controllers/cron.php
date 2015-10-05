@@ -7962,7 +7962,7 @@ class cronController extends bootstrap
 
             $this->bdd->query("
                 INSERT IGNORE INTO nmp_backup (`id_nmp`, `serialize_content`, `date`, `mailto`, `reponse`, `erreur`, `status`, `date_sent`, `added`, `updated`)
-                SELECT n1.* FROM nmp n1  WHERE LEFT(n1.added, 10) <= '" . $dateMoinsNbJours . "' ORDER BY n1.added ASC LIMIT " . $limite
+                SELECT n1.* FROM nmp n1  WHERE LEFT(n1.added, 10) <= '" . $dateMoinsNbJours . "' AND mailto NOT LIKE '%unilend.fr' ORDER BY n1.added ASC LIMIT " . $limite
             );
 
             $this->oLogger->addRecord(ULogger::INFO, '`nmp` backuped lines: ' . mysql_affected_rows(), array('ID' => $debut));
