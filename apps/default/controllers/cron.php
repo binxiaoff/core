@@ -2430,7 +2430,7 @@ class cronController extends bootstrap
                 $dossier = 'ssh2.sftp://' . $sftp . '/home/sfpmei/receptions';
                 if (!file_exists($dossier)) {
                     if ($this->Config['env'] != "dev") {
-                        $this->oLogger->addRecord('ERROR',
+                        $this->oLogger->addRecord(ULogger::ERROR,
                             'Cron : ' . __METHOD__ . ' Unilend error connexion ssh',
                             array($this->Config['env']));
                         mail($this->sDestinatairesDebug, '[Alert] Unilend error connexion ssh ' . $this->Config['env'], '[Alert] Unilend error connexion ssh ' . $this->Config['env'] . ' cron reception', $this->sHeadersDebug);
@@ -2582,7 +2582,7 @@ class cronController extends bootstrap
                             //if(5 == 6){
 
                             if ($this->Config['env'] != "dev") {
-                                $this->oLogger->addRecord('INFO',
+                                $this->oLogger->addRecord(ULogger::INFO,
                                     'Cron : ' . __METHOD__ . ' virement offre de bienvenue',
                                     array($this->Config['env']));
                             }
@@ -5449,29 +5449,29 @@ class cronController extends bootstrap
                 $todayMoins1h = mktime(date("H") - 1, date("i"), date("s"), date("m"), date("d"), date("Y"));
                 // Si la valeur est a zero et que la derniere mise a jour date de plus d'une heure
                 if ($ctrlCheckBids == 0 && strtotime($updateCheckBids) < $todayMoins1h) {
-                    $this->oLogger->addRecord('ERROR',
+                    $this->oLogger->addRecord(ULogger::ERROR,
                         'Cron : ' . __METHOD__ . ' Controle cron checkBids value 0 in settings at date : ' . date('Y-m-d H:i:s'),
                         array($this->Config['env']));
                 }
                 // Si la valeur est a zero et que la derniere mise a jour date de plus d'une heure
                 if ($ctrlCheckEmailBidKO == 0 && strtotime($updateCheckEmailBidKO) < $todayMoins1h) {
-                    $this->oLogger->addRecord('ERROR',
+                    $this->oLogger->addRecord(ULogger::ERROR,
                         'Cron : ' . __METHOD__ . ' Controle cron checkEmailBidKO value 0 in settings at date : ' . date('Y-m-d H:i:s'),
                         array($this->Config['env']));
                 }
                 // si la valeur est a zero
                 if ($ctrlCheck_projet_en_funding == 0 && strtotime($updateCheck_projet_en_funding) < $todayMoins1h) {
-                    $this->oLogger->addRecord('ERROR',
+                    $this->oLogger->addRecord(ULogger::ERROR,
                         'Cron : ' . __METHOD__ . ' Controle cron check_projet_en_fundings value 0 in settings at date : ' . date('Y-m-d H:i:s'),
                         array($this->Config['env']));
                 }
                 if ($ctrlRemb == 0) {
-                    $this->oLogger->addRecord('ERROR',
+                    $this->oLogger->addRecord(ULogger::ERROR,
                         'Cron : ' . __METHOD__ . ' Controle cron remboursement value 0 in settings at date : ' . date('Y-m-d H:i:s'),
                         array($this->Config['env']));
                 }
                 if ($ctrlRembPreteurs == 0) {
-                    $this->oLogger->addRecord('ERROR',
+                    $this->oLogger->addRecord(ULogger::ERROR,
                         'Cron : ' . __METHOD__ . ' Controle cron statut remboursements des prêteurs value 0 in settings at date : ' . date('Y-m-d H:i:s'),
                         array($this->Config['env']));
                 }
@@ -8228,7 +8228,7 @@ class cronController extends bootstrap
         echo 'duree traitement : ' . $dureeS . ' secondes<br>';
         echo 'nb lignes effacées : ' . mysql_affected_rows();
 
-        $this->oLogger->addRecord('INFO',
+        $this->oLogger->addRecord(ULogger::INFO,
             'Cron : ' . __METHOD__ . ' Duree : ' . $dureeS . 'sec, nb lignes effacées : ' . mysql_affected_rows(),
             array($this->Config['env'])
         );
@@ -8246,29 +8246,29 @@ class cronController extends bootstrap
             $limite           = 2000;
             $dateMoinsNbJours = date('Y-m-d', mktime(0, 0, 0, date('m'), date('d') - $nbJOursEnMOins, date('Y')));
 
-            $this->oLogger->addRecord('INFO', 'Current date with an offset of ' . $nbJOursEnMOins . ' days: ' . $dateMoinsNbJours, array('ID' => $debut));
+            $this->oLogger->addRecord(ULogger::INFO, 'Current date with an offset of ' . $nbJOursEnMOins . ' days: ' . $dateMoinsNbJours, array('ID' => $debut));
 
             $this->bdd->query("
                 INSERT IGNORE INTO mails_filer_backup (`id_filermails`, `id_textemail`, `desabo`, `email_nmp`, `from`, `to`, `subject`, `content`, `headers`, `added`, `updated`)
                 SELECT m1.* FROM mails_filer m1 WHERE LEFT(m1.added, 10) <= '" . $dateMoinsNbJours . "' ORDER BY m1.added ASC LIMIT " . $limite
             );
 
-            $this->oLogger->addRecord('INFO', '`mails_filer` backuped lines: ' . mysql_affected_rows(), array('ID' => $debut));
+            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` backuped lines: ' . mysql_affected_rows(), array('ID' => $debut));
 
             $this->bdd->query('DELETE FROM `mails_filer` WHERE LEFT(added, 10) <= "' . $dateMoinsNbJours . '" ORDER BY added ASC LIMIT ' . $limite);
 
-            $this->oLogger->addRecord('INFO', '`mails_filer` deleted lines: ' . mysql_affected_rows(), array('ID' => $debut));
+            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` deleted lines: ' . mysql_affected_rows(), array('ID' => $debut));
 
             $this->bdd->query("
                 INSERT IGNORE INTO nmp_backup (`id_nmp`, `serialize_content`, `date`, `mailto`, `reponse`, `erreur`, `status`, `date_sent`, `added`, `updated`)
                 SELECT n1.* FROM nmp n1  WHERE LEFT(n1.added, 10) <= '" . $dateMoinsNbJours . "' ORDER BY n1.added ASC LIMIT " . $limite
             );
 
-            $this->oLogger->addRecord('INFO', '`nmp` backuped lines: ' . mysql_affected_rows(), array('ID' => $debut));
+            $this->oLogger->addRecord(ULogger::INFO, '`nmp` backuped lines: ' . mysql_affected_rows(), array('ID' => $debut));
 
             $this->bdd->query('DELETE FROM `nmp` WHERE LEFT(added, 10) <= "' . $dateMoinsNbJours . '" ORDER BY added ASC LIMIT ' . $limite);
 
-            $this->oLogger->addRecord('INFO', '`nmp` deleted lines: ' . mysql_affected_rows(), array('ID' => $debut));
+            $this->oLogger->addRecord(ULogger::INFO, '`nmp` deleted lines: ' . mysql_affected_rows(), array('ID' => $debut));
 
             $this->stopCron();
         }
@@ -8415,7 +8415,7 @@ class cronController extends bootstrap
             $this->mails_text->get('preteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
 
             foreach ($L_mail_ra_en_attente as $ra_email) {
-                $this->oLogger->addRecord('INFO', 'Start email ' . $ra_email['id_reception'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
+                $this->oLogger->addRecord(ULogger::INFO, 'Start email ' . $ra_email['id_reception'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
 
                 // Tout se base sur cette variable !
                 $id_reception = $ra_email['id_reception'];
@@ -8428,7 +8428,7 @@ class cronController extends bootstrap
                 $sum_ech_restant     = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');
 
                 foreach ($L_preteur_on_projet as $preteur) {
-                    $this->oLogger->addRecord('INFO', 'Lender ' . $preteur['id_lender'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
+                    $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $preteur['id_lender'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
 
                     $reste_a_payer_pour_preteur = $this->echeanciers->getSumRestanteARembByProject_capital(' AND id_lender =' . $preteur['id_lender'] . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status_ra = 1 AND id_project = ' . $this->projects->id_project);
 
@@ -8503,7 +8503,7 @@ class cronController extends bootstrap
                 $remboursement_anticipe_mail_a_envoyer->statut = 1;
                 $remboursement_anticipe_mail_a_envoyer->update();
 
-                $this->oLogger->addRecord('INFO', 'End email ' . $ra_email['id_reception'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
+                $this->oLogger->addRecord(ULogger::INFO, 'End email ' . $ra_email['id_reception'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
             }
 
             $this->stopCron();
@@ -8584,12 +8584,12 @@ class cronController extends bootstrap
             $this->oSemaphore->value = 0;
             $this->oSemaphore->update();
 
-            $this->oLogger->addRecord('INFO', 'Start cron', array('ID' => $this->iStartTime));
+            $this->oLogger->addRecord(ULogger::INFO, 'Start cron', array('ID' => $this->iStartTime));
 
             return true;
         }
 
-        $this->oLogger->addRecord('INFO', 'Semaphore locked', array('ID' => $this->iStartTime));
+        $this->oLogger->addRecord(ULogger::INFO, 'Semaphore locked', array('ID' => $this->iStartTime));
 
         return false;
     }
@@ -8599,6 +8599,6 @@ class cronController extends bootstrap
         $this->oSemaphore->value = 1;
         $this->oSemaphore->update();
 
-        $this->oLogger->addRecord('INFO', 'End cron', array('ID' => $this->iStartTime));
+        $this->oLogger->addRecord(ULogger::INFO, 'End cron', array('ID' => $this->iStartTime));
     }
 }
