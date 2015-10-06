@@ -5,7 +5,7 @@ class simulationController extends bootstrap
     public function simulationController(&$command, $config, $app)
     {
         parent::__construct($command, $config, $app);
-        $this->users->checkAccess('emprunteurs');
+
         $this->catchAll = true;
     }
 
