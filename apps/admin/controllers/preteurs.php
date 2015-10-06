@@ -460,6 +460,7 @@ class preteursController extends bootstrap
 
             // Variables du mailing
             $varMail = array(
+                'furl'          => $this->furl,
                 'surl'          => $surl,
                 'url'           => $url,
                 'prenom_p'      => $this->clients->prenom,
@@ -1760,6 +1761,7 @@ class preteursController extends bootstrap
 
         // Variables du mailing
         $varMail = array(
+            'furl'          => $this->furl,
             'surl'          => $surl,
             'url'           => $url,
             'prenom_p'      => $this->clients->prenom,

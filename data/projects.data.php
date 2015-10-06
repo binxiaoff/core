@@ -121,18 +121,19 @@ class projects extends projects_crud
             $where .= ' AND co.name LIKE "%' . $raison_sociale . '%"';
         }
 
-
-        $sql = 'SELECT p.*,p.status as statusProject, co.siren,co.name,
-                        (SELECT ps.label FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as label,
-                        (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status
-                FROM projects p
-                    LEFT JOIN companies co ON (p.id_company = co.id_company)
-                WHERE 1=1
-                ' . $where . '
-                HAVING label !=""
-                ' . $having . '
-                ORDER BY p.added DESC
-                ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = '
+            SELECT p.*,
+                p.status AS statusProject,
+                co.siren,
+                co.name,
+                (SELECT ps.label FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as label,
+                (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status
+            FROM projects p
+            LEFT JOIN companies co ON (p.id_company = co.id_company)
+            WHERE 1 = 1 ' . $where . '
+            HAVING label != "" ' . $having . '
+            ORDER BY p.added DESC
+            ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $resultat = $this->bdd->query($sql);
         $result = array();
 
@@ -185,7 +186,7 @@ class projects extends projects_crud
         if ($order != '')
             $order = ' ORDER BY ' . $order;
 
-          $sql = '
+        $sql = '
             SELECT
             p.id_project,
             p.date_publication_full
@@ -238,17 +239,18 @@ class projects extends projects_crud
             $where .= ' AND c.email = "' . $email . '"';
         }
 
-
-        $sql = 'SELECT p.*, co.*,c.*,
-                        (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status_project
-                FROM ((projects p
-                    LEFT JOIN companies co ON (p.id_company = co.id_company)
-                    LEFT JOIN clients c ON (co.id_client_owner = c.id_client)))
-                WHERE 1=1
-                ' . $where . '
-                HAVING status_project IN(80,60)
-                ORDER BY p.added DESC
-                ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = '
+            SELECT p.*,
+                co.*,
+                c.*,
+                (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status_project
+            FROM ((projects p
+            LEFT JOIN companies co ON (p.id_company = co.id_company)
+            LEFT JOIN clients c ON (co.id_client_owner = c.id_client)))
+            WHERE 1 = 1 ' . $where . '
+            HAVING status_project IN(80, 60)
+            ORDER BY p.added DESC
+            ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $resultat = $this->bdd->query($sql);
         $result = array();
 
@@ -279,17 +281,18 @@ class projects extends projects_crud
             $where .= ' AND c.email = "' . $email . '"';
         }
 
-
-        $sql = 'SELECT p.*, co.*,c.*,
-                        (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status_project
-                FROM ((projects p
-                    LEFT JOIN companies co ON (p.id_company = co.id_company)
-                    LEFT JOIN clients c ON (co.id_client_owner = c.id_client)))
-                WHERE 1=1
-                ' . $where . '
-                HAVING status_project IN(100,110,120)
-                ORDER BY p.added DESC
-                ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = '
+            SELECT p.*,
+                co.*,
+                c.*,
+                (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status_project
+            FROM ((projects p
+            LEFT JOIN companies co ON (p.id_company = co.id_company)
+            LEFT JOIN clients c ON (co.id_client_owner = c.id_client)))
+            WHERE 1 = 1 ' . $where . '
+            HAVING status_project IN(100, 110, 120)
+            ORDER BY p.added DESC
+            ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $resultat = $this->bdd->query($sql);
         $result = array();
 
@@ -345,11 +348,10 @@ class projects extends projects_crud
     function getLastProject($id_company)
     {
         $sql = 'SELECT id_project
-                FROM `projects`
+                FROM projects
                 WHERE id_company = ' . $id_company . '
                 ORDER BY added DESC
-                LIMIT 1
-                ';
+                LIMIT 1';
 
         $result = $this->bdd->query($sql);
         $id_project = (int)($this->bdd->result($result, 0, 0));

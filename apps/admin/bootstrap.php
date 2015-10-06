@@ -14,7 +14,6 @@ class bootstrap extends Controller
         $this->ficelle = $this->loadLib('ficelle');
         $this->upload  = $this->loadLib('upload');
         $this->photos  = $this->loadLib('photos', array($this->spath, $this->surl));
-        $this->Web2Pdf = $this->loadLib('Web2Pdf');
 
         $this->ln             = $this->loadData('textes');
         $this->settings       = $this->loadData('settings');

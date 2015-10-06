@@ -2,8 +2,6 @@
 
 class bootstrap extends Controller
 {
-    var $Command;
-
     /**
      * @object data\crud\companies
      * @desc object for Companies infos
@@ -16,18 +14,16 @@ class bootstrap extends Controller
      */
     public $projects;
 
-    function bootstrap($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
-        // Mise en session de l'url demand�e pour un retour si deconnect� sauf pour la fonction login du controller root
+        // Mise en session de l'url demandée pour un retour si deconnecté sauf pour la fonction login du controller root
         if ($this->current_function != 'login') {
             $_SESSION['redirection_url'] = $_SERVER['REQUEST_URI'];
         }
 
-        // Chargement des librairies
         $this->upload = $this->loadLib('upload');
 
-        // Chargement des datas
         $this->settings                = $this->loadData('settings');
         $this->tree_elements           = $this->loadData('tree_elements');
         $this->blocs_elements          = $this->loadData('blocs_elements');
@@ -56,7 +52,6 @@ class bootstrap extends Controller
         $this->companies               = $this->loadData('companies');
         $this->projects                = $this->loadData('projects');
 
-        // Chargement des librairies
         $this->ficelle = $this->loadLib('ficelle');
         $this->photos  = $this->loadLib('photos', array($this->spath, $this->surl));
         $this->tnmp    = $this->loadLib('tnmp', array($this->nmp, $this->nmp_desabo, $this->Config['env']));
@@ -64,8 +59,6 @@ class bootstrap extends Controller
 
         // Recuperation de la liste des langue disponibles
         $this->lLangues = $this->Config['multilanguage']['allowed_languages'];
-        //unset($_SESSION['utm_source']);
-
 
         // Formulaire de modification d'un texte de traduction
         if (isset($_POST['form_mod_traduction'])) {
@@ -133,8 +126,7 @@ class bootstrap extends Controller
 
         /////////////////
 
-
-        // R�cuperation du menu footer
+        // Récuperation du menu footer
         $this->menuFooter = $this->tree->getMenu('footer', $this->language, $this->lurl);
 
         $this->navFooter1 = $this->tree->getMenu('footer-nav-1', $this->language, $this->lurl);
@@ -213,7 +205,7 @@ class bootstrap extends Controller
 
                 // Si erreur on affiche le message
                 if ($no_error) {
-                    // On recupere le formulaire de connexion s'il est pass�
+                    // On recupere le formulaire de connexion s'il est passé
                     if ($this->clients->handleLogin('connect', 'login', 'password')) {
                         //vidage des trackeurs d'echec en session
                         unset($_SESSION['login']);
@@ -297,7 +289,7 @@ class bootstrap extends Controller
                             } // Sinon
                             else {
 
-                                // on check le statut du preteur pour voir si on doit le rediriger sur la page des doc � uploader
+                                // on check le statut du preteur pour voir si on doit le rediriger sur la page des doc à uploader
                                 $this->clients_status->getLastStatut($_SESSION['client']['id_client']);
                                 if (in_array($this->clients_status->status, array(20, 30))) {
 
@@ -312,7 +304,7 @@ class bootstrap extends Controller
                                 } // Sinon
                                 else {
 
-                                    // On regarde le CGU du preteur pour voir si il est sign� ou pas (cgv particulier et entreprise ont le mm contenu)
+                                    // On regarde le CGU du preteur pour voir si il est signé ou pas (cgv particulier et entreprise ont le mm contenu)
                                     $this->clients->get($_SESSION['client']['id_client'], 'id_client');
                                     // cgu societe
                                     if (in_array($this->clients->type, array(2, 4))) {
@@ -324,10 +316,10 @@ class bootstrap extends Controller
                                         $this->lienConditionsGenerales = $this->settings->value;
                                     }
 
-                                    // liste des cgv accpet�
+                                    // liste des cgv accepté
                                     $listeAccept = $this->acceptations_legal_docs->selectAccepts('id_client = ' . $this->clients->id_client);
 
-                                    // On cherche si on a d�j� le cgv (si pas sign� on redirige sur la page synthese pour qu'il signe)
+                                    // On cherche si on a déjà le cgv (si pas signé on redirige sur la page synthèse pour qu'il signe)
                                     if (! in_array($this->lienConditionsGenerales, $listeAccept)) {
                                         header('Location:' . $this->lurl . '/synthese');
                                         die;
@@ -369,7 +361,7 @@ class bootstrap extends Controller
                     - tentative 4 = 4 sec
                     - etc...
 
-                    Au bout de 10 demandes (avec la m�me IP) DANS LES 10min
+                    Au bout de 10 demandes (avec la même IP) DANS LES 10 min
                     - Ajout d'un captcha + @ admin
 
                     */
@@ -377,7 +369,7 @@ class bootstrap extends Controller
                     // H - 10min
                     $h_moins_dix_min = date('Y-m-d H:i:s', mktime(date('H'), date('i') - 10, 0, date('m'), date('d'), date('Y')));
 
-                    //on r�cup�re le nombre de tentative d�j� faite avec l'ip du user
+                    //on récupère le nombre de tentative déjà faite avec l'ip du user
                     $this->login_log                 = $this->loadData('login_log');
                     $this->nb_tentatives_precedentes = $this->login_log->counter('IP = "' . $_SERVER["REMOTE_ADDR"] . '" AND date_action >= "' . $h_moins_dix_min . '" AND statut = 0');
 
@@ -421,7 +413,7 @@ class bootstrap extends Controller
         }// fin login
 
         //print_r($_SESSION['login']);
-        // On recupere le formulaire de connexion s'il est pass�
+        // On recupere le formulaire de connexion s'il est passé
         //if($this->clients->handleLogin('connect','login','password'))
 //        {
 //
@@ -494,7 +486,7 @@ class bootstrap extends Controller
         if ($this->clients->checkAccess()) {
             $this->connect_ok = true;
 
-            // On recupere les infos du client si il est connect�
+            // On recupere les infos du client si il est connecté
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
@@ -588,8 +580,8 @@ class bootstrap extends Controller
         }
 
         // page projet tri
-        // 1 : termin� bientot
-        // 2 : nouveaut�
+        // 1 : terminé bientôt
+        // 2 : nouveauté
 
 
         $this->tabOrdreProject = array(
@@ -599,7 +591,7 @@ class bootstrap extends Controller
         );
 
 
-        // Afficher les projets termin�s ? (1 : oui | 0 : non)
+        // Afficher les projets terminés ? (1 : oui | 0 : non)
         $this->settings->get('Afficher les projets termines', 'type');
         if ($this->settings->value == 1) {
             $this->tabProjectDisplay = '50,60,70,80,90,100,110,130';
@@ -607,11 +599,11 @@ class bootstrap extends Controller
             $this->tabProjectDisplay = '50';
         }
 
-        // R�cup du lien fb
+        // Récup du lien fb
         $this->settings->get('Facebook', 'type');
         $this->like_fb = $this->settings->value;
 
-        // R�cup du lien Twitter
+        // Récup du lien Twitter
         $this->settings->get('Twitter', 'type');
         $this->twitter = $this->settings->value;
 
@@ -692,7 +684,7 @@ class bootstrap extends Controller
         }
     }
 
-    function handlePartenaire($params)
+    public function handlePartenaire($params)
     {
         // Chargement des datas
         $partenaires       = $this->loadData('partenaires');
@@ -702,7 +694,7 @@ class bootstrap extends Controller
         // On check les params pour voir si on a un partenaire
         if (count($params) > 0) {
 
-            // Variable pour savoir s'il a trouv� un p
+            // Variable pour savoir s'il a trouvé un p
             $getta = false;
 
             $i = 0;
@@ -711,7 +703,7 @@ class bootstrap extends Controller
                 // Si on detecte un p en params
                 if ($p == 'p') {
 
-                    // Youpi il a trouv�
+                    // Youpi il a trouvé
                     $getta = true;
 
                     $indexPart = $i + 1;
@@ -771,7 +763,7 @@ class bootstrap extends Controller
                 $i++;
             }
 
-            // Si il a rien trouv� on regarde si on a un cookie et pas de session
+            // Si il a rien trouvé on regarde si on a un cookie et pas de session
             if (! isset($_SESSION['partenaire']['id_partenaire']) && isset($_COOKIE['izicom_partenaire']) && ! $getta) {
                 // On regarde si on trouve toujours un partenaire
                 if ($partenaires->get($_COOKIE['izicom_partenaire'], 'hash')) {
