@@ -26,7 +26,6 @@ class rootController extends bootstrap
             $paramSlug = isset($this->params[0]) ? $this->params[0] : '';
         }
 
-        // On regarde si on a une redirection sur ce slug
         $this->redirections = $this->loadData('redirections');
 
         if ($this->redirections->get(array('from_slug' => $paramSlug, 'id_langue' => $this->language))) {
@@ -71,8 +70,12 @@ class rootController extends bootstrap
 
             // Redirection depot de dossier
             if ($this->tree->id_tree == 128) {
-                $this->ficelle->source($_GET['utm_source'], $this->lurl . '/financement-participatif-pme-empruntez-aupres-du-grand-public', $_GET['utm_source2']);
-                header('Location:' . $this->lurl . '/financement-participatif-pme-empruntez-aupres-du-grand-public');
+                $this->ficelle->source(
+                    isset($_GET['utm_source']) ? $_GET['utm_source'] : '',
+                    $this->lurl . '/lp-depot-de-dossier',
+                    isset($_GET['utm_source2']) ? $_GET['utm_source2'] : ''
+                );
+                header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
                 die;
             }
 
@@ -811,19 +814,9 @@ class rootController extends bootstrap
                 $this->setView('../templates/' . $this->templates->slug, true);
             }
         } else {
-            // On regarde si on a une redirection sur ce slug
-            $this->redirections = $this->loadData('redirections');
-
-            if ($this->redirections->get(array('from_slug' => $paramSlug, 'id_langue' => $this->language))) {
-                header('Location:' . $this->lurl . '/' . $this->redirections->to_slug, true, 301);
-                die;
-            } else {
-                //header("HTTP/1.0 404 Not Found");
-                header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
-                $this->setView('../root/404');
-            }
+            header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
+            $this->setView('../root/404');
         }
-
     }
 
     public function _logout()
