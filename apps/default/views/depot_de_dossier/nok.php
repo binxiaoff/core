@@ -1,8 +1,9 @@
 <div class="main">
     <div class="shell">
+    <?php
+        $sReason = isset($this->params[0]) ? $this->params[0] : null;
 
-        <?
-        switch($this->params[0]){
+        switch ($sReason) {
             case 'pas-3-bilans':
                 echo  "<p>".$this->lng['depot-de-dossier-nok']['pas-3-bilans']."</p>";
                 break;
@@ -20,5 +21,5 @@
                 break;
         }
         ?>
-    </div><!-- /.shell -->
-</div><!-- /.main -->
+    </div>
+</div>

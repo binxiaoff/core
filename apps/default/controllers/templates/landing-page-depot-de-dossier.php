@@ -10,7 +10,12 @@ $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
 $this->projects_status_history = $this->loadData('projects_status_history');
 $this->projects                = $this->loadData('projects');
 
-//traduction
+$this->settings->get('Somme à emprunter min','type');
+$this->sommeMin = $this->settings->value;
+
+$this->settings->get('Somme à emprunter max','type');
+$this->sommeMax = $this->settings->value;
+
 $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
 $this->lng['etape-1']      = $this->ln->selectFront('depot-de-dossier-etape1', $this->language, $this->App);
 
@@ -19,7 +24,4 @@ $this->type         = 0;
 
 // Liste des projets en funding
 $this->lProjetsFunding = $this->projects->selectProjectsByStatus('50,60,80', ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 6);
-
-// Nb projets en funding
-
-$this->nbProjects = $this->projects->countSelectProjectsByStatus('50,60,80', ' AND p.status = 0 AND p.display = 0');
+$this->nbProjects      = $this->projects->countSelectProjectsByStatus('50,60,80', ' AND p.status = 0 AND p.display = 0');

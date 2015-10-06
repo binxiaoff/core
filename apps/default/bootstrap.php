@@ -17,7 +17,7 @@ class bootstrap extends Controller
     public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
-        // Mise en session de l'url demandée pour un retour si deconnecté sauf pour la fonction login du controller root
+
         if ($this->current_function != 'login') {
             $_SESSION['redirection_url'] = $_SERVER['REQUEST_URI'];
         }
@@ -69,8 +69,6 @@ class bootstrap extends Controller
             $this->ln->updateTextTranslations($_POST['section'], $_POST['nom'], $values);
         }
 
-        // Chargement des fichiers CSS
-        //$this->loadCss('../scripts/default/colorbox/colorbox');
         $this->loadCss('default/izicom');
         $this->loadCss('default/colorbox');
         $this->loadCss('default/fonts');
@@ -80,10 +78,7 @@ class bootstrap extends Controller
         $this->loadCss('default/style', 0, 'all', 'css', date('Ymd')); // permet d'avoir un nouveau cache de js par jour chez l'utilisateur
         $this->loadCss('default/style-edit', 0, 'all', 'css', date('Ymd'));
 
-
-        // Chargement des fichier JS
         $this->loadJs('default/jquery/jquery-1.10.2.min');
-        //$this->loadJs('default/colorbox/jquery.colorbox-min');
         $this->loadJs('default/bootstrap-tooltip');
         $this->loadJs('default/jquery.carouFredSel-6.2.1-packed');
         $this->loadJs('default/jquery.c2selectbox');
@@ -96,6 +91,10 @@ class bootstrap extends Controller
         $this->loadJs('default/functions', 0, date('Ymd'));
         $this->loadJs('default/main', 0, date('YmdH'));
         $this->loadJs('default/ajax', 0, date('Ymd'));
+
+        $this->meta_title       = '';
+        $this->meta_description = '';
+        $this->meta_keywords    = '';
 
         // Lutte contre le XSS
         if (is_array($_POST)) {

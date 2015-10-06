@@ -46,11 +46,6 @@ class depot_de_dossierController extends bootstrap
         header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
     }
 
-//    public function _etape1()
-//    {
-//        header('location: ' . $this->lurl . '/lp-depot-de-dossier');
-//    }
-
     public function _etape1()
     {
         $this->checkClient();
@@ -66,7 +61,11 @@ class depot_de_dossierController extends bootstrap
         $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
         // source -> mets utm_source dans la session
-        $this->ficelle->source($_GET['utm_source'], $this->lurl . '/' . $this->params[0], $_GET['utm_source2']);
+        $this->ficelle->source(
+            isset($_GET['utm_source']) ? $_GET['utm_source'] : '',
+            $this->lurl . (isset($this->params[0]) ? '/' . $this->params[0] : ''),
+            isset($_GET['utm_source2']) ? $_GET['utm_source2'] : ''
+        );
 
         $reponse_get = false;
 
@@ -101,7 +100,7 @@ class depot_de_dossierController extends bootstrap
 
             $form_valid = true;
 
-            if (!isset($montant) or $montant == $this->lng['landing-page']['montant-souhaite']) {
+            if (!isset($montant) || $montant == $this->lng['landing-page']['montant-souhaite']) {
                 $form_valid        = false;
                 $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
             }
@@ -113,7 +112,7 @@ class depot_de_dossierController extends bootstrap
                 $this->form_ok = false;
             }
 
-            if (!isset($siren) or $siren == $this->lng['landing-page']['siren'] || strlen($siren) != 9) {
+            if (!isset($siren) || $siren == $this->lng['landing-page']['siren'] || strlen($siren) != 9) {
                 $form_valid        = false;
                 $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
             }
@@ -163,9 +162,10 @@ class depot_de_dossierController extends bootstrap
                 }
 
                 $this->projects->id_company = $this->companies->id_company;
-                if ($this->prescripteurs->id_prescripteurs == '') {
+                if ($this->prescripteurs->id_prescripteur == '') {
                     $this->projects->id_prescripteur = $this->prescripteurs->id_prescripteur;
                 }
+
                 $this->projects->amount     = $montant;
                 $this->projects->id_company = $this->companies->id_company;
                 $this->projects->id_project = $this->projects->create();

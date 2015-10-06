@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <meta charset="utf-8">
+    <meta name="description" content="<?= $this->meta_description ?>">
+    <meta name="keywords" content="<?= $this->meta_keywords ?>">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=0">
     <title><?= $this->meta_title ?><?= ($this->baseline_title != '' ? ' - ' . $this->baseline_title : '') ?></title>
-    <meta name="description" content="<?= $this->meta_description ?>"/>
-    <meta name="keywords" content="<?= $this->meta_keywords ?>"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=0"/>
-    <link rel="shortcut icon" href="<?= $this->url ?>/landing-page/css/images/favicon.ico"/>
-    <link rel="stylesheet" href="<?= $this->url ?>/landing-page/css/jquery.c2selectbox.css" type="text/css"/>
-    <link rel="stylesheet" href="<?= $this->url ?>/landing-page/css/style.css" type="text/css"/>
+    <link rel="shortcut icon" href="<?= $this->url ?>/landing-page/css/images/favicon.ico">
+    <link rel="stylesheet" href="<?= $this->url ?>/landing-page/css/jquery.c2selectbox.css" type="text/css">
+    <link rel="stylesheet" href="<?= $this->url ?>/landing-page/css/style.css" type="text/css">
     <script src="<?= $this->url ?>/landing-page/js/modernizr.js"></script>
     <script src="<?= $this->url ?>/landing-page/js/jquery-1.11.0.min.js"></script>
     <script src="<?= $this->url ?>/scripts/default/livevalidation_standalone.compressed.js"></script>
@@ -70,7 +70,7 @@
         <section class="content left">
             <header class="page-header cf">
                 <a target="_blank" href="<?= $this->content['lp-lien-logo-221'] ?>" class="logo left">
-                    <img src="<?= $this->url ?>/landing-page/css/images/logo.png" alt=""/>
+                    <img src="<?= $this->url ?>/landing-page/css/images/logo.png" alt="">
                 </a>
                 <?php if ($this->content['lp-emprunteur-empruntis'] != '') { ?>
                     <img class="empruntis" src="<?= $this->photos->display($this->content['lp-emprunteur-empruntis']) ?>" alt="Empruntis">
@@ -80,21 +80,21 @@
                 <h1><?= $this->content['lp-titre-landing-page-222'] ?></h1>
                 <ul class="cf">
                     <li>
-                        <img src="<?= $this->photos->display($this->content['lp-gauche-image-223']) ?>" alt=""/>
+                        <img src="<?= $this->photos->display($this->content['lp-gauche-image-223']) ?>" alt="">
                         <p>
                             <strong><?= $this->content['lp-gauche-chiffre-224'] ?></strong>
                             <span style="color:#727272;font-size:20px;"><?= $this->content['lp-gauche-texte-225'] ?></span>
                         </p>
                     </li>
                     <li>
-                        <img src="<?= $this->photos->display($this->content['lp-centre-image-226']) ?>" alt=""/>
+                        <img src="<?= $this->photos->display($this->content['lp-centre-image-226']) ?>" alt="">
                         <p>
                             <strong><?= $this->content['lp-centre-chiffre-227'] ?></strong>
                             <span style="color:#727272;font-size:20px;"><?= $this->content['lp-centre-texte-228'] ?></span>
                         </p>
                     </li>
                     <li>
-                        <img src="<?= $this->photos->display($this->content['lp-droite-image-229']) ?>" alt=""/>
+                        <img src="<?= $this->photos->display($this->content['lp-droite-image-229']) ?>" alt="">
                         <p>
                             <strong><?= $this->content['lp-droite-chiffre-230'] ?></strong>
                             <span style="color:#727272;font-size:20px;"><?= $this->content['lp-droite-texte-231'] ?></span>
@@ -109,10 +109,12 @@
         </section>
         <aside class="signup right">
             <h2><?= $this->content['lp-titre-formulaire'] ?></h2>
-            <form action="" method="post" id="depot_de_dossier" name="depot_de_dossier">
+            <form action="<?= $this->lurl ?>/depot_de_dossier/etape1" method="post" id="depot_de_dossier" name="depot_de_dossier">
+                <?php if (isset($this->retour_form)) { ?>
                 <div class="form-row" style="display:inline;">
                     <span style="text-align:center; color:#C84747;"><?= $this->retour_form ?></span>
                 </div>
+                <?php } ?>
                 <div class="form-row">
                     <span class="euro-sign">€</span>
                     <input type="text" class="field required" placeholder="<?= $this->lng['landing-page']['montant-souhaite'] ?>" value="<?= isset($_POST['montant']) ? $_POST['montant'] : '' ?>" title="<?= $this->lng['landing-page']['montant-souhaite'] ?>" name="montant" id="montant" data-validators="Presence&amp;Numericality, {maximum:<?= $this->sommeMax ?>}&amp;Numericality, {minimum: <?= $this->sommeMin ?>}" onkeyup="lisibilite_nombre(this.value,this.id);">
@@ -124,9 +126,9 @@
                     <em class="caractmax"><?= $this->lng['landing-page']['9-caracteres-numeriques'] ?></em>
                 </div>
                 <div class="form-row">
-                    <input type="text" placeholder="<?= $this->lng['landing-page']['email'] ?>" value="<?= isset($_POST['email']) ? $_POST['email'] : '' ?>" title="<?= $this->lng['etape-1']['email'] ?>" name="email" id="email"/>
+                    <input type="text" placeholder="<?= $this->lng['landing-page']['email'] ?>" value="<?= isset($_POST['email']) ? $_POST['email'] : '' ?>" title="<?= $this->lng['landing-page']['email'] ?>" name="email" id="email">
                 </div>
-                <input type="hidden" name="spy_inscription_landing_page_depot_dossier" value="1"/>
+                <input type="hidden" name="spy_inscription_landing_page_depot_dossier" value="1">
                 <button type="submit" class="button" style="font-family: 'TrendSansOne'; font-weight:normal;text-transform: uppercase;">
                     <?= $this->content['lp-bouton-formulaire-241'] ?>
                     <span class="arrow"></span>
