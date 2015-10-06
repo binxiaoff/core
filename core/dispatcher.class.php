@@ -167,7 +167,7 @@ class Dispatcher
             $i = 0;
             foreach ($parameters as $p) {
                 $var = explode($this->Config['params']['separator'], $p);
-                if ($var[1] != '') {
+                if (! empty($var[1])) {
                     $tmp[$var[0]] = $var[1];
                 } else {
                     $tmp[$i] = $p;

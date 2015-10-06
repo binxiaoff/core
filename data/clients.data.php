@@ -28,33 +28,22 @@
 
 class clients extends clients_crud
 {
-    function clients($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::clients($bdd, $params);
     }
 
-    function get($id, $field = 'id_client')
+    public function get($id, $field = 'id_client')
     {
         return parent::get($id, $field);
     }
 
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_client')
+    public function delete($id, $field = 'id_client')
     {
         parent::delete($id, $field);
     }
 
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -72,7 +61,7 @@ class clients extends clients_crud
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -84,7 +73,7 @@ class clients extends clients_crud
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id, $field = 'id_client')
+    public function exist($id, $field = 'id_client')
     {
         $sql    = 'SELECT * FROM `clients` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
@@ -95,12 +84,12 @@ class clients extends clients_crud
     //**************************************** AJOUTS ******************************************//
     //******************************************************************************************//
 
-    var $loginPage = '';
-    var $connectedPage = '';
-    var $userTable = 'clients';
-    var $securityKey = 'clients';
-    var $userMail = 'email';
-    var $userPass = 'password';
+    public $loginPage = '';
+    public $connectedPage = '';
+    public $userTable = 'clients';
+    public $securityKey = 'clients';
+    public $userMail = 'email';
+    public $userPass = 'password';
 
     public function handleLogin($button, $email, $pass)
     {
@@ -172,13 +161,13 @@ class clients extends clients_crud
         }
     }
 
-    function changePassword($email, $pass)
+    public function changePassword($email, $pass)
     {
         $sql = 'UPDATE ' . $this->userTable . ' SET ' . $this->userPass . ' = "' . md5($pass) . '" WHERE ' . $this->userMail . ' = "' . $email . '"';
         $this->bdd->query($sql);
     }
 
-    function existEmail($email)
+    public function existEmail($email)
     {
         $sql = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '"';
         $res = $this->bdd->query($sql);
@@ -190,9 +179,9 @@ class clients extends clients_crud
         }
     }
 
-    function checkAccess()
+    public function checkAccess()
     {
-        if ($_SESSION['auth'] != true) {
+        if (! isset($_SESSION['auth']) || $_SESSION['auth'] != true) {
             return false;
         }
 
@@ -210,7 +199,7 @@ class clients extends clients_crud
         }
     }
 
-    function getLastStatut($id_client)
+    public function getLastStatut($id_client)
     {
         $sql              = 'SELECT id_client_status
 				FROM `clients_status_history`
@@ -228,7 +217,7 @@ class clients extends clients_crud
         }
     }
 
-    function checkCompteCreate($id_client)
+    public function checkCompteCreate($id_client)
     {
         $sql    = 'SELECT count(*)
 				FROM `clients_status_history`
@@ -249,7 +238,7 @@ class clients extends clients_crud
     // $restriction = preteur | empreunteur
     // $option = permet de restreindre le contenu emprunteur
     // $slug = chemin pour rediriger l'emprunteur sur une page
-    function checkStatusPreEmp($statut = '1', $restriction = 'preteur', $id_client = '', $option = '', $slug = '')
+    public function checkStatusPreEmp($statut = '1', $restriction = 'preteur', $id_client = '', $option = '', $slug = '')
     {
         $reponse = false;
 
@@ -287,7 +276,7 @@ class clients extends clients_crud
         }
     }
 
-    function searchClients($ref = '', $nom = '', $email = '', $prenom = '')
+    public function searchClients($ref = '', $nom = '', $email = '', $prenom = '')
     {
         $where = 'WHERE 1 = 1';
 
@@ -314,7 +303,7 @@ class clients extends clients_crud
         return $result;
     }
 
-    function searchEmprunteurs($ref = '', $nom = '', $email = '', $prenom = '', $societe = '', $siret = '', $status = '', $start = '', $nb = '')
+    public function searchEmprunteurs($ref = '', $nom = '', $email = '', $prenom = '', $societe = '', $siret = '', $status = '', $start = '', $nb = '')
     {
         $where = 'WHERE 1 = 1';
 
@@ -352,7 +341,7 @@ class clients extends clients_crud
         return $result;
     }
 
-    function totalmontantEmprunt($id_client)
+    public function totalmontantEmprunt($id_client)
     {
         // Récupération du totel montant emprunt d'un client
         $sql    = 'SELECT SUM(p.amount) as total FROM clients c,companies co,projects p WHERE c.id_client = co.id_client_owner AND co.id_company = p.id_company AND c.id_client = ' . $id_client;
@@ -361,7 +350,7 @@ class clients extends clients_crud
         return $this->bdd->result($result, 0, 0);
     }
 
-    function searchPreteurs($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $emprunteur = '', $start = '', $nb = '')
+    public function searchPreteurs($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $emprunteur = '', $start = '', $nb = '')
     {
         $where = 'WHERE 1 = 1 ';
 
@@ -416,7 +405,7 @@ class clients extends clients_crud
         return $result;
     }
 
-    function searchPreteursV2($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $emprunteur = '', $start = '', $nb = '')
+    public function searchPreteursV2($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $emprunteur = '', $start = '', $nb = '')
     {
         $where = 'WHERE 1 = 1 ';
         $and   = '';
@@ -508,7 +497,7 @@ class clients extends clients_crud
         return $result;
     }
 
-    function selectPreteurs($dateMoins1Mois)
+    public function selectPreteurs($dateMoins1Mois)
     {
         $sql = '
 		SELECT
@@ -550,7 +539,7 @@ class clients extends clients_crud
     }
 
     // presteurs by status
-    function selectPreteursByStatus($status = '', $where = '', $order = '', $start = '', $nb = '')
+    public function selectPreteursByStatus($status = '', $where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -589,7 +578,7 @@ class clients extends clients_crud
     }
 
     // presteurs by status
-    function selectPreteursByStatusSlim($status = '', $where = '', $order = '', $start = '', $nb = '')
+    public function selectPreteursByStatusSlim($status = '', $where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' AND ' . $where;
@@ -614,13 +603,13 @@ class clients extends clients_crud
         return $result;
     }
 
-    function update_added($date, $id_client)
+    public function update_added($date, $id_client)
     {
         $sql = "UPDATE `unilend`.`clients` SET `added` = '" . $date . "' WHERE `clients`.`id_client` = " . $id_client . ";";
         $this->bdd->query($sql);
     }
 
-    function get_prospects()
+    public function get_prospects()
     {
         $sql = 'SELECT *
 				FROM `clients` c
@@ -643,7 +632,7 @@ class clients extends clients_crud
         return $result;
     }
 
-    function get_preteurs_restriction($sql)
+    public function get_preteurs_restriction($sql)
     {
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -653,7 +642,7 @@ class clients extends clients_crud
         return $result;
     }
 
-    function counter_de_test($where = '')
+    public function counter_de_test($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;

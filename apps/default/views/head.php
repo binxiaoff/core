@@ -8,7 +8,7 @@
         <?php
         if ($this->google_webmaster_tools != '')
         {
-            ?>    
+            ?>
             <meta name="google-site-verification" content="<?= $this->google_webmaster_tools ?>" />
             <?php
         }
@@ -24,33 +24,9 @@
             <script type="text/javascript">
                 var add_surl = '<?= $this->surl ?>';
                 var add_url = '<?= $this->lurl ?>';
-
             </script>
             <?php $this->callCss(); ?>
-            <?php $this->callJs(); ?>	
-
-            <?
-            // partenaire challanges
-            if ($this->lurl == 'http://partenaire.unilend.challenges.fr')
-            {
-
-                // PUB challenges
-                /* $sas_pageid	= '61933/486256'
-
-
-
-                  ?>
-                  <script>
-                  var sas_tmstp = Math.round(Math.random()*10000000000),
-                  sas_pageid = '<?=$sas_pageid?>',
-                  sas_target = '',
-                  sas_formatids = '23885,23371,27098,21482,21488,21487,21486,21485,27097,21483,21484';
-                  document.write('<scr'+'ipt async="true" src="http://ww690.smartadserver.com/call2/pubjallajax/' + sas_pageid + '/' + sas_formatids + '/' + sas_tmstp + '/' + escape(sas_target) + '?"></scr'+'ipt>');
-                  </script>
-                  <script src="http://referentiel.nouvelobs.com/tools/smart.php"></script>
-                  <? */
-            }
-            ?>
+            <?php $this->callJs(); ?>
     </head>
     <body class="has-fixed-nav">
         <?
@@ -156,7 +132,7 @@
                   </script>
                   <noscript><img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" /></noscript><?php */ ?>
 
-                <img src="https://ext.ligatus.com/conversion/?c=77615&a=10723" width="1" height="1" />       
+                <img src="https://ext.ligatus.com/conversion/?c=77615&a=10723" width="1" height="1" />
 
                 <?
             }
@@ -298,7 +274,7 @@
             <?php
             if ($this->google_analytics != '')
             {
-                ?>    
+                ?>
                 <script type="text/javascript">
                     var _gaq = _gaq || [];
                     _gaq.push(['_setAccount', '<?= $this->google_analytics ?>']);
@@ -315,11 +291,8 @@
                 <?php
             }
 
-
-//unset($_SESSION['login']);
-//echo $_SESSION['login']['nb_tentatives_precedentes'];
-//gestion du temps d'attente en cas d'echec successifs
-            if ($_SESSION['login']['nb_tentatives_precedentes'] > 1)
+            //gestion du temps d'attente en cas d'echec successifs
+            if (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1)
             {
                 ?>
                 <script type="text/javascript">
@@ -333,8 +306,8 @@
                 <?php
             }
 
-            if ($_SESSION['login']['nb_tentatives_precedentes'] >= 5)
+            if (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] >= 5)
             {
-                
+
             }
             ?>

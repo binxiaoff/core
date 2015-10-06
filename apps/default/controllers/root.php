@@ -2,37 +2,35 @@
 
 class rootController extends bootstrap
 {
-    var $Command;
-
-    function rootController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
         $this->catchAll = true;
     }
 
-    function _default()
+    public function _default()
     {
         // Activation du cache
         $this->fireCache();
 
         // ajout du slash car capital rajout un Get
-        if (substr($this->params[0], 0, 8) == 'capital?') {
-            header('location:' . $this->lurl . '/capital/?');
+        if (isset($this->params[0]) && substr($this->params[0], 0, 8) == 'capital?') {
+            header('Location:' . $this->lurl . '/capital/?');
             die;
         }
 
         // On check pour les tracker google defonce pas la home
-        if (substr($this->params[0], 0, 1) == '?') {
+        if (isset($this->params[0]) && substr($this->params[0], 0, 1) == '?') {
             $paramSlug = '';
         } else {
-            $paramSlug = $this->params[0];
+            $paramSlug = isset($this->params[0]) ? $this->params[0] : '';
         }
 
         // On regarde si on a une redirection sur ce slug
         $this->redirections = $this->loadData('redirections');
 
         if ($this->redirections->get(array('from_slug' => $paramSlug, 'id_langue' => $this->language))) {
-            header('location:' . $this->lurl . '/' . $this->redirections->to_slug, true, 301);
+            header('Location:' . $this->lurl . '/' . $this->redirections->to_slug, true, 301);
             die;
         }
 
@@ -185,7 +183,7 @@ class rootController extends bootstrap
             // landing page restriction pour pas aller sur d'autres pages
             if ($this->lurl == 'http://lexpress.unilend.fr') {
                 if ($this->tree->id_template != 18 && $this->tree->id_template != 20 && $this->tree->id_template != 21) {
-                    header('location: ' . $this->surl);
+                    header('Location: ' . $this->surl);
                     die;
                 }
             }
@@ -193,7 +191,7 @@ class rootController extends bootstrap
             // landing page restriction pour pas aller sur d'autres pages
             if ($this->lurl == 'http://pret-entreprise.votreargent.lexpress.fr') {
                 if ($this->tree->id_template != 18 && $this->tree->id_template != 20 && $this->tree->id_template != 21) {
-                    header('location: ' . $this->surl);
+                    header('Location: ' . $this->surl);
                     die;
                 }
             }
@@ -201,7 +199,7 @@ class rootController extends bootstrap
             // landing page restriction pour pas aller sur d'autres pages
             if ($this->lurl == 'http://emprunt-entreprise.lentreprise.lexpress.fr') {
                 if ($this->tree->id_template != 18 && $this->tree->id_template != 20 && $this->tree->id_template != 21) {
-                    header('location: ' . $this->surl);
+                    header('Location: ' . $this->surl);
                     die;
                 }
             }
@@ -211,7 +209,7 @@ class rootController extends bootstrap
                 $_SESSION['lexpress']['header']      = $this->content['header'];
                 $_SESSION['lexpress']['footer']      = $this->content['footer'];
 
-                header('location:' . $this->lurl);
+                header('Location:' . $this->lurl);
                 die;
             }
             ////////////////////////////
@@ -226,7 +224,7 @@ class rootController extends bootstrap
                 $_SESSION['lexpress']['header']      = $this->content['header-277'];
                 $_SESSION['lexpress']['footer']      = $this->content['footer-278'];
 
-                header('location:' . $this->lurl);
+                header('Location:' . $this->lurl);
                 die;
 
             }
@@ -299,16 +297,16 @@ class rootController extends bootstrap
 
             // restriction pour capital
             if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' && $this->tree->id_template != 14) {
-                header('location: http://prets-entreprises-unilend.capital.fr/capital/');
+                header('Location: http://prets-entreprises-unilend.capital.fr/capital/');
                 die;
             } elseif ($this->lurl == 'http://partenaire.unilend.challenges.fr' && $this->tree->id_template != 14) {
-                header('location: http://partenaire.unilend.challenges.fr/challenges/');
+                header('Location: http://partenaire.unilend.challenges.fr/challenges/');
                 die;
             } elseif ($this->lurl == 'http://financementparticipatifpme.lefigaro.fr' && $this->tree->id_template != 14) {
-                header('location: http://financementparticipatifpme.lefigaro.fr/figaro/');
+                header('Location: http://financementparticipatifpme.lefigaro.fr/figaro/');
                 die;
             } elseif ($this->lurl == 'http://financementparticipatifpme.lefigaro.fr' && $this->tree->id_template != 14) {
-                header('location: http://financementparticipatifpme.lefigaro.fr/figaro/');
+                header('Location: http://financementparticipatifpme.lefigaro.fr/figaro/');
                 die;
             }
             //////////////////////////
@@ -356,12 +354,12 @@ class rootController extends bootstrap
                             $this->clients->password = md5($mdp);
                             $this->clients->update();
 
-                            header('location:' . $this->lurl . '/' . $this->params[0] . '/' . $this->params[1] . '/valide');
+                            header('Location:' . $this->lurl . '/' . $this->params[0] . '/' . $this->params[1] . '/valide');
                             die;
                         }
                     }
                 } else {
-                    header('location:' . $this->lurl);
+                    header('Location:' . $this->lurl);
                     die;
                 }
             }
@@ -636,8 +634,7 @@ class rootController extends bootstrap
                 $this->companies_details = $this->loadData('companies_details');
                 $this->bids              = $this->loadData('bids');
 
-                // source
-                $this->ficelle->source($_GET['utm_source'], '', $_GET['utm_source2']);
+                $this->ficelle->source(isset($_GET['utm_source']) ? $_GET['utm_source'] : '', '', isset($_GET['utm_source2']) ? $_GET['utm_source2'] : '');
 
                 // Heure fin periode funding
                 $this->settings->get('Heure fin periode funding', 'type');
@@ -818,7 +815,7 @@ class rootController extends bootstrap
             $this->redirections = $this->loadData('redirections');
 
             if ($this->redirections->get(array('from_slug' => $paramSlug, 'id_langue' => $this->language))) {
-                header('location:' . $this->lurl . '/' . $this->redirections->to_slug, true, 301);
+                header('Location:' . $this->lurl . '/' . $this->redirections->to_slug, true, 301);
                 die;
             } else {
                 //header("HTTP/1.0 404 Not Found");
@@ -829,12 +826,12 @@ class rootController extends bootstrap
 
     }
 
-    function _logout()
+    public function _logout()
     {
         $this->clients->handleLogout();
     }
 
-    function _logAdminUser()
+    public function _logAdminUser()
     {
         $this->autoFireHeader = false;
         $this->autoFireDebug  = false;
@@ -850,7 +847,7 @@ class rootController extends bootstrap
         }
     }
 
-    function _search()
+    public function _search()
     {
         //Recuperation des element de traductions
         $this->lng['search'] = $this->ln->selectFront('search', $this->language, $this->App);
@@ -868,7 +865,7 @@ class rootController extends bootstrap
 
     }
 
-    function _notification_payline()
+    public function _notification_payline()
     {
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
@@ -1041,7 +1038,7 @@ class rootController extends bootstrap
         }
     }
 
-    function _changeCompte()
+    public function _changeCompte()
     {
         // On check si y a un compte
         if (! $this->clients->checkAccess()) {
@@ -1064,7 +1061,7 @@ class rootController extends bootstrap
         }
     }
 
-    function _xmlAllProjects()
+    public function _xmlAllProjects()
     {
         $projects  = $this->loadData('projects');
         $companies = $this->loadData('companies');
@@ -1126,7 +1123,7 @@ class rootController extends bootstrap
         die;
     }
 
-    function _capital()
+    public function _capital()
     {
         $this->autoFireHeader = false;
         $this->autoFireDebug  = false;
@@ -1147,7 +1144,7 @@ class rootController extends bootstrap
 
     }
 
-    function _challenges()
+    public function _challenges()
     {
         $this->autoFireHeader = false;
         $this->autoFireDebug  = false;
@@ -1160,7 +1157,7 @@ class rootController extends bootstrap
         $this->bas  = file_get_contents('http://www.challenges.fr/partners/footer.php');
     }
 
-    function _lexpress()
+    public function _lexpress()
     {
         $this->autoFireHeader = false;
         $this->autoFireDebug  = false;
@@ -1191,7 +1188,7 @@ class rootController extends bootstrap
 
         // Si on a une session d'ouverte on redirige
         if (isset($_SESSION['client'])) {
-            header('location:' . $this->lurl);
+            header('Location:' . $this->lurl);
             die;
         }
 
@@ -1221,7 +1218,7 @@ class rootController extends bootstrap
         }
     }
 
-    function _lexpress_entreprise()
+    public function _lexpress_entreprise()
     {
         $this->autoFireHeader = false;
         $this->autoFireDebug  = false;
@@ -1252,7 +1249,7 @@ class rootController extends bootstrap
 
         // Si on a une session d'ouverte on redirige
         if (isset($_SESSION['client'])) {
-            header('location:' . $this->lurl);
+            header('Location:' . $this->lurl);
             die;
         }
 
@@ -1282,7 +1279,7 @@ class rootController extends bootstrap
         }
     }
 
-    function _figaro()
+    public function _figaro()
     {
         $this->autoFireHeader = false;
         $this->autoFireDebug  = false;
@@ -1313,7 +1310,7 @@ class rootController extends bootstrap
 
         // Si on a une session d'ouverte on redirige
         if (isset($_SESSION['client'])) {
-            header('location:' . $this->lurl);
+            header('Location:' . $this->lurl);
             die;
         }
 
@@ -1344,7 +1341,7 @@ class rootController extends bootstrap
     }
 
     // Enregistrement et lecture du pdf cgv
-    function _pdf_cgv_preteurs()
+    public function _pdf_cgv_preteurs()
     {
         // Inclusion controller pdf
         include($this->path . '/apps/default/controllers/pdf.php');
@@ -1398,7 +1395,7 @@ class rootController extends bootstrap
     }
 
     // lecture page du cgv en html
-    function _cgv_preteurs($bPdf = false, pdfController $oPdf = null, array $aParams = null)
+    public function _cgv_preteurs($bPdf = false, pdfController $oPdf = null, array $aParams = null)
     {
         $this->params = (false === is_null($aParams)) ? $aParams : $this->params;
 

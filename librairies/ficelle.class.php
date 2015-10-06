@@ -400,23 +400,6 @@ class ficelle
     }
 
     // Source
-    public function source_old($utm_source = '', $url = '')
-    {
-        if (!isset($_SESSION['utm_source'])) {
-            if ($utm_source != '' || $url != '') {
-
-                if ($utm_source != '') {
-                    $source = $utm_source;
-                } elseif ($url != '') {
-                    $source = $url;
-                }
-
-                $_SESSION['utm_source'] = $source;
-            }
-        }
-    }
-
-    // Source
     public function source($utm_source = '', $url = '', $utm_source2 = '')
     {
         // source1
