@@ -4784,11 +4784,11 @@ class cronController extends bootstrap
 
         // Mise a jour des données //
         // On change l'adresse mail de tout les clients
-        $this->bdd->query("UPDATE `unilend`.`clients` SET `email` = 'DCourtier.Auto@equinoa.fr';");
+        $this->bdd->query("UPDATE clients SET email = 'DCourtier.Auto@equinoa.fr'");
         // Et on change l'adresse de notifiaction
-        $this->bdd->query("UPDATE `unilend`.`settings` SET `value` = 'DCourtier.Auto@equinoa.fr' WHERE id_setting = 44;");
+        $this->bdd->query("UPDATE settings SET value = 'DCourtier.Auto@equinoa.fr' WHERE id_setting = 44");
         // email facture
-        $this->bdd->query("UPDATE `unilend`.`companies` SET `email_facture` = 'DCourtier.Auto@equinoa.fr';");
+        $this->bdd->query("UPDATE companies SET email_facture = 'DCourtier.Auto@equinoa.fr'");
 
         // Email pour prevenir de la mise a jour //
         $to      = 'unilend@equinoa.fr';
