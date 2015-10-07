@@ -27,14 +27,9 @@ class ficelle
         return $string;
     }
 
-    // Verifie que la chaine passee en parametre est au format email
     public function isEmail($value)
     {
-        if (preg_match('#^[\w.-]+@[\w.-]+\.[a-zA-Z]{2,5}$#', $value)) {
-            return true;
-        } else {
-            return false;
-        }
+        return (false !== filter_var($value, FILTER_VALIDATE_EMAIL));
     }
 
     // Encode les caracteres speciaux
