@@ -30,53 +30,40 @@ class profileController extends bootstrap
         $this->page = 'profile';
     }
 
-
     public function _default()
     {
-        // Particulier
         if (in_array($this->clients->type, array(1, 3))) {
             header('Location:' . $this->lurl . '/profile/particulier');
             die;
-        } // Societe
-        elseif (in_array($this->clients->type, array(2, 4))) {
+        } elseif (in_array($this->clients->type, array(2, 4))) {
             header('Location:' . $this->lurl . '/profile/societe');
             die;
         }
     }
 
-
     public function _particulier()
     {
-
-        // Societe (si on est pas sur la bonne page)
         if (in_array($this->clients->type, array(2, 4))) {
-            header('Location:' . $this->lurl . '/profile/societe');
+            header('Location: ' . $this->lurl . '/profile/societe');
             die;
         }
 
-        //Recuperation des element de traductions
         $this->lng['etape1']          = $this->ln->selectFront('inscription-preteur-etape-1', $this->language, $this->App);
         $this->lng['etape2']          = $this->ln->selectFront('inscription-preteur-etape-2', $this->language, $this->App);
         $this->lng['profile']         = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
         $this->lng['gestion-alertes'] = $this->ln->selectFront('preteur-profile-gestion-alertes', $this->language, $this->App);
 
-        // CSS
         $this->unLoadCss('default/custom-theme/jquery-ui-1.10.3.custom');
         $this->loadCss('default/preteurs/new-style');
 
-        // JS
         $this->unLoadJs('default/functions');
         $this->unLoadJs('default/main');
         $this->unLoadJs('default/ajax');
-
         $this->loadJs('default/preteurs/functions');
         $this->loadJs('default/main');
         $this->loadJs('default/ajax');
 
-        // Chargement des datas
-        //$this->pays = $this->loadData('pays');
-        $this->pays = $this->loadData('pays_v2');
-        //$this->nationalites = $this->loadData('nationalites');
+        $this->pays                          = $this->loadData('pays_v2');
         $this->nationalites                  = $this->loadData('nationalites_v2');
         $this->lenders_accounts              = $this->loadData('lenders_accounts');
         $this->clients_status                = $this->loadData('clients_status');
@@ -95,7 +82,6 @@ class profileController extends bootstrap
 
         // Liste des pays
         $this->lPays = $this->pays->select('', 'ordre ASC');
-        //echo count($this->lPays);
         // liste des nationalites
         $this->lNatio = $this->nationalites->select('', 'ordre ASC');
 
@@ -159,11 +145,6 @@ class profileController extends bootstrap
         $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
 
         $this->NotifC = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
-
-        /*echo '<pre>';
-		print_r($this->arrayNotifClient);
-		echo '</pre>';*/
-
 
         // formulaire particulier gestion de vos alertes
         if (isset($_POST['send_gestion_alertes'])) {
@@ -828,7 +809,6 @@ class profileController extends bootstrap
         } // fin form
         // formulaire particulier secu
         elseif (isset($_POST['send_form_mdp'])) {
-
             // Histo client //
             $serialize = serialize(array('id_client' => $this->clients->id_client, 'newmdp' => md5($_POST['passNew'])));
             $this->clients_history_actions->histo(7, 'change mdp', $this->clients->id_client, $serialize);
@@ -922,65 +902,70 @@ class profileController extends bootstrap
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                if ($this->Config['env'] == 'prod') // nmp
-                {
+                if ($this->Config['env'] == 'prod') {
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-
-                    // Injection du mail NMP dans la queue
                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else // non nmp
-                {
+                } else {
                     $this->email->addRecipient(trim($this->clients->email));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
-                // fin mail
 
                 $_SESSION['reponse_profile_secu'] = $this->lng['profile']['votre-mot-de-passe-a-bien-ete-change'];
-
-                header('Location:' . $this->lurl . '/profile/particulier/2');
-                die;
-
-            } else {
-                header('Location:' . $this->lurl . '/profile/particulier/2');
-                die;
             }
 
-        }
+            header('Location: ' . $this->lurl . '/profile/particulier/2');
+            die;
+        } elseif (isset($_POST['send_form_question'])) {
+            $serialize = serialize(array(
+                'id_client' => $this->clients->id_client,
+                'question'  => isset($_POST['secret-question']) ? $_POST['secret-question'] : '',
+                'response'  => isset($_POST['secret-response']) ? md5($_POST['secret-response']) : ''
+            ));
+            $this->clients_history_actions->histo(20, 'change secret question', $this->clients->id_client, $serialize);
 
+            if (
+                false === empty($_POST['secret-question'])
+                && false === empty($_POST['secret-response'])
+                && $_POST['secret-question'] != $this->lng['etape1']['question-secrete']
+                && $_POST['secret-response'] != $this->lng['etape1']['question-response']
+            ) {
+                $this->clients->secrete_question = $_POST['secret-question'];
+                $this->clients->secrete_reponse = md5($_POST['secret-response']);
+                $this->clients->update();
+
+                $_SESSION['reponse_profile_secu_question'] = $this->lng['profile']['votre-question-secrete-a-bien-ete-changee'];
+            } else {
+                $_SESSION['reponse_profile_secu_question_error'] = $this->lng['profile']['question-reponse-invalide'];
+            }
+
+            header('Location: ' . $this->lurl . '/profile/particulier/2');
+            die;
+        }
     }
 
     public function _societe()
     {
-        // Particulier (si on est pas sur la bonne page)
         if (in_array($this->clients->type, array(1, 3))) {
-            header('Location:' . $this->lurl . '/profile/particulier');
+            header('Location: ' . $this->lurl . '/profile/particulier');
             die;
         }
 
-        //Recuperation des element de traductions
         $this->lng['etape1']          = $this->ln->selectFront('inscription-preteur-etape-1', $this->language, $this->App);
         $this->lng['etape2']          = $this->ln->selectFront('inscription-preteur-etape-2', $this->language, $this->App);
         $this->lng['profile']         = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
         $this->lng['gestion-alertes'] = $this->ln->selectFront('preteur-profile-gestion-alertes', $this->language, $this->App);
 
-
-        // CSS
         $this->unLoadCss('default/custom-theme/jquery-ui-1.10.3.custom');
         $this->loadCss('default/preteurs/new-style');
 
-        // JS
         $this->unLoadJs('default/functions');
         $this->unLoadJs('default/main');
         $this->unLoadJs('default/ajax');
-
         $this->loadJs('default/preteurs/functions');
         $this->loadJs('default/main');
         $this->loadJs('default/ajax');
 
-        // Chargement des datas
-        //$this->pays = $this->loadData('pays');
-        $this->pays = $this->loadData('pays_v2');
-        //$this->nationalites = $this->loadData('nationalites');
+        $this->pays                          = $this->loadData('pays_v2');
         $this->nationalites                  = $this->loadData('nationalites_v2');
         $this->companies                     = $this->loadData('companies');
         $this->lenders_accounts              = $this->loadData('lenders_accounts');
@@ -1377,15 +1362,11 @@ class profileController extends bootstrap
                     if (! isset($_POST['external-consultant']) || $_POST['external-consultant'] == '') {
                         $this->form_ok = false;
                     }
-                    /*if(!isset($_POST['autre_inscription']) || $_POST['autre_inscription'] == $this->lng['etape1']['autre']){
-						$this->form_ok = false;
-					}*/
                 }
             }
 
             /////////////////// PARTIE BANQUE /////////////////////////
-            $this->error_fichier = false;
-
+            $this->error_fichier       = false;
             $bCniDirigeantUpdated      = false;
             $bKbisUpdated              = false;
             $bRibUdated                = false;
@@ -1514,22 +1495,10 @@ class profileController extends bootstrap
                     $capital != $this->companies->capital ||
                     $siret != $this->companies->siret ||
                     $siren != $this->companies->siren ||
-//				$phone != $this->companies->phone ||
-                    //$adresse1 != $this->clients_adresses->adresse1 ||
-//				$ville != $this->clients_adresses->ville ||
-//				$cp != $this->clients_adresses->cp ||
-//				$id_pays != $this->clients_adresses->id_pays ||
-//				$civilite != $this->clients->civilite ||
                     $nom != $this->clients->nom ||
                     $prenom != $this->clients->prenom ||
-//				$fonction != $this->clients->fonction ||
-//				$telephone != $this->clients->telephone ||
-//				$civilite_dirigeant != $this->companies->civilite_dirigeant ||
                     $nom_dirigeant != $this->companies->nom_dirigeant ||
                     $prenom_dirigeant != $this->companies->prenom_dirigeant ||
-//				$fonction_dirigeant != $this->companies->fonction_dirigeant ||
-//				$email_dirigeant != $this->companies->email_dirigeant ||
-//				$phone_dirigeant != $this->companies->phone_dirigeant ||
                     $status_conseil_externe_entreprise != $this->companies->status_conseil_externe_entreprise ||
                     $preciser_conseil_externe_entreprise != $this->companies->preciser_conseil_externe_entreprise ||
                     $origine_des_fonds_old != $this->lenders_accounts->origine_des_fonds ||
@@ -1877,31 +1846,45 @@ class profileController extends bootstrap
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                if ($this->Config['env'] == 'prod') // nmp
-                {
+                if ($this->Config['env'] == 'prod') {
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-
-                    // Injection du mail NMP dans la queue
                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else // non nmp
-                {
+                } else {
                     $this->email->addRecipient(trim($this->clients->email));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
-                // fin mail
 
                 $_SESSION['reponse_profile_secu'] = $this->lng['profile']['votre-mot-de-passe-a-bien-ete-change'];
-
-                header('Location:' . $this->lurl . '/profile/particulier/2');
-                die;
-
-            } else {
-                header('Location:' . $this->lurl . '/profile/particulier/2');
-                die;
             }
+
+            header('Location:' . $this->lurl . '/profile/societe/2');
+            die;
+        } elseif (isset($_POST['send_form_question'])) {
+            $serialize = serialize(array(
+                'id_client' => $this->clients->id_client,
+                'question'  => isset($_POST['secret-question']) ? $_POST['secret-question'] : '',
+                'response'  => isset($_POST['secret-response']) ? md5($_POST['secret-response']) : ''
+            ));
+            $this->clients_history_actions->histo(20, 'change secret question', $this->clients->id_client, $serialize);
+
+            if (
+                false === empty($_POST['secret-question'])
+                && false === empty($_POST['secret-response'])
+                && $_POST['secret-question'] != $this->lng['etape1']['question-secrete']
+                && $_POST['secret-response'] != $this->lng['etape1']['question-response']
+            ) {
+                $this->clients->secrete_question = $_POST['secret-question'];
+                $this->clients->secrete_reponse = md5($_POST['secret-response']);
+                $this->clients->update();
+
+                $_SESSION['reponse_profile_secu_question'] = $this->lng['profile']['votre-question-secrete-a-bien-ete-changee'];
+            } else {
+                $_SESSION['reponse_profile_secu_question_error'] = $this->lng['profile']['question-reponse-invalide'];
+            }
+
+            header('Location: ' . $this->lurl . '/profile/societe/2');
+            die;
         }
-
-
     }
 
     public function _info_perso()
