@@ -1,4 +1,5 @@
 <?php
+ require __DIR__ .'/vendor/autoload.php';
 
 class Autoloader
 {
@@ -18,4 +19,6 @@ class Autoloader
         $aReplace = array('', DIRECTORY_SEPARATOR);
         require_once str_replace($aSearch, $aReplace, $class) . '.php';
     }
+
+
 }
