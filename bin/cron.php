@@ -1,25 +1,27 @@
 <?php
-require_once __DIR__ . '/../../../vendor/autoload.php';
-require_once __DIR__ . '/../../../Autoloader.php';
-require_once __DIR__ . '/../../../config.php';
+require_once __DIR__ . '/../Autoloader.php';
+require_once __DIR__ . '/../config.php';
+
+use Unilend\core\Cron;
+use Unilend\core\Bootstrap;
 
 Autoloader::register();
 
 /**
  * @object $oBootstrap Instance of Boostrap for log cron calls and set configuration
  */
-$oBootstrap = \Unilend\core\Bootstrap::getInstance($config);
+$oBootstrap = Bootstrap::getInstance($config);
 
 /**
  * @object $oCron for manage parameters required and optional
  */
-$oCron = $oBootstrap->getCron();
+$oCron = new Cron($oBootstrap);
 
 $oCron->setOptions(
-    array('d' => Unilend\core\Cron::OPTION_REQUIRED,
-          'c' => Unilend\core\Cron::OPTION_REQUIRED,
-          'f' => Unilend\core\Cron::OPTION_OPTIONAL,
-          's' => \Unilend\core\Cron::OPTION_REQUIRED
+    array('d' => Cron::OPTION_REQUIRED,
+          'c' => Cron::OPTION_REQUIRED,
+          'f' => Cron::OPTION_OPTIONAL,
+          's' => Cron::OPTION_REQUIRED
     ))
     ->setDescription('d', 'directory name for load class')
     ->setDescription('c', 'classname to use')
