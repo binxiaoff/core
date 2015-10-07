@@ -5,24 +5,30 @@ namespace Unilend\core;
 use Unilend\librairies\ULogger;
 
 require_once __DIR__ . '/bdd.class.php';
-require_once 'errorhandler.class.php';
+require_once __DIR__ . '/../data/crud/settings.crud.php';
+require_once __DIR__ . '/../data/settings.data.php';
 
 class Bootstrap
 {
     /**
-     * @object $oInstance Instance of this object
+     * @var $oInstance Instance of this object
      */
     private static $oInstance;
 
     /**
-     * @object $oDatabase core\bdd()
+     * @var bdd
      */
     private $oDatabase;
 
     /**
      * @var ULogger
      */
-    private $oUlogger;
+    private $oLogger;
+
+    /**
+     * @var settings
+     */
+    private $oSettings;
 
     /**
      * @array $aConfig file config in root path
@@ -39,7 +45,6 @@ class Bootstrap
             self::$oInstance = new Bootstrap();
             self::$oInstance->setAssert();
             self::$oInstance->setConfig($aConfig);
-            self::$oInstance->ErrorHandler();
         }
 
         return self::$oInstance;
@@ -71,6 +76,24 @@ class Bootstrap
         return $this->oDatabase;
     }
 
+    public function setSettings()
+    {
+        if (false === is_object($this->oDatabase)) {
+            $this->setDatabase();
+        }
+
+        $this->oSettings = new \settings($this->oDatabase);
+
+        return $this;
+    }
+
+    public function getSettings()
+    {
+        assert('is_object($this->oSettings); //Settings is not an object');
+
+        return $this->oSettings;
+    }
+
     /**
      * @param string $sNameChannel name of logger context
      * @param string $sNameLog name of file log
@@ -81,7 +104,7 @@ class Bootstrap
         //We check, and add if necessary, if log's name have extension .log
         $sNameLog .= (!preg_match('/(\.log)$/i', $sNameLog)) ? '.log' : '';
 
-        $this->oUlogger = new ULogger($sNameChannel, self::$aConfig['log_path'][self::$aConfig['env']], $sNameLog);
+        $this->oLogger = new ULogger($sNameChannel, self::$aConfig['log_path'][self::$aConfig['env']], $sNameLog);
 
         return $this;
     }
@@ -95,14 +118,14 @@ class Bootstrap
 
     public function getLogger()
     {
-        assert('is_object($this->oUlogger); //Logger is not an object');
+        assert('is_object($this->oLogger); //Logger is not an object');
 
-        return $this->oUlogger;
+        return $this->oLogger;
     }
 
     public function getCron()
     {
-        return new Cron($this->setLogger('Cron', 'cron.log')->getLogger());
+        return new Cron($this);
     }
 
     /**
@@ -114,17 +137,7 @@ class Bootstrap
     {
         $this->setLogger('ErrorAssertion', 'assert.log');
         $aErrorDetails = explode('//', $sError);
-        $this->oUlogger->addRecord('error', 'Wrong Assertion in ' . $sFunction . ' at line ' . $sLine . '. ' . $aErrorDetails[1],
+        $this->oLogger->addRecord(ULogger::ERROR, 'Wrong Assertion in ' . $sFunction . ' at line ' . $sLine . '. ' . $aErrorDetails[1],
             array(__FILE__ . ' at ' . __LINE__));
-    }
-
-    private static function ErrorHandler()
-    {
-        new \ErrorHandler(self::$aConfig['error_handler'][self::$aConfig['env']]['file'],
-            0,
-            self::$aConfig['error_handler'][self::$aConfig['env']]['allow_log'],
-            self::$aConfig['error_handler'][self::$aConfig['env']]['report']);
-
-        return true;
     }
 }

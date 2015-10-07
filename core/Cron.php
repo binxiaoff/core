@@ -2,8 +2,6 @@
 
 namespace Unilend\core;
 
-
-
 use Unilend\librairies\ULogger;
 
 final class Cron
@@ -24,12 +22,32 @@ final class Cron
     /**
      * @var ULogger
      */
-    private $oLoggerCron;
+    private $oLogger;
 
-    public function __construct(ULogger $oLoggerCron){
-        $this->oLoggerCron = $oLoggerCron;
+    /**
+     * @var int
+     */
+    private $iStartTime;
+
+    /**
+     * @var Bootstrap
+     */
+    private $oBootstrap;
+
+
+    /**
+     * @param Bootstrap $oBootstrap
+     */
+    public function __construct(Bootstrap $oBootstrap)
+    {
+        $this->oBootstrap = $oBootstrap;
     }
 
+    /**
+     * function for determine differents options for cron manager
+     * @param array $aOptions
+     * @return $this
+     */
     public function setOptions(array $aOptions)
     {
         $this->aOptions = $aOptions;
@@ -37,6 +55,12 @@ final class Cron
         return $this;
     }
 
+    /**
+     * Set Description for each options
+     * @param $sOption
+     * @param $sDescription
+     * @return $this
+     */
     public function setDescription($sOption, $sDescription)
     {
         assert('is_string($sOption); //Option for description is not a string');
@@ -62,9 +86,12 @@ final class Cron
 
     public function getLogger()
     {
-        return $this->oLoggerCron;
+        return $this->oLogger;
     }
 
+    /**
+     * Function for determine if each options declared in cron manager exist
+     */
     public function parseCommand()
     {
         foreach ($this->aOptions as $sOption => $sMode) {
@@ -79,22 +106,57 @@ final class Cron
         }
     }
 
-    public function executeCron(Bootstrap $oBootstrap)
+    public function executeCron()
     {
-        $iTimeStartCron = microtime(true);
-        $sTextLogCron = '';
+        if($this->startCron($this->getOptions('s'), 5)) {
+            $sClassName = '\\' . $this->getOptions('d') . '\\' . $this->getOptions('c');
+            $oClassCall = new $sClassName($this->oBootstrap);
+            $oClassCall->{$this->getOptions('f')}();
+            $this->stopCron();
+        }
+    }
 
-        $sClassName = '\\' . $this->getOptions('d') . '\\' . $this->getOptions('c');
-        $oClassCall = new $sClassName($oBootstrap);
+    /**
+     * @param $sName  string Cron name (used for settings name)
+     * @param $iDelay int    Minimum delay (in minutes) before we consider cron has crashed and needs to be restarted
+     * @return bool
+     */
+    private function startCron($sName, $iDelay)
+    {
+        $this->iStartTime  = time();
+        $this->oLogger = $this->oBootstrap->setLogger($sName, 'cron.log')->getLogger();
+        $this->oSemaphore  = $this->oBootstrap->setSettings()->getSettings();
+        $this->oSemaphore->get('Controle cron ' . $sName, 'type');
 
-        $sFunctionToCall = $this->getOptions('f');
-        if (false !== $sFunctionToCall) {
-            $oClassCall->$sFunctionToCall();
-            $sTextLogCron = ', Function : ' . $sFunctionToCall;
+        if ($this->oSemaphore->value == 0) {
+            $iUpdatedDateTime      = strtotime($this->oSemaphore->updated);
+            $iMinimumDelayDateTime = mktime(date('H'), date('i') - $iDelay, 0, date('m'), date('d'), date('Y'));
+
+            if ($iUpdatedDateTime <= $iMinimumDelayDateTime) {
+                $this->oSemaphore->value = 1;
+                $this->oSemaphore->update();
+            }
         }
 
-        $iTimeEndCron = microtime(true) - $iTimeStartCron;
-        $this->oLoggerCron->addRecord('info','Call class ' . $sClassName . $sTextLogCron . ' and execute in '
-            . round($iTimeEndCron, 2), array(__FILE__ . ' at ' . __LINE__));
+        if ($this->oSemaphore->value == 1) {
+            $this->oSemaphore->value = 0;
+            $this->oSemaphore->update();
+
+            $this->oLogger->addRecord(ULogger::INFO, 'Start cron', array('ID' => $this->iStartTime));
+
+            return true;
+        }
+
+        $this->oLogger->addRecord(ULogger::INFO, 'Semaphore locked', array('ID' => $this->iStartTime));
+
+        return false;
+    }
+
+    private function stopCron()
+    {
+        $this->oSemaphore->value = 1;
+        $this->oSemaphore->update();
+
+        $this->oLogger->addRecord(ULogger::INFO, 'End cron', array('ID' => $this->iStartTime));
     }
 }
