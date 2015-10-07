@@ -503,7 +503,6 @@ class SalesForce
     /**
      * @param string $sQuery sql query
      * @param string $sNameFile File Name to generate
-     * @param bool|false $bSpecialTreatments true if treat html special content
      */
     private function tryIt($sQuery, $sNameFile)
     {
