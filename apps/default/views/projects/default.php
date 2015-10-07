@@ -27,10 +27,10 @@
                                 <option value="3"><?=$this->lng['preteur-projets']['projets-bide']?></option>
                                 <option value="4"><?=$this->lng['preteur-projets']['projets-termines']?></option>
                             </select>
-                            
-                           	<button style="margin-left:10px;margin-top:7px;overflow:visible;" class="btn btn-pinky btn-small multi" type="reset" name="rest" id="rest" ><?=$this->lng['preteur-projets']['reset']?></button> 
+
+                           	<button style="margin-left:10px;margin-top:7px;overflow:visible;" class="btn btn-pinky btn-small multi" type="reset" name="rest" id="rest" ><?=$this->lng['preteur-projets']['reset']?></button>
                         </div>
-                        
+
 					</form>
                     <style>
 						.unProjet td a.lien{color:#727272;text-decoration:none;}
@@ -64,16 +64,16 @@
                         foreach($this->lProjetsFunding as $pf)
                         {
 							$this->projects_status->getLastStatut($pf['id_project']);
-							
+
                             // On recupere les info companies
                             $this->companies->get($pf['id_company'],'id_company');
                             $this->companies_details->get($pf['id_company'],'id_company');
-                            
+
 							// date fin 21h a chaque fois
                             $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'),$pf['date_retrait_full']);
                             if($inter['mois']>0) $dateRest = $inter['mois'].' '.$this->lng['preteur-projets']['mois'];
                             else $dateRest = '';
-                            
+
 							$CountEnchere = $this->bids->counter('id_project = '.$pf['id_project']);
 							//$avgRate = $this->bids->getAVG($pf['id_project'],'rate');
 							// moyenne pondéré
@@ -86,7 +86,7 @@
 								{
 									$montantHaut += ($b['rate']*($b['amount']/100));
 									$montantBas += ($b['amount']/100);
-								}	
+								}
 							}
 							// funding ko
 							elseif($this->projects_status->status==70)
@@ -95,7 +95,7 @@
 								{
 									$montantHaut += ($b['rate']*($b['amount']/100));
 									$montantBas += ($b['amount']/100);
-								}	
+								}
 							}
 							// emprun refusé
 							elseif($this->projects_status->status==75)
@@ -104,7 +104,7 @@
 								{
 									$montantHaut += ($b['rate']*($b['amount']/100));
 									$montantBas += ($b['amount']/100);
-								}	
+								}
 							}
 							else
 							{
@@ -112,23 +112,23 @@
 								{
 									$montantHaut += ($b['rate']*($b['amount']/100));
 									$montantBas += ($b['amount']/100);
-								}	
+								}
 							}
 								if($montantHaut>0 && $montantBas >0)
 								$avgRate = ($montantHaut/$montantBas);
 								else $avgRate = 0;
-							
+
                             // dates pour le js
                             $mois_jour = $this->dates->formatDate($pf['date_retrait'],'F d');
                             $annee = $this->dates->formatDate($pf['date_retrait'],'Y');
-							
+
 							// favori
 							if($this->favoris->get($this->clients->id_client,'id_project = '.$pf['id_project'].' AND id_client'))
 								$favori = 'active';
 							else
 								$favori = '';
                             ?>
-                            
+
                             <tr class="unProjet" id="project<?=$pf['id_project']?>">
                                 <td>
 									<?
@@ -149,10 +149,10 @@
 										</script>
 										<?
 									}
-									
+
 									if($pf['photo_projet'] != '')
 									{
-										?><a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>"><img src="<?=$this->photos->display($pf['photo_projet'],'photos_projets','photo_projet_min')?>" alt="<?=$pf['photo_projet']?>" class="thumb"></a><?
+										?><a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>"><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $pf['photo_projet'] ?>" alt="<?=$pf['photo_projet']?>" class="thumb"></a><?
 									}
 									?>
                                     <div class="description">
@@ -160,7 +160,7 @@
                                         <h6><?=$this->companies->city.($this->companies->zip!=''?', ':'').$this->companies->zip?></h6>
                                         <p><?=$pf['nature_project']?></p>
                                     </div><!-- /.description -->
-                                    
+
                                 </td>
                                 <td>
                                     <a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>">
@@ -168,16 +168,16 @@
                                     </a>
                                 </td>
                                 <td style="white-space:nowrap;">
-                                    <a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>">	
+                                    <a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>">
 										<?=number_format($pf['amount'], 0, ',', ' ')?>€
                                     </a>
                                 </td>
                                 <td style="white-space:nowrap;">
                                     <a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>">
                                         <?=($pf['period']==1000000?$this->lng['preteur-projets']['je-ne-sais-pas']:$pf['period'].' '.$this->lng['preteur-projets']['mois'])?>
-                                    </a>  
+                                    </a>
                                 </td>
-                                
+
                                 <td>
                                     <a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>">
 										<?
@@ -192,7 +192,7 @@
                                         ?>
                                     </a>
                                 </td>
-                                
+
                                 <td>
                                 	<a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>">
                                 	<strong id="val<?=$pf['id_project']?>"><?=$dateRest?></strong>
@@ -217,7 +217,7 @@
                             <?
                         }
                         ?>
-    
+
                         </table><!-- /.table -->
                         <div id="positionStart" style="display:none;"><?=$this->lProjetsFunding[0]['positionStart']?></div>
                         <div class="loadmore" style="display:none;">
@@ -227,54 +227,54 @@
                         <div id="ordreProject" style="display:none;"><?=$this->ordreProject?></div>
                         <div id="where" style="display:none;"><?=$this->where?></div>
                         <div id="valType" style="display:none;"><?=$this->type?></div>
-                        
-                        
-                        
-                        
-                        
+
+
+
+
+
                     </div>
 				</div>
 			</div>
-            
+
 		</div>
-		
+
 <!--#include virtual="ssi-footer.shtml"  -->
 
 
 <script type="text/javascript">
- 
-$(document).ready(function(){ 
- 
+
+$(document).ready(function(){
+
 	var load = false;
-	var offset = $('.unProjet:last').offset(); 
- 
+	var offset = $('.unProjet:last').offset();
+
 	$(window).scroll(function(){ // On surveille l'évènement scroll
- 		
-		/* Si l'élément offset est en bas de scroll, si aucun chargement 
-		n'est en cours, si le nombre de projet affiché est supérieur 
-		à 5 et si tout les projets ne sont pas affichés, alors on 
+
+		/* Si l'élément offset est en bas de scroll, si aucun chargement
+		n'est en cours, si le nombre de projet affiché est supérieur
+		à 5 et si tout les projets ne sont pas affichés, alors on
 		lance la fonction. */
-		if((offset.top-$(window).height() <= $(window).scrollTop()) 
-		&& load==false && ($('.unProjet').size()>=10) && 
+		if((offset.top-$(window).height() <= $(window).scrollTop())
+		&& load==false && ($('.unProjet').size()>=10) &&
 		($('.unProjet').size()!=$('.nbProjet').text())){
- 			
+
 			// la valeur passe à vrai, on va charger
 			load = true;
- 
+
 			//On récupère l'id du dernier projet affiché
 			var last_id = $('.unProjet:last').attr('id');
- 
+
 			//On affiche un loader
 			$('.loadmore').show();
- 			
+
 			//On lance la fonction ajax
 			var val = {last: last_id, positionStart: $('#positionStart').html(),ordreProject: $('#ordreProject').html(),where: $('#where').html(),type: $('#valType').html()}
 			$.post(add_url + '/ajax/load_project', val).done(function(data) {
-					
+
 					obj = JSON.parse(data);
 					var positionStart = obj.positionStart;
 					var affichage = obj.affichage;
-					
+
 					//On masque le loader
 					$('.loadmore').fadeOut(500);
 					/* On affiche le résultat après
@@ -285,12 +285,12 @@ $(document).ready(function(){
 					offset = $('.unProjet:last').offset();
 					//On remet la valeur à faux car c'est fini
 					load = false;
-					
+
 					$('#positionStart').html(positionStart);
-			});	
+			});
 		}
 	});
- 
+
 });
 
 
@@ -300,13 +300,13 @@ $("select").change(function () {
 
 	$.post(add_url + '/ajax/triProject', {val: val,id: id}).done(function(data) {
 		$('#table_tri').html(data)
-	});	
+	});
 })
 
 $("#rest").click(function () {
 	$.post(add_url + '/ajax/triProject', {rest_val: 1}).done(function(data) {
 		$('#table_tri').html(data);
-	});	
+	});
 })
 
 

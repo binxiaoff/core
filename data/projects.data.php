@@ -5,26 +5,26 @@
 // **************************************************************************************************** //
 //
 // Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
-// associated documentation files (the "Software"), to deal in the Software without restriction, 
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+// associated documentation files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
 // subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies 
+// The above copyright notice and this permission notice shall be included in all copies
 // or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but 
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. 
-// In no event shall the authors or copyright holders equinoa be liable for any claim, 
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from, 
+// The Software is provided "as is", without warranty of any kind, express or implied, including but
+// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
+// In no event shall the authors or copyright holders equinoa be liable for any claim,
+// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
 // out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising 
-// or otherwise to promote the sale, use or other dealings in this Software without 
+// Except as contained in this notice, the name of equinoa shall not be used in advertising
+// or otherwise to promote the sale, use or other dealings in this Software without
 // prior written authorization from equinoa.
 //
 //  Version : 2.4.0
 //  Date : 21/03/2011
 //  Coupable : CM
-//                                                                                   
+//
 // **************************************************************************************************** //
 
 class projects extends projects_crud
@@ -122,14 +122,14 @@ class projects extends projects_crud
         }
 
 
-        $sql = 'SELECT p.*,p.status as statusProject, co.siren,co.name, 
+        $sql = 'SELECT p.*,p.status as statusProject, co.siren,co.name,
 						(SELECT ps.label FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as label,
 						(SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status
-				FROM projects p 
+				FROM projects p
 					LEFT JOIN companies co ON (p.id_company = co.id_company)
 				WHERE 1=1
-				' . $where . ' 
-				HAVING label !="" 
+				' . $where . '
+				HAVING label !=""
 				' . $having . '
 				ORDER BY p.added DESC
 				' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
@@ -151,17 +151,17 @@ class projects extends projects_crud
         if ($order == '')
             $order = 'lestatut ASC, p.date_retrait DESC';
 
-        $sql = 'SELECT 
+        $sql = 'SELECT
 				p.*,
 				(SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status,
-				CASE 
+				CASE
 					WHEN  (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) = 50
 					THEN "1"
 					ELSE "2"
 					END as lestatut
 				FROM projects p
-				' . $where . ' 
-				HAVING status IN (' . $status . ') 
+				' . $where . '
+				HAVING status IN (' . $status . ')
 				ORDER BY '
             . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         //mail('d.courtier@equinoa.com','test unilend sql',$sql);
@@ -189,7 +189,7 @@ class projects extends projects_crud
             $order = ' ORDER BY ' . $order;
 
         $sql = '
-			SELECT 
+			SELECT
 			p.id_project,
 			p.date_publication_full
 			FROM projects p
@@ -212,16 +212,14 @@ class projects extends projects_crud
             $where = ' WHERE 1 = 1 ' . $where . ' ';
 
         $sql = 'SELECT p.*,(SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status
-				FROM projects p 
-				' . $where . ' 
-				HAVING status IN (' . $status . ') 
+				FROM projects p
+				' . $where . '
+				HAVING status IN (' . $status . ')
 				ORDER BY p.added DESC
 				';
 
         $resultat = $this->bdd->query($sql);
-        $result = array();
 
-        $positionStart = $start + $nb;
         $i = 0;
         while ($record = $this->bdd->fetch_array($resultat)) {
             $i++;
@@ -251,14 +249,14 @@ class projects extends projects_crud
         }
 
 
-        $sql = 'SELECT p.*, co.*,c.*, 
+        $sql = 'SELECT p.*, co.*,c.*,
 						(SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status_project
-				FROM ((projects p 
+				FROM ((projects p
 					LEFT JOIN companies co ON (p.id_company = co.id_company)
 					LEFT JOIN clients c ON (co.id_client_owner = c.id_client)))
 				WHERE 1=1
-				' . $where . ' 
-				HAVING status_project IN(80,60) 
+				' . $where . '
+				HAVING status_project IN(80,60)
 				ORDER BY p.added DESC
 				' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $resultat = $this->bdd->query($sql);
@@ -292,14 +290,14 @@ class projects extends projects_crud
         }
 
 
-        $sql = 'SELECT p.*, co.*,c.*, 
+        $sql = 'SELECT p.*, co.*,c.*,
 						(SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status_project
-				FROM ((projects p 
+				FROM ((projects p
 					LEFT JOIN companies co ON (p.id_company = co.id_company)
 					LEFT JOIN clients c ON (co.id_client_owner = c.id_client)))
 				WHERE 1=1
-				' . $where . ' 
-				HAVING status_project IN(100,110,120) 
+				' . $where . '
+				HAVING status_project IN(100,110,120)
 				ORDER BY p.added DESC
 				' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $resultat = $this->bdd->query($sql);
@@ -331,7 +329,7 @@ class projects extends projects_crud
         return array('previous' => $previous, 'next' => $next);
     }
 
-    // liste les projets favoris dont la date de retrait est dans j-2 
+    // liste les projets favoris dont la date de retrait est dans j-2
     function getDerniersFav($id_client)
     {
         $sql = 'SELECT * FROM `favoris` WHERE id_client = ' . $id_client;
@@ -356,8 +354,8 @@ class projects extends projects_crud
 
     function getFirstProject($id_company)
     {
-        $sql = 'SELECT id_project 
-				FROM `projects` 
+        $sql = 'SELECT id_project
+				FROM `projects`
 				WHERE id_company = ' . $id_company . '
 				ORDER BY added ASC
 				LIMIT 1

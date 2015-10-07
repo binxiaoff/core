@@ -37,7 +37,6 @@ class Controller
     var $autoFireFooter = true;
     var $autoFireDebug = true;
     var $catchAll = false;
-    var $stats_context;
     var $bdd;
     var $js;
     var $css;
@@ -45,7 +44,7 @@ class Controller
     var $included_js;
     var $included_css;
 
-    function __construct(&$command, $config, $app)
+    public function __construct(&$command, $config, $app)
     {
         define('ENVIRONMENT', $config['env']);
 
@@ -65,7 +64,7 @@ class Controller
         $this->included_css = array();
         $this->bdd          = new bdd($this->Config['bdd_config'][$this->Config['env']], $this->Config['bdd_option'][$this->Config['env']]);
 
-        // Initialisation des propri�t�s n�cessaires au cache
+        // Initialisation des propriétés nécessaires au cache
         $this->enableCache      = $this->Config['cache'][$this->Config['env']];
         $this->cacheDuration    = $this->Config['cacheDuration'][$this->Config['env']];
         $this->cacheCurrentPage = false;
@@ -102,26 +101,26 @@ class Controller
         }
     }
 
-    function _default()
+    public function _default()
     {
 
     }
 
-    function _error($msg = '')
+    public function _error($msg = '')
     {
         if (!isset($this->params[0])) {
             trigger_error('ASPARTAM - ' . $msg, E_USER_ERROR);
         }
     }
 
-    function _404()
+    public function _404()
     {
         header("HTTP/1.0 404 Not Found");
         echo 'Page not found';
         die;
     }
 
-    function initErrorHandling()
+    public function initErrorHandling()
     {
 
         if (file_exists($this->path . 'core/errorhandler.class.php')) {
@@ -132,7 +131,7 @@ class Controller
 
     }
 
-    function execute()
+    public function execute()
     {
         $FunctionToCall = $this->Command->getFunction();
         if ($FunctionToCall == '') {
@@ -153,7 +152,7 @@ class Controller
         $this->params = $this->Command->getParameters();
         call_user_func(array(&$this, '_' . $FunctionToCall));
 
-        // Si la page courante doit �tre cach�e, on cherche la page en cache ou on initie le processus de cr�ation de la version en cache
+        // Si la page courante doit être cachée, on cherche la page en cache ou on initie le processus de création de la version en cache
         if ($this->cacheCurrentPage) {
             $this->initCache();
         }
@@ -187,12 +186,12 @@ class Controller
             }
         }
 
-        // Si la page courante doit �tre cach�e, termine le boulot de cr�ation du cache
+        // Si la page courante doit être cachée, termine le boulot de création du cache
         if ($this->cacheCurrentPage) {
             $this->completeCache();
         }
 
-        //Affiche une fentre de debug/error si l'option est activ�e dans le config.php
+        //Affiche une fentre de debug/error si l'option est activée dans le config.php
         if (($this->Config['bdd_option'][$this->Config['env']]['DEBUG_DISPLAY'] || $this->Config['bdd_option'][$this->Config['env']]['DISPLAY_ERREUR']) && in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']]) && $this->autoFireDebug) {
             $this->fireDebug();
         }
@@ -200,13 +199,11 @@ class Controller
 
 
     //Gere l'affichage de l'entete
-    function fireHead($head = '')
+    public function fireHead($head = '')
     {
-        $css_context = $this->css_context;
-        if ($head == '') {
+        if (empty($head) && ! empty($this->head)) {
             $head = $this->head;
-        }
-        if ($head == '') {
+        } elseif (empty($head)) {
             $head = 'head';
         }
 
@@ -218,7 +215,7 @@ class Controller
     }
 
     //Gere l'affichage du corps de la page
-    function fireView($view = '')
+    public function fireView($view = '')
     {
         if ($view == '') {
             $view = $this->view;
@@ -241,13 +238,11 @@ class Controller
     }
 
     //Gere l'affichage du menu
-    function fireHeader($header = '')
+    public function fireHeader($header = '')
     {
-        $css_context = $this->css_context;
-        if ($header == '') {
+        if (empty($header) && ! empty($this->header)) {
             $header = $this->header;
-        }
-        if ($header == '') {
+        } elseif (empty($header)) {
             $header = 'header';
         }
         if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $header . '.php')) {
@@ -258,10 +253,8 @@ class Controller
     }
 
     //Gere l'affichage du pied de page
-    function fireFooter($footer = '', $morestats = '')
+    public function fireFooter($footer = '', $morestats = '')
     {
-        $stats_context = $this->stats_context . '\r\n' . $morestats;
-        $css_context   = $this->css_context;
         if ($footer == '') {
             $footer = $this->footer;
         }
@@ -276,7 +269,7 @@ class Controller
     }
 
     //Affiche une fenetre contenant les erreurs eventuelles
-    function fireDebug()
+    public function fireDebug()
     {
         echo '
 			<div style="display: none; overflow:auto; position:fixed; top:95%; left:0px; background-color:#F1EDED;font-size:11px; width:99%; height:400px; z-index:9999; padding:0 0 20px 10px;border-top: 1px solid #919191;margin:-400px auto 20px auto; " id="divdebug" >
@@ -418,7 +411,7 @@ class Controller
     }
 
     //Ajoute une information dans la fenetre de debug
-    function setDebug($var, $title = '')
+    public function setDebug($var, $title = '')
     {
         if ($title == '') {
             $title = count($_SESSION['msg']);
@@ -427,32 +420,32 @@ class Controller
     }
 
     //Change le head
-    function setHead($head)
+    public function setHead($head)
     {
         $this->head = $head;
     }
 
     //Change la vue
-    function setView($view, $is_template = false)
+    public function setView($view, $is_template = false)
     {
         $this->view             = $view;
         $this->is_view_template = $is_template;
     }
 
     //Change le header
-    function setHeader($header)
+    public function setHeader($header)
     {
         $this->header = $header;
     }
 
     //Change le footer
-    function setFooter($footer)
+    public function setFooter($footer)
     {
         $this->footer = $footer;
     }
 
     //Cree une nouvelle instance d'un objet
-    function loadData($object, $params = '', $db = '')
+    public function loadData($object, $params = '', $db = '')
     {
         if ($db == '') {
             $db = $this->bdd;
@@ -484,7 +477,7 @@ class Controller
     }
 
     //Cree une nouvelle instance d'une librairie
-    function loadLib($library, $params = '', $instanciate = true)
+    public function loadLib($library, $params = '', $instanciate = true)
     {
         if ($params == '') {
             $params = array();
@@ -511,7 +504,7 @@ class Controller
     }
 
     //Charge un fichier js dans le tableau des js
-    function loadJs($js, $ieonly = 0, $version = '')
+    public function loadJs($js, $ieonly = 0, $version = '')
     {
         if (!array_key_exists($js, $this->included_js)) {
             $this->included_js[$js] = ($ieonly != 0 ? "<!--[if IE " . $ieonly . "]>" : "") . "<script type=\"text/javascript\" src=\"" . $this->Config['static_url'][$this->Config['env']] . "/scripts/" . $js . ".js" . ($version != '' ? '?d=' . $version : '') . "\"></script>" . ($ieonly != 0 ? "<![endif]-->" : "");
@@ -519,7 +512,7 @@ class Controller
     }
 
     //Supprime un fichier js dans le head
-    function unLoadJs($js)
+    public function unLoadJs($js)
     {
         if (array_key_exists($js, $this->included_js)) {
             unset($this->included_js[$js]);
@@ -527,7 +520,7 @@ class Controller
     }
 
     //appelle les js passees en param
-    function callJs()
+    public function callJs()
     {
         foreach ($this->included_js as $js) {
             echo $js . "\r\n";
@@ -535,7 +528,7 @@ class Controller
     }
 
     //Charge un fichier css dans le tableau des css
-    function loadCss($css, $ieonly = 0, $media = 'all', $type = 'css', $version = '')
+    public function loadCss($css, $ieonly = 0, $media = 'all', $type = 'css', $version = '')
     {
         if (!array_key_exists($css, $this->included_css)) {
             $this->included_css[$css] = ($ieonly != 0 ? "<!--[if IE " . $ieonly . "]>" : "") . "<link media =\"" . $media . "\" href=\"" . $this->Config['static_url'][$this->Config['env']] . "/styles/" . $css . "." . $type . ($version != '' ? '?d=' . $version : '') . "\" type=\"text/css\" rel=\"stylesheet\" />" . ($ieonly != 0 ? "<![endif]-->" : "");
@@ -543,7 +536,7 @@ class Controller
     }
 
     //Supprime un fichier css dans le head
-    function unLoadCss($css)
+    public function unLoadCss($css)
     {
         if (array_key_exists($css, $this->included_css)) {
             unset($this->included_css[$css]);
@@ -551,7 +544,7 @@ class Controller
     }
 
     //appelle les css passees en param
-    function callCss()
+    public function callCss()
     {
         foreach ($this->included_css as $css) {
             echo $css . "\r\n";
@@ -559,7 +552,7 @@ class Controller
     }
 
     //Genere un fichier CRUD a partir d'une table
-    function generateCRUD($table)
+    public function generateCRUD($table)
     {
         //On recupere la structure de la table
         $sql    = "desc " . $table;
@@ -567,6 +560,7 @@ class Controller
 
         if ($result) {
             //On compte le nombre de cle primaire
+            $nb_cle = 0;
             while ($record = $this->bdd->fetch_array($result)) {
                 if ($record['Key'] == 'PRI') {
                     $nb_cle++;
@@ -578,16 +572,22 @@ class Controller
             $result = $this->bdd->query($sql);
 
             //initialisation
-            $slug = false;
+            $slug           = false;
+            $declaration    = '';
+            $initialisation = '';
+            $remplissage    = '';
+            $escapestring   = '';
+            $updatefields   = '';
+            $clist          = '';
+            $cvalues        = '';
 
-            //On parcours la table
             while ($record = $this->bdd->fetch_array($result)) {
-                $declaration .= "\tpublic \$" . $record['Field'] . ";\r\n";
+                $declaration    .= "\tpublic \$" . $record['Field'] . ";\r\n";
                 $initialisation .= "\t\t\$this->" . $record['Field'] . " = '';\r\n";
-                $remplissage .= "\t\t\t\$this->" . $record['Field'] . " = \$record['" . $record['Field'] . "'];\r\n";
-                $escapestring .= "\t\t\$this->" . $record['Field'] . " = \$this->bdd->escape_string(\$this->" . $record['Field'] . ");\r\n";
+                $remplissage    .= "\t\t\t\$this->" . $record['Field'] . " = \$record['" . $record['Field'] . "'];\r\n";
+                $escapestring   .= "\t\t\$this->" . $record['Field'] . " = \$this->bdd->escape_string(\$this->" . $record['Field'] . ");\r\n";
 
-                //On stock les cl� primaire dans un tableau
+                //On stock les clé primaire dans un tableau
                 if ($record['Key'] == 'PRI') {
                     $id[] = $record['Field'];
                 }
@@ -603,7 +603,7 @@ class Controller
                     $slug = true;
                 }
 
-                //Si la cl� primaire est unique, c'est un autoincr�mente donc on l'exclus de la liste
+                //Si la clé primaire est unique, c'est un autoincrémente donc on l'exclus de la liste
                 if ($nb_cle == 1) {
                     if ($record['Key'] != 'PRI') {
                         $clist .= "`" . $record['Field'] . "`,";
@@ -633,7 +633,7 @@ class Controller
             $clist        = substr($clist, 0, strlen($clist) - 1);
             $cvalues      = substr($cvalues, 0, strlen($cvalues) - 1);
 
-            //chargement du sample en fonction du nombre de cle primaire
+            //chargement du sample en fonction du nombre de clé primaires
             if ($nb_cle == 1) {
                 $dao = file_get_contents($this->path . 'core/crud.sample.php');
 
@@ -684,7 +684,7 @@ class Controller
     }
 
     //Genere un fichier DATA a partir d'une table
-    function generateDATA($table)
+    public function generateDATA($table)
     {
         $sql    = "desc " . $table;
         $result = $this->bdd->query($sql);
@@ -722,7 +722,7 @@ class Controller
 
     //Cette fonction construit et renvois l'url a appeler pour passer dans la langue en parametre tout en restant sur la meme page
     //Exemple :<a href=\"<?=\$this->changeLanguage('fr');?\>\"><img src=\"flag-fr.jpg\"></a>
-    function changeLanguage($lang, $current_lang, $is_routage = false)
+    public function changeLanguage($lang, $current_lang, $is_routage = false)
     {
         if (!$is_routage) {
             $requestURI = explode('/', $_SERVER['REQUEST_URI']);
@@ -752,30 +752,30 @@ class Controller
         }
     }
 
-    // Fonction qui d�clenche le caching d'une page
-    function fireCache()
+    // Fonction qui déclenche le caching d'une page
+    public function fireCache()
     {
         if ($this->enableCache) {
             $this->cacheCurrentPage = true;
         }
     }
 
-    function initVendor()
+    public function initVendor()
     {
         require_once __DIR__ . '/../vendor/autoload.php';
     }
 
-    function initUnilendAutoload()
+    public function initUnilendAutoload()
     {
         require_once __DIR__ . '/../Autoloader.php';
         Autoloader::register();
     }
 
     // Initialisation du cache
-    function initCache()
+    public function initCache()
     {
         $this->cacheFile = $this->path . 'tmp/cache/' . md5($_SERVER['REQUEST_URI']);
-        // On recherche un fichier de cache suffisament r�cent
+        // On recherche un fichier de cache suffisament récent
         if (file_exists($this->cacheFile) && (time() - $this->cacheDuration * 60 < filemtime($this->cacheFile))) {
             // Si on le trouve, on l'output
             include($this->cacheFile);
@@ -786,7 +786,7 @@ class Controller
         ob_start();
     }
 
-    function completeCache()
+    public function completeCache()
     {
         // Ecriture du fichier de cache
         $fp = fopen($this->cacheFile, 'w');
@@ -795,14 +795,13 @@ class Controller
 
         fclose($fp);
 
-        // Output �cran
         ob_end_flush();
 
         // Cassos
         exit;
     }
 
-    function clearCache($page = '')
+    public function clearCache($page = '')
     {
         $cacheFile   = $this->path . 'tmp/cache/' . md5($page);
         $cacheFolder = $this->path . 'tmp/cache/';
@@ -821,7 +820,7 @@ class Controller
     }
 
     // Redirige vers une autre url avec le bon header si besoin
-    function redirection($url, $type = '')
+    public function redirection($url, $type = '')
     {
         if ($type == 301) {
             header("HTTP/1.1 301 Moved Permanently");

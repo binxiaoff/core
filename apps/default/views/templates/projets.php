@@ -1,5 +1,5 @@
-<?        
-if(		$this->lurl == 'http://prets-entreprises-unilend.capital.fr' 
+<?
+if(		$this->lurl == 'http://prets-entreprises-unilend.capital.fr'
 	||	$this->lurl == 'http://partenaire.unilend.challenges.fr'
 	||	$this->lurl == 'http://figaro.unilend.fr'
 	||	$this->lurl == 'http://financementparticipatifpme.lefigaro.fr'
@@ -21,7 +21,7 @@ if(		$this->lurl == 'http://prets-entreprises-unilend.capital.fr'
 				<div class="section-c">
 					<h2><?=$this->lng['preteur-projets']['decouvrez-les']?> <?=$this->nbProjects?> <?=$this->lng['preteur-projets']['projets-en-cours']?></h2>
 					<p><?=$this->content['contenu-180']?></p>
-					
+
 					<form action="" method="post" id="form_tri" name="form_tri">
                         <div class="row clearfix">
                             <select name="temps" id="temps" class="custom-select field-almost-small">
@@ -44,10 +44,10 @@ if(		$this->lurl == 'http://prets-entreprises-unilend.capital.fr'
                                 <option value="3"><?=$this->lng['preteur-projets']['projets-bide']?></option><?php */?>
                                 <option value="4"><?=$this->lng['preteur-projets']['projets-termines']?></option>
                             </select>
-                            
-                           	<button style="margin-left:10px;margin-top:7px;overflow:visible;" class="btn btn-pinky btn-small multi" type="reset" name="rest" id="rest" ><?=$this->lng['preteur-projets']['reset']?></button> 
+
+                           	<button style="margin-left:10px;margin-top:7px;overflow:visible;" class="btn btn-pinky btn-small multi" type="reset" name="rest" id="rest" ><?=$this->lng['preteur-projets']['reset']?></button>
                         </div>
-                        
+
 					</form>
                     <style>
 						.unProjet td a.lien{color:#727272;text-decoration:none;}
@@ -82,24 +82,24 @@ if(		$this->lurl == 'http://prets-entreprises-unilend.capital.fr'
                         foreach($this->lProjetsFunding as $pf)
                         {
 							$this->projects_status->getLastStatut($pf['id_project']);
-							
+
                             // On recupere les info companies
                             $this->companies->get($pf['id_company'],'id_company');
                             $this->companies_details->get($pf['id_company'],'id_company');
-                            
+
 							// date fin 21h a chaque fois
                             $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'),$pf['date_retrait_full']);
-							
+
                             if($inter['mois']>0) $dateRest = $inter['mois'].' '.$this->lng['preteur-projets']['mois'];
                             else $dateRest = '';
-                            
+
                             // dates pour le js
                             $mois_jour = $this->dates->formatDate($pf['date_retrait'],'F d');
                             $annee = $this->dates->formatDate($pf['date_retrait'],'Y');
-							
+
 							$CountEnchere = $this->bids->counter('id_project = '.$pf['id_project']);
 							//$avgRate = $this->bids->getAVG($pf['id_project'],'rate');
-							
+
 							// moyenne pondéré
 							$montantHaut = 0;
 							$montantBas = 0;
@@ -119,7 +119,7 @@ if(		$this->lurl == 'http://prets-entreprises-unilend.capital.fr'
 								{
 									$montantHaut += ($b['rate']*($b['amount']/100));
 									$montantBas += ($b['amount']/100);
-								}	
+								}
 							}
 							// emprun refusé
 							elseif($this->projects_status->status==75)
@@ -128,7 +128,7 @@ if(		$this->lurl == 'http://prets-entreprises-unilend.capital.fr'
 								{
 									$montantHaut += ($b['rate']*($b['amount']/100));
 									$montantBas += ($b['amount']/100);
-								}	
+								}
 							}
 							else
 							{
@@ -138,18 +138,18 @@ if(		$this->lurl == 'http://prets-entreprises-unilend.capital.fr'
 									$montantBas += ($b['amount']/100);
 								}
 							}
-							
+
 							if($montantHaut>0 && $montantBas >0)
 							$avgRate = ($montantHaut/$montantBas);
 							else $avgRate = 0;
-							
+
 							// favori
 							if($this->favoris->get($this->clients->id_client,'id_project = '.$pf['id_project'].' AND id_client'))
 								$favori = 'active';
 							else
 								$favori = '';
                             ?>
-                            
+
                             <tr class="unProjet" id="project<?=$pf['id_project']?>">
                                 <td>
 									<?
@@ -162,7 +162,7 @@ if(		$this->lurl == 'http://prets-entreprises-unilend.capital.fr'
 										$tab_date_retrait = explode(' ',$pf['date_retrait_full']);
 										$tab_date_retrait = explode(':',$tab_date_retrait[1]);
 										$heure_retrait = $tab_date_retrait[0].':'.$tab_date_retrait[1];
-										
+
 									?>
                                     <script>
                                         var cible<?=$pf['id_project']?> = new Date('<?=$mois_jour?>, <?=$annee?> <?=$heure_retrait?>:00');
@@ -171,10 +171,10 @@ if(		$this->lurl == 'http://prets-entreprises-unilend.capital.fr'
                                     </script>
                                     <?
 									}
-									
+
 									if($pf['photo_projet'] != '')
 									{
-										?><a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>"><img src="<?=$this->photos->display($pf['photo_projet'],'photos_projets','photo_projet_min')?>" alt="<?=$pf['photo_projet']?>" class="thumb"></a><?
+										?><a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>"><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>" class="thumb"></a><?
 									}
 									?>
                                     <div class="description">
@@ -227,7 +227,7 @@ if(		$this->lurl == 'http://prets-entreprises-unilend.capital.fr'
 								{
                                 	?><a href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>" class="btn btn-info btn-small"><?=$this->lng['preteur-projets']['pretez']?></a><?
 								}
-								
+
 								if(isset($_SESSION['client']))
 								{
 									?>
@@ -240,7 +240,7 @@ if(		$this->lurl == 'http://prets-entreprises-unilend.capital.fr'
                             <?
                         }
                         ?>
-    
+
                         </table><!-- /.table -->
                         <div id="positionStart" style="display:none;"><?=$this->lProjetsFunding[0]['positionStart']?></div>
                         <div class="loadmore" style="display:none;">
@@ -250,51 +250,51 @@ if(		$this->lurl == 'http://prets-entreprises-unilend.capital.fr'
                         <div id="ordreProject" style="display:none;"><?=$this->ordreProject?></div>
                         <div id="where" style="display:none;"><?=$this->where?></div>
                         <div id="valType" style="display:none;"><?=$this->type?></div>
-                        
+
                     </div>
 				</div>
 			</div>
-            
+
 		</div>
-		
+
 <!--#include virtual="ssi-footer.shtml"  -->
 
 
 <script type="text/javascript">
- 
-$(document).ready(function(){ 
- 
- 
+
+$(document).ready(function(){
+
+
 	var load = false;
-	var offset = $('.unProjet:last').offset(); 
- 
+	var offset = $('.unProjet:last').offset();
+
 	$(window).scroll(function(){ // On surveille l'évènement scroll
- 		
-		/* Si l'élément offset est en bas de scroll, si aucun chargement 
-		n'est en cours, si le nombre de projet affiché est supérieur 
-		à 5 et si tout les projets ne sont pas affichés, alors on 
+
+		/* Si l'élément offset est en bas de scroll, si aucun chargement
+		n'est en cours, si le nombre de projet affiché est supérieur
+		à 5 et si tout les projets ne sont pas affichés, alors on
 		lance la fonction. */
-		if((offset.top-$(window).height() <= $(window).scrollTop()) 
-		&& load==false && ($('.unProjet').size()>=10) && 
+		if((offset.top-$(window).height() <= $(window).scrollTop())
+		&& load==false && ($('.unProjet').size()>=10) &&
 		($('.unProjet').size()!=$('.nbProjet').text())){
- 			
+
 			// la valeur passe à vrai, on va charger
 			load = true;
- 
+
 			//On récupère l'id du dernier projet affiché
 			var last_id = $('.unProjet:last').attr('id');
- 
+
 			//On affiche un loader
 			$('.loadmore').show();
- 			
+
 			//On lance la fonction ajax
 			var val = {last: last_id, positionStart: $('#positionStart').html(),ordreProject: $('#ordreProject').html(),where: $('#where').html(),type: $('#valType').html()}
 			$.post(add_url + '/ajax/load_project', val).done(function(data) {
-					
+
 					obj = JSON.parse(data);
 					var positionStart = obj.positionStart;
 					var affichage = obj.affichage;
-					
+
 					//On masque le loader
 					$('.loadmore').fadeOut(500);
 					/* On affiche le résultat après
@@ -305,12 +305,12 @@ $(document).ready(function(){
 					offset = $('.unProjet:last').offset();
 					//On remet la valeur à faux car c'est fini
 					load = false;
-					
+
 					$('#positionStart').html(positionStart);
-			});	
+			});
 		}
 	});
- 
+
 });
 
 
@@ -320,13 +320,13 @@ $("select").change(function () {
 
 	$.post(add_url + '/ajax/triProject', {val: val,id: id}).done(function(data) {
 		$('#table_tri').html(data)
-	});	
+	});
 })
 
 $("#rest").click(function () {
 	$.post(add_url + '/ajax/triProject', {rest_val: 1}).done(function(data) {
 		$('#table_tri').html(data);
-	});	
+	});
 })
 
 

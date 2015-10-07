@@ -378,7 +378,7 @@
                         <?php
                     }
                     if ($f['photo_projet'] != '') {
-                        ?><a href="<?= $this->lurl ?>/projects/detail/<?= $f['slug'] ?>" class="img-holder"><img src="<?= $this->photos->display($f['photo_projet'], 'photos_projets', 'photo_projet_min') ?>" alt="<?= $f['photo_projet'] ?>"></a><?php
+                        ?><a href="<?= $this->lurl ?>/projects/detail/<?= $f['slug'] ?>" class="img-holder"><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $f['photo_projet'] ?>" alt="<?= $f['photo_projet'] ?>"></a><?php
                     }
                     ?>
                     <div class="info">
