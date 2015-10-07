@@ -4,6 +4,11 @@ use Unilend\librairies\ULogger;
 
 class depot_de_dossierController extends bootstrap
 {
+    /**
+     * @var attachment_helper
+     */
+    private $attachmentHelper;
+
     public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
@@ -1132,7 +1137,6 @@ class depot_de_dossierController extends bootstrap
 
         //add the new name for each file
         foreach ($aFiles as $f => $file) {
-
             $aNom_tmp                  = explode('.', $aFiles[$f]['name']);
             $aFiles[$f]['no_ext_name'] = $aNom_tmp[0];
         }
@@ -1140,93 +1144,72 @@ class depot_de_dossierController extends bootstrap
         switch ($iAttachmentType) {
             case attachment_type::RELEVE_BANCAIRE_MOIS_N :
                 $uploadPath = $basePath . 'releve_bancaire_mois_n/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::RELEVE_BANCAIRE_MOIS_N_1 :
                 $uploadPath = $basePath . 'releve_bancaire_mois_n_1/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::RELEVE_BANCAIRE_MOIS_N_2:
                 $uploadPath = $basePath . 'releve_bancaire_mois_n_2/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::PRESENTATION_ENTRERPISE:
                 $uploadPath = $basePath . 'presentation_entreprise/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::ETAT_ENDETTEMENT:
                 $uploadPath = $basePath . 'etat_endettement/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::DERNIERE_LIASSE_FISCAL :
                 $uploadPath = $basePath . 'liasse_fiscal/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::LIASSE_FISCAL_N_1:
                 $uploadPath = $basePath . 'liasse_fiscal_n_1/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::LIASSE_FISCAL_N_2:
                 $uploadPath = $basePath . 'liasse_fiscal_n_2/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::RAPPORT_CAC:
                 $uploadPath = $basePath . 'rapport_cac/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::PREVISIONNEL:
                 $uploadPath = $basePath . 'previsionnel/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::CNI_PASSPORTE_DIRIGEANT :
                 $uploadPath = $basePath . 'cni_passeport_dirigeant/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::CNI_PASSPORTE_VERSO :
                 $uploadPath = $basePath . 'cni_passeport_dirigeant_verso/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::RIB :
                 $uploadPath = $basePath . 'rib/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::KBIS :
                 $uploadPath = $basePath . 'extrait_kbis/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::AUTRE1 :
                 $uploadPath = $basePath . 'autre/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::AUTRE2 :
                 $uploadPath = $basePath . 'autre2/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::AUTRE3:
                 $uploadPath = $basePath . 'autre3/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::BALANCE_CLIENT:
                 $uploadPath = $basePath . 'balance_client/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::BALANCE_FOURNISSEUR:
                 $uploadPath = $basePath . 'balance_fournisseur/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             case attachment_type::ETAT_PRIVILEGES_NANTISSEMENTS:
                 $uploadPath = $basePath . 'etat_privileges_nantissements/';
-                $sNewName   = $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId;
                 break;
             default :
                 return false;
         }
 
-        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::PROJECT, $iAttachmentType, $field, $this->path, $uploadPath, $this->upload, $this->attachment, $sNewName, $aFiles);
+        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::PROJECT, $iAttachmentType, $field, $this->path, $uploadPath, $this->upload, $this->attachment, $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId, $aFiles);
 
         if (false === $resultUpload) {
-            $this->form_ok = false;
-
+            $this->form_ok       = false;
             $this->error_fichier = true;
         }
 

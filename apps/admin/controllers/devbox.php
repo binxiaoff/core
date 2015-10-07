@@ -14,7 +14,81 @@ class devboxController extends bootstrap
         }
     }
 
-    // Ressort un csv avec les process des users
+    public function _projectsAttachementMigration()
+    {
+        $this->bdd->query("
+            INSERT INTO attachment_type (id, label) VALUES
+              (30, 'Relevé de compte bancaire du mois précédent'),
+              (31, 'Relevé de compte bancaire du mois N-1'),
+              (32, 'Relevé de compte bancaire du mois N-2'),
+              (33, 'Présentation de l''entreprise'),
+              (34, 'Etat d''endettement'),
+              (35, 'Liasse fiscale année N-1'),
+              (36, 'Liasse fiscale année N-2'),
+              (37, 'Rapport des CAC'),
+              (38, 'Prévisionnel'),
+              (39, 'Balance client'),
+              (40, 'Balance fournisseur'),
+              (41, 'Etat des privilèges et nantissements')"
+        );
+
+        /**
+         * Nombre d'attachments à transférer des sociétés vers les
+         * Pour chacune des sociétés qui ont des attachments, boucler sur tous les projets et insérer le(s) attachment(s) de la société
+         * Le faire également pour les fichiers en eux même sur le disque
+         */
+        $this->bdd->query("
+            SELECT (COUNT(DISTINCT fichier_annexes_rapport_special_commissaire_compte)
+               + COUNT(DISTINCT fichier_arret_comptable_recent)
+               + COUNT(DISTINCT fichier_autre_1)
+               + COUNT(DISTINCT fichier_autre_2)
+               + COUNT(DISTINCT fichier_autre_3)
+               + COUNT(DISTINCT fichier_budget_exercice_en_cours_a_venir)
+               + COUNT(DISTINCT fichier_cni_passeport)
+               + COUNT(DISTINCT fichier_delegation_pouvoir)
+               + COUNT(DISTINCT fichier_dernier_bilan_certifie)
+               + COUNT(DISTINCT fichier_derniere_liasse_fiscale)
+               + COUNT(DISTINCT fichier_derniers_comptes_approuves)
+               + COUNT(DISTINCT fichier_derniers_comptes_consolides_groupe)
+               + COUNT(DISTINCT fichier_extrait_kbis)
+               + COUNT(DISTINCT fichier_logo_societe)
+               + COUNT(DISTINCT fichier_notation_banque_france)
+               + COUNT(DISTINCT fichier_rib)
+               + COUNT(DISTINCT fichier_photo_dirigeant)
+               - 17) AS cnt
+            FROM projects
+            INNER JOIN projects_last_status_history USING (id_project)
+            INNER JOIN projects_status_history USING (id_project_status_history)
+            INNER JOIN companies_details USING (id_company)
+            WHERE id_project_status NOT IN(21, 22)"
+        );
+
+        // Une fois tous les attachments transférés, on supprime les anciennes colonnes
+        // Backuper la table companies_details avant
+        $this->bdd->query("
+            ALTER TABLE companies_details
+              DROP COLUMN fichier_extrait_kbis,
+              DROP COLUMN fichier_extrait_kbis,
+              DROP COLUMN fichier_rib,
+              DROP COLUMN fichier_delegation_pouvoir,
+              DROP COLUMN fichier_logo_societe,
+              DROP COLUMN fichier_photo_dirigeant,
+              DROP COLUMN fichier_dernier_bilan_certifie,
+              DROP COLUMN fichier_cni_passeport,
+              DROP COLUMN fichier_derniere_liasse_fiscale,
+              DROP COLUMN fichier_derniers_comptes_approuves,
+              DROP COLUMN fichier_derniers_comptes_consolides_groupe,
+              DROP COLUMN fichier_annexes_rapport_special_commissaire_compte,
+              DROP COLUMN fichier_arret_comptable_recent,
+              DROP COLUMN fichier_budget_exercice_en_cours_a_venir,
+              DROP COLUMN fichier_notation_banque_france,
+              DROP COLUMN fichier_autre_1,
+              DROP COLUMN fichier_autre_2,
+              DROP COLUMN fichier_autre_3"
+        );
+    }
+
+    // Ressort un csv avec les process des usersw≤
     public function _etape_inscription()
     {
         // récup de tous les clients crée depuis le 1 aout
