@@ -123,10 +123,6 @@ class Bootstrap
         return $this->oLogger;
     }
 
-    public function getCron()
-    {
-        return new Cron($this);
-    }
 
     /**
      * @param string $sFunction name of function where assert it's in error
