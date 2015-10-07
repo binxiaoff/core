@@ -109,24 +109,24 @@
         </section>
         <aside class="signup right">
             <h2><?= $this->content['lp-titre-formulaire'] ?></h2>
-            <form action="<?= $this->lurl ?>/depot_de_dossier/etape1" method="post" id="depot_de_dossier" name="depot_de_dossier">
-                <?php if (isset($this->retour_form)) { ?>
+            <form action="<?= $this->lurl ?>/lp-depot-de-dossier" method="post" id="depot_de_dossier" name="depot_de_dossier">
+                <?php if (isset($this->aForm['response'])) { ?>
                 <div class="form-row" style="display:inline;">
-                    <span style="text-align:center; color:#C84747;"><?= $this->retour_form ?></span>
+                    <span style="text-align:center; color:#C84747;"><?= $this->aForm['response'] ?></span>
                 </div>
                 <?php } ?>
                 <div class="form-row">
                     <span class="euro-sign">€</span>
-                    <input type="text" class="field required" placeholder="<?= $this->lng['landing-page']['montant-souhaite'] ?>" value="<?= isset($_POST['montant']) ? $_POST['montant'] : '' ?>" title="<?= $this->lng['landing-page']['montant-souhaite'] ?>" name="montant" id="montant" data-validators="Presence&amp;Numericality, {maximum:<?= $this->sommeMax ?>}&amp;Numericality, {minimum: <?= $this->sommeMin ?>}" onkeyup="lisibilite_nombre(this.value,this.id);">
+                    <input type="text" class="field required" placeholder="<?= $this->lng['landing-page']['montant-souhaite'] ?>" value="<?= isset($this->aForm['values']['montant']) ? $this->aForm['values']['montant'] : '' ?>" title="<?= $this->lng['landing-page']['montant-souhaite'] ?>" name="montant" id="montant" data-validators="Presence&amp;Numericality, {maximum:<?= $this->sommeMax ?>}&amp;Numericality, {minimum: <?= $this->sommeMin ?>}" onkeyup="lisibilite_nombre(this.value,this.id);">
                     <em class="jusqua"><?= $this->lng['landing-page']['jusqua'] ?></em>
                 </div>
                 <div style="clear:both;"></div>
                 <div class="form-row">
-                    <input type="text" class="field required" placeholder="<?= $this->lng['landing-page']['siren'] ?>" value="<?= isset($_POST['siren']) ? $_POST['siren'] : '' ?>" title="<?= $this->lng['landing-page']['siren'] ?>" name="siren" id="siren" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 9}">
+                    <input type="text" class="field required" placeholder="<?= $this->lng['landing-page']['siren'] ?>" value="<?= isset($this->aForm['values']['siren']) ? $this->aForm['values']['siren'] : '' ?>" title="<?= $this->lng['landing-page']['siren'] ?>" name="siren" id="siren" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 9}">
                     <em class="caractmax"><?= $this->lng['landing-page']['9-caracteres-numeriques'] ?></em>
                 </div>
                 <div class="form-row">
-                    <input type="text" placeholder="<?= $this->lng['landing-page']['email'] ?>" value="<?= isset($_POST['email']) ? $_POST['email'] : '' ?>" title="<?= $this->lng['landing-page']['email'] ?>" name="email" id="email">
+                    <input type="text" placeholder="<?= $this->lng['landing-page']['email'] ?>" value="<?= isset($this->aForm['values']['email']) ? $this->aForm['values']['email'] : '' ?>" title="<?= $this->lng['landing-page']['email'] ?>" name="email" id="email">
                 </div>
                 <input type="hidden" name="spy_inscription_landing_page_depot_dossier" value="1">
                 <button type="submit" class="button" style="font-family: 'TrendSansOne'; font-weight:normal;text-transform: uppercase;">

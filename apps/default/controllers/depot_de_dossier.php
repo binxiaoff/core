@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\librairies\ULogger;
+
 class depot_de_dossierController extends bootstrap
 {
     public function __construct($command, $config, $app)
@@ -28,7 +30,6 @@ class depot_de_dossierController extends bootstrap
         $this->lng['etape3']                  = $this->ln->selectFront('depot-de-dossier-etape-3', $this->language, $this->App);
         $this->lng['espace-emprunteur']       = $this->ln->selectFront('depot-de-dossier-espace-emprunteur', $this->language, $this->App);
 
-        // Altares
         $this->settings->get('Altares login', 'type');
         $login = $this->settings->value;
 
@@ -52,394 +53,305 @@ class depot_de_dossierController extends bootstrap
 
         $this->page = 1;
 
-        $this->settings->get('Somme à emprunter min', 'type');
-        $this->sommeMin = $this->settings->value;
-
-        $this->settings->get('Somme à emprunter max', 'type');
-        $this->sommeMax = $this->settings->value;
-
         $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
-        // source -> mets utm_source dans la session
-        $this->ficelle->source(
-            isset($_GET['utm_source']) ? $_GET['utm_source'] : '',
-            $this->lurl . (isset($this->params[0]) ? '/' . $this->params[0] : ''),
-            isset($_GET['utm_source2']) ? $_GET['utm_source2'] : ''
-        );
-
-        $reponse_get = false;
-
-        // Si on a les get en question
-        if (isset($_GET['montant']) && $_GET['montant'] != '' &&
-            isset($_GET['siren']) && $_GET['siren'] != ''
-        ) {
-            $reponse_get = true;
+        if (false === isset($_SESSION['forms']['depot-de-dossier']['values'])) {
+            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
+            die;
         }
 
-        // On récupère le formulaire d'inscription de la page
-        // @Antoine: ce bout de code vient de du controlleur de la landing page qui devrait en principe déjà gérer les infos renseignées dans le lien.
-        // je l'ai laissé jusqu'à ce que je me mets sur les test des liens avec informations dedans.
-        if (isset($_POST['spy_inscription_landing_page_depot_dossier']) || $reponse_get == true) {
-            if ($reponse_get == true) {
-                $montant = str_replace(',', '.', str_replace(' ', '', $_GET['montant']));
-                $siren   = $_GET['siren'];
-                $email   = $_GET['email'];
-            } else {
-                $montant = str_replace(',', '.', str_replace(' ', '', $_POST['montant']));
-                $siren   = $_POST['siren'];
-                $email   = ($_POST['email'] == 'Email') ? '' : $_POST['email'];
+        $iAmount = $_SESSION['forms']['depot-de-dossier']['values']['montant'];
+        $iSIREN  = $_SESSION['forms']['depot-de-dossier']['values']['siren'];
+        $sEmail  = isset($_SESSION['forms']['depot-de-dossier']['values']['email']) && $this->ficelle->isEmail($_SESSION['forms']['depot-de-dossier']['values']['email']) ? $_SESSION['forms']['depot-de-dossier']['values']['email'] : null;
+
+        // @todo unset $_SESSION['forms']['depot-de-dossier']['values'] ?
+
+        //create client, company and project independent from eligibility
+
+        /*if ($this->companies->exist($iSIREN, $field = 'siren')) {
+            $this->companies->get($iSIREN, 'siren');
+            //then get the client from that company in case it has not already been found by email before
+            if ($this->clients->id_client == '') {
+                $this->clients->get($this->companies->id_client_owner);
+            }
+        }
+        //if there is a client, check if the client is not already a "preteur", in this case send back with error message
+        if (is_numeric($this->clients->id_client) && $this->clients->status_pre_emp === 1) {
+
+            $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
+            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
+        }*/
+
+        $this->clients->id_langue            = $this->language;
+        $this->clients->status_depot_dossier = 1;
+        $this->clients->slug_origine         = $this->tree->slug;
+
+        if ($this->preteurCreateEmprunteur == false) {
+            $this->clients->source  = $_SESSION['utm_source'];
+            $this->clients->source2 = $_SESSION['utm_source2'];
+        }
+
+        if (false === is_null($sEmail)) {
+            $this->clients->email = $sEmail;
+        }
+
+        if ($this->clients->id_client == '') {
+            $this->clients->id_client = $this->clients->create();
+        }
+
+        $this->companies->id_client_owner               = $this->clients->id_client;
+        $this->companies->siren                         = $iSIREN;
+        $this->companies->status_adresse_correspondance = '1';
+
+        if ($this->companies->id_company == '') {
+            $this->companies->id_company = $this->companies->create();
+        }
+
+        $this->projects->id_company = $this->companies->id_company;
+        if ($this->prescripteurs->id_prescripteur == '') {
+            $this->projects->id_prescripteur = $this->prescripteurs->id_prescripteur;
+        }
+
+        $this->projects->amount     = $iAmount;
+        $this->projects->id_company = $this->companies->id_company;
+        $this->projects->id_project = $this->projects->create();
+
+        // 1 : activé 2 : activé mais prend pas en compte le resultat 3 : desactivé (DC)
+        $this->settings->get('Altares debrayage', 'type');
+        $AltaresDebrayage = $this->settings->value;
+
+        $this->settings->get('Altares email alertes', 'type');
+        $AltaresEmailAlertes = $this->settings->value;
+
+        // 1 : activé - 2 : on prend pas en compte les filtres.(DC)
+        if (in_array($AltaresDebrayage, array(1, 2))) {
+            $result = '';
+            try {
+                $result = $this->ficelle->ws($this->wsdl, $this->identification, $iSIREN);
+            } catch (\Exception $e) {
+                $oLogger = new ULogger('connection', $this->logPath, 'altares.log');
+                $oLogger->addRecord(ULogger::ALERT, $e->getMessage(), array('siren' => $iSIREN));
+
+                mail($AltaresEmailAlertes, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $e->getMessage());
             }
 
-            /*if (isset($email) && $this->ficelle->isEmail($email) === true && $this->clients->existEmail($email) === false) {
-                $this->clients->get($email, 'email');
+            if ($result->exception != false) {
+                $oLogger = new ULogger('connection', $this->logPath, 'altares.log');
+                $oLogger->addRecord(ULogger::ALERT, $result->exception->code . ' | ' . $result->exception->description . ' | ' . $result->exception->erreur, array('siren' => $iSIREN));
+
+                mail($AltaresEmailAlertes, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $iSIREN . ' | ' . $result->exception->code . ' | ' . $result->exception->description . ' | ' . $result->exception->erreur);
             }
 
-            if (isset($email) && $this->ficelle->isEmail($email) && $this->prescripteurs->exist($email, 'email') === false) {
-                $this->prescripteurs->get($email, 'email');
-            }*/
+            $exception = $result->exception;
 
-            $form_valid = true;
+            if ($AltaresDebrayage == 2) {
+                $oLogger = new ULogger('connection', $this->logPath, 'altares.log');
+                $oLogger->addRecord(ULogger::INFO, 'Tentative évaluation', array('siren' => $iSIREN));
 
-            if (!isset($montant) || $montant == $this->lng['landing-page']['montant-souhaite']) {
-                $form_valid        = false;
-                $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
+                mail($AltaresEmailAlertes, '[ALERTE] Altares Tentative evaluation', 'Date ' . date('Y-m-d H:i:s') . ' siren : ' . $iSIREN);
             }
+        }
 
-            if (!is_numeric($montant)) {
-                $form_valid        = false;
-                $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
-            } elseif ($montant < $this->sommeMin || $montant > $this->sommeMax) {
-                $this->form_ok = false;
-            }
+        if (false === empty($exception)) {
+            $this->emailAltares($this->projects->id_project, $this->projects->title);
+            $this->redirectEtape1('/depot_de_dossier/nok', projects_status::NOTE_EXTERNE_FAIBLE);
+        }
 
-            if (!isset($siren) || $siren == $this->lng['landing-page']['siren'] || strlen($siren) != 9) {
-                $form_valid        = false;
-                $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
-            }
+        $this->projects->retour_altares = $result->myInfo->eligibility;
+        $this->projects->update();
 
-            if ($form_valid) {
+        switch ($result->myInfo->eligibility) {
+            case '1_Etablissement Inactif':
+            case '7_SIREN inconnu':
+                $this->redirectEtape1('/depot_de_dossier/nok/no-siren', projects_status::NOTE_EXTERNE_FAIBLE);
+                break;
+            case '2_Etablissement sans RCS':
+                $this->redirectEtape1('/depot_de_dossier/nok/no-rcs', projects_status::NOTE_EXTERNE_FAIBLE);
+                break;
+            case '3_Procédure Active':
+            case '4_Bilan de plus de 450 jours':
+            case '9_bilan sup 450 jours':
+            default:
+                $this->redirectEtape1('/depot_de_dossier/nok', projects_status::NOTE_EXTERNE_FAIBLE);
+                break;
+            case '5_Fonds Propres Négatifs':
+            case '6_EBE Négatif':
+                $this->redirectEtape1('/depot_de_dossier/nok/rex-nega', projects_status::NOTE_EXTERNE_FAIBLE);
+                break;
+            case '8_Eligible':
+                $this->clients_adresses->id_client = $this->clients->id_client;
+                $this->clients_adresses->create();
 
-                //create client, company and project independent from eligibility
+                $oIdentite = $result->myInfo->identite;
+                $oScore    = $result->myInfo->score;
+                $oSiege    = $result->myInfo->siege;
 
-                /*if ($this->companies->exist($siren, $field = 'siren')) {
-                    $this->companies->get($siren, 'siren');
-                    //then get the client from that company in case it has not already been found by email before
-                    if ($this->clients->id_client == '') {
-                        $this->clients->get($this->companies->id_client_owner);
-                    }
-                }
-                //if there is a client, check if the client is not already a "preteur", in this case send back with error message
-                if (is_numeric($this->clients->id_client) && $this->clients->status_pre_emp === 1) {
-
-                    $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
-                    header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
-                }*/
-
-                $this->clients->id_langue            = $this->language;
-                $this->clients->status_depot_dossier = 1;
-                $this->clients->slug_origine         = $this->tree->slug;
-
-                // clients //
-                if ($this->preteurCreateEmprunteur == false) {
-                    $this->clients->source  = $_SESSION['utm_source'];
-                    $this->clients->source2 = $_SESSION['utm_source2'];
-                }
-
-                if (isset($email) && $this->clients->email == '') {
-                    $this->clients->email = $email;
-                }
-
-                if ($this->clients->id_client == '') {
-                    $this->clients->id_client = $this->clients->create();
-                }
-
-                $this->companies->id_client_owner               = $this->clients->id_client;
-                $this->companies->siren                         = $siren;
+                //TODO review logic of saving data
+                //maybe create an altares libarary so
+                $this->companies->name                          = $oIdentite->raisonSociale;
+                $this->companies->forme                         = $oIdentite->formeJuridique;
+                $this->companies->capital                       = $oIdentite->capital;
+                $this->companies->code_naf                      = $oIdentite->naf5EntreCode;
+                $this->companies->libelle_naf                   = $oIdentite->naf5EntreLibelle;
+                $this->companies->adresse1                      = $oIdentite->rue;
+                $this->companies->city                          = $oIdentite->ville;
+                $this->companies->zip                           = $oIdentite->codePostal;
+                $this->companies->phone                         = str_replace(' ', '', $oSiege->telephone);
+                $this->companies->rcs                           = $oIdentite->rcs;
+                $this->companies->siret                         = $oIdentite->siret;
                 $this->companies->status_adresse_correspondance = '1';
+                $this->companies->date_creation                 = substr($oIdentite->dateCreation, 0, 10);
+                $this->companies->altares_eligibility           = $result->myInfo->eligibility;
+                $this->companies->altares_niveauRisque          = $oScore->niveauRisque;
+                $this->companies->altares_scoreVingt            = $oScore->scoreVingt;
+                $this->companies->score_sectoriel_altatres      = $oScore->scoreSectorielVingt;
+                $this->companies->score_sectoriel_xerfirisk     = $oScore->scoreSectorielCent;
+                $this->companies->altares_dateValeur            = substr($oScore->dateValeur, 0, 10);
 
-                if ($this->companies->id_company == '') {
-                    $this->companies->id_company = $this->companies->create();
-                }
+                $dateDernierBilanString                             = substr($oIdentite->dateDernierBilan, 0, 10);
+                $dateDernierBilan                                   = explode('-', $dateDernierBilanString);
+                $this->companies_details->date_dernier_bilan        = $dateDernierBilanString;
+                $this->companies_details->date_dernier_bilan_mois   = $dateDernierBilan[1];
+                $this->companies_details->date_dernier_bilan_annee  = $dateDernierBilan[0];
+                $this->companies_details->date_dernier_bilan_publie = $dateDernierBilanString;
+                $this->companies_details->id_company                = $this->companies->id_company;
 
-                $this->projects->id_company = $this->companies->id_company;
-                if ($this->prescripteurs->id_prescripteur == '') {
-                    $this->projects->id_prescripteur = $this->prescripteurs->id_prescripteur;
-                }
-
-                $this->projects->amount     = $montant;
-                $this->projects->id_company = $this->companies->id_company;
-                $this->projects->id_project = $this->projects->create();
-
-                // 1 : activé 2 : activé mais prend pas en compte le resultat 3 : desactivé (DC)
-                $this->settings->get('Altares debrayage', 'type');
-                $AltaresDebrayage = $this->settings->value;
-
-                $this->settings->get('Altares email alertes', 'type');
-                $AltaresEmailAlertes = $this->settings->value;
-
-                // 1 : activé 2 : on prend pas en compte les filtres.(DC)
-                if (in_array($AltaresDebrayage, array(1, 2))) {
-                    $result = '';
-                    try {
-                        $result = $this->ficelle->ws($this->wsdl, $this->identification, $siren);
-                    } catch (Exception $e) {
-                        mail($AltaresEmailAlertes, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $e->getMessage());
-                        error_log("[" . date('Y-m-d H:i:s') . "] " . $e->getMessage(), 3, $this->path . '/log/error_altares.txt');
-                    }
-
-                    if ($result->exception != false) {
-                        $erreur = 'Siren fourni : ' . $siren . ' | ' . $result->exception->code . ' | ' . $result->exception->description . ' | ' . $result->exception->erreur;
-                        mail($AltaresEmailAlertes, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . '' . $erreur);
-                        error_log("[" . date('Y-m-d H:i:s') . "] " . $erreur . "\n", 3, $this->path . '/log/error_altares.txt');
-                    }
-
-                    // Verif si erreur
-                    $exception = $result->exception;
-
-                    // que pour le statut 2 (DC)
-                    if ($AltaresDebrayage == 2) {
-                        mail($AltaresEmailAlertes, '[ALERTE] Altares Tentative evaluation', 'Date ' . date('Y-m-d H:i:s') . ' siren : ' . $siren);
-                    }
-                } // debrayage statut 3 : altares desactivé
-                else {
-                    $exception = '';
-                }
-                // si altares ok
-                if ($exception == '') {
-                    $sEligibility                   = $result->myInfo->eligibility;
-
-                    $this->projects->retour_altares = $sEligibility;
-                    $this->projects->update();
-
-                    switch ($sEligibility) {
-                        case '1_Etablissement Inactif':
-                            $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                            header('Location: ' . $this->lurl . '/depot_de_dossier/nok/no-siren');
-                            die;
-                        case '2_Etablissement sans RCS':
-                            $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                            header('Location: ' . $this->lurl . '/depot_de_dossier/nok/no-rcs');
-                            die;
-                        case '3_Procédure Active':
-                        case '4_Bilan de plus de 450 jours':
-                            $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                            header('Location: ' . $this->lurl . '/depot_de_dossier/nok');
-                            die;
-                        case '5_Fonds Propres Négatifs':
-                        case '6_EBE Négatif':
-                            $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                            header('Location: ' . $this->lurl . '/depot_de_dossier/nok/rex-nega');
-                            die;
-                        case '7_SIREN inconnu':
-                            $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                            header('Location: ' . $this->lurl . '/depot_de_dossier/nok/no-siren');
-                            die;
-                        case '9_bilan sup 450 jours':
-                            $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                            header('Location: ' . $this->lurl . '/depot_de_dossier/nok');
-                            die;
-                        case '8_Eligible':
-                            $this->clients_adresses->id_client = $this->clients->id_client;
-                            $this->clients_adresses->create();
-
-                            $oIdentite = $result->myInfo->identite;
-                            $oScore    = $result->myInfo->score;
-                            $oSiege    = $result->myInfo->siege;
-
-                            //TODO review logic of saving data
-                            //maybe create an altares libarary so
-                            $this->companies->name                          = $oIdentite->raisonSociale;
-                            $this->companies->forme                         = $oIdentite->formeJuridique;
-                            $this->companies->capital                       = $oIdentite->capital;
-                            $this->companies->code_naf                      = $oIdentite->naf5EntreCode;
-                            $this->companies->libelle_naf                   = $oIdentite->naf5EntreLibelle;
-                            $this->companies->adresse1                      = $oIdentite->rue;
-                            $this->companies->city                          = $oIdentite->ville;
-                            $this->companies->zip                           = $oIdentite->codePostal;
-                            $this->companies->phone                         = str_replace(' ', '', $oSiege->telephone);
-                            $this->companies->rcs                           = $oIdentite->rcs;
-                            $this->companies->siret                         = $oIdentite->siret;
-                            $this->companies->status_adresse_correspondance = '1';
-                            $this->companies->date_creation                 = substr($oIdentite->dateCreation, 0, 10);
-                            $this->companies->altares_eligibility           = $sEligibility;
-                            $this->companies->altares_niveauRisque          = $oScore->niveauRisque;
-                            $this->companies->altares_scoreVingt            = $oScore->scoreVingt;
-                            $this->companies->score_sectoriel_altatres      = $oScore->scoreSectorielVingt;
-                            $this->companies->score_sectoriel_xerfirisk     = $oScore->scoreSectorielCent;
-                            $this->companies->altares_dateValeur            = substr($oScore->dateValeur, 0, 10);
-
-                            $dateDernierBilanString                             = substr($oIdentite->dateDernierBilan, 0, 10);
-                            $dateDernierBilan                                   = explode('-', $dateDernierBilanString);
-                            $this->companies_details->date_dernier_bilan        = $dateDernierBilanString;
-                            $this->companies_details->date_dernier_bilan_mois   = $dateDernierBilan[1];
-                            $this->companies_details->date_dernier_bilan_annee  = $dateDernierBilan[0];
-                            $this->companies_details->date_dernier_bilan_publie = $dateDernierBilanString;
-
-                            $this->companies_details->id_company = $this->companies->id_company;
-                            if ($this->preteurCreateEmprunteur == true && $this->clients->type == 2) {
-                                $this->companies_details->update();
-                            } else {
-                                $this->companies_details->create();
-                            }
-
-                            // On génère 5 lignes dans la base pour les bilans
-                            $lesdates = array(date('Y') - 3, date('Y') - 2, date('Y') - 1, date('Y'), date('Y') + 1);
-                            for ($i = 0; $i < 5; $i++) {
-                                $this->companies_bilans->id_company = $this->companies->id_company;
-                                $this->companies_bilans->date       = $lesdates[$i];
-                                $this->companies_bilans->create();
-                            }
-
-                            // les 3 dernieres vrais années (actif/passif)
-                            $date    = array();
-                            $date[1] = (date('Y') - 1);
-                            $date[2] = (date('Y') - 2);
-                            $date[3] = (date('Y') - 3);
-
-                            foreach ($date as $k => $d) {
-                                $this->companies_actif_passif->annee      = $d;
-                                $this->companies_actif_passif->ordre      = $k;
-                                $this->companies_actif_passif->id_company = $this->companies->id_company;
-                                $this->companies_actif_passif->create();
-                            }
-
-
-                            $syntheseFinanciereInfo = $result->myInfo->syntheseFinanciereInfo;
-                            $syntheseFinanciereList = $result->myInfo->syntheseFinanciereInfo->syntheseFinanciereList;
-
-                            $posteActifList         = array();
-                            $postePassifList        = array();
-                            $syntheseFinanciereInfo = array();
-                            $syntheseFinanciereList = array();
-                            $derniersBilans         = array();
-                            $i                      = 0;
-
-                            if ($result->myInfo->bilans != '') {
-                                foreach ($result->myInfo->bilans as $b) {
-                                    $annee                                 = substr($b->bilan->dateClotureN, 0, 4);
-                                    $posteActifList[$annee]                = $b->bilanRetraiteInfo->posteActifList;
-                                    $postePassifList[$annee]               = $b->bilanRetraiteInfo->postePassifList;
-                                    $syntheseFinanciereInfo[$annee]        = $b->syntheseFinanciereInfo;
-                                    $syntheseFinanciereList[$annee]        = $b->syntheseFinanciereInfo->syntheseFinanciereList;
-                                    $soldeIntermediaireGestionInfo[$annee] = $b->soldeIntermediaireGestionInfo->SIGList;
-                                    $investissement[$annee]                = $b->bilan->posteList[0]->valeur;
-
-                                    // date des derniers bilans
-                                    $derniersBilans[$i] = $annee;
-
-                                    $i++;
-                                }
-                            }
-
-                            $ldate = $lesdates;
-                            // on génère un tableau avec les données
-                            for ($i = 0; $i < 5; $i++) // on parcourt les 5 années
-                            {
-                                for ($a = 0; $a < 3; $a++)// on parcourt les 3 dernieres années
-                                {
-                                    // si y a une année du bilan qui correxpond a une année du tableau
-                                    if ($derniersBilans[$a] == $ldate[$i]) {
-                                        // On recup les données de cette année
-                                        $montant1 = $posteActifList[$ldate[$i]][1]->montant;
-                                        $montant2 = $posteActifList[$ldate[$i]][2]->montant;
-                                        $montant3 = $posteActifList[$ldate[$i]][3]->montant;
-                                        $montant  = $montant1 + $montant2 + $montant3;
-
-                                        $this->companies_bilans->get($this->companies->id_company, 'date = ' . $ldate[$i] . ' AND id_company');
-                                        $this->companies_bilans->ca                          = $syntheseFinanciereList[$ldate[$i]][0]->montantN;
-                                        $this->companies_bilans->resultat_exploitation       = $syntheseFinanciereList[$ldate[$i]][1]->montantN;
-                                        $this->companies_bilans->resultat_brute_exploitation = $soldeIntermediaireGestionInfo[$ldate[$i]][9]->montantN;
-                                        $this->companies_bilans->investissements             = $investissement[$ldate[$i]];
-                                        $this->companies_bilans->update();
-                                    }
-                                }
-                            }
-                            // Debut actif/passif
-                            foreach ($derniersBilans as $annees) {
-                                foreach ($posteActifList[$annees] as $a) {
-                                    $ActifPassif[$annees][$a->posteCle] = $a->montant;
-                                }
-                                foreach ($postePassifList[$annees] as $p) {
-                                    $ActifPassif[$annees][$p->posteCle] = $p->montant;
-                                }
-                            }
-                            // Liste des actif passif
-                            $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '"', 'annee DESC');
-                            $i                             = 0;
-                            foreach ($this->lCompanies_actif_passif as $k => $ap) {
-                                if ($this->companies_actif_passif->get($ap['annee'], 'id_company = ' . $ap['id_company'] . ' AND annee')) {
-                                    // Actif
-                                    $this->companies_actif_passif->immobilisations_corporelles   = $ActifPassif[$ap['annee']]['posteBR_IMCOR'];
-                                    $this->companies_actif_passif->immobilisations_incorporelles = $ActifPassif[$ap['annee']]['posteBR_IMMINC'];
-                                    $this->companies_actif_passif->immobilisations_financieres   = $ActifPassif[$ap['annee']]['posteBR_IMFI'];
-                                    $this->companies_actif_passif->stocks                        = $ActifPassif[$ap['annee']]['posteBR_STO'];
-                                    //creances_clients = Avances et acomptes + creances clients + autre creances et cca + autre creances hors exploitation
-                                    $this->companies_actif_passif->creances_clients                = $ActifPassif[$ap['annee']]['posteBR_BV'] + $ActifPassif[$ap['annee']]['posteBR_BX'] + $ActifPassif[$ap['annee']]['posteBR_ACCCA'] + $ActifPassif[$ap['annee']]['posteBR_ACHE_'];
-                                    $this->companies_actif_passif->disponibilites                  = $ActifPassif[$ap['annee']]['posteBR_CF'];
-                                    $this->companies_actif_passif->valeurs_mobilieres_de_placement = $ActifPassif[$ap['annee']]['posteBR_CD'];
-
-                                    // passif
-                                    // capitaux_propres = capitaux propres + non valeurs
-                                    $this->companies_actif_passif->capitaux_propres = $ActifPassif[$ap['annee']]['posteBR_CPRO'] + $ActifPassif[$ap['annee']]['posteBR_NONVAL'];
-                                    // provisions_pour_risques_et_charges = Provisions pour risques et charges + Provisions actif circulant
-                                    $this->companies_actif_passif->provisions_pour_risques_et_charges = $ActifPassif[$ap['annee']]['posteBR_PROVRC'] + $ActifPassif[$ap['annee']]['posteBR_PROAC'];
-                                    $this->companies_actif_passif->amortissement_sur_immo             = $ActifPassif[$ap['annee']]['posteBR_AMPROVIMMO'];
-                                    // dettes_financieres = Emprunts + Dettes groupe et associés + Concours bancaires courants
-                                    $this->companies_actif_passif->dettes_financieres = $ActifPassif[$ap['annee']]['posteBR_EMP'] + $ActifPassif[$ap['annee']]['posteBR_VI'] + $ActifPassif[$ap['annee']]['posteBR_EH'];
-
-                                    // dettes_fournisseurs = Avances et Acomptes clients + Dettes fournisseurs
-                                    $this->companies_actif_passif->dettes_fournisseurs = $ActifPassif[$ap['annee']]['posteBR_DW'] + $ActifPassif[$ap['annee']]['posteBR_DX'];
-
-                                    // autres_dettes = autres dettes exploi + Dettes sur immos et comptes rattachés + autres dettes hors exploi
-                                    $this->companies_actif_passif->autres_dettes = $ActifPassif[$ap['annee']]['posteBR_AUTDETTEXPL'] + $ActifPassif[$ap['annee']]['posteBR_DZ'] + $ActifPassif[$ap['annee']]['posteBR_AUTDETTHEXPL'];
-                                    $this->companies_actif_passif->update();
-                                }
-                                $i++;
-                            }
-                            $this->companies->update();
-
-                            //check on creation date
-                            $sAnneeCreation = substr($oIdentite->dateCreation, 0, 10);
-                            $oDatetime1     = date_create_from_format('Y-m-d', $sAnneeCreation);
-                            $oDatetime2     = date_create();
-                            $oInterval      = date_diff($oDatetime1, $oDatetime2);
-
-                            //if création moins de 720 jours -> demande de coordonnées puis message dédié
-                            if ($oInterval->days < 720) {
-                                $this->projects_status_history->addStatus(-2, projects_status::PAS_3_BILANS, $this->projects->id_project);
-                                header('Location: ' . $this->lurl . '/depot_de_dossier/prospect/' . $this->projects->hash);
-                                die;
-                            } //ifelse création entre 720 et 1080 jours -> question 3 bilans
-                            elseif ($oInterval->days > 720 && $oInterval->days < 1080) {
-                                $this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_2, $this->projects->id_project);
-                                header('Location: ' . $this->lurl . '/depot_de_dossier/etape2/' . $this->projects->hash . '/1080');
-                                die;
-                            } else {
-                                sleep(1);
-                                $this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_2, $this->projects->id_project);
-                                header('Location: ' . $this->lurl . '/depot_de_dossier/etape2/' . $this->projects->hash);
-                                die;
-                            }
-                            // end eligible
-                            break;
-                        default:
-                            $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                            header('Location: ' . $this->lurl . '/depot_de_dossier/nok');
-                            die;
-                            break;
-                    }
+                if ($this->preteurCreateEmprunteur == true && $this->clients->type == 2) {
+                    $this->companies_details->update();
                 } else {
-                    // ajout du statut dans l'historique
-                    $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-
-                    //on envoie email erreur
-                    $this->emailAltares($this->projects->id_project, $this->projects->title);
-
-                    header('Location: ' . $this->lurl . '/depot_de_dossier/nok');
-                    die;
+                    $this->companies_details->create();
                 }
-            }
+
+                // On génère 5 lignes dans la base pour les bilans
+                $lesdates = array(date('Y') - 3, date('Y') - 2, date('Y') - 1, date('Y'), date('Y') + 1);
+                for ($i = 0; $i < 5; $i++) {
+                    $this->companies_bilans->id_company = $this->companies->id_company;
+                    $this->companies_bilans->date       = $lesdates[$i];
+                    $this->companies_bilans->create();
+                }
+
+                // les 3 dernieres vrais années (actif/passif)
+                $date    = array();
+                $date[1] = (date('Y') - 1);
+                $date[2] = (date('Y') - 2);
+                $date[3] = (date('Y') - 3);
+
+                foreach ($date as $k => $d) {
+                    $this->companies_actif_passif->annee      = $d;
+                    $this->companies_actif_passif->ordre      = $k;
+                    $this->companies_actif_passif->id_company = $this->companies->id_company;
+                    $this->companies_actif_passif->create();
+                }
+
+                $posteActifList         = array();
+                $postePassifList        = array();
+                $syntheseFinanciereInfo = array();
+                $syntheseFinanciereList = array();
+                $derniersBilans         = array();
+
+                if (isset($result->myInfo->bilans) && is_array($result->myInfo->bilans)) {
+                    $i = 0;
+                    foreach ($result->myInfo->bilans as $b) {
+                        $annee                                 = substr($b->bilan->dateClotureN, 0, 4);
+                        $posteActifList[$annee]                = $b->bilanRetraiteInfo->posteActifList;
+                        $postePassifList[$annee]               = $b->bilanRetraiteInfo->postePassifList;
+                        $syntheseFinanciereInfo[$annee]        = $b->syntheseFinanciereInfo;
+                        $syntheseFinanciereList[$annee]        = $b->syntheseFinanciereInfo->syntheseFinanciereList;
+                        $soldeIntermediaireGestionInfo[$annee] = $b->soldeIntermediaireGestionInfo->SIGList;
+                        $investissement[$annee]                = $b->bilan->posteList[0]->valeur;
+                        $derniersBilans[$i++]                  = $annee;
+                    }
+                }
+
+                $ldate = $lesdates;
+                // on génère un tableau avec les données
+                for ($i = 0; $i < 5; $i++) { // on parcourt les 5 années
+                    for ($a = 0; $a < 3; $a++) { // on parcourt les 3 dernieres années
+                        // si y a une année du bilan qui correxpond a une année du tableau
+                        if ($derniersBilans[$a] == $ldate[$i]) {
+                            // On recup les données de cette année
+                            $montant1 = $posteActifList[$ldate[$i]][1]->montant;
+                            $montant2 = $posteActifList[$ldate[$i]][2]->montant;
+                            $montant3 = $posteActifList[$ldate[$i]][3]->montant;
+                            $montant  = $montant1 + $montant2 + $montant3;
+
+                            $this->companies_bilans->get($this->companies->id_company, 'date = ' . $ldate[$i] . ' AND id_company');
+                            $this->companies_bilans->ca                          = $syntheseFinanciereList[$ldate[$i]][0]->montantN;
+                            $this->companies_bilans->resultat_exploitation       = $syntheseFinanciereList[$ldate[$i]][1]->montantN;
+                            $this->companies_bilans->resultat_brute_exploitation = $soldeIntermediaireGestionInfo[$ldate[$i]][9]->montantN;
+                            $this->companies_bilans->investissements             = $investissement[$ldate[$i]];
+                            $this->companies_bilans->update();
+                        }
+                    }
+                }
+
+                foreach ($derniersBilans as $annees) {
+                    foreach ($posteActifList[$annees] as $a) {
+                        $ActifPassif[$annees][$a->posteCle] = $a->montant;
+                    }
+                    foreach ($postePassifList[$annees] as $p) {
+                        $ActifPassif[$annees][$p->posteCle] = $p->montant;
+                    }
+                }
+
+                $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '"', 'annee DESC');
+                $i                             = 0;
+                foreach ($this->lCompanies_actif_passif as $k => $ap) {
+                    if ($this->companies_actif_passif->get($ap['annee'], 'id_company = ' . $ap['id_company'] . ' AND annee')) {
+                        // Actif
+                        $this->companies_actif_passif->immobilisations_corporelles   = $ActifPassif[$ap['annee']]['posteBR_IMCOR'];
+                        $this->companies_actif_passif->immobilisations_incorporelles = $ActifPassif[$ap['annee']]['posteBR_IMMINC'];
+                        $this->companies_actif_passif->immobilisations_financieres   = $ActifPassif[$ap['annee']]['posteBR_IMFI'];
+                        $this->companies_actif_passif->stocks                        = $ActifPassif[$ap['annee']]['posteBR_STO'];
+                        //creances_clients = Avances et acomptes + creances clients + autre creances et cca + autre creances hors exploitation
+                        $this->companies_actif_passif->creances_clients                = $ActifPassif[$ap['annee']]['posteBR_BV'] + $ActifPassif[$ap['annee']]['posteBR_BX'] + $ActifPassif[$ap['annee']]['posteBR_ACCCA'] + $ActifPassif[$ap['annee']]['posteBR_ACHE_'];
+                        $this->companies_actif_passif->disponibilites                  = $ActifPassif[$ap['annee']]['posteBR_CF'];
+                        $this->companies_actif_passif->valeurs_mobilieres_de_placement = $ActifPassif[$ap['annee']]['posteBR_CD'];
+
+                        // passif
+                        // capitaux_propres = capitaux propres + non valeurs
+                        $this->companies_actif_passif->capitaux_propres = $ActifPassif[$ap['annee']]['posteBR_CPRO'] + $ActifPassif[$ap['annee']]['posteBR_NONVAL'];
+                        // provisions_pour_risques_et_charges = Provisions pour risques et charges + Provisions actif circulant
+                        $this->companies_actif_passif->provisions_pour_risques_et_charges = $ActifPassif[$ap['annee']]['posteBR_PROVRC'] + $ActifPassif[$ap['annee']]['posteBR_PROAC'];
+                        $this->companies_actif_passif->amortissement_sur_immo             = $ActifPassif[$ap['annee']]['posteBR_AMPROVIMMO'];
+                        // dettes_financieres = Emprunts + Dettes groupe et associés + Concours bancaires courants
+                        $this->companies_actif_passif->dettes_financieres = $ActifPassif[$ap['annee']]['posteBR_EMP'] + $ActifPassif[$ap['annee']]['posteBR_VI'] + $ActifPassif[$ap['annee']]['posteBR_EH'];
+
+                        // dettes_fournisseurs = Avances et Acomptes clients + Dettes fournisseurs
+                        $this->companies_actif_passif->dettes_fournisseurs = $ActifPassif[$ap['annee']]['posteBR_DW'] + $ActifPassif[$ap['annee']]['posteBR_DX'];
+
+                        // autres_dettes = autres dettes exploi + Dettes sur immos et comptes rattachés + autres dettes hors exploi
+                        $this->companies_actif_passif->autres_dettes = $ActifPassif[$ap['annee']]['posteBR_AUTDETTEXPL'] + $ActifPassif[$ap['annee']]['posteBR_DZ'] + $ActifPassif[$ap['annee']]['posteBR_AUTDETTHEXPL'];
+                        $this->companies_actif_passif->update();
+                    }
+                    $i++;
+                }
+                $this->companies->update();
+
+                //check on creation date
+                $oDatetime1 = date_create_from_format('Y-m-d', substr($oIdentite->dateCreation, 0, 10));
+                $oDatetime2 = date_create();
+                $oInterval  = date_diff($oDatetime1, $oDatetime2);
+
+                //if création moins de 720 jours -> demande de coordonnées puis message dédié
+                if ($oInterval->days < 720) {
+                    $this->redirectEtape1('/depot_de_dossier/prospect/' . $this->projects->hash, projects_status::PAS_3_BILANS);
+                } elseif ($oInterval->days > 720 && $oInterval->days < 1080) {
+                    // question 3 bilans
+                    $this->redirectEtape1('/depot_de_dossier/etape2/' . $this->projects->hash . '/1080', projects_status::COMPLETUDE_ETAPE_2);
+                }
+
+                $this->redirectEtape1('/depot_de_dossier/etape2/' . $this->projects->hash, projects_status::COMPLETUDE_ETAPE_2);
+                break;
         }
+    }
+
+    private function redirectEtape1($sPage, $iProjectStatus)
+    {
+        $this->projects_status_history->addStatus(-2, $iProjectStatus, $this->projects->id_project);
+        unset($_SESSION['forms']['depot-de-dossier']);
+        header('Location: ' . $this->lurl . $sPage);
+        die;
     }
 
     public function _etape2()
