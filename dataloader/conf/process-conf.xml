@@ -1,0 +1,103 @@
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN" "http://www.springframework.org/dtd/spring-beans.dtd">
+<beans>
+    <bean id="preteurs" class="com.salesforce.dataloader.process.ProcessRunner" singleton="false">
+        <description>Inserts Lenders from CSV file.</description>
+        <property name="name" value="preteurs"/>
+        <property name="configOverrideMap">
+            <map>
+                <entry key="sfdc.debugMessages" value="false"/>
+                <entry key="sfdc.debugMessagesFile" value="/srv/sites/unilend/log/salesforce_lenders.log"/>
+                <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
+                <entry key="sfdc.username" value="arnaudschwartz@unilend.fr"/>
+                <entry key="sfdc.password" value="dec018d494533cf58716151de8f5eead000c8182ccd2f2cbe33b2059727a3b4386c1f3f3a68e5d6e"/>
+                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"></entry>
+                <entry key="sfdc.timeoutSecs" value="540"/>
+                <entry key="sfdc.loadBatchSize" value="200"/>
+                <entry key="sfdc.entity" value="Contact"/>
+                <entry key="sfdc.externalIdField" value="ID_Client__c"/>
+                <entry key="sfdc.insertNulls" value="true"/>
+                <entry key="process.operation" value="upsert"/>
+                <entry key="process.mappingFile" value="/srv/sites/unilend/dataloader/map/Mapping_Lenders.sdl"/>
+                <entry key="process.outputError" value="/srv/sites/unilend/log/errorLenders.csv"/>
+                <entry key="dataAccess.name" value="/srv/sites/unilend/dataloader/extract/preteurs.csv" />
+                <entry key="dataAccess.type" value="csvRead" />
+                <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="companies" class="com.salesforce.dataloader.process.ProcessRunner" singleton="false">
+        <description>Inserts Companies from CSV file.</description>
+        <property name="name" value="companies"/>
+        <property name="configOverrideMap">
+            <map>
+                <entry key="sfdc.debugMessages" value="false"/>
+                <entry key="sfdc.debugMessagesFile" value="/srv/sites/unilend/log/salesforce_Companies.log"/>
+                <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
+                <entry key="sfdc.username" value="arnaudschwartz@unilend.fr"/>
+                <entry key="sfdc.password" value="dec018d494533cf58716151de8f5eead000c8182ccd2f2cbe33b2059727a3b4386c1f3f3a68e5d6e"/>
+                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"></entry>
+                <entry key="sfdc.timeoutSecs" value="540"/>
+                <entry key="sfdc.loadBatchSize" value="200"/>
+                <entry key="sfdc.entity" value="Account"/>
+                <entry key="sfdc.insertNulls" value="true"/>
+                <entry key="sfdc.externalIdField" value="ID_Emprunteur__c"/>
+                <entry key="process.operation" value="upsert"/>
+                <entry key="process.mappingFile" value="/srv/sites/unilend/dataloader/map/Mapping_Company.sdl"/>
+                <entry key="process.outputError" value="/srv/sites/unilend/log/errorCompanies.csv"/>
+                <entry key="dataAccess.name" value="/srv/sites/unilend/dataloader/extract/companies.csv" />
+                <entry key="dataAccess.type" value="csvRead" />
+                <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="emprunteurs" class="com.salesforce.dataloader.process.ProcessRunner" singleton="false">
+        <description>Inserts Borrowers from CSV file.</description>
+        <property name="name" value="emprunteurs"/>
+        <property name="configOverrideMap">
+            <map>
+                <entry key="sfdc.debugMessages" value="false"/>
+                <entry key="sfdc.debugMessagesFile" value="/srv/sites/unilend/log/salesforce_Borrowers.log"/>
+                <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
+                <entry key="sfdc.username" value="arnaudschwartz@unilend.fr"/>
+                <entry key="sfdc.password" value="dec018d494533cf58716151de8f5eead000c8182ccd2f2cbe33b2059727a3b4386c1f3f3a68e5d6e"/>
+                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"></entry>
+                <entry key="sfdc.timeoutSecs" value="540"/>
+                <entry key="sfdc.loadBatchSize" value="200"/>
+                <entry key="sfdc.entity" value="Contact"/>
+                <entry key="sfdc.insertNulls" value="true"/>
+                <entry key="sfdc.externalIdField" value="ID_Client__c"/>
+                <entry key="process.operation" value="upsert"/>
+                <entry key="process.mappingFile" value="/srv/sites/unilend/dataloader/map/Mapping_Borrowers.sdl"/>
+                <entry key="process.outputError" value="/srv/sites/unilend/log/errorBorrowers.csv"/>
+                <entry key="dataAccess.name" value="/srv/sites/unilend/dataloader/extract/emprunteurs.csv" />
+                <entry key="dataAccess.type" value="csvRead" />
+                <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
+            </map>
+        </property>
+    </bean>
+    <bean id="projects" class="com.salesforce.dataloader.process.ProcessRunner" singleton="false">
+        <description>Inserts Projects from CSV file.</description>
+        <property name="name" value="projects"/>
+        <property name="configOverrideMap">
+            <map>
+                <entry key="sfdc.debugMessages" value="false"/>
+                <entry key="sfdc.debugMessagesFile" value="/srv/sites/unilend/log/salesforce_Projects.log"/>
+                <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
+                <entry key="sfdc.username" value="arnaudschwartz@unilend.fr"/>
+                <entry key="sfdc.password" value="dec018d494533cf58716151de8f5eead000c8182ccd2f2cbe33b2059727a3b4386c1f3f3a68e5d6e"/>
+                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"></entry>
+                <entry key="sfdc.timeoutSecs" value="540"/>
+                <entry key="sfdc.loadBatchSize" value="200"/>
+                <entry key="sfdc.entity" value="Dossier__c"/>
+                <entry key="sfdc.insertNulls" value="true"/>
+                <entry key="sfdc.externalIdField" value="Numero_Dossier_BO__c"/>
+                <entry key="process.operation" value="upsert"/>
+                <entry key="process.mappingFile" value="/srv/sites/unilend/dataloader/map/Mapping_Projects.sdl"/>
+                <entry key="process.outputError" value="/srv/sites/unilend/log/errorProjects.csv"/>
+                <entry key="dataAccess.name" value="/srv/sites/unilend/dataloader/extract/projects.csv" />
+                <entry key="dataAccess.type" value="csvRead" />
+                <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
+            </map>
+        </property>
+    </bean>
+</beans>

@@ -84,7 +84,7 @@ class bdd
 
         mysql_query("SET NAMES 'utf8'");
 
-        if (! $this->connect_id) {
+        if (!$this->connect_id) {
 
             $this->error();
 
@@ -108,7 +108,7 @@ class bdd
             $connect_id = $this->connect_id;
         }
 
-        if (! mysql_select_db($bdd, $connect_id)) {
+        if (!mysql_select_db($bdd, $connect_id)) {
             $this->error();
             return false;
         }
@@ -120,7 +120,7 @@ class bdd
             $connect_id = $this->connect_id;
         }
 
-        if (! @mysql_close($connect_id)) {
+        if (!@mysql_close($connect_id)) {
             $msg = 'Erreur lors de la fermeture de la connexion !';
             $this->error($msg);
 
@@ -143,7 +143,7 @@ class bdd
 
         $this->ressource = @mysql_query($requete, $connect_id);
 
-        if ($this->option['BDD_PANIC'] == true && $_SERVER['HTTP_HOST'] == 'fr.nuxe.com') {
+        if ($this->option['BDD_PANIC'] == true && (true == isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] == 'fr.nuxe.com')) {
             $stop = microtime(true);
             $time = ($stop - $start);
 
@@ -152,7 +152,7 @@ class bdd
             }
         }
 
-        if (! $this->ressource) {
+        if (!$this->ressource) {
 
             $msg = 'Erreur lors de l\'execution de la requete "<i>' . $this->requete . '</i>"';
             $this->error($msg);
@@ -171,9 +171,9 @@ class bdd
 
         $array = @mysql_fetch_array($ressource);
 
-        if (! is_resource($ressource)) {
+        if (!is_resource($ressource)) {
             $this->error('L\'argument passé à la fonction fetch_array() n\'est pas une ressource !');
-        } elseif (! $array) {
+        } elseif (!$array) {
         } else {
             return $array;
         }
@@ -187,7 +187,7 @@ class bdd
 
         $this->affected_rows = @mysql_affected_rows($connect_id);
 
-        if (! is_resource($connect_id)) {
+        if (!is_resource($connect_id)) {
             $this->error('L\'argument passé à la fonction affected_rows() n\'est pas une ressource valide !');
         } elseif ($this->affected_rows == -1) {
 
@@ -205,7 +205,7 @@ class bdd
 
         $this->num_rows = @mysql_num_rows($ressource);
 
-        if (! is_resource($ressource)) {
+        if (!is_resource($ressource)) {
             $this->error('L\'argument passé à la fonction num_rows() n\'est pas une ressource valide !');
         } else {
             return $this->num_rows;
@@ -235,9 +235,9 @@ class bdd
 
         $array = @mysql_fetch_assoc($ressource);
 
-        if (! is_resource($ressource)) {
+        if (!is_resource($ressource)) {
             $this->error('L\'argument passé à la fonction fetch_assoc() n\'est pas une ressource !');
-        } elseif (! $array) {
+        } elseif (!$array) {
         } else {
             return $array;
         }
@@ -251,7 +251,7 @@ class bdd
 
         $last_insert_id = @mysql_insert_id($connect_id);
 
-        if (! $last_insert_id) {
+        if (!$last_insert_id) {
             $this->error();
         } elseif ($last_insert_id == 0) {
             $this->error('Aucun ID généré lors de la dernière requête !');
@@ -452,5 +452,10 @@ class bdd
             $result[] = $record;
         }
         return $result;
+    }
+
+    function free_result($rSql)
+    {
+        mysql_free_result($rSql);
     }
 }
