@@ -46,9 +46,10 @@ class Controller
 
     public function __construct(&$command, $config, $app)
     {
-        define('ENVIRONMENT', $config['env']);
+        if(false === defined('ENVIRONMENT')) {
+            define('ENVIRONMENT', $config['env']);
+        }
 
-        $this->initVendor();
         $this->initUnilendAutoload();
 
         //Variables de session pour la fenetre de debug
@@ -758,11 +759,6 @@ class Controller
         if ($this->enableCache) {
             $this->cacheCurrentPage = true;
         }
-    }
-
-    public function initVendor()
-    {
-        require_once __DIR__ . '/../vendor/autoload.php';
     }
 
     public function initUnilendAutoload()

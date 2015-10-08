@@ -157,6 +157,8 @@ class pdfController extends bootstrap
                 $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/styleClaims.css');
                 break;
             case 'operations':
+                $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/style.css');
+                $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/style-edit.css');
                 $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/styleOperations.css');
                 break;
             case 'dec_pret':
@@ -1169,7 +1171,6 @@ class pdfController extends bootstrap
     private function GenerateOperationsHtml($sFiltreOp)
     {
         if (isset($sFiltreOp)) {
-
             $this->wallets_lines    = $this->loadData('wallets_lines');
             $this->bids             = $this->loadData('bids');
             $this->oLoans           = $this->loadData('loans');
