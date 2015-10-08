@@ -97,7 +97,7 @@ class pdfController extends bootstrap
                 date("Y-m-d", filemtime($sPathPdf)) != date('Y-m-d')
             ) {
                 unlink($sPathPdf);
-                $this->oLogger->addRecord('info', 'File : ' . $sPathPdf . ' deleting.', array(__FILE__ . ' on line ' . __LINE__));
+                $this->oLogger->addRecord(ULogger::INFO, 'File : ' . $sPathPdf . ' deleting.', array(__FILE__ . ' on line ' . __LINE__));
             }
             return true;
         }
@@ -170,7 +170,7 @@ class pdfController extends bootstrap
 
         $iTimeEndPdf = microtime(true) - $iTimeStartPdf;
 
-        $this->oLogger->addRecord('info', 'End generation of ' . $sTypePdf . ' pdf in ' . round($iTimeEndPdf, 2),
+        $this->oLogger->addRecord(ULogger::INFO, 'End generation of ' . $sTypePdf . ' pdf in ' . round($iTimeEndPdf, 2),
             array(__FILE__ . ' on line ' . __LINE__));
     }
 
@@ -186,7 +186,7 @@ class pdfController extends bootstrap
         header("Content-disposition: attachment; filename=" . $sNamePdf . ".pdf");
         header("Content-Type: application/force-download");
         if (!readfile($sPathPdf)) {
-            $this->oLogger->addRecord('debug', 'File : ' . $sPathPdf . ' not readable.',
+            $this->oLogger->addRecord(ULogger::DEBUG, 'File : ' . $sPathPdf . ' not readable.',
                 array(__FILE__ . ' on line ' . __LINE__));
         }
     }
