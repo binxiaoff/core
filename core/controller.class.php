@@ -44,6 +44,8 @@ class Controller
     var $included_js;
     var $included_css;
 
+    public $current_template = '';
+
     public function __construct(&$command, $config, $app)
     {
         if(false === defined('ENVIRONMENT')) {
@@ -256,12 +258,8 @@ class Controller
     //Gere l'affichage du pied de page
     public function fireFooter($footer = '', $morestats = '')
     {
-        if ($footer == '') {
-            $footer = $this->footer;
-        }
-        if ($footer == '') {
-            $footer = 'footer';
-        }
+        $footer = ('' == $footer && isset($this->footer)) ? $this->footer : 'footer';
+
         if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $footer . '.php')) {
             call_user_func(array(&$this, '_error'), 'footer not found : views/' . $footer . '.php');
         } else {
