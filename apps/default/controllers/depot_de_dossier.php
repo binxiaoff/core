@@ -49,16 +49,20 @@ class depot_de_dossierController extends bootstrap
 
     public function _etape1()
     {
-        $this->checkClient();
+//        $this->checkClient();
 
         $this->page = 1;
-
-        $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
         if (false === isset($_SESSION['forms']['depot-de-dossier']['values'])) {
             header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
             die;
         }
+
+        $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
+
+        $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-etape-2'];
+        $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-2'];
+        $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-etape-2'];
 
         $iAmount = $_SESSION['forms']['depot-de-dossier']['values']['montant'];
         $iSIREN  = $_SESSION['forms']['depot-de-dossier']['values']['siren'];
@@ -87,8 +91,8 @@ class depot_de_dossierController extends bootstrap
         $this->clients->slug_origine         = $this->tree->slug;
 
         if ($this->preteurCreateEmprunteur == false) {
-            $this->clients->source  = $_SESSION['utm_source'];
-            $this->clients->source2 = $_SESSION['utm_source2'];
+            $this->clients->source               = $_SESSION['utm_source'];
+            $this->clients->source2              = $_SESSION['utm_source2'];
         }
 
         if (false === is_null($sEmail)) {
@@ -182,38 +186,35 @@ class depot_de_dossierController extends bootstrap
                 $this->clients_adresses->id_client = $this->clients->id_client;
                 $this->clients_adresses->create();
 
-                $oIdentite = $result->myInfo->identite;
-                $oScore    = $result->myInfo->score;
-                $oSiege    = $result->myInfo->siege;
+                $oIdentity                 = $result->myInfo->identite;
+                $oScore                    = $result->myInfo->score;
+                $sLastAccountStatementDate = substr($oIdentity->dateDernierBilan, 0, 10);
+                $aLastAccountStatementDate = explode('-', $sLastAccountStatementDate);
 
-                //TODO review logic of saving data
-                //maybe create an altares libarary so
-                $this->companies->name                          = $oIdentite->raisonSociale;
-                $this->companies->forme                         = $oIdentite->formeJuridique;
-                $this->companies->capital                       = $oIdentite->capital;
-                $this->companies->code_naf                      = $oIdentite->naf5EntreCode;
-                $this->companies->libelle_naf                   = $oIdentite->naf5EntreLibelle;
-                $this->companies->adresse1                      = $oIdentite->rue;
-                $this->companies->city                          = $oIdentite->ville;
-                $this->companies->zip                           = $oIdentite->codePostal;
-                $this->companies->phone                         = str_replace(' ', '', $oSiege->telephone);
-                $this->companies->rcs                           = $oIdentite->rcs;
-                $this->companies->siret                         = $oIdentite->siret;
-                $this->companies->status_adresse_correspondance = '1';
-                $this->companies->date_creation                 = substr($oIdentite->dateCreation, 0, 10);
-                $this->companies->altares_eligibility           = $result->myInfo->eligibility;
-                $this->companies->altares_niveauRisque          = $oScore->niveauRisque;
-                $this->companies->altares_scoreVingt            = $oScore->scoreVingt;
-                $this->companies->score_sectoriel_altatres      = $oScore->scoreSectorielVingt;
-                $this->companies->score_sectoriel_xerfirisk     = $oScore->scoreSectorielCent;
-                $this->companies->altares_dateValeur            = substr($oScore->dateValeur, 0, 10);
-
-                $dateDernierBilanString                             = substr($oIdentite->dateDernierBilan, 0, 10);
-                $dateDernierBilan                                   = explode('-', $dateDernierBilanString);
-                $this->companies_details->date_dernier_bilan        = $dateDernierBilanString;
-                $this->companies_details->date_dernier_bilan_mois   = $dateDernierBilan[1];
-                $this->companies_details->date_dernier_bilan_annee  = $dateDernierBilan[0];
-                $this->companies_details->date_dernier_bilan_publie = $dateDernierBilanString;
+                // @todo review logic of saving data - maybe create an altares libarary so
+                $this->companies->name                              = $oIdentity->raisonSociale;
+                $this->companies->forme                             = $oIdentity->formeJuridique;
+                $this->companies->capital                           = $oIdentity->capital;
+                $this->companies->code_naf                          = $oIdentity->naf5EntreCode;
+                $this->companies->libelle_naf                       = $oIdentity->naf5EntreLibelle;
+                $this->companies->adresse1                          = $oIdentity->rue;
+                $this->companies->city                              = $oIdentity->ville;
+                $this->companies->zip                               = $oIdentity->codePostal;
+                $this->companies->phone                             = str_replace(' ', '', $result->myInfo->siege->telephone);
+                $this->companies->rcs                               = $oIdentity->rcs;
+                $this->companies->siret                             = $oIdentity->siret;
+                $this->companies->status_adresse_correspondance     = '1';
+                $this->companies->date_creation                     = substr($oIdentity->dateCreation, 0, 10);
+                $this->companies->altares_eligibility               = $result->myInfo->eligibility;
+                $this->companies->altares_niveauRisque              = $oScore->niveauRisque;
+                $this->companies->altares_scoreVingt                = $oScore->scoreVingt;
+                $this->companies->score_sectoriel_altatres          = $oScore->scoreSectorielVingt;
+                $this->companies->score_sectoriel_xerfirisk         = $oScore->scoreSectorielCent;
+                $this->companies->altares_dateValeur                = substr($oScore->dateValeur, 0, 10);
+                $this->companies_details->date_dernier_bilan        = $sLastAccountStatementDate;
+                $this->companies_details->date_dernier_bilan_mois   = $aLastAccountStatementDate[1];
+                $this->companies_details->date_dernier_bilan_annee  = $aLastAccountStatementDate[0];
+                $this->companies_details->date_dernier_bilan_publie = $sLastAccountStatementDate;
                 $this->companies_details->id_company                = $this->companies->id_company;
 
                 if ($this->preteurCreateEmprunteur == true && $this->clients->type == 2) {
@@ -329,7 +330,7 @@ class depot_de_dossierController extends bootstrap
                 $this->companies->update();
 
                 //check on creation date
-                $oDatetime1 = date_create_from_format('Y-m-d', substr($oIdentite->dateCreation, 0, 10));
+                $oDatetime1 = date_create_from_format('Y-m-d', substr($oIdentity->dateCreation, 0, 10));
                 $oDatetime2 = date_create();
                 $oInterval  = date_diff($oDatetime1, $oDatetime2);
 
@@ -356,16 +357,13 @@ class depot_de_dossierController extends bootstrap
 
     public function _etape2()
     {
-        $this->checkClient();
+//        $this->checkClient();
 
         $this->page = 2;
 
-        $this->lng['etape1'] = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
-        $this->lng['etape2'] = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
-
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-etape-2'];
-        $this->meta_description = $this->lng['depot-de-dossier-header']['meta-title-etape-2'];
-        $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-title-etape-2'];
+        $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-2'];
+        $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-etape-2'];
 
         $this->settings->get('Lien conditions generales depot dossier', 'type');
         $this->lienConditionsGenerales = $this->settings->value;
@@ -379,300 +377,292 @@ class depot_de_dossierController extends bootstrap
         $this->companies->get($this->projects->id_company);
         $this->clients->get($this->companies->id_client_owner);
 
-        if (is_numeric($this->projects->id_prescripteur)) {
-            $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
-        }
-
-        if ($this->preteurCreateEmprunteur === true && $this->clients->status_depot_dossier >= 1) {
-            $bConditionOk = true;
-
-        } elseif (intval($this->clients->status) === 0 && $this->clients->status_depot_dossier >= 1) {
-            $bConditionOk = true;
-        } else {
+        if (
+            ($this->preteurCreateEmprunteur === false || $this->clients->status_depot_dossier == 0)
+            && ($this->clients->status >= 1 || $this->clients->status_depot_dossier == 0)
+        ) {
             header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
             die;
         }
 
-        // TODO decide how data will be provided for the function
-        //data only for development purposes. if data comes from settings or from a special table needs to be decided
-        $aMinMaxDuree = array(array('min' => 0, 'max' => 50000, 'heures' => 96), array('min' => 50001, 'max' => 80000, 'heures' => 192), array('min' => 80001, 'max' => 120000, 'heures' => 264), array('min' => 120001, 'max' => 1000000, 'heures' => 5 * 24));
+        if (is_numeric($this->projects->id_prescripteur)) {
+            $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
+        }
 
-        foreach ($aMinMaxDuree as $line) {
-            if ($line['min'] <= $this->projects->amount && $this->projects->amount <= $line['max']) {
-                $this->iDuree = ($line['heures'] / 24);
-            } else {
-                //arbitrary choice
-                $this->iDuree = 10;
+        // @todo data must be dynamic and configurable
+        $this->settings->get('Durée moyenne financement', 'type');
+
+        foreach (json_decode($this->settings->value) as $aAverageFundingDuration) {
+            if ($this->projects->amount >= $aAverageFundingDuration->min && $this->projects->amount <= $aAverageFundingDuration->max) {
+                $this->iAverageFundingDuration = $aAverageFundingDuration->heures / 24;
             }
         }
 
-        if ($bConditionOk === true) {
-            // Form depot de dossier etape 2
-            if (isset($_POST['send_form_depot_dossier'])) {
+        if (is_null($this->iAverageFundingDuration)) {
+            // @todo arbitrary choice
+            $this->iAverageFundingDuration = 360;
+        }
 
-                $bForm_ok = true;
+        // Form depot de dossier etape 2
+        if (isset($_POST['send_form_depot_dossier'])) {
+            $bForm_ok = true;
 
-                if (!isset($_POST['sex_representative']) || $_POST['sex_representative'] == '') {
+            if (!isset($_POST['sex_representative']) || $_POST['sex_representative'] == '') {
+                $bForm_ok = false;
+            }
+            if (!isset($_POST['nom_representative']) || $_POST['nom_representative'] == '' || $_POST['nom_representative'] == $this->lng['etape2']['nom']) {
+                $bForm_ok = false;
+            }
+            if (!isset($_POST['prenom_representative']) || $_POST['prenom_representative'] == '' || $_POST['prenom_representative'] == $this->lng['etape2']['prenom']) {
+                $bForm_ok = false;
+            }
+            if (!isset($_POST['portable_representative']) ||
+                $_POST['portable_representative'] == '' ||
+                $_POST['portable_representative'] == $this->lng['etape2']['telephone'] ||
+                strlen($_POST['portable_representative']) < 9 ||
+                strlen($_POST['portable_representative']) > 14
+            ) {
+                $bForm_ok = false;
+            }
+            if (!isset($_POST['fonction_representative']) || $_POST['fonction_representative'] == '' || $_POST['fonction_representative'] == $this->lng['etape2']['fonction']) {
+                $bForm_ok = false;
+            }
+            if (!isset($_POST['email_representative']) ||
+                $_POST['email_representative'] == '' ||
+                $_POST['email_representative'] == $this->lng['etape2']['email'] ||
+                $this->ficelle->isEmail($_POST['email_representative']) == false ||
+                $_POST['email_representative'] != $_POST['conf_email_representative']
+            ) {
+                $bForm_ok = false;
+            }
+
+            $this->clients->civilite = $_POST['sex_representative'];
+            $this->clients->nom      = $_POST['nom_representative'];
+            $this->clients->prenom   = $_POST['prenom_representative'];
+            $this->clients->fonction = $_POST['fonction_representative'];
+            $this->clients->mobile   = $_POST['portable_representative'];
+            $this->clients->email    = $_POST['email_representative'];
+
+            if (!isset($_POST['raison-sociale']) || $_POST['raison-sociale'] == '' || $_POST['raison-sociale'] == $this->lng['etape2']['raison-sociale']) {
+                $bForm_ok = false;
+            }
+            $this->companies->name = $_POST['raison-sociale'];
+
+            // if it si not a gerant, its a prescripteur so the form needs to be validated.`
+            // CGU are only visible if its a gerant, so it is checked in the else.
+            if (isset($_POST['gerant']) && $_POST['gerant'] == 3) {
+                if (!isset($_POST['gender_prescripteur']) || $_POST['gender_prescripteur'] == '') {
                     $bForm_ok = false;
                 }
-                if (!isset($_POST['nom_representative']) || $_POST['nom_representative'] == '' || $_POST['nom_representative'] == $this->lng['etape2']['nom']) {
+                if (!isset($_POST['prescripteur_nom']) || $_POST['prescripteur_nom'] == '' || $_POST['prescripteur_nom'] == $this->lng['etape2']['nom']) {
                     $bForm_ok = false;
                 }
-                if (!isset($_POST['prenom_representative']) || $_POST['prenom_representative'] == '' || $_POST['prenom_representative'] == $this->lng['etape2']['prenom']) {
+                if (!isset($_POST['prescripteur_prenom']) || $_POST['prescripteur_prenom'] == '' || $_POST['prescripteur_prenom'] == $this->lng['etape2']['prenom']) {
                     $bForm_ok = false;
                 }
-                if (!isset($_POST['portable_representative']) ||
-                    $_POST['portable_representative'] == '' ||
-                    $_POST['portable_representative'] == $this->lng['etape2']['telephone'] ||
-                    strlen($_POST['portable_representative']) < 9 ||
-                    strlen($_POST['portable_representative']) > 14
+
+                if (!isset($_POST['prescripteur_email']) ||
+                    $_POST['prescripteur_email'] == '' ||
+                    $_POST['prescripteur_email'] == $this->lng['etape2']['email'] ||
+                    $this->ficelle->isEmail($_POST['prescripteur_email']) == false ||
+                    $_POST['prescripteur_email'] != $_POST['prescripteur_conf_email'] ||
+                    $this->clients->existEmail($_POST['prescripteur_email']) == false
                 ) {
                     $bForm_ok = false;
                 }
-                if (!isset($_POST['fonction_representative']) || $_POST['fonction_representative'] == '' || $_POST['fonction_representative'] == $this->lng['etape2']['fonction']) {
-                    $bForm_ok = false;
-                }
-                if (!isset($_POST['email_representative']) ||
-                    $_POST['email_representative'] == '' ||
-                    $_POST['email_representative'] == $this->lng['etape2']['email'] ||
-                    $this->ficelle->isEmail($_POST['email_representative']) == false ||
-                    $_POST['email_representative'] != $_POST['conf_email_representative']
+
+                if (!isset($_POST['prescripteur_phone']) ||
+                    $_POST['prescripteur_phone'] == '' ||
+                    $_POST['prescripteur_phone'] == $this->lng['etape2']['telephone'] ||
+                    strlen($_POST['prescripteur_phone']) < 9 ||
+                    strlen($_POST['prescripteur_phone']) > 14
                 ) {
                     $bForm_ok = false;
                 }
 
-                $this->clients->civilite = $_POST['sex_representative'];
-                $this->clients->nom      = $_POST['nom_representative'];
-                $this->clients->prenom   = $_POST['prenom_representative'];
-                $this->clients->fonction = $_POST['fonction_representative'];
-                $this->clients->mobile   = $_POST['portable_representative'];
-                $this->clients->email    = $_POST['email_representative'];
-
-                if (!isset($_POST['raison-sociale']) || $_POST['raison-sociale'] == '' || $_POST['raison-sociale'] == $this->lng['etape2']['raison-sociale']) {
+                $this->prescripteurs->civilite = $_POST['gender_prescripteur'];
+                $this->prescripteurs->nom      = $_POST['prescripteur_nom'];
+                $this->prescripteurs->prenom   = $_POST['prescripteur_prenom'];
+                $this->prescripteurs->mobile   = $_POST['prescripteur_phone'];
+                $this->prescripteurs->email    = $_POST['prescripteur_email'];
+            } else {
+                if (!isset($_POST['accept-cgu']) || $_POST['accept-cgu'] != true) {
                     $bForm_ok = false;
                 }
-                $this->companies->name = $_POST['raison-sociale'];
+            }
 
-                // if it si not a gerant, its a prescripteur so the form needs to be validated.`
-                // CGU are only visible if its a gerant, so it is checked in the else.
-                if (isset($_POST['gerant']) && $_POST['gerant'] == 3) {
-                    if (!isset($_POST['gender_prescripteur']) || $_POST['gender_prescripteur'] == '') {
-                        $bForm_ok = false;
-                    }
-                    if (!isset($_POST['prescripteur_nom']) || $_POST['prescripteur_nom'] == '' || $_POST['prescripteur_nom'] == $this->lng['etape2']['nom']) {
-                        $bForm_ok = false;
-                    }
-                    if (!isset($_POST['prescripteur_prenom']) || $_POST['prescripteur_prenom'] == '' || $_POST['prescripteur_prenom'] == $this->lng['etape2']['prenom']) {
-                        $bForm_ok = false;
-                    }
+            if (isset($_POST['comments']) && $_POST['comments'] != $this->lng['etape2']['toutes-informations-utiles']) {
+                $this->projects_comments = $_POST['comments'];
+            } else {
+                $this->projects_comments = '';
+            }
 
-                    if (!isset($_POST['prescripteur_email']) ||
-                        $_POST['prescripteur_email'] == '' ||
-                        $_POST['prescripteur_email'] == $this->lng['etape2']['email'] ||
-                        $this->ficelle->isEmail($_POST['prescripteur_email']) == false ||
-                        $_POST['prescripteur_email'] != $_POST['prescripteur_conf_email'] ||
-                        $this->clients->existEmail($_POST['prescripteur_email']) == false
-                    ) {
-                        $bForm_ok = false;
-                    }
+            // if there is the question about 3 bilans, it needs to be answered
+            if (isset($_POST['trois_bilans'])) {
+                if (!isset($_POST['comptables']) || $_POST['comptables'] == '') {
+                    $bForm_ok = false;
+                }
+            }
 
-                    if (!isset($_POST['prescripteur_phone']) ||
-                        $_POST['prescripteur_phone'] == '' ||
-                        $_POST['prescripteur_phone'] == $this->lng['etape2']['telephone'] ||
-                        strlen($_POST['prescripteur_phone']) < 9 ||
-                        strlen($_POST['prescripteur_phone']) > 14
-                    ) {
-                        $bForm_ok = false;
-                    }
+            if (!isset($_POST['duree']) || $_POST['duree'] == 0 || in_array($_POST['duree'], $this->dureePossible) == false) {
+                $bForm_ok = false;
+            }
+            $this->projects->period = $_POST['duree'];
 
-                    $this->prescripteurs->civilite = $_POST['gender_prescripteur'];
-                    $this->prescripteurs->nom      = $_POST['prescripteur_nom'];
-                    $this->prescripteurs->prenom   = $_POST['prescripteur_prenom'];
-                    $this->prescripteurs->mobile   = $_POST['prescripteur_phone'];
-                    $this->prescripteurs->email    = $_POST['prescripteur_email'];
+            if ($bForm_ok) {
+                // only gerant needs to accept CGU, not the prescripteur
+                if ($_POST['gerant'] == 3) {
+                    if (is_numeric($this->prescripteurs->id)) {
+                        $this->prescripteurs->update();
+                    } else {
+                        $this->prescripteurs->id_prescripteur = $this->prescripteurs->create();
+                    }
+                    $this->projects->id_prescripteur = $this->prescripteurs->id_prescripteur;
                 } else {
-                    if (!isset($_POST['accept-cgu']) || $_POST['accept-cgu'] != true) {
-                        $bForm_ok = false;
-                    }
+                    // -- acceptation des cgu -- //
+                    $this->acceptations_legal_docs->get($this->lienConditionsGenerales, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc') ? $bAccept_ok = true : $bAccept_ok = false;
+                    $this->acceptations_legal_docs->id_legal_doc = $this->lienConditionsGenerales;
+                    $this->acceptations_legal_docs->id_client    = $this->clients->id_client;
+                    $bAccept_ok == true ? $this->acceptations_legal_docs->update() : $this->acceptations_legal_docs->create();
+                    // -- fin partie cgu -- //
                 }
 
-                if (isset($_POST['comments']) && $_POST['comments'] != $this->lng['etape2']['toutes-informations-utiles']) {
-                    $this->projects_comments = $_POST['comments'];
-                } else {
-                    $this->projects_comments = '';
-                }
-
-                // if there is the question about 3 bilans, it needs to be answered
+                $bComptables = true;
                 if (isset($_POST['trois_bilans'])) {
-                    if (!isset($_POST['comptables']) || $_POST['comptables'] == '') {
-                        $bForm_ok = false;
-                    }
+                    (intval($_POST['comptables']) === 0) ? $bComptables = false : $bComptables = true;
+                }
+                // clients
+                $this->clients->id_langue = 'fr';
+                $this->clients->slug      = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
+
+                // l'email facture est la meme que l'email client a la creation
+                $this->companies->email_facture = $this->clients->email;
+
+                // si good page confirmation
+                $this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_2, $this->projects->id_project);
+
+                // Creation du mot de passe client
+                $lemotdepasse = '';
+                if (isset($_SESSION['client'])) {
+                    $this->clients->status_pre_emp = 3;
+                    $_SESSION['status_pre_emp']    = 1;
+                } else {
+                    $this->clients->status_pre_emp = 2;
+                    $lemotdepasse                  = $this->ficelle->generatePassword(8);
+                    $this->clients->password       = md5($lemotdepasse);
                 }
 
-                if (!isset($_POST['duree']) || $_POST['duree'] == 0 || in_array($_POST['duree'], $this->dureePossible) == false) {
-                    $bForm_ok = false;
-                }
-                $this->projects->period = $_POST['duree'];
+                // put in 3 so he can't got back on to etape 2
+                $this->clients->status_depot_dossier = 2;
 
-                if ($bForm_ok) {
-                    // only gerant needs to accept CGU, not the prescripteur
-                    if ($_POST['gerant'] == 3) {
-                        if (is_numeric($this->prescripteurs->id)) {
-                            $this->prescripteurs->update();
-                        } else {
-                            $this->prescripteurs->id_prescripteur = $this->prescripteurs->create();
-                        }
-                        $this->projects->id_prescripteur = $this->prescripteurs->id_prescripteur;
-                    } else {
-                        // -- acceptation des cgu -- //
-                        $this->acceptations_legal_docs->get($this->lienConditionsGenerales, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc') ? $bAccept_ok = true : $bAccept_ok = false;
-                        $this->acceptations_legal_docs->id_legal_doc = $this->lienConditionsGenerales;
-                        $this->acceptations_legal_docs->id_client    = $this->clients->id_client;
-                        $bAccept_ok == true ? $this->acceptations_legal_docs->update() : $this->acceptations_legal_docs->create();
-                        // -- fin partie cgu -- //
-                    }
+                //used in bootstrap and ajax depot de dossier
+                $this->clients->status_transition = 1;
 
-                    $bComptables = true;
-                    if (isset($_POST['trois_bilans'])) {
-                        (intval($_POST['comptables']) === 0) ? $bComptables = false : $bComptables = true;
-                    }
-                    // clients
-                    $this->clients->id_langue = 'fr';
-                    $this->clients->slug      = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
+                $this->companies->update();
+                $this->companies_details->update();
+                $this->projects->update();
+                $this->prescripteurs->update();
+                $this->clients->update();
 
-                    // l'email facture est la meme que l'email client a la creation
-                    $this->companies->email_facture = $this->clients->email;
+                // todo change person recieving the email from client or prescripteur if there is one
 
-                    // si good page confirmation
-                    $this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_2, $this->projects->id_project);
+                // if 3 bilans are ok, we send the email, otherwise redirect to "not eligible page" but all data is saved. No email is sent.
+                if ($bComptables) {
+                    //**********************************************//
+                    //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION ***//
+                    //**********************************************//
+                    // Recuperation du modele de mail
+                    $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
 
-                    // Creation du mot de passe client
-                    $lemotdepasse = '';
-                    if (isset($_SESSION['client'])) {
-                        $this->clients->status_pre_emp = 3;
-                        $_SESSION['status_pre_emp']    = 1;
-                    } else {
-                        $this->clients->status_pre_emp = 2;
-                        $lemotdepasse                  = $this->ficelle->generatePassword(8);
-                        $this->clients->password       = md5($lemotdepasse);
-                    }
+                    // Variables du mailing
+                    $surl  = $this->surl;
+                    $url   = $this->lurl;
+                    $login = $this->clients->email;
+                    //$mdp = $lemotdepasse;
 
-                    // put in 3 so he can't got back on to etape 2
-                    $this->clients->status_depot_dossier = 2;
+                    $this->settings->get('Facebook', 'type');
+                    $lien_fb = $this->settings->value;
 
-                    //used in bootstrap and ajax depot de dossier
-                    $this->clients->status_transition = 1;
+                    $this->settings->get('Twitter', 'type');
+                    $lien_tw = $this->settings->value;
 
-                    $this->companies->update();
-                    $this->companies_details->update();
-                    $this->projects->update();
-                    $this->prescripteurs->update();
-                    $this->clients->update();
+                    // Variables du mailing
+                    $varMail = array(
+                        'surl' => $surl,
+                        'url' => $url,
+                        'password' => $lemotdepasse,
+                        'lien_fb' => $lien_fb,
+                        'lien_tw' => $lien_tw);
 
-                    // todo change person recieving the email from client or prescripteur if there is one
+                    // Construction du tableau avec les balises EMV
+                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    // if 3 bilans are ok, we send the email, otherwise redirect to "not eligible page" but all data is saved. No email is sent.
-                    if ($bComptables) {
-                        //**********************************************//
-                        //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION ***//
-                        //**********************************************//
-                        // Recuperation du modele de mail
-                        $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
+                    // Attribution des données aux variables
+                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                        // Variables du mailing
-                        $surl  = $this->surl;
-                        $url   = $this->lurl;
-                        $login = $this->clients->email;
-                        //$mdp = $lemotdepasse;
+                    // Envoi du mail
+                    $this->email = $this->loadLib('email', array());
+                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                    $this->email->setSubject(stripslashes($sujetMail));
+                    $this->email->setHTMLBody(stripslashes($texteMail));
 
-                        $this->settings->get('Facebook', 'type');
-                        $lien_fb = $this->settings->value;
-
-                        $this->settings->get('Twitter', 'type');
-                        $lien_tw = $this->settings->value;
-
-                        // Variables du mailing
-                        $varMail = array(
-                            'surl' => $surl,
-                            'url' => $url,
-                            'password' => $lemotdepasse,
-                            'lien_fb' => $lien_fb,
-                            'lien_tw' => $lien_tw);
-
-                        // Construction du tableau avec les balises EMV
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                        // Attribution des données aux variables
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        if ($this->Config['env'] == 'prod') // nmp
-                        {
-                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                            // Injection du mail NMP dans la queue
-                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                        } else // non nmp
-                        {
-                            $this->email->addRecipient(trim($this->clients->email));
-                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                        }
-                        // fin mail
-                        //**********************************************//
-                        //*** ENVOI DU MAIL NOTIFICATION INSCRIPTION ***//
-                        //**********************************************//
-                        // destinataire
-                        $this->settings->get('Adresse notification inscription emprunteur', 'type');
-                        $destinataire = $this->settings->value;
-
-                        // Recuperation du modele de mail
-                        $this->mails_text->get('notification-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
-
-                        // Variables du mailing
-                        $surl         = $this->surl;
-                        $url          = $this->lurl;
-                        $nom_societe  = utf8_decode($this->companies->name);
-                        $montant_pret = $this->projects->amount;
-                        $lien         = $this->aurl . '/emprunteurs/edit/' . $this->clients->id_client;
-
-                        // Attribution des données aux variables
-                        $sujetMail = htmlentities($this->mails_text->subject);
-                        eval("\$sujetMail = \"$sujetMail\";");
-
-                        $texteMail = $this->mails_text->content;
-                        eval("\$texteMail = \"$texteMail\";");
-
-                        $exp_name = $this->mails_text->exp_name;
-                        eval("\$exp_name = \"$exp_name\";");
-
-                        // Nettoyage de printemps
-                        $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                        $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->addRecipient(trim($destinataire));
-                        //$this->email->addBCCRecipient('');
-
-                        $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
-                        $this->email->setHTMLBody($texteMail);
+                    if ($this->Config['env'] == 'prod') // nmp
+                    {
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                        // Injection du mail NMP dans la queue
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                    } else // non nmp
+                    {
+                        $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                        // fin mail
-                        // Page confirmation
-                        header('Location: ' . $this->lurl . '/depot_de_dossier/etape3/' . $this->projects->hash);
-                        die;
-                    } else {
-                        $this->projects_status_history->addStatus(-2, projects_status::PAS_3_BILANS, $this->projects->id_project);
-                        header('Location: ' . $this->lurl . '/depot_de_dossier/nok/pas-3-bilans');
-                        die;
                     }
+                    // fin mail
+                    //**********************************************//
+                    //*** ENVOI DU MAIL NOTIFICATION INSCRIPTION ***//
+                    //**********************************************//
+                    // destinataire
+                    $this->settings->get('Adresse notification inscription emprunteur', 'type');
+                    $destinataire = $this->settings->value;
+
+                    // Recuperation du modele de mail
+                    $this->mails_text->get('notification-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
+
+                    // Variables du mailing
+                    $surl         = $this->surl;
+                    $url          = $this->lurl;
+                    $nom_societe  = utf8_decode($this->companies->name);
+                    $montant_pret = $this->projects->amount;
+                    $lien         = $this->aurl . '/emprunteurs/edit/' . $this->clients->id_client;
+
+                    // Attribution des données aux variables
+                    $sujetMail = htmlentities($this->mails_text->subject);
+                    eval("\$sujetMail = \"$sujetMail\";");
+
+                    $texteMail = $this->mails_text->content;
+                    eval("\$texteMail = \"$texteMail\";");
+
+                    $exp_name = $this->mails_text->exp_name;
+                    eval("\$exp_name = \"$exp_name\";");
+
+                    // Nettoyage de printemps
+                    $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
+                    $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
+
+                    $this->email = $this->loadLib('email', array());
+                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                    $this->email->addRecipient(trim($destinataire));
+
+                    $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
+                    $this->email->setHTMLBody($texteMail);
+                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                    header('Location: ' . $this->lurl . '/depot_de_dossier/etape3/' . $this->projects->hash);
+                    die;
+                } else {
+                    $this->projects_status_history->addStatus(-2, projects_status::PAS_3_BILANS, $this->projects->id_project);
+                    header('Location: ' . $this->lurl . '/depot_de_dossier/nok/pas-3-bilans');
+                    die;
                 }
             }
         }
@@ -680,7 +670,7 @@ class depot_de_dossierController extends bootstrap
 
     public function _prospect()
     {
-        $this->checkClient();
+//        $this->checkClient();
 
         $this->lng['etape1']           = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
         $this->lng['etape2']           = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
@@ -826,7 +816,7 @@ class depot_de_dossierController extends bootstrap
 
     public function _etape3()
     {
-        $this->checkClient();
+//        $this->checkClient();
 
         $this->projects->get($this->params['0'], 'hash');
         $this->companies->get($this->projects->id_company);
@@ -949,7 +939,7 @@ class depot_de_dossierController extends bootstrap
 
     public function _fichiers()
     {
-        $this->checkClient();
+//        $this->checkClient();
 
 
         if ($this->preteurCreateEmprunteur === true && $this->clients->status_depot_dossier >= 3) {
@@ -1001,7 +991,7 @@ class depot_de_dossierController extends bootstrap
 
     public function _merci()
     {
-        $this->checkClient();
+//        $this->checkClient();
 
         $this->lng['depot-de-dossier'] = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
 
@@ -1256,4 +1246,3 @@ class depot_de_dossierController extends bootstrap
         }
     }
 }
-

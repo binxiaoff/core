@@ -46,14 +46,6 @@ if (
     ) {
         $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['landing-page']['champs-obligatoires'];
     } else {
-        /*if (isset($email) && $this->ficelle->isEmail($email) === true && $this->clients->existEmail($email) === false) {
-            $this->clients->get($email, 'email');
-        }
-
-        if (isset($email) && $this->ficelle->isEmail($email) && $this->prescripteurs->exist($email, 'email') === false) {
-            $this->prescripteurs->get($email, 'email');
-        }*/
-
         $iAmount = str_replace(array(',', ' '), array('.', ''), $aForm['montant']);
 
         if ($iAmount != (int) $iAmount) {

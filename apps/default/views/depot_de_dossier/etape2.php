@@ -1,6 +1,6 @@
 <div class="main">
     <div class="shell">
-        <p><?php printf($this->lng['etape2']['contenu'], $this->projects->amount, $this->iDuree); ?></p>
+        <p><?php printf($this->lng['etape2']['contenu'], $this->projects->amount, $this->iAverageFundingDuration); ?></p>
         <div class="register-form">
             <form action="" method="post" id="form_depot_dossier" name="form_depot_dossier" enctype="multipart/form-data">
                 <div class="row">
