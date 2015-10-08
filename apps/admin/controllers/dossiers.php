@@ -323,6 +323,10 @@ class dossiersController extends bootstrap
                 $this->lProjects_status = array();
             }
 
+            //Attachment List
+            $this->oAttachment_type = $this->loadData('attachment_type');
+            $this->aAttachmentTypes = $this->oAttachment_type->getAllTypesForProjects();
+            $this->aAttachments = $this->projects->getAttachments();
             //******************//
             // On lance Altares //
             //******************//

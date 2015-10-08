@@ -151,14 +151,22 @@ class lenders_accounts extends lenders_accounts_crud
 		return $values;
 	}
 
-	public function getAttachments($lender){
+	public function getAttachments($lender = null)
+	{
+		if (null === $lender) {
+			$lender = $this->id_lender_account;
+		}
+
+		if ($lender) {
+			return false;
+		}
 
 		$sql = 'SELECT a.id, a.id_type, a.id_owner, a.type_owner, a.path, a.added, a.updated, a.archived
 				FROM attachment a
-				WHERE a.id_owner = '.$lender.'
+				WHERE a.id_owner = ' . $lender . '
 					AND a.type_owner = "lenders_accounts";';
 
-		$result = $this->bdd->query($sql);
+		$result      = $this->bdd->query($sql);
 		$attachments = array();
 		while ($record = $this->bdd->fetch_array($result)) {
 
@@ -167,8 +175,4 @@ class lenders_accounts extends lenders_accounts_crud
 		return $attachments;
 
 	}
-
-
-
-
 }

@@ -434,8 +434,17 @@ class projects extends projects_crud
         return $record;
     }
 
-    public function getAttachments($project)
+    public function getAttachments($project = null)
     {
+
+        if (null === $project) {
+            $project = $this->id_project;
+        }
+
+        if (! $project) {
+            return false;
+        }
+
         $sql = 'SELECT a.id, a.id_type, a.id_owner, a.type_owner, a.path, a.added, a.updated, a.archived
                 FROM attachment a
                 WHERE a.id_owner = ' . $project . '
