@@ -3,6 +3,8 @@
 <head>
     <title>Vos operations indexation</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="<?=$this->surl?>/styles/default/style.css" type="text/css" media="all" />
+    <link rel="stylesheet" href="<?=$this->surl?>/styles/default/style-edit.css" type="text/css" media="all" />
     <link rel="stylesheet" href="<?=$this->surl?>/styles/default/pdf/styleOperations.css" type="text/css" media="all" />
 </head>
 <body>
@@ -164,7 +166,7 @@ if($this->oLendersAccounts->id_company != 0){
             <tr class="content_transact <?=($i%2 == 1?'':'odd')?>" height="0">
                     <?php /*?><tr<?=($i%2 == 1?'':' class="odd"')?>><?php */?>
                     <td colspan="7">
-                        <div class="div_content_transact content_remb_<?=$t['id_transaction']?>" style="display:inline-block;">
+                        <div class="div_content_transact content_remb_<?=$t['id_transaction']?>">
                         <table class="soustable" width="100%" >
                             <tbody>
                            	<?php /*?><tr>

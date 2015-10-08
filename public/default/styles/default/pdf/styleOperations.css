@@ -3,15 +3,15 @@
 
 .vos_operations{font-size:13px;width:960px;margin:auto;}
 .vos_operations td{padding:5px;}
-.vos_operations tr.content_transact td{height: 0px;padding: 0px;}
+.vos_operations tr.content_transact td{padding: 0px;}
 
 table.vos_operations th#order_projects{text-align:left;}
 
 .vos_operations tr.transact{cursor:pointer;}
-.vos_operations tr.content_transact .div_content_transact{display:inline-block;width:100%;}
+.vos_operations tr.content_transact .div_content_transact{width:100%;}
 
 .vos_operations tr.content_transact td .soustable{border-bottom:1px solid #b10366;margin-top: 10px;padding-bottom: 10px;}
-.vos_operations tr.content_transact td .soustable tr td{padding:0px;height: 15px;}
+.vos_operations tr.content_transact td .soustable tr td{padding:0px;}
 .vos_operations tr.content_transact td .soustable tr td.chiffres{text-align:right;}
 .vos_operations tr.content_transact td .soustable tr td.detail_remb{padding-left:5px;vertical-align:top;}
 
@@ -41,8 +41,7 @@ table.vos_operations th#order_projects{text-align:left;}
 
 
 .pdfHeader,.pdfFooter{width:960px;margin:auto;}
-.pdfHeader .logo { padding: 0 0 70px 0; }
-.pdfHeader .logo { background:url(images/logo.png) no-repeat 0 0; white-space:nowrap; overflow:hidden; }
+.pdfHeader .logo { padding: 0 0 70px 0; float: none; background:url(images/logo.png) no-repeat 0 0; white-space:nowrap; overflow:hidden; }
 .pdfFooter{font-size:13px;}
 
 .table th:first-child.pdfSolde{color:white;padding-left: 5px;border-radius: 0;font-size: 17px;}
