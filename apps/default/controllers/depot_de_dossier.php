@@ -183,7 +183,7 @@ class depot_de_dossierController extends bootstrap
             case '6_EBE Négatif':
                 $this->redirectEtape1('/depot_de_dossier/nok/rex-nega', projects_status::NOTE_EXTERNE_FAIBLE);
                 break;
-            case '8_Eligible':
+            case 'Oui':
                 $this->clients_adresses->id_client = $this->clients->id_client;
                 $this->clients_adresses->create();
 
@@ -983,20 +983,10 @@ class depot_de_dossierController extends bootstrap
         if (isset($_POST['submit_files']) && !empty($_FILES)) {
 
             //reformat $_FILES so it can be treated by the upload function
-            $aPostFiles = $_FILES['files'];
-
-            $aFiles     = array();
-            $iFileCount = count($aPostFiles['name']);
-            $aFileKeys  = array_keys($aPostFiles);
-
-            for ($i = 0; $i < $iFileCount; $i++) {
-                foreach ($aFileKeys as $key) {
-                    $aFiles[$i][$key] = $aPostFiles[$key][$i];
-                }
-            }
-
-            foreach ($_POST['type_document'] as $key => $iAttachmentType) {
-                $this->uploadAttachment($this->projects->id_project, $key, $iAttachmentType, $aFiles);
+            foreach ($_FILES as $field => $file) {
+                //We made the field name = attachment type id
+                $iAttachmentType = $field;
+                $this->uploadAttachment($this->projects->id_project, $field, $iAttachmentType, $_FILES);
             }
             $this->projects_status_history->addStatus(-2, projects_status::A_TRAITER, $this->projects->id_project);
             header('Location: ' . $this->lurl . '/depot_de_dossier/merci/procedure-accelere');
@@ -1133,80 +1123,13 @@ class depot_de_dossierController extends bootstrap
             $this->attachment = $this->loadData('attachment');
         }
 
-        $basePath = 'protected/projects/';
-
         //add the new name for each file
-        foreach ($aFiles as $f => $file) {
-            $aNom_tmp                  = explode('.', $aFiles[$f]['name']);
-            $aFiles[$f]['no_ext_name'] = $aNom_tmp[0];
+        $sNewName = '';
+        if(isset($aFiles[$field]['name']) && $aFileInfo = pathinfo($aFiles[$field]['name'])) {
+                $sNewName = $aFileInfo['filename'] . '_' . $iOwnerId;
         }
 
-        switch ($iAttachmentType) {
-            case attachment_type::RELEVE_BANCAIRE_MOIS_N :
-                $uploadPath = $basePath . 'releve_bancaire_mois_n/';
-                break;
-            case attachment_type::RELEVE_BANCAIRE_MOIS_N_1 :
-                $uploadPath = $basePath . 'releve_bancaire_mois_n_1/';
-                break;
-            case attachment_type::RELEVE_BANCAIRE_MOIS_N_2:
-                $uploadPath = $basePath . 'releve_bancaire_mois_n_2/';
-                break;
-            case attachment_type::PRESENTATION_ENTRERPISE:
-                $uploadPath = $basePath . 'presentation_entreprise/';
-                break;
-            case attachment_type::ETAT_ENDETTEMENT:
-                $uploadPath = $basePath . 'etat_endettement/';
-                break;
-            case attachment_type::DERNIERE_LIASSE_FISCAL :
-                $uploadPath = $basePath . 'liasse_fiscal/';
-                break;
-            case attachment_type::LIASSE_FISCAL_N_1:
-                $uploadPath = $basePath . 'liasse_fiscal_n_1/';
-                break;
-            case attachment_type::LIASSE_FISCAL_N_2:
-                $uploadPath = $basePath . 'liasse_fiscal_n_2/';
-                break;
-            case attachment_type::RAPPORT_CAC:
-                $uploadPath = $basePath . 'rapport_cac/';
-                break;
-            case attachment_type::PREVISIONNEL:
-                $uploadPath = $basePath . 'previsionnel/';
-                break;
-            case attachment_type::CNI_PASSPORTE_DIRIGEANT :
-                $uploadPath = $basePath . 'cni_passeport_dirigeant/';
-                break;
-            case attachment_type::CNI_PASSPORTE_VERSO :
-                $uploadPath = $basePath . 'cni_passeport_dirigeant_verso/';
-                break;
-            case attachment_type::RIB :
-                $uploadPath = $basePath . 'rib/';
-                break;
-            case attachment_type::KBIS :
-                $uploadPath = $basePath . 'extrait_kbis/';
-                break;
-            case attachment_type::AUTRE1 :
-                $uploadPath = $basePath . 'autre/';
-                break;
-            case attachment_type::AUTRE2 :
-                $uploadPath = $basePath . 'autre2/';
-                break;
-            case attachment_type::AUTRE3:
-                $uploadPath = $basePath . 'autre3/';
-                break;
-            case attachment_type::BALANCE_CLIENT:
-                $uploadPath = $basePath . 'balance_client/';
-                break;
-            case attachment_type::BALANCE_FOURNISSEUR:
-                $uploadPath = $basePath . 'balance_fournisseur/';
-                break;
-            case attachment_type::ETAT_PRIVILEGES_NANTISSEMENTS:
-                $uploadPath = $basePath . 'etat_privileges_nantissements/';
-                break;
-            default :
-                return false;
-        }
-
-        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::PROJECT, $iAttachmentType, $field, $this->path, $uploadPath, $this->upload, $this->attachment, $aFiles[$field]['no_ext_name'] . '_' . $iOwnerId, $aFiles);
+        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::PROJECT, $iAttachmentType, $field, $this->path, $this->upload, $this->attachment, $sNewName);
 
         if (false === $resultUpload) {
             $this->form_ok       = false;
@@ -1220,8 +1143,8 @@ class depot_de_dossierController extends bootstrap
     {
         $this->preteurCreateEmprunteur = false;
 
-        if (isset($_SESSION['client'])) {
-            $this->clients->get($_SESSION['client']['id_client'], 'id_client');
+        //if (isset($_SESSION['client'])) {
+            $this->clients->get(38258, 'id_client');
 
             switch ($this->clients->status_pre_emp) {
                 case '1':
@@ -1235,8 +1158,8 @@ class depot_de_dossierController extends bootstrap
                     $_SESSION['error_pre_empr'] = $this->lng['etape1']['seule-une-personne-morale-peut-creer-un-compte-emprunteur'];
                     break;
             }
-            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
-        }
+            //header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
+        //}
     }
 }
 

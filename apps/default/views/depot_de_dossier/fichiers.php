@@ -26,8 +26,7 @@
                 </div>
 
                 <div class="row row-upload">
-                    <select name="type_document[]"
-                            class="custom-select required field">
+                    <select class="custom-select required field">
                         <option value=""> <?= $this->lng['espace-emprunteur']['selectionnez-un-document'] ?></option>
                         <?
                         foreach ($this->aAttachmentTypes as $k => $a) {
@@ -47,7 +46,7 @@
                             <span class="btn btn-small" style=" float: left; margin: 5px;">
                                 <?= $this->lng['etape2']['parcourir'] ?>
                                 <span class="file-upload">
-                                    <input type="file" class="file-field" name="files[]" id="file-field">
+                                    <input type="file" class="file-field" name="" id="file-field">
                                 </span>
                             </span>
                         </div>
@@ -70,26 +69,39 @@
 </div><!-- /.main -->
 <!--#include virtual="ssi-footer.shtml"  -->
 <script>
+    var uploadFieldId = 1;
     $(function() {
+        $('.row.row-upload').find('select').change(function() {
+            var attachmentTypeId = $(this).val();
+            $(this).parents('.row.row-upload').find('input.file-field').attr('name', attachmentTypeId);
+        });
         $uploadRow = $('.row.row-upload').first().clone().hide().prop('id', 'upload-row-pattern');
         $uploadRow.children('select').removeClass('custom-select');
         $('#form_espace_emprunteur').append($uploadRow);
+
     });
 
     $(document).on('change', 'input.file-field', function () {
-        var $self = $(this);
-        var val = $self.val();
+
+        var val = $(this).val();
 
         if (val.length != 0 || val != '') {
             val = val.replace(/\\/g, '/').replace(/.*\//, '');
-            $self.closest('.uploader').find('input.field').val(val).addClass('LV_valid_field').addClass('file-uploaded');
+            $(this).closest('.uploader').find('input.field').val(val).addClass('LV_valid_field').addClass('file-uploaded');
         }
     });
 
 
     $('.btn-add-new-row').click(function () {
-        $uploadRow = $('#upload-row-pattern').clone().show();
+        $uploadRow = $('#upload-row-pattern').clone().show().prop('id', 'upload-row-pattern_'+ uploadFieldId);
         $uploadRow.children('select').addClass('custom-select').c2Selectbox();
         $(this).parent('.row').before($uploadRow);
+
+        $('#upload-row-pattern_'+ uploadFieldId).find('select').change(function() {
+            var attachmentTypeId = $(this).val();
+            $(this).parents('.row.row-upload').find('input.file-field').attr('name', attachmentTypeId);
+        });
+
+        uploadFieldId ++;
     });
 </script>

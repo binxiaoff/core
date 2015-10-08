@@ -4,6 +4,11 @@ class preteursController extends bootstrap
 {
     var $Command;
 
+    /**
+     * @var attachment_helper
+     */
+    private $attachmentHelper;
+
     function preteursController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
