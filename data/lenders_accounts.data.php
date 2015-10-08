@@ -91,7 +91,7 @@ class lenders_accounts extends lenders_accounts_crud
 
     public function getValuesforTRI($lender)
     {
-
+        $aValuesTRI = array();
         //get loans values as negativ , dates and project status
         $sql = 'SELECT (l.amount *-1) as loan,
 					( SELECT psh.added
@@ -101,11 +101,9 @@ class lenders_accounts extends lenders_accounts_crud
 						ORDER BY psh.added ASC LIMIT 1 ) as date
 				  FROM loans l WHERE l.id_lender = ' . $lender . ';';
 
-        $result      = $this->bdd->query($sql);
-        $loansValues = array();
+        $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($result)) {
-
-            $loansValues[] = array(strtotime($record["date"]) => intval($record["loan"]));
+            $aValuesTRI[$record["date"]] = $record["loan"];
         }
 
         //get echeancier values
@@ -126,29 +124,26 @@ class lenders_accounts extends lenders_accounts_crud
 							INNER JOIN loans l ON e.id_loan = l.id_loan
 						WHERE e.id_lender = ' . $lender . ';';
 
-        $result          = $this->bdd->query($sql);
-        $echeancesValues = array();
-
+        $result = $this->bdd->query($sql);
 
         $statusKo = array(projects_status::PROBLEME, projects_status::RECOUVREMENT);
         while ($record = $this->bdd->fetch_array($result)) {
-
-            if (in_array(intval($record["project_status"]), $statusKo) && $record["echeance_status"] == "0") {
-
+            if (in_array($record["project_status"], $statusKo) && 0 === (int)$record["echeance_status"]) {
                 $record["montant"] = 0;
             }
 
             if ($record["date_echeance_reel"] == "0000-00-00 00:00:00") {
                 $record["date_echeance_reel"] = $record["date_echeance"];
-            }// end if Date echeance reele
+            }
 
-            $echeancesValues[] = array(strtotime($record["date_echeance_reel"]) => intval($record["montant"]));
+            if (array_key_exists($record["date_echeance_reel"], $aValuesTRI)) {
+                $aValuesTRI[$record["date_echeance_reel"]] += $record["montant"];
+            } else {
+                $aValuesTRI[$record["date_echeance_reel"]] = $record["montant"];
+            }
         }
 
-        //merge arrays into one
-        $values = array_merge($loansValues, $echeancesValues);
-
-        return $values;
+        return $aValuesTRI;
     }
 
     public function getAttachments($lender)
