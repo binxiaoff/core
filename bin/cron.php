@@ -21,13 +21,15 @@ $oCron = new Cron($oBootstrap);
 $oCron->setOptions(
     array('d' => Cron::OPTION_REQUIRED,
           'c' => Cron::OPTION_REQUIRED,
+          's' => Cron::OPTION_REQUIRED,
           'f' => Cron::OPTION_OPTIONAL,
-          's' => Cron::OPTION_REQUIRED
+          't' => Cron::OPTION_OPTIONAL
     ))
     ->setDescription('d', 'directory name for load class')
     ->setDescription('c', 'classname to use')
-    ->setDescription('f', 'function name to use if necessary')
     ->setDescription('s', 'name of cron for semaphore')
+    ->setDescription('f', 'function name to use if necessary')
+    ->setDescription('t', 'cron max execution time, default 5 min')
     ->setParameters();
 
 try {
