@@ -124,7 +124,7 @@ class bootstrap extends Controller
 
                     $_SESSION['login_user']['duree_waiting']             = $this->duree_waiting;
                     $_SESSION['login_user']['nb_tentatives_precedentes'] = $this->nb_tentatives_precedentes;
-                    $_SESSION['login_user']['displayCaptchaError']       = $this->displayCaptchaError;
+                    $_SESSION['login_user']['displayCaptchaError']       = (isset($this->displayCaptchaError)) ? $this->displayCaptchaError : '';
 
                     $this->loggin_connection_admin        = $this->loadData('loggin_connection_admin');
                     $this->loggin_connection_admin->email = $_POST['login'];
