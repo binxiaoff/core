@@ -323,7 +323,8 @@ class emprunteursController extends bootstrap
 
                     // Mise en session du message
                     $_SESSION['freeow']['title'] = 'Erreur BIC';
-                    $_SESSION['freeow']['message'] = 'L\'IBAN est invalide';
+                    $_SESSION['freeow']['message'] = 'Le BIC est invalide';
+                    //$_SESSION['freeow']['message'] = 'Le BIC doit contenir entre 8 et 11 caractères';
 
                     header('Location:' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
                     die;
@@ -335,7 +336,7 @@ class emprunteursController extends bootstrap
 
                     // Mise en session du message
                     $_SESSION['freeow']['title'] = 'Erreur IBAN';
-                    $_SESSION['freeow']['message'] = 'L\'IBAN doit contenir entre 8 et 11 caractères';
+                    $_SESSION['freeow']['message'] = 'L\'IBAN est invalide';
 
                     header('Location:' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
                     die;
