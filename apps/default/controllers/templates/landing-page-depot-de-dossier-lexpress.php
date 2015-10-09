@@ -31,7 +31,7 @@ $login = $this->settings->value;
 $this->settings->get('Altares mot de passe','type');
 $mdp = $this->settings->value; // mdp en sha1
 // Url wsdl
-$this->settings->get('Altares wsdl','type');
+$this->settings->get('Altares WSDL Eligibility','type');
 $this->wsdl = $this->settings->value;
 // Identification
 $this->identification = $login.'|'.$mdp;

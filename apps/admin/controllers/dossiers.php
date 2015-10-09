@@ -16,7 +16,7 @@ class dossiersController extends bootstrap
         $login = $this->settings->value;
         $this->settings->get('Altares mot de passe', 'type');
         $mdp = $this->settings->value;
-        $this->settings->get('Altares wsdl', 'type');
+        $this->settings->get('Altares WSDL Eligibility', 'type');
         $this->wsdl = $this->settings->value;
         $this->identification = $login . '|' . $mdp;
 

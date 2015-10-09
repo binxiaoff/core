@@ -37,7 +37,7 @@ class depot_de_dossierController extends bootstrap
         $this->settings->get('Altares mot de passe', 'type');
         $mdp = $this->settings->value; // mdp en sha1
 
-        $this->settings->get('Altares wsdl', 'type');
+        $this->settings->get('Altares WSDL Eligibility', 'type');
         $this->wsdl = $this->settings->value;
 
         $this->identification = $login . '|' . $mdp;
