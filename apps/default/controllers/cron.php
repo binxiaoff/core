@@ -5806,7 +5806,7 @@ class cronController extends bootstrap
         ini_set('max_execution_time', 3600); // hotbug 07/09/2015
         ini_set('memory_limit', '4096M'); // hotbug 07/09/2015
 
-        if (true === $this->startCron('notification quotidienne', 60)) {
+        if (true === $this->startCron('notification quotidienne', 5)) {
             $clients                       = $this->loadData('clients');
             $clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
             $clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
