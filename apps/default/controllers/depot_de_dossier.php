@@ -1111,10 +1111,6 @@ class depot_de_dossierController extends bootstrap
             $aFiles = $_FILES;
         }
 
-        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper');
-        }
-
         if (false === isset($this->upload) || false === $this->upload instanceof upload) {
             $this->upload = $this->loadLib('upload');
         }
@@ -1123,13 +1119,21 @@ class depot_de_dossierController extends bootstrap
             $this->attachment = $this->loadData('attachment');
         }
 
+        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
+            $this->attachment_type = $this->loadData('attachment_type');
+        }
+
+        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
+            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type));;
+        }
+
         //add the new name for each file
         $sNewName = '';
         if(isset($aFiles[$field]['name']) && $aFileInfo = pathinfo($aFiles[$field]['name'])) {
-                $sNewName = $aFileInfo['filename'] . '_' . $iOwnerId;
+            $sNewName = $aFileInfo['filename'] . '_' . $iOwnerId;
         }
 
-        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::PROJECT, $iAttachmentType, $field, $this->path, $this->upload, $this->attachment, $sNewName);
+        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::PROJECT, $iAttachmentType, $field, $this->path, $this->upload, $sNewName);
 
         if (false === $resultUpload) {
             $this->form_ok       = false;

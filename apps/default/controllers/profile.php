@@ -2381,10 +2381,6 @@ class profileController extends bootstrap
      */
     private function uploadAttachment($lenderAccountId, $attachmentType)
     {
-        if(false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper');
-        }
-
         if(false === isset($this->upload) || false === $this->upload instanceof upload) {
             $this->upload = $this->loadLib('upload');
         }
@@ -2392,6 +2388,14 @@ class profileController extends bootstrap
         if(false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
             $this->attachment = $this->loadData('attachment');
         }
+
+		if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
+			$this->attachment_type = $this->loadData('attachment_type');
+		}
+
+		if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
+			$this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type));;
+		}
 
         switch($attachmentType) {
             case attachment_type::CNI_PASSPORTE :
@@ -2437,7 +2441,7 @@ class profileController extends bootstrap
                 return false;
         }
 
-        $resultUpload = $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->path, $this->upload, $this->attachment);
+        $resultUpload = $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->path, $this->upload);
 
         if(false === $resultUpload) {
             $this->form_ok = false;

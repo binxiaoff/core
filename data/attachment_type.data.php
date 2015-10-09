@@ -39,6 +39,7 @@ class attachment_type extends attachment_type_crud
     const DELEGATION_POUVOIR            = 9;
     const STATUTS                       = 10;
     const CNI_PASSPORTE_VERSO           = 11;
+    const COMPANY_LOGO                  = 12;
     const AUTRE1                        = 22;
     const AUTRE2                        = 23;
     const AUTRE3                        = 24;
@@ -131,15 +132,45 @@ class attachment_type extends attachment_type_crud
             self::AUTRE2,
             self::AUTRE3,
             self::CNI_PASSPORTE_DIRIGEANT,
-            self::CNI_PASSPORTE_VERSO
+            self::CNI_PASSPORTE_VERSO,
+            self::COMPANY_LOGO
         );
 
+        return $this->getAllTypes($aTypes);
+    }
+
+    public function getAllTypesForLender()
+    {
+        $aTypes = array(
+            self::CNI_PASSPORTE_DIRIGEANT,
+            self::CNI_PASSPORTE_VERSO,
+            self::JUSTIFICATIF_DOMICILE,
+            self::RIB,
+            self::ATTESTATION_HEBERGEMENT_TIERS,
+            self::CNI_PASSPORT_TIERS_HEBERGEANT,
+            self::CNI_PASSPORTE_DIRIGEANT,
+            self::DELEGATION_POUVOIR,
+            self::KBIS,
+            self::JUSTIFICATIF_FISCAL,
+            self::AUTRE1,
+            self::AUTRE2,
+            self::AUTRE3,
+            self::DISPENSE_PRELEVEMENT_2014,
+            self::DISPENSE_PRELEVEMENT_2015,
+            self::DISPENSE_PRELEVEMENT_2016,
+            self::DISPENSE_PRELEVEMENT_2017,
+        );
+
+        return $this->getAllTypes($aTypes);
+    }
+
+    private function getAllTypes($aTypes)
+    {
         $sql = 'SELECT * FROM `attachment_type` ORDER BY `label`  DESC';
         $resultat = $this->bdd->query($sql);
         $result   = array();
         while ($record = $this->bdd->fetch_assoc($resultat)) {
-
-            if (in_array($record['id'], $aTypes)){
+            if (in_array($record['id'], $aTypes)) {
                 $result[] = $record;
             }
         }

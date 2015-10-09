@@ -1896,63 +1896,20 @@
         <div id="etape5">
             <script language="javascript" type="text/javascript">
                 function formUploadCallback(result) {
+                    var aStatus = jQuery.parseJSON(result);
+                    if(aStatus.length != 0) {
+                        $.each(aStatus, function(fileType, value){
+                            if ('ok' == value) {
+                                $(".statut_"+fileType).html('Enregistré');
+                            }
 
-                    var obj = jQuery.parseJSON(result);
-                    var enregistre = '<span style="color:green;">Enregistré</span>';
-                    if (obj.fichier1 == 'ok') {
-                        $(".statut_fichier1").html(enregistre);
-                    }
-                    if (obj.fichier2 == 'ok') {
-                        $(".statut_fichier2").html(enregistre);
-                    }
-                    if (obj.fichier3 == 'ok') {
-                        $(".statut_fichier3").html(enregistre);
-                    }
-                    if (obj.fichier4 == 'ok') {
-                        $(".statut_fichier4").html(enregistre);
-                    }
-                    if (obj.fichier5 == 'ok') {
-                        $(".statut_fichier5").html(enregistre);
-                    }
-                    if (obj.fichier6 == 'ok') {
-                        $(".statut_fichier6").html(enregistre);
-                    }
-                    if (obj.fichier7 == 'ok') {
-                        $(".statut_fichier7").html(enregistre);
-                    }
-                    if (obj.fichier8 == 'ok') {
-                        $(".statut_fichier8").html(enregistre);
-                    }
-                    if (obj.fichier9 == 'ok') {
-                        $(".statut_fichier9").html(enregistre);
-                    }
-                    if (obj.fichier10 == 'ok') {
-                        $(".statut_fichier10").html(enregistre);
-                    }
-                    if (obj.fichier11 == 'ok') {
-                        $(".statut_fichier11").html(enregistre);
-                    }
-                    if (obj.fichier12 == 'ok') {
-                        $(".statut_fichier12").html(enregistre);
-                    }
-                    if (obj.fichier13 == 'ok') {
-                        $(".statut_fichier13").html(enregistre);
-                    }
-                    if (obj.fichier15 == 'ok') {
-                        $(".statut_fichier15").html(enregistre);
-                    }
-                    if (obj.fichier16 == 'ok') {
-                        $(".statut_fichier16").html(enregistre);
-                    }
-                    if (obj.fichier17 == 'ok') {
-                        $(".statut_fichier17").html(enregistre);
+                        });
+                        $("#valid_etape5").slideDown();
+                        setTimeout(function () {
+                            $("#valid_etape5").slideUp();
+                        }, 4000);
                     }
 
-                    //console.log("Upload OK:", result);
-                    $("#valid_etape5").slideDown();
-                    setTimeout(function () {
-                        $("#valid_etape5").slideUp();
-                    }, 4000);
                 }
             </script>
             <form method="post" name="dossier_etape5" id="dossier_etape5" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/file/<?= $this->params[0] ?>" target="upload_target">
@@ -1968,23 +1925,15 @@
                         <th></th>
                         </thead>
                         <tbody>
-                        <tr>
-                            <td>Logo de la société</td>
-                            <td>
-                                <a target="_blank" href="<?= $this->surl ?>/var/images/logos_companies/<?= $this->companies_details->fichier_logo_societe ?>"><?= $this->companies_details->fichier_logo_societe ?></a>
-                            </td>
-                            <td class="statut_fichier4"><?= ($this->companies_details->fichier_logo_societe != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier4" id="fichier_logo_societe"/></td>
-                        </tr>
                         <?php foreach($this->aAttachmentTypes as $sAttachmentType): ?>
                         <tr>
                             <td><?=$sAttachmentType['label']?></td>
                             <td>
-                                <?php if(isset($this->attachments[$sAttachmentType['id']]['path'])): ?>
-                                    <a href="<?= $this->url ?>/protected/extrait_kbis/<?= $this->attachments[$sAttachmentType['id']]['path'] ?>"><?= $this->attachments[$sAttachmentType['id']]['path'] ?></a>
+                                <?php if(isset($this->aAttachments[$sAttachmentType['id']]['path'])): ?>
+                                    <a href="<?= $this->url ?>/attachment/download/id/<?= $this->aAttachments[$sAttachmentType['id']]['id'] ?>/file/<?= urlencode($this->aAttachments[$sAttachmentType['id']]['path']) ?>"><?= $this->aAttachments[$sAttachmentType['id']]['path'] ?></a>
                                 <?php endif; ?>
                             </td>
-                            <td class="statut_fichier1"><?= isset($this->attachments[$sAttachmentType['id']]) === true ? 'Enregistré' : '' ?></td>
+                            <td class="statut_fichier_<?=$sAttachmentType['id']?>"><?= isset($this->aAttachments[$sAttachmentType['id']]) === true ? 'Enregistré' : '' ?></td>
                             <td><input type="file" name="<?=$sAttachmentType['id']?>" id="fichier_project_<?=$sAttachmentType['id']?>"/></td>
                         </tr>
                         <?php endforeach; ?>

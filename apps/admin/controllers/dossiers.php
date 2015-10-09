@@ -324,8 +324,8 @@ class dossiersController extends bootstrap
             }
 
             //Attachment List
-            $this->oAttachment_type = $this->loadData('attachment_type');
-            $this->aAttachmentTypes = $this->oAttachment_type->getAllTypesForProjects();
+            $this->attachment_type = $this->loadData('attachment_type');
+            $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects();
             $this->aAttachments = $this->projects->getAttachments();
             //******************//
             // On lance Altares //
@@ -1853,217 +1853,22 @@ class dossiersController extends bootstrap
         $this->projects          = $this->loadData('projects');
         $this->companies_details = $this->loadData('companies_details');
 
-        // Initialisation
-        $this->tablResult['fichier1']  = 'nok';
-        $this->tablResult['fichier2']  = 'nok';
-        $this->tablResult['fichier3']  = 'nok';
-        $this->tablResult['fichier4']  = 'nok';
-        $this->tablResult['fichier5']  = 'nok';
-        $this->tablResult['fichier6']  = 'nok';
-        $this->tablResult['fichier7']  = 'nok';
-        $this->tablResult['fichier8']  = 'nok';
-        $this->tablResult['fichier9']  = 'nok';
-        $this->tablResult['fichier10'] = 'nok';
-        $this->tablResult['fichier11'] = 'nok';
-        $this->tablResult['fichier12'] = 'nok';
-        $this->tablResult['fichier13'] = 'nok';
-        //$this->tablResult['fichier14'] = 'nok';
-        $this->tablResult['fichier15'] = 'nok';
-        $this->tablResult['fichier16'] = 'nok';
-        $this->tablResult['fichier17'] = 'nok';
-
         if (isset($_POST['send_etape5']) && isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             // Histo user //
             $serialize = serialize(array('id_project' => $this->params[0], 'files' => $_FILES));
             $this->users_history->histo(9, 'dossier edit etapes 5', $_SESSION['user']['id_user'], $serialize);
-            ////////////////
-            // On recup le detail de l'entreprise
-            $this->companies_details->get($this->projects->id_company, 'id_company');
 
-            // extrait_kbis
-            if (isset($_FILES['fichier1']) && $_FILES['fichier1']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/companies/extrait_kbis/');
-                if ($this->upload->doUpload('fichier1')) {
-                    if ($this->companies_details->fichier_extrait_kbis != '') {
-                        @unlink($this->path . 'protected/companies/extrait_kbis/' . $this->companies_details->fichier_extrait_kbis);
-                    }
-                    $this->companies_details->fichier_extrait_kbis = $this->upload->getName();
-                    $this->tablResult['fichier1']                  = 'ok';
-                }
-            }
-            // fichier_rib
-            if (isset($_FILES['fichier2']) && $_FILES['fichier2']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/companies/rib/');
-                if ($this->upload->doUpload('fichier2')) {
-                    if ($this->companies_details->fichier_rib != '') {
-                        @unlink($this->path . 'protected/companies/rib/' . $this->companies_details->fichier_rib);
-                    }
-                    $this->companies_details->fichier_rib = $this->upload->getName();
-                    $this->tablResult['fichier2']         = 'ok';
-                }
-            }
-            // fichier_delegation_pouvoir
-            if (isset($_FILES['fichier3']) && $_FILES['fichier3']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/companies/delegation_pouvoir/');
-                if ($this->upload->doUpload('fichier3')) {
-                    if ($this->companies_details->fichier_delegation_pouvoir != '') {
-                        @unlink($this->path . 'protected/companies/delegation_pouvoir/' . $this->companies_details->fichier_delegation_pouvoir);
-                    }
-                    $this->companies_details->fichier_delegation_pouvoir = $this->upload->getName();
-                    $this->tablResult['fichier3']                        = 'ok';
-                }
-            }
-            // fichier_logo_societe
-            if (isset($_FILES['fichier4']) && $_FILES['fichier4']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'public/default/var/images/logos_companies/');
-                if ($this->upload->doUpload('fichier4')) {
-                    if ($this->companies_details->fichier_logo_societe != '') {
-                        @unlink($this->path . 'public/default/var/images/logos_companies/' . $this->companies_details->fichier_logo_societe);
-                    }
-                    $this->companies_details->fichier_logo_societe = $this->upload->getName();
-                    $this->tablResult['fichier4']                  = 'ok';
-                }
-            }
-            // fichier_photo_dirigeant
-            if (isset($_FILES['fichier5']) && $_FILES['fichier5']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/companies/photo_dirigeant/');
-                if ($this->upload->doUpload('fichier5')) {
-                    if ($this->companies_details->fichier_photo_dirigeant != '') {
-                        @unlink($this->path . 'protected/companies/photo_dirigeant/' . $this->companies_details->fichier_photo_dirigeant);
-                    }
-                    $this->companies_details->fichier_photo_dirigeant = $this->upload->getName();
-                    $this->tablResult['fichier5']                     = 'ok';
-                }
-            }
+            $this->tablResult = array();
 
-            // fichier_cni_passeport
-            if (isset($_FILES['fichier6']) && $_FILES['fichier6']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/companies/cni_passeport/');
-                if ($this->upload->doUpload('fichier6')) {
-                    if ($this->companies_details->fichier_cni_passeport != '') {
-                        @unlink($this->path . 'protected/companies/cni_passeport/' . $this->companies_details->fichier_cni_passeport);
+            foreach ($_FILES as $field => $file) {
+                //We made the field name = attachment type id
+                $iAttachmentType = $field;
+                if('' !== $file['name']) {
+                    if($this->uploadAttachment($this->projects->id_project, $field, $iAttachmentType, $_FILES)) {
+                        $this->tablResult['fichier_'.$iAttachmentType] = 'ok';
                     }
-                    $this->companies_details->fichier_cni_passeport = $this->upload->getName();
-                    $this->tablResult['fichier6']                   = 'ok';
                 }
             }
-            // fichier_derniere_liasse_fiscale
-            if (isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/companies/derniere_liasse_fiscale/');
-                if ($this->upload->doUpload('fichier7')) {
-                    if ($this->companies_details->fichier_derniere_liasse_fiscale != '') {
-                        @unlink($this->path . 'protected/companies/derniere_liasse_fiscale/' . $this->companies_details->fichier_derniere_liasse_fiscale);
-                    }
-                    $this->companies_details->fichier_derniere_liasse_fiscale = $this->upload->getName();
-                    $this->tablResult['fichier7']                             = 'ok';
-                }
-            }
-            // fichier_derniers_comptes_approuves
-            if (isset($_FILES['fichier8']) && $_FILES['fichier8']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/companies/derniers_comptes_approuves/');
-                if ($this->upload->doUpload('fichier8')) {
-                    if ($this->companies_details->fichier_derniers_comptes_approuves != '') {
-                        @unlink($this->path . 'protected/companies/derniers_comptes_approuves/' . $this->companies_details->fichier_derniers_comptes_approuves);
-                    }
-                    $this->companies_details->fichier_derniers_comptes_approuves = $this->upload->getName();
-                    $this->tablResult['fichier8']                                = 'ok';
-                }
-            }
-            // fichier_derniers_comptes_consolides_groupe
-            if (isset($_FILES['fichier9']) && $_FILES['fichier9']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/companies/derniers_comptes_consolides_groupe/');
-                if ($this->upload->doUpload('fichier9')) {
-                    if ($this->companies_details->fichier_derniers_comptes_consolides_groupe != '') {
-                        @unlink($this->path . 'protected/companies/derniers_comptes_consolides_groupe/' . $this->companies_details->fichier_derniers_comptes_consolides_groupe);
-                    }
-                    $this->companies_details->fichier_derniers_comptes_consolides_groupe = $this->upload->getName();
-                    $this->tablResult['fichier9']                                        = 'ok';
-                }
-            }
-            // fichier_annexes_rapport_special_commissaire_compte
-            if (isset($_FILES['fichier10']) && $_FILES['fichier10']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/companies/annexes_rapport_special_commissaire_compte/');
-                if ($this->upload->doUpload('fichier10')) {
-                    if ($this->companies_details->fichier_annexes_rapport_special_commissaire_compte != '') {
-                        @unlink($this->path . 'protected/companies/annexes_rapport_special_commissaire_compte/' . $this->companies_details->fichier_annexes_rapport_special_commissaire_compte);
-                    }
-                    $this->companies_details->fichier_annexes_rapport_special_commissaire_compte = $this->upload->getName();
-                    $this->tablResult['fichier10']                                               = 'ok';
-                }
-            }
-            // fichier_arret_comptable_recent
-            if (isset($_FILES['fichier11']) && $_FILES['fichier11']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/companies/arret_comptable_recent/');
-                if ($this->upload->doUpload('fichier11')) {
-                    if ($this->companies_details->fichier_arret_comptable_recent != '') {
-                        @unlink($this->path . 'protected/companies/arret_comptable_recent/' . $this->companies_details->fichier_arret_comptable_recent);
-                    }
-                    $this->companies_details->fichier_arret_comptable_recent = $this->upload->getName();
-                    $this->tablResult['fichier11']                           = 'ok';
-                }
-            }
-            // fichier_budget_exercice_en_cours_a_venir
-            if (isset($_FILES['fichier12']) && $_FILES['fichier12']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/companies/budget_exercice_en_cours_a_venir/');
-                if ($this->upload->doUpload('fichier12')) {
-                    if ($this->companies_details->fichier_budget_exercice_en_cours_a_venir != '') {
-                        @unlink($this->path . 'protected/companies/budget_exercice_en_cours_a_venir/' . $this->companies_details->fichier_budget_exercice_en_cours_a_venir);
-                    }
-                    $this->companies_details->fichier_budget_exercice_en_cours_a_venir = $this->upload->getName();
-                    $this->tablResult['fichier12']                                     = 'ok';
-                }
-            }
-            // fichier_notation_banque_france
-            if (isset($_FILES['fichier13']) && $_FILES['fichier13']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/companies/notation_banque_france/');
-                if ($this->upload->doUpload('fichier13')) {
-                    if ($this->companies_details->fichier_notation_banque_france != '') {
-                        @unlink($this->path . 'protected/companies/notation_banque_france/' . $this->companies_details->fichier_notation_banque_france);
-                    }
-                    $this->companies_details->fichier_notation_banque_france = $this->upload->getName();
-                    $this->tablResult['fichier13']                           = 'ok';
-                }
-            }
-
-            // fichier_autre_1
-            if (isset($_FILES['fichier15']) && $_FILES['fichier15']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/companies/autres/');
-                if ($this->upload->doUpload('fichier15')) {
-                    if ($this->companies_details->fichier_autre_1 != '') {
-                        @unlink($this->path . 'protected/companies/autres/' . $this->companies_details->fichier_autre_1);
-                    }
-                    $this->companies_details->fichier_autre_1 = $this->upload->getName();
-                    $this->tablResult['fichier15']            = 'ok';
-                }
-            }
-
-            // fichier_autre_2
-            if (isset($_FILES['fichier16']) && $_FILES['fichier16']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/companies/autres/');
-                if ($this->upload->doUpload('fichier16')) {
-                    if ($this->companies_details->fichier_autre_2 != '') {
-                        @unlink($this->path . 'protected/companies/autres/' . $this->companies_details->fichier_autre_2);
-                    }
-                    $this->companies_details->fichier_autre_2 = $this->upload->getName();
-                    $this->tablResult['fichier16']            = 'ok';
-                }
-            }
-
-            // fichier_autre_3
-            if (isset($_FILES['fichier17']) && $_FILES['fichier17']['name'] != '') {
-                $this->upload->setUploadDir($this->path, 'protected/companies/autres/');
-                if ($this->upload->doUpload('fichier17')) {
-                    if ($this->companies_details->fichier_autre_3 != '') {
-                        @unlink($this->path . 'protected/companies/autres/' . $this->companies_details->fichier_autre_3);
-                    }
-                    $this->companies_details->fichier_autre_3 = $this->upload->getName();
-                    $this->tablResult['fichier17']            = 'ok';
-                }
-            }
-
-            // Enregistrement des images
-            $this->companies_details->update();
-
             $this->result = json_encode($this->tablResult);
         }
     }
@@ -2274,6 +2079,11 @@ class dossiersController extends bootstrap
             $this->date_dernier_bilan_jour  = $dateDernierBilan[2];
             $this->date_dernier_bilan_mois  = $dateDernierBilan[1];
             $this->date_dernier_bilan_annee = $dateDernierBilan[0];
+
+            //Attachment List
+            $this->attachment_type = $this->loadData('attachment_type');
+            $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects();
+            $this->aAttachments = $this->projects->getAttachments();
 
             //******************//
             // On lance Altares //
@@ -3738,5 +3548,45 @@ class dossiersController extends bootstrap
             $this->phrase_resultat       = "<div style='color:red;'>Remboursement impossible <br />Toutes les &eacute;ch&eacute;ances pr&eacute;c&eacute;dentes ne sont pas rembours&eacute;es</div>";
             $this->ra_possible_all_payed = false;
         }
+    }
+
+    /**
+     * @param integer $iOwnerId
+     * @param integer $field
+     * @param integer $iAttachmentType
+     * @param array $aFiles
+     * @return bool
+     */
+    private function uploadAttachment($iOwnerId, $field, $iAttachmentType, $aFiles = null)
+    {
+        if ($aFiles === null) {
+            $aFiles = $_FILES;
+        }
+
+        if (false === isset($this->upload) || false === $this->upload instanceof upload) {
+            $this->upload = $this->loadLib('upload');
+        }
+
+        if (false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
+            $this->attachment = $this->loadData('attachment');
+        }
+
+        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
+            $this->attachment_type = $this->loadData('attachment_type');
+        }
+
+        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
+            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type));;
+        }
+
+        //add the new name for each file
+        $sNewName = '';
+        if(isset($aFiles[$field]['name']) && $aFileInfo = pathinfo($aFiles[$field]['name'])) {
+            $sNewName = $aFileInfo['filename'] . '_' . $iOwnerId;
+        }
+
+        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::PROJECT, $iAttachmentType, $field, $this->path, $this->upload, $sNewName);
+
+        return $resultUpload;
     }
 }

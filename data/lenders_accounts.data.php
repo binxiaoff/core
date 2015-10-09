@@ -157,7 +157,7 @@ class lenders_accounts extends lenders_accounts_crud
 			$lender = $this->id_lender_account;
 		}
 
-		if ($lender) {
+		if (! $lender) {
 			return false;
 		}
 

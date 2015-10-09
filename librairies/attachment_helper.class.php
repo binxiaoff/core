@@ -3,8 +3,19 @@
 class attachment_helper
 {
     const PATH_LENDER = 'protected/lenders/';
-    const PATH_COMPANY = 'protected/companies/';
     const PATH_PROJECT = 'protected/projects/';
+
+    /** @var  attachment */
+    private $oAttachment;
+
+    /** @var  attachment_type */
+    private $oAttachmentType;
+
+    public function __construct($aAttributes)
+    {
+        $this->oAttachment     = $aAttributes[0];
+        $this->oAttachmentType = $aAttributes[1];
+    }
     /**
      * @param integer    $ownerId
      * @param string     $ownerType
@@ -12,7 +23,6 @@ class attachment_helper
      * @param string     $field
      * @param string     $basePath
      * @param upload     $upload
-     * @param attachment $attachment
      * @param string     $sNewName
      * @param array      $aFiles
      *
@@ -25,7 +35,6 @@ class attachment_helper
         $field,
         $basePath,
         $upload,
-        $attachment,
         $sNewName = '',
         $aFiles = null
     ) {
@@ -37,7 +46,7 @@ class attachment_helper
             return false;
         }
 
-        if (false === ($attachment instanceof \attachment)) {
+        if (! $this->oAttachment instanceof attachment || ! $this->oAttachmentType instanceof attachment_type) {
             return false;
         }
 
@@ -57,7 +66,7 @@ class attachment_helper
             return false;
         }
 
-        $attachmentInfo = $attachment->select(
+        $attachmentInfo = $this->oAttachment->select(
             'id_owner = ' . $ownerId . '
             AND type_owner = "' . $ownerType . '"
             AND id_type = ' . $attachmentType
@@ -67,13 +76,13 @@ class attachment_helper
             @unlink($basePath . $uploadPath . $attachmentInfo[0]['path']);
         }
 
-        $attachment->id_type    = $attachmentType;
-        $attachment->id_owner   = $ownerId;
-        $attachment->type_owner = $ownerType;
-        $attachment->path       = $upload->getName();
-        $attachment->archived   = null;
+        $this->oAttachment->id_type    = $attachmentType;
+        $this->oAttachment->id_owner   = $ownerId;
+        $this->oAttachment->type_owner = $ownerType;
+        $this->oAttachment->path       = $upload->getName();
+        $this->oAttachment->archived   = null;
 
-        $attachment_id = $attachment->save();
+        $attachment_id = $this->oAttachment->save();
 
         if (false === is_numeric($attachment_id)) {
             return false;
@@ -82,7 +91,7 @@ class attachment_helper
         return $attachment_id;
     }
 
-    private function getUploadPath($sOwnerType, $iDocumentType)
+    public function getUploadPath($sOwnerType, $iDocumentType)
     {
         switch ($sOwnerType) {
             case attachment::LENDER:
@@ -179,6 +188,8 @@ class attachment_helper
                 return 'balance_fournisseur/';
             case attachment_type::ETAT_PRIVILEGES_NANTISSEMENTS:
                 return 'etat_privileges_nantissements/';
+            case attachment_type::COMPANY_LOGO:
+                return 'logo_company/';
             default:
                 return '';
         }

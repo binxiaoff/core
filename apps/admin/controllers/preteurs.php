@@ -282,6 +282,7 @@ class preteursController extends bootstrap
 
         //attachments
         $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects();
 
         // liste des bids en cour
         $this->lBids = $this->bids->select('id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND status = 0', 'added DESC');
@@ -437,7 +438,7 @@ class preteursController extends bootstrap
 
         //attachements
         $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-
+        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects();
         // liste des cvg signé
         $this->lAcceptCGV = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
 
@@ -600,57 +601,13 @@ class preteursController extends bootstrap
                 else $this->lenders_accounts->precision = '';
 
                 // debut fichiers //
-
-                // carte-nationale-didentite-passeport
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
-
-                // CNI passeport verso
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
-
-                // justificatif-de-domicile
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
-
-                // RIB
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
-
-                //Attestation d'hebergement par un tiers
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::ATTESTATION_HEBERGEMENT_TIERS);
-
-                //CNI/Passport du tiers hébergeant
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
-
-                // CNI/Passeport dirigeants
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
-
-                // Délégation de pouvoir
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
-
-                // Extrait Kbis
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
-
-                // document_fiscal
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
-
-                //autre1
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
-
-                //autre2
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE2);
-
-                //autre3
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE3);
-
-                // Dispense de prélèvement 2014
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2014);
-
-                // Dispense de prélèvement 2015
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2015);
-
-                // Dispense de prélèvement 2016
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2016);
-
-                //Dispense de prélèvement 2017
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2017);
+                foreach ($_FILES as $field => $file) {
+                    //We made the field name = attachment type id
+                    $iAttachmentType = $field;
+                    if('' !== $file['name']) {
+                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType, $_FILES);
+                    }
+                }
 
                 // Mandat
                 if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
@@ -1074,56 +1031,13 @@ class preteursController extends bootstrap
 
                 // debut fichiers //
 
-                // carte-nationale-didentite-passeport
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
-
-                // CNI passeport verso
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
-
-                // justificatif-de-domicile
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
-
-                // RIB
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
-
-                //Attestation d'hebergement par un tiers
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::ATTESTATION_HEBERGEMENT_TIERS);
-
-                //CNI/Passport du tiers hébergeant
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
-
-                // CNI/Passeport dirigeants
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
-
-                // Délégation de pouvoir
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
-
-                // Extrait Kbis
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
-
-                // document_fiscal
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
-
-                //autre1
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
-
-                //autre2
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE2);
-
-                //autre3
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE3);
-
-                // Dispense de prélèvement 2014
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2014);
-
-                // Dispense de prélèvement 2015
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2015);
-
-                // Dispense de prélèvement 2016
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2016);
-
-                //Dispense de prélèvement 2017
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DISPENSE_PRELEVEMENT_2017);
+                foreach ($_FILES as $field => $file) {
+                    //We made the field name = attachment type id
+                    $iAttachmentType = $field;
+                    if('' !== $file['name']) {
+                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType, $_FILES);
+                    }
+                }
 
                 // Mandat
                 if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
@@ -2198,16 +2112,17 @@ class preteursController extends bootstrap
             }
         }
     }
-
     /**
-     * @param integer $lenderAccountId
-     * @param integer $attachmentType
+     * @param integer $iOwnerId
+     * @param integer $field
+     * @param integer $iAttachmentType
+     * @param array $aFiles
      * @return bool
      */
-    private function uploadAttachment($lenderAccountId, $attachmentType)
+    private function uploadAttachment($iOwnerId, $field, $iAttachmentType, $aFiles = null)
     {
-        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper');
+        if ($aFiles === null) {
+            $aFiles = $_FILES;
         }
 
         if (false === isset($this->upload) || false === $this->upload instanceof upload) {
@@ -2218,63 +2133,23 @@ class preteursController extends bootstrap
             $this->attachment = $this->loadData('attachment');
         }
 
-        switch ($attachmentType) {
-            case attachment_type::CNI_PASSPORTE:
-                $field = 'cni_passeport';
-                break;
-            case attachment_type::CNI_PASSPORTE_VERSO:
-                $field = 'cni_passeport_verso';
-                break;
-            case attachment_type::JUSTIFICATIF_DOMICILE:
-                $field = 'justificatif_domicile';
-                break;
-            case attachment_type::RIB:
-                $field = 'rib';
-                break;
-            case attachment_type::ATTESTATION_HEBERGEMENT_TIERS:
-                $field = 'attestation_hebergement_tiers';
-                break;
-            case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT:
-                $field = 'cni_passport_tiers_hebergeant';
-                break;
-            case attachment_type::CNI_PASSPORTE_DIRIGEANT:
-                $field = 'cni_passeport_dirigeant';
-                break;
-            case attachment_type::DELEGATION_POUVOIR:
-                $field = 'delegation_pouvoir';
-                break;
-            case attachment_type::KBIS:
-                $field = 'extrait_kbis';
-                break;
-            case attachment_type::JUSTIFICATIF_FISCAL:
-                $field = 'document_fiscal';
-                break;
-            case attachment_type::AUTRE1:
-                $field = 'autre1';
-                break;
-            case attachment_type::AUTRE2:
-                $field = 'autre2';
-                break;
-            case attachment_type::AUTRE3:
-                $field = 'autre3';
-                break;
-            case attachment_type::DISPENSE_PRELEVEMENT_2014:
-                $field = 'dispense_prelevement_2014';
-                break;
-            case attachment_type::DISPENSE_PRELEVEMENT_2015:
-                $field = 'dispense_prelevement_2015';
-                break;
-            case attachment_type::DISPENSE_PRELEVEMENT_2016:
-                $field = 'dispense_prelevement_2016';
-                break;
-            case attachment_type::DISPENSE_PRELEVEMENT_2017:
-                $field = 'dispense_prelevement_2017';
-                break;
-            default:
-                return false;
+        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
+            $this->attachment_type = $this->loadData('attachment_type');
         }
 
-        return $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->path, $this->upload, $this->attachment);
+        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
+            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type));;
+        }
+
+        //add the new name for each file
+        $sNewName = '';
+        if(isset($aFiles[$field]['name']) && $aFileInfo = pathinfo($aFiles[$field]['name'])) {
+            $sNewName = mb_substr($aFileInfo['filename'], 0, 30) . '_' . $iOwnerId;
+        }
+
+        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::LENDER, $iAttachmentType, $field, $this->path, $this->upload, $sNewName);
+
+        return $resultUpload;
     }
 
     public function _email_history()
