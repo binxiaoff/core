@@ -175,8 +175,7 @@ class dossiersController extends bootstrap
             // Si existe pas on créer les champs
             if ($this->lCompanies_actif_passif == false) {
                 $i = 1;
-                foreach ($this->lCompanies_actif_passif as $c)
-                //for($i=1;$i<=3;$i++)
+                foreach ($this->lCompanies_actif_passif as $c) //for($i=1;$i<=3;$i++)
                 {
                     if ($c['annee'] <= $dernierBilan) {
                         $a                                        = 0;
@@ -627,7 +626,7 @@ class dossiersController extends bootstrap
                             $_SESSION['freeow']['message'] .= 'Erreur upload photo : taille max dépassée (' . $this->Config['images']['projets']['width'] . 'x' . $this->Config['images']['projets']['height'] . ')<br>';
                         } elseif ($this->upload->doUpload('photo_projet', '', true)) {
                             // Delete previous image of the name was different from the new one
-                            if (! empty($this->projects->photo_projet) && $this->projects->photo_projet != $this->upload->getName()) {
+                            if (!empty($this->projects->photo_projet) && $this->projects->photo_projet != $this->upload->getName()) {
                                 @unlink($this->path . 'public/default/images/dyn/projets/source/' . $this->projects->photo_projet);
                             }
                             $this->projects->photo_projet = $this->upload->getName();
@@ -794,8 +793,8 @@ class dossiersController extends bootstrap
                             $mess .= '</ul>';
 
                             if (strlen($mess) > 9) {
-                                $to      = implode(',', $this->Config['DebugAlertesBusiness']);
-                                $to     .= ($this->Config['env'] == 'prod') ? ', nicolas.lesur@unilend.fr' : '';
+                                $to = implode(',', $this->Config['DebugAlertesBusiness']);
+                                $to .= ($this->Config['env'] == 'prod') ? ', nicolas.lesur@unilend.fr' : '';
                                 $subject = '[Rappel] Donnees projet manquantes';
                                 $message = '
                                 <html>
@@ -965,16 +964,16 @@ class dossiersController extends bootstrap
 
                                     // Variables du mailing
                                     $varMail = array(
-                                        'surl' => $this->surl,
-                                        'url' => $this->furl,
-                                        'prenom_p' => $this->clients->prenom,
-                                        'valeur_bid' => number_format($p['amount'] / 100, 2, ',', ' '),
-                                        'nom_entreprise' => $this->companies->name,
+                                        'surl'              => $this->surl,
+                                        'url'               => $this->furl,
+                                        'prenom_p'          => $this->clients->prenom,
+                                        'valeur_bid'        => number_format($p['amount'] / 100, 2, ',', ' '),
+                                        'nom_entreprise'    => $this->companies->name,
                                         'montant_rembourse' => number_format($rembNet, 2, ',', ' '),
-                                        'cab_recouvrement' => $this->cab,
-                                        'motif_virement' => $motif,
-                                        'lien_fb' => $lien_fb,
-                                        'lien_tw' => $lien_tw);
+                                        'cab_recouvrement'  => $this->cab,
+                                        'motif_virement'    => $motif,
+                                        'lien_fb'           => $lien_fb,
+                                        'lien_tw'           => $lien_tw);
 
                                     // Construction du tableau avec les balises EMV
                                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
@@ -1042,15 +1041,15 @@ class dossiersController extends bootstrap
 
                                     // Variables du mailing
                                     $varMail = array(
-                                        'surl' => $this->surl,
-                                        'url' => $this->furl,
-                                        'prenom_p' => $this->clients->prenom,
-                                        'date_probleme' => $DateProbleme,
+                                        'surl'             => $this->surl,
+                                        'url'              => $this->furl,
+                                        'prenom_p'         => $this->clients->prenom,
+                                        'date_probleme'    => $DateProbleme,
                                         'cab_recouvrement' => $this->cab,
-                                        'nom_entreprise' => $this->companies->name,
-                                        'motif_virement' => $motif,
-                                        'lien_fb' => $lien_fb,
-                                        'lien_tw' => $lien_tw);
+                                        'nom_entreprise'   => $this->companies->name,
+                                        'motif_virement'   => $motif,
+                                        'lien_fb'          => $lien_fb,
+                                        'lien_tw'          => $lien_tw);
 
                                     // Construction du tableau avec les balises EMV
                                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
@@ -1112,14 +1111,14 @@ class dossiersController extends bootstrap
 
                                     // Variables du mailing
                                     $varMail = array(
-                                        'surl' => $this->surl,
-                                        'url' => $this->furl,
-                                        'prenom_p' => $this->clients->prenom,
-                                        'date_probleme' => $DateProbleme,
+                                        'surl'             => $this->surl,
+                                        'url'              => $this->furl,
+                                        'prenom_p'         => $this->clients->prenom,
+                                        'date_probleme'    => $DateProbleme,
                                         'cab_recouvrement' => $this->cab,
-                                        'nom_entreprise' => $this->companies->name,
-                                        'lien_fb' => $lien_fb,
-                                        'lien_tw' => $lien_tw);
+                                        'nom_entreprise'   => $this->companies->name,
+                                        'lien_fb'          => $lien_fb,
+                                        'lien_tw'          => $lien_tw);
 
                                     // Construction du tableau avec les balises EMV
                                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
@@ -1285,15 +1284,15 @@ class dossiersController extends bootstrap
 
                                 // Variables du mailing
                                 $varMail = array(
-                                    'surl' => $this->surl,
-                                    'url' => $this->furl,
-                                    'prenom_p' => $clients->prenom,
-                                    'valeur_bid' => number_format($l['amount'] / 100, 0, ',', ' '),
-                                    'nom_entreprise' => $companies->name,
+                                    'surl'              => $this->surl,
+                                    'url'               => $this->furl,
+                                    'prenom_p'          => $clients->prenom,
+                                    'valeur_bid'        => number_format($l['amount'] / 100, 0, ',', ' '),
+                                    'nom_entreprise'    => $companies->name,
                                     'nb_preteurMoinsUn' => ($nb_loans - 1),
-                                    'motif_virement' => $motif,
-                                    'lien_fb' => $lien_fb,
-                                    'lien_tw' => $lien_tw);
+                                    'motif_virement'    => $motif,
+                                    'lien_fb'           => $lien_fb,
+                                    'lien_tw'           => $lien_tw);
 
 
                                 // Construction du tableau avec les balises EMV
@@ -1565,21 +1564,21 @@ class dossiersController extends bootstrap
 
                                             // Variables du mailing
                                             $varMail = array(
-                                                'surl' => $surl,
-                                                'url' => $url,
-                                                'prenom_p' => $prenom,
-                                                'valeur_bid' => $montant_pret,
-                                                'taux_bid' => $taux,
+                                                'surl'           => $surl,
+                                                'url'            => $url,
+                                                'prenom_p'       => $prenom,
+                                                'valeur_bid'     => $montant_pret,
+                                                'taux_bid'       => $taux,
                                                 'nom_entreprise' => $entreprise,
-                                                'nbre_echeance' => $duree,
-                                                'mensualite_p' => number_format($lecheancier['montant'] / 100, 2, ',', ' '),
-                                                'date_debut' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                                                'compte-p' => $this->furl,
-                                                'projet-p' => $this->furl . '/projects/detail/' . $this->projects->slug,
-                                                'link_contrat' => $link_contrat,
+                                                'nbre_echeance'  => $duree,
+                                                'mensualite_p'   => number_format($lecheancier['montant'] / 100, 2, ',', ' '),
+                                                'date_debut'     => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
+                                                'compte-p'       => $this->furl,
+                                                'projet-p'       => $this->furl . '/projects/detail/' . $this->projects->slug,
+                                                'link_contrat'   => $link_contrat,
                                                 'motif_virement' => $motif,
-                                                'lien_fb' => $lien_fb,
-                                                'lien_tw' => $lien_tw);
+                                                'lien_fb'        => $lien_fb,
+                                                'lien_tw'        => $lien_tw);
 
                                             // Construction du tableau avec les balises EMV
                                             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
@@ -1641,20 +1640,20 @@ class dossiersController extends bootstrap
 
                                 // Variables du mailing
                                 $varMail = array(
-                                    'surl' => $this->surl,
-                                    'url' => $this->furl,
-                                    'prenom' => $lemprunteur->prenom,
-                                    'entreprise' => $laCompanie->name,
-                                    'pret' => number_format($leProject->amount, 2, ',', ' '),
-                                    'projet-title' => $leProject->title,
-                                    'compte-p' => $this->furl,
-                                    'projet-p' => $this->furl . '/projects/detail/' . $leProject->slug,
-                                    'link_facture' => $this->furl . '/pdf/facture_EF/' . $lemprunteur->hash . '/' . $leProject->id_project . '/',
+                                    'surl'            => $this->surl,
+                                    'url'             => $this->furl,
+                                    'prenom'          => $lemprunteur->prenom,
+                                    'entreprise'      => $laCompanie->name,
+                                    'pret'            => number_format($leProject->amount, 2, ',', ' '),
+                                    'projet-title'    => $leProject->title,
+                                    'compte-p'        => $this->furl,
+                                    'projet-p'        => $this->furl . '/projects/detail/' . $leProject->slug,
+                                    'link_facture'    => $this->furl . '/pdf/facture_EF/' . $lemprunteur->hash . '/' . $leProject->id_project . '/',
                                     'datedelafacture' => $dateStatutRemb,
-                                    'mois' => strtolower($this->dates->tableauMois['fr'][date('n')]),
-                                    'annee' => date('Y'),
-                                    'lien_fb' => $lien_fb,
-                                    'lien_tw' => $lien_tw);
+                                    'mois'            => strtolower($this->dates->tableauMois['fr'][date('n')]),
+                                    'annee'           => date('Y'),
+                                    'lien_fb'         => $lien_fb,
+                                    'lien_tw'         => $lien_tw);
 
                                 // Construction du tableau avec les balises EMV
                                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
@@ -3077,17 +3076,17 @@ class dossiersController extends bootstrap
 
                                                 // Variables du mailing
                                                 $varMail = array(
-                                                    'surl' => $this->surl,
-                                                    'url' => $this->furl,
-                                                    'prenom_p' => $this->clients->prenom,
+                                                    'surl'             => $this->surl,
+                                                    'url'              => $this->furl,
+                                                    'prenom_p'         => $this->clients->prenom,
                                                     'cab_recouvrement' => $this->cab,
-                                                    'mensualite_p' => number_format($rembNet, 2, ',', ' '),
-                                                    'nom_entreprise' => $this->companies->name,
-                                                    'solde_p' => $this->transactions->getSolde($this->clients->id_client),
-                                                    'link_echeancier' => $this->furl,
-                                                    'motif_virement' => $motif,
-                                                    'lien_fb' => $lien_fb,
-                                                    'lien_tw' => $lien_tw);
+                                                    'mensualite_p'     => number_format($rembNet, 2, ',', ' '),
+                                                    'nom_entreprise'   => $this->companies->name,
+                                                    'solde_p'          => $this->transactions->getSolde($this->clients->id_client),
+                                                    'link_echeancier'  => $this->furl,
+                                                    'motif_virement'   => $motif,
+                                                    'lien_fb'          => $lien_fb,
+                                                    'lien_tw'          => $lien_tw);
 
                                                 // Construction du tableau avec les balises EMV
                                                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
@@ -3152,18 +3151,18 @@ class dossiersController extends bootstrap
 
                                                 // Variables du mailing
                                                 $varMail = array(
-                                                    'surl' => $surl,
-                                                    'url' => $url,
-                                                    'prenom_p' => utf8_decode($this->clients->prenom),
-                                                    'mensualite_p' => $rembNetEmail,
+                                                    'surl'                  => $surl,
+                                                    'url'                   => $url,
+                                                    'prenom_p'              => utf8_decode($this->clients->prenom),
+                                                    'mensualite_p'          => $rembNetEmail,
                                                     'mensualite_avantfisca' => ($e['montant'] / 100),
-                                                    'nom_entreprise' => utf8_decode($this->companies->name),
-                                                    'date_bid_accepte' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                                                    'nbre_prets' => $nbpret,
-                                                    'solde_p' => $solde,
-                                                    'motif_virement' => $motif,
-                                                    'lien_fb' => $lien_fb,
-                                                    'lien_tw' => $lien_tw);
+                                                    'nom_entreprise'        => utf8_decode($this->companies->name),
+                                                    'date_bid_accepte'      => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
+                                                    'nbre_prets'            => $nbpret,
+                                                    'solde_p'               => $solde,
+                                                    'motif_virement'        => $motif,
+                                                    'lien_fb'               => $lien_fb,
+                                                    'lien_tw'               => $lien_tw);
 
                                                 // Construction du tableau avec les balises EMV
                                                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
@@ -3233,18 +3232,18 @@ class dossiersController extends bootstrap
 
                                                     // Variables du mailing
                                                     $varMail = array(
-                                                        'surl' => $surl,
-                                                        'url' => $url,
-                                                        'prenom_p' => $this->clients->prenom,
-                                                        'mensualite_p' => $rembNetEmail,
+                                                        'surl'                  => $surl,
+                                                        'url'                   => $url,
+                                                        'prenom_p'              => $this->clients->prenom,
+                                                        'mensualite_p'          => $rembNetEmail,
                                                         'mensualite_avantfisca' => ($e['montant'] / 100),
-                                                        'nom_entreprise' => $this->companies->name,
-                                                        'date_bid_accepte' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                                                        'nbre_prets' => $nbpret,
-                                                        'solde_p' => $solde,
-                                                        'motif_virement' => $motif,
-                                                        'lien_fb' => $lien_fb,
-                                                        'lien_tw' => $lien_tw);
+                                                        'nom_entreprise'        => $this->companies->name,
+                                                        'date_bid_accepte'      => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
+                                                        'nbre_prets'            => $nbpret,
+                                                        'solde_p'               => $solde,
+                                                        'motif_virement'        => $motif,
+                                                        'lien_fb'               => $lien_fb,
+                                                        'lien_tw'               => $lien_tw);
 
                                                     // Construction du tableau avec les balises EMV
                                                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
@@ -3348,20 +3347,20 @@ class dossiersController extends bootstrap
 
                                 // Variables du mailing
                                 $varMail = array(
-                                    'surl' => $this->surl,
-                                    'url' => $this->furl,
-                                    'prenom' => $emprunteur->prenom,
-                                    'pret' => number_format($projects->amount, 2, ',', ' '),
-                                    'entreprise' => stripslashes(trim($companies->name)),
-                                    'projet-title' => $projects->title,
-                                    'compte-p' => $this->furl,
-                                    'projet-p' => $this->furl . '/projects/detail/' . $projects->slug,
-                                    'link_facture' => $link,
+                                    'surl'            => $this->surl,
+                                    'url'             => $this->furl,
+                                    'prenom'          => $emprunteur->prenom,
+                                    'pret'            => number_format($projects->amount, 2, ',', ' '),
+                                    'entreprise'      => stripslashes(trim($companies->name)),
+                                    'projet-title'    => $projects->title,
+                                    'compte-p'        => $this->furl,
+                                    'projet-p'        => $this->furl . '/projects/detail/' . $projects->slug,
+                                    'link_facture'    => $link,
                                     'datedelafacture' => $dateRemb,
-                                    'mois' => strtolower($this->dates->tableauMois['fr'][date('n')]),
-                                    'annee' => date('Y'),
-                                    'lien_fb' => $lien_fb,
-                                    'lien_tw' => $lien_tw);
+                                    'mois'            => strtolower($this->dates->tableauMois['fr'][date('n')]),
+                                    'annee'           => date('Y'),
+                                    'lien_fb'         => $lien_fb,
+                                    'lien_tw'         => $lien_tw);
 
                                 // Construction du tableau avec les balises EMV
                                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
@@ -3619,20 +3618,20 @@ class dossiersController extends bootstrap
 
                         // Variables du mailing
                         $varMail = array(
-                            'surl' => $this->surl,
-                            'url' => $this->furl,
-                            'prenom_p' => $this->clients->prenom,
-                            'nomproject' => $this->projects->title,
-                            'nom_entreprise' => $this->companies->name,
-                            'taux_bid' => number_format($loans->rate, 2, ',', ' '),
+                            'surl'                 => $this->surl,
+                            'url'                  => $this->furl,
+                            'prenom_p'             => $this->clients->prenom,
+                            'nomproject'           => $this->projects->title,
+                            'nom_entreprise'       => $this->companies->name,
+                            'taux_bid'             => number_format($loans->rate, 2, ',', ' '),
                             'nbecheancesrestantes' => $sum_ech_restant,
-                            'interetsdejaverses' => number_format($sum_interet, 2, ',', ' '),
-                            'crdpreteur' => $rembNetEmail,
-                            'Datera' => date('d/m/Y'),
-                            'solde_p' => $solde,
-                            'motif_virement' => $motif,
-                            'lien_fb' => $lien_fb,
-                            'lien_tw' => $lien_tw);
+                            'interetsdejaverses'   => number_format($sum_interet, 2, ',', ' '),
+                            'crdpreteur'           => $rembNetEmail,
+                            'Datera'               => date('d/m/Y'),
+                            'solde_p'              => $solde,
+                            'motif_virement'       => $motif,
+                            'lien_fb'              => $lien_fb,
+                            'lien_tw'              => $lien_tw);
 
                         // Construction du tableau avec les balises EMV
                         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
