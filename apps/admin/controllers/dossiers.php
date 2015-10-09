@@ -3908,10 +3908,10 @@ class dossiersController extends bootstrap
 
         //Récupération de la date theorique de remb ( ON AJOUTE ICI LA ZONE TAMPON DE 3 JOURS APRES LECHEANCE)
         $L_echeance     = $this->echeanciers->select(" id_project = " . $id_project . " AND DATE_ADD(date_echeance,INTERVAL 3 DAY) > NOW()", 'ordre ASC', 0, 1);
-        $next_echeanche = $L_echeance[0];
+        $next_echeanche = (isset($L_echeance[0])) ? $L_echeance[0] : null;
 
 
-        $ordre_echeance_ra = $L_echeance[0]['ordre'] + 1;
+        $ordre_echeance_ra = (isset($L_echeance[0])) ? $L_echeance[0]['ordre'] + 1 : 0;
 
 
         $date_next_echeance = $next_echeanche['date_echeance'];
@@ -3926,41 +3926,41 @@ class dossiersController extends bootstrap
         if ($dateEcheance != "" && isset($dateEcheance)) {
             $date_next_echeance_4jouvres_avant_stamp = $jo->display_jours_ouvres($dateEcheance, 4);
         }
+        if(false === empty($next_echeanche)) {
+            // on check si la date limite est pas déjà dépassé. Si oui on prend la prochaine echeance
+            if ($date_next_echeance_4jouvres_avant_stamp <= time()) {
+                // Dans ce cas, on connait donc déjà la derniere echeance qui se déroulera normalement
+                $derniere_echeance_normale            = $next_echeanche;
+                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($derniere_echeance_normale['date_echeance']);
 
-        // on check si la date limite est pas déjà dépassé. Si oui on prend la prochaine echeance
-        if ($date_next_echeance_4jouvres_avant_stamp <= time()) {
-            // Dans ce cas, on connait donc déjà la derniere echeance qui se déroulera normalement
-            $derniere_echeance_normale            = $next_echeanche;
-            $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($derniere_echeance_normale['date_echeance']);
-
-            // on va recup la date de la derniere echeance qui suit le process de base
-            $L_echeance = $this->echeanciers->select(" id_project = " . $id_project . " AND DATE_ADD(date_echeance,INTERVAL 3 DAY) > NOW() AND ordre = " . ($ordre_echeance_ra + 1), 'ordre ASC', 0, 1);
+                // on va recup la date de la derniere echeance qui suit le process de base
+                $L_echeance = $this->echeanciers->select(" id_project = " . $id_project . " AND DATE_ADD(date_echeance,INTERVAL 3 DAY) > NOW() AND ordre = " . ($ordre_echeance_ra + 1), 'ordre ASC', 0, 1);
 
 
-            if (count($L_echeance) > 0) {
-                // on refait le meme process pour la nouvelle date
-                $next_echeanche = $L_echeance[0];
+                if (count($L_echeance) > 0) {
+                    // on refait le meme process pour la nouvelle date
+                    $next_echeanche = $L_echeance[0];
 
-                $date_next_echeance = $next_echeanche['date_echeance'];
+                    $date_next_echeance = $next_echeanche['date_echeance'];
 
-                // Date 4 jours ouvrés avant date next echeance
-                $jo = $this->loadLib('jours_ouvres');
+                    // Date 4 jours ouvrés avant date next echeance
+                    $jo = $this->loadLib('jours_ouvres');
 
-                $dateEcheance                            = strtotime($date_next_echeance);
-                $date_next_echeance_4jouvres_avant_stamp = $jo->display_jours_ouvres($dateEcheance, 4);
+                    $dateEcheance                            = strtotime($date_next_echeance);
+                    $date_next_echeance_4jouvres_avant_stamp = $jo->display_jours_ouvres($dateEcheance, 4);
 
-                //$ordre_echeance_ra = $ordre_echeance_ra + 1; // changement on n'ajoute plus un mois supp
+                    //$ordre_echeance_ra = $ordre_echeance_ra + 1; // changement on n'ajoute plus un mois supp
+                } else {
+                    $this->date_next_echeance_4jouvres_avant = "Aucune &eacute;ch&eacute;ance &agrave; venir dans le futur";
+                }
             } else {
-                $this->date_next_echeance_4jouvres_avant = "Aucune &eacute;ch&eacute;ance &agrave; venir dans le futur";
+                // on va recup la date de la derniere echeance qui suit le process de base
+                $L_echeance_normale = $this->echeanciers->select(" id_project = " . $id_project . " AND ordre = " . $ordre_echeance_ra + 1, 'ordre ASC', 0, 1);
+
+                $derniere_echeance_normale            = $L_echeance_normale[0];
+                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($derniere_echeance_normale['date_echeance']);
             }
-        } else {
-            // on va recup la date de la derniere echeance qui suit le process de base
-            $L_echeance_normale = $this->echeanciers->select(" id_project = " . $id_project . " AND ordre = " . $ordre_echeance_ra + 1, 'ordre ASC', 0, 1);
-
-            $derniere_echeance_normale            = $L_echeance_normale[0];
-            $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($derniere_echeance_normale['date_echeance']);
         }
-
         if ($date_next_echeance_4jouvres_avant_stamp != "" && isset($date_next_echeance_4jouvres_avant_stamp)) {
             $this->date_next_echeance_4jouvres_avant = date("d/m/Y", $date_next_echeance_4jouvres_avant_stamp);
             $this->date_next_echeance                = $this->dates->formatDateMysqltoFr_HourOut($date_next_echeance);
@@ -3990,12 +3990,12 @@ class dossiersController extends bootstrap
             $this->phrase_resultat        = "<div style='color:green;'>Remboursement anticip&eacute; effectu&eacute;</div>";
             $this->remb_anticipe_effectue = true;
         } else {
-            if ($resultat_num == O) {
+            if ($resultat_num == 0) {
                 $this->phrase_resultat = "<div style='color:green;'>Remboursement possible</div>";
-            } elseif ($resultat_num < O) // si emprunteur doit plus que les prets ==> Orange non bloquant
+            } elseif ($resultat_num < 0) // si emprunteur doit plus que les prets ==> Orange non bloquant
             {
                 $this->phrase_resultat = "<div style='color:orange;'>Remboursement possible <br />(CRD Pr&ecirc;teurs :" . $this->montant_restant_du_preteur . "€ - CRD Emprunteur :" . $this->montant_restant_du_emprunteur . "€)</div>";
-            } elseif ($resultat_num > O) // si preteurs doivent plus que les emprunteurs ==> rouge bloquant
+            } elseif ($resultat_num > 0) // si preteurs doivent plus que les emprunteurs ==> rouge bloquant
             {
                 $this->phrase_resultat = "<div style='color:red;'>Remboursement impossible <br />(CRD Pr&ecirc;teurs :" . $this->montant_restant_du_preteur . "€ - CRD Emprunteur :" . $this->montant_restant_du_emprunteur . "€)</div>";
             }
