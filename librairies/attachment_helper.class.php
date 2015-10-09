@@ -159,19 +159,19 @@ class attachment_helper
             case attachment_type::ETAT_ENDETTEMENT:
                 return 'etat_endettement/';
             case attachment_type::DERNIERE_LIASSE_FISCAL:
-                return 'liasse_fiscal/';
+                return 'liasse_fiscale/';
             case attachment_type::LIASSE_FISCAL_N_1:
-                return 'liasse_fiscal_n_1/';
+                return 'liasse_fiscale_n_1/';
             case attachment_type::LIASSE_FISCAL_N_2:
-                return 'liasse_fiscal_n_2/';
+                return 'liasse_fiscale_n_2/';
             case attachment_type::RAPPORT_CAC:
-                return 'rapport_cac/';
+                return 'annexes_rapport_special_commissaire_compte/';
             case attachment_type::PREVISIONNEL:
                 return 'previsionnel/';
             case attachment_type::CNI_PASSPORTE_DIRIGEANT:
-                return 'cni_passeport_dirigeant/';
+                return 'cni_passeport/';
             case attachment_type::CNI_PASSPORTE_VERSO:
-                return 'cni_passeport_dirigeant_verso/';
+                return 'cni_passeport_verso/';
             case attachment_type::RIB:
                 return 'rib/';
             case attachment_type::KBIS:
@@ -182,14 +182,32 @@ class attachment_helper
                 return 'autre2/';
             case attachment_type::AUTRE3:
                 return 'autre3/';
+            case attachment_type::AUTRE4:
+                return 'autre4/';
             case attachment_type::BALANCE_CLIENT:
                 return 'balance_client/';
             case attachment_type::BALANCE_FOURNISSEUR:
                 return 'balance_fournisseur/';
             case attachment_type::ETAT_PRIVILEGES_NANTISSEMENTS:
                 return 'etat_privileges_nantissements/';
-            case attachment_type::COMPANY_LOGO:
-                return 'logo_company/';
+            case attachment_type::CGV:
+                return 'cgv/';
+            case attachment_type::CNI_BENEFICIAIRE_EFFECTIF_1:
+                return 'cni_beneficiaire_efectif_1/';
+            case attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1:
+                return 'cni_beneficiaire_efectif_verso_1/';
+            case attachment_type::CNI_BENEFICIAIRE_EFFECTIF_2:
+                return 'cni_beneficiaire_efectif_2/';
+            case attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2:
+                return 'cni_beneficiaire_efectif_verso_2/';
+            case attachment_type::CNI_BENEFICIAIRE_EFFECTIF_3:
+                return 'cni_beneficiaire_efectif_3/';
+            case attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3:
+                return 'cni_beneficiaire_efectif_verso_3/';
+            case attachment_type::SITUATION_COMPTABLE_INTERMEDIAIRE:
+                return 'situation_comptable_intermediaire/';
+            case attachment_type::DERNIERS_COMPTES_CONSOLIDES:
+                return 'derniers_comptes_consolides_groupe/';
             default:
                 return '';
         }
