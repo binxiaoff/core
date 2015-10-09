@@ -998,15 +998,15 @@ class pdfController extends bootstrap
 			for($ordre=1;$ordre<=$projects->period;$ordre++){
 				
 				// on prend le nombre de jours dans le mois au lieu du mois
-				$nbjourstemp = mktime (0,0,0,date("m")+$ordre ,1,date("Y"));
-				$nbjoursMois += date('t',$nbjourstemp);
+				//$nbjourstemp = mktime (0,0,0,date("m")+$ordre ,1,date("Y"));
+				//$nbjoursMois += date('t',$nbjourstemp);
 				
 				// Date d'echeance preteur
-				$date_echeance = $this->dates->dateAddMoisJours($dateRemb,0,$nb_jours+$nbjoursMois);
+				$date_echeance = $this->dates->dateAddMoisJoursV3($dateRemb,$ordre);
 				$date_echeance = date('Y-m-d H:i',$date_echeance).':00';
 				
 				// Date d'echeance emprunteur
-				$date_echeance_emprunteur = $this->dates->dateAddMoisJours($dateRemb,0,$nbjoursMois);
+				$date_echeance_emprunteur = $this->dates->dateAddMoisJoursV3($dateRemb,$ordre);
 				
 				
 				// on retire 6 jours ouvrés

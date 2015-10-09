@@ -1240,7 +1240,7 @@ class cronController extends bootstrap
                     //$nbjoursMois += date('t',$nbjourstemp);
                     
                     // Date d'echeance preteur
-                    $dateEcheance = $this->dates->dateAddMoisJoursV3($this->projects->date_fin,$k,$nb_jours);
+                    $dateEcheance = $this->dates->dateAddMoisJoursV3($this->projects->date_fin,$k);
                     $dateEcheance = date('Y-m-d h:i',$dateEcheance).':00';
                     
                     // Date d'echeance emprunteur
@@ -1391,7 +1391,7 @@ class cronController extends bootstrap
             $nbjoursMois += date('t', $nbjourstemp);
 
             // Date d'echeance emprunteur
-            $dateEcheance_emprunteur = $this->dates->dateAddMoisJours($projects->date_fin, 0, $nbjoursMois);
+            $dateEcheance_emprunteur = $this->dates->dateAddMoisJoursV3($projects->date_fin, $k);
             // on retire 6 jours ouvrés
             $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur, 6);
 
