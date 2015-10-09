@@ -314,7 +314,7 @@ if (isset($_SESSION['freeow']))
                         <tr>
                             <th>Virement à émettre avant le :</th>
                             <td>
-                                <label for="statut"><?= $this->date_next_echeance_4jouvres_avant ?></label>
+                                <label for="statut"><?= (isset($this->date_next_echeance_4jouvres_avant)) ? $this->date_next_echeance_4jouvres_avant : '' ?></label>
                             </td>
                         </tr>
                         <?php
@@ -330,29 +330,7 @@ if (isset($_SESSION['freeow']))
 
                     <?php
 
-                    if($this->virement_recu)
-                    {
-                        /*
-                        if($this->virement_recu_ok)
-                        {
-                            ?>
-                            <tr>
-                                <th>Actions : (EN DEBUG)</th>
-                                <td>
-                                    <form action="" name="action_remb_anticipe">
-                                        <input type="hidden" name="id_reception" value="<?=$this->receptions->id_reception?>">
-                                        <input type="hidden" name="montant_crd_preteur" value="<?=$this->montant_restant_du_preteur?>">
-                                        <input type="hidden" name="spy_remb_anticipe" value="ok">
-                                        <input type="submit" value="Déclencher le remboursement anticipé" class="btn">
-                                    </form>
-                                </td>
-                            </tr>
-                            <?php
-                        }
-
-                         */
-                    }
-                    else
+                    if(false === $this->virement_recu)
                     {
                         ?>
                         <tr>
@@ -369,7 +347,7 @@ if (isset($_SESSION['freeow']))
 
 
                 <?php
-                if(!$this->virement_recu && !$this->remb_anticipe_effectue)
+                if(!$this->virement_recu && !$this->remb_anticipe_effectue && isset($this->date_next_echeance))
                 {
                     ?>
                     * : Le montant correspond aux CRD des échéances restantes après celle du <?= $this->date_next_echeance ?> qui sera prélevé normalement
@@ -629,7 +607,7 @@ if (isset($_SESSION['freeow']))
                     </tr>
 
                     <?php
-                    if ($this->retour_dates_valides != "" && isset($this->retour_dates_valides))
+                    if (isset($this->retour_dates_valides) && $this->retour_dates_valides != "")
                     {
                         ?>
                         <tr class="content_date_retrait">
@@ -1389,7 +1367,13 @@ if (isset($_SESSION['freeow']))
                                             $b = 1;
                                             foreach ($this->lCompanies_actif_passif as $ap)
                                             {
-                                                $totalAnnee = ($ap[$arrayBilans[0]['value']] + $ap[$arrayBilans[1]['value']] + $ap[$arrayBilans[2]['value']] + $ap[$arrayBilans[3]['value']] + $ap[$arrayBilans[4]['value']] + $ap[$arrayBilans[5]['value']] + $ap[$arrayBilans[6]['value']] + $ap[$arrayBilans[7]['value']])
+                                                $totalAnnee = ($ap[$arrayBilans[1]['value']] +
+                                                    $ap[$arrayBilans[2]['value']] +
+                                                    $ap[$arrayBilans[3]['value']] +
+                                                    $ap[$arrayBilans[4]['value']] +
+                                                    $ap[$arrayBilans[5]['value']] +
+                                                    $ap[$arrayBilans[6]['value']] +
+                                                    $ap[$arrayBilans[7]['value']])
                                                 ?><td id="<?= $t['value'] ?>_<?= $ap['ordre'] ?>" ><?= $totalAnnee ?></td><?
                                                 if ($b == 3)
                                                     break;
@@ -1597,7 +1581,12 @@ if (isset($_SESSION['freeow']))
                                             $b = 1;
                                             foreach ($this->lCompanies_actif_passif as $ap)
                                             {
-                                                $totalAnnee = ($ap[$arrayBilansPassif[0]['value']] + $ap[$arrayBilansPassif[1]['value']] + $ap[$arrayBilansPassif[2]['value']] + $ap[$arrayBilansPassif[3]['value']] + $ap[$arrayBilansPassif[4]['value']] + $ap[$arrayBilansPassif[5]['value']] + $ap[$arrayBilansPassif[6]['value']])
+                                                $totalAnnee = ($ap[$arrayBilansPassif[1]['value']] +
+                                                    $ap[$arrayBilansPassif[2]['value']] +
+                                                    $ap[$arrayBilansPassif[3]['value']] +
+                                                    $ap[$arrayBilansPassif[4]['value']] +
+                                                    $ap[$arrayBilansPassif[5]['value']] +
+                                                    $ap[$arrayBilansPassif[6]['value']])
                                                 ?><td id="<?= $t['value'] ?>_<?= $ap['ordre'] ?>" ><?= $totalAnnee ?></td><?
                                                 if ($b == 3)
                                                     break;
