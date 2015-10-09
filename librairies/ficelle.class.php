@@ -107,23 +107,6 @@ class ficelle
         }
     }
 
-    // SOAP Client
-    public function ws($wsdl, $identification, $siren)
-    {
-        ini_set('default_socket_timeout', 60);
-
-        $client = new SoapClient($wsdl, array("trace" => 1, "exception" => TRUE));
-        $result = $client->__soapCall("getEligibility", array(
-            "getEligibility" => array(
-                "identification" => $identification,
-                "refClient"      => "sffpme",
-                "siren"          => $siren
-            )
-        ));
-
-        return $result->return;
-    }
-
     // met des majuscules sur les noms composés
     public function majNom($nom)
     {
@@ -142,7 +125,6 @@ class ficelle
             }
             return $newNom;
         }
-
     }
 
     public function str_split_unicode($str, $l = 0)

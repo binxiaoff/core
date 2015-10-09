@@ -37,9 +37,6 @@ $this->wsdl = $this->settings->value;
 $this->identification = $login.'|'.$mdp;
 
 
-// statut
-$this->tablStatus = array('Oui','Pas de bilan');
-
 //*************************//
 //*** Fin Infos Altares ***//
 //*************************//
@@ -127,16 +124,12 @@ if(isset($_POST['spy_inscription_landing_page_depot_dossier']) || $reponse_get =
 
 
 
-	if($form_valid)
-	{
-		// Web Service Altares
+	if ($form_valid) {
 		$result = '';
 		try {
-			$result = $this->ficelle->ws($this->wsdl,$this->identification,$siren);
-			//mail('courtier.damien@gmail.com','debug result',serialize($result));
-		}
-		catch (Exception $e) {
-			//mail('courtier.damien@gmail.com','debug error',serialize($e));
+			$oAltares = new \Unilend\librairies\Altares($this->bdd);
+			$result   = $oAltares->getEligibility($siren);
+		} catch (Exception $e) {
 		}
 
 		// Verif si erreur
@@ -145,18 +138,10 @@ if(isset($_POST['spy_inscription_landing_page_depot_dossier']) || $reponse_get =
 		// si altares ok
 		if($exception == '')
 		{
-			//mail('courtier.damien@gmail.com','debug exception',serialize($exception));
-			// verif reponse
 			$eligibility = $result->myInfo->eligibility;
 			$score = $result->myInfo->score;
 			$identite = $result->myInfo->identite;
 			$siege = $result->myInfo->siege;
-
-
-			/*mail('courtier.damien@gmail.com','debug eligibility',serialize($eligibility));
-			mail('courtier.damien@gmail.com','debug score',serialize($score));
-			mail('courtier.damien@gmail.com','debug identite',serialize($identite));
-			mail('courtier.damien@gmail.com','debug siege',serialize($siege));*/
 
 			// clients //
 			$this->clients->source = $_SESSION['utm_source'];
@@ -363,43 +348,17 @@ if(isset($_POST['spy_inscription_landing_page_depot_dossier']) || $reponse_get =
 			// date -3 ans
 			$todayMoins3 = date('Y')-3;
 
-			// || $eligibility == 'Non'
-			//if($eligibility == 'Société radiée' || $eligibility == 'Non')
-			if(in_array($eligibility,array('Société radiée','Non','Pas de RCS')))
-			{
+			if ($eligibility === 'Non') {
 				// ajout du statut dans l'historique : statut 5 (Note externe faible)
 				$this->projects_status_history->addStatus(-2,5,$this->projects->id_project);
 
 				// pas good
 				$altares = true;
-			}
-			elseif(in_array($eligibility,$this->tablStatus))
-			{
-				/*if($score->scoreVingt < 12)
-				{
-					// inferieur a 12
-					$this->projects_status_history->addStatus(-2,5,$this->projects->id_project);
+			} elseif (substr($identite->dateCreation, 0, 4) > date('Y') - 3) {
+				// ajout du statut dans l'historique : statut 5 (Note externe faible)
+				$this->projects_status_history->addStatus(-2,5,$this->projects->id_project);
 
-					// pas good
-					//$altares = true;
-				}*/
-				if($eligibility == 'Pas de bilan')
-				{
-					// ajout du statut dans l'historique : statut 6 (Pas 3 bilans)
-					$this->projects_status_history->addStatus(-2,6,$this->projects->id_project);
-
-					// pas good
-					//$altares = true;
-				}
-				// date creation -3 ans
-				if(substr($identite->dateCreation,0,4) > $todayMoins3)
-				{
-					// ajout du statut dans l'historique : statut 5 (Note externe faible)
-					$this->projects_status_history->addStatus(-2,5,$this->projects->id_project);
-
-					// pas good
-					$altares = true;
-				}
+				$altares = true;
 			}
 
 			// Moins de 3 exercices comptables
@@ -408,8 +367,6 @@ if(isset($_POST['spy_inscription_landing_page_depot_dossier']) || $reponse_get =
 				// ajout du statut dans l'historique : statut 6 (Pas 3 bilans)
 				$this->projects_status_history->addStatus(-2,6,$this->projects->id_project);
 			}
-
-
 		}// fin altares
 		else{
 			// clients //

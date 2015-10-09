@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\librairies\Altares;
+
 class dossiersController extends bootstrap
 {
     public function __construct($command, $config, $app)
@@ -327,57 +329,37 @@ class dossiersController extends bootstrap
             // On lance Altares //
             //******************//
             if (isset($this->params[1]) && $this->params[1] == 'altares') {
-                // SIREN
-                $this->siren = $this->companies->siren;
-                // Web Service Altares
-                $result = $this->ficelle->ws($this->wsdl, $this->identification, $this->siren);
+                $oAltares = new Altares($this->bdd);
+                $result = $oAltares->getEligibility($this->companies->siren);
 
                 $this->altares_ok = false;
 
-                // Si pas d'erreur
                 if ($result->exception == '') {
-                    // verif reponse
                     $eligibility = $result->myInfo->eligibility;
                     $score       = $result->myInfo->score;
                     $identite    = $result->myInfo->identite;
 
-                    // statut
-                    $this->tablStatus = array('Oui', 'Pas de bilan');
-
-                    // date -3 ans
-                    $todayMoins3 = date('Y') - 3;
-
-                    // On enregistre
-                    $this->companies->altares_eligibility = $eligibility;
-
-                    $dateValeur                            = substr($score->dateValeur, 0, 10);
-                    $this->companies->altares_dateValeur   = $dateValeur;
+                    $this->companies->altares_eligibility  = $eligibility;
+                    $this->companies->altares_dateValeur   = substr($score->dateValeur, 0, 10);
                     $this->companies->altares_niveauRisque = $score->niveauRisque;
                     $this->companies->altares_scoreVingt   = $score->scoreVingt;
 
-                    // si pas ok
-                    if ($eligibility == 'Société radiée' || $eligibility == 'Non' || $eligibility == 'SIREN inconnu') {
-                        // Mise en session du message
+                    if ($eligibility == 'Non') {
                         $_SESSION['freeow']['title']   = 'Donn&eacute;es Altares';
                         $_SESSION['freeow']['message'] = 'soci&eacute;t&eacute; non &eacute;ligible';
 
-                        header('Location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                        header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                         die;
-                    }
-                    // si pas ok 2
-                    //elseif(in_array($eligibility,$this->tablStatus) && $score->scoreVingt < 12 || in_array($eligibility,$this->tablStatus) && substr($identite->dateCreation,0,4) > $todayMoins3 )
-                    elseif (in_array($eligibility, $this->tablStatus) && substr($identite->dateCreation, 0, 4) > $todayMoins3) {
-                        // Mise en session du message
+                    } elseif (substr($identite->dateCreation, 0, 4) > date('Y') - 3) {
                         $_SESSION['freeow']['title']   = 'Donn&eacute;es Altares';
                         $_SESSION['freeow']['message'] = 'soci&eacute;t&eacute; non &eacute;ligible';
 
-                        header('Location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                        header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                         die;
                     } else {
                         $this->altares_ok = true;
 
-                        $siege    = $result->myInfo->siege;
-                        $identite = $result->myInfo->identite;
+                        $siege = $result->myInfo->siege;
 
                         $syntheseFinanciereInfo = $result->myInfo->syntheseFinanciereInfo;
                         $syntheseFinanciereList = $result->myInfo->syntheseFinanciereInfo->syntheseFinanciereList;
@@ -489,8 +471,6 @@ class dossiersController extends bootstrap
 
                         foreach ($this->lCompanies_actif_passif as $k => $ap) {
                             if ($this->companies_actif_passif->get($ap['annee'], 'id_company = ' . $ap['id_company'] . ' AND annee')) {
-                                //$this->companies_actif_passif->annee = $derniersBilans[$i];
-                                //$this->companies_actif_passif->ordre = $i+1;
                                 // Actif
                                 $this->companies_actif_passif->immobilisations_corporelles   = $ActifPassif[$ap['annee']]['posteBR_IMCOR'];
                                 $this->companies_actif_passif->immobilisations_incorporelles = $ActifPassif[$ap['annee']]['posteBR_IMMINC'];
@@ -2275,56 +2255,34 @@ class dossiersController extends bootstrap
             // On lance Altares //
             //******************//
             if (isset($this->params[1]) && $this->params[1] == 'altares') {
-
-                // SIREN
-                $this->siren = $this->companies->siren;
-                // Web Service Altares
-                $result = $this->ficelle->ws($this->wsdl, $this->identification, $this->siren);
+                $oAltares = new Altares($this->bdd);
+                $result = $oAltares->getEligibility($this->companies->siren);
 
                 $this->altares_ok = false;
 
-                // Si pas d'erreur
                 if ($result->exception == '') {
-
-                    // verif reponse
                     $eligibility = $result->myInfo->eligibility;
                     $score       = $result->myInfo->score;
                     $identite    = $result->myInfo->identite;
 
-                    // statut
-                    $this->tablStatus = array('Oui', 'Pas de bilan');
-
-                    // date -3 ans
-                    $todayMoins3 = date('Y') - 3;
-
-                    // On enregistre
                     $this->companies->altares_eligibility = $eligibility;
-
-                    $dateValeur                            = substr($score->dateValeur, 0, 10);
-                    $this->companies->altares_dateValeur   = $dateValeur;
+                    $this->companies->altares_dateValeur   = substr($score->dateValeur, 0, 10);
                     $this->companies->altares_niveauRisque = $score->niveauRisque;
                     $this->companies->altares_scoreVingt   = $score->scoreVingt;
 
-                    // si pas ok
-                    if ($eligibility == 'Société radiée' || $eligibility == 'Non' || $eligibility == 'SIREN inconnu') {
-                        // Mise en session du message
+                    if ($eligibility == 'Non') {
                         $_SESSION['freeow']['title']   = 'Donn&eacute;es Altares';
                         $_SESSION['freeow']['message'] = 'soci&eacute;t&eacute; non &eacute;ligible';
 
-                        header('Location:' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
+                        header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
                         die;
-                    }
-                    // si pas ok 2
-                    //elseif(in_array($eligibility,$this->tablStatus) && $score->scoreVingt < 12 || in_array($eligibility,$this->tablStatus) && substr($identite->dateCreation,0,4) > $todayMoins3 )
-                    elseif (in_array($eligibility, $this->tablStatus) && substr($identite->dateCreation, 0, 4) > $todayMoins3) {
-                        // Mise en session du message
+                    } elseif (substr($identite->dateCreation, 0, 4) > date('Y') - 3) {
                         $_SESSION['freeow']['title']   = 'Donn&eacute;es Altares';
                         $_SESSION['freeow']['message'] = 'soci&eacute;t&eacute; non &eacute;ligible';
 
-                        header('Location:' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
+                        header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
                         die;
-                    } // si ok
-                    else {
+                    } else {
                         $this->altares_ok = true;
 
                         $identite               = $result->myInfo->identite;
