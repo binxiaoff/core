@@ -10,37 +10,34 @@
         <span class="pointer-right"></span>
         <h2><?= $this->lng['home']['presentation'] ?></h2>
         <div style="padding-bottom:18px;font-size:24px;"><?= $this->lng['home']['decouvrez-comment'] ?></div>
-        
-        <script>   
-        
-        $('.youtube').colorbox({iframe:true, innerWidth:640, innerHeight:390, opacity:0.5});
-        var sCurrentUrl=document.location.href;
-        console.log(sCurrentUrl);
-        if(0<parseInt(sCurrentUrl.search('video=1'))) 
-        {
-            $('.youtube').colorbox({open:true});
-        }
-            
-            
-        $(window).on('load resize', function() {
-            if ( $(window).width() < 768 ) {
-                $('#btn_pret').attr("href", "<?= $this->lurl . '/Landing-Pages-Externes/2015'?>");                
+
+        <script>
+
+            $('.youtube').colorbox({iframe: true, innerWidth: 640, innerHeight: 390, opacity: 0.5, maxWidth: '90%', maxHeight: '30%'});
+            var sCurrentUrl = document.location.href;
+            console.log(sCurrentUrl);
+            if (0 < parseInt(sCurrentUrl.search('video=1')))
+            {
+                $('.youtube').colorbox({open: true});
             }
-        });
+
+
+            $(window).on('load resize', function () {
+                if ($(window).width() < 768) {
+                    $('#btn_pret').attr("href", "<?= $this->lurl . '/Landing-Pages-Externes/2015' ?>");
+                }
+            });
         </script>
-        
+
         <?
-        if ($this->clients->checkAccess() && $this->clients->status_pre_emp == 1 || $this->clients->checkAccess() && $this->clients->status_pre_emp == 3)
-        {
+        if ($this->clients->checkAccess() && $this->clients->status_pre_emp == 1 || $this->clients->checkAccess() && $this->clients->status_pre_emp == 3) {
             ?>
             <a href="<?= $this->lurl ?>/projects" class="btn btn-mega btn-info">
                 <i class="icon-arrow-medium-next right"></i>
                 <?= $this->lng['home']['pretez'] ?>
             </a>
             <?
-        }
-        else
-        {
+        } else {
             ?>
             <a href="<?= $this->lurl . '/' . $this->tree->getSlug(127, $this->language) ?>" class="btn btn-mega btn-info" id="btn_pret">
                 <i class="icon-arrow-medium-next right"></i>
@@ -74,8 +71,7 @@
     <div class="shell">
         <div class="section-projects-landing">
             <?
-            if (count($this->lProjetsFunding) > 0)
-            {
+            if (count($this->lProjetsFunding) > 0) {
                 ?>
                 <a href="<?= $this->lurl . '/' . $this->tree->getSlug(4, $this->language) ?>" class="view-projects-link"><i class="arrow-right"></i><?= $this->lng['home']['decouvrez-tous-les-projets'] ?></a>
 
@@ -132,8 +128,7 @@
 
                     <?
                     $this->loans = $this->loadData('loans');
-                    foreach ($this->lProjetsFunding as $pf)
-                    {
+                    foreach ($this->lProjetsFunding as $pf) {
                         $this->projects_status->getLastStatut($pf['id_project']);
 
                         $this->companies->get($pf['id_company'], 'id_company');
@@ -151,36 +146,27 @@
                         $montantHaut = 0;
                         $montantBas = 0;
                         // si fundé ou remboursement
-                        if ($this->projects_status->status == 60 || $this->projects_status->status >= 80)
-                        {
-                            foreach ($this->loans->select('id_project = ' . $pf['id_project']) as $b)
-                            {
+                        if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
+                            foreach ($this->loans->select('id_project = ' . $pf['id_project']) as $b) {
                                 $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                                 $montantBas += ($b['amount'] / 100);
                             }
                         }
                         // funding ko
-                        elseif ($this->projects_status->status == 70)
-                        {
-                            foreach ($this->bids->select('id_project = ' . $pf['id_project']) as $b)
-                            {
+                        elseif ($this->projects_status->status == 70) {
+                            foreach ($this->bids->select('id_project = ' . $pf['id_project']) as $b) {
                                 $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                                 $montantBas += ($b['amount'] / 100);
                             }
                         }
                         // emprun refusé
-                        elseif ($this->projects_status->status == 75)
-                        {
-                            foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 1') as $b)
-                            {
+                        elseif ($this->projects_status->status == 75) {
+                            foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 1') as $b) {
                                 $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                                 $montantBas += ($b['amount'] / 100);
                             }
-                        }
-                        else
-                        {
-                            foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 0') as $b)
-                            {
+                        } else {
+                            foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 0') as $b) {
                                 $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                                 $montantBas += ($b['amount'] / 100);
                             }
@@ -199,26 +185,22 @@
                         <tr class="unProjet" id="project<?= $pf['id_project'] ?>">
                             <td>
                                 <?
-                                if ($this->projects_status->status >= 60)
-                                {
+                                if ($this->projects_status->status >= 60) {
                                     $dateRest = $this->lng['home']['termine'];
-                                }
-                                else
-                                {
+                                } else {
                                     $tab_date_retrait = explode(' ', $pf['date_retrait_full']);
                                     $tab_date_retrait = explode(':', $tab_date_retrait[1]);
                                     $heure_retrait = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
                                     ?>
                                     <script>
                                         var cible<?= $pf['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>');
-                                        var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
-                                        setTimeout('decompte(letime<?= $pf['id_project'] ?>,"val<?= $pf['id_project'] ?>")', 500);
+                                            var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
+                                            setTimeout('decompte(letime<?= $pf['id_project'] ?>,"val<?= $pf['id_project'] ?>")', 500);
                                     </script>
                                     <?
                                 }
 
-                                if ($pf['photo_projet'] != '')
-                                {
+                                if ($pf['photo_projet'] != '') {
                                     ?><img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_min') ?>" alt="<?= $pf['photo_projet'] ?>" class="thumb"><?
                                 }
                                 ?>
@@ -232,24 +214,18 @@
                             <td style="white-space:nowrap;"><?= number_format($pf['amount'], 0, ',', ' ') ?>&euro;</td>
                             <td style="white-space:nowrap;"><?= $pf['period'] ?> mois</td>
                             <?
-                            if ($CountEnchere > 0)
-                            {
+                            if ($CountEnchere > 0) {
                                 ?><td><?= number_format($avgRate, 1, ',', ' ') ?>%</td><?
-                            }
-                            else
-                            {
+                            } else {
                                 ?><td><?= ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %')) ?></td><?
                             }
                             ?>
                             <td><strong id="val<?= $pf['id_project'] ?>"><?= $dateRest ?></strong></td>
                             <td>
                                 <?
-                                if ($this->projects_status->status >= 60)
-                                {
+                                if ($this->projects_status->status >= 60) {
                                     ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn grise1 btn-info btn-small multi btn-grise"><?= $this->lng['home']['cta-voir-le-projet'] ?></a><?
-                                }
-                                else
-                                {
+                                } else {
                                     ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small"><?= $this->lng['home']['cta-pretez'] ?></a><?
                                 }
                                 ?>
@@ -263,13 +239,11 @@
             }
             ?>
         </div><!-- /.section projects landing -->  
-        
+
         <div class="section-projects-mobile">
-            
+
             <?
-            $this->loans = $this->loadData('loans');
-            foreach ($this->lProjetsFunding as $pf)
-            {
+            foreach ($this->lProjetsFunding as $pf) {
                 $this->projects_status->getLastStatut($pf['id_project']);
 
                 $this->companies->get($pf['id_company'], 'id_company');
@@ -287,36 +261,27 @@
                 $montantHaut = 0;
                 $montantBas = 0;
                 // si fundé ou remboursement
-                if ($this->projects_status->status == 60 || $this->projects_status->status >= 80)
-                {
-                    foreach ($this->loans->select('id_project = ' . $pf['id_project']) as $b)
-                    {
+                if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
+                    foreach ($this->loans->select('id_project = ' . $pf['id_project']) as $b) {
                         $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                         $montantBas += ($b['amount'] / 100);
                     }
                 }
                 // funding ko
-                elseif ($this->projects_status->status == 70)
-                {
-                    foreach ($this->bids->select('id_project = ' . $pf['id_project']) as $b)
-                    {
+                elseif ($this->projects_status->status == 70) {
+                    foreach ($this->bids->select('id_project = ' . $pf['id_project']) as $b) {
                         $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                         $montantBas += ($b['amount'] / 100);
                     }
                 }
                 // emprun refusé
-                elseif ($this->projects_status->status == 75)
-                {
-                    foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 1') as $b)
-                    {
+                elseif ($this->projects_status->status == 75) {
+                    foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 1') as $b) {
                         $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                         $montantBas += ($b['amount'] / 100);
                     }
-                }
-                else
-                {
-                    foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 0') as $b)
-                    {
+                } else {
+                    foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 0') as $b) {
                         $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                         $montantBas += ($b['amount'] / 100);
                     }
@@ -334,83 +299,67 @@
 
                 <div class="project-mobile">
                     <div class="project-mobile-image">
-                        
+
                         <?
-                        if ($this->projects_status->status >= 60)
-                        {
+                        if ($this->projects_status->status >= 60) {
                             $dateRest = $this->lng['home']['termine'];
-                        }
-                        else
-                        {
-                            $tab_date_retrait = explode(' ', $pf['date_retrait_full']);
-                            $tab_date_retrait = explode(':', $tab_date_retrait[1]);
-                            $heure_retrait = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
+                        } else {
+                            $heure_retrait = date('H:i', strtotime($pf['date_retrait_full']));
                             ?>
                             <script>
                                 var cible<?= $pf['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>');
-                                var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
-                                setTimeout('decompte(letime<?= $pf['id_project'] ?>,"val<?= $pf['id_project'] ?>")', 500);
+                                    var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
+                                    setTimeout('decompte(letime<?= $pf['id_project'] ?>,"min_val<?= $pf['id_project'] ?>")', 500);
                             </script>
                             <?
                         }
-                        if ($pf['photo_projet'] != '')
-                        {
+                        if ($pf['photo_projet'] != '') {
                             ?><img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_min') ?>" alt="<?= $pf['photo_projet'] ?>"><?
                         }
-                        
-                        
+
+
                         //Gestion des étoiles
-                        
-                        
                         ?>
-                            
-                            <?php
+
+                        <?php
                         $nb_etoile_on = $this->lNotes[$pf['risk']];
-                        
-                        if($nb_etoile_on == 1)
-                        {
+
+                        if ($nb_etoile_on == 1) {
                             $nb_etoile_on = 3;
                         }
-                        
-                        
-                        
+
+
+
                         $nb_etoile_off = 5;
                         $nb_etoile_restant_afficher = $nb_etoile_on;
-                        
+
                         $html_etoile = "";
-                        
-                        for($i = 1; $i <= 5; $i++)
-                        {
-                            if($nb_etoile_on > 0)
-                            {
+
+                        for ($i = 1; $i <= 5; $i++) {
+                            if ($nb_etoile_on > 0) {
                                 $html_etoile .= '<i class="ico-star-on"></i>';
                                 $nb_etoile_on--;
-                            }
-                            else
-                            {
+                            } else {
                                 $html_etoile .= '<i class="ico-star-off"></i>';
                             }
                         }
-                        
-                       
-                        
-                        
+
+
+
+
                         //gestion affichage du pourcentage   
                         $pourcent_affichage = "";
-                        if ($CountEnchere > 0)
-                        {
-                            $pourcent_affichage = number_format($avgRate, 1, ',', ' ').'%';
-                        }
-                        else
-                        {
-                            $pourcent_affichage = ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %'));   
+                        if ($CountEnchere > 0) {
+                            $pourcent_affichage = number_format($avgRate, 1, ',', ' ') . '%';
+                        } else {
+                            $pourcent_affichage = ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %'));
                         }
                         ?>
-                        
-                        
+
+
 
                         <div class="project-mobile-image-caption">
-                                <?= number_format($pf['amount'], 0, ',', ' ') ?>&euro; | <div class="cadreEtoiles" style="display: inline-block; top:7px;left: -1px;"><div class="etoile <?= $this->lNotes[$pf['risk']] ?>"></div></div> | <?=$pourcent_affichage?> | <?= $pf['period'] ?> mois
+                            <?= number_format($pf['amount'], 0, ',', ' ') ?>&euro; | <div class="cadreEtoiles" style="display: inline-block; top:7px;left: -1px;"><div class="etoile <?= $this->lNotes[$pf['risk']] ?>"></div></div> | <?= $pourcent_affichage ?> | <?= $pf['period'] ?> mois
                         </div>
                     </div>
 
@@ -422,20 +371,20 @@
                         <h5>
                             <i class="ico-clock"></i>
 
-                            <?= $dateRest ?>
+                            <strong id="min_val<?= $pf['id_project'] ?>"><?= $dateRest ?></strong>
                         </h5>
 
                         <p>
                             <?
-                            if ($this->projects_status->status >= 60)
-                            {
-                                ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn" style="top:-18px;"><?= str_replace('<br />',' ',$this->lng['home']['cta-voir-le-projet']) ?></a><?
-                            }
-                            else
-                            {
-                                ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn" style="top:-30px;"><?= str_replace('<br />',' ',$this->lng['home']['cta-pretez']) ?></a><?
+                            if ($this->projects_status->status >= 60) {
+                                ?>
+                                <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise" style="line-height: 14px;padding: 4px 11px;"><?= $this->lng['home']['cta-voir-le-projet'] ?></a>
+                                <?
+                            } else {
+                                ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn"><?= $this->lng['home']['cta-pretez'] ?></a><?
                             }
                             ?>
+                            
 
                             <?= $pf['nature_project'] ?>
                         </p>
