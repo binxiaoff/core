@@ -142,7 +142,7 @@
                            class="field field-large required"
                            data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 14}">
                 </div>
-                <?php if (isset($this->params[1]) && $this->params[1] == '1080') { ?>
+                <?php if ($this->bAnnualAccountsQuestion) { ?>
                     <div class="row">
                         <div class="form-choose radio_comptables">
                             <span class="title"><?= $this->lng['etape2']['exercices-comptables'] ?></span>

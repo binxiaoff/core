@@ -53,6 +53,7 @@ if (
         $_SESSION['forms']['depot-de-dossier']['errors']['siren'] = true;
     } else {
         $iAmount = str_replace(array(',', ' '), array('.', ''), $aForm['montant']);
+        $_SESSION['forms']['depot-de-dossier']['values']['montant'] = $iAmount;
 
         if ($iAmount != (int) $iAmount) {
             $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['landing-page']['champs-obligatoires'];

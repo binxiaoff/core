@@ -29,6 +29,10 @@
 
 class projects extends projects_crud
 {
+    const MINIMUM_CREATION_DAYS_PROSPECT = 720;
+
+    const MINIMUM_CREATION_DAYS = 1080;
+
     public function __construct($bdd, $params = '')
     {
         parent::projects($bdd, $params);
