@@ -8290,9 +8290,7 @@ var_dump($texteMail);die;
         $sType = $this->params[0];
         $iTimeStartDataloader = microtime(true);
         //TODO a passer en crontab
-//        exec('java -cp ' . $this->Config['dataloader_path'][$this->Config['env']] . 'dataloader-26.0.0-uber.jar -Dsalesforce.config.dir=' . $this->Config['path'][$this->Config['env']] . 'dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=' . escapeshellarg($sType), $aReturnDataloader, $sReturn);
-        exec('java -cp /srv/dataloader/target/dataloader-26.0.0-uber.jar -Dsalesforce.config.dir=' . $this->Config['path'][$this->Config['env']] . 'dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=' . escapeshellarg($sType), $aReturnDataloader, $sReturn);
-        var_dump($sReturn);
+        exec('java -cp ' . $this->Config['dataloader_path'][$this->Config['env']] . 'dataloader-26.0.0-uber.jar -Dsalesforce.config.dir=' . $this->Config['path'][$this->Config['env']] . 'dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=' . escapeshellarg($sType), $aReturnDataloader, $sReturn);
         var_dump($aReturnDataloader);
         $iTimeEndDataloader = microtime(true) - $iTimeStartDataloader;
         $oLogger    = new ULogger('SendDataloader', $this->logPath, 'cron.log');
