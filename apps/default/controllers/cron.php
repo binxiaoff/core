@@ -5760,12 +5760,12 @@ class cronController extends bootstrap
     {
         $echeanciers = $this->loadData('echeanciers');
         $projects    = $this->loadData('projects');
-
+        $surl = $this->surl; //Variable for eval($texteMail); Do not delete.
         $liste   = $echeanciers->selectEcheanciersByprojetEtOrdre(); // <--- a rajouter en prod
-        $content = '';
+        $liste_remb = '';
         foreach ($liste as $l) {
             $projects->get($l['id_project'], 'id_project');
-            $content .= '
+            $liste_remb .= '
 				<tr>
 					<td>' . $l['id_project'] . '</td>
 					<td>' . $projects->title_bo . '</td>
@@ -5774,7 +5774,7 @@ class cronController extends bootstrap
 
 					<td>' . $l['date_echeance_emprunteur'] . '</td>
 					<td>' . $l['date_echeance_emprunteur_reel'] . '</td>
-					<td>' . ($l['status_emprunteur'] == 1 ? 'Oui' : 'Non') . '</td>
+					<td>' . ((int)$l['status_emprunteur'] === 1 ? 'Oui' : 'Non') . '</td>
 				</tr>';
         }
 
@@ -5797,7 +5797,9 @@ class cronController extends bootstrap
         $this->email->addRecipient(trim($destinataire));
         $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
         $this->email->setHTMLBody($texteMail);
-        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+        if('prod' === $this->Config['env']) {
+            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+        }
     }
 
     // Cron une fois par jour a 19h30 (* 18-20 * * *)
@@ -7589,10 +7591,9 @@ class cronController extends bootstrap
                         $day     = date('d', $timeAdd);
                         $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
                         $year    = date('Y', $timeAdd);
-
+                        $Total_rembNet = 0;
                         $lEcheances = $echeanciers->selectEcheances_a_remb('id_project = ' . $r['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $r['ordre'] . ' AND status = 0');
                         if ($lEcheances != false) {
-                            $Total_rembNet = 0;
                             $Total_etat    = 0;
                             $nb_pret_remb  = 0;
 
