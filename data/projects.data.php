@@ -92,6 +92,9 @@ class projects extends projects_crud
 
     function searchDossiers($date1 = '', $date2 = '', $montant = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $start = '', $nb = '')
     {
+        $where = '';
+        $having = '';
+
         if ($date1 != '') {
             $where .= ' AND p.added >= "' . $date1 . ' 00:00:00"';
         }
@@ -133,7 +136,9 @@ class projects extends projects_crud
 				' . $having . '
 				ORDER BY p.added DESC
 				' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        var_dump($sql);
         $resultat = $this->bdd->query($sql);
+
         $result = array();
 
         while ($record = $this->bdd->fetch_array($resultat)) {

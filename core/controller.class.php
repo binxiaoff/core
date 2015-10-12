@@ -337,7 +337,7 @@ class Controller
 				<fieldset style="border:1px solid #ff7800; padding:5px; background-color:white;">
 					<legend style="border:1px solid #ff7800; padding:2px; background-color:white;"><strong>setDebug:</strong></legend>
 			';
-        if (count($_SESSION['msg']) > 0) {
+        if (isset($_SESSION['msg']) && count($_SESSION['msg']) > 0) {
             foreach ($_SESSION['msg'] as $title => $elem) {
                 echo '<PRE>';
                 echo($title != '' ? $title . ' : ' : '');
@@ -352,7 +352,7 @@ class Controller
 					<fieldset style="border:1px solid red; padding:5px; background-color:white;">
 						<legend style="border:1px solid red; padding:2px; background-color:white;"><strong>Errors:</strong></legend>
 			';
-        if (count($_SESSION['error']) > 0) {
+        if (isset($_SESSION['error']) && count($_SESSION['error']) > 0) {
             foreach ($_SESSION['error'] as $elem) {
                 echo '<PRE>';
                 print_r($elem);
@@ -396,8 +396,8 @@ class Controller
 			<div style="position:fixed; top:100%; left:0px; width:100%; height:20px; background-color:#F1EDED;border-top: 1px solid #919191;font-size:12px; margin:-20px auto 0 auto;  ">
 				<span style="cursor: pointer;" onclick="document.getElementById(\'divdebug\').style.display=\'block\';">[O]</span>
 				<span style="cursor: pointer;" onclick="document.getElementById(\'divdebug\').style.display=\'none\';">[X]</span> |
-				<span style="color: #ff7800; font-weight:bold;">' . count($_SESSION['msg']) . ' setdebug</span> |
-				<span style="color: red; font-weight:bold;">' . count($_SESSION['error']) . ' erreur </span> |
+				<span style="color: #ff7800; font-weight:bold;">' . (isset($_SESSION['msg'])) ? count($_SESSION['msg']) : 0 . ' setdebug</span> |
+				<span style="color: red; font-weight:bold;">' . (isset($_SESSION['error'])) ? count($_SESSION['error']) : 0 . ' erreur </span> |
 				<span style="color: #0096ff; font-weight:bold;">' . count($_SESSION['debug']) . ' requ&ecirc;tes </span> |
 				<span style="color: #066500; font-weight:bold;">' . count($this->params) . ' params </span> |
 				<span style="color: #7C0CCF; font-weight:bold;">' . count($_POST) . ' post </span> |
