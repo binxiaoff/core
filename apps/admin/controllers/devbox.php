@@ -16,6 +16,11 @@ class devboxController extends bootstrap
 
     public function _projectsAttachementMigration()
     {
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
         $this->bdd->query("
             INSERT INTO attachment_type (id, label) VALUES
               (30, 'Relevé de compte bancaire du mois précédent'),
@@ -74,11 +79,13 @@ class devboxController extends bootstrap
             WHERE id_project_status NOT IN(21, 22)"
         );
 
+        //Migration des donées
+        $this->migrateCompanyAttachment();
+
         // Une fois tous les attachments transférés, on supprime les anciennes colonnes
         // Backuper la table companies_details avant
         $this->bdd->query("
             ALTER TABLE companies_details
-              DROP COLUMN fichier_extrait_kbis,
               DROP COLUMN fichier_extrait_kbis,
               DROP COLUMN fichier_rib,
               DROP COLUMN fichier_delegation_pouvoir,
@@ -1234,7 +1241,7 @@ class devboxController extends bootstrap
         $this->bdd->query($sql);
     }
 
-    public function _migrateCompanyAttachment()
+    private function migrateCompanyAttachment()
     {
         $oAttachment       = $this->loadData('attachment');
         $this->loadData('attachment_type');
