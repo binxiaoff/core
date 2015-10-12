@@ -289,7 +289,7 @@ class Controller
 							</tr>
 							<tr>
 								<td>Template</td>
-								<td>' . $this->current_template . '</td>
+								<td>' . (isset($this->current_template) ? $this->current_template : '') . '</td>
 							</tr>
 							<tr>
 								<td>Mon IP</td>
