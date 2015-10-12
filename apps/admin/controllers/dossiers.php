@@ -1873,6 +1873,28 @@ class dossiersController extends bootstrap
         }
     }
 
+    public function _remove_file()
+    {
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+        $aResult = array();
+
+        if (isset($_POST['attachment_id'])) {
+            $iAttachmentId = $_POST['attachment_id'];
+
+            if($this->removeAttachment($iAttachmentId)) {
+                $aResult[$iAttachmentId] = 'ok';
+            }
+        }
+
+        echo json_encode($aResult);
+    }
+
     public function _add()
     {
         // Chargement du data
@@ -3576,7 +3598,7 @@ class dossiersController extends bootstrap
         }
 
         if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type));;
+            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));;
         }
 
         //add the new name for each file
@@ -3585,8 +3607,30 @@ class dossiersController extends bootstrap
             $sNewName = $aFileInfo['filename'] . '_' . $iOwnerId;
         }
 
-        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::PROJECT, $iAttachmentType, $field, $this->path, $this->upload, $sNewName);
+        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::PROJECT, $iAttachmentType, $field, $this->upload, $sNewName);
 
         return $resultUpload;
+    }
+
+    /**
+     * @param $iAttachmentId
+     *
+     * @return mixed
+     */
+    private function removeAttachment($iAttachmentId)
+    {
+        if (false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
+            $this->attachment = $this->loadData('attachment');
+        }
+
+        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
+            $this->attachment_type = $this->loadData('attachment_type');
+        }
+
+        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
+            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));
+        }
+
+        return $this->attachmentHelper->remove($iAttachmentId);
     }
 }

@@ -1236,9 +1236,8 @@ class devboxController extends bootstrap
 
     public function _migrateCompanyAttachment()
     {
-        var_dump('rtoto');
         $oAttachment       = $this->loadData('attachment');
-        //$oAttachmentType   = $this->loadData('attachment_type');
+        $this->loadData('attachment_type');
         $oCompaniesDetails = $this->loadData('companies_details');
         $oProject          = $this->loadData('projects');
         $iCompanyNbTotal   = $oCompaniesDetails->counter();
@@ -1249,11 +1248,10 @@ class devboxController extends bootstrap
         while(true)
         {
             $aCompanies = $oCompaniesDetails->select('', '', $iStart, $iLimit);
-            $iStart += $iLimit;
-
-            if(empty($aProjects)) {
+            if (empty($aCompanies)) {
                 break;
             }
+            $iStart += $iLimit;
 
             foreach($aCompanies as $aCompany)
             {
@@ -1261,7 +1259,7 @@ class devboxController extends bootstrap
                 $ownerType = attachment::PROJECT;
                 $added = $aCompany['added'];
 
-                $aProjects = $oProject->select('where id_company = ' . $iCompanyId);
+                $aProjects = $oProject->select('id_company = ' . $iCompanyId);
 
                 if (empty($aProjects)) {
                     continue;

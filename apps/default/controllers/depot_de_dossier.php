@@ -1124,7 +1124,7 @@ class depot_de_dossierController extends bootstrap
         }
 
         if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type));;
+            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));;
         }
 
         //add the new name for each file
@@ -1133,7 +1133,7 @@ class depot_de_dossierController extends bootstrap
             $sNewName = $aFileInfo['filename'] . '_' . $iOwnerId;
         }
 
-        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::PROJECT, $iAttachmentType, $field, $this->path, $this->upload, $sNewName);
+        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::PROJECT, $iAttachmentType, $field, $this->upload, $sNewName);
 
         if (false === $resultUpload) {
             $this->form_ok       = false;

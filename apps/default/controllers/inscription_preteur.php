@@ -2480,7 +2480,7 @@ class inscription_preteurController extends bootstrap
 		}
 
 		if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-			$this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type));;
+			$this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));;
 		}
 
 		switch($attachmentType) {
@@ -2527,7 +2527,7 @@ class inscription_preteurController extends bootstrap
 				return false;
 		}
 
-		$resultUpload = $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->path, $this->upload);
+		$resultUpload = $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->upload);
 
 		if(false === $resultUpload) {
 			$this->form_ok = false;

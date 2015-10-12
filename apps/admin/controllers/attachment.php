@@ -39,7 +39,7 @@ class attachmentController extends bootstrap
         /** @var attachment_type $oAttachmentType */
         $oAttachmentType    = $this->loadData('attachment_type');
         /** @var attachment_helper $oAttachmentHelper */
-        $oAttachmentHelper = $this->loadLib('attachment_helper', array($oAttachment, $oAttachmentType));
+        $oAttachmentHelper = $this->loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->path));
 
         $oAttachment->get($iAttachmentId);
 
@@ -47,10 +47,10 @@ class attachmentController extends bootstrap
             header('location:' . $this->lurl);
         }
 
-        $sAttachmentPath = $oAttachmentHelper->getUploadPath($oAttachment->type_owner, $oAttachment->id_type);
+        $sAttachmentPath = $oAttachmentHelper->getFullPath($oAttachment->type_owner, $oAttachment->id_type);
 
-        if (file_exists($this->path . $sAttachmentPath)) {
-            $url = ($this->path . $sAttachmentPath);
+        if (file_exists($sAttachmentPath)) {
+            $url = ($sAttachmentPath);
 
             header('Content-Description: File Transfer');
             header('Content-Type: application/octet-stream');

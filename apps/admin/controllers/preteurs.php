@@ -2138,7 +2138,7 @@ class preteursController extends bootstrap
         }
 
         if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type));;
+            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path ));;
         }
 
         //add the new name for each file
@@ -2147,7 +2147,7 @@ class preteursController extends bootstrap
             $sNewName = mb_substr($aFileInfo['filename'], 0, 30) . '_' . $iOwnerId;
         }
 
-        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::LENDER, $iAttachmentType, $field, $this->path, $this->upload, $sNewName);
+        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::LENDER, $iAttachmentType, $field, $this->upload, $sNewName);
 
         return $resultUpload;
     }

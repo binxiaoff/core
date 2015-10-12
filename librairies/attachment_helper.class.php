@@ -11,33 +11,28 @@ class attachment_helper
     /** @var  attachment_type */
     private $oAttachmentType;
 
+    /** @var  string */
+    private $basePath;
+
     public function __construct($aAttributes)
     {
-        $this->oAttachment     = $aAttributes[0];
-        $this->oAttachmentType = $aAttributes[1];
+        $this->oAttachment      = $aAttributes[0];
+        $this->oAttachmentType  = $aAttributes[1];
+        $this->basePath         = $aAttributes[2];
     }
     /**
      * @param integer    $ownerId
      * @param string     $ownerType
      * @param integer    $attachmentType
      * @param string     $field
-     * @param string     $basePath
      * @param upload     $upload
      * @param string     $sNewName
      * @param array      $aFiles
      *
      * @return bool|string
      */
-    public function upload(
-        $ownerId,
-        $ownerType,
-        $attachmentType,
-        $field,
-        $basePath,
-        $upload,
-        $sNewName = '',
-        $aFiles = null
-    ) {
+    public function upload($ownerId, $ownerType, $attachmentType, $field, $upload, $sNewName = '', $aFiles = null)
+    {
         if (is_null($aFiles)) {
             $aFiles = $_FILES;
         }
@@ -60,7 +55,7 @@ class attachment_helper
             return false;
         }
 
-        $upload->setUploadDir($basePath, $uploadPath);
+        $upload->setUploadDir($this->basePath, $uploadPath);
 
         if (false === $upload->doUpload($field, $sNewName, $erase = false, $aFiles)) {
             return false;
@@ -73,7 +68,7 @@ class attachment_helper
         );
 
         if (false === empty($attachmentInfo) && $attachmentInfo[0]['path'] != '') {
-            @unlink($basePath . $uploadPath . $attachmentInfo[0]['path']);
+            @unlink($this->basePath . $uploadPath . $attachmentInfo[0]['path']);
         }
 
         $this->oAttachment->id_type    = $attachmentType;
@@ -91,6 +86,25 @@ class attachment_helper
         return $attachment_id;
     }
 
+    public function remove($iAttachmentId)
+    {
+        if (false === $this->oAttachment->get($iAttachmentId)) {
+            return false;
+        }
+
+        $this->oAttachment->delete($iAttachmentId);
+
+        $uploadPath = $this->getUploadPath($this->oAttachment->type_owner, $this->oAttachment->id_type);
+
+        if ('' === $uploadPath) {
+            return false;
+        }
+
+        @unlink($this->basePath . $uploadPath . $this->oAttachment->path);
+
+        return true;
+    }
+
     public function getUploadPath($sOwnerType, $iDocumentType)
     {
         switch ($sOwnerType) {
@@ -101,6 +115,17 @@ class attachment_helper
             default:
                 return null;
         }
+    }
+
+    public function getFullPath($sOwnerType, $iDocumentType)
+    {
+        $path = $this->getUploadPath($sOwnerType, $iDocumentType);
+
+        if (null === $path) {
+            return null;
+        }
+
+        return $this->basePath . $path;
     }
 
     private function getLendersDocumentPath($iDocumentType)

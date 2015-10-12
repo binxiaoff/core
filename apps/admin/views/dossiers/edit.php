@@ -1919,6 +1919,7 @@
                     ?>
                     <table class="tablesorter">
                         <thead>
+                        <th></th>
                         <th width="200">Nom</th>
                         <th>Fichier</th>
                         <th>Statut</th>
@@ -1927,13 +1928,18 @@
                         <tbody>
                         <?php foreach($this->aAttachmentTypes as $sAttachmentType): ?>
                         <tr>
-                            <td><?=$sAttachmentType['label']?></td>
-                            <td>
+                            <td class="remove_col">
+                                <?php if(isset($this->aAttachments[$sAttachmentType['id']]['path'])): ?>
+                                    <a href="#" data-id="<?=$this->aAttachments[$sAttachmentType['id']]['id']?>" data-label="<?=$sAttachmentType['label']?>" class="icon_remove_attachment"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" title="Supprimer"></a>
+                                <?php endif; ?>
+                            </td>
+                            <td class="type_col"><?=$sAttachmentType['label']?></td>
+                            <td class="label_col">
                                 <?php if(isset($this->aAttachments[$sAttachmentType['id']]['path'])): ?>
                                     <a href="<?= $this->url ?>/attachment/download/id/<?= $this->aAttachments[$sAttachmentType['id']]['id'] ?>/file/<?= urlencode($this->aAttachments[$sAttachmentType['id']]['path']) ?>"><?= $this->aAttachments[$sAttachmentType['id']]['path'] ?></a>
                                 <?php endif; ?>
                             </td>
-                            <td class="statut_fichier_<?=$sAttachmentType['id']?>"><?= isset($this->aAttachments[$sAttachmentType['id']]) === true ? 'Enregistré' : '' ?></td>
+                            <td class="statut_fichier_<?=$sAttachmentType['id']?>" id="statut_fichier_id_<?= $this->aAttachments[$sAttachmentType['id']]['id']?>"><?= isset($this->aAttachments[$sAttachmentType['id']]) === true ? 'Enregistré' : '' ?></td>
                             <td><input type="file" name="<?=$sAttachmentType['id']?>" id="fichier_project_<?=$sAttachmentType['id']?>"/></td>
                         </tr>
                         <?php endforeach; ?>
@@ -2345,6 +2351,44 @@
         if ($(this).attr('checked') == true) {
             $('.statut_dirigeant_etape2').show('slow');
             $('.statut_dirigeant3_etape2').show('slow');
+        }
+    });
+
+    $('.icon_remove_attachment').click(function(e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        var type = $(this).data('label');
+        var response = confirm("Voulez-vous supprimer " + type + "?");
+        if (response == true) {
+            $.ajax({
+                url: "<?=$this->lurl?>/dossiers/remove_file",
+                dataType: 'json',
+                type: 'POST',
+                data: {
+                    attachment_id: id
+                },
+                error: function() {
+                    alert('An error has occurred');
+                },
+                success: function(data) {
+                    if(false === $.isEmptyObject(data)) {
+                        $.each(data, function(fileId, value){
+                            if ('ok' == value) {
+                                $("#statut_fichier_id_"+fileId).html('Supprimé');
+                                $(this).remove;
+                                $("#statut_fichier_id_"+fileId).parent().find('.label_col').html('');
+                                $("#statut_fichier_id_"+fileId).parent().find('.remove_col').html('');
+                            }
+
+                        });
+                        setTimeout(function () {
+                            $("#valid_etape5").slideUp();
+                        }, 4000);
+                    } else {
+                        alert('An error has occurred');
+                    }
+                }
+            });
         }
     });
 </script>
