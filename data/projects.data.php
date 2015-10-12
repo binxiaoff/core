@@ -29,34 +29,72 @@
 
 class projects extends projects_crud
 {
-
-    function projects($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::projects($bdd, $params);
     }
 
-    function get($id, $field = 'id_project')
+    public function get($id, $field = 'id_project')
     {
         return parent::get($id, $field);
     }
 
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_project')
+    public function delete($id, $field = 'id_project')
     {
         parent::delete($id, $field);
     }
 
-    function create($cs = '')
+    public function create()
     {
-        $id = parent::create($cs);
-        return $id;
+        $this->id_project            = $this->bdd->escape_string($this->id_project);
+        $this->hash                  = $this->bdd->escape_string($this->hash);
+        $this->slug                  = $this->bdd->escape_string($this->slug);
+        $this->id_company            = $this->bdd->escape_string($this->id_company);
+        $this->id_partenaire         = $this->bdd->escape_string($this->id_partenaire);
+        $this->id_partenaire_subcode = $this->bdd->escape_string($this->id_partenaire_subcode);
+        $this->id_prescripteur       = $this->bdd->escape_string($this->id_prescripteur);
+        $this->amount                = $this->bdd->escape_string($this->amount);
+        $this->status_solde          = $this->bdd->escape_string($this->status_solde);
+        $this->period                = $this->bdd->escape_string($this->period);
+        $this->title                 = $this->bdd->escape_string($this->title);
+        $this->title_bo              = $this->bdd->escape_string($this->title_bo);
+        $this->photo_projet          = $this->bdd->escape_string($this->photo_projet);
+        $this->lien_video            = $this->bdd->escape_string($this->lien_video);
+        $this->comments              = $this->bdd->escape_string($this->comments);
+        $this->nature_project        = $this->bdd->escape_string($this->nature_project);
+        $this->objectif_loan         = $this->bdd->escape_string($this->objectif_loan);
+        $this->presentation_company  = $this->bdd->escape_string($this->presentation_company);
+        $this->means_repayment       = $this->bdd->escape_string($this->means_repayment);
+        $this->type                  = $this->bdd->escape_string($this->type);
+        $this->target_rate           = $this->bdd->escape_string($this->target_rate);
+        $this->stand_by              = $this->bdd->escape_string($this->stand_by);
+        $this->id_analyste           = $this->bdd->escape_string($this->id_analyste);
+        $this->date_publication      = $this->bdd->escape_string($this->date_publication);
+        $this->date_publication_full = $this->bdd->escape_string($this->date_publication_full);
+        $this->date_retrait          = $this->bdd->escape_string($this->date_retrait);
+        $this->date_retrait_full     = $this->bdd->escape_string($this->date_retrait_full);
+        $this->date_fin              = $this->bdd->escape_string($this->date_fin);
+        $this->create_bo             = $this->bdd->escape_string($this->create_bo);
+        $this->risk                  = $this->bdd->escape_string($this->risk);
+        $this->retour_altares        = $this->bdd->escape_string($this->retour_altares);
+        $this->process_fast          = $this->bdd->escape_string($this->process_fast);
+        $this->remb_auto             = $this->bdd->escape_string($this->remb_auto);
+        $this->status                = $this->bdd->escape_string($this->status);
+        $this->stop_relances         = $this->bdd->escape_string($this->stop_relances);
+        $this->display               = $this->bdd->escape_string($this->display);
+        $this->added                 = $this->bdd->escape_string($this->added);
+        $this->updated               = $this->bdd->escape_string($this->updated);
+
+        $this->bdd->query('INSERT INTO `projects` (`hash`,`slug`,`id_company`,`id_partenaire`,`id_partenaire_subcode`,`id_prescripteur`,`amount`,`status_solde`,`period`,`title`,`title_bo`,`photo_projet`,`lien_video`,`comments`,`nature_project`,`objectif_loan`,`presentation_company`,`means_repayment`,`type`,`target_rate`,`stand_by`,`id_analyste`,`date_publication`,`date_publication_full`,`date_retrait`,`date_retrait_full`,`date_fin`,`create_bo`,`risk`,`retour_altares`,`process_fast`,`remb_auto`,`status`,`stop_relances`,`display`,`added`,`updated`) VALUES(MD5(CONCAT(UUID(), NOW()))),"' . $this->slug . '","' . $this->id_company . '","' . $this->id_partenaire . '","' . $this->id_partenaire_subcode . '","' . $this->id_prescripteur . '","' . $this->amount . '","' . $this->status_solde . '","' . $this->period . '","' . $this->title . '","' . $this->title_bo . '","' . $this->photo_projet . '","' . $this->lien_video . '","' . $this->comments . '","' . $this->nature_project . '","' . $this->objectif_loan . '","' . $this->presentation_company . '","' . $this->means_repayment . '","' . $this->type . '","' . $this->target_rate . '","' . $this->stand_by . '","' . $this->id_analyste . '","' . $this->date_publication . '","' . $this->date_publication_full . '","' . $this->date_retrait . '","' . $this->date_retrait_full . '","' . $this->date_fin . '","' . $this->create_bo . '","' . $this->risk . '","' . $this->retour_altares . '","' . $this->process_fast . '","' . $this->remb_auto . '","' . $this->status . '","' . $this->stop_relances . '","' . $this->display . '",NOW(),NOW())');
+
+        $this->get($this->bdd->insert_id(), 'id_project');
+
+        $this->bdd->controlSlug('projects', $this->slug, 'id_project', $this->id_project);
+
+        return $this->id_project;
     }
 
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '')
             $where = ' WHERE ' . $where;
@@ -72,7 +110,7 @@ class projects extends projects_crud
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '')
             $where = ' WHERE ' . $where;
@@ -83,14 +121,14 @@ class projects extends projects_crud
         return (int)($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id, $field = 'id_project')
+    public function exist($id, $field = 'id_project')
     {
         $sql = 'SELECT * FROM `projects` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    function searchDossiers($date1 = '', $date2 = '', $montant = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $start = '', $nb = '')
+    public function searchDossiers($date1 = '', $date2 = '', $montant = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $start = '', $nb = '')
     {
         if ($date1 != '') {
             $where .= ' AND p.added >= "' . $date1 . ' 00:00:00"';
@@ -178,7 +216,7 @@ class projects extends projects_crud
     }
 
     // version slim
-    function selectProjectsByStatusSlim($status, $where = '', $order = '', $start = '', $nb = '')
+    public function selectProjectsByStatusSlim($status, $where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '')
             $where = ' ' . $where . ' ';
@@ -217,7 +255,7 @@ class projects extends projects_crud
         return current($this->bdd->fetch_assoc($this->bdd->query($sql)));
     }
 
-    function searchDossiersRemb($siren = '', $societe = '', $nom = '', $prenom = '', $projet = '', $email = '', $start = '', $nb = '')
+    public function searchDossiersRemb($siren = '', $societe = '', $nom = '', $prenom = '', $projet = '', $email = '', $start = '', $nb = '')
     {
         $where = '';
         if ($siren != '') {
@@ -260,7 +298,7 @@ class projects extends projects_crud
         return $result;
     }
 
-    function searchDossiersNoRemb($siren = '', $societe = '', $nom = '', $prenom = '', $projet = '', $email = '', $start = '', $nb = '')
+    public function searchDossiersNoRemb($siren = '', $societe = '', $nom = '', $prenom = '', $projet = '', $email = '', $start = '', $nb = '')
     {
         if ($siren != '') {
             $where .= ' AND co.siren = "' . $siren . '"';
@@ -302,7 +340,7 @@ class projects extends projects_crud
         return $result;
     }
 
-    function positionProject($id_project, $status = '', $order = '')
+    public function positionProject($id_project, $status = '', $order = '')
     {
         if ($status == '')
             $status = '50,60,80';
@@ -323,7 +361,7 @@ class projects extends projects_crud
     }
 
     // liste les projets favoris dont la date de retrait est dans j-2
-    function getDerniersFav($id_client)
+    public function getDerniersFav($id_client)
     {
         $sql = 'SELECT * FROM `favoris` WHERE id_client = ' . $id_client;
 
@@ -345,7 +383,7 @@ class projects extends projects_crud
         return $result;
     }
 
-    function getLastProject($id_company)
+    public function getLastProject($id_company)
     {
         $sql = 'SELECT id_project
                 FROM projects
