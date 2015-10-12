@@ -727,7 +727,7 @@ class ajaxController extends bootstrap
                 $this->companies->get($this->projects->id_company, 'id_company');
 
                 $this->projects->amount = str_replace(' ', '', str_replace(',', '.', $_POST['montant_etape1']));
-                $this->projects->period = $_POST['duree_etape1'];
+                $this->projects->period = (0 < (int) $_POST['duree_etape1']) ? (int) $_POST['duree_etape1'] : $this->projects->period;
                 $this->companies->siren = $_POST['siren_etape1'];
 
                 // on enregistre les modifs

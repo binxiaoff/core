@@ -118,8 +118,7 @@
 
                             <?php
                                 if ($this->projects->create_bo == 1) {
-                                    ?><input type="text" name="siren" id="siren" class="input_large"
-                                             value="<?= $this->companies->siren ?>"/><?
+                                    ?><input type="text" name="siren" id="siren" class="input_large" value="<?= $this->companies->siren ?>"/><?
                                 } else {
                                     ?><input type="hidden" name="siren" id="siren"value="<?= $this->companies->siren ?>"/><?
                                     echo $this->companies->siren;
@@ -228,8 +227,7 @@
                             <select name="duree" id="duree" class="select"
                                     style="width:160px;background-color:#AAACAC;">
                                 <?php foreach ($this->dureePossible as $duree): ?>
-                                    <option <?= ($this->projects->period == $duree ? 'selected' : '') ?>
-                                        value="<?= $duree ?>"><?= $duree ?> mois
+                                    <option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois
                                     </option>
                                 <?php endforeach ?>
                                 <option <?= ($this->projects->period == '1000000' ? 'selected' : '') ?> value="1000000">
@@ -406,6 +404,8 @@
                             <?php
                                 if ($this->current_projects_status->status == 130) {
                                     echo "Remboursement anticipé";
+                                } elseif (0 === (int)$this->projects->period || 1000000 === (int)$this->projects->period) {
+                                    echo "Pr&eacute;p Funding";
                                 } else {
                                     if (count($this->lProjects_status) > 0) {
                             ?>
@@ -435,7 +435,17 @@
                     ?>
                         <tr class="change_statut" <?= ($this->current_projects_status->status == 35 ? '' : 'style="display:none"') ?>>
                             <td colspan="2">
-                                Vous devez changer le statut du projet pour ajouter une date de publication et de retrait
+                                <?php
+                                    if (0 === (int)$this->projects->period || 1000000 === (int)$this->projects->period) {
+                                ?>
+                                        V&eacute;rifiez la dur&eacute;e du pr&ecirc;t et le rib avant de pouvoir changer de statut
+                                <?php
+                                    } else {
+                                ?>
+                                        Vous devez changer le statut du projet pour ajouter une date de publication et de retrait
+                                <?php
+                                    }
+                                ?>
                                 <div class="block_cache change_statut"></div>
                             </td>
                         </tr>
@@ -774,7 +784,7 @@
                                         value="<?= $duree ?>"><?= $duree ?> mois
                                     </option>
                                 <? endforeach ?>
-                                <option <?= ($this->projects->period == '1000000' ? 'selected' : '') ?> value="1000000">
+                                <option <?= ($this->projects->period == '1000000' || $this->projects->period == 0) ? 'selected' : '' ?> value="0">
                                     je ne sais pas
                                 </option>
                             </select>
@@ -785,11 +795,9 @@
                         <td>
                             <?php
                             if ($this->projects->create_bo == 1) {
-                                ?><input type="text" name="siren_etape1" id="siren_etape1" class="input_large"
-                                         value="<?= $this->companies->siren ?>"/><?
+                                ?><input type="text" name="siren_etape1" id="siren_etape1" class="input_large" value="<?= $this->companies->siren ?>"/><?
                             } else {
-                                ?><input type="hidden" name="siren_etape1" id="siren_etape1"
-                                         value="<?= $this->companies->siren ?>"/><?
+                                ?><input type="hidden" name="siren_etape1" id="siren_etape1" value="<?= $this->companies->siren ?>"/><?
                                 echo $this->companies->siren;
                             }
                             ?>

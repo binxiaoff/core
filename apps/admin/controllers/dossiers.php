@@ -96,6 +96,10 @@ class dossiersController extends bootstrap
         }
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
+            if(false === in_array($this->projects->period, $this->dureePossible)){
+                array_push($this->dureePossible,$this->projects->period);
+                sort($this->dureePossible);
+            }
             $this->projects_notes->get($this->params[0], 'id_project');
 
             // Liste deroulante secteurs
