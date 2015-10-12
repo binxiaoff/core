@@ -404,7 +404,9 @@
                             <?php
                                 if ($this->current_projects_status->status == 130) {
                                     echo "Remboursement anticipé";
-                                } elseif (0 === (int)$this->projects->period || 1000000 === (int)$this->projects->period) {
+                                } elseif (0 === (int)$this->projects->period ||
+                                    1000000 === (int)$this->projects->period ||
+                                    '' == $this->companies_details->fichier_rib) {
                                     echo "Pr&eacute;p Funding";
                                 } else {
                                     if (count($this->lProjects_status) > 0) {
@@ -436,7 +438,9 @@
                         <tr class="change_statut" <?= ($this->current_projects_status->status == 35 ? '' : 'style="display:none"') ?>>
                             <td colspan="2">
                                 <?php
-                                    if (0 === (int)$this->projects->period || 1000000 === (int)$this->projects->period) {
+                                    if (0 === (int)$this->projects->period ||
+                                        1000000 === (int)$this->projects->period ||
+                                        '' == $this->companies_details->fichier_rib) {
                                 ?>
                                         V&eacute;rifiez la dur&eacute;e du pr&ecirc;t et le rib avant de pouvoir changer de statut
                                 <?php
