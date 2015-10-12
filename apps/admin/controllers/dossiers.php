@@ -315,15 +315,8 @@ class dossiersController extends bootstrap
             ////////////////////////////////////////////////
             // liste les status
             // les statuts dispo sont conditionnés par le statut courant
-            if ($this->current_projects_status->status == 20) {
-                $this->lProjects_status = $this->projects_status->select(' status <= 20 ', ' status ASC ');
-            } elseif (in_array($this->current_projects_status->status, array(35))) {
-                $this->lProjects_status = $this->projects_status->select(' status IN (35,40)', ' status ASC ');
-            } elseif ($this->current_projects_status->status >= 80) {
-                $this->lProjects_status = $this->projects_status->select(' status >= 80 ', ' status ASC ');
-            } else {
-                $this->lProjects_status = array();
-            }
+            $this->projects_status->getLastStatut($this->projects->id_project);
+            $this->lProjects_status = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
 
             //Attachment List
             $this->attachment_type = $this->loadData('attachment_type');
