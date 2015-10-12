@@ -5,9 +5,6 @@
 
         if (isset($this->params[0]) && $this->params[0] == 'nok') {
             echo $this->lng['etape1']['contenu-non-eligible'];
-        } elseif (isset($_SESSION['error_pre_empr'])) {
-            echo $_SESSION['error_pre_empr'];
-            unset($_SESSION['error_pre_empr']);
         } else {
             if ($this->error_email_representative_exist == true || $this->error_email_exist == true) {
                 ?><p style="color:#c84747;text-align:center;"><?= $this->lng['etape2']['erreur-email'] ?></p><?

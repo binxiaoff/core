@@ -38,24 +38,32 @@ if (
     $aForm = isset($_POST['spy_inscription_landing_page_depot_dossier']) ? $_POST : $_GET;
     $_SESSION['forms']['depot-de-dossier']['values'] = $aForm;
 
-    if (
-        empty($aForm['montant'])
-        || empty($aForm['siren'])
-        || $aForm['siren'] != (int) $aForm['siren']
-        || strlen($aForm['siren']) !== 9
-    ) {
+    if (false === empty($aForm['email']) && false === filter_var($aForm['email'], FILTER_VALIDATE_EMAIL)) {
         $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['landing-page']['champs-obligatoires'];
+        $_SESSION['forms']['depot-de-dossier']['errors']['email'] = true;
+    }
+
+    if (empty($aForm['montant'])) {
+        $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['landing-page']['champs-obligatoires'];
+        $_SESSION['forms']['depot-de-dossier']['errors']['montant'] = true;
+    }
+
+    if (empty($aForm['siren']) || $aForm['siren'] != (int) $aForm['siren'] || strlen($aForm['siren']) !== 9) {
+        $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['landing-page']['champs-obligatoires'];
+        $_SESSION['forms']['depot-de-dossier']['errors']['siren'] = true;
     } else {
         $iAmount = str_replace(array(',', ' '), array('.', ''), $aForm['montant']);
 
         if ($iAmount != (int) $iAmount) {
             $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['landing-page']['champs-obligatoires'];
+            $_SESSION['forms']['depot-de-dossier']['errors']['montant'] = true;
         } elseif ($iAmount < $this->sommeMin || $iAmount > $this->sommeMax) {
             $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['depot-de-dossier']['montant-invalide'];
+            $_SESSION['forms']['depot-de-dossier']['errors']['montant'] = true;
         }
     }
 
-    if (isset($_SESSION['forms']['depot-de-dossier']['response'])) {
+    if (isset($_SESSION['forms']['depot-de-dossier']['errors'])) {
         header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
         die;
     }
