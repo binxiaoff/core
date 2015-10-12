@@ -74,9 +74,10 @@ class Altares
     private function soapCall($sWSDLUrl, $sWSName, array $aParameters = array())
     {
         $oClient = new \SoapClient($sWSDLUrl, array('trace' => 1, 'exception' => true));
-        return $oClient->__soapCall(
+        $oResult = $oClient->__soapCall(
             $sWSName,
             array(array('identification' => $this->sIdentification, 'refClient' => 'sffpme') + $aParameters)
         );
+        return isset($oResult->return) ? $oResult->return : null;
     }
 }
