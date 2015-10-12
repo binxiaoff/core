@@ -4,6 +4,11 @@ class dossiersController extends bootstrap
 {
     public $Command;
 
+    /**
+     * @var string for block risk note and comments
+     */
+    public $bReadonlyRiskNote;
+
     public function dossiersController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
@@ -88,6 +93,8 @@ class dossiersController extends bootstrap
         $this->notifications                 = $this->loadData('notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+        // Id Status to block risk note and risk comments.
+        $aBlockRiskStatus = array(50, 60, 70, 80, 100, 110, 120, 130);
 
         $this->settings->get('Durée des prêts autorisées', 'type');
         $this->dureePossible = explode(',', $this->settings->value);
@@ -120,12 +127,14 @@ class dossiersController extends bootstrap
 
             // on check le statut, si c'est la premiere fois qu'il est consulté on le passe en "à l'étude"
             $this->current_projects_status->getLastStatut($this->projects->id_project);
-
             if ($this->current_projects_status->status == 10) {
                 $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 20, $this->projects->id_project);
                 // on reactualise l'affichage
                 $this->current_projects_status->getLastStatut($this->projects->id_project);
             }
+
+            //Check if status is eligible for block the note and comments.
+            $this->bReadonlyRiskNote = (in_array($this->current_projects_status->status, $aBlockRiskStatus)) ?: false;
 
             // On recup l'entreprise
             $this->companies->get($this->projects->id_company, 'id_company');
@@ -3926,7 +3935,7 @@ class dossiersController extends bootstrap
         if ($dateEcheance != "" && isset($dateEcheance)) {
             $date_next_echeance_4jouvres_avant_stamp = $jo->display_jours_ouvres($dateEcheance, 4);
         }
-        if(false === empty($next_echeanche)) {
+        if (false === empty($next_echeanche)) {
             // on check si la date limite est pas déjà dépassé. Si oui on prend la prochaine echeance
             if ($date_next_echeance_4jouvres_avant_stamp <= time()) {
                 // Dans ce cas, on connait donc déjà la derniere echeance qui se déroulera normalement
