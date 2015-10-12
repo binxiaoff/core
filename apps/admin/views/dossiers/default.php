@@ -40,7 +40,7 @@
     <?php if (isset($_POST['form_search_client'])) { ?>
         <h1>Résultats de la recherche de dossiers <?=(count($this->lProjects)>0?'('.count($this->lProjects).')':'')?></h1>
     <?php } else { ?>
-        <h1>Liste des <?=count($this->lProjects)?> derniers dossiers</h1>
+        <h1>Liste des <?=(isset($this->lProjects)) ? count($this->lProjects) : 0?> derniers dossiers</h1>
     <?php } ?>
     <div class="btnDroite"><a href="<?=$this->lurl?>/dossiers/add/create" class="btn_link">Créer un dossier</a></div>
     <style>
@@ -52,11 +52,11 @@
             <fieldset>
                 <table class="formColor">
                     <tr>
-                        <td><label for="id">ID :</label><br /><input type="text" name="id" id="id" class="input_court" title="id" value="<?=$_POST['id']?>"/></td>
-                        <td><label for="siren">Siren :</label><br /><input type="text" name="siren" id="siren" class="input_moy" title="siren" value="<?=$_POST['siren']?>"/></td>
-                        <td><label for="siren">Raison sociale :</label><br /><input type="text" name="raison-sociale" id="raison-sociale" class="input_moy" title="Raison sociale" value="<?=$_POST['raison-sociale']?>"/></td>
-                        <td style="padding-top:23px;"><input type="text" name="date1" id="datepik_1" class="input_dp" value="<?=$_POST['date1']?>"/></td>
-                        <td style="padding-top:23px;"><input type="text" name="date2" id="datepik_2" class="input_dp" value="<?=$_POST['date2']?>"/></td>
+                        <td><label for="id">ID :</label><br /><input type="text" name="id" id="id" class="input_court" title="id" value="<?=(isset($_POST['id'])) ? $_POST['id'] : ''?>"/></td>
+                        <td><label for="siren">Siren :</label><br /><input type="text" name="siren" id="siren" class="input_moy" title="siren" value="<?=(isset($_POST['siren'])) ? $_POST['siren'] : ''?>"/></td>
+                        <td><label for="siren">Raison sociale :</label><br /><input type="text" name="raison-sociale" id="raison-sociale" class="input_moy" title="Raison sociale" value="<?=(isset($_POST['raison-sociale'])) ? $_POST['raison-sociale'] : ''?>"/></td>
+                        <td style="padding-top:23px;"><input type="text" name="date1" id="datepik_1" class="input_dp" value="<?=(isset($_POST['date1'])) ? $_POST['date1'] : ''?>"/></td>
+                        <td style="padding-top:23px;"><input type="text" name="date2" id="datepik_2" class="input_dp" value="<?=(isset($_POST['date2'])) ? $_POST['date2'] : ''?>"/></td>
                         <td style="padding-top:23px;">
                             <select name="montant" id="montant" class="select">
                                 <option value="0">Montant</option>
@@ -87,7 +87,7 @@
                             <select name="status" id="status" class="select">
                                 <option value="">Status</option>
                                 <?php  foreach ($this->lProjects_status as $s) { ?>
-                                    <option <?=(isset($_POST['status']) && $_POST['status'] == $s['status'] || $this->params[0] == $s['status']?'selected':'')?> value="<?=$s['status']?>"><?=$s['label']?></option>
+                                    <option <?=(isset($_POST['status']) && $_POST['status'] == $s['status'] || isset($this->params[0]) && $this->params[0] == $s['status']?'selected':'')?> value="<?=$s['status']?>"><?=$s['label']?></option>
                                 <?php } ?>
                             </select>
                         </td>
@@ -111,7 +111,7 @@
             </fieldset>
         </form>
     </div>
-    <?php if (count($this->lProjects) > 0) { ?>
+    <?php if (isset($this->lProjects) && count($this->lProjects) > 0) { ?>
         <table class="tablesorter">
             <thead>
                 <tr>
