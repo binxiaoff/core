@@ -104,4 +104,16 @@ class projects_status_history extends projects_status_history_crud
 		
 		$this->create();
 	}
+
+	public function getBeforeLastStatut($iProjectId)
+	{
+		$result = $this->select('id_project='.$iProjectId, 'added DESC', 1, 1);
+
+		if(isset($result[0]) && false === empty($result[0])) {
+
+			return $result[0]['id_project_status'];
+		}
+
+		return false;
+	}
 }

@@ -139,4 +139,34 @@ class projects_status extends projects_status_crud
 
         return parent::get($id_project_statut, 'id_project_status');
     }
+
+    /**
+     * @param                         $iProjectId
+     * @param projects_status_history $oProjectStatusHistory
+     *
+     * @return array|bool
+     */
+    public function getPossibleStatus($iProjectId, projects_status_history $oProjectStatusHistory)
+    {
+        if ($this->status >= self::REMBOURSEMENT) {
+            $sPossibleStatus = 'status >= '. self::REMBOURSEMENT;
+        } else {
+            switch ($this->status) {
+                case self::ABANDON:
+                    $iStatus = $oProjectStatusHistory->getBeforeLastStatut($iProjectId);
+                    return $this->select('id_project_status='.$iStatus);
+                case self::EN_ATTENTE_PIECES:
+                    $sPossibleStatus = 'status <= ' . self::EN_ATTENTE_PIECES;
+                    break;
+                case self::PREP_FUNDING:
+                    $sPossibleStatus = 'status IN (' . self::PREP_FUNDING . ',' . self::A_FUNDER . ')';
+                    break;
+                case self::REJETE:
+                default:
+                    return array();
+            }
+        }
+
+        return $this->select($sPossibleStatus, 'status ASC');
+    }
 }
