@@ -136,7 +136,7 @@ class projects extends projects_crud
 				' . $having . '
 				ORDER BY p.added DESC
 				' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-        var_dump($sql);
+
         $resultat = $this->bdd->query($sql);
 
         $result = array();
