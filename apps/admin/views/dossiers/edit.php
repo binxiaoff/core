@@ -127,7 +127,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="rcs">SIRET :</label></th>
+                        <th><label for="siret">SIRET :</label></th>
                         <td>
                             <input type="text" name="siret" id="siret" class="input_large" value="<?= $this->companies->siret ?>"/>
                         </td>
@@ -136,6 +136,18 @@
                         <th><label for="rcs">RCS :</label></th>
                         <td>
                             <input type="text" name="rcs" id="rcs" class="input_large" value="<?= $this->companies->rcs ?>"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="code_naf">Code NAF :</label></th>
+                        <td>
+                            <input type="text" name="code_naf" id="code_naf" class="input_large" value="<?= $this->companies->code_naf ?>"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="libelle_naf">Libellé NAF :</label></th>
+                        <td>
+                            <input type="text" name="libelle_naf" id="libelle_naf" class="input_large" value="<?= $this->companies->libelle_naf ?>"/>
                         </td>
                     </tr>
                     <tr>
@@ -277,6 +289,14 @@
                     <tr>
                         <th><label for="rate">Score :</label></th>
                         <td><?= $this->companies->altares_scoreVingt ?>/20</td>
+                    </tr>
+                    <tr>
+                        <th><label for="rate">Score Sectoriel :</label></th>
+                        <td><?= $this->companies->altares_scoreSectorielCent/100*20 ?>/20</td>
+                    </tr>
+                    <tr>
+                        <th><label for="rate">Date dernier bilan:</label></th>
+                        <td><?= $this->date_dernier_bilan_jour . '/' . $this->date_dernier_bilan_mois . '/' . $this->date_dernier_bilan_annee?></td>
                     </tr>
                 </table>
                 <br><br>

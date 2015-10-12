@@ -383,14 +383,19 @@ class dossiersController extends bootstrap
 
                             $i++;
                         }
-
-                        $this->companies->name     = $identite->raisonSociale;
-                        $this->companies->forme    = $identite->formeJuridique;
-                        $this->companies->capital  = $identite->capital;
-                        $this->companies->siret    = $identite->siret;
-                        $this->companies->adresse1 = $identite->rue;
-                        $this->companies->city     = $identite->ville;
-                        $this->companies->zip      = $identite->codePostal;
+                        $this->companies->name                       = $identite->raisonSociale;
+                        $this->companies->forme                      = $identite->formeJuridique;
+                        $this->companies->capital                    = $identite->capital;
+                        $this->companies->siret                      = $identite->siret;
+                        $this->companies->adresse1                   = $identite->rue;
+                        $this->companies->city                       = $identite->ville;
+                        $this->companies->zip                        = $identite->codePostal;
+                        $this->companies->code_naf                   = $identite->naf5EntreCode;
+                        $this->companies->libelle_naf                = $identite->naf5EntreLibelle;
+                        $this->companies->altares_niveauRisque       = $score->niveauRisque;
+                        $this->companies->altares_scoreVingt         = $score->scoreVingt;
+                        $this->companies->altares_scoreSectorielCent = $score->scoreSectorielCent;
+                        $this->companies->altares_dateValeur         = substr($score->dateValeur, 0, 10);
 
                         // on decoupe
                         $dateCreation = substr($identite->dateCreation, 0, 10);
@@ -951,6 +956,8 @@ class dossiersController extends bootstrap
                     $this->companies->rcs             = $_POST['rcs'];
                     $this->companies->sector          = $_POST['sector'];
                     $this->companies->id_client_owner = $_POST['id_client'];
+                    $this->companies->code_naf        = $_POST['code_naf'];
+                    $this->companies->libelle_naf     = $_POST['libelle_naf'];
                     //$this->companies->risk = $_POST['risk'];
 
                     $this->companies->tribunal_com = $_POST['tribunal_com'];
