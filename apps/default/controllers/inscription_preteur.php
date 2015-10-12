@@ -3,6 +3,11 @@
 class inscription_preteurController extends bootstrap
 {
 	var $Command;
+
+	/**
+	 * @var attachment_helper
+	 */
+	private $attachmentHelper;
 	
 	function inscription_preteurController($command,$config,$app)
 	{
@@ -2462,10 +2467,6 @@ class inscription_preteurController extends bootstrap
 	 */
 	private function uploadAttachment($lenderAccountId, $attachmentType)
 	{
-		if(false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-			$this->attachmentHelper = $this->loadLib('attachment_helper');
-		}
-
 		if(false === isset($this->upload) || false === $this->upload instanceof upload) {
 			$this->upload = $this->loadLib('upload');
 		}
@@ -2474,66 +2475,59 @@ class inscription_preteurController extends bootstrap
 			$this->attachment = $this->loadData('attachment');
 		}
 
-		$basePath = 'protected/lenders/';
+		if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
+			$this->attachment_type = $this->loadData('attachment_type');
+		}
+
+		if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
+			$this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));;
+		}
 
 		switch($attachmentType) {
 			case attachment_type::CNI_PASSPORTE :
 				$field = 'cni_passeport';
-				$uploadPath = $basePath.'cni_passeport/';
 				break;
 			case attachment_type::CNI_PASSPORTE_VERSO :
 				$field = 'cni_passeport_verso';
-				$uploadPath = $basePath.'cni_passeport_verso/';
 				break;
 			case attachment_type::JUSTIFICATIF_DOMICILE :
 				$field = 'justificatif_domicile';
-				$uploadPath = $basePath.'justificatif_domicile/';
 				break;
 			case attachment_type::RIB :
 				$field = 'rib';
-				$uploadPath = $basePath.'rib/';
 				break;
 			case attachment_type::ATTESTATION_HEBERGEMENT_TIERS :
 				$field = 'attestation_hebergement_tiers';
-				$uploadPath = $basePath.'attestation_hebergement_tiers/';
 				break;
 			case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT :
 				$field = 'cni_passport_tiers_hebergeant';
-				$uploadPath = $basePath.'cni_passport_tiers_hebergeant/';
 				break;
 			case attachment_type::CNI_PASSPORTE_DIRIGEANT :
 				$field = 'cni_passeport_dirigeant';
-				$uploadPath = $basePath.'cni_passeport_dirigent/';
 				break;
 			case attachment_type::DELEGATION_POUVOIR :
 				$field = 'delegation_pouvoir';
-				$uploadPath = $basePath.'delegation_pouvoir/';
 				break;
 			case attachment_type::KBIS :
 				$field = 'extrait_kbis';
-				$uploadPath = $basePath.'extrait_kbis/';
 				break;
 			case attachment_type::JUSTIFICATIF_FISCAL :
 				$field = 'document_fiscal';
-				$uploadPath = $basePath.'document_fiscal/';
 				break;
 			case attachment_type::AUTRE1 :
 				$field = 'autre1';
-				$uploadPath = $basePath.'autre/';
 				break;
 			case attachment_type::AUTRE2 :
 				$field = 'autre2';
-				$uploadPath = $basePath.'autre2/';
 				break;
 			case attachment_type::AUTRE3:
 				$field = 'autre3';
-				$uploadPath = $basePath.'autre3/';
 				break;
 			default :
 				return false;
 		}
 
-		$resultUpload = $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->path, $uploadPath, $this->upload, $this->attachment);
+		$resultUpload = $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->upload);
 
 		if(false === $resultUpload) {
 			$this->form_ok = false;

@@ -14,7 +14,92 @@ class devboxController extends bootstrap
         }
     }
 
-    // Ressort un csv avec les process des users
+    public function _projectsAttachementMigration()
+    {
+        $this->bdd->query("
+            INSERT INTO attachment_type (id, label) VALUES
+              (30, 'Relevé de compte bancaire du mois précédent'),
+              (31, 'Relevé de compte bancaire du mois N-1'),
+              (32, 'Relevé de compte bancaire du mois N-2'),
+              (33, 'Présentation de l''entreprise'),
+              (34, 'Etat d''endettement'),
+              (35, 'Liasse fiscale année N-1'),
+              (36, 'Liasse fiscale année N-2'),
+              (37, 'Rapport des CAC'),
+              (38, 'Prévisionnel'),
+              (39, 'Balance client'),
+              (40, 'Balance fournisseur'),
+              (41, 'Etat des privilèges et nantissements'),
+              (42, 'Autre 4'),
+              (43, 'CGV'),
+              (44, 'CNI du bénéficiaire effectif 1'),
+              (45, 'CNI du bénéficiaire effectif 1 verso'),
+              (46, 'CNI du bénéficiaire effectif 2'),
+              (47, 'CNI du bénéficiaire effectif 2 verso'),
+              (48, 'CNI du bénéficiaire effectif 3'),
+              (49, 'CNI du bénéficiaire effectif 3 verso'),
+              (50, 'Situation comptable intermédiaire'),
+              (51, 'Derniers comptes consolides groupe')
+              "
+        );
+
+        /**
+         * Nombre d'attachments à transférer des sociétés vers les
+         * Pour chacune des sociétés qui ont des attachments, boucler sur tous les projets et insérer le(s) attachment(s) de la société
+         * Le faire également pour les fichiers en eux même sur le disque
+         */
+        $this->bdd->query("
+            SELECT (COUNT(DISTINCT fichier_annexes_rapport_special_commissaire_compte)
+               + COUNT(DISTINCT fichier_arret_comptable_recent)
+               + COUNT(DISTINCT fichier_autre_1)
+               + COUNT(DISTINCT fichier_autre_2)
+               + COUNT(DISTINCT fichier_autre_3)
+               + COUNT(DISTINCT fichier_budget_exercice_en_cours_a_venir)
+               + COUNT(DISTINCT fichier_cni_passeport)
+               + COUNT(DISTINCT fichier_delegation_pouvoir)
+               + COUNT(DISTINCT fichier_dernier_bilan_certifie)
+               + COUNT(DISTINCT fichier_derniere_liasse_fiscale)
+               + COUNT(DISTINCT fichier_derniers_comptes_approuves)
+               + COUNT(DISTINCT fichier_derniers_comptes_consolides_groupe)
+               + COUNT(DISTINCT fichier_extrait_kbis)
+               + COUNT(DISTINCT fichier_logo_societe)
+               + COUNT(DISTINCT fichier_notation_banque_france)
+               + COUNT(DISTINCT fichier_rib)
+               + COUNT(DISTINCT fichier_photo_dirigeant)
+               - 17) AS cnt
+            FROM projects
+            INNER JOIN projects_last_status_history USING (id_project)
+            INNER JOIN projects_status_history USING (id_project_status_history)
+            INNER JOIN companies_details USING (id_company)
+            WHERE id_project_status NOT IN(21, 22)"
+        );
+
+        // Une fois tous les attachments transférés, on supprime les anciennes colonnes
+        // Backuper la table companies_details avant
+        $this->bdd->query("
+            ALTER TABLE companies_details
+              DROP COLUMN fichier_extrait_kbis,
+              DROP COLUMN fichier_extrait_kbis,
+              DROP COLUMN fichier_rib,
+              DROP COLUMN fichier_delegation_pouvoir,
+              DROP COLUMN fichier_logo_societe,
+              DROP COLUMN fichier_photo_dirigeant,
+              DROP COLUMN fichier_dernier_bilan_certifie,
+              DROP COLUMN fichier_cni_passeport,
+              DROP COLUMN fichier_derniere_liasse_fiscale,
+              DROP COLUMN fichier_derniers_comptes_approuves,
+              DROP COLUMN fichier_derniers_comptes_consolides_groupe,
+              DROP COLUMN fichier_annexes_rapport_special_commissaire_compte,
+              DROP COLUMN fichier_arret_comptable_recent,
+              DROP COLUMN fichier_budget_exercice_en_cours_a_venir,
+              DROP COLUMN fichier_notation_banque_france,
+              DROP COLUMN fichier_autre_1,
+              DROP COLUMN fichier_autre_2,
+              DROP COLUMN fichier_autre_3"
+        );
+    }
+
+    // Ressort un csv avec les process des usersw≤
     public function _etape_inscription()
     {
         // récup de tous les clients crée depuis le 1 aout
@@ -1147,5 +1232,138 @@ class devboxController extends bootstrap
             AND `libelle_projet` = ''
         ";
         $this->bdd->query($sql);
+    }
+
+    public function _migrateCompanyAttachment()
+    {
+        $oAttachment       = $this->loadData('attachment');
+        $this->loadData('attachment_type');
+        $oCompaniesDetails = $this->loadData('companies_details');
+        $oProject          = $this->loadData('projects');
+        $iCompanyNbTotal   = $oCompaniesDetails->counter();
+
+        $iTreated = 0;
+        $iStart = 0;
+        $iLimit = 100;
+        while(true)
+        {
+            $aCompanies = $oCompaniesDetails->select('', '', $iStart, $iLimit);
+            if (empty($aCompanies)) {
+                break;
+            }
+            $iStart += $iLimit;
+
+            foreach($aCompanies as $aCompany)
+            {
+                $iCompanyId = $aCompany['id_company'];
+                $ownerType = attachment::PROJECT;
+                $added = $aCompany['added'];
+
+                $aProjects = $oProject->select('id_company = ' . $iCompanyId);
+
+                if (empty($aProjects)) {
+                    continue;
+                }
+
+                foreach ($aProjects as $aProject)
+                {
+                    $ownerId = $aProject['id_project'];
+
+                    if('' !== $aCompany['fichier_extrait_kbis']) {
+                        $this->saveAttachment(attachment_type::KBIS, $aCompany['fichier_extrait_kbis'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_rib']) {
+                        $this->saveAttachment(attachment_type::RIB, $aCompany['fichier_rib'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_delegation_pouvoir']) {
+                        $this->saveAttachment(attachment_type::CGV, $aCompany['fichier_delegation_pouvoir'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_logo_societe']) {
+                        $this->saveAttachment(attachment_type::AUTRE1, $aCompany['fichier_logo_societe'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_photo_dirigeant']) {
+                        $this->saveAttachment(attachment_type::CNI_PASSPORTE_VERSO, $aCompany['fichier_photo_dirigeant'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_dernier_bilan_certifie']) {
+                        $this->saveAttachment(attachment_type::LIASSE_FISCAL_N_2, $aCompany['fichier_dernier_bilan_certifie'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_cni_passeport']) {
+                        $this->saveAttachment(attachment_type::CNI_PASSPORTE_DIRIGEANT, $aCompany['fichier_cni_passeport'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_derniere_liasse_fiscale']) {
+                        $this->saveAttachment(attachment_type::DERNIERE_LIASSE_FISCAL, $aCompany['fichier_derniere_liasse_fiscale'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_derniers_comptes_approuves']) {
+                        $this->saveAttachment(attachment_type::LIASSE_FISCAL_N_1, $aCompany['fichier_derniers_comptes_approuves'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_derniers_comptes_consolides_groupe']) {
+                        $this->saveAttachment(attachment_type::DERNIERS_COMPTES_CONSOLIDES, $aCompany['fichier_derniers_comptes_consolides_groupe'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_annexes_rapport_special_commissaire_compte']) {
+                        $this->saveAttachment(attachment_type::RAPPORT_CAC, $aCompany['fichier_annexes_rapport_special_commissaire_compte'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_arret_comptable_recent']) {
+                        $this->saveAttachment(attachment_type::SITUATION_COMPTABLE_INTERMEDIAIRE, $aCompany['fichier_arret_comptable_recent'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_budget_exercice_en_cours_a_venir']) {
+                        $this->saveAttachment(attachment_type::PREVISIONNEL, $aCompany['fichier_budget_exercice_en_cours_a_venir'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_notation_banque_france']) {
+                        $this->saveAttachment(attachment_type::AUTRE2, $aCompany['fichier_notation_banque_france'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_autre_1']) {
+                        $this->saveAttachment(attachment_type::AUTRE2, $aCompany['fichier_autre_1'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_autre_2']) {
+                        $this->saveAttachment(attachment_type::AUTRE3, $aCompany['fichier_autre_2'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+
+                    if('' !== $aCompany['fichier_autre_3']) {
+                        $this->saveAttachment(attachment_type::AUTRE4, $aCompany['fichier_autre_3'], $ownerId, $ownerType, $added, $oAttachment);
+                    }
+                }
+
+                $iTreated ++;
+
+                echo 'The attachments of company id : '. $iCompanyId .' has been migrated. Treated : '. $iTreated . '/' . $iCompanyNbTotal . PHP_EOL;
+            }
+
+        }
+    }
+
+    /**
+     * @param integer $attachmentType
+     * @param string $path
+     * @param integer $ownerId
+     * @param integer $ownerType
+     * @param string $added
+     * @param attachment $attachment
+     * @return mixed
+     */
+    private function saveAttachment($attachmentType, $path, $ownerId, $ownerType, $added, $attachment)
+    {
+        $attachment->id_type = $attachmentType;
+        $attachment->id_owner = $ownerId;
+        $attachment->type_owner = $ownerType;
+        $attachment->path = $path;
+        $attachment->archived = null;
+        $attachment->added = $added;
+
+        return $attachment->save();
     }
 }
