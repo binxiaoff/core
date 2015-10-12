@@ -1833,12 +1833,12 @@
 
                             <th><label for="qualite_moyen_infos_financieres">Qualité des moyens & infos financières</label></th>
                             <td>
-                                <input tabindex="6" id="qualite_moyen_infos_financieres" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->qualite_moyen_infos_financieres ?>" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value, this.id);"> /10
+                                <input tabindex="6" id="qualite_moyen_infos_financieres" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->qualite_moyen_infos_financieres ?>" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                             </td>
 
                             <th><label for="notation_externe">Notation externe</label></th>
                             <td>
-                                <input tabindex="7" id="notation_externe" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->notation_externe ?>" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value, this.id);"> /10
+                                <input tabindex="7" id="notation_externe" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->notation_externe ?>" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                             </td>
                         </tr>
                         <tr>
@@ -1847,19 +1847,19 @@
                                     <tr>
                                         <th><label for="structure">Structure</label></th>
                                         <td>
-                                            <input tabindex="1" class="input_court cal_moyen" type="text" value="<?= ($this->projects_notes->structure) ?>" name="structure" id="structure" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="1" class="input_court cal_moyen" type="text" value="<?= ($this->projects_notes->structure) ?>" name="structure" id="structure" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                     <tr>
                                         <th><label for="rentabilite">Rentabilité</label></th>
                                         <td>
-                                            <input tabindex="2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->rentabilite ?>" name="rentabilite" id="rentabilite" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->rentabilite ?>" name="rentabilite" id="rentabilite" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                     <tr>
                                         <th><label for="tresorerie">Trésorerie</label></th>
                                         <td>
-                                            <input tabindex="3" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie ?>" name="tresorerie" id="tresorerie" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="3" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie ?>" name="tresorerie" id="tresorerie" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                 </table>
@@ -1869,13 +1869,13 @@
                                     <tr>
                                         <th><label for="global">Global</label></th>
                                         <td>
-                                            <input tabindex="4" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global ?>" name="global" id="global" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="4" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global ?>" name="global" id="global" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                     <tr>
                                         <th><label for="individuel">Individuel</label></th>
                                         <td>
-                                            <input tabindex="5" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="5" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                 </table>
@@ -1887,16 +1887,32 @@
                         </tr>
                         <tr>
                             <td colspan="8" style="text-align:center;">
-                                <label for="avis" style="text-align:left;display: block;">Avis :</label><br/>
-                                <textarea tabindex="8" name="avis" style="height:700px;" id="avis" class="textarea_large avis"/><?= $this->projects_notes->avis ?></textarea>
-                                <script type="text/javascript">var ckedAvis = CKEDITOR.replace('avis', {height: 700});</script>
+                                <?php
+                                    if(false === $this->bReadonlyRiskNote){
+                                ?>
+                                    <label for="avis" style="text-align:left;display: block;">Avis :</label><br/>
+                                    <textarea tabindex="8" name="avis" style="height:700px;" id="avis" class="textarea_large avis"/><?= $this->projects_notes->avis ?></textarea>
+                                    <script type="text/javascript">var ckedAvis = CKEDITOR.replace('avis', {height: 700});</script>
+                                <?php
+                                    } else {
+                                ?>
+                                    <div style="color:black;"><?= $this->projects_notes->avis ?></div>
+                                <?php
+                                    }
+                                ?>
                             </td>
                         </tr>
                     </table>
                     <br/><br/>
                     <div id="valid_etape6">Données sauvegardées</div>
                     <div class="btnDroite listBtn_etape6">
-                        <input type="button" onclick="valid_rejete_etape6(3,<?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
+                        <?php
+                            if(false === $this->bReadonlyRiskNote) {
+                        ?>
+                                <input type="button" onclick="valid_rejete_etape6(3,<?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
+                        <?php
+                            }
+                        ?>
                         <?php
                         if ($this->current_projects_status->status == 31) {
                         ?>
@@ -1983,11 +1999,11 @@
 
                             <th><label for="qualite_moyen_infos_financieres2">Qualité des moyens & infos financières</label></th>
                             <td>
-                                <input tabindex="14" id="qualite_moyen_infos_financieres2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->qualite_moyen_infos_financieres ?>" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value, this.id);"> /10
+                                <input tabindex="14" id="qualite_moyen_infos_financieres2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->qualite_moyen_infos_financieres ?>" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                             </td>
                             <th><label for="notation_externe2">Notation externe</label></th>
                             <td>
-                                <input tabindex="15" id="notation_externe2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->notation_externe ?>" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value, this.id);"> /10
+                                <input tabindex="15" id="notation_externe2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->notation_externe ?>" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                             </td>
                         </tr>
                         <tr>
@@ -1996,19 +2012,19 @@
                                     <tr>
                                         <th><label for="structure2">Structure</label></th>
                                         <td>
-                                            <input tabindex="9" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->structure ?>" name="structure2" id="structure2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="9" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->structure ?>" name="structure2" id="structure2" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                     <tr>
                                         <th><label for="rentabilite2">Rentabilité</label></th>
                                         <td>
-                                            <input tabindex="10" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->rentabilite ?>" name="rentabilite2" id="rentabilite2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="10" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->rentabilite ?>" name="rentabilite2" id="rentabilite2" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                     <tr>
                                         <th><label for="tresorerie2">Trésorerie</label></th>
                                         <td>
-                                            <input tabindex="11" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie ?>" name="tresorerie2" id="tresorerie2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="11" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie ?>" name="tresorerie2" id="tresorerie2" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                 </table>
@@ -2018,13 +2034,13 @@
                                     <tr>
                                         <th><label for="global2">Global</label></th>
                                         <td>
-                                            <input tabindex="12" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global ?>" name="global2" id="global2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="12" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global ?>" name="global2" id="global2" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                     <tr>
                                         <th><label for="individuel2">Individuel</label></th>
                                         <td>
-                                            <input tabindex="13" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel2" id="individuel2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="13" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel2" id="individuel2" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                 </table>
@@ -2036,9 +2052,19 @@
                         </tr>
                         <tr>
                             <td colspan="8" style="text-align:center;">
-                                <label for="avis_comite" style="text-align:left;display: block;">Avis comité :</label><br/>
-                                <textarea tabindex="16" name="avis_comite" style="height:700px;" id="avis_comite" class="textarea_large avis_comite"><?= $this->projects_notes->avis_comite ?></textarea>
-                                <script type="text/javascript">var ckedAvis_comite = CKEDITOR.replace('avis_comite', {height: 700});</script>
+                                <?php
+                                if(false === $this->bReadonlyRiskNote){
+                                ?>
+                                    <label for="avis_comite" style="text-align:left;display: block;">Avis comité :</label><br/>
+                                    <textarea tabindex="16" name="avis_comite" style="height:700px;" id="avis_comite" class="textarea_large avis_comite"><?= $this->projects_notes->avis_comite; ?></textarea>
+                                    <script type="text/javascript">var ckedAvis_comite = CKEDITOR.replace('avis_comite', {height: 700});</script>
+                                <?php
+                                } else {
+                                ?>
+                                    <div style="color:black;"><?= $this->projects_notes->avis_comite; ?></div>
+                                <?php
+                                }
+                                ?>
                             </td>
                         </tr>
                     </table>
@@ -2096,7 +2122,13 @@
 
                     <div id="valid_etape7">Données sauvegardées</div>
                     <div class="btnDroite">
-                        <input type="button" onclick="valid_rejete_etape7(3,<?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
+                        <?php
+                        if(false === $this->bReadonlyRiskNote) {
+                        ?>
+                            <input type="button" onclick="valid_rejete_etape7(3,<?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
+                        <?php
+                        }
+                        ?>
                         <?php
                         if ($this->current_projects_status->status == 33) {
                         ?>
