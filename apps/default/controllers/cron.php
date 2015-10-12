@@ -8223,4 +8223,23 @@ class cronController extends bootstrap
 
         $this->oLogger->addRecord(ULogger::INFO, 'End cron', array('ID' => $this->iStartTime));
     }
+
+    /**
+     * Function to delete after tests salesforce
+     * @param string $sType name of treatment (preteurs, emprunteurs, projects or companies)
+     */
+    public function _sendDataloader()
+    {
+        $sType = $this->params[0];
+        $iTimeStartDataloader = microtime(true);
+        //TODO a passer en crontab
+//        exec('java -cp ' . $this->Config['dataloader_path'][$this->Config['env']] . 'dataloader-26.0.0-uber.jar -Dsalesforce.config.dir=' . $this->Config['path'][$this->Config['env']] . 'dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=' . escapeshellarg($sType), $aReturnDataloader, $sReturn);
+        exec('java -cp /srv/dataloader/target/dataloader-26.0.0-uber.jar -Dsalesforce.config.dir=' . $this->Config['path'][$this->Config['env']] . 'dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=' . escapeshellarg($sType), $aReturnDataloader, $sReturn);
+        var_dump($sReturn);
+        var_dump($aReturnDataloader);
+        $iTimeEndDataloader = microtime(true) - $iTimeStartDataloader;
+        $oLogger    = new ULogger('SendDataloader', $this->logPath, 'cron.log');
+        $oLogger->addRecord(ULogger::INFO, 'Send to dataloader type ' . $sType . ' in ' . round($iTimeEndDataloader, 2),
+            array(__FILE__ . ' on line ' . __LINE__));
+    }
 }
