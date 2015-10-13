@@ -300,9 +300,6 @@ class depot_de_dossierController extends bootstrap
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-2'];
         $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-etape-2'];
 
-        $this->companies->get($this->projects->id_company);
-        $this->clients->get($this->companies->id_client_owner);
-
         if (is_numeric($this->projects->id_prescripteur)) {
             $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
         }
@@ -462,7 +459,7 @@ class depot_de_dossierController extends bootstrap
 
             if ($this->bAnnualAccountsQuestion && (false === isset($_POST['comptables']) || empty($_POST['comptables']))) {
                 $this->projects_status_history->addStatus(-2, projects_status::PAS_3_BILANS, $this->projects->id_project);
-                header('Location: ' . $this->lurl . '/depot_de_dossier/nok/pas-3-bilans');
+                header('Location: ' . $this->lurl . '/depot_de_dossier/nok/' . $this->projects->hash);
                 die;
             }
 
@@ -591,9 +588,6 @@ class depot_de_dossierController extends bootstrap
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-3'];
         $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-etape-3'];
 
-        $this->companies->get($this->projects->id_company);
-        $this->clients->get($this->companies->id_client_owner);
-
         //Calcul de la mensualite en tenant compte du montant/ duree / taux min et taux max et frais
 
         $this->financialClass = $this->loadLib('financial');
@@ -660,7 +654,7 @@ class depot_de_dossierController extends bootstrap
 
                 if ($this->projects->resultat_exploitation_declara_client < 0 || $this->projects->ca_declara_client < 100000 || $this->projects->fonds_propres_declara_client < 10000) {
                     $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                    header('Location: ' . $this->lurl . '/depot_de_dossier/nok/rex-nega');
+                    header('Location: ' . $this->lurl . '/depot_de_dossier/nok/' . $this->projects->hash);
                     die;
                 }
 
@@ -678,7 +672,7 @@ class depot_de_dossierController extends bootstrap
                     $this->clients->status = 1;
                     $this->clients->update();
                     $this->projects_status_history->addStatus(-2, projects_status::A_TRAITER, $this->projects->id_project);
-                    header('Location: ' . $this->lurl . '/depot_de_dossier/merci');
+                    header('Location: ' . $this->lurl . '/depot_de_dossier/merci/' . $this->projects->hash);
                     die;
                 }
             }
@@ -696,9 +690,6 @@ class depot_de_dossierController extends bootstrap
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-prospect'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-prospect'];
         $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-prospect'];
-
-        $this->companies->get($this->projects->id_company);
-        $this->clients->get($this->companies->id_client_owner);
 
         if (is_numeric($this->projects->id_prescripteur)) {
             $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
@@ -833,9 +824,6 @@ class depot_de_dossierController extends bootstrap
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-fichiers'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-fichiers'];
         $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-fichiers'];
-
-        $this->companies->get($this->projects->id_company);
-        $this->clients->get($this->companies->id_client_owner);
 
         // if you change the method in attachement_type think of adding the new attachement types in the upload function below
         // TODO use trads for Types of files
@@ -985,7 +973,9 @@ class depot_de_dossierController extends bootstrap
             die;
         }
 
-        $this->projects_status = $this->loadData('projects_status');
+        $this->companies->get($this->projects->id_company);
+        $this->clients->get($this->companies->id_client_owner);
+
         $this->projects_status->getLastStatut($this->projects->id_project);
 
         switch ($this->projects_status->status) {
