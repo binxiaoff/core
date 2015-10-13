@@ -126,9 +126,6 @@ if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_com
             // Remb preteur
             if ($t['type_transaction'] == 5 || $t['type_transaction'] == 23) {
 
-                // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
-                $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['remboursement'];
-
                 $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
                 $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
 
