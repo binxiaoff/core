@@ -4,6 +4,11 @@ class dossiersController extends bootstrap
 {
     public $Command;
 
+    /**
+     * @var int Count project in searchDossiers
+     */
+    public $iCountProjects;
+
     public function dossiersController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
@@ -59,12 +64,13 @@ class dossiersController extends bootstrap
             } else {
                 $date2 = '';
             }
-
-            $this->lProjects = $this->projects->searchDossiers($date1, $date2, $_POST['montant'], $_POST['duree'], $_POST['status'], $_POST['analyste'], $_POST['siren'], $_POST['id'], $_POST['raison-sociale']);
-        } // statut
-        elseif (isset($this->params[0])) {
+            $iNbStartPagination = (isset($_POST['nbLignePagination'])) ? (int)$_POST['nbLignePagination'] : 0;
+            $this->nb_lignes = (isset($this->nb_lignes)) ? (int)$this->nb_lignes : 100;
+            $this->lProjects = $this->projects->searchDossiers($date1, $date2, $_POST['montant'], $_POST['duree'], $_POST['status'], $_POST['analyste'], $_POST['siren'], $_POST['id'], $_POST['raison-sociale'],$iNbStartPagination,$this->nb_lignes);
+        } elseif (isset($this->params[0])) {// statut
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
+        $this->iCountProjects = (isset($this->lProjects) && is_array($this->lProjects)) ? array_shift($this->lProjects) : 0;
     }
 
     public function _edit()
