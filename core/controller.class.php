@@ -31,12 +31,12 @@ class Controller
     var $Command;
     var $Config;
     var $App;
-    var $autoFireHead = true;
+    var $autoFireHead   = true;
     var $autoFireHeader = true;
-    var $autoFireView = true;
+    var $autoFireView   = true;
     var $autoFireFooter = true;
-    var $autoFireDebug = true;
-    var $catchAll = false;
+    var $autoFireDebug  = true;
+    var $catchAll       = false;
     var $bdd;
     var $js;
     var $css;
@@ -46,7 +46,7 @@ class Controller
 
     public function __construct(&$command, $config, $app)
     {
-        if(false === defined('ENVIRONMENT')) {
+        if (false === defined('ENVIRONMENT')) {
             define('ENVIRONMENT', $config['env']);
         }
 
@@ -74,7 +74,7 @@ class Controller
         $this->language           = $this->Command->Language;
         $this->current_controller = $this->Command->getControllerName();
         $this->current_function   = $this->Command->getfunction();
-        $this->current_template = '';
+        $this->current_template   = '';
 
         // Mise en place des chemins
         $this->path       = $this->Config['path'][$this->Config['env']];
@@ -204,7 +204,7 @@ class Controller
     //Gere l'affichage de l'entete
     public function fireHead($head = '')
     {
-        if (empty($head) && ! empty($this->head)) {
+        if (empty($head) && !empty($this->head)) {
             $head = $this->head;
         } elseif (empty($head)) {
             $head = 'head';
@@ -226,7 +226,7 @@ class Controller
             $view = 'index';
         }
 
-        if($view != '') {
+        if ($view != '') {
             if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php')) {
                 call_user_func(array(
                     &$this, '_error'
@@ -244,7 +244,7 @@ class Controller
     //Gere l'affichage du menu
     public function fireHeader($header = '')
     {
-        if (empty($header) && ! empty($this->header)) {
+        if (empty($header) && !empty($this->header)) {
             $header = $this->header;
         } elseif (empty($header)) {
             $header = 'header';
@@ -585,10 +585,10 @@ class Controller
             $cvalues        = '';
 
             while ($record = $this->bdd->fetch_array($result)) {
-                $declaration    .= "\tpublic \$" . $record['Field'] . ";\r\n";
+                $declaration .= "\tpublic \$" . $record['Field'] . ";\r\n";
                 $initialisation .= "\t\t\$this->" . $record['Field'] . " = '';\r\n";
-                $remplissage    .= "\t\t\t\$this->" . $record['Field'] . " = \$record['" . $record['Field'] . "'];\r\n";
-                $escapestring   .= "\t\t\$this->" . $record['Field'] . " = \$this->bdd->escape_string(\$this->" . $record['Field'] . ");\r\n";
+                $remplissage .= "\t\t\t\$this->" . $record['Field'] . " = \$record['" . $record['Field'] . "'];\r\n";
+                $escapestring .= "\t\t\$this->" . $record['Field'] . " = \$this->bdd->escape_string(\$this->" . $record['Field'] . ");\r\n";
 
                 //On stock les clé primaire dans un tableau
                 if ($record['Key'] == 'PRI') {
