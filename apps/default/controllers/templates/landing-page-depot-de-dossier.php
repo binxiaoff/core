@@ -38,7 +38,7 @@ if (
     $aForm = isset($_POST['spy_inscription_landing_page_depot_dossier']) ? $_POST : $_GET;
     $_SESSION['forms']['depot-de-dossier']['values'] = $aForm;
 
-    if (false === empty($aForm['email']) && false === filter_var($aForm['email'], FILTER_VALIDATE_EMAIL)) {
+    if (false === empty($aForm['email']) && false === $this->ficelle->isEmail($aForm['email'])) {
         $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['landing-page']['champs-obligatoires'];
         $_SESSION['forms']['depot-de-dossier']['errors']['email'] = true;
     }
