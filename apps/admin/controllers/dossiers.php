@@ -102,6 +102,10 @@ class dossiersController extends bootstrap
         }
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
+            if(false === in_array($this->projects->period, $this->dureePossible)){
+                array_push($this->dureePossible,$this->projects->period);
+                sort($this->dureePossible);
+            }
             $this->projects_notes->get($this->params[0], 'id_project');
 
             // Liste deroulante secteurs
@@ -632,7 +636,7 @@ class dossiersController extends bootstrap
                             $_SESSION['freeow']['message'] .= 'Erreur upload photo : taille max dépassée (' . $this->Config['images']['projets']['width'] . 'x' . $this->Config['images']['projets']['height'] . ')<br>';
                         } elseif ($this->upload->doUpload('photo_projet', '', true)) {
                             // Delete previous image of the name was different from the new one
-                            if (!empty($this->projects->photo_projet) && $this->projects->photo_projet != $this->upload->getName()) {
+                            if (! empty($this->projects->photo_projet) && $this->projects->photo_projet != $this->upload->getName()) {
                                 @unlink($this->path . 'public/default/images/dyn/projets/source/' . $this->projects->photo_projet);
                             }
                             $this->projects->photo_projet = $this->upload->getName();
@@ -3942,6 +3946,8 @@ class dossiersController extends bootstrap
                 // on va recup la date de la derniere echeance qui suit le process de base
                 $L_echeance = $this->echeanciers->select(" id_project = " . $id_project . " AND DATE_ADD(date_echeance,INTERVAL 3 DAY) > NOW() AND ordre = " . ($ordre_echeance_ra + 1), 'ordre ASC', 0, 1);
 
+            // on va recup la date de la derniere echeance qui suit le process de base
+            $L_echeance = $this->echeanciers->select(" id_project = " . $id_project . " AND DATE_ADD(date_echeance,INTERVAL 3 DAY) > NOW() AND ordre = " . ($ordre_echeance_ra + 1), 'ordre ASC', 0, 1);
 
                 if (count($L_echeance) > 0) {
                     // on refait le meme process pour la nouvelle date
