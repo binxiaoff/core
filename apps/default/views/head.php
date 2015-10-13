@@ -3,7 +3,7 @@
 <!--[if IE 7]>         <html class="no-js lt-ie10 lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html class="no-js lt-ie10 lt-ie9"> <![endif]-->
 <!--[if IE 9]>         <html class="no-js lt-ie10"> <![endif]-->
-<!--[if gt IE 9]><!--> <html class="no-js" xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?= $this->language ?>" lang="<?= $this->language ?>"> <!--<![endif]-->
+<!--[if gt IE 9]><!--> <html class="no-js <?=($this->error_login!=''?'show-login':'')?>" xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?= $this->language ?>" lang="<?= $this->language ?>"> <!--<![endif]-->
     <head>
         <?php
         if ($this->google_webmaster_tools != '')
@@ -31,9 +31,9 @@
 
             <!-- NEW INCLUDES -->
 
-            <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+            <meta name="viewport" id="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
 
-            <script>
+            <script type="text/javascript">
                 if (screen.width > 767 ){
                     var mvp = document.getElementById('viewport');
                     mvp.setAttribute('content', 'width=1024');

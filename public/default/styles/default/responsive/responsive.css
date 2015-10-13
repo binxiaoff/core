@@ -954,7 +954,52 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
         background: url("images/stars_white.png") no-repeat scroll 0 0 transparent;
         height:9px;width:691px;position:relative;top:1px;
     }
-    
+
     .testimonial-thumb{padding: 0;}
     .testimonial-thumb img{max-height: 40px;}
+
+    .single-project-mobile .orders-table {
+        font-weight: bold;
+    }
+    .single-project-mobile .orders-table th:first-child {
+        padding-left: 20px;
+    }
+    .single-project-mobile .orders-table td, .single-project-mobile .orders-table th {
+        text-align: left;
+    }
+    .single-project-mobile th {
+        color: #fff;
+        font-size: 13px;
+        line-height: 17px;
+        text-align: left;
+    }
+    .single-project-mobile th small {
+        color: #d881b3;
+        display: block;
+        font-size: 11px;
+        line-height: 15px;
+        text-transform: uppercase;
+    }
+    .single-project-mobile td{padding: 5px !important ;font-size: 15px;}
+
+    .single-project-mobile .enchereVous{left: 0px;}
+
+    .single-project-mobile .orders-table td.nth-table-row {
+        background: #f7e5ef none repeat scroll 0 0;
+        color: #b10366;
+        font-size: 14px;
+        line-height: 30px;
+        text-align: center;
+    }
+
+    #triNum_mobile, #triTx_mobile, #triAmount_mobile, #triStatuts_mobile {
+        cursor: pointer;
+    }
+    
+    .has-fixed-nav .navigation ul ul a.active,.nav-fixed .navigation ul ul a.active{color: white;}
+    
+    .article-entry h5{font-size: 12px;}
+    
+    .login-panel .error_login_mobile{display: inline;}
+    .login-panel .error_login_mobile .error_login{height: auto;text-align: center;}
 }

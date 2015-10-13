@@ -51,7 +51,7 @@ if (isset($_SESSION['lexpress']))
                     <form action="" method="post" id="form_connect" name="form_connect">
 
 
-                        <div style="height:30px;">
+                        <div style="height:30px;" class="error_login_mobile">
                             <?php /* ?><p class="error_login"><?=$this->error_login?></p><?php */ ?>
 
                             <?

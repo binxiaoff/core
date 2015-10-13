@@ -75,6 +75,7 @@ if (isset($_SESSION['lexpress']))
                     $.colorbox({
                         href: "<?= $this->lurl ?>/thickbox/pop_up_cgv",
                         fixed: true,
+                        maxWidth: '90%', 
                         onClosed: function () {
                             /*location.reload();*/
                         }

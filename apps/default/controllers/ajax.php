@@ -733,6 +733,82 @@ class ajaxController extends bootstrap
 		$this->status = array($this->lng['preteur-projets']['enchere-en-cours'],$this->lng['preteur-projets']['enchere-ok'],$this->lng['preteur-projets']['enchere-ko']);
 		
 	}
+        
+        // Affichage du tableau d'offres en cours mobile
+        function _displayAll_mobile()
+	{
+		$this->autoFireView = true;
+		
+		// Chargement des datas
+		$this->bids = $this->loadData('bids');
+		$this->projects = $this->loadData('projects');
+		$this->lenders_accounts = $this->loadData('lenders_accounts');
+		
+		$this->lenders_accounts->get($this->clients->id_client,'id_client_owner');
+		
+		//Recuperation des element de traductions
+		$this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets',$this->language,$this->App);
+		
+		// On recup le projet
+		$this->projects->get($this->bdd->escape_string($_POST['id']),'id_project');
+		
+		if(isset($_POST['tri']))
+		{
+			$order = $_POST['tri'];
+		}
+		else
+		{
+			$order = 'ordre';
+		}
+		
+		if(isset($_POST['direction']))
+		{
+			if($_POST['direction'] == 1){
+				$direction = 'ASC';
+				$this->direction = 2;
+			}
+			else{
+				$direction = 'DESC';
+				$this->direction = 1;
+			}
+		}
+		
+		if($order == 'rate') $order = 'rate '.$direction.', ordre '.$direction;
+		elseif($order == 'amount')$order = 'amount '.$direction.', rate '.$direction.', ordre '.$direction;
+		elseif($order == 'status')$order = 'status '.$direction.', rate '.$direction.', ordre '.$direction;
+		else $order = 'ordre '.$direction;
+		
+		
+		// Liste des encheres enregistrées
+		$this->lEnchere = $this->bids->select('id_project = '.$this->projects->id_project,$order);
+		
+		$this->CountEnchere = $this->bids->counter('id_project = '.$this->projects->id_project);
+		
+		$this->avgAmount = $this->bids->getAVG($this->projects->id_project,'amount','0');
+		
+		$this->avgRate = $this->bids->getAVG($this->projects->id_project,'rate');
+		
+		// moyenne pondéré
+			$montantHaut = 0;
+			$tauxBas = 0;
+			$montantBas = 0;
+			foreach($this->bids->select('id_project = '.$this->projects->id_project.' AND status = 0' ) as $b)
+			{
+				$montantHaut += ($b['rate']*($b['amount']/100));
+				$tauxBas += $b['rate'];
+				$montantBas += ($b['amount']/100);
+			}
+			
+			if($montantHaut>0 && $montantBas >0)
+			$this->avgRate = ($montantHaut/$montantBas);
+			else $this->avgRate = 0;
+			
+			//$this->avgAmount = ($montantHaut/$tauxBas)*100;
+		
+		// status enchere
+		$this->status = array($this->lng['preteur-projets']['enchere-en-cours'],$this->lng['preteur-projets']['enchere-ok'],$this->lng['preteur-projets']['enchere-ko']);
+		
+	}
 	
 	function _loadGraph()
 	{
