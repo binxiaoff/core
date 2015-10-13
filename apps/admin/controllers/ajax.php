@@ -1509,7 +1509,7 @@ class ajaxController extends bootstrap
 
 
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', '80,100,110,120', '', $_POST['siren'], $_POST['id'], $_POST['raison_sociale']);
-
+            $iCountProjects = (is_array($this->lProjects)) ? array_shift($this->lProjects) : 0;
             $this->id_reception = $_POST['id_reception'];
 
 

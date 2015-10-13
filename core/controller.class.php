@@ -44,9 +44,11 @@ class Controller
     var $included_js;
     var $included_css;
 
+    public $current_template = '';
+
     public function __construct(&$command, $config, $app)
     {
-        if (false === defined('ENVIRONMENT')) {
+        if(false === defined('ENVIRONMENT')) {
             define('ENVIRONMENT', $config['env']);
         }
 
@@ -74,7 +76,6 @@ class Controller
         $this->language           = $this->Command->Language;
         $this->current_controller = $this->Command->getControllerName();
         $this->current_function   = $this->Command->getfunction();
-        $this->current_template   = '';
 
         // Mise en place des chemins
         $this->path       = $this->Config['path'][$this->Config['env']];
@@ -110,7 +111,6 @@ class Controller
 
     public function _error($msg = '')
     {
-        var_dump($this->params);
         if (!isset($this->params[0])) {
             trigger_error('ASPARTAM - ' . $msg, E_USER_ERROR);
         }
@@ -204,7 +204,7 @@ class Controller
     //Gere l'affichage de l'entete
     public function fireHead($head = '')
     {
-        if (empty($head) && !empty($this->head)) {
+        if (empty($head) && ! empty($this->head)) {
             $head = $this->head;
         } elseif (empty($head)) {
             $head = 'head';
@@ -220,9 +220,9 @@ class Controller
     //Gere l'affichage du corps de la page
     public function fireView($view = '')
     {
-        if ($view == '' && $this->view != '') {
+        if (empty($view) && ! empty($this->view)) {
             $view = $this->view;
-        } elseif ($view == '' && 'pdf' != $this->Command->getControllerName()) { //Exclude pdf controller for view empty
+        } elseif (empty($view) == '' && 'pdf' != $this->Command->getControllerName()) { //Exclude pdf controller for view empty
             $view = 'index';
         }
 
@@ -244,7 +244,7 @@ class Controller
     //Gere l'affichage du menu
     public function fireHeader($header = '')
     {
-        if (empty($header) && !empty($this->header)) {
+        if (empty($header) && ! empty($this->header)) {
             $header = $this->header;
         } elseif (empty($header)) {
             $header = 'header';
@@ -259,11 +259,8 @@ class Controller
     //Gere l'affichage du pied de page
     public function fireFooter($footer = '', $morestats = '')
     {
-        if ($footer == '' && (isset($this->footer) && $this->footer != '')) {
-            $footer = $this->footer;
-        } elseif ($footer == '') {
-            $footer = 'footer';
-        }
+        $footer = ('' == $footer && isset($this->footer)) ? $this->footer : 'footer';
+
         if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $footer . '.php')) {
             call_user_func(array(&$this, '_error'), 'footer not found : views/' . $footer . '.php');
         } else {
@@ -585,10 +582,10 @@ class Controller
             $cvalues        = '';
 
             while ($record = $this->bdd->fetch_array($result)) {
-                $declaration .= "\tpublic \$" . $record['Field'] . ";\r\n";
+                $declaration    .= "\tpublic \$" . $record['Field'] . ";\r\n";
                 $initialisation .= "\t\t\$this->" . $record['Field'] . " = '';\r\n";
-                $remplissage .= "\t\t\t\$this->" . $record['Field'] . " = \$record['" . $record['Field'] . "'];\r\n";
-                $escapestring .= "\t\t\$this->" . $record['Field'] . " = \$this->bdd->escape_string(\$this->" . $record['Field'] . ");\r\n";
+                $remplissage    .= "\t\t\t\$this->" . $record['Field'] . " = \$record['" . $record['Field'] . "'];\r\n";
+                $escapestring   .= "\t\t\$this->" . $record['Field'] . " = \$this->bdd->escape_string(\$this->" . $record['Field'] . ");\r\n";
 
                 //On stock les clé primaire dans un tableau
                 if ($record['Key'] == 'PRI') {
