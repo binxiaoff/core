@@ -223,7 +223,6 @@ class preteursController extends bootstrap
 
     function _edit()
     {
-
         //On appelle la fonction de chargement des données
         $this->loadGestionData();
 
@@ -2348,7 +2347,7 @@ class preteursController extends bootstrap
         }
 
         // LOANS //
-        $this->lSumLoans = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, $year, 'next_echeance ASC');
+        $this->lSumLoans = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, '', 'next_echeance ASC');
 
         $this->arrayDeclarationCreance = array(1456, 1009, 1614, 3089, 10971, 970);
 

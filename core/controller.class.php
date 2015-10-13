@@ -74,6 +74,7 @@ class Controller
         $this->language           = $this->Command->Language;
         $this->current_controller = $this->Command->getControllerName();
         $this->current_function   = $this->Command->getfunction();
+        $this->current_template = '';
 
         // Mise en place des chemins
         $this->path       = $this->Config['path'][$this->Config['env']];
@@ -258,10 +259,9 @@ class Controller
     //Gere l'affichage du pied de page
     public function fireFooter($footer = '', $morestats = '')
     {
-        if ($footer == '') {
+        if ($footer == '' && (isset($this->footer) && $this->footer != '')) {
             $footer = $this->footer;
-        }
-        if ($footer == '') {
+        } elseif ($footer == '') {
             $footer = 'footer';
         }
         if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $footer . '.php')) {
