@@ -31,28 +31,35 @@ if (isset($_SESSION['forms']['depot-de-dossier'])) {
     unset($_SESSION['forms']['depot-de-dossier']);
 }
 
-if (
-    isset($_POST['spy_inscription_landing_page_depot_dossier'])
-    || isset($_GET['montant'], $_GET['siren']) && ! empty($_GET['montant']) && ! empty($_GET['siren'])
-) {
-    $aForm = isset($_POST['spy_inscription_landing_page_depot_dossier']) ? $_POST : $_GET;
-    $_SESSION['forms']['depot-de-dossier']['values'] = $aForm;
+/**
+ * If borrower is redirected to Unilend
+ * We save data to session but don't overwrite posted data
+ */
+foreach (array('siren', 'montant', 'email', 'prenom', 'nom', 'mobile') as $sFieldName) {
+    if (isset($_GET[$sFieldName]) && false === isset($this->aForm['values'][$sFieldName])) {
+        $this->aForm['values'][$sFieldName]                             = $_GET[$sFieldName];
+        $_SESSION['forms']['depot-de-dossier-2']['values'][$sFieldName] = $_GET[$sFieldName];
+    }
+}
 
-    if (false === empty($aForm['email']) && false === $this->ficelle->isEmail($aForm['email'])) {
+if (isset($_POST['spy_inscription_landing_page_depot_dossier'])) {
+    $_SESSION['forms']['depot-de-dossier']['values'] = $_POST;
+
+    if (false === empty($_POST['email']) && false === $this->ficelle->isEmail($_POST['email'])) {
         $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['landing-page']['champs-obligatoires'];
         $_SESSION['forms']['depot-de-dossier']['errors']['email'] = true;
     }
 
-    if (empty($aForm['montant'])) {
+    if (empty($_POST['montant'])) {
         $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['landing-page']['champs-obligatoires'];
         $_SESSION['forms']['depot-de-dossier']['errors']['montant'] = true;
     }
 
-    if (empty($aForm['siren']) || $aForm['siren'] != (int) $aForm['siren'] || strlen($aForm['siren']) !== 9) {
+    if (empty($_POST['siren']) || $_POST['siren'] != (int) $_POST['siren'] || strlen($_POST['siren']) !== 9) {
         $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['landing-page']['champs-obligatoires'];
         $_SESSION['forms']['depot-de-dossier']['errors']['siren'] = true;
     } else {
-        $iAmount = str_replace(array(',', ' '), array('.', ''), $aForm['montant']);
+        $iAmount = str_replace(array(',', ' '), array('.', ''), $_POST['montant']);
         $_SESSION['forms']['depot-de-dossier']['values']['montant'] = $iAmount;
 
         if ($iAmount != (int) $iAmount) {
