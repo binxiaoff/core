@@ -51,8 +51,12 @@ class depot_de_dossierController extends bootstrap
 
     public function _default()
     {
-        header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
-        die;
+        $this->checkProjectHash('default');
+    }
+
+    public function _stand_by()
+    {
+        $this->checkProjectHash('standby');
     }
 
     /**
@@ -118,7 +122,7 @@ class depot_de_dossierController extends bootstrap
         $iStatusSetting = $this->settings->value;
 
         if ($iStatusSetting == 3) {
-            $this->step1Redirect('/depot_de_dossier/nok', projects_status::NOTE_EXTERNE_FAIBLE);
+            $this->step1Redirect('nok', projects_status::NOTE_EXTERNE_FAIBLE);
         }
 
         $this->settings->get('Altares email alertes', 'type');
@@ -132,7 +136,7 @@ class depot_de_dossierController extends bootstrap
             $oLogger->addRecord(ULogger::ALERT, $oException->getMessage(), array('siren' => $iSIREN));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $oException->getMessage());
-            $this->step1Redirect('/depot_de_dossier/nok', projects_status::NOTE_EXTERNE_FAIBLE);
+            $this->step1Redirect('nok', projects_status::NOTE_EXTERNE_FAIBLE);
         }
 
         if (false === empty($oResult->exception)) {
@@ -140,7 +144,7 @@ class depot_de_dossierController extends bootstrap
             $oLogger->addRecord(ULogger::ALERT, $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur, array('siren' => $iSIREN));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $iSIREN . ' | ' . $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur);
-            $this->step1Redirect('/depot_de_dossier/nok', projects_status::NOTE_EXTERNE_FAIBLE);
+            $this->step1Redirect('nok', projects_status::NOTE_EXTERNE_FAIBLE);
         }
 
         if ($iStatusSetting == 2) {
@@ -261,32 +265,14 @@ class depot_de_dossierController extends bootstrap
                 $oInterval            = $oCompanyCreationDate->diff(new \DateTime());
 
                 if ($oInterval->days < \projects::MINIMUM_CREATION_DAYS_PROSPECT) {
-                    $this->step1Redirect('/depot_de_dossier/prospect/' . $this->projects->hash, projects_status::PAS_3_BILANS);
+                    $this->step1Redirect('prospect', projects_status::PAS_3_BILANS);
                 }
 
-                $this->step1Redirect('/depot_de_dossier/etape2/' . $this->projects->hash, projects_status::COMPLETUDE_ETAPE_2);
+                $this->step1Redirect('etape2', projects_status::COMPLETUDE_ETAPE_2);
                 break;
             case 'Non':
             default:
-                switch ($oResult->myInfo->codeRetour) {
-                    case '1': // Etablissement Inactif
-                    case '7': // SIREN inconnu
-                        $this->step1Redirect('/depot_de_dossier/nok/no-siren', projects_status::NOTE_EXTERNE_FAIBLE);
-                        break;
-                    case '2': // Etablissement sans RCS
-                        $this->step1Redirect('/depot_de_dossier/nok/no-rcs', projects_status::NOTE_EXTERNE_FAIBLE);
-                        break;
-                    case '5': // Fonds Propres Négatifs
-                    case '6': // EBE Négatif
-                        $this->step1Redirect('/depot_de_dossier/nok/rex-nega', projects_status::NOTE_EXTERNE_FAIBLE);
-                        break;
-                    case '3': // Procédure Active
-                    case '4': // Bilan de plus de 450 jours
-                    case '9': // bilan sup 450 jours
-                    default:
-                        $this->step1Redirect('/depot_de_dossier/nok', projects_status::NOTE_EXTERNE_FAIBLE);
-                        break;
-                }
+                $this->step1Redirect('nok', projects_status::NOTE_EXTERNE_FAIBLE);
                 break;
         }
     }
@@ -299,7 +285,8 @@ class depot_de_dossierController extends bootstrap
     private function step1Redirect($sPage, $iProjectStatus)
     {
         $this->projects_status_history->addStatus(-2, $iProjectStatus, $this->projects->id_project);
-        header('Location: ' . $this->lurl . $sPage);
+
+        header('Location: ' . $this->lurl . '/depot_de_dossier/' . $sPage . '/' . $this->projects->hash);
         die;
     }
 
@@ -594,9 +581,115 @@ class depot_de_dossierController extends bootstrap
         }
     }
 
+    public function _etape3()
+    {
+        $this->page = 3;
+
+        $this->checkProjectHash('step3');
+
+        $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-etape-3'];
+        $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-3'];
+        $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-etape-3'];
+
+        $this->companies->get($this->projects->id_company);
+        $this->clients->get($this->companies->id_client_owner);
+
+        //Calcul de la mensualite en tenant compte du montant/ duree / taux min et taux max et frais
+
+        $this->financialClass = $this->loadLib('financial');
+        $this->settings->get('Tri par taux intervalles', 'type');
+        $sTauxIntervalles = $this->settings->value;
+
+        $iMontant = $this->projects->amount;
+        $iDuree   = $this->projects->period;
+
+        $iTauxMax = (substr($sTauxIntervalles, -2) / 100);
+        $iTauxMin = (substr($sTauxIntervalles, 0, 1) / 100);
+        $iTauxCom = 0.01;
+        $iTva     = 0.02;
+
+        $iMensualite_min = $this->financialClass->PMT(($iTauxMin / 12), $iDuree, ($iMontant * -1));
+        $iMensualite_max = $this->financialClass->PMT(($iTauxMax / 12), $iDuree, ($iMontant * -1));
+        $iCommission     = ($this->financialClass->PMT(($iTauxCom / 12), $iDuree, ($iMontant * -1))) - ($this->financialClass->PMT(0, $iDuree, ($iMontant * -1)));
+
+        $this->mensualite_min_ttc = round($iMensualite_min + $iCommission * (1 + $iTva));
+        $this->mensualite_max_ttc = round($iMensualite_max + $iCommission * (1 + $iTva));
+
+
+        //year considered for "latest liasse fiscal" necessary to get the information from Bilan and actif_passif
+        $iYear = (date('Y', time()) - 1);
+
+        $aCompaniesBilan         = $this->companies_bilans->select('id_company = ' . $this->companies->id_company . ' AND date = ' . $iYear);
+        $aCompanies_actif_passif = $this->companies_actif_passif->select('id_company = ' . $this->companies->id_company . ' AND annee = ' . $iYear);
+
+        $this->iRex          = $aCompaniesBilan[0]['resultat_exploitation'];
+        $this->iCa           = $aCompaniesBilan[0]['ca'];
+        $this->iFondsPropres = $aCompanies_actif_passif[0]['capitaux_propres'];
+
+        if (isset($_POST['send_form_etape_3'])) {
+            $bFormOk = true;
+
+            if (! isset($_POST['fonds_propres']) || $_POST['fonds_propres'] == '') {
+                $bFormOk = false;
+            }
+            if (! isset($_POST['ca']) || $_POST['ca'] == '') {
+                $bFormOk = false;
+            }
+            if (! isset($_POST['resultat_brute_exploitation']) || $_POST['resultat_brute_exploitation'] == '') {
+                $bFormOk = false;
+            }
+
+            if (! isset($_FILES['liasse_fiscal']) && $_FILES['liasse_fiscal']['name'] == '') {
+                $bFormOk = false;
+            }
+            $this->iRex          = $_POST['resultat_brute_exploitation'];
+            $this->iCa           = $_POST['ca'];
+            $this->iFondsPropres = $_POST['fonds_propres'];
+
+            if ($bFormOk) {
+                $this->uploadAttachment($this->projects->id_project, 'liasse_fiscal', attachment_type::DERNIERE_LIASSE_FISCAL);
+
+                if (empty($_FILES['autre']) == false) {
+                    $this->uploadAttachment($this->projects->id_project, 'autre', attachment_type::AUTRE1);
+                }
+
+                $this->projects->fonds_propres_declara_client         = $this->iFondsPropres;
+                $this->projects->resultat_exploitation_declara_client = $this->iRex;
+                $this->projects->ca_declara_client                    = $this->iCa;
+                $this->projects->update();
+
+                if ($this->projects->resultat_exploitation_declara_client < 0 || $this->projects->ca_declara_client < 100000 || $this->projects->fonds_propres_declara_client < 10000) {
+                    $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
+                    header('Location: ' . $this->lurl . '/depot_de_dossier/nok/rex-nega');
+                    die;
+                }
+
+                if (isset($_POST['procedure_acceleree'])) {
+                    $this->projects->process_fast = 1;
+                    $this->projects->update();
+                    //TODO une fois que le status et la constante sont crées
+                    //$this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_3, $this->projects->id_project);
+                    header('Location: ' . $this->lurl . '/depot_de_dossier/fichiers/' . $this->projects->hash);
+                    die;
+                } else {
+                    //TODO envoi de mail pour reprise de dossier
+
+                    //client stauts change to online has been done in former functions and seems to be used to validate a projet.
+                    $this->clients->status = 1;
+                    $this->clients->update();
+                    $this->projects_status_history->addStatus(-2, projects_status::A_TRAITER, $this->projects->id_project);
+                    header('Location: ' . $this->lurl . '/depot_de_dossier/merci');
+                    die;
+                }
+            }
+        }
+    }
+
     public function _prospect()
     {
         $this->page = 'prospect';
+
+        $this->checkProjectHash('prospect');
 
         $this->lng['depot-de-dossier'] = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
 
@@ -724,114 +817,9 @@ class depot_de_dossierController extends bootstrap
                 $this->projects->update();
                 $this->prescripteurs->update();
 
-                // si good page confirmation
                 $this->projects_status_history->addStatus(-2, projects_status::PAS_3_BILANS, $this->projects->id_project);
-                header('Location: ' . $this->lurl . '/depot_de_dossier/merci/prospect');
+                header('Location: ' . $this->lurl . '/depot_de_dossier/merci/' . $this->projects->hash);
                 die;
-            }
-        }
-    }
-
-    public function _etape3()
-    {
-        $this->page = 3;
-
-        $this->checkProjectHash('step3');
-
-        $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-etape-3'];
-        $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-3'];
-        $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-etape-3'];
-
-        $this->companies->get($this->projects->id_company);
-        $this->clients->get($this->companies->id_client_owner);
-
-        //Calcul de la mensualite en tenant compte du montant/ duree / taux min et taux max et frais
-
-        $this->financialClass = $this->loadLib('financial');
-        $this->settings->get('Tri par taux intervalles', 'type');
-        $sTauxIntervalles = $this->settings->value;
-
-        $iMontant = $this->projects->amount;
-        $iDuree   = $this->projects->period;
-
-        $iTauxMax = (substr($sTauxIntervalles, -2) / 100);
-        $iTauxMin = (substr($sTauxIntervalles, 0, 1) / 100);
-        $iTauxCom = 0.01;
-        $iTva     = 0.02;
-
-        $iMensualite_min = $this->financialClass->PMT(($iTauxMin / 12), $iDuree, ($iMontant * -1));
-        $iMensualite_max = $this->financialClass->PMT(($iTauxMax / 12), $iDuree, ($iMontant * -1));
-        $iCommission     = ($this->financialClass->PMT(($iTauxCom / 12), $iDuree, ($iMontant * -1))) - ($this->financialClass->PMT(0, $iDuree, ($iMontant * -1)));
-
-        $this->mensualite_min_ttc = round($iMensualite_min + $iCommission * (1 + $iTva));
-        $this->mensualite_max_ttc = round($iMensualite_max + $iCommission * (1 + $iTva));
-
-
-        //year considered for "latest liasse fiscal" necessary to get the information from Bilan and actif_passif
-        $iYear = (date('Y', time()) - 1);
-
-        $aCompaniesBilan         = $this->companies_bilans->select('id_company = ' . $this->companies->id_company . ' AND date = ' . $iYear);
-        $aCompanies_actif_passif = $this->companies_actif_passif->select('id_company = ' . $this->companies->id_company . ' AND annee = ' . $iYear);
-
-        $this->iRex          = $aCompaniesBilan[0]['resultat_exploitation'];
-        $this->iCa           = $aCompaniesBilan[0]['ca'];
-        $this->iFondsPropres = $aCompanies_actif_passif[0]['capitaux_propres'];
-
-        if (isset($_POST['send_form_etape_3'])) {
-            $bFormOk = true;
-
-            if (! isset($_POST['fonds_propres']) || $_POST['fonds_propres'] == '') {
-                $bFormOk = false;
-            }
-            if (! isset($_POST['ca']) || $_POST['ca'] == '') {
-                $bFormOk = false;
-            }
-            if (! isset($_POST['resultat_brute_exploitation']) || $_POST['resultat_brute_exploitation'] == '') {
-                $bFormOk = false;
-            }
-
-            if (! isset($_FILES['liasse_fiscal']) && $_FILES['liasse_fiscal']['name'] == '') {
-                $bFormOk = false;
-            }
-            $this->iRex          = $_POST['resultat_brute_exploitation'];
-            $this->iCa           = $_POST['ca'];
-            $this->iFondsPropres = $_POST['fonds_propres'];
-
-            if ($bFormOk) {
-                $this->uploadAttachment($this->projects->id_project, 'liasse_fiscal', attachment_type::DERNIERE_LIASSE_FISCAL);
-
-                if (empty($_FILES['autre']) == false) {
-                    $this->uploadAttachment($this->projects->id_project, 'autre', attachment_type::AUTRE1);
-                }
-
-                $this->projects->fonds_propres_declara_client         = $this->iFondsPropres;
-                $this->projects->resultat_exploitation_declara_client = $this->iRex;
-                $this->projects->ca_declara_client                    = $this->iCa;
-                $this->projects->update();
-
-                if ($this->projects->resultat_exploitation_declara_client < 0 || $this->projects->ca_declara_client < 100000 || $this->projects->fonds_propres_declara_client < 10000) {
-                    $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                    header('Location: ' . $this->lurl . '/depot_de_dossier/nok/rex-nega');
-                    die;
-                }
-
-                if (isset($_POST['procedure_acceleree'])) {
-                    $this->projects->process_fast = 1;
-                    $this->projects->update();
-                    //TODO une fois que le status et la constante sont crées
-                    //$this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_3, $this->projects->id_project);
-                    header('Location: ' . $this->lurl . '/depot_de_dossier/fichiers/' . $this->projects->hash);
-                    die;
-                } else {
-                    //TODO envoi de mail pour reprise de dossier
-
-                    //client stauts change to online has been done in former functions and seems to be used to validate a projet.
-                    $this->clients->status = 1;
-                    $this->clients->update();
-                    $this->projects_status_history->addStatus(-2, projects_status::A_TRAITER, $this->projects->id_project);
-                    header('Location: ' . $this->lurl . '/depot_de_dossier/merci');
-                    die;
-                }
             }
         }
     }
@@ -840,7 +828,7 @@ class depot_de_dossierController extends bootstrap
     {
         $this->page = 'fichiers';
 
-        $this->checkProjectHash('files');
+        $this->checkProjectHash('fichiers');
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-fichiers'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-fichiers'];
@@ -868,6 +856,8 @@ class depot_de_dossierController extends bootstrap
 
     public function _merci()
     {
+        $this->checkProjectHash('merci');
+
         $this->lng['depot-de-dossier'] = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-merci'];
@@ -880,21 +870,21 @@ class depot_de_dossierController extends bootstrap
         //Recuperation des element de traductions
         $this->lng['contact']  = $this->ln->selectFront('contact', $this->language, $this->App);
         $this->demande_contact = $this->loadData('demande_contact');
-        $contenu               = $this->tree_elements->select('id_tree = 47 AND id_langue = "' . $this->language . '"');
-        foreach ($contenu as $elt) {
+
+        foreach ($this->tree_elements->select('id_tree = 47 AND id_langue = "' . $this->language . '"') as $elt) {
             $this->elements->get($elt['id_element']);
             $this->content[$this->elements->slug]    = $elt['value'];
             $this->complement[$this->elements->slug] = $elt['complement'];
         }
-        // Creation du breadcrumb
-        $this->breadCrumb   = $this->tree->getBreadCrumb('47', $this->language);
+
+        $this->breadCrumb   = $this->tree->getBreadCrumb(47, $this->language);
         $this->nbBreadCrumb = count($this->breadCrumb);
 
-        //TODO get rid of the contact messages
+        // @todo get rid of the contact messages
 
         if (isset($_POST['send_form_contact'])) {
-
             include $this->path . 'apps/default/controllers/root.php';
+
             $oCommand = new Command('root', '_default', array(), $this->language);
             $oRoot    = new rootController($oCommand, $this->Config, 'default');
             $oRoot->contact();
@@ -902,18 +892,40 @@ class depot_de_dossierController extends bootstrap
         }
     }
 
-    public function _stand_by()
-    {
-        $this->checkProjectHash('standby');
-    }
-
     public function _nok()
     {
+        $this->checkProjectHash('nok');
+
         $this->lng['depot-de-dossier-nok'] = $this->ln->selectFront('depot-de-dossier-nok', $this->language, $this->App);
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-nok'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-nok'];
         $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-nok'];
+
+        switch ($this->projects->retour_altares) {
+            case '1': // Etablissement Inactif
+            case '7': // SIREN inconnu
+                $this->sErrorMessage = $this->lng['depot-de-dossier-nok']['no-siren'];
+                break;
+            case '2': // Etablissement sans RCS
+                $this->sErrorMessage = $this->lng['depot-de-dossier-nok']['no-rcs'];
+                break;
+            case '5': // Fonds Propres Négatifs
+            case '6': // EBE Négatif
+                $this->sErrorMessage = $this->lng['depot-de-dossier-nok']['rex-nega'];
+                break;
+            case '8':
+                if ($this->projects_status->status == \projects_status::PAS_3_BILANS) {
+                    $this->sErrorMessage = $this->lng['depot-de-dossier-nok']['pas-3-bilans'];
+                    break;
+                }
+            case '3': // Procédure Active
+            case '4': // Bilan de plus de 450 jours
+            case '9': // bilan sup 450 jours
+            default:
+                $this->sErrorMessage = $this->lng['depot-de-dossier-nok']['contenu-non-eligible'];
+                break;
+        }
     }
 
     /**
@@ -977,12 +989,13 @@ class depot_de_dossierController extends bootstrap
         $this->projects_status->getLastStatut($this->projects->id_project);
 
         switch ($this->projects_status->status) {
-            case \projects_status::NOTE_EXTERNE_FAIBLE:
-                header('Location: ' . $this->lurl . '/depot_de_dossier/nok');
-                die;
             case \projects_status::PAS_3_BILANS:
-                header('Location: ' . $this->lurl . '/depot_de_dossier/nok/pas-3-bilans');
-                die;
+            case \projects_status::NOTE_EXTERNE_FAIBLE:
+                if (false === in_array($sPage, array('nok', 'prospect', 'merci'))) {
+                    header('Location: ' . $this->lurl . '/depot_de_dossier/nok/' . $this->projects->hash);
+                    die;
+                }
+                break;
             case \projects_status::COMPLETUDE_ETAPE_2:
                 if ($sPage !== 'step2') {
                     header('Location: ' . $this->lurl . '/depot_de_dossier/etape2/' . $this->projects->hash);
@@ -997,17 +1010,17 @@ class depot_de_dossierController extends bootstrap
                 break;
             case \projects_status::A_TRAITER:
             case \projects_status::EN_ATTENTE_PIECES:
-                if ($sPage !== 'files') {
+                if ($sPage !== 'fichiers') {
                     header('Location: ' . $this->lurl . '/depot_de_dossier/fichiers/' . $this->projects->hash);
                     die;
                 }
                 break;
             case \projects_status::ABANDON:
-                header('Location: ' . $this->lurl . '/depot_de_dossier/merci/abandon');
-                die;
             default: // Should correspond to "Revue analyste" and above
-                header('Location: ' . $this->lurl . '/depot_de_dossier/merci/analyse');
-                die;
+                if ($sPage !== 'merci') {
+                    header('Location: ' . $this->lurl . '/depot_de_dossier/merci/' . $this->projects->hash);
+                    die;
+                }
         }
     }
 }
