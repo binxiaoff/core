@@ -9,6 +9,46 @@ use Monolog\Formatter\LineFormatter;
 class ULogger
 {
     /**
+     * Detailed debug information
+     */
+    const DEBUG = Logger::DEBUG;
+
+    /**
+     * Interesting events
+     */
+    const INFO = Logger::INFO;
+
+    /**
+     * Uncommon events
+     */
+    const NOTICE = Logger::NOTICE;
+
+    /**
+     * Exceptional occurrences that are not errors
+     */
+    const WARNING = Logger::WARNING;
+
+    /**
+     * Runtime errors
+     */
+    const ERROR = Logger::ERROR;
+
+    /**
+     * Critical conditions
+     */
+    const CRITICAL = Logger::CRITICAL;
+
+    /**
+     * Action must be taken immediately
+     */
+    const ALERT = Logger::ALERT;
+
+    /**
+     * Urgent alert.
+     */
+    const EMERGENCY = Logger::EMERGENCY;
+
+    /**
      * @var LoggerInterface
      */
     private $oLogger;
@@ -32,33 +72,29 @@ class ULogger
     {
         $this->setFormatterLog();
         $this->sFullPath = $sPathLog . $sNameLog;
-        $this->oLogger = new Logger($sNameLogger);
+        $this->oLogger   = new Logger($sNameLogger);
         $this->setStreamHandler();
     }
 
     public function setFormatterLog()
     {
-        $sDateFormat = "d-m-Y H:i:s";
-        $sOutput = "[%datetime%] [%channel%] [%level_name%] %message% %context% %extra%\n";
+        $sDateFormat      = "d-m-Y H:i:s";
+        $sOutput          = "[%datetime%] [%channel%] [%level_name%] %message% %context% %extra%\n";
         $this->oFormatter = new LineFormatter($sOutput, $sDateFormat);
         return $this;
     }
 
     public function setStreamHandler()
     {
-        $oRefClass = new \ReflectionClass('Monolog\Logger');
+        $this->oStreamHandler = new StreamHandler($this->sFullPath);
+        $this->oStreamHandler->setFormatter($this->oFormatter);
+        $this->oLogger->pushHandler($this->oStreamHandler);
 
-        foreach($oRefClass->getConstants() as $iLevel) {
-            $this->oStreamHandler = new StreamHandler($this->sFullPath, $iLevel);
-            $this->oStreamHandler->setFormatter($this->oFormatter);
-            $this->oLogger->pushHandler($this->oStreamHandler);
-            unset($this->oStreamHandler);
-        }
         return $this;
     }
 
     public function addRecord($sType, $sMessage, array $aContext = array())
     {
-        return $this->oLogger->addRecord(constant('Monolog\Logger::' . strtoupper($sType)), $sMessage, $aContext);
+        return $this->oLogger->addRecord($sType, $sMessage, $aContext);
     }
 }

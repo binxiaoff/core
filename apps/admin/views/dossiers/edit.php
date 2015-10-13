@@ -73,7 +73,7 @@ if (isset($_SESSION['freeow']))
         <li>Detail Dossier</li>
     </ul>
 
-    <h1>Detail dossier : <?= $this->projects->title ?></h1>    
+    <h1>Detail dossier : <?= $this->projects->title ?></h1>
 
     <form method="post" name="dossier_resume" id="dossier_resume" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <div id="resume">
@@ -140,7 +140,6 @@ if (isset($_SESSION['freeow']))
                                     ?><option <?= ($this->companies->sector == $k + 1 ? 'selected' : '') ?> value="<?= $k + 1 ?>"><?= $s ?></option><?
                                 }
                                 ?>
-
                             </select></td>
                     </tr>
                     <tr>
@@ -162,7 +161,7 @@ if (isset($_SESSION['freeow']))
                     </tr>
                     <tr>
                         <th><label for="photo_projet">Photo projet :</label></th>
-                        <td><input type="file" name="photo_projet" id="photo_projet" /><br /><a target="_blank" href="<?= $this->surl ?>/var/images/photos_projets/<?= $this->projects->photo_projet ?>"><?= $this->projects->photo_projet ?></a></td>
+                        <td><input type="file" name="photo_projet" id="photo_projet" /><br /><a target="_blank" href="<?= $this->surl ?>/images/dyn/projets/source/<?= $this->projects->photo_projet ?>"><?= $this->projects->photo_projet ?></a></td>
                     </tr>
                     <tr>
                         <th><label for="lien_video">Lien vidéo :</label></th>
@@ -272,7 +271,7 @@ if (isset($_SESSION['freeow']))
                 <table class="form" style="width: 538px; border: 1px solid #B10366;">
                     <tr>
                         <th>Statut :</th>
-                        <td>                            
+                        <td>
                             <label for="statut"><?= $this->phrase_resultat ?></label>
                         </td>
                     </tr>
@@ -282,31 +281,31 @@ if (isset($_SESSION['freeow']))
                         ?>
                         <tr>
                             <th>Virement reçu le :</th>
-                            <td>                            
+                            <td>
                                 <label for="statut"><?= $this->dates->formatDateMysqltoFr_HourOut($this->receptions->added)?></label>
                             </td>
                         </tr>
                         <tr>
                             <th>Identification virement :</th>
-                            <td>                            
+                            <td>
                                 <label for="statut"><?=$this->receptions->id_reception?></label>
                             </td>
                         </tr>
-                        
+
                         <tr>
                             <th>Montant virement :</th>
-                            <td>                            
+                            <td>
                                 <label for="statut"><?=($this->receptions->montant/100) ?> €</label>
                             </td>
                         </tr>
-                        
+
                         <tr>
                             <th>Motif du virement :</th>
-                            <td>                            
+                            <td>
                                 <label for="statut"><?=$this->receptions->motif?></label>
                             </td>
                         </tr>
-                        
+
                         <?php
                     }
                     else
@@ -314,23 +313,23 @@ if (isset($_SESSION['freeow']))
                         ?>
                         <tr>
                             <th>Virement à émettre avant le :</th>
-                            <td>                            
+                            <td>
                                 <label for="statut"><?= $this->date_next_echeance_4jouvres_avant ?></label>
                             </td>
                         </tr>
                         <?php
                     }
                     ?>
-                    <tr>    
+                    <tr>
                         <th>Montant CRD (*) :</th>
-                        <td>                            
+                        <td>
                             <label for="statut"><?= $this->montant_restant_du_preteur ?>€</label>
                         </td>
                     </tr>
-                    
-                    
-                    <?php            
-                    
+
+
+                    <?php
+
                     if($this->virement_recu)
                     {
                         /*
@@ -339,36 +338,36 @@ if (isset($_SESSION['freeow']))
                             ?>
                             <tr>
                                 <th>Actions : (EN DEBUG)</th>
-                                <td> 
+                                <td>
                                     <form action="" name="action_remb_anticipe">
                                         <input type="hidden" name="id_reception" value="<?=$this->receptions->id_reception?>">
                                         <input type="hidden" name="montant_crd_preteur" value="<?=$this->montant_restant_du_preteur?>">
                                         <input type="hidden" name="spy_remb_anticipe" value="ok">
-                                        <input type="submit" value="Déclencher le remboursement anticipé" class="btn"> 
+                                        <input type="submit" value="Déclencher le remboursement anticipé" class="btn">
                                     </form>
                                 </td>
                             </tr>
                             <?php
                         }
-                        
+
                          */
                     }
                     else
                     {
                         ?>
-                        <tr> 
+                        <tr>
                             <th>Motif à indiquer sur le virement :</th>
-                            <td>                            
+                            <td>
                                 <label for="statut">RA-<?= $this->projects->id_project ?></label>
                             </td>
                         </tr>
                         <?php
                     }
                     ?>
-                    
+
                 </table>
-                
-                
+
+
                 <?php
                 if(!$this->virement_recu && !$this->remb_anticipe_effectue)
                 {
@@ -376,10 +375,10 @@ if (isset($_SESSION['freeow']))
                     * : Le montant correspond aux CRD des échéances restantes après celle du <?= $this->date_next_echeance ?> qui sera prélevé normalement
                     <?php
                 }
-                
+
                 ?>
-                    
-                    
+
+
 
                 <br><br><br><br>
                 <h2>Actions</h2>
@@ -401,7 +400,7 @@ if (isset($_SESSION['freeow']))
                         <th>id emprunteur:</th>
                         <td>
                             <?= $this->clients->id_client ?>
-                            <input id="id_client" type="hidden" value="<?= $this->clients->id_client ?>" name="id_client"> 
+                            <input id="id_client" type="hidden" value="<?= $this->clients->id_client ?>" name="id_client">
                         </td>
                     </tr>
                     <tr>
@@ -431,7 +430,7 @@ if (isset($_SESSION['freeow']))
                                 }
                                 ?>
                             </select>
-                        </td>	
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="status">Statut :</label></th>
@@ -442,7 +441,7 @@ if (isset($_SESSION['freeow']))
                                 echo "Remboursement anticipé";
                             }
                             else
-                            {      
+                            {
 	                            if (count($this->lProjects_status) > 0)
 	                            {
 	                                ?>
@@ -463,7 +462,7 @@ if (isset($_SESSION['freeow']))
 	                            }
 							}
                             ?>
-                        </td>	
+                        </td>
                     </tr>
                 </table>
                 <table class="form" style="width: 538px;">
@@ -508,8 +507,8 @@ if (isset($_SESSION['freeow']))
                                     {
                                         ?><option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_publication == $h ? "selected=selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option><?
                                     }
-                                    ?>                                        
-                                </select>h                            
+                                    ?>
+                                </select>h
 
                                 <select name="date_publication_minute" class="selectMini">
                                     <?
@@ -518,8 +517,8 @@ if (isset($_SESSION['freeow']))
                                         ?><option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_publication == $m ? "selected=selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
                                         <?
                                     }
-                                    ?>                                        
-                                </select>                      
+                                    ?>
+                                </select>
 
                                 <?php /* ?><select name="date_publication_seconde" class="selectMini">
                                   <?php
@@ -570,7 +569,7 @@ if (isset($_SESSION['freeow']))
                                 ?>
 
 
-                                &agrave;                                
+                                &agrave;
                                 <select name="date_retrait_heure" class="selectMini">
                                     <?php
                                     for ($h = 0; $h < 24; $h++)
@@ -579,8 +578,8 @@ if (isset($_SESSION['freeow']))
                                         <option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_retrait == $h ? "selected=selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option>
                                         <?php
                                     }
-                                    ?>                                        
-                                </select>h                            
+                                    ?>
+                                </select>h
 
                                 <select name="date_retrait_minute" class="selectMini">
                                     <?php
@@ -590,8 +589,8 @@ if (isset($_SESSION['freeow']))
                                         <option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_retrait == $m ? "selected=selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
                                         <?php
                                     }
-                                    ?>                                        
-                                </select>                           
+                                    ?>
+                                </select>
 
                                 <?php /* ?><select name="date_retrait_seconde" class="selectMini">
                                   <?php
@@ -674,7 +673,7 @@ if (isset($_SESSION['freeow']))
                                     }
                                     ?>
                                 </div>
-                            </td>   
+                            </td>
                         </tr>
                         <tr>
                             <th></th>
@@ -729,15 +728,15 @@ if (isset($_SESSION['freeow']))
             <style>
                 .block_cache{background-color: black;height: 80px;left: 0;margin-top: 4px;opacity: 0.50; position: absolute; width: 550px;z-index: 999;}
             </style>
-            <div style="display:none" class="recharge"> 
+            <div style="display:none" class="recharge">
                 <script type="text/javascript">
                     $("#status").change(function () {
                         if ($("#status").val() == 40) {
                             $(".change_statut").hide();
                         }
-                        elseif ($("#status").val() == 80) {
+                        else if ($("#status").val() == 80) {
                             /* dans le cas d'un changement vers probleme, on affiche une box de conf */
-                            
+
                         }
                         else {
                             $(".change_statut").show();
@@ -770,7 +769,7 @@ if (isset($_SESSION['freeow']))
                     <tr>
                         <th width="120" align="center">Date ajout</th>
                         <th align="center">Contenu</th>
-                        <th width="50" align="center">&nbsp;</th>  
+                        <th width="50" align="center">&nbsp;</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -787,7 +786,7 @@ if (isset($_SESSION['freeow']))
 
                                 <img style="cursor:pointer;" onclick="deleteMemo(<?= $p['id_project_comment'] ?>,<?= $p['id_project'] ?>);" src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" />
                             </td>
-                        </tr>   
+                        </tr>
                         <?
                         $i++;
                     }
@@ -828,7 +827,7 @@ if (isset($_SESSION['freeow']))
     </style>
     <br /><br />
     <div id="lesEtapes">
-        <div id="title_etape1" >Etape 1</div> 
+        <div id="title_etape1" >Etape 1</div>
         <div id="etape1">
             <form method="post" name="dossier_etape1" id="dossier_etape1" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
                 <table class="form" style="width: 100%;">
@@ -872,7 +871,7 @@ if (isset($_SESSION['freeow']))
         </div>
         <br />
 
-        <div id="title_etape2">Etape 2</div> 
+        <div id="title_etape2">Etape 2</div>
         <div id="etape2">
             <form method="post" name="dossier_etape2" id="dossier_etape2" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
                 <table class="form" style="width: 100%;">
@@ -1047,7 +1046,7 @@ if (isset($_SESSION['freeow']))
         </div>
         <br />
 
-        <div id="title_etape3">Etape 3</div> 
+        <div id="title_etape3">Etape 3</div>
         <div id="etape3">
             <form method="post" name="dossier_etape3" id="dossier_etape3" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
                 <table class="form" style="width: 100%;">
@@ -1103,7 +1102,7 @@ if (isset($_SESSION['freeow']))
         </div>
         <br />
 
-        <div id="title_etape4">Etape 4</div> 
+        <div id="title_etape4">Etape 4</div>
         <div id="etape4">
             <script language="javascript" type="text/javascript">
                 function formUploadCallbackcsv(result) {
@@ -1353,7 +1352,7 @@ if (isset($_SESSION['freeow']))
                                         }
                                         ?>
                                     </thead>
-                                    <tbody> 
+                                    <tbody>
                                         <tr>
                                             <?
                                         }
@@ -1561,7 +1560,7 @@ if (isset($_SESSION['freeow']))
                                         }
                                         ?>
                                     </thead>
-                                    <tbody> 
+                                    <tbody>
                                         <tr>
                                             <?
                                         }
@@ -1746,7 +1745,7 @@ if (isset($_SESSION['freeow']))
                         </tr>
 
                     </table>
-                </div>   
+                </div>
                 <br /><br />
 
                 <div id="valid_etape4">Données sauvegardées</div>
@@ -1755,7 +1754,7 @@ if (isset($_SESSION['freeow']))
         </div>
         <br />
 
-        <div id="title_etape5">Etape 5</div> 
+        <div id="title_etape5">Etape 5</div>
         <div id="etape5">
             <script language="javascript" type="text/javascript">
                 function formUploadCallback(result) {
@@ -1993,7 +1992,7 @@ if (isset($_SESSION['freeow']))
                 //$moyenne = (($this->projects->performance_fianciere+$this->projects->marche_opere+$this->projects->qualite_moyen_infos_financieres+$this->projects->notation_externe)/4)
                 ?>
 
-                <div id="title_etape6">Etape 6</div> 
+                <div id="title_etape6">Etape 6</div>
                 <div id="etape6">
                     <table class="form tableNotes" style="width: 100%;">
                         <tr>
@@ -2038,7 +2037,7 @@ if (isset($_SESSION['freeow']))
                                     <tr>
                                         <th><label for="individuel">Individuel</label></th>
                                         <td><input tabindex="5" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10</td>
-                                    </tr>   
+                                    </tr>
                                 </table>
                             </td>
                             <td colspan="4"></td>
@@ -2136,7 +2135,7 @@ if (isset($_SESSION['freeow']))
             if ($this->current_projects_status->status >= 33)
             {
                 ?>
-                <div id="title_etape7">Etape 7</div> 
+                <div id="title_etape7">Etape 7</div>
                 <div id="etape7">
                     <table class="form tableNotes" style="width: 100%;">
                         <tr>
@@ -2167,7 +2166,7 @@ if (isset($_SESSION['freeow']))
                                     <tr>
                                         <th><label for="tresorerie2">Trésorerie</label></th>
                                         <td><input tabindex="11" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie ?>" name="tresorerie2" id="tresorerie2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10</td>
-                                    </tr> 
+                                    </tr>
                                 </table>
                             </td>
                             <td colspan="2" style="vertical-align:top;">
@@ -2179,7 +2178,7 @@ if (isset($_SESSION['freeow']))
                                     <tr>
                                         <th><label for="individuel2">Individuel</label></th>
                                         <td><input tabindex="13" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel2" id="individuel2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10</td>
-                                    </tr>     
+                                    </tr>
                                 </table>
                             </td>
                             <td colspan="4"></td>

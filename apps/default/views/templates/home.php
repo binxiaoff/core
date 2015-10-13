@@ -1,6 +1,6 @@
 <!--#include virtual="ssi-header.shtml"  -->
 		<?php /*?><div class="fonds">
-		
+
         </div><?php */?>
         <div class="banner">
 			<div class="banner-content">
@@ -36,21 +36,21 @@
 				</a>
 			</div><!-- /.banner-content -->
 		</div><!-- /.banner -->
-        
+
          <div class="hp-counter">
             <div class="shell">
             	<div style="text-align:right;padding-right:193px;">
                 <p class="hp"><?=$this->lng['home']['deja']?></p>
                 <div class="counter-holder">
                 	<?=$this->compteur?>
-                    
+
                 </div>
                 <p class="hp"><?=$this->lng['home']['demprunte-sur-unilend']?></p>
                 </div>
             </div>
         </div>
         <!-- /.counter-holder -->
-        
+
 		<div class="main">
 			<div class="shell">
             	<?
@@ -124,8 +124,8 @@
 						else $dateRest = '';
 
 						$CountEnchere = $this->bids->counter('id_project = '.$pf['id_project']);
-						//$avgRate = $this->bids->getAVG($pf['id_project'],'rate');					
-							
+						//$avgRate = $this->bids->getAVG($pf['id_project'],'rate');
+
 						// moyenne pondéré
 						$montantHaut = 0;
 						$montantBas = 0;
@@ -136,7 +136,7 @@
 							{
 								$montantHaut += ($b['rate']*($b['amount']/100));
 								$montantBas += ($b['amount']/100);
-							}	
+							}
 						}
 						// funding ko
 						elseif($this->projects_status->status==70)
@@ -145,7 +145,7 @@
 							{
 								$montantHaut += ($b['rate']*($b['amount']/100));
 								$montantBas += ($b['amount']/100);
-							}	
+							}
 						}
 						// emprun refusé
 						elseif($this->projects_status->status==75)
@@ -154,7 +154,7 @@
 							{
 								$montantHaut += ($b['rate']*($b['amount']/100));
 								$montantBas += ($b['amount']/100);
-							}	
+							}
 						}
 						else
 						{
@@ -163,13 +163,13 @@
 								$montantHaut += ($b['rate']*($b['amount']/100));
 								$montantBas += ($b['amount']/100);
 							}
-							
+
 						}
-							
+
 						if($montantHaut != 0 && $montantBas != 0)
 						$avgRate = ($montantHaut/$montantBas);
 						else $avgRate = 0;
-							
+
 						// dates pour le js
 						$mois_jour = $this->dates->formatDate($pf['date_retrait'],'F d');
 						$annee = $this->dates->formatDate($pf['date_retrait'],'Y');
@@ -201,7 +201,7 @@
 								if($pf['photo_projet'] != '')
 								{
 
-									?><img src="<?=$this->photos->display($pf['photo_projet'],'photos_projets','photo_projet_min')?>" alt="<?=$pf['photo_projet']?>" class="thumb"><?
+									?><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>" class="thumb"><?
 
 								}
 								?>
@@ -245,7 +245,7 @@
                 <?
 				}
 				?>
-			</div><!-- /.shell -->     
+			</div><!-- /.shell -->
 		</div><!-- /.main -->
         <?=$this->fireView('../blocs/ils-parlent-de-nous')?>
 

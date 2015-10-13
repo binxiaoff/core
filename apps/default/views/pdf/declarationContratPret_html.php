@@ -10,7 +10,7 @@
 		<div class="page-break">
 			<div class="header">
 				<div class="col-left">
-					<a href="#"><img src="<?=$this->surl?>/styles/default/declarationContratPret/images/cerfa.png" alt="" /></a>
+					<div class="logocerfa"><a href="#"></a></div>
 					<p><small>N° 10142 * 05 <br />N° 50058 # 05</small></p>
 				</div><!-- /.col-left -->
 				<div class="col-right">
@@ -22,7 +22,7 @@
 					<div class="cl">&nbsp;</div>
 				</div><!-- /.col-right -->
 				<div class="col-center">
-					<a href="#" class="logo"><img src="<?=$this->surl?>/styles/default/declarationContratPret/images/logo.png" alt="" /></a>
+					<div class="logorep"><a href="#" class="logo"></a></div>
 				</div><!-- /.col-center -->
 				<div class="cl">&nbsp;</div>
 			</div><!-- /.header -->
@@ -34,42 +34,42 @@
 				<div class="doc-body">
 					<div class="section">
 						<h3>I. DÉSIGNATION DU DÉCLARANT (intermédiaire ou à défaut emprunteur)</h3>
-						<table width="100%" border="0" cellspacing="0" cellpadding="0">
+						<table width="100%" cellspacing="0" cellpadding="0">
 							<tr>
-								<td><p><label>Nom et prénom ou raison sociale, profession :</label> <span class="editable"><?=strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->raisonSociale)))?></span></p></td>
+								<td style="border: 1px solid #231f20;"><p><label>Nom et prénom ou raison sociale, profession :</label> <span class="editable"><?=strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->raisonSociale)))?></span></p></td>
 							</tr>
 							<tr>
-								<td><label>Adresse complète :</label> <span class="editable"><?=strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->adresse)))?></span></td>
+								<td style="border: 1px solid #231f20;"><label>Adresse complète :</label> <span class="editable"><?=strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->adresse)))?></span></td>
 							</tr>
 
 						</table>
 					</div><!-- /.section -->
 					<div class="section">
 						<h3>II. RENSEIGNEMENTS CONCERNANT LES CONDITIONS DU PRÊT ET LES PARTIES AU CONTRAT</h3>
-						<table width="100%" border="0" cellspacing="0" cellpadding="0">
+						<table width="100%" cellspacing="0" cellpadding="0">
 							<tr>
-								<th colspan="4">Conditions du prêt</th>
+								<th style="border: 1px solid #231f20;" colspan="4">Conditions du prêt</th>
 								<th rowspan="2">Noms, prénoms et adresses complètes (y compris code département) des parties <span>ÉCRIVEZ EN CAPITALES</span><small>5</small></th>
 							</tr>
 							<tr>
-								<td class="headings tc" width="42">Date <small>1</small></td>
-								<td class="headings tc" width="32">Durée <small>2</small></td>
-								<td class="headings tc" width="22">Taux <small>3</small></td>
-								<td class="headings tc" width="62">Montant <br />en principal <small>4</small></td>
+								<td style="border: 1px solid #231f20;" class="headings tc" width="42">Date <small>1</small></td>
+								<td style="border: 1px solid #231f20;" class="headings tc" width="32">Durée <small>2</small></td>
+								<td style="border: 1px solid #231f20;" class="headings tc" width="22">Taux <small>3</small></td>
+								<td style="border: 1px solid #231f20;" class="headings tc" width="62">Montant <br />en principal <small>4</small></td>
 							</tr>
 							<tr>
-								<td class="tc"><span class="date"><?=date('d/m/Y',strtotime($this->oLoans->added))?></span></td>
-								<td class="tc"><?=($this->projects->period/12)?></td>
-								<td class="tc"><small><?=number_format($this->oLoans->rate, 1, ',', ' ')?></small></td>
-								<td class="tc"><?=number_format(($this->oLoans->amount/100), 0, ',', ' ')?></td>
-								<td class="large nopadding">
-									<table border="0" cellspacing="0" cellpadding="0" class="title">
+								<td style="border: 1px solid #231f20;" class="tc"><span class="date"><?=date('d/m/Y',strtotime($this->oLoans->added))?></span></td>
+								<td style="border: 1px solid #231f20;" class="tc"><?=($this->projects->period/12)?></td>
+								<td style="border: 1px solid #231f20;" class="tc"><small><?=number_format($this->oLoans->rate, 1, ',', ' ')?></small></td>
+								<td style="border: 1px solid #231f20;" class="tc"><?=number_format(($this->oLoans->amount/100), 0, ',', ' ')?></td>
+								<td style="border: 1px solid #231f20;" class="large nopadding">
+									<table cellspacing="0" cellpadding="0" class="title">
 										<tr>
-											<td width="16" class="noborder-top noborder-left">A</td>
-											<td width="290" class="noborder-top">Créancier ou porteur ou prêteur</td>
+											<td style="border: 1px solid #231f20;" width="16" class="noborder-top noborder-left">A</td>
+											<td style="border: 1px solid #231f20;" width="290" class="noborder-top">Créancier ou porteur ou prêteur</td>
 										</tr>
 									</table>
-									<table width="100%" border="0" cellspacing="0" cellpadding="0" class="inner">
+									<table width="100%" cellspacing="0" cellpadding="0" class="inner">
 										<tr>
 											<td><?=strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->nomPreteur)))?></td>
 										</tr>
@@ -83,13 +83,13 @@
 											<td>&nbsp;</td>
 										</tr>
 									</table>
-									<table border="0" cellspacing="0" cellpadding="0" class="title">
+									<table cellspacing="0" cellpadding="0" class="title">
 										<tr>
-											<td width="16" class="noborder-left">B</td>
-											<td width="290">Débiteur ou émetteur ou emprunteur</td>
+											<td style="border: 1px solid #231f20;" width="16" class="noborder-left">B</td>
+											<td style="border: 1px solid #231f20;" width="290">Débiteur ou émetteur ou emprunteur</td>
 										</tr>
 									</table>
-									<table width="100%" border="0" cellspacing="0" cellpadding="0" class="inner">
+									<table width="100%" cellspacing="0" cellpadding="0" class="inner">
 										<tr>
 											<td><?=strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->companiesEmp->name)))?></td>
 										</tr>
@@ -107,11 +107,11 @@
 							</tr>
 						</table>
 
-						<table width="100%" border="0" cellspacing="0" cellpadding="0">
+						<table width="100%" cellspacing="0" cellpadding="0">
 							<tr>
-								<td width="24" class="noborder-top"><strong>C</strong></td>
-								<td width="86" class="noborder-top"><strong>Observations</strong></td>
-								<td class="noborder">&nbsp;</td>
+								<td style="border: 1px solid #231f20;" width="24" class="noborder-top"><strong>C</strong></td>
+								<td style="border: 1px solid #231f20;" width="86" class="noborder-top"><strong>Observations</strong></td>
+								<td style="border: 1px solid #231f20;" class="noborder">&nbsp;</td>
 							</tr>
 							<tr>
 								<td colspan="3" class="noborder">&nbsp;</td>
@@ -121,35 +121,35 @@
 							</tr>
 						</table>
 
-						<table width="100%" border="0" cellspacing="0" cellpadding="0" class="stats">
+						<table width="100%" cellspacing="0" cellpadding="0" class="stats">
 							<tr>
-								<td width="24"><strong>D</strong></td>
-								<td width="80" class="tc">Années</td>
+								<td style="border: 1px solid #231f20;" width="24"><strong>D</strong></td>
+								<td style="border: 1px solid #231f20;" width="80" class="tc">Années</td>
                                 <?
 								for($i=0;$i<10;$i++)
 								{
-									?><td><span class="editable"><?=($this->lEcheances[$i]==false?'..........':$this->lEcheances[$i]['annee'])?></span></td><?
+									?><td style="border: 1px solid #231f20;"><span class="editable"><?=($this->lEcheances[$i]==false?'..........':$this->lEcheances[$i]['annee'])?></span></td><?
 								}
 								?>
 
 
 							</tr>
 							<tr>
-								<td colspan="2">Montant annuel des intérêts exigibles</td>
+								<td style="border: 1px solid #231f20;" colspan="2">Montant annuel des intérêts exigibles</td>
 								<?
 								for($i=0;$i<10;$i++)
 								{
-									?><td><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':number_format(($this->lEcheances[$i]['interets']/100), 2, ',', ' '))?></span></td><?
+									?><td style="border: 1px solid #231f20;"><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':number_format(($this->lEcheances[$i]['interets']/100), 2, ',', ' '))?></span></td><?
 								}
 								?>
 
 							</tr>
 							<tr>
-								<td colspan="2">Montant annuel du principal remboursé</td>
+								<td style="border: 1px solid #231f20;" colspan="2">Montant annuel du principal remboursé</td>
 								<?
 								for($i=0;$i<10;$i++)
 								{
-									?><td><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':number_format(($this->lEcheances[$i]['capital']/100), 2, ',', ' '))?></span></td><?
+									?><td style="border: 1px solid #231f20;"><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':number_format(($this->lEcheances[$i]['capital']/100), 2, ',', ' '))?></span></td><?
 								}
 								?>
 							</tr>
@@ -158,30 +158,30 @@
 							{
 							?>
 							<tr>
-								<td class="empty">&nbsp;</td>
-								<td width="80" class="tc noborder-left">Années</td>
+								<td style="border: 1px solid #231f20;" class="empty">&nbsp;</td>
+								<td style="border: 1px solid #231f20;" width="80" class="tc noborder-left">Années</td>
 								<?
 								for($i=10;$i<20;$i++)
 								{
-									?><td><span class="editable"><?=($this->lEcheances[$i]==false?'..........':$this->lEcheances[$i]['annee'])?></span></td><?
+									?><td style="border: 1px solid #231f20;"><span class="editable"><?=($this->lEcheances[$i]==false?'..........':$this->lEcheances[$i]['annee'])?></span></td><?
 								}
 								?>
 							</tr>
 							<tr>
-								<td colspan="2">Montant annuel des intérêts exigibles</td>
+								<td style="border: 1px solid #231f20;" colspan="2">Montant annuel des intérêts exigibles</td>
 								<?
 								for($i=10;$i<20;$i++)
 								{
-									?><td><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':number_format(($this->lEcheances[$i]['interets']/100), 2, ',', ' '))?></span></td><?
+									?><td style="border: 1px solid #231f20;"><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':number_format(($this->lEcheances[$i]['interets']/100), 2, ',', ' '))?></span></td><?
 								}
 								?>
 							</tr>
 							<tr>
-								<td colspan="2">Montant annuel du principal remboursé</td>
+								<td style="border: 1px solid #231f20;" colspan="2">Montant annuel du principal remboursé</td>
 								<?
 								for($i=10;$i<=20;$i++)
 								{
-									?><td><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':number_format(($this->lEcheances[$i]['capital']/100), 2, ',', ' '))?></span></td><?
+									?><td style="border: 1px solid #231f20;"><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':number_format(($this->lEcheances[$i]['capital']/100), 2, ',', ' '))?></span></td><?
 								}
 								?>
 							</tr>
@@ -194,9 +194,9 @@
 				<div class="doc-foot">
 					<div class="signiture">
 						<span>A</span><span class="city editable">PARIS</span><span>, le </span> <span class="date editable"><?=date('d/m/Y',strtotime($this->oLoans->added))?></span> <em>Signature :</em>
-                        <img src="<?=$this->surl?>/styles/default/images/logo.png" />
+                        <div class="footLogo"></div>
 					</div><!-- /.signiture -->
-					<div><a href="#"><img src="<?=$this->surl?>/styles/default/declarationContratPret/images/bottom-logo.png" alt="" /></a></div>
+					<div class="logoministere"></div>
 				</div><!-- /.doc-foot -->
 			</div><!-- /.document -->
 		</div><!-- /.page-break -->
