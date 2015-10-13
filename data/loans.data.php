@@ -305,7 +305,7 @@ class loans extends loans_crud
 				ROUND(AVG(rate),2) as rate,
 				COUNT(l.id_loan) as nb_loan,
 				l.id_loan as id_loan_if_one_loan,
-				LEFT((SELECT e.date_echeance FROM echeanciers e WHERE e.id_loan = l.id_loan AND e.ordre = 1),10) as debut,
+				LEFT((SELECT e.date_echeance FROM echeanciers e WHERE e.id_loan = l.id_loan AND e.ordre = 1 ORDER BY e.date_echeance ASC LIMIT 1),10) as debut,
 				LEFT((SELECT e1.date_echeance FROM echeanciers e1 WHERE e1.id_loan = l.id_loan ORDER BY e1.date_echeance DESC LIMIT 1),10) as fin,
 				LEFT((SELECT e2.date_echeance FROM echeanciers e2 WHERE e2.id_loan = l.id_loan AND e2.status = 0 ORDER BY e2.date_echeance ASC LIMIT 1),10) as next_echeance,
 				SUM((SELECT ((ROUND(e3.montant/100,2))-(ROUND(e3.prelevements_obligatoires+e3.retenues_source+e3.csg+e3.prelevements_sociaux+e3.contributions_additionnelles+e3.prelevements_solidarite+e3.crds,2))) FROM echeanciers e3 WHERE e3.id_loan = l.id_loan AND e3.status = 0 ORDER BY e3.date_echeance ASC LIMIT 1)) as mensuel
@@ -315,7 +315,7 @@ class loans extends loans_crud
 			WHERE id_lender = '.$id_lender.' AND l.status = 0 '.$year.'
 			GROUP BY l.id_project
 			ORDER BY '.$order;
-		//mail('k1@david.equinoa.net','AJAX',$sql);
+
 		$resultat = $this->bdd->query($sql);
 		$result = array();
 		while($record = $this->bdd->fetch_array($resultat))
