@@ -1996,8 +1996,8 @@ class ajaxController extends bootstrap
         $_SESSION['filtre_vos_operations']['tri_type_transac'] = $_POST['tri_type_transac'];
         $_SESSION['filtre_vos_operations']['tri_projects']     = $_POST['tri_projects'];
         $_SESSION['filtre_vos_operations']['id_last_action']   = $_POST['id_last_action'];
-        $_SESSION['filtre_vos_operations']['order']            = $_POST['order'];
-        $_SESSION['filtre_vos_operations']['type']             = $_POST['type'];
+        $_SESSION['filtre_vos_operations']['order']            = isset($_POST['order']) ? $_POST['order'] : '';
+        $_SESSION['filtre_vos_operations']['type']             = isset($_POST['type']) ? $_POST['type'] : '';
         $_SESSION['filtre_vos_operations']['id_client']        = $this->clients->id_client;
 
         //////////// DEBUT PARTIE DATES //////////////
@@ -2243,8 +2243,9 @@ class ajaxController extends bootstrap
             if ($this->order == "")
                 $this->order = "ASC";
 
-            if ($tri == "")
+            if (false === isset($tri) || $tri == "") {
                 $tri = 1;
+            }
 
             $this->lSumLoans = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, $annee, $arrayTri[$tri] . " " . $this->order);
 
