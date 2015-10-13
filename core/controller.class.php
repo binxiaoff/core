@@ -109,6 +109,7 @@ class Controller
 
     public function _error($msg = '')
     {
+        var_dump($this->params);
         if (!isset($this->params[0])) {
             trigger_error('ASPARTAM - ' . $msg, E_USER_ERROR);
         }
@@ -218,23 +219,24 @@ class Controller
     //Gere l'affichage du corps de la page
     public function fireView($view = '')
     {
-        if ($view == '') {
+        if ($view == '' && $this->view != '') {
             $view = $this->view;
-        }
-        if ($view == '') {
+        } elseif ($view == '' && 'pdf' != $this->Command->getControllerName()) { //Exclude pdf controller for view empty
             $view = 'index';
         }
 
-        if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php')) {
-            call_user_func(array(
-                &$this, '_error'
-            ), 'view not found : views/' . $this->Command->getControllerName() . '/' . $view . '.php');
-        } else {
-            if ($this->is_view_template && file_exists($this->path . 'apps/' . $this->App . '/controllers/templates/' . $view . '.php')) {
-                include($this->path . 'apps/' . $this->App . '/controllers/templates/' . $view . '.php');
-            }
+        if($view != '') {
+            if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php')) {
+                call_user_func(array(
+                    &$this, '_error'
+                ), 'view not found : views/' . $this->Command->getControllerName() . '/' . $view . '.php');
+            } else {
+                if ($this->is_view_template && file_exists($this->path . 'apps/' . $this->App . '/controllers/templates/' . $view . '.php')) {
+                    include($this->path . 'apps/' . $this->App . '/controllers/templates/' . $view . '.php');
+                }
 
-            include($this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php');
+                include($this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php');
+            }
         }
     }
 
