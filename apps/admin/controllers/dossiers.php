@@ -37,7 +37,7 @@ class dossiersController extends bootstrap
         $this->wsdl = $this->settings->value;
         // Identification
         $this->identification = $login . '|' . $mdp;
-
+//        (int)$this->projects->period === 1000000 || (int)$this->projects->period === 0
         // Liste deroulante conseil externe de l'entreprise
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $this->conseil_externe = $this->ficelle->explodeStr2array($this->settings->value);
@@ -69,12 +69,13 @@ class dossiersController extends bootstrap
             } else {
                 $date2 = '';
             }
-
-            $this->lProjects = $this->projects->searchDossiers($date1, $date2, $_POST['montant'], $_POST['duree'], $_POST['status'], $_POST['analyste'], $_POST['siren'], $_POST['id'], $_POST['raison-sociale']);
-        } // statut
-        elseif (isset($this->params[0])) {
+            $iNbStartPagination = (isset($_POST['nbLignePagination'])) ? (int)$_POST['nbLignePagination'] : 0;
+            $this->nb_lignes = (isset($this->nb_lignes)) ? (int)$this->nb_lignes : 100;
+            $this->lProjects = $this->projects->searchDossiers($date1, $date2, $_POST['montant'], $_POST['duree'], $_POST['status'], $_POST['analyste'], $_POST['siren'], $_POST['id'], $_POST['raison-sociale'],$iNbStartPagination,$this->nb_lignes);
+        } elseif (isset($this->params[0])) {// statut
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
+        $this->iCountProjects = (isset($this->lProjects) && is_array($this->lProjects)) ? array_shift($this->lProjects) : 0;
     }
 
     public function _edit()
