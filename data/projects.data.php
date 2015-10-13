@@ -93,7 +93,6 @@ class projects extends projects_crud
     function searchDossiers($date1 = '', $date2 = '', $montant = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $start = '', $nb = '')
     {
         $where = '';
-        $having = '';
 
         if ($date1 != '') {
             $where .= ' AND p.added >= "' . $date1 . ' 00:00:00"';
@@ -109,7 +108,7 @@ class projects extends projects_crud
             $where .= ' AND p.period = "' . $duree . '"';
         }
         if ($status != '') {
-            $having .= ' AND status IN (' . $status . ')';
+            $where .= ' AND ps.status IN (' . $status . ')';
         }
         if ($analyste != '0' && $analyste != '') {
             $where .= ' AND p.id_analyste = "' . $analyste . '"';
@@ -124,22 +123,43 @@ class projects extends projects_crud
             $where .= ' AND co.name LIKE "%' . $raison_sociale . '%"';
         }
 
+        $sSqlCount = 'SELECT
+                            COUNT(*)
+                        FROM
+                            projects p
+                            LEFT JOIN projects_last_status_history plsh on plsh.id_project = p.id_project
+                            LEFT JOIN projects_status_history psh on psh.id_project_status_history = plsh.id_project_status_history
+                            LEFT JOIN projects_status ps on ps.id_project_status = psh.id_project_status
+                        WHERE
+                            (ps.label != "" or ps.label is not null)
+                        ' . $where;
 
-        $sql = 'SELECT p.*,p.status as statusProject, co.siren,co.name,
-						(SELECT ps.label FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as label,
-						(SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status
-				FROM projects p
-					LEFT JOIN companies co ON (p.id_company = co.id_company)
-				WHERE 1=1
-				' . $where . '
-				HAVING label !=""
-				' . $having . '
-				ORDER BY p.added DESC
-				' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $rResult = $this->bdd->query($sSqlCount);
+        $iCountProjects =  (int)($this->bdd->result($rResult, 0, 0));
+
+        $sql = 'SELECT
+                    p.*,
+                    p.status as statusProject,
+                    co.siren,
+                    co.name,
+                    ps.label,
+                    ps.status
+                FROM
+                    projects p
+                    LEFT JOIN companies co ON (p.id_company = co.id_company)
+                    LEFT JOIN projects_last_status_history plsh on plsh.id_project = p.id_project
+                    LEFT JOIN projects_status_history psh on psh.id_project_status_history = plsh.id_project_status_history
+                    LEFT JOIN projects_status ps on ps.id_project_status = psh.id_project_status
+                WHERE
+                    (ps.label != "" or ps.label is not null)
+                ' . $where . '
+                ORDER BY p.added DESC
+                ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
 
         $result = array();
+        $result[0] = $iCountProjects;
 
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
