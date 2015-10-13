@@ -2374,23 +2374,8 @@ class preteursController extends bootstrap
     {
         $valuesTRI = $this->lenders_accounts->getValuesforTRI($this->lenders_accounts->id_lender_account);
 
-
-        $dates  = array();
-        $values = array();
-
-
-        foreach ($valuesTRI as $k => $paire) {
-
-            foreach ($paire as $date => $valeur) {
-
-                $dates[]  = $date;
-                $values[] = $valeur;
-
-            }
-        }
-
-        $this->financial = $this->loadLib('financial');
-        return round($this->financial->XIRR($values, $dates, $guess = 0.1) * 100, 2);
+        $oFinancial = new \PHPExcel_Calculation_Financial();
+        return round($oFinancial->XIRR(array_values($valuesTRI), array_keys($valuesTRI)) * 100, 2);
     }
 
     public function _contratPdf()

@@ -6,8 +6,9 @@ use Unilend\librairies\ULogger;
 
 final class Cron
 {
-    const OPTION_REQUIRED = 1;
-    const OPTION_OPTIONAL = 2;
+    const OPTION_REQUIRED  = 1;
+    const OPTION_OPTIONAL  = 2;
+    const MAX_EXECUTE_TIME = 5;
 
     /**
      * @var array with options of cron
@@ -108,7 +109,9 @@ final class Cron
 
     public function executeCron()
     {
-        if($this->startCron($this->getOptions('s'), 5)) {
+        $iMinute = (int)$this->getOptions('t');
+        $iMinute = (isset($iMinute) && 0 < $iMinute) ? $iMinute : self::MAX_EXECUTE_TIME;
+        if ($this->startCron($this->getOptions('s'), $iMinute)) {
             $sClassName = '\\' . $this->getOptions('d') . '\\' . $this->getOptions('c');
             $oClassCall = new $sClassName($this->oBootstrap);
             $oClassCall->{$this->getOptions('f')}();
@@ -123,9 +126,9 @@ final class Cron
      */
     private function startCron($sName, $iDelay)
     {
-        $this->iStartTime  = time();
-        $this->oLogger = $this->oBootstrap->setLogger($sName, 'cron.log')->getLogger();
-        $this->oSemaphore  = $this->oBootstrap->setSettings()->getSettings();
+        $this->iStartTime = time();
+        $this->oLogger    = $this->oBootstrap->setLogger($sName, 'cron.log')->getLogger();
+        $this->oSemaphore = $this->oBootstrap->setSettings()->getSettings();
         $this->oSemaphore->get('Controle cron ' . $sName, 'type');
 
         if ($this->oSemaphore->value == 0) {
