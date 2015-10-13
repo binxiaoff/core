@@ -19,6 +19,10 @@
         $(".tablesorter").tablesorter({headers:{9:{sorter: false},5: { sorter:'digit' }}});
 
         $('#displayPager').html($('#pageActive').val()+'/'+nbPages);
+        $('#send_dossier').click(function(){
+            $('#nbLignePagination').val(0);
+            $('#pageActive').val(1);
+        });
     });
 
     function paginationDossiers(directionPagination) {
