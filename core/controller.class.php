@@ -222,8 +222,6 @@ class Controller
     {
         if (empty($view) && ! empty($this->view)) {
             $view = $this->view;
-        } elseif (empty($view) == '' && 'pdf' != $this->Command->getControllerName()) { //Exclude pdf controller for view empty
-            $view = 'index';
         }
 
         if ($view != '') {
