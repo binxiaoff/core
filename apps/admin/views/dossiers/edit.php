@@ -51,7 +51,19 @@
             changeYear: true,
             yearRange: '<?= (date('Y') - 40) ?>:<?= (date('Y')) ?>'
         });
-
+        $('#duree').change(function(){
+            if(0 == $(this).val()) {
+                $("#status").css('display', 'none');
+                $("#msgProject").css('display', 'none');
+                $("#displayPeriodHS").css('display', 'block');
+                $("#msgProjectPeriodHS").css('display', 'block');
+            } else {
+                $("#status").css('display', 'block');
+                $("#msgProject").css('display', 'block');
+                $("#displayPeriodHS").css('display', 'none');
+                $("#msgProjectPeriodHS").css('display', 'none');
+            }
+        });
 
         <?php
             if ($this->nb_lignes != ''){
@@ -407,10 +419,18 @@
                             } elseif (0 === (int)$this->projects->period ||
                                 1000000 === (int)$this->projects->period ||
                                 '' == $this->companies_details->fichier_rib) {
-                                echo "Pr&eacute;p Funding";
+                            ?>
+                                <span>
+                                    Pr&eacute;p Funding
+                                    <input type="hidden" name="status" id="status" value="<?= $this->current_projects_status->status ?>" />
+                                </span>
+                            <?php
                             } else {
                                 if (count($this->lProjects_status) > 0) {
-                                    ?>
+                            ?>
+                                    <span id="displayPeriodHS" style="display:none;">
+                                        Pr&eacute;p Funding
+                                    </span>
                                     <select name="status" id="status" class="select" <?= ($this->current_projects_status->status == 130 ? '"disabled"' : "") ?>>
                                         <?php
                                         foreach ($this->lProjects_status as $s) {
@@ -446,7 +466,8 @@
                                     <?php
                                 } else {
                                     ?>
-                                    Vous devez changer le statut du projet pour ajouter une date de publication et de retrait
+                                <span id="msgProject">Vous devez changer le statut du projet pour ajouter une date de publication et de retrait</span>
+                                <span id="msgProjectPeriodHS" style="display:none;">V&eacute;rifiez la dur&eacute;e du pr&ecirc;t et le rib avant de pouvoir changer de statut</span>
                                     <?php
                                 }
                                 ?>
