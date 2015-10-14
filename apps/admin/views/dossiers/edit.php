@@ -827,7 +827,11 @@
         }
         ?>
     </div>
+    <br>
+    <br>
     <hr style="border: 2px solid #B10366;">
+    <br>
+    <br>
     <h2>Email</h2>
 
     <div id="tab_email">
@@ -1384,6 +1388,26 @@
                         <?php
                     }
                     ?>
+                    <br/><br/>
+                    <table class="form" style="width: 100%;">
+                        <tr>
+                            <th><label for="ca_declara_client">Chiffe d'affaires declaré par client</label></th>
+                            <td>
+                                <input type="text" name="ca_declara_client" id="ca_declara_client" class="input_moy" value="<?=$this->projects->ca_declara_client?>"/>
+                            </td>
+                            <th><label for="resultat_exploitation_declara_client">Résultat d'exploitation declaré par client</label></th>
+                            <td>
+                                <input type="text" name="resultat_exploitation_declara_client" id="resultat_exploitation_declara_client" class="input_moy" value="<?=$this->projects->resultat_exploitation_declara_client?>"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th><label for="fonds_propres_declara_client">Fonds propres declarés par client</label></th>
+                            <td>
+                                <input type="text" name="fonds_propres_declara_client" id="fonds_propres_declara_client" class="input_moy" value="<?=$this->projects->fonds_propres_declara_client?>"/>
+                            </td>
+                        </tr>
+
+                    </table>
                     <br/><br/>
 
                     <table class="form" style="width: 100%;">

@@ -874,6 +874,12 @@ class ajaxController extends bootstrap
                 // On recup le projet
                 $this->projects->get($_POST['id_project'], 'id_project');
 
+                $this->projects->ca_declara_client                    = $_POST['ca_declara_client'];
+                $this->projects->resultat_exploitation_declara_client = $_POST['resultat_exploitation_declara_client'];
+                $this->projects->fonds_propres_declara_client         = $_POST['fonds_propres_declara_client'];
+
+                $this->projects->update();
+
                 // On recup le detail de l'entreprise
                 $this->companies_details->get($this->projects->id_company, 'id_company');
 

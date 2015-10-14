@@ -763,6 +763,10 @@ function valid_etape4(id_project)
 		jour_etape4: $("#jour_etape4").val(),
 		mois_etape4: $("#mois_etape4").val(),
 		annee_etape4: $("#annee_etape4").val(),
+		ca_declara_client: $("#ca_declara_client").val(),
+		resultat_exploitation_declara_client: $("#resultat_exploitation_declara_client").val(),
+		fonds_propres_declara_client: $("#fonds_propres_declara_client").val(),
+
 		encours_actuel_dette_fianciere: $("#encours_actuel_dette_fianciere").val(),
 		remb_a_venir_cette_annee: $("#remb_a_venir_cette_annee").val(),
 		remb_a_venir_annee_prochaine: $("#remb_a_venir_annee_prochaine").val(),
