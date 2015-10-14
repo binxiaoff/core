@@ -387,7 +387,7 @@ class depot_de_dossierController extends bootstrap
             $_SESSION['forms']['depot-de-dossier-2']['errors']['bilans'] = true;
         }
 
-        if (empty($_POST['duree']) || $_POST['duree'] != (int) $_POST['duree']) {
+        if (empty($_POST['duree']) || false === in_array($_POST['duree'], $this->dureePossible)) {
             $_SESSION['forms']['depot-de-dossier-2']['errors']['duree'] = true;
         }
 
@@ -400,8 +400,14 @@ class depot_de_dossierController extends bootstrap
             die;
         }
 
+        /**
+         * @todo en attente d'éclaircissement sur le fonctionnement des prescripteurs
+         * Quelles sont les données enregistrées dans le client owner de la company si prescripteur ?
+         * Comment cela se passe-t-il si le client est déjà connecté (prêteur/emprunteur) au moment du dépôt de dossier ?
+         */
         $bForm_ok = true;
 
+        /*
         $this->clients->civilite = $_POST['sex_representative'];
         $this->clients->nom      = $_POST['nom_representative'];
         $this->clients->prenom   = $_POST['prenom_representative'];
@@ -424,25 +430,16 @@ class depot_de_dossierController extends bootstrap
                 $bForm_ok = false;
             }
         }
+        */
 
-        if (isset($_POST['comments']) && $_POST['comments'] != $this->lng['etape2']['toutes-informations-utiles']) {
-            $this->projects_comments = $_POST['comments'];
-        } else {
-            $this->projects_comments = '';
-        }
-
-        // if there is the question about 3 bilans, it needs to be answered
-        if (isset($_POST['trois_bilans'])) {
-            if (! isset($_POST['comptables']) || $_POST['comptables'] == '') {
-                $bForm_ok = false;
-            }
-        }
-
-        if (! isset($_POST['duree']) || $_POST['duree'] == 0 || in_array($_POST['duree'], $this->dureePossible) == false) {
-            $bForm_ok = false;
+        if ($this->bAnnualAccountsQuestion && (false === isset($_POST['comptables']) || empty($_POST['comptables']))) {
+            $this->projects_status_history->addStatus(-2, projects_status::PAS_3_BILANS, $this->projects->id_project);
+            header('Location: ' . $this->lurl . '/depot_de_dossier/nok/' . $this->projects->hash);
+            die;
         }
 
         if ($bForm_ok) {
+            /*
             $this->projects->period = $_POST['duree'];
 
             // only gerant needs to accept CGU, not the prescripteur
@@ -463,19 +460,11 @@ class depot_de_dossierController extends bootstrap
                 // -- fin partie cgu -- //
             }
 
-            if ($this->bAnnualAccountsQuestion && (false === isset($_POST['comptables']) || empty($_POST['comptables']))) {
-                $this->projects_status_history->addStatus(-2, projects_status::PAS_3_BILANS, $this->projects->id_project);
-                header('Location: ' . $this->lurl . '/depot_de_dossier/nok/' . $this->projects->hash);
-                die;
-            }
-
             $this->clients->id_langue = 'fr';
             $this->clients->slug      = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
 
             // l'email facture est la meme que l'email client a la creation
             $this->companies->email_facture = $this->clients->email;
-
-            $this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_2, $this->projects->id_project);
 
             //used in bootstrap and ajax depot de dossier
             $this->clients->status_transition = 1;
@@ -486,16 +475,12 @@ class depot_de_dossierController extends bootstrap
             $this->projects->update();
             $this->prescripteurs->update();
 
-            // todo change person recieving the email from client or prescripteur if there is one
+            // @todo change person recieving the email from client or prescripteur if there is one
 
-            // if 3 bilans are ok, we send the email, otherwise redirect to "not eligible page" but all data is saved. No email is sent.
-            //**********************************************//
-            //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION ***//
-            //**********************************************//
+            // ENVOI DU MAIL CONFIRMATION INSCRIPTION
             // Recuperation du modele de mail
             $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
 
-            // Variables du mailing
             $surl  = $this->surl;
             $url   = $this->lurl;
             $login = $this->clients->email;
@@ -507,7 +492,6 @@ class depot_de_dossierController extends bootstrap
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
-            // Variables du mailing
             $varMail = array(
                 'surl'     => $surl,
                 'url'      => $url,
@@ -516,34 +500,26 @@ class depot_de_dossierController extends bootstrap
                 'lien_tw'  => $lien_tw
             );
 
-            // Construction du tableau avec les balises EMV
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-            // Attribution des données aux variables
             $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-            // Envoi du mail
             $this->email = $this->loadLib('email', array());
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->setSubject(stripslashes($sujetMail));
             $this->email->setHTMLBody(stripslashes($texteMail));
 
-            if ($this->Config['env'] == 'prod') // nmp
-            {
+            if ($this->Config['env'] == 'prod') {
                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                // Injection du mail NMP dans la queue
                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-            } else // non nmp
-            {
+            } else {
                 $this->email->addRecipient(trim($this->clients->email));
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
-            // fin mail
-            //**********************************************//
-            //*** ENVOI DU MAIL NOTIFICATION INSCRIPTION ***//
-            //**********************************************//
+
+            // ENVOI DU MAIL NOTIFICATION INSCRIPTION
             // destinataire
             $this->settings->get('Adresse notification inscription emprunteur', 'type');
             $destinataire = $this->settings->value;
@@ -551,14 +527,12 @@ class depot_de_dossierController extends bootstrap
             // Recuperation du modele de mail
             $this->mails_text->get('notification-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
 
-            // Variables du mailing
             $surl         = $this->surl;
             $url          = $this->lurl;
             $nom_societe  = utf8_decode($this->companies->name);
             $montant_pret = $this->projects->amount;
             $lien         = $this->aurl . '/emprunteurs/edit/' . $this->clients->id_client;
 
-            // Attribution des données aux variables
             $sujetMail = htmlentities($this->mails_text->subject);
             eval("\$sujetMail = \"$sujetMail\";");
 
@@ -568,7 +542,6 @@ class depot_de_dossierController extends bootstrap
             $exp_name = $this->mails_text->exp_name;
             eval("\$exp_name = \"$exp_name\";");
 
-            // Nettoyage de printemps
             $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
             $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
@@ -579,6 +552,10 @@ class depot_de_dossierController extends bootstrap
             $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
             $this->email->setHTMLBody($texteMail);
             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            */
+
+            $this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_3, $this->projects->id_project);
+
             header('Location: ' . $this->lurl . '/depot_de_dossier/etape3/' . $this->projects->hash);
             die;
         }
@@ -594,33 +571,26 @@ class depot_de_dossierController extends bootstrap
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-3'];
         $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-etape-3'];
 
-        //Calcul de la mensualite en tenant compte du montant/ duree / taux min et taux max et frais
+        $this->financial = $this->loadLib('financial');
 
-        $this->financialClass = $this->loadLib('financial');
         $this->settings->get('Tri par taux intervalles', 'type');
-        $sTauxIntervalles = $this->settings->value;
+        $aRatesIntervals      = explode(';', $this->settings->value);
+        $aMinimumRateInterval = explode('-', $aRatesIntervals[0]);
+        $aMaximumRateInterval = explode('-', end($aRatesIntervals));
 
-        $iMontant = $this->projects->amount;
-        $iDuree   = $this->projects->period;
+        $this->settings->get('TVA', 'type');
+        $fVATRate = (float) $this->settings->value;
 
-        $iTauxMax = (substr($sTauxIntervalles, -2) / 100);
-        $iTauxMin = (substr($sTauxIntervalles, 0, 1) / 100);
-        $iTauxCom = 0.01;
-        $iTva     = 0.02;
+        $this->settings->get('Commission remboursement', 'type');
+        $fCommissionAmount = $this->financial->PMT($this->settings->value / 12, $this->projects->period, - $this->projects->amount) - $this->financial->PMT(0, $this->projects->period, - $this->projects->amount);
 
-        $iMensualite_min = $this->financialClass->PMT(($iTauxMin / 12), $iDuree, ($iMontant * -1));
-        $iMensualite_max = $this->financialClass->PMT(($iTauxMax / 12), $iDuree, ($iMontant * -1));
-        $iCommission     = ($this->financialClass->PMT(($iTauxCom / 12), $iDuree, ($iMontant * -1))) - ($this->financialClass->PMT(0, $iDuree, ($iMontant * -1)));
-
-        $this->mensualite_min_ttc = round($iMensualite_min + $iCommission * (1 + $iTva));
-        $this->mensualite_max_ttc = round($iMensualite_max + $iCommission * (1 + $iTva));
-
+        $this->iMinimumMonthlyPayment = round($this->financial->PMT($aMinimumRateInterval[0] / 12, $this->projects->period, - $this->projects->amount) + $fCommissionAmount * (1 + $fVATRate));
+        $this->iMaximumMonthlyPayment = round($this->financial->PMT($aMaximumRateInterval[1] / 12, $this->projects->period, - $this->projects->amount) + $fCommissionAmount * (1 + $fVATRate));
 
         //year considered for "latest liasse fiscal" necessary to get the information from Bilan and actif_passif
-        $iYear = (date('Y', time()) - 1);
-
-        $aCompaniesBilan         = $this->companies_bilans->select('id_company = ' . $this->companies->id_company . ' AND date = ' . $iYear);
-        $aCompanies_actif_passif = $this->companies_actif_passif->select('id_company = ' . $this->companies->id_company . ' AND annee = ' . $iYear);
+        $iLastAnnualAccountsYear = date('Y') - 1;
+        $aCompaniesBilan         = $this->companies_bilans->select('id_company = ' . $this->companies->id_company . ' AND date = ' . $iLastAnnualAccountsYear);
+        $aCompanies_actif_passif = $this->companies_actif_passif->select('id_company = ' . $this->companies->id_company . ' AND annee = ' . $iLastAnnualAccountsYear);
 
         $this->iRex          = $aCompaniesBilan[0]['resultat_exploitation'];
         $this->iCa           = $aCompaniesBilan[0]['ca'];
