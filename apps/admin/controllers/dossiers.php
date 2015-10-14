@@ -607,6 +607,7 @@ class dossiersController extends bootstrap
                     $this->projects->id_analyste    = $_POST['analyste'];
                     $this->projects->lien_video     = $_POST['lien_video'];
                     $this->projects->display        = $_POST['display_project'];
+                    $this->projects->stop_relances  = $_POST['stop_relances'];
 
                     // en prep funding
                     if ($this->current_projects_status->status >= 35) {
@@ -1866,6 +1867,7 @@ class dossiersController extends bootstrap
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
+        $this->autoFireView   = false;
         $this->autoFireDebug  = false;
 
         $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
@@ -1881,6 +1883,33 @@ class dossiersController extends bootstrap
         }
 
         echo json_encode($aResult);
+    }
+
+    /**
+     *
+     */
+    public function _tab_email()
+    {
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireView   = false;
+        $this->autoFireDebug  = false;
+
+        $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+        $sResult = 'nok';
+
+        if (isset($_POST['project_id']) && isset($_POST['flag'])) {
+            $this->projects = $this->loadData('projects');
+            if ($this->projects->get($_POST['project_id'], 'id_project')) {
+                $this->projects->stop_relances = $_POST['flag'];
+                $this->projects->update();
+                $sResult = 'ok';
+            }
+        }
+
+        echo $sResult;
     }
 
     public function _add()

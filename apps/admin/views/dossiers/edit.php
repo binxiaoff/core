@@ -827,6 +827,27 @@
         }
         ?>
     </div>
+    <br>
+    <br>
+    <hr style="border: 2px solid #B10366;">
+    <br>
+    <br>
+    <h2>Email</h2>
+
+    <div id="tab_email">
+        <div id="edit_projects_tab_email">
+            <input type="checkbox" name="stop_relances" id="stop_relances" value="1" <?= $this->projects->stop_relances == 1 ? 'checked':'' ?>/> <label for="stop_relances">Arrêt des relances</label>
+            <div class="btnDroite">
+                <a href="#" class="btn_link" id="save_projects_tab_email" data-project-id="<?=$this->projects->id_project?>">Sauvegarder</a>
+            </div>
+        </div><br />
+        <div id="tab_email_msg">Données sauvegardées</div>
+        <br />
+        <div id="send_cgv">
+            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>/altares" class="btn_link">Envoi des CGV</a>
+        </div>
+
+    </div>
 
     <style type="text/css">
         #etape1, #etape2, #etape3, #etape4, #etape5, #etape6, #etape7 {
@@ -845,7 +866,7 @@
             font-weight: bold;
         }
 
-        #valid_etape1, #valid_etape2, #valid_etape3, #valid_etape4, #valid_etape5, #valid_etape6, #valid_etape7 {
+        #tab_email_msg, #valid_etape1, #valid_etape2, #valid_etape3, #valid_etape4, #valid_etape5, #valid_etape6, #valid_etape7 {
             display: none;
             text-align: center;
             font-size: 16px;
@@ -1367,6 +1388,26 @@
                         <?php
                     }
                     ?>
+                    <br/><br/>
+                    <table class="form" style="width: 100%;">
+                        <tr>
+                            <th><label for="ca_declara_client">Chiffe d'affaires declaré par client</label></th>
+                            <td>
+                                <input type="text" name="ca_declara_client" id="ca_declara_client" class="input_moy" value="<?=$this->projects->ca_declara_client?>"/>
+                            </td>
+                            <th><label for="resultat_exploitation_declara_client">Résultat d'exploitation declaré par client</label></th>
+                            <td>
+                                <input type="text" name="resultat_exploitation_declara_client" id="resultat_exploitation_declara_client" class="input_moy" value="<?=$this->projects->resultat_exploitation_declara_client?>"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th><label for="fonds_propres_declara_client">Fonds propres declarés par client</label></th>
+                            <td>
+                                <input type="text" name="fonds_propres_declara_client" id="fonds_propres_declara_client" class="input_moy" value="<?=$this->projects->fonds_propres_declara_client?>"/>
+                            </td>
+                        </tr>
+
+                    </table>
                     <br/><br/>
 
                     <table class="form" style="width: 100%;">
@@ -2401,6 +2442,7 @@
                             }
 
                         });
+                        $("#valid_etape5").slideDown();
                         setTimeout(function () {
                             $("#valid_etape5").slideUp();
                         }, 4000);
@@ -2410,5 +2452,36 @@
                 }
             });
         }
+    });
+
+    $('#save_projects_tab_email').click(function(e){
+        e.preventDefault();
+        var iProjectId =$(this).data('project-id');
+        var iFlag = 0;
+        if ($('#stop_relances').is(':checked')) {
+            iFlag = 1;
+        }
+
+        $.ajax({
+            url: "<?=$this->lurl?>/dossiers/tab_email",
+            type: 'POST',
+            data: {
+                project_id: iProjectId,
+                flag: iFlag
+            },
+            error: function() {
+                alert('An error has occurred');
+            },
+            success: function(data) {
+                if('ok' == data) {
+                    $("#tab_email_msg").slideDown();
+                    setTimeout(function () {
+                        $("#tab_email_msg").slideUp();
+                    }, 4000);
+                } else {
+                    alert('An error has occurred');
+                }
+            }
+        });
     });
 </script>
