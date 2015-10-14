@@ -454,7 +454,7 @@
                             if ($this->current_projects_status->status == 130) {
                                 echo "Remboursement anticipé";
                             } else {
-                                if (count($this->lProjects_status) > 0) {
+                                if (count($this->lProjects_status) > 0 && true === $this->bCanEditStatus) {
                                     ?>
                                     <select name="status" id="status" class="select" <?= ($this->current_projects_status->status == 130 ? '"disabled"' : "") ?>>
                                         <?php

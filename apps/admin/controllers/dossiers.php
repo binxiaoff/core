@@ -318,6 +318,14 @@ class dossiersController extends bootstrap
             $this->projects_status->getLastStatut($this->projects->id_project);
             $this->lProjects_status = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
 
+            $this->bCanEditStatus = false;
+            if ($this->users->get($_SESSION['user']['id_user'], 'id_user')) {
+                $this->loadData('users_types');
+                if (in_array($this->users->id_user_type, array(users_types::TYPE_ADMIN, users_types::TYPE_ANALYSTE, users_types::TYPE_COMMERCIAL))) {
+                    $this->bCanEditStatus = true;
+                }
+            }
+
             //Attachment List
             $this->attachment_type = $this->loadData('attachment_type');
             $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects();
