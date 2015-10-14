@@ -168,7 +168,7 @@ class statsController extends bootstrap
 	
 	// Ressort un csv avec les process des users
 	function _etape_inscription()
-	{		
+	{
 		// Récup des dates
 		if($_POST['date1'] != '')
 		{
@@ -177,31 +177,58 @@ class statsController extends bootstrap
 		}
 		else
 		{
-			$_POST['date1'] = date('d/m/Y'); //"01/08/2014";
-			$date1 = date("Y-m-d H:i:s"); //"2014-08-01 00:00:00";
-		}	
-		
+			$_POST['date1'] = date('d/m/Y',strtotime('first day of this month')) ; //"01/08/2014";
+			$date1 = date('Y-m-d',strtotime('first day of this month')) ; //"2014-08-01";
+
+		}
+
 		if($_POST['date2'] != '')
 		{
 			$d2 = explode('/',$_POST['date2']);
 			$date2 = $d2[2].'-'.$d2[1].'-'.$d2[0];
 		}
 		else
-		{			
+		{
 			$_POST['date2'] =  date('d/m/Y',strtotime('last day of this month')); //"31/08/2014";
-			$date2 = date('Y-m-d H:i:s',strtotime('last day of this month')); //"2014-08-31 00:00:00";
+			$date2 = date('Y-m-d',strtotime('last day of this month')); //"2014-08-31";
+
 		}
-	
+
 		// récup de tous les clients crée depuis le 1 aout
-		$this->clients = $this->loadData('clients');
-		$this->L_clients = $this->clients->select('etape_inscription_preteur > 0 AND status = 1 AND added > "'.$date1.'" AND added < "'.$date2.'"');
-		
+		$sql = 'SELECT
+						c.id_client,
+						c.nom,
+						c.prenom,
+						c.email,
+						c.telephone,
+						c.added,
+							IF (
+								c.etape_inscription_preteur = 3,
+								IF (
+									la.type_transfert = 1, "3. Virement","3. CB"),
+									c.etape_inscription_preteur
+									) as etape_inscription_preteur2,
+						c.source,
+						c.source2,
+						c.source3
+							FROM clients c
+							LEFT JOIN lenders_accounts la ON (la.id_client_owner = c.id_client)
+							WHERE c.etape_inscription_preteur > 0 AND c.status = 1 AND c.added >= "'.$date1.' 00:00:00'.'" AND c.added <= "'.$date2.' 23:59:59";';
+
+		$result= $this->bdd->query($sql);
+
+		$this->L_clients = array();
+		while ($record = $this->bdd->fetch_assoc($result)) {
+			$this->L_clients[] = $record;
+		}
+
+
 		// Le post est simplement le clic sur un bouton
 		if(isset($_POST['recup'])){
-			
-			header("Content-type: application/vnd.ms-excel"); 
+
+			header("Content-type: application/vnd.ms-excel");
 			header("Content-disposition: attachment; filename=\"Export_etape_inscription.csv\"");
-			
+
 			// Récup des dates
 			if($_POST['spy_date1'] != '')
 			{
@@ -210,9 +237,9 @@ class statsController extends bootstrap
 			}
 			else
 			{
-				$date1 = date("Y-m-d H:i:s"); //"2014-08-01 00:00:00";
-			}	
-			
+				$date1 = date('Y-m-d',strtotime('first day of this month')) ; //"2014-08-01";
+			}
+
 			if($_POST['spy_date2'] != '')
 			{
 				$d2 = explode('/',$_POST['spy_date2']);
@@ -220,45 +247,46 @@ class statsController extends bootstrap
 			}
 			else
 			{
-				$date2 = date('Y-m-d H:i:s',strtotime('last day of this month')); //"2014-08-31 00:00:00";
+				$date2 = date('Y-m-d',strtotime('last day of this month')); //"2014-08-31";
 			}
-	
-			$this->L_clients = $this->clients->select('etape_inscription_preteur > 0 AND status = 1 AND added > "'.$date1.'" AND added < "'.$date2.'"');
-		
-			
-			
+
+			$sql = 'SELECT
+						c.id_client,
+						c.nom,
+						c.prenom,
+						c.email,
+						c.telephone,
+						c.added,
+							IF (
+								c.etape_inscription_preteur = 3,
+								IF (
+									la.type_transfert = 1, "3. Virement","3. CB"),
+									c.etape_inscription_preteur
+									) as etape_inscription_preteur2,
+						c.source,
+						c.source2,
+						c.source3
+							FROM clients c
+							LEFT JOIN lenders_accounts la ON (la.id_client_owner = c.id_client)
+							WHERE c.etape_inscription_preteur > 0 AND c.status = 1 AND c.added >= "'.$date1.' 00:00:00'.'" AND c.added <= "'.$date2.' 23:59:59";';
+
+			$result= $this->bdd->query($sql);
+
+			$this->L_clients = array();
+			while ($record = $this->bdd->fetch_assoc($result)) {
+				$this->L_clients[] = $record;
+			}
+
 			$csv = "id_client;nom;prenom;email;tel;date_inscription;etape_inscription;Source;Source 2; Source 3\n";
 			// construction de chaque ligne 
 			foreach($this->L_clients as $u)
-			{ 
-				if($u['etape_inscription_preteur'] == 3)
-				{
-					// On va récupérer le type de paiement
-					$this->lenders_accounts = $this->loadData('lenders_accounts');
-					$this->lenders_accounts->get($u['id_client'],'id_client_owner');
-					
-					if($this->lenders_accounts->type_transfert == 1)
-					{
-						$type = "Virement";
-					}
-					else
-					{
-						$type = "CB";
-					}
-					
-					$etape =  "3 - ".$type;
-				}
-				else
-				{
-					$etape = $u['etape_inscription_preteur'];
-				}
-			
+			{
 				// on concatene a $csv 
-				$csv .= utf8_decode($u['id_client']).';'.utf8_decode($u['nom']).';'.utf8_decode($u['prenom']).';'.utf8_decode($u['email']).';'.utf8_decode($u['telephone'].' '.$u['mobile']).';'.utf8_decode($this->dates->formatDate($u['added'],'d/m/Y')).';'.utf8_decode($etape).';'.$u['source'].';'.$u['source2'].';'.$u['slug_origine']."\n"; // le \n final entre " " 
-			} 
-			
-			print($csv); 
-			exit; 
+				$csv .= utf8_decode($u['id_client']).';'.utf8_decode($u['nom']).';'.utf8_decode($u['prenom']).';'.utf8_decode($u['email']).';'.utf8_decode($u['telephone'].' '.$u['mobile']).';'.utf8_decode($this->dates->formatDate($u['added'],'d/m/Y')).';'.utf8_decode($u['etape_inscription_preteur2']).';'.$u['source'].';'.$u['source2'].';'.$u['slug_origine']."\n"; // le \n final entre " "
+			}
+
+			print($csv);
+			exit;
 		}
 	}
 	
@@ -527,7 +555,7 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 		
 		/*$header = "id_project; name; source; title; added; status; altares_scoreVingt; risk; amount; period; ca2011; ca2012; ca2013; rbe2011; rbe2012; rbe2013; rex2011; rex2012; rex2013; invest2011; invest2012; invest2013; immocorp2011; immocorp2012; immocorp2013; immoincorp2011; immoincorp2012; immoincorp2013; immofin2011; immofin2012; immofin2013; stock2011; stock2012; stock2013; creances2011; creances2012; creances2013; dispo2011; dispo2012; dispo2013; valeursmob2011; valeursmob2012; valeursmob2013; cp2011; cp2012; cp2013; provisions2011; provisions2012; provisions2013; ammort2011; ammort2012; ammort2013; dettesfin2011; dettesfin2012; dettesfin2013; dettesfour2011; dettesfour2012; dettesfour2013; autresdettes2011; autresdettes2012; autresdettes2013; forme; date_creation;";
 		$header = utf8_encode($header);
-		
+
 		$csv = "";
 		$csv .= $header." \n";*/
 		$i = 1;
@@ -664,9 +692,13 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 					$csv .= " \n";
 				}
 				
-				foreach($e as $key=>$field)
-				if(!is_numeric($key))
-				$csv .= $field."; ";
+				foreach($e as $key=>$field){
+					if(!is_numeric($key)){
+						if ($key == 'Adresse') 
+							$field = preg_replace('~[\r\n\t]+~', '', $field);
+						$csv .= $field."; ";
+					}
+				}
 				$csv .= " \n";
 			$i++;
 			}
@@ -1464,8 +1496,8 @@ FROM projects p join companies c on c.id_company = p.id_company where id_project
 		$csv .= $header." \n";
 		
 
-		$annee = '2014';
-		$date = '31/12/2014';
+		$annee = '2015';
+		$date = '31/12/2015';
 			
 		/*$sql = '
 		SELECT 

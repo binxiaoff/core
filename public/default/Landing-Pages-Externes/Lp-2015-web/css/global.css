@@ -100,7 +100,7 @@
 #simulez_vos_interets > .wrapper > #pret > div#pret_left > div + div > .c2-sb-wrap > .c2-sb-inner-wrap > .c2-sb-button > i { vertical-align: middle; text-align: center; border: none; display: inline-block; background: url(../img/select.png) no-repeat 0 0; width: 18px; height: 11px; }
 #simulez_vos_interets > .wrapper > #pret > div#pret_left > div + div > .c2-sb-wrap > .c2-sb-list-wrap { background: #ffffff; border: 1px solid #dbdbdb; border-top: none; padding-right: 2px; }
 #simulez_vos_interets > .wrapper > #pret > div#pret_left > div + div > .c2-sb-wrap > .c2-sb-list-wrap .c2-sb-list-item-link { font-style: normal; color: #727272; }
-#simulez_vos_interets > .wrapper > #pret > div#pret_right { height: 130px; float: left; background: #dbdbdb; padding: 8px 11px 11px 11px; width: 230px; text-align: center; }
+#simulez_vos_interets > .wrapper > #pret > div#pret_right { height: 130px; float: left; background: #dbdbdb; padding: 8px 11px 11px 11px; width: 280px; text-align: center; }
 #simulez_vos_interets > .wrapper > #pret > div#pret_right > #dc_slider-step { margin: 21px 5px; padding: 0 28px 0 22px; -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; }
 #simulez_vos_interets > .wrapper > #pret > div#pret_right > #dc_slider-step > div > div { -webkit-border-radius: 10px; -moz-border-radius: 10px; border-radius: 10px; }
 #simulez_vos_interets > .wrapper > #pret > div#pret_right > ul { margin-left: 4px; }

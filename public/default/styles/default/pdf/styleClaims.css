@@ -1,0 +1,157 @@
+.img{
+    background-image:url(../../../images/default/declaration_de_creances.jpg);
+    background-repeat: no-repeat;
+    background-size: 960px auto;
+    width:960px;
+    height: 1285px;
+    margin:auto;
+    text-align:left;
+    font-size: 16px;
+}
+
+.creancier{
+    float: left;
+    height: 174px;
+    left: 40px;
+    position: relative;
+    top: 193px;
+    width: 408px;
+    padding: 5px 5px 5px 11px;
+}
+
+.mandataire_du_creancier{
+    float: right;
+    height: 174px;
+    right: 47px;
+    position: relative;
+    top: 193px;
+    width: 408px;
+    padding: 5px 5px 5px 11px;
+}
+
+.debiteur{
+    float: left;
+    height: 174px;
+    left: 40px;
+    position: relative;
+    top: 275px;
+    width: 408px;
+    padding: 5px 5px 5px 11px;
+}
+
+.procedure{
+    float: right;
+    height: 174px;
+    right: 47px;
+    position: relative;
+    top: 305px;
+    width: 408px;
+    padding: 5px 5px 5px 11px;
+}
+
+.creance_declaree{
+    height: 188px;
+    left: 40px;
+    position: relative;
+    top: 408px;
+    width: 873px;
+}
+
+.case1{
+    float:left;
+    height: 51px;
+    left: 143px;
+    padding: 5px;
+    position: relative;
+    width: 231px;
+    text-align:right;
+}
+.case2{
+    float:left;
+    height: 51px;
+    left: 143px;
+    padding: 5px;
+    position: relative;
+    width: 232px;
+}
+.case3{
+    float: right;
+    height: 179px;
+    padding: 5px;
+    position: relative;
+    right: 0;
+    width: 235px;
+}
+.case4{
+    float:left;
+    height: 51px;
+    left: 143px;
+    padding: 5px;
+    position: relative;
+    width: 231px;
+    top: 2px;
+    text-align:right;
+}
+.case5{
+    float:left;
+    height: 51px;
+    left: 143px;
+    padding: 5px;
+    position: relative;
+    width: 232px;
+    top: 2px;
+}
+.case6{
+    float:left;
+    height: 51px;
+    left: 143px;
+    padding: 5px;
+    position: relative;
+    width: 231px;
+    top: 5px;
+    text-align:right;
+}
+.case7{
+    float:left;
+    height: 51px;
+    left: 143px;
+    padding: 5px;
+    position: relative;
+    width: 232px;
+    top: 5px;
+}
+
+.fait_a{
+    float:left;
+    height: 33px;
+    left: 90px;
+    position: relative;
+    top: 430px;
+    width: 185px;
+}
+
+.fait_le{
+    float: right;
+    height: 33px;
+    position: relative;
+    right: 492px;
+    top: 430px;
+    width: 163px;
+}
+
+.signataire{
+    height: 39px;
+    left: 245px;
+    position: relative;
+    top: 478px;
+    width: 227px;
+}
+
+.montant_total{
+    height: 20px;
+    left: 90px;
+    position: relative;
+    text-align: right;
+    top: 528px;
+    width: 227px;
+}

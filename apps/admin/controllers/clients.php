@@ -18,7 +18,7 @@ class clientsController extends bootstrap
 			die;
 		}
 		
-		// Controle d'acces à la rubrique
+		// Controle d'acces ï¿½ la rubrique
 		$this->users->checkAccess('clients');
 		
 		// Activation du menu
@@ -176,7 +176,7 @@ class clientsController extends bootstrap
 			// Recuperation des infos du groupe
 			$this->groupes->get($this->params[1],'id_groupe');
 			
-			// Suppression des associaitons de clients de ce groupe (ca veut rien dire mais je le dit quand même)
+			// Suppression des associaitons de clients de ce groupe (ca veut rien dire mais je le dit quand mï¿½me)
 			$this->clients_groupes->delete(array('id_groupe'=>$this->groupes->id_groupe));
 			
 			// Suppression du groupe
@@ -208,7 +208,7 @@ class clientsController extends bootstrap
 		// Suppression d'un client
 		if(isset($this->params[1]) && $this->params[1] == 'delete')
 		{
-			// Suppression des associaitons de clients de ce groupe (ca veut rien dire mais je le dit quand même)
+			// Suppression des associaitons de clients de ce groupe (ca veut rien dire mais je le dit quand mï¿½me)
 			$this->clients_groupes->delete(array('id_groupe'=>$this->params[0],'id_client'=>$this->params[2]));
 			
 			// Mise en session du message
@@ -300,7 +300,7 @@ class clientsController extends bootstrap
 				$email = trim($_POST['email']);
 				$password = $this->new_password;
 				
-				// Attribution des données aux variables
+				// Attribution des donnï¿½es aux variables
 				$sujetMail = $this->mails_text->subject;
 				eval("\$sujetMail = \"$sujetMail\";");
 				
@@ -311,14 +311,13 @@ class clientsController extends bootstrap
 				eval("\$exp_name = \"$exp_name\";");
 				
 				// Nettoyage de printemps
-				$sujetMail = strtr($sujetMail,'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-				$exp_name = strtr($exp_name,'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
+				$sujetMail = strtr($sujetMail,'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
+				$exp_name = strtr($exp_name,'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 				
 				// Envoi du mail
 				$this->email = $this->loadLib('email',array());
 				$this->email->setFrom($this->mails_text->exp_email,$exp_name);
 				$this->email->addRecipient(trim($_POST['email']));
-				$this->email->addBCCRecipient('j.dehais@equinoa.fr');
 				$this->email->setSubject('=?UTF-8?B?'.base64_encode($sujetMail).'?=');
 				$this->email->setHTMLBody($texteMail);
 				Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);

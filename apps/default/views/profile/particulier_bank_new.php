@@ -79,7 +79,7 @@
             </label>
 
             <div class="uploader">
-                <input id="txt_rib" type="text" class="field required <?=($this->error_rib==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->lenders_accounts->fichier_rib!= ''?$this->lenders_accounts->fichier_rib:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
+                <input id="txt_rib" type="text" class="field required <?=($this->error_rib==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::RIB]["path"]!= ''?$this->attachments[attachment_type::RIB]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
 
                 <div class="file-holder">
                     <span class="btn btn-small">

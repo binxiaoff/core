@@ -27,11 +27,9 @@
 							<input type="text" name="montant" id="montant" title="<?=$this->lng['etape1']['montant']?>" value="<?=$this->lng['etape1']['montant']?>" class="field field-large required euro-field" data-validators="Presence&amp;Numericality, { maximum:<?=$this->sommeMax?> }&amp;Numericality, { minimum:<?=$this->sommeMin?> }" onkeyup="lisibilite_nombre(this.value,this.id);">
 							<select name="duree" id="duree" class="field field-large required custom-select">
                                 <option value="0"><?=$this->lng['etape1']['duree']?></option>
-                               
-                                <option value="24">24 mois</option>
-                                <option value="36">36 mois</option>
-                                <option value="48">48 mois</option>
-                                <option value="60">60 mois</option>
+								<?foreach($this->dureePossible as $duree):?>
+									<option value="<?=$duree?>"><?=$duree?> mois</option>
+								<?endforeach?>
                             </select>
 							<span class="field-caption"><?=$this->lng['etape1']['maximum']?></span>
 

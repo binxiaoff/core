@@ -1,8 +1,10 @@
+# Mac
+.DS_Store
+
+# NetBeans
 nbproject/*
 !nbproject/project.properties
 !nbproject/project.xml
-
-### NetBeans ###
 build/
 nbbuild/
 dist/
@@ -20,13 +22,22 @@ tmp/
 public/admin/.htaccess
 public/default/var
 public/default/.htaccess
+public/default/Landing-Pages-Externes/
 config.php
 data/crud/*
+route.php
+*.rej
 
+# PHPStorm
+.idea/
 
+# Vagrant
+/vagrant/.vagrant/
 
-#sauf
+# Composer
+/vendor/
+
+# Exceptions
 !public/default/styles/default/*
 !public/default/scripts/default/*
 !/dev/public/
-/route.php

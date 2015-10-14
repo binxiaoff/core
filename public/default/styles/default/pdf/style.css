@@ -1,23 +1,13 @@
-@font-face {
-    font-family: 'TrendSansOne';
-    src: url('fonts/trendsans-one-webfont.eot');
-    src: url('fonts/trendsans-one-webfont.eot?#iefix') format('embedded-opentype'),
-         url('fonts/trendsans-one-webfont.woff') format('woff'),
-         url('fonts/trendsans-one-webfont.ttf') format('truetype'),
-         url('fonts/trendsans-one-webfont.svg#trend_sansone') format('svg');
-    font-weight: normal;
-    font-style: normal;
-}
-
 * { margin: 0; padding: 0; outline: 0; }
 
 body, html { height: 100%; }
 
 body {
-    font-size: 12px;
+    font-size: 11px;
     line-height: 16px;
-    font-family: 'Calibri', arial, sans-serif;
-    color: #808080;
+    letter-spacing: 1.5px;
+    font-family: 'Calibri', 'Arial', 'Sans-Serif';
+    color: black;
     background: #fff;
     min-width: 960px;
 }
@@ -26,7 +16,26 @@ a { color: #0252aa; text-decoration: none; cursor: pointer; }
 a:hover { text-decoration: underline; }
 a img { border: 0; }
 
-input, textarea, select { font-size: 12px; font-family: arial, sans-serif; }
+.cgu-wrapper { line-height:1.43; font-family:'Arial', 'Sans-Serif'; color:#727272; background:#fff; }
+.cgu-wrapper a { font-size:18px; color:#b10366; text-decoration:none; cursor:pointer; font-weight:bold;}
+.cgu-wrapper .main { padding-bottom:510px; }
+.cgu-wrapper h1 { padding: 0 0 20px 0; }
+.cgu-wrapper p, ul, ol { padding-bottom:1.43em; }
+.cgu-wrapper ul, ol { list-style-position:outside; padding-left:130px; color:#b10366; }
+.cgu-wrapper ul p , ol p { padding:0; color:#a1a5a7; }
+.cgu-wrapper h1 { font-size:36px; }
+.cgu-wrapper h2 { font-size:24px; }
+.cgu-wrapper h3 { font-size:22px; }
+.cgu-wrapper h4 { font-size:20px; }
+.cgu-wrapper h5 { font-size:18px; }
+.cgu-wrapper h6 { font-size:16px; }
+.cgu-wrapper .logo { padding: 0 0 20px 0; }
+.cgu-wrapper .logo { background:url(images/logo.png) no-repeat 0 0; width:252px; height:61px; text-indent:100%; }
+
+
+
+
+input, textarea, select { font-size: 11px; font-family: arial, sans-serif; }
 textarea { overflow: auto; }
 
 .cl { display: block; height: 0; font-size: 0; line-height: 0; text-indent: -4000px; clear: both; }
@@ -34,39 +43,42 @@ textarea { overflow: auto; }
 .left, .alignleft { float: left; display: inline; }
 .right, .alignright { float: right; display: inline; }
 
-.doc-wrapper .shell { width: 630px; margin: 0 auto; padding: 15px 0; }
+.doc-wrapper .shell { width: 70%; margin: 0 auto; padding: 15px 0; }
 .doc-wrapper .logo { padding: 0 0 20px 0; }
+.doc-wrapper .logo { background:url(images/logo.png) no-repeat 0 0; width:252px; height:61px; text-indent:100%; }
 
-.doc-wrapper h3 { padding: 0 0 20px 0; color: #7f7f7f; font-size: 14px; line-height: 16px; text-transform: uppercase; }
+
+.doc-wrapper h3 { padding: 0 0 20px 0; letter-spacing: 0px; color: #7f7f7f; font-size: 12px; line-height: 16px;font-weight: bold; }
 .doc-wrapper h3.sm { text-transform: none; color: #b20066; }
 .doc-wrapper h3 .red-text { display: block; color: #ff0000; text-transform: none; font-weight: normal; }
 .doc-wrapper h3 .red-text-in { color: #ff0000; }
 .doc-wrapper h3.pink { color: #b20066; }
-.doc-wrapper h5 { padding: 0 6px; background: #c0c0c0; font-size: 12px; line-height: 17px; color: #000000; font-weight: normal; }
+.doc-wrapper h5 { padding: 0 6px; background: #c0c0c0; font-size: 11px; line-height: 17px; color: #000000; font-weight: bold;letter-spacing: 1.5px; }
 .doc-wrapper h5 .red-text { color: #ff0000; }
 .doc-wrapper p { padding: 0 0 18px 0; font-size: 13px; line-height: 17px; }
 
 .doc-wrapper .list { padding: 0 6px 20px 6px; }
 .doc-wrapper .list ul { list-style: none outside none; }
-.doc-wrapper .list li { color: #808080; display: block; font-size: 12px; line-height: 20px; }
+.doc-wrapper .list li { color: black; display: block; font-size: 11px; line-height: 20px; }
 .doc-wrapper .list li h5 { position: relative; margin: 0 -6px; }
 .doc-wrapper .list li.bl { color: #000000; }
 .doc-wrapper .list li .col-long { width: 365px; float: left; display: inline; }
 .doc-wrapper .list li .col-small { width: 250px; float: right; display: inline; text-align: center; }
-.doc-wrapper .list li a.btn { font-size: 12px; width: 250px; display: block; height: 50px; text-align: center; line-height: 50px; color: #ffffff; text-transform: uppercase; background: #b20066; }
+.doc-wrapper .list li a.btn { font-size: 11px; width: 250px; display: block; height: 50px; text-align: center; line-height: 50px; color: #ffffff; text-transform: uppercase; background: #b20066; }
 .doc-wrapper .list li a.btn-blue { background: #4600a5; }
 .doc-wrapper .list li .orange-text,
 .doc-wrapper .list li .red-text { color: #ff0000; }
+.doc-wrapper ol { color: #000000; }
 
-.doc-wrapper .total-row { position: relative; display: block; padding: 0 6px; background: #c0c0c0; font-size: 12px; line-height: 17px; color: #000000; font-weight: normal; text-align: right; margin: -15px 0 1px 0; }
+.doc-wrapper .total-row { position: relative; display: block; padding: 0 6px; background: #c0c0c0; font-size: 10px; line-height: 17px; color: #000000; font-weight: normal; text-align: right; margin: -15px 0 1px 0; }
 
-.doc-wrapper .center-text { padding: 25px 0 40px 0; color: #808080; display: block; font-size: 12px; line-height: 16px; text-align: center; }
+.doc-wrapper .center-text { padding: 25px 0 40px 0; color: #808080; display: block; font-size: 11px; line-height: 16px; text-align: center; }
 .doc-wrapper .word-list { padding: 0 0 18px 20px; font-size: 13px; line-height: 17px; }
 
 .doc-wrapper .dates-table { padding: 0 0 20px 0; }
-.doc-wrapper .dates-table table { border-top: solid 1px #c0c0c0; border-left: solid 1px #c0c0c0; }
-.doc-wrapper .dates-table table th { font-size: 12px; line-height: 16px; color: #000000; padding: 45px 5px 0 5px; background: #c0c0c0; text-transform: uppercase; border-right: solid 1px #c0c0c0; font-weight: normal; text-align: left; }
-.doc-wrapper .dates-table table td { font-size: 12px; line-height: 16px; color: #808080; padding: 25px 5px 0 5px; border-bottom: dotted 1px #c0c0c0; border-right: solid 1px #c0c0c0; }
+.doc-wrapper .dates-table table { border-right: solid 1px #c0c0c0; border-top: solid 1px #c0c0c0; border-bottom: dotted 1px #c0c0c0; border-left: solid 1px #c0c0c0; }
+.doc-wrapper .dates-table table th { font-size: 11px; line-height: 16px; color: #000000; padding: 45px 5px 0 5px; background: #c0c0c0; text-transform: uppercase; border-right: solid 1px #c0c0c0; font-weight: normal; text-align: left; }
+.doc-wrapper .dates-table table td { font-size: 11px; line-height: 16px; color: black; padding: 25px 5px 0 5px;  }
 .doc-wrapper .dates-table table.table-2 th { padding-top: 5px; }
 .doc-wrapper .dates-table table.table-2 td { padding-top: 5px; }
 .doc-wrapper .dates-table table.table-3 th { padding-top: 15px; padding-bottom: 15px; vertical-align: center; }
@@ -77,9 +89,9 @@ textarea { overflow: auto; }
 .doc-wrapper .price-table { padding: 0 0 40px 0; }
 .doc-wrapper .price-table h4 { font-size: 14px; line-height: 18px; color: #7f7f7f; display: block; padding: 0 0 3px 0; }
 .doc-wrapper .price-table table { border-top: solid 1px #7f7f7f; }
-.doc-wrapper .price-table table td { border-bottom: solid 1px #7f7f7f; padding: 0 8px; font-size: 12px; line-height: 16px; color: #7f7f7f; }
+.doc-wrapper .price-table table td { border-bottom: solid 1px #7f7f7f; padding: 0 8px; font-size: 11px; line-height: 16px; color: #7f7f7f; }
 .doc-wrapper .price-table .purple-text { color: #c00066; font-weight: bold; }
-.doc-wrapper .price-table table th { font-size: 12px; line-height: 16px; color: #c00066; text-align: left; padding: 0 8px; border-bottom: solid 1px #7f7f7f; }
+.doc-wrapper .price-table table th { font-size: 11px; line-height: 16px; color: #c00066; text-align: left; padding: 0 8px; border-bottom: solid 1px #7f7f7f; }
 .doc-wrapper .price-table .col-1 { text-align: left; }
 .doc-wrapper .price-table .col-2 { text-align: right; }
 .doc-wrapper .price-table .col-date { text-align: left; border-right: solid 1px #7f7f7f; }
@@ -87,20 +99,22 @@ textarea { overflow: auto; }
 .doc-wrapper .price-table .col-entree { text-align: right; border-right: solid 1px #7f7f7f; }
 .doc-wrapper .price-table .col-sortie { text-align: right; border-right: 0; }
 
-.doc-wrapper .footer { padding: 30px 0 0 0; color: #d980b3; text-transform: uppercase; font-size: 8px; line-height: 16px; display: block; }
+.doc-wrapper .footer { padding: 30px 0 0 0; color: #d980b3; text-transform: uppercase; font-size: 11px; line-height: 16px; display: block; }
 
 .pdf-wrapper { padding: 0 0 30px 0; color: #848484; }
 .pdf-wrapper .shell { width: 718px; margin: 0 auto; padding: 15px 0; }
 .pdf-wrapper .logo { padding: 0 0 50px 0; }
-.pdf-wrapper h2 { text-align: center; font-size: 14px; line-height: 18px; display: block; color: #000000; padding: 0 0 5px 0; font-family: 'TrendSansOne', arial, sans-serif; }
+.pdf-wrapper .logo { background:url(images/logo.png) no-repeat 0 0; width:252px; height:61px; text-indent:100%; }
 
-.pdf-wrapper .container { width: 716px; border: solid 1px #a1a5a7; margin: 0 auto; font-size: 13px; line-height: 16px; color: #848484; }
+.pdf-wrapper h2 { text-align: center; font-size: 14px; line-height: 18px; display: block; color: #000000; padding: 0 0 5px 0; font-family: 'Calibri', arial, sans-serif; }
+
+.pdf-wrapper .container { width: 716px; border: solid 1px #a1a5a7; margin: 0 auto; font-size: 13px; line-height: 16px; color: black; }
 .pdf-wrapper .container .case-1 { border-bottom: solid 1px #a1a5a7; }
 .pdf-wrapper .container .case-1 .col-1 { width: 162px; border-right: solid 1px #a1a5a7; }
 .pdf-wrapper .container .case-1 .col-2 { width: 434px; padding: 0 0 0 18px; border-right: solid 1px #a1a5a7; }
-.pdf-wrapper .container .case-1 .col-2 h4 { font-size: 12px; line-height: 16px; font-family: 'TrendSansOne', arial, sans-serif; padding-top: 2px; color: #b10366; }
+.pdf-wrapper .container .case-1 .col-2 h4 { font-size: 11px; line-height: 16px; font-family: 'Calibri', arial, sans-serif; padding-top: 2px; color: #b10366; }
 .pdf-wrapper .container .case-1 .col-2 .block-1 { display: block; width: 405px; height: 14px; background: url(images/box-bg.png) repeat-x 0 0; font-size: 10px; line-height: 14px; border-left: solid 1px #010101; margin: 3px 0; }
-.pdf-wrapper .container .case-1 .col-3 { width: 100px; text-align: center; font-size: 12px; line-height: 15px; }
+.pdf-wrapper .container .case-1 .col-3 { width: 100px; text-align: center; font-size: 11px; line-height: 15px; }
 
 .pdf-wrapper .container .case-2 { padding: 5px; border-bottom: solid 1px #a1a5a7; }
 .pdf-wrapper .container .case-2 em.big { text-transform: uppercase; }
@@ -112,7 +126,7 @@ textarea { overflow: auto; }
 .pdf-wrapper .container .case-3 .col-1 { width: 140px; float: left; display: inline; padding-left: 5px; padding-right: 5px; font-size: 15px; line-height: 17px; }
 .pdf-wrapper .container .case-3 .col-2 { width: 20px; float: left; display: inline; font-size: 15px; line-height: 17px; }
 .pdf-wrapper .container .case-3 .col-3 { width: 520px; float: left; display: inline; }
-.pdf-wrapper .container .case-3 .col-4 { width: 20px; padding-right: 5px; float: left; display: inline; font-size: 11px; line-height: 14px; font-weight: bold; text-align: right; } 
+.pdf-wrapper .container .case-3 .col-4 { width: 20px; padding-right: 5px; float: left; display: inline; font-size: 11px; line-height: 14px; font-weight: bold; text-align: right; }
 .pdf-wrapper .container .case-3 .row { position: relative; padding: 0 0 7px 0; }
 .pdf-wrapper .container .case-3 .row .star { position: absolute; font-size: 15px; line-height: 17px; top: 0; left: -20px; }
 .pdf-wrapper .container .case-3 .row .number { position: absolute; right: -20px; top: 0; font-size: 11px; line-height: 14px; font-weight: bold; }
@@ -123,7 +137,7 @@ textarea { overflow: auto; }
 .pdf-wrapper .container .case-3 .box-w-2 { width: 280px; float: right; display: inline; }
 .pdf-wrapper .container .case-3 .box-w-3 { width: 245px; float: left; display: inline; }
 .pdf-wrapper .container .case-3 .box-w-4 { width: 230px; padding: 0 0 0 20px; float: left; display: inline; }
-.pdf-wrapper .container .case-3 .box .small-number { position: absolute; top: 0; right: 0; font-size: 9px; line-height: 12px; }
+.pdf-wrapper .container .case-3 .box .small-number { position: absolute; top: 0; right: 0; font-size: 11px; line-height: 12px; }
 .pdf-wrapper .container .case-3 .q-box { background: url(images/box-bg.png) repeat-x 0 0; font-size: 10px; line-height: 14px; border-left: solid 1px #010101; height: 14px; }
 .pdf-wrapper .container .case-3 .q-box-1 { width: 75px; display: block; }
 .pdf-wrapper .container .case-3 .q-box-2 { width: 60px; float: left; display: inline; margin: 0 13px 0 0; }
@@ -138,13 +152,12 @@ textarea { overflow: auto; }
 
 .pdf-wrapper .container .case-4 td { vertical-align: top; }
 .pdf-wrapper .container .case-4 .col-1 { width: 390px; padding: 5px 5px 25px 5px; border-right: solid 1px #a1a5a7; font-size: 15px; line-height: 17px; }
-.pdf-wrapper .container .case-4 .col-2 { padding: 5px; font-size: 8px; line-height: 10px; }
+.pdf-wrapper .container .case-4 .col-2 { padding: 5px; font-size: 11px; line-height: 10px; }
 
 .pdf-wrapper .case-5 { font-size: 11px; line-height: 14px; padding: 5px; color: #848484; }
 
 
-@media print {
+.pageBreakAfter { page-break-after: always; }
+.pageBreakBefore { page-break-before: always; }
 
-	.page-break { page-break-after: always; }
 
-}
