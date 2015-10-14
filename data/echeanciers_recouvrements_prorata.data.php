@@ -85,13 +85,31 @@ class echeanciers_recouvrements_prorata extends echeanciers_recouvrements_prorat
         if ($where != '')
             $where = ' WHERE ' . $where;
 
-        $sql = 'SELECT sum(capital) as capital, sum(interets) as interets FROM `echeanciers_recouvrements_prorata` ' . $where;
+        $sql = '
+            SELECT 
+                sum(capital) as capital, 
+                sum(interets) as interets,
+                sum(prelevements_obligatoires) as prelevements_obligatoires,
+                sum(retenues_source) as retenues_source,
+                sum(csg) as csg,
+                sum(prelevements_sociaux) as prelevements_sociaux,
+                sum(contributions_additionnelles) as contributions_additionnelles,
+                sum(prelevements_solidarite) as prelevements_solidarite,
+                sum(crds) as crds
+            FROM `echeanciers_recouvrements_prorata` ' . $where;
         
         $resultat = $this->bdd->query($sql);
         $result = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
-            $result['capital'] = $record['capital'];
-            $result['interets'] = $record['interets'];
+            $result['capital'] = round($record['capital']/100,2);
+            $result['interets'] = round($record['interets']/100,2);
+            $result['prelevements_obligatoires'] = $record['prelevements_obligatoires'];
+            $result['retenues_source'] = $record['retenues_source'];
+            $result['csg'] = $record['csg'];
+            $result['prelevements_sociaux'] = $record['prelevements_sociaux'];
+            $result['contributions_additionnelles'] = $record['contributions_additionnelles'];
+            $result['prelevements_solidarite'] = $record['prelevements_solidarite'];
+            $result['crds'] = $record['crds'];
         }
         return $result;
     }

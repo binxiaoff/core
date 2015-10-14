@@ -334,6 +334,15 @@ class transfertsController extends bootstrap {
             // On rembourse les preteurs
             if (isset($_POST['send_form_remb_preteurs'])) {
 
+                if (isset($_SESSION['anti_double_action']) && $_SESSION['anti_double_action'] != '') {
+                    mail('d.courtier@equinoa.com', 'unilend - test double action', 'tentative de double action');
+                    // redirection
+                    header('location:' . $this->lurl . '/transferts/recouvrement/' . $this->receptions->id_reception);
+                    die;
+                }
+
+                $_SESSION['anti_double_action'] = 'en cours'; // check pour eviter un double envoi de form
+
                 // csv
                 if (isset($_FILES['csv']) && $_FILES['csv']['name'] != '') {
 
@@ -377,13 +386,13 @@ class transfertsController extends bootstrap {
                                             $interets = ($e['interets'] / 100);
 
                                             echo '<br>----------------<br>';
-                                            echo 'montant echeance ' . $e['ordre'] . ' : ';
+                                            echo 'montant echeance (id lender : ' . $e['id_lender'] . ') ' . $e['ordre'] . ' : ';
 
                                             // si le recouvrement est superieur au montant de l'echeance
                                             if ($recouvrement_restant >= $montant_echeance) {
 
                                                 // On verifie que la transaction n'existe pas
-                                                if ($this->transactions->get($e['id_echeancier'], 'id_echeancier') == false) {
+                                                if ($this->transactions->counter('id_echeancier = ' . $e['id_echeancier']) <= 0) {
 
                                                     $Array_fiscals = array(
                                                         'prelevements_obligatoires' => $e['prelevements_obligatoires'],
@@ -395,15 +404,17 @@ class transfertsController extends bootstrap {
                                                         'crds' => $e['crds']
                                                     );
 
-                                                    // Remboursement echeance preteur
-                                                    //$this->rembEcheance($this->receptions->id_reception,$e['id_echeancier'], $id_client, $this->lenders_accounts->id_lender_account, $capital, $interets, $Array_fiscals);
+                                                    // Remboursement echeance preteur (on remb la totalité de l'echeance)
+                                                    $this->rembEcheance($this->receptions->id_reception, $e['id_echeancier'], $id_client, $this->lenders_accounts->id_lender_account, $capital, $interets, $Array_fiscals);
                                                     // On retire ce qu'on a pris pour remb l'echeance
                                                     $recouvrement_restant -= $montant_echeance;
+
+                                                    echo '<b>' . $montant_echeance . '</b> - Reste : ' . $recouvrement_restant . ' (remb normal)';
                                                 }
                                                 // Si on a deja une transaction on verifie si il ne s'agit pas d'un recouvrement au prorata
                                                 elseif ($this->echeanciers_recouvrements_prorata->counter('id_echeancier = ' . $e['id_echeancier']) > 0) {
 
-                                                    // on trouvé au moins un resultat du coup on va regarder si le montant est le meme ou pas
+                                                    // on à trouvé au moins un resultat du coup on va regarder si le montant est le meme ou pas
                                                     $sum = $this->echeanciers_recouvrements_prorata->sumCapitalInterets('id_echeancier = ' . $e['id_echeancier']);
 
                                                     // montant prorata trouvé
@@ -414,26 +425,45 @@ class transfertsController extends bootstrap {
 
                                                         // on recup la diff
                                                         $montant_manquant = $montant_echeance - $montant_echeance_recouvrement;
-                                                        $capital_manquant = $montant_echeance - $sum['capital'];
-                                                        $interets_manquant = $montant_echeance - $sum['interets'];
 
-                                                        // array fiscal manquant <---- a faire
-                                                        $Array_fiscals = array();
+                                                        $capital_manquant = $capital - $sum['capital'];
+                                                        $interets_manquant = $interets - $sum['interets'];
 
-                                                        // Remboursement echeance preteur
-                                                        $this->rembEcheance($this->receptions->id_reception, $e['id_echeancier'], $id_client, $this->lenders_accounts->id_lender_account, $capital_prorata, $interets_prorata, $Array_fiscals, true);
+                                                        $prelevements_obligatoires_manquant = $e['prelevements_obligatoires'] - $sum['prelevements_obligatoires'];
+                                                        $retenues_source_manquant = $e['retenues_source'] - $sum['retenues_source'];
+                                                        $csg_manquant = $e['csg'] - $sum['csg'];
+                                                        $prelevements_sociaux_manquant = $e['prelevements_sociaux'] - $sum['prelevements_sociaux'];
+                                                        $contributions_additionnelles_manquant = $e['contributions_additionnelles'] - $sum['contributions_additionnelles'];
+                                                        $prelevements_solidarite_manquant = $e['prelevements_solidarite'] - $sum['prelevements_solidarite'];
+                                                        $crds_manquant = $e['crds'] - $sum['crds'];
 
-                                                        $recouvrement_restant -= $manquant;
+                                                        // array fiscal manquant <---- a verifier
+
+                                                        $Array_fiscals = array(
+                                                            'prelevements_obligatoires' => $prelevements_obligatoires_manquant,
+                                                            'retenues_source' => $retenues_source_manquant,
+                                                            'csg' => $csg_manquant,
+                                                            'prelevements_sociaux' => $prelevements_sociaux_manquant,
+                                                            'contributions_additionnelles' => $contributions_additionnelles_manquant,
+                                                            'prelevements_solidarite' => $prelevements_solidarite_manquant,
+                                                            'crds' => $crds_manquant
+                                                        );
+
+                                                        //print_r($Array_fiscals);
+                                                        // Remboursement echeance preteur (on remb la totalité de l'echeance)
+                                                        $this->rembEcheance($this->receptions->id_reception, $e['id_echeancier'], $id_client, $this->lenders_accounts->id_lender_account, $capital_manquant, $interets_manquant, $Array_fiscals, true, true);
+
+                                                        $recouvrement_restant -= $montant_manquant;
+
+                                                        echo '<b>' . $montant_echeance . '</b> montant manquant : ' . $montant_manquant . ' (capital : <b>' . $capital_manquant . '</b> au lieu de ' . ($e['capital'] / 100) . ', interets : <b>' . $interets_manquant . '</b> au lieu de ' . ($e['interets'] / 100) . ') - Reste : ' . $recouvrement_restant . ' (remb manquant) <----- ';
                                                     }
                                                 }
-
-                                                echo '<b>' . $montant_echeance . '</b> - Reste : ' . $recouvrement_restant;
                                             }
                                             // si il reste de l'argent mais pas suffisament pour une echeance entiere
                                             elseif ($recouvrement_restant < $montant_echeance && $recouvrement_restant > 0) {
 
                                                 // On verifie que la transaction n'existe pas
-                                                if ($this->transactions->get($e['id_echeancier'], 'id_echeancier') == false) {
+                                                if ($this->transactions->counter('id_echeancier = ' . $e['id_echeancier']) <= 0) {
 
                                                     // prorata
                                                     $capital_prorata = round(($recouvrement_restant * $capital) / $montant_echeance, 2);
@@ -449,27 +479,86 @@ class transfertsController extends bootstrap {
                                                         'crds' => round(($recouvrement_restant * $e['crds']) / $montant_echeance, 2)
                                                     );
 
-                                                    // Remboursement echeance preteur
+                                                    // Remboursement echeance preteur (on remb qu'une partie de l'echeance)
                                                     $this->rembEcheance($this->receptions->id_reception, $e['id_echeancier'], $id_client, $this->lenders_accounts->id_lender_account, $capital_prorata, $interets_prorata, $Array_fiscals, true);
 
                                                     // On retire ce qu'on a pris pour remb l'echeance
                                                     $recouvrement_restant = 0;
-                                                }
 
-                                                echo '<b>' . $montant_echeance . '</b> (capital : <b>' . $capital_prorata . '</b> au lieu de ' . ($e['capital'] / 100) . ', interets : <b>' . $interets_prorata . '</b> au lieu de ' . ($e['interets'] / 100) . ') - Reste : ' . $recouvrement_restant . ' <----- ';
+                                                    echo '<b>' . $montant_echeance . '</b> (capital : <b>' . $capital_prorata . '</b> au lieu de ' . ($e['capital'] / 100) . ', interets : <b>' . $interets_prorata . '</b> au lieu de ' . ($e['interets'] / 100) . ') - Reste : ' . $recouvrement_restant . ' (remb du reste) <----- ';
+                                                }
+                                                // Si on a deja une transaction on verifie si il ne s'agit pas d'un recouvrement au prorata
+                                                elseif ($this->echeanciers_recouvrements_prorata->counter('id_echeancier = ' . $e['id_echeancier']) > 0) {
+                                                    // on à trouvé au moins un resultat du coup on va regarder si le montant est le meme ou pas
+                                                    $sum = $this->echeanciers_recouvrements_prorata->sumCapitalInterets('id_echeancier = ' . $e['id_echeancier']);
+
+                                                    // montant prorata trouvé
+                                                    $montant_echeance_recouvrement = $sum['capital'] + $sum['interets'];
+
+                                                    // si il manque de l'argent on recupere l'argent qu'il faut
+                                                    if ($montant_echeance_recouvrement < $montant_echeance) {
+
+                                                        // on recup la diff
+                                                        $montant_echeance_manquant = $montant_echeance - $montant_echeance_recouvrement;
+                                                        $capital_manquant = $capital - $sum['capital'];
+                                                        $interets_manquant = $interets - $sum['interets'];
+                                                        $prelevements_obligatoires_manquant = $e['prelevements_obligatoires'] - $sum['prelevements_obligatoires'];
+                                                        $retenues_source_manquant = $e['retenues_source'] - $sum['retenues_source'];
+                                                        $csg_manquant = $e['csg'] - $sum['csg'];
+                                                        $prelevements_sociaux_manquant = $e['prelevements_sociaux'] - $sum['prelevements_sociaux'];
+                                                        $contributions_additionnelles_manquant = $e['contributions_additionnelles'] - $sum['contributions_additionnelles'];
+                                                        $prelevements_solidarite_manquant = $e['prelevements_solidarite'] - $sum['prelevements_solidarite'];
+                                                        $crds_manquant = $e['crds'] - $sum['crds'];
+
+                                                        // array fiscal manquant <---- a verifier
+                                                        // prorata
+                                                        $capital_prorata = round(($recouvrement_restant * $capital_manquant) / $montant_echeance_manquant, 2);
+                                                        $interets_prorata = round(($recouvrement_restant * $interets_manquant) / $montant_echeance_manquant, 2);
+
+                                                        $Array_fiscals = array(
+                                                            'prelevements_obligatoires' => round(($recouvrement_restant * $prelevements_obligatoires_manquant) / $montant_echeance_manquant, 2),
+                                                            'retenues_source' => round(($recouvrement_restant * $retenues_source_manquant) / $montant_echeance_manquant, 2),
+                                                            'csg' => round(($recouvrement_restant * $csg_manquant) / $montant_echeance_manquant, 2),
+                                                            'prelevements_sociaux' => round(($recouvrement_restant * $prelevements_sociaux_manquant) / $montant_echeance_manquant, 2),
+                                                            'contributions_additionnelles' => round(($recouvrement_restant * $contributions_additionnelles_manquant) / $montant_echeance_manquant, 2),
+                                                            'prelevements_solidarite' => round(($recouvrement_restant * $prelevements_solidarite_manquant) / $montant_echeance_manquant, 2),
+                                                            'crds' => round(($recouvrement_restant * $crds_manquant) / $montant_echeance_manquant, 2)
+                                                        );
+
+                                                        // Remboursement echeance preteur (on remb qu'une partie de l'echeance qui avait deja eu un prorata)
+                                                        $this->rembEcheance($this->receptions->id_reception, $e['id_echeancier'], $id_client, $this->lenders_accounts->id_lender_account, $capital_prorata, $interets_prorata, $Array_fiscals, true);
+
+                                                        // On retire ce qu'on a pris pour remb l'echeance
+                                                        $recouvrement_restant = 0;
+
+                                                        echo '<b>' . $montant_echeance . '</b> montant manquant : ' . $montant_manquant . ' (capital : <b>' . $capital_manquant . '</b> au lieu de ' . ($e['capital'] / 100) . ', interets : <b>' . $interets_manquant . '</b> au lieu de ' . ($e['interets'] / 100) . ') - Reste : ' . $recouvrement_restant . ' (remb manquant au prorata) <----- ';
+                                                    } // end if montant recouvrement prorata < montant de l'echeance
+                                                } // end if recouvrement prorata
                                             }
                                         }
                                     }
-                                    die;
+                                    //die;
                                 }
                                 $i++;
                             }
                             fclose($handle);
                         }
-                        
+
                         // FIN LECTURE CSV //
-                    }
-                }
+                    } // end upload csv
+                } // end upload fichier csv
+                // fin traitement
+                unset($_SESSION['anti_double_action']);
+
+                // Mise en session du message
+                $_SESSION['freeow']['title'] = 'Rembourser les preteurs';
+                $_SESSION['freeow']['message'] = 'le remboursement a bien ete fait !';
+
+                // redirection
+                header('location:' . $this->lurl . '/transferts/recouvrement/' . $this->receptions->id_reception);
+                die;
+                // + message confirmation
+
                 die;
             }
 
@@ -479,7 +568,7 @@ class transfertsController extends bootstrap {
                 $this->lastDateRecouvrement = date('d/m/Y', strtotime($_SESSION['DER']));
                 $this->lastFormatSql = date('Y-m-d', strtotime($_SESSION['DER']));
             } else {
-                $_SESSION['DER'] = '';
+                $_SESSION['DER'] = ''; // DER : date d'entree en recouvrement
 
                 $retour = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 10', 'added DESC', 0, 1);
 
@@ -532,14 +621,27 @@ class transfertsController extends bootstrap {
         }
     }
 
-    // remb preteur
-    function rembEcheance($id_reception, $id_echeancier, $id_client, $id_lender, $capital, $interet, $array_fiscal, $prorata = false) {
-
+    // Mise a jour echeance
+    function udpdate_statut_remb_echeance($id_echeance) {
         $echeanciers = $this->loadData('echeanciers');
+
+        if ($echeanciers->get($id_echeancier, 'id_echeancier')) {
+            $echeanciers->status = 1; // remboursé
+            $echeanciers->status_emprunteur = 1; // remboursé emprunteur
+            $echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
+            $echeanciers->date_echeance_emprunteur_reel = date('Y-m-d H:i:s');
+            $echeanciers->update();
+        }
+    }
+
+    // remb preteur
+    function rembEcheance($id_reception, $id_echeancier, $id_client, $id_lender, $capital, $interet, $array_fiscal, $prorata = false, $manquant = false) {
+
         $echeanciers_recouvrements_prorata = $this->loadData('echeanciers_recouvrements_prorata');
         $transactions = $this->loadData('transactions');
         $wallets_lines = $this->loadData('wallets_lines');
 
+        // Recup  du remb net
         $remb_brut = ($capital + $interet);
         $etat = array_sum($array_fiscal);
         $remb_net = $remb_brut - $etat;
@@ -556,15 +658,19 @@ class transfertsController extends bootstrap {
             $echeanciers_recouvrements_prorata->contributions_additionnelles = $array_fiscal['contributions_additionnelles'];
             $echeanciers_recouvrements_prorata->prelevements_solidarite = $array_fiscal['prelevements_solidarite'];
             $echeanciers_recouvrements_prorata->crds = $array_fiscal['crds'];
-            //$echeanciers_recouvrements_prorata->create();
+            $echeanciers_recouvrements_prorata->create();
+
+            // Si on a un prorata pour combler la somme manquante de l'echeance
+            if ($manquant) {
+                $this->udpdate_statut_remb_echeance($id_echeancier);
+            }
         }
 
         ///////////////// ENREGISTREMENT DU REMB PRETEUR ///////////////
-        // echeance preteur
-        $echeanciers->get($id_echeancier, 'id_echeancier');
-        $echeanciers->status = 1; // remboursé
-        $echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
-        //$echeanciers->update();
+        // echeance preteur  (si on fait un remb au prorata on met pas a jour le statut de l'echeance, on le fera quand le l'echeance sera entierement remb)
+        else {
+            $this->udpdate_statut_remb_echeance($id_echeancier);
+        }
         // On enregistre la transaction
         $transactions->id_client = $id_client;
         $transactions->montant = ($remb_net * 100);
@@ -576,7 +682,7 @@ class transfertsController extends bootstrap {
         $transactions->ip_client = $_SERVER['REMOTE_ADDR'];
         $transactions->type_transaction = 5; // remb enchere
         $transactions->transaction = 2; // transaction virtuelle
-        //$transactions->id_transaction = $transactions->create();
+        $transactions->id_transaction = $transactions->create();
         // on enregistre la transaction dans son wallet
         $wallets_lines->id_lender = $id_lender;
         $wallets_lines->type_financial_operation = 40;
@@ -584,7 +690,7 @@ class transfertsController extends bootstrap {
         $wallets_lines->status = 1; // non utilisé
         $wallets_lines->type = 2; // transaction virtuelle
         $wallets_lines->amount = ($remb_net * 100);
-        //$wallets_lines->id_wallet_line = $wallets_lines->create();
+        $wallets_lines->id_wallet_line = $wallets_lines->create();
     }
 
     function _recouvrement_preteurs() {
