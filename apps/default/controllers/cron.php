@@ -450,7 +450,6 @@ class cronController extends bootstrap
 
                     $texteMail = $this->mails_text->content;
                     eval("\$texteMail = \"$texteMail\";");
-var_dump($texteMail);die;
                     $exp_name = $this->mails_text->exp_name;
                     eval("\$exp_name = \"$exp_name\";");
 
