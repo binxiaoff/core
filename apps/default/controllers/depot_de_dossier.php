@@ -5,6 +5,13 @@ use Unilend\librairies\ULogger;
 
 class depot_de_dossierController extends bootstrap
 {
+    const PAGE_NAME_STEP_2    = 'etape2';
+    const PAGE_NAME_STEP_3    = 'etape3';
+    const PAGE_NAME_FILES     = 'fichiers';
+    const PAGE_NAME_PROSPECT  = 'prospect';
+    const PAGE_NAME_THANK_YOU = 'merci';
+    const PAGE_NAME_NOK       = 'nok';
+
     /**
      * @var attachment_helper
      */
@@ -122,7 +129,7 @@ class depot_de_dossierController extends bootstrap
         $iStatusSetting = $this->settings->value;
 
         if ($iStatusSetting == 3) {
-            $this->step1Redirect('nok', projects_status::NOTE_EXTERNE_FAIBLE);
+            $this->redirect(self::PAGE_NAME_NOK, \projects_status::NOTE_EXTERNE_FAIBLE);
         }
 
         $this->settings->get('Altares email alertes', 'type');
@@ -136,7 +143,7 @@ class depot_de_dossierController extends bootstrap
             $oLogger->addRecord(ULogger::ALERT, $oException->getMessage(), array('siren' => $iSIREN));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $oException->getMessage());
-            $this->step1Redirect('nok', projects_status::NOTE_EXTERNE_FAIBLE);
+            $this->redirect(self::PAGE_NAME_NOK, \projects_status::NOTE_EXTERNE_FAIBLE);
         }
 
         if (false === empty($oResult->exception)) {
@@ -144,7 +151,7 @@ class depot_de_dossierController extends bootstrap
             $oLogger->addRecord(ULogger::ALERT, $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur, array('siren' => $iSIREN));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $iSIREN . ' | ' . $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur);
-            $this->step1Redirect('nok', projects_status::NOTE_EXTERNE_FAIBLE);
+            $this->redirect(self::PAGE_NAME_NOK, \projects_status::NOTE_EXTERNE_FAIBLE);
         }
 
         if ($iStatusSetting == 2) {
@@ -265,36 +272,23 @@ class depot_de_dossierController extends bootstrap
                 $oInterval            = $oCompanyCreationDate->diff(new \DateTime());
 
                 if ($oInterval->days < \projects::MINIMUM_CREATION_DAYS_PROSPECT) {
-                    $this->step1Redirect('prospect', projects_status::PAS_3_BILANS);
+                    $this->redirect(self::PAGE_NAME_PROSPECT, \projects_status::PAS_3_BILANS);
                 }
 
-                $this->step1Redirect('etape2', projects_status::COMPLETUDE_ETAPE_2);
+                $this->redirect(self::PAGE_NAME_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
                 break;
             case 'Non':
             default:
-                $this->step1Redirect('nok', projects_status::NOTE_EXTERNE_FAIBLE);
+                $this->redirect(self::PAGE_NAME_NOK, \projects_status::NOTE_EXTERNE_FAIBLE);
                 break;
         }
-    }
-
-    /**
-     * Redirect to corresponding page after step 1
-     * @param $sPage          string Page to redirect to
-     * @param $iProjectStatus int    Project status
-     */
-    private function step1Redirect($sPage, $iProjectStatus)
-    {
-        $this->projects_status_history->addStatus(-2, $iProjectStatus, $this->projects->id_project);
-
-        header('Location: ' . $this->lurl . '/depot_de_dossier/' . $sPage . '/' . $this->projects->hash);
-        die;
     }
 
     public function _etape2()
     {
         $this->page = 2;
 
-        $this->checkProjectHash('step2');
+        $this->checkProjectHash(self::PAGE_NAME_STEP_2);
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-etape-2'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-2'];
@@ -396,8 +390,7 @@ class depot_de_dossierController extends bootstrap
         }
 
         if (false === empty($_SESSION['forms']['depot-de-dossier-2']['errors'])) {
-            header('Location: ' . $this->lurl . '/depot_de_dossier/etape2/' . $this->projects->hash);
-            die;
+            $this->redirect(self::PAGE_NAME_STEP_2);
         }
 
         /**
@@ -433,9 +426,7 @@ class depot_de_dossierController extends bootstrap
         */
 
         if ($this->bAnnualAccountsQuestion && (false === isset($_POST['comptables']) || empty($_POST['comptables']))) {
-            $this->projects_status_history->addStatus(-2, projects_status::PAS_3_BILANS, $this->projects->id_project);
-            header('Location: ' . $this->lurl . '/depot_de_dossier/nok/' . $this->projects->hash);
-            die;
+            $this->redirect(self::PAGE_NAME_NOK, \projects_status::PAS_3_BILANS);
         }
 
         if ($bForm_ok) {
@@ -554,10 +545,7 @@ class depot_de_dossierController extends bootstrap
             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             */
 
-            $this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_3, $this->projects->id_project);
-
-            header('Location: ' . $this->lurl . '/depot_de_dossier/etape3/' . $this->projects->hash);
-            die;
+            $this->redirect(self::PAGE_NAME_STEP_3, \projects_status::COMPLETUDE_ETAPE_3);
         }
     }
 
@@ -565,7 +553,7 @@ class depot_de_dossierController extends bootstrap
     {
         $this->page = 3;
 
-        $this->checkProjectHash('step3');
+        $this->checkProjectHash(self::PAGE_NAME_STEP_3);
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-etape-3'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-3'];
@@ -582,39 +570,34 @@ class depot_de_dossierController extends bootstrap
         $fVATRate = (float) $this->settings->value;
 
         $this->settings->get('Commission remboursement', 'type');
-        $fCommissionAmount = $this->financial->PMT($this->settings->value / 12, $this->projects->period, - $this->projects->amount) - $this->financial->PMT(0, $this->projects->period, - $this->projects->amount);
+        $fCommission = ($this->financial->PMT($this->settings->value / 12, $this->projects->period, - $this->projects->amount) - $this->financial->PMT(0, $this->projects->period, - $this->projects->amount)) * (1 + $fVATRate);
 
-        $this->iMinimumMonthlyPayment = round($this->financial->PMT($aMinimumRateInterval[0] / 12, $this->projects->period, - $this->projects->amount) + $fCommissionAmount * (1 + $fVATRate));
-        $this->iMaximumMonthlyPayment = round($this->financial->PMT($aMaximumRateInterval[1] / 12, $this->projects->period, - $this->projects->amount) + $fCommissionAmount * (1 + $fVATRate));
+        $this->iMinimumMonthlyPayment = round($this->financial->PMT($aMinimumRateInterval[0] / 100 / 12, $this->projects->period, - $this->projects->amount) + $fCommission);
+        $this->iMaximumMonthlyPayment = round($this->financial->PMT($aMaximumRateInterval[1] / 100 / 12, $this->projects->period, - $this->projects->amount) + $fCommission);
 
         //year considered for "latest liasse fiscal" necessary to get the information from Bilan and actif_passif
-        $iLastAnnualAccountsYear = date('Y') - 1;
-        $aCompaniesBilan         = $this->companies_bilans->select('id_company = ' . $this->companies->id_company . ' AND date = ' . $iLastAnnualAccountsYear);
-        $aCompanies_actif_passif = $this->companies_actif_passif->select('id_company = ' . $this->companies->id_company . ' AND annee = ' . $iLastAnnualAccountsYear);
+        $iLastAnnualAccountsYear  = date('Y') - 1;
+        $aAnnualAccounts          = $this->companies_bilans->select('id_company = ' . $this->companies->id_company . ' AND date = ' . $iLastAnnualAccountsYear);
+        $aAssetsDebts             = $this->companies_actif_passif->select('id_company = ' . $this->companies->id_company . ' AND annee = ' . $iLastAnnualAccountsYear);
+        $iAltaresCapitalStock     = $aAssetsDebts[0]['capitaux_propres'];
+        $iAltaresOperationIncomes = $aAnnualAccounts[0]['resultat_exploitation'];
+        $iAltaresRevenue          = $aAnnualAccounts[0]['ca'];
 
-        $this->iRex          = $aCompaniesBilan[0]['resultat_exploitation'];
-        $this->iCa           = $aCompaniesBilan[0]['ca'];
-        $this->iFondsPropres = $aCompanies_actif_passif[0]['capitaux_propres'];
+        $this->iCapitalStock     = empty($this->projects->fonds_propres_declara_client) ? $iAltaresCapitalStock : $this->projects->fonds_propres_declara_client;
+        $this->iOperatingIncomes = empty($this->projects->resultat_exploitation_declara_client) ? $iAltaresOperationIncomes : $this->projects->resultat_exploitation_declara_client;
+        $this->iRevenue          = empty($this->projects->ca_declara_client) ? $iAltaresRevenue : $this->projects->ca_declara_client;
 
         if (isset($_POST['send_form_etape_3'])) {
             $bFormOk = true;
 
-            if (! isset($_POST['fonds_propres']) || $_POST['fonds_propres'] == '') {
-                $bFormOk = false;
+            if (
+                false === isset($_POST['fonds_propres']) || $_POST['fonds_propres'] == ''
+                || false === isset($_POST['ca']) || $_POST['ca'] == ''
+                || false === isset($_POST['resultat_brute_exploitation']) || $_POST['resultat_brute_exploitation'] == ''
+                || false === isset($_FILES['liasse_fiscal']) && $_FILES['liasse_fiscal']['name'] == ''
+            ) {
+                $this->redirect(self::PAGE_NAME_STEP_3);
             }
-            if (! isset($_POST['ca']) || $_POST['ca'] == '') {
-                $bFormOk = false;
-            }
-            if (! isset($_POST['resultat_brute_exploitation']) || $_POST['resultat_brute_exploitation'] == '') {
-                $bFormOk = false;
-            }
-
-            if (! isset($_FILES['liasse_fiscal']) && $_FILES['liasse_fiscal']['name'] == '') {
-                $bFormOk = false;
-            }
-            $this->iRex          = $_POST['resultat_brute_exploitation'];
-            $this->iCa           = $_POST['ca'];
-            $this->iFondsPropres = $_POST['fonds_propres'];
 
             if ($bFormOk) {
                 $this->uploadAttachment($this->projects->id_project, 'liasse_fiscal', attachment_type::DERNIERE_LIASSE_FISCAL);
@@ -623,33 +606,57 @@ class depot_de_dossierController extends bootstrap
                     $this->uploadAttachment($this->projects->id_project, 'autre', attachment_type::AUTRE1);
                 }
 
-                $this->projects->fonds_propres_declara_client         = $this->iFondsPropres;
-                $this->projects->resultat_exploitation_declara_client = $this->iRex;
-                $this->projects->ca_declara_client                    = $this->iCa;
-                $this->projects->update();
+                $bUpdateDeclaration                   = false;
+                $_POST['fonds_propres']               = str_replace(array(' ', ','), array('', '.'), $_POST['fonds_propres']);
+                $_POST['resultat_brute_exploitation'] = str_replace(array(' ', ','), array('', '.'), $_POST['resultat_brute_exploitation']);
+                $_POST['ca']                          = str_replace(array(' ', ','), array('', '.'), $_POST['ca']);
 
-                if ($this->projects->resultat_exploitation_declara_client < 0 || $this->projects->ca_declara_client < 100000 || $this->projects->fonds_propres_declara_client < 10000) {
-                    $this->projects_status_history->addStatus(-2, projects_status::NOTE_EXTERNE_FAIBLE, $this->projects->id_project);
-                    header('Location: ' . $this->lurl . '/depot_de_dossier/nok/' . $this->projects->hash);
-                    die;
+                if ($iAltaresCapitalStock != $_POST['fonds_propres']) {
+                    $this->projects->fonds_propres_declara_client = $_POST['fonds_propres'];
+                    $bUpdateDeclaration = true;
+                } elseif (false === empty($this->projects->fonds_propres_declara_client) && $iAltaresCapitalStock == $_POST['fonds_propres']) {
+                    $this->projects->fonds_propres_declara_client = 0;
+                    $bUpdateDeclaration = true;
+                }
+
+                if ($iAltaresOperationIncomes != $_POST['resultat_brute_exploitation']) {
+                    $this->projects->resultat_exploitation_declara_client = $_POST['resultat_brute_exploitation'];
+                    $bUpdateDeclaration = true;
+                } elseif (false === empty($this->projects->resultat_exploitation_declara_client) && $iAltaresOperationIncomes == $_POST['resultat_brute_exploitation']) {
+                    $this->projects->resultat_exploitation_declara_client = 0;
+                    $bUpdateDeclaration = true;
+                }
+
+                if ($iAltaresRevenue != $_POST['ca']) {
+                    $this->projects->ca_declara_client = $_POST['ca'];
+                    $bUpdateDeclaration = true;
+                } elseif (false === empty($this->projects->ca_declara_client) && $iAltaresRevenue == $_POST['ca']) {
+                    $this->projects->ca_declara_client = 0;
+                    $bUpdateDeclaration = true;
+                }
+
+                if ($bUpdateDeclaration) {
+                    $this->projects->update();
+                }
+
+                if ($_POST['fonds_propres'] < 10000 || $_POST['resultat_brute_exploitation'] < 0 || $_POST['ca'] < 100000) {
+                    $this->redirect(self::PAGE_NAME_NOK, \projects_status::NOTE_EXTERNE_FAIBLE);
                 }
 
                 if (isset($_POST['procedure_acceleree'])) {
                     $this->projects->process_fast = 1;
                     $this->projects->update();
+
                     //TODO une fois que le status et la constante sont crées
-                    //$this->projects_status_history->addStatus(-2, projects_status::COMPLETUDE_ETAPE_3, $this->projects->id_project);
-                    header('Location: ' . $this->lurl . '/depot_de_dossier/fichiers/' . $this->projects->hash);
-                    die;
+                    $this->redirect(self::PAGE_NAME_FILES, \projects_status::COMPLETUDE_ETAPE_3);
                 } else {
                     //TODO envoi de mail pour reprise de dossier
 
                     //client stauts change to online has been done in former functions and seems to be used to validate a projet.
                     $this->clients->status = 1;
                     $this->clients->update();
-                    $this->projects_status_history->addStatus(-2, projects_status::A_TRAITER, $this->projects->id_project);
-                    header('Location: ' . $this->lurl . '/depot_de_dossier/merci/' . $this->projects->hash);
-                    die;
+
+                    $this->redirect(self::PAGE_NAME_THANK_YOU, \projects_status::A_TRAITER);
                 }
             }
         }
@@ -659,7 +666,7 @@ class depot_de_dossierController extends bootstrap
     {
         $this->page = 'prospect';
 
-        $this->checkProjectHash('prospect');
+        $this->checkProjectHash(self::PAGE_NAME_PROSPECT);
 
         $this->lng['depot-de-dossier'] = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
 
@@ -780,9 +787,7 @@ class depot_de_dossierController extends bootstrap
                 $this->projects->update();
                 $this->prescripteurs->update();
 
-                $this->projects_status_history->addStatus(-2, projects_status::PAS_3_BILANS, $this->projects->id_project);
-                header('Location: ' . $this->lurl . '/depot_de_dossier/merci/' . $this->projects->hash);
-                die;
+                $this->redirect(self::PAGE_NAME_THANK_YOU, \projects_status::PAS_3_BILANS);
             }
         }
     }
@@ -791,7 +796,7 @@ class depot_de_dossierController extends bootstrap
     {
         $this->page = 'fichiers';
 
-        $this->checkProjectHash('fichiers');
+        $this->checkProjectHash(self::PAGE_NAME_FILES);
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-fichiers'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-fichiers'];
@@ -808,15 +813,15 @@ class depot_de_dossierController extends bootstrap
                 $iAttachmentType = $field;
                 $this->uploadAttachment($this->projects->id_project, $field, $iAttachmentType, $_FILES);
             }
-            $this->projects_status_history->addStatus(-2, projects_status::A_TRAITER, $this->projects->id_project);
-            header('Location: ' . $this->lurl . '/depot_de_dossier/merci/procedure-accelere');
-            die;
+
+            // @todo /depot_de_dossier/merci/procedure-accelere
+            $this->redirect(self::PAGE_NAME_THANK_YOU, \projects_status::A_TRAITER);
         }
     }
 
     public function _merci()
     {
-        $this->checkProjectHash('merci');
+        $this->checkProjectHash(self::PAGE_NAME_THANK_YOU);
 
         $this->lng['depot-de-dossier'] = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
 
@@ -854,7 +859,7 @@ class depot_de_dossierController extends bootstrap
 
     public function _nok()
     {
-        $this->checkProjectHash('nok');
+        $this->checkProjectHash(self::PAGE_NAME_NOK);
 
         $this->lng['depot-de-dossier-nok'] = $this->ln->selectFront('depot-de-dossier-nok', $this->language, $this->App);
 
@@ -960,36 +965,46 @@ class depot_de_dossierController extends bootstrap
         switch ($this->projects_status->status) {
             case \projects_status::PAS_3_BILANS:
             case \projects_status::NOTE_EXTERNE_FAIBLE:
-                if (false === in_array($sPage, array('nok', 'prospect', 'merci'))) {
-                    header('Location: ' . $this->lurl . '/depot_de_dossier/nok/' . $this->projects->hash);
-                    die;
+                if (false === in_array($sPage, array(self::PAGE_NAME_NOK, self::PAGE_NAME_PROSPECT, self::PAGE_NAME_THANK_YOU))) {
+                    $this->redirect(self::PAGE_NAME_NOK);
                 }
                 break;
             case \projects_status::COMPLETUDE_ETAPE_2:
-                if ($sPage !== 'step2') {
-                    header('Location: ' . $this->lurl . '/depot_de_dossier/etape2/' . $this->projects->hash);
-                    die;
+                if ($sPage !== self::PAGE_NAME_STEP_2) {
+                    $this->redirect(self::PAGE_NAME_STEP_2);
                 }
                 break;
             case \projects_status::COMPLETUDE_ETAPE_3:
-                if ($sPage !== 'step3') {
-                    header('Location: ' . $this->lurl . '/depot_de_dossier/etape3/' . $this->projects->hash);
-                    die;
+                if ($sPage !== self::PAGE_NAME_STEP_3) {
+                    $this->redirect(self::PAGE_NAME_STEP_3);
                 }
                 break;
             case \projects_status::A_TRAITER:
             case \projects_status::EN_ATTENTE_PIECES:
-                if ($sPage !== 'fichiers') {
-                    header('Location: ' . $this->lurl . '/depot_de_dossier/fichiers/' . $this->projects->hash);
-                    die;
+                if ($sPage !== self::PAGE_NAME_FILES) {
+                    $this->redirect(self::PAGE_NAME_FILES);
                 }
                 break;
             case \projects_status::ABANDON:
             default: // Should correspond to "Revue analyste" and above
-                if ($sPage !== 'merci') {
-                    header('Location: ' . $this->lurl . '/depot_de_dossier/merci/' . $this->projects->hash);
-                    die;
+                if ($sPage !== self::PAGE_NAME_THANK_YOU) {
+                    $this->redirect(self::PAGE_NAME_THANK_YOU);
                 }
         }
+    }
+
+    /**
+     * Redirect to corresponding page and update status
+     * @param $sPage          string Page to redirect to
+     * @param $iProjectStatus int    Project status
+     */
+    private function redirect($sPage, $iProjectStatus = null)
+    {
+        if (false === is_null($iProjectStatus)) {
+            $this->projects_status_history->addStatus(-2, $iProjectStatus, $this->projects->id_project);
+        }
+
+        header('Location: ' . $this->lurl . '/depot_de_dossier/' . $sPage . '/' . $this->projects->hash);
+        die;
     }
 }

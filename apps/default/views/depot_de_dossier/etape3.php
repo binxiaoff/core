@@ -11,43 +11,43 @@
                     </tr>
                     <tr>
                         <td>
-                            <label class="inline-text"><?= $this->lng['etape3']['fonds-propres'] ?></label>
+                            <label class="inline-text"><?= $this->lng['etape3']['fonds-propres-label'] ?></label>
                         </td>
                         <td>
                             <div class="field-holder">
                                 <input type="text" name="fonds_propres" id="fonds_propres"
-                                       data-validators="Numericality"
-                                       value="<?= $this->iFondsPropres ?>"
+                                       placeholder="<?= $this->lng['etape3']['fonds-propres'] ?>"
+                                       value="<?= $this->iCapitalStock ?>"
                                        class="field field-large euro-field"
-                                       onkeyup="lisibilite_nombre(this.value,this.id);">
+                                       data-validators="Numericality" onkeyup="lisibilite_nombre(this.value,this.id);">
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <label class="inline-text"><?= $this->lng['etape3']['ca'] ?></label>
+                            <label class="inline-text"><?= $this->lng['etape3']['ca-label'] ?></label>
                         </td>
                         <td>
                             <div class="field-holder">
                                 <input type="text" name="ca" id="ca"
-                                       data-validators="Numericality"
-                                       value="<?= $this->iCa ?>"
+                                       placeholder="<?= $this->lng['etape3']['ca'] ?>"
+                                       value="<?= $this->iRevenue ?>"
                                        class="field field-large euro-field"
-                                       onkeyup="lisibilite_nombre(this.value,this.id);">
+                                       data-validators="Numericality" onkeyup="lisibilite_nombre(this.value,this.id);">
                             </div>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <label class="inline-text"><?= $this->lng['etape3']['resultat-brut-dexploitation'] ?></label>
+                            <label class="inline-text"><?= $this->lng['etape3']['rex-label'] ?></label>
                         </td>
                         <td>
                             <div class="field-holder">
                                 <input type="text" name="resultat_brute_exploitation" id="rbe"
-                                       data-validators="Numericality"
-                                       value="<?= $this->iRex ?>"
+                                       placeholder="<?= $this->lng['etape3']['rex'] ?>"
+                                       value="<?= $this->iOperatingIncomes ?>"
                                        class="field field-large euro-field"
-                                       onkeyup="lisibilite_nombre(this.value,this.id);">
+                                       data-validators="Numericality" onkeyup="lisibilite_nombre(this.value,this.id);">
                             </div>
                         </td>
                     </tr>
