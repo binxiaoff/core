@@ -158,7 +158,7 @@ class cronController extends bootstrap
         $this->settings->get('Twitter', 'type');
         $lien_tw = $this->settings->value;
 
-        $this->lProjects = $this->projects->selectProjectsByStatus(50,'','',0,1);
+        $this->lProjects = $this->projects->selectProjectsByStatus(50);
         foreach ($this->lProjects as $projects) {
             $tabdateretrait = explode(':', $projects['date_retrait_full']);
             $dateretrait    = $tabdateretrait[0] . ':' . $tabdateretrait[1];
