@@ -97,16 +97,6 @@
         <div id="resume">
             <h2>Resume & actions</h2>
             <div class="gauche">
-                <h2>Action</h2>
-                <table class="form" style="width: 580px;">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <input type="checkbox" name="stop_relances" id="stop_relances" value="1" <?= $this->projects->stop_relances == 1 ? 'checked':'' ?>/> <label for="stop_relances">Arrêt des relances</label>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
                 <h2>Identité</h2>
                 <table class="form" style="width: 580px;">
                     <tr>
@@ -837,6 +827,23 @@
         }
         ?>
     </div>
+    <hr style="border: 2px solid #B10366;">
+    <h2>Email</h2>
+
+    <div id="tab_email">
+        <div id="edit_projects_tab_email">
+            <input type="checkbox" name="stop_relances" id="stop_relances" value="1" <?= $this->projects->stop_relances == 1 ? 'checked':'' ?>/> <label for="stop_relances">Arrêt des relances</label>
+            <div class="btnDroite">
+                <a href="#" class="btn_link" id="save_projects_tab_email" data-project-id="<?=$this->projects->id_project?>">Sauvegarder</a>
+            </div>
+        </div><br />
+        <div id="tab_email_msg">Données sauvegardées</div>
+        <br />
+        <div id="send_cgv">
+            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>/altares" class="btn_link">Envoi des CGV</a>
+        </div>
+
+    </div>
 
     <style type="text/css">
         #etape1, #etape2, #etape3, #etape4, #etape5, #etape6, #etape7 {
@@ -855,7 +862,7 @@
             font-weight: bold;
         }
 
-        #valid_etape1, #valid_etape2, #valid_etape3, #valid_etape4, #valid_etape5, #valid_etape6, #valid_etape7 {
+        #tab_email_msg, #valid_etape1, #valid_etape2, #valid_etape3, #valid_etape4, #valid_etape5, #valid_etape6, #valid_etape7 {
             display: none;
             text-align: center;
             font-size: 16px;
@@ -2411,6 +2418,7 @@
                             }
 
                         });
+                        $("#valid_etape5").slideDown();
                         setTimeout(function () {
                             $("#valid_etape5").slideUp();
                         }, 4000);
@@ -2420,5 +2428,36 @@
                 }
             });
         }
+    });
+
+    $('#save_projects_tab_email').click(function(e){
+        e.preventDefault();
+        var iProjectId =$(this).data('project-id');
+        var iFlag = 0;
+        if ($('#stop_relances').is(':checked')) {
+            iFlag = 1;
+        }
+
+        $.ajax({
+            url: "<?=$this->lurl?>/dossiers/tab_email",
+            type: 'POST',
+            data: {
+                project_id: iProjectId,
+                flag: iFlag
+            },
+            error: function() {
+                alert('An error has occurred');
+            },
+            success: function(data) {
+                if('ok' == data) {
+                    $("#tab_email_msg").slideDown();
+                    setTimeout(function () {
+                        $("#tab_email_msg").slideUp();
+                    }, 4000);
+                } else {
+                    alert('An error has occurred');
+                }
+            }
+        });
     });
 </script>
