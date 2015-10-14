@@ -604,8 +604,8 @@ class preteursController extends bootstrap
                 foreach ($_FILES as $field => $file) {
                     //We made the field name = attachment type id
                     $iAttachmentType = $field;
-                    if('' !== $file['name']) {
-                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType, $_FILES);
+                    if ('' !== $file['name']) {
+                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
                     }
                 }
 
@@ -1034,8 +1034,8 @@ class preteursController extends bootstrap
                 foreach ($_FILES as $field => $file) {
                     //We made the field name = attachment type id
                     $iAttachmentType = $field;
-                    if('' !== $file['name']) {
-                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType, $_FILES);
+                    if ('' !== $file['name']) {
+                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
                     }
                 }
 
@@ -2116,15 +2116,10 @@ class preteursController extends bootstrap
      * @param integer $iOwnerId
      * @param integer $field
      * @param integer $iAttachmentType
-     * @param array $aFiles
      * @return bool
      */
-    private function uploadAttachment($iOwnerId, $field, $iAttachmentType, $aFiles = null)
+    private function uploadAttachment($iOwnerId, $field, $iAttachmentType)
     {
-        if ($aFiles === null) {
-            $aFiles = $_FILES;
-        }
-
         if (false === isset($this->upload) || false === $this->upload instanceof upload) {
             $this->upload = $this->loadLib('upload');
         }
@@ -2141,9 +2136,8 @@ class preteursController extends bootstrap
             $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path ));;
         }
 
-        //add the new name for each file
         $sNewName = '';
-        if(isset($aFiles[$field]['name']) && $aFileInfo = pathinfo($aFiles[$field]['name'])) {
+        if (isset($_FILES[$field]['name']) && $aFileInfo = pathinfo($_FILES[$field]['name'])) {
             $sNewName = mb_substr($aFileInfo['filename'], 0, 30) . '_' . $iOwnerId;
         }
 
