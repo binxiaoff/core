@@ -1852,10 +1852,8 @@ class dossiersController extends bootstrap
             foreach ($_FILES as $field => $file) {
                 //We made the field name = attachment type id
                 $iAttachmentType = $field;
-                if('' !== $file['name']) {
-                    if($this->uploadAttachment($this->projects->id_project, $field, $iAttachmentType, $_FILES)) {
-                        $this->tablResult['fichier_'.$iAttachmentType] = 'ok';
-                    }
+                if ('' !== $file['name'] && $this->uploadAttachment($this->projects->id_project, $field, $iAttachmentType)) {
+                    $this->tablResult['fichier_'.$iAttachmentType] = 'ok';
                 }
             }
             $this->result = json_encode($this->tablResult);
@@ -3571,15 +3569,10 @@ class dossiersController extends bootstrap
      * @param integer $iOwnerId
      * @param integer $field
      * @param integer $iAttachmentType
-     * @param array $aFiles
      * @return bool
      */
-    private function uploadAttachment($iOwnerId, $field, $iAttachmentType, $aFiles = null)
+    private function uploadAttachment($iOwnerId, $field, $iAttachmentType)
     {
-        if ($aFiles === null) {
-            $aFiles = $_FILES;
-        }
-
         if (false === isset($this->upload) || false === $this->upload instanceof upload) {
             $this->upload = $this->loadLib('upload');
         }
@@ -3598,7 +3591,7 @@ class dossiersController extends bootstrap
 
         //add the new name for each file
         $sNewName = '';
-        if(isset($aFiles[$field]['name']) && $aFileInfo = pathinfo($aFiles[$field]['name'])) {
+        if (isset($_FILES[$field]['name']) && $aFileInfo = pathinfo($_FILES[$field]['name'])) {
             $sNewName = $aFileInfo['filename'] . '_' . $iOwnerId;
         }
 

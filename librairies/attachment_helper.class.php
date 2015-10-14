@@ -27,16 +27,11 @@ class attachment_helper
      * @param string     $field
      * @param upload     $upload
      * @param string     $sNewName
-     * @param array      $aFiles
      *
      * @return bool|string
      */
-    public function upload($ownerId, $ownerType, $attachmentType, $field, $upload, $sNewName = '', $aFiles = null)
+    public function upload($ownerId, $ownerType, $attachmentType, $field, $upload, $sNewName = '')
     {
-        if (is_null($aFiles)) {
-            $aFiles = $_FILES;
-        }
-
         if (false === ($upload instanceof \upload)) {
             return false;
         }
@@ -45,7 +40,7 @@ class attachment_helper
             return false;
         }
 
-        if (false === isset($aFiles[$field]) || $aFiles[$field]['name'] == '') {
+        if (false === isset($_FILES[$field]) || $_FILES[$field]['name'] == '') {
             return null; // the field is empty, NOT an error
         }
 
@@ -57,7 +52,7 @@ class attachment_helper
 
         $upload->setUploadDir($this->basePath, $uploadPath);
 
-        if (false === $upload->doUpload($field, $sNewName, $erase = false, $aFiles)) {
+        if (false === $upload->doUpload($field, $sNewName, false)) {
             return false;
         }
 
