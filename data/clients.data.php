@@ -653,4 +653,46 @@ class clients extends clients_crud
         $result = $this->bdd->query($sql);
         return (int) ($this->bdd->result($result, 0, 0));
     }
+
+    public function searchPrescripteur($iClientId = '', $nom = '', $prenom = '', $email = '', $offset = '', $limit = 100)
+    {
+        $where = ' WHERE 1 = 1';
+
+        if ($iClientId != '') {
+            $where .= ' AND c.id_client =' . $iClientId;
+        }
+
+        if ('' != $nom) {
+            $where .= ' AND c.nom LIKE "%' . $nom . '%"';
+        }
+        if ('' != $email) {
+            $where .= ' AND c.email LIKE "%' . $email . '%"';
+        }
+        if ('' != $prenom) {
+            $where .= ' AND c.prenom LIKE "%' . $prenom . '%"';
+        }
+
+        if ('' != $offset) {
+            $offset = ' OFFSET '. $offset;
+        }
+
+        if ('' != $limit) {
+            $limit = ' LIMIT '. $limit;
+        }
+
+        $sql = 'SELECT * FROM clients c
+                INNER JOIN prescripteurs p USING (id_client)'
+                . $where
+                . ' ORDER BY c.id_client DESC'
+                . $offset
+                . $limit;
+
+        $oQuery = $this->bdd->query($sql);
+        $result   = array();
+
+        while ($record = $this->bdd->fetch_array($oQuery)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
 }
