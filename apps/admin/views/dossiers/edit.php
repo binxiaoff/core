@@ -97,6 +97,16 @@
         <div id="resume">
             <h2>Resume & actions</h2>
             <div class="gauche">
+                <h2>Action</h2>
+                <table class="form" style="width: 580px;">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="stop_relances" id="stop_relances" value="1" <?= $this->projects->stop_relances == 1 ? 'checked':'' ?>/> <label for="stop_relances">Arrêt des relances</label>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
                 <h2>Identité</h2>
                 <table class="form" style="width: 580px;">
                     <tr>
