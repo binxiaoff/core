@@ -13,7 +13,7 @@
 
         <script>
 
-            $('.youtube').colorbox({iframe: true, innerWidth: 640, innerHeight: 390, opacity: 0.5, maxWidth: '90%', maxHeight: '30%'});
+            $('.youtube').colorbox({iframe: true, innerWidth: 640, innerHeight: 390, opacity: 0.5, maxWidth: '90%'});
             var sCurrentUrl = document.location.href;
             console.log(sCurrentUrl);
             if (0 < parseInt(sCurrentUrl.search('video=1')))
@@ -21,6 +21,19 @@
                 $('.youtube').colorbox({open: true});
             }
 
+            $(window).on('resize', function () {
+                if ($(this).width() < 640) {
+                    $.colorbox.resize({
+                        innerWidth: 300,
+                        innerHeight: 150
+                    });
+                } else {
+                    $.colorbox.resize({
+                        innerWidth: 640,
+                        innerHeight: 390
+                    });
+                }
+            });
 
             $(window).on('load resize', function () {
                 if ($(window).width() < 768) {
@@ -384,7 +397,7 @@
                                 ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn"><?= $this->lng['home']['cta-pretez'] ?></a><?
                             }
                             ?>
-                            
+
 
                             <?= $pf['nature_project'] ?>
                         </p>

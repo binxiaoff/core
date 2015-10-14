@@ -1,6 +1,5 @@
 <?
-if (isset($_SESSION['lexpress']))
-{
+if (isset($_SESSION['lexpress'])) {
     ?>
     <iframe name="lexpress" SRC="<?= $_SESSION['lexpress']['header'] ?>" scrolling="no" height="138px" width="100%" FRAMEBORDER="no"></iframe>
     <?
@@ -10,8 +9,7 @@ if (isset($_SESSION['lexpress']))
 
     <?
     if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' || $this->lurl == 'http://partenaire.unilend.challenges.fr' || $this->lurl == 'http://financementparticipatifpme.lefigaro.fr' || $this->lurl == 'http://financementparticipatifpme.lefigaro.fr'
-    )
-    {
+    ) {
 
         //if($this->lurl == 'http://capital.unilend.fr' || $this->lurl == 'http://challenges.unilend.fr'){
         ?>
@@ -40,12 +38,9 @@ if (isset($_SESSION['lexpress']))
 
 
             <?
-            if ($this->clients->checkAccess())
-            {
+            if ($this->clients->checkAccess()) {
                 $this->fireView('../blocs/header-account');
-            }
-            else
-            {
+            } else {
                 ?>
                 <div class="login-panel" style="width:525px;">
                     <form action="" method="post" id="form_connect" name="form_connect">
@@ -56,8 +51,7 @@ if (isset($_SESSION['lexpress']))
 
                             <?
                             // on lance le captcha
-                            if ($_SESSION['login']['nb_tentatives_precedentes'] > 5 && !isset($_POST['project_detail']))
-                            {
+                            if ($_SESSION['login']['nb_tentatives_precedentes'] > 5 && !isset($_POST['project_detail'])) {
                                 ?>
 
                                 <input type="text" name="captcha" class="field field-mini input_captcha_login" id="captcha" value="captcha" title="captcha">
@@ -77,13 +71,11 @@ if (isset($_SESSION['lexpress']))
                                 <?
                             }
                             // on lance le message d'attente
-                            elseif ($_SESSION['login']['nb_tentatives_precedentes'] > 1 && !isset($_POST['project_detail']))
-                            {
+                            elseif ($_SESSION['login']['nb_tentatives_precedentes'] > 1 && !isset($_POST['project_detail'])) {
                                 echo '<p class="error_login error_wait" style="display:block;">' . $this->lng['header']['vous-devez-attendre'] . ' ' . $_SESSION['login']['duree_waiting'] . ' ' . $this->lng['header']['secondes-avant-de-pourvoir-vous-connecter'] . '</p>';
                             }
                             // message d'erreur
-                            elseif ($_SESSION['login']['nb_tentatives_precedentes'] <= 1 && !isset($_POST['project_detail']))
-                            {
+                            elseif ($_SESSION['login']['nb_tentatives_precedentes'] <= 1 && !isset($_POST['project_detail'])) {
                                 echo '<p class="error_login">' . $this->error_login . '</p>';
                             }
                             ?>
@@ -107,8 +99,7 @@ if (isset($_SESSION['lexpress']))
                     </form>
                     <?
                     // On desactive la validation par la touche enter
-                    if ($_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5)
-                    {
+                    if ($_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5) {
                         ?>
                         <script type="text/javascript">
                             $("input").keypress(function (event) {
@@ -135,15 +126,12 @@ if (isset($_SESSION['lexpress']))
                     <ul>
                         <li class="active nav-item-home" style="margin-top:15px;"><a href="<?= $this->lurl ?>"><i class="icon-home"></i></a></li>
                         <?
-                        foreach ($this->tree->getNavigation(1, $this->language) as $key => $n)
-                        {
+                        foreach ($this->tree->getNavigation(1, $this->language) as $key => $n) {
                             ?><li><?
                                         $sNav = $this->tree->getNavigation($n['id_tree'], $this->language);
-                                        if ($sNav != false && $n['id_template'] != 2)
-                                        {
+                                        if ($sNav != false && $n['id_template'] != 2) {
                                             ?><ul><?
-                                        foreach ($sNav as $key => $sn)
-                                        {
+                                        foreach ($sNav as $key => $sn) {
                                             ?><li><a <?= ($this->tree->id_tree == $sn['id_tree'] ? 'class="active"' : '') ?> href="<?= $this->lurl . '/' . $sn['slug'] ?>"><?= $sn['title'] ?></a></li><?
                                         }
                                         ?></ul><?
@@ -163,6 +151,13 @@ if (isset($_SESSION['lexpress']))
                     </div><!-- /.search -->
                 </div><!-- /.shell -->
             </div><!-- /.navigation -->
+
+            <div class="search mobile-search">
+                <form action="<?= $this->lurl ?>/search" method="post">
+                    <input type="text" name="search" value="<?= $this->lng['header']['recherche'] ?>" title="<?= $this->lng['header']['recherche'] ?>" class="field field-mini">
+                    <button type="submit" class="icon-search"></button>
+                </form>
+            </div>
 
         </div><!-- /.shell -->
     </div><!-- /.header -->

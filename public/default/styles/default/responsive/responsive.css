@@ -108,14 +108,17 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .logedin-panel .login-toggle { display: block; position: absolute; top: 0; right: 0; margin: 0; }
     .logedin-panel .header_account_name { color: #fff; }
 
-    .search { width: 50%; float: none; position: absolute; top: 0; right: 0; z-index: 8; margin: 101px 0 0; background-color: #fff; box-shadow: 10px 10px 20px rgba(0,0,0,.5); }
+    .search { width: 50%; float: none; position: absolute; top: 0; left: 100%; z-index: 8; margin: 101px 0 0; background-color: #fff; box-shadow: 10px 10px 20px rgba(0,0,0,.5); display: none; }
     .search form { padding: 10px 35px 10px 10px; }
     .search button { top: 20px; }
     .search input { width: 100%; height: 35px; box-sizing: border-box; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; }
 
-    .navigation,
-    .nav-fixed .navigation { position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9; padding-left: 50px; background-color: transparent; }
+    .mobile-search { display: block; }
 
+    .navigation,
+    .nav-fixed .navigation { width: 100%; position: fixed; top: 0; left: 100%; bottom: 0; z-index: 9; padding-left: 50px; background-color: transparent; }
+
+    .navigation { box-sizing: border-box; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; }
     .navigation .shell { height: 100%; padding: 0; overflow-x: hidden; overflow-y: auto; -webkit-overflow-scrolling: touch; background-color: #b10366; }
 
     .navigation .nav-toggle { display: block; }
@@ -147,17 +150,16 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
     .search,
     .login-panel,
-    .logedin-panel,
-    .navigation {
+    .logedin-panel {
         -webkit-transition: -webkit-transform .5s ease;
         -ms-transition: -ms-transform .5s ease;
         transition: transform .5s ease;
     }
 
-    .search {
-        -webkit-transform: translateX(120%);
-        -ms-transform: translateX(120%);
-        transform: translateX(120%);
+    .navigation {
+        -webkit-transition: left .5s ease;
+        -ms-transition: left .5s ease;
+        transition: left .5s ease;
     }
 
     .login-panel,
@@ -167,29 +169,25 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
         transform: translateY(-150%);
     }
 
-    .navigation { 
-        -webkit-transform: translateX(100%);
-        -ms-transform: translateX(100%);
-        transform: translateX(100%);
-    }
+    .show-nav .navigation { left: 0%; }
 
-    .show-nav .navigation {
+    .search {
         -webkit-transform: translateX(0%);
         -ms-transform: translateX(0%);
         transform: translateX(0%);
     }
 
+    .show-search .search {
+        -webkit-transform: translateX(-100%);
+        -ms-transform: translateX(-100%);
+        transform: translateX(-100%);
+    }
+    
     .show-login .login-panel,
     .show-login .logedin-panel {
         -webkit-transform: translateY(0%);
         -ms-transform: translateY(0%);
         transform: translateY(0%);
-    }
-
-    .show-search .search { 
-        -webkit-transform: translateX(-200%);
-        -ms-transform: translateX(-200%);
-        transform: translateX(-200%);
     }
 
     .show-login .login-panel .login-toggle,
@@ -995,11 +993,11 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     #triNum_mobile, #triTx_mobile, #triAmount_mobile, #triStatuts_mobile {
         cursor: pointer;
     }
-    
+
     .has-fixed-nav .navigation ul ul a.active,.nav-fixed .navigation ul ul a.active{color: white;}
-    
+
     .article-entry h5{font-size: 12px;}
-    
+
     .login-panel .error_login_mobile{display: inline;}
     .login-panel .error_login_mobile .error_login{height: auto;text-align: center;}
 }
