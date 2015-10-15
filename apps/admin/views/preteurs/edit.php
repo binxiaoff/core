@@ -215,56 +215,56 @@
         <tr>
             <th>CNI/Passeport</th>
             <td>
-                <a href="<?=$this->lurl?>/protected/cni_passeport_lender/<?=$this->attachments[attachment_type::CNI_PASSPORTE]["path"]?>">
-                    <?=$this->attachments[attachment_type::CNI_PASSPORTE]["path"]; ?></a>
+                <a href="<?=$this->lurl?>/protected/cni_passeport_lender/<?=(isset($this->attachments[attachment_type::CNI_PASSPORTE])) ? $this->attachments[attachment_type::CNI_PASSPORTE]["path"] : ''?>">
+                    <?=(isset($this->attachments[attachment_type::CNI_PASSPORTE])) ? $this->attachments[attachment_type::CNI_PASSPORTE]["path"] : ''?></a>
             </td>
         </tr>
         <tr>
             <th>CNI/Passeport verso</th>
             <td>
-                <a href="<?=$this->lurl?>/protected/cni_passeport_verso_lender/<?=$this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]?>">
-                    <?=$this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]; ?></a>
+                <a href="<?=$this->lurl?>/protected/cni_passeport_verso_lender/<?=(isset($this->attachments[attachment_type::CNI_PASSPORTE_VERSO])) ? $this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"] : ''?>">
+                    <?=(isset($this->attachments[attachment_type::CNI_PASSPORTE_VERSO])) ? $this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"] : ''?></a>
             </td>
         </tr>
         <tr>
             <th>Justificatif de domicile</th>
             <td>
-                <a href="<?=$this->lurl?>/protected/justificatif_domicile_lender/<?=$this->attachments[attachment_type::JUSTIFICATIF_DOMICILE]["path"]?>">
-                    <?=$this->attachments[attachment_type::JUSTIFICATIF_DOMICILE]["path"];?></a>
+                <a href="<?=$this->lurl?>/protected/justificatif_domicile_lender/<?=(isset($this->attachments[attachment_type::JUSTIFICATIF_DOMICILE])) ? $this->attachments[attachment_type::JUSTIFICATIF_DOMICILE]["path"] : ''?>">
+                    <?=(isset($this->attachments[attachment_type::JUSTIFICATIF_DOMICILE])) ? $this->attachments[attachment_type::JUSTIFICATIF_DOMICILE]["path"] : ''?></a>
             </td>
         </tr>
         <tr>
             <th>RIB</th>
-            <td><a href="<?=$this->lurl?>/protected/rib_lender/<?=$this->attachments[attachment_type::RIB]["path"]?>">
-                    <?=$this->attachments[attachment_type::RIB]["path"]?></a></td>
+            <td><a href="<?=$this->lurl?>/protected/rib_lender/<?=(isset($this->attachments[attachment_type::RIB])) ? $this->attachments[attachment_type::RIB]["path"] : ''?>">
+                    <?=(isset($this->attachments[attachment_type::RIB])) ? $this->attachments[attachment_type::RIB]["path"] : ''?></a></td>
         </tr>
         <tr>
             <th>Attestation d'hébergement par un tiers</th>
             <td>
-                <a href="<?=$this->lurl?>/protected/attestation_hebergement_tiers_lender/<?=$this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]["path"]?>">
-                    <?=$this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]["path"];?></a>
+                <a href="<?=$this->lurl?>/protected/attestation_hebergement_tiers_lender/<?=(isset($this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS])) ? $this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]["path"] : ''?>">
+                    <?=(isset($this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS])) ? $this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]["path"] : ''?></a>
             </td>
         </tr>
         <tr>
             <th>CNI ou passport du tiers hébergeant</th>
             <td>
-                <a href="<?=$this->lurl?>/protected/cni_passport_tiers_hebergeant_lender/<?=$this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]["path"]?>">
-                    <?=$this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]["path"];?></a></td>
+                <a href="<?=$this->lurl?>/protected/cni_passport_tiers_hebergeant_lender/<?=(isset($this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT])) ? $this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]["path"] : ''?>">
+                    <?=(isset($this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT])) ? $this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]["path"] : ''?></a></td>
         </tr>
         <tr>
             <th>CNI/Passeport dirigeant</th>
-            <td><a href="<?=$this->lurl?>/protected/cni_passeport_dirigent_lender/<?=$this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]?>">
-                    <?=$this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]?></a></td>
+            <td><a href="<?=$this->lurl?>/protected/cni_passeport_dirigent_lender/<?=(isset($this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT])) ? $this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"] : ''?>">
+                    <?=(isset($this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT])) ? $this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"] : ''?></a></td>
         </tr>
         <tr>
             <th>Délégation de pouvoir</th>
-            <td><a href="<?=$this->lurl?>/protected/delegation_pouvoir_lender/<?=$this->attachments[attachment_type::DELEGATION_POUVOIR]["path"]?>">
-                    <?=$this->attachments[attachment_type::DELEGATION_POUVOIR]["path"]?></a></td>
+            <td><a href="<?=$this->lurl?>/protected/delegation_pouvoir_lender/<?=(isset($this->attachments[attachment_type::DELEGATION_POUVOIR])) ? $this->attachments[attachment_type::DELEGATION_POUVOIR]["path"] : ''?>">
+                    <?=(isset($this->attachments[attachment_type::DELEGATION_POUVOIR])) ? $this->attachments[attachment_type::DELEGATION_POUVOIR]["path"] : ''?></a></td>
         </tr>
         <tr>
             <th>Extrait kbis</th>
-            <td><a href="<?=$this->lurl?>/protected/extrait_kbis_lender/<?=$this->attachments[attachment_type::KBIS]["path"]?>">
-                    <?=$this->attachments[attachment_type::KBIS]["path"]?></a></td>
+            <td><a href="<?=$this->lurl?>/protected/extrait_kbis_lender/<?=(isset($this->attachments[attachment_type::KBIS])) ? $this->attachments[attachment_type::KBIS]["path"] : ''?>">
+                    <?=(isset($this->attachments[attachment_type::KBIS])) ? $this->attachments[attachment_type::KBIS]["path"] : ''?></a></td>
         </tr>
 
         <tr>
@@ -273,43 +273,46 @@
                 <?
                 if($this->clients_mandats->get($this->clients->id_client,'id_client'))
                 {
-                    ?><a href="<?=$this->lurl?>/protected/mandat_preteur/<?=$this->clients_mandats->name?>"><?=$this->clients_mandats->name?></a><?
+                ?>
+                    <a href="<?=$this->lurl?>/protected/mandat_preteur/<?=(isset($this->clients_mandats)) ? $this->clients_mandats->name : ''?>">
+                    <?=(isset($this->clients_mandats)) ? $this->clients_mandats->name : ''?></a>
+                <?
                 }
                 ?>
             </td>
         </tr>
         <tr>
             <th>Document fiscal</th>
-            <td><a href="<?=$this->lurl?>/protected/document_fiscal_preteur/<?=$this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"]?>">
-                    <?=$this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"]?></a></td>
+            <td><a href="<?=$this->lurl?>/protected/document_fiscal_preteur/<?=(isset($this->attachments[attachment_type::JUSTIFICATIF_FISCAL])) ? $this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"] : ''?>">
+                    <?=(isset($this->attachments[attachment_type::JUSTIFICATIF_FISCAL])) ? $this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"] : ''?></a></td>
         </tr>
         <tr>
             <th>Autre 1</th>
-            <td><a href="<?=$this->lurl?>/protected/autre_lender/<?=$this->attachments[attachment_type::AUTRE1]["path"]?>"><?=$this->attachments[attachment_type::AUTRE1]["path"]?></a></td>
+            <td><a href="<?=$this->lurl?>/protected/autre_lender/<?=(isset($this->attachments[attachment_type::AUTRE1])) ? $this->attachments[attachment_type::AUTRE1]["path"] : ''?>"><?=(isset($this->attachments[attachment_type::AUTRE1])) ? $this->attachments[attachment_type::AUTRE1]["path"] : ''?></a></td>
         </tr>
         <tr>
             <th>Autre 2</th>
-            <td><a href="<?=$this->lurl?>/protected/autre2_lender/<?=$this->attachments[attachment_type::AUTRE2]["path"]?>"><?=$this->attachments[attachment_type::AUTRE2]["path"]?></a></td>
+            <td><a href="<?=$this->lurl?>/protected/autre2_lender/<?=(isset($this->attachments[attachment_type::AUTRE2])) ? $this->attachments[attachment_type::AUTRE2]["path"] : ''?>"><?=(isset($this->attachments[attachment_type::AUTRE2])) ? $this->attachments[attachment_type::AUTRE2]["path"] : ''?></a></td>
         </tr>
         <tr>
             <th>Autre 3</th>
-            <td><a href="<?=$this->lurl?>/protected/autre3_lender/<?=$this->attachments[attachment_type::AUTRE3]["path"]?>"><?=$this->attachments[attachment_type::AUTRE3]["path"]?></a></td>
+            <td><a href="<?=$this->lurl?>/protected/autre3_lender/<?=(isset($this->attachments[attachment_type::AUTRE3])) ? $this->attachments[attachment_type::AUTRE3]["path"] : ''?>"><?=(isset($this->attachments[attachment_type::AUTRE3])) ? $this->attachments[attachment_type::AUTRE3]["path"] : ''?></a></td>
         </tr>
         <tr>
             <th>Dispense de prélèvement 2014</th>
-            <td><a href="<?=$this->lurl?>/protected/dispense_prelevement_2014_lender/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2014]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2014]["path"]?></a></td>
+            <td><a href="<?=$this->lurl?>/protected/dispense_prelevement_2014_lender/<?=(isset($this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2014])) ? $this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2014]["path"] : ''?>"><?=(isset($this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2014])) ? $this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2014]["path"] : ''?></a></td>
         </tr>
         <tr>
             <th>Dispense de prélèvement 2015</th>
-            <td><a href="<?=$this->lurl?>/protected/dispense_prelevement_2015_lender/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2015]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2015]["path"]?></a></td>
+            <td><a href="<?=$this->lurl?>/protected/dispense_prelevement_2015_lender/<?=(isset($this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2015])) ? $this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2015]["path"] : ''?>"><?=(isset($this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2015])) ? $this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2015]["path"] : ''?></a></td>
         </tr>
         <tr>
             <th>Dispense de prélèvement 2016</th>
-            <td><a href="<?=$this->lurl?>/protected/dispense_prelevement_2016_lender/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2016]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2016]["path"]?></a></td>
+            <td><a href="<?=$this->lurl?>/protected/dispense_prelevement_2016_lender/<?=(isset($this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2016])) ? $this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2016]["path"] : ''?>"><?=(isset($this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2016])) ? $this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2016]["path"] : ''?></a></td>
         </tr>
         <tr>
             <th>Dispense de prélèvement 2017</th>
-            <td><a href="<?=$this->lurl?>/protected/dispense_prelevement_2017_lender/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2017]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2017]["path"]?></a></td>
+            <td><a href="<?=$this->lurl?>/protected/dispense_prelevement_2017_lender/<?=(isset($this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2017])) ? $this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2017]["path"] : ''?>"><?=(isset($this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2017])) ? $this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2017]["path"] : ''?></a></td>
         </tr>
     </table>
     <br /><br />

@@ -4,6 +4,16 @@ class dossiersController extends bootstrap
 {
     public $Command;
 
+    /**
+     * @var int Count project in searchDossiers
+     */
+    public $iCountProjects;
+
+    /**
+     * @var string for block risk note and comments
+     */
+    public $bReadonlyRiskNote;
+
     public function dossiersController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
@@ -27,7 +37,7 @@ class dossiersController extends bootstrap
         $this->wsdl = $this->settings->value;
         // Identification
         $this->identification = $login . '|' . $mdp;
-
+//        (int)$this->projects->period === 1000000 || (int)$this->projects->period === 0
         // Liste deroulante conseil externe de l'entreprise
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $this->conseil_externe = $this->ficelle->explodeStr2array($this->settings->value);
@@ -59,12 +69,13 @@ class dossiersController extends bootstrap
             } else {
                 $date2 = '';
             }
-
-            $this->lProjects = $this->projects->searchDossiers($date1, $date2, $_POST['montant'], $_POST['duree'], $_POST['status'], $_POST['analyste'], $_POST['siren'], $_POST['id'], $_POST['raison-sociale']);
-        } // statut
-        elseif (isset($this->params[0])) {
+            $iNbStartPagination = (isset($_POST['nbLignePagination'])) ? (int)$_POST['nbLignePagination'] : 0;
+            $this->nb_lignes = (isset($this->nb_lignes)) ? (int)$this->nb_lignes : 100;
+            $this->lProjects = $this->projects->searchDossiers($date1, $date2, $_POST['montant'], $_POST['duree'], $_POST['status'], $_POST['analyste'], $_POST['siren'], $_POST['id'], $_POST['raison-sociale'],$iNbStartPagination,$this->nb_lignes);
+        } elseif (isset($this->params[0])) {// statut
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
+        $this->iCountProjects = (isset($this->lProjects) && is_array($this->lProjects)) ? array_shift($this->lProjects) : 0;
     }
 
     public function _edit()
@@ -88,6 +99,8 @@ class dossiersController extends bootstrap
         $this->notifications                 = $this->loadData('notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+        // Id Status to block risk note and risk comments.
+        $aBlockRiskStatus = array(50, 60, 70, 80, 100, 110, 120, 130);
 
         $this->settings->get('Durée des prêts autorisées', 'type');
         $this->dureePossible = explode(',', $this->settings->value);
@@ -96,6 +109,10 @@ class dossiersController extends bootstrap
         }
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
+            if(false === in_array($this->projects->period, $this->dureePossible)){
+                array_push($this->dureePossible,$this->projects->period);
+                sort($this->dureePossible);
+            }
             $this->projects_notes->get($this->params[0], 'id_project');
 
             // Liste deroulante secteurs
@@ -120,12 +137,14 @@ class dossiersController extends bootstrap
 
             // on check le statut, si c'est la premiere fois qu'il est consulté on le passe en "à l'étude"
             $this->current_projects_status->getLastStatut($this->projects->id_project);
-
             if ($this->current_projects_status->status == 10) {
                 $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 20, $this->projects->id_project);
                 // on reactualise l'affichage
                 $this->current_projects_status->getLastStatut($this->projects->id_project);
             }
+
+            //Check if status is eligible for block the note and comments.
+            $this->bReadonlyRiskNote = (in_array($this->current_projects_status->status, $aBlockRiskStatus)) ?: false;
 
             // On recup l'entreprise
             $this->companies->get($this->projects->id_company, 'id_company');
@@ -542,16 +561,17 @@ class dossiersController extends bootstrap
             if (isset($_POST['send_form_dossier_resume'])) {
                 // On check avant la validation que la date de publication & date de retrait sont OK sinon on bloque(KLE)
                 /* La date de publication doit être au minimum dans 5min et la date de retrait à plus de 5min (pas de contrainte) */
-                $tab_date_pub_post          = explode('/', $_POST['date_publication']);
-                $date_publication_full_test = $tab_date_pub_post[2] . '-' . $tab_date_pub_post[1] . '-' . $tab_date_pub_post[0] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute'] . ':00';
-                $tab_date_retrait_post      = explode('/', $_POST['date_retrait']);
-                $date_retrait_full_test     = $tab_date_retrait_post[2] . '-' . $tab_date_retrait_post[1] . '-' . $tab_date_retrait_post[0] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':00';
-                $date_auj_plus_5min         = date("Y-m-d H:i:s", mktime(date('H'), date('i') + 5, date('s'), date("m"), date("d"), date("Y")));
-                $date_auj_plus_1jour        = date("Y-m-d H:i:s", mktime(date('H'), date('i'), date('s'), date("m"), date("d") + 1, date("Y")));
                 $dates_valide               = false;
-
-                if ($date_publication_full_test > $date_auj_plus_5min && $date_retrait_full_test > $date_auj_plus_1jour) {
-                    $dates_valide = true;
+                if(! is_null($_POST['date_publication']) && ! empty($_POST['date_publication'])) {
+                    $tab_date_pub_post          = explode('/', $_POST['date_publication']);
+                    $date_publication_full_test = $tab_date_pub_post[2] . '-' . $tab_date_pub_post[1] . '-' . $tab_date_pub_post[0] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute'] . ':00';
+                    $tab_date_retrait_post      = explode('/', $_POST['date_retrait']);
+                    $date_retrait_full_test     = $tab_date_retrait_post[2] . '-' . $tab_date_retrait_post[1] . '-' . $tab_date_retrait_post[0] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':00';
+                    $date_auj_plus_5min         = date("Y-m-d H:i:s", mktime(date('H'), date('i') + 5, date('s'), date("m"), date("d"), date("Y")));
+                    $date_auj_plus_1jour        = date("Y-m-d H:i:s", mktime(date('H'), date('i'), date('s'), date("m"), date("d") + 1, date("Y")));
+                    if ($date_publication_full_test > $date_auj_plus_5min && $date_retrait_full_test > $date_auj_plus_1jour) {
+                        $dates_valide = true;
+                    }
                 }
 
                 $this->retour_dates_valides = "";
@@ -631,12 +651,12 @@ class dossiersController extends bootstrap
                     // --- Fin Génération du slug --- //
                     // en prep funding
                     if ($this->current_projects_status->status >= 35) {
-                        if (isset($_POST['date_publication'])) {
+                        if (isset($_POST['date_publication']) && ! empty($_POST['date_publication'])) {
                             $this->projects->date_publication = $this->dates->formatDateFrToMysql($_POST['date_publication']);
                             // Récupération des heures/minutes/sec
                             $this->projects->date_publication_full = $this->projects->date_publication . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute'] . ':0';
                         }
-                        if (isset($_POST['date_retrait'])) {
+                        if (isset($_POST['date_retrait']) && ! empty($_POST['date_retrait'])) {
                             $this->projects->date_retrait = $this->dates->formatDateFrToMysql($_POST['date_retrait']);
                             // Récupération des heures/minutes/sec
                             $this->projects->date_retrait_full = $this->projects->date_retrait . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':0';

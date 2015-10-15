@@ -105,7 +105,7 @@ class SalesForce
                     REPLACE(co.email_facture,',','') AS 'EmailFacturation',
                     co.id_client_owner AS 'IDClient',
                     co.forme as 'FormeSociale',
-                    '01224000000Zkxx' as 'Sfcompte'
+                    '012240000002G4U' as 'Sfcompte'
                   FROM
                     companies co
                   LEFT JOIN
@@ -118,6 +118,7 @@ class SalesForce
     {
         $sQuery = "SELECT
                     c.id_client as 'IDClient',
+                    c.id_client as 'IDClient_2',
                     c.id_langue as 'Langue',
                     CONVERT(CAST(REPLACE(c.civilite,',','') as BINARY) USING utf8) as 'Civilite',
                     CONVERT(CAST(REPLACE(c.nom,',','') as BINARY) USING utf8) as 'Nom',
@@ -162,7 +163,8 @@ class SalesForce
                     CONVERT(CAST(REPLACE(ca.adresse3,',','') as BINARY) USING utf8) as 'Adresse3',
                     CONVERT(CAST(REPLACE(ca.cp,',','') as BINARY) USING utf8) as 'CP',
                     CONVERT(CAST(REPLACE(ca.ville,',','') as BINARY) USING utf8) as 'Ville',
-                    acountry.fr as 'Pays'
+                    acountry.fr as 'Pays',
+                    '012240000002G4e' as 'Sfcompte'
                   FROM
                     clients c
                     LEFT JOIN clients_adresses ca on (c.id_client = ca.id_client)
@@ -309,7 +311,7 @@ class SalesForce
                     acountry.fr as 'Pays',
                     SUM(l.amount)/100 as 'TotalPretEur',
                     '' as 'DeletingProspect',
-                    '0012400000F6xvT' as 'Sfcompte'
+                    '0012400000K0Bxw' as 'Sfcompte'
                   FROM
                     clients c
                     LEFT JOIN clients_adresses ca on (c.id_client = ca.id_client)
@@ -503,7 +505,6 @@ class SalesForce
     /**
      * @param string $sQuery sql query
      * @param string $sNameFile File Name to generate
-     * @param bool|false $bSpecialTreatments true if treat html special content
      */
     private function tryIt($sQuery, $sNameFile)
     {

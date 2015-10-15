@@ -23,7 +23,7 @@ function AjaxObject()
 		return xhr_object;
 	}
 	else
-	{ 
+	{
 		alert('Votre navigateur ne supporte pas les objets XMLHTTPRequest...');
 		return;
 	}
@@ -34,10 +34,10 @@ function deleteImageElement(id_elt,slug)
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	xhr_object.onreadystatechange = function()
 	{
-		if (xhr_object.readyState != 4) 
+		if (xhr_object.readyState != 4)
 		{
 			document.getElementById('deleteImageElement' + id_elt).innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
 		}
@@ -58,10 +58,10 @@ function deleteFichierElement(id_elt,slug)
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	xhr_object.onreadystatechange = function()
 	{
-		if (xhr_object.readyState != 4) 
+		if (xhr_object.readyState != 4)
 		{
 			document.getElementById('deleteFichierElement' + id_elt).innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
 		}
@@ -82,10 +82,10 @@ function deleteFichierProtectedElement(id_elt,slug)
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	xhr_object.onreadystatechange = function()
 	{
-		if (xhr_object.readyState != 4) 
+		if (xhr_object.readyState != 4)
 		{
 			document.getElementById('deleteFichierProtectedElement' + id_elt).innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
 		}
@@ -106,10 +106,10 @@ function deleteImageElementBloc(id_elt,slug)
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	xhr_object.onreadystatechange = function()
 	{
-		if (xhr_object.readyState != 4) 
+		if (xhr_object.readyState != 4)
 		{
 			document.getElementById('deleteImageElementBloc' + id_elt).innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
 		}
@@ -130,10 +130,10 @@ function deleteFichierElementBloc(id_elt,slug)
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	xhr_object.onreadystatechange = function()
 	{
-		if (xhr_object.readyState != 4) 
+		if (xhr_object.readyState != 4)
 		{
 			document.getElementById('deleteFichierElementBloc' + id_elt).innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
 		}
@@ -154,10 +154,10 @@ function deleteFichierProtectedElementBloc(id_elt,slug)
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	xhr_object.onreadystatechange = function()
 	{
-		if (xhr_object.readyState != 4) 
+		if (xhr_object.readyState != 4)
 		{
 			document.getElementById('deleteFichierProtectedElementBloc' + id_elt).innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
 		}
@@ -178,10 +178,10 @@ function deleteImageTree(id_tree,lng)
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	xhr_object.onreadystatechange = function()
 	{
-		if (xhr_object.readyState != 4) 
+		if (xhr_object.readyState != 4)
 		{
 			document.getElementById('deleteImageTree_' + lng).innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
 		}
@@ -201,10 +201,10 @@ function deleteVideoTree(id_tree,lng)
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	xhr_object.onreadystatechange = function()
 	{
-		if (xhr_object.readyState != 4) 
+		if (xhr_object.readyState != 4)
 		{
 			document.getElementById('deleteVideoTree_' + lng).innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
 		}
@@ -226,10 +226,10 @@ function loadNomTexte(section)
 	{
 		xhr_object = AjaxObject();
 		var param = no_cache();
-	
+
 		xhr_object.onreadystatechange = function()
 		{
-			if (xhr_object.readyState != 4) 
+			if (xhr_object.readyState != 4)
 			{
 				document.getElementById('listeNomTraduction').innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
 			}
@@ -248,7 +248,7 @@ function loadNomTexte(section)
 	else
 	{
 		document.getElementById('listeNomTraduction').innerHTML = '';
-		document.getElementById('elementTraduction').innerHTML = '';	
+		document.getElementById('elementTraduction').innerHTML = '';
 		document.getElementById('btnAjouterTraduction').style.display = 'none';
 	}
 }
@@ -260,10 +260,10 @@ function loadTradTexte(nom,section)
 	{
 		xhr_object = AjaxObject();
 		var param = no_cache();
-	
+
 		xhr_object.onreadystatechange = function()
 		{
-			if (xhr_object.readyState != 4) 
+			if (xhr_object.readyState != 4)
 			{
 				document.getElementById('elementTraduction').innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
 			}
@@ -278,7 +278,7 @@ function loadTradTexte(nom,section)
 	}
 	else
 	{
-		document.getElementById('elementTraduction').innerHTML = '';	
+		document.getElementById('elementTraduction').innerHTML = '';
 	}
 }
 
@@ -287,7 +287,7 @@ function activeUserZone(id_user,id_zone,zone)
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	xhr_object.onreadystatechange = function()
 	{
 		if(xhr_object.readyState == 4 && xhr_object.status == 200)
@@ -305,10 +305,10 @@ function ajoutProduitComp(id_prod,id_crosseling)
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	xhr_object.onreadystatechange = function()
 	{
-		if (xhr_object.readyState != 4) 
+		if (xhr_object.readyState != 4)
 		{
 			document.getElementById('bloc_comp_produit').innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
 		}
@@ -328,10 +328,10 @@ function moveProduitComp(sens,id_prod,id_crosseling)
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	xhr_object.onreadystatechange = function()
 	{
-		if (xhr_object.readyState != 4) 
+		if (xhr_object.readyState != 4)
 		{
 			document.getElementById('bloc_comp_produit').innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
 		}
@@ -350,10 +350,10 @@ function deleteProduitComp(id_prod,id_crosseling)
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	xhr_object.onreadystatechange = function()
 	{
-		if (xhr_object.readyState != 4) 
+		if (xhr_object.readyState != 4)
 		{
 			document.getElementById('bloc_comp_produit').innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
 		}
@@ -372,10 +372,10 @@ function deleteImageFicheProduit(id_img,id_prod)
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	xhr_object.onreadystatechange = function()
 	{
-		if (xhr_object.readyState != 4) 
+		if (xhr_object.readyState != 4)
 		{
 			document.getElementById('bloc_images_produit').innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
 		}
@@ -394,10 +394,10 @@ function moveImageToFirstOne(id_img,id_prod)
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	xhr_object.onreadystatechange = function()
 	{
-		if (xhr_object.readyState != 4) 
+		if (xhr_object.readyState != 4)
 		{
 			document.getElementById('bloc_images_produit').innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
 		}
@@ -419,22 +419,22 @@ function check_status_dossier(surl,status,id_project)
 	}
 	else if(status == 30)
 	{
-		var message = 'rejeter';	
+		var message = 'rejeter';
 	}
-	
-	
+
+
 	if(confirm('Etes vous sur de '+message+' le dossier ?') == true)
 	{
 		xhr_object = AjaxObject();
 		var param = no_cache();
-		
+
 		var date_pub = document.getElementById('date_pub').value;
 		var date_pub = date_pub.replace(/\//g,"-");
-		
+
 		xhr_object.onreadystatechange = function()
 		{
 			if(xhr_object.readyState == 4 && xhr_object.status == 200)
-			{			
+			{
 				var reponse = xhr_object.responseText;
 				if(reponse == 'nok')
 				{
@@ -449,20 +449,20 @@ function check_status_dossier(surl,status,id_project)
 		}
 		xhr_object.open('GET',add_url + '/ajax/check_status_dossier/' + status + '/' + id_project + '/' + date_pub + '/' + param ,false);
 		xhr_object.send(null);
-		
-		
-		
+
+
+
 		/*xhr_object = AjaxObject();
 		var param = no_cache();
-		
+
 		xhr_object.onreadystatechange = function()
 		{
 			if(xhr_object.readyState == 4 && xhr_object.status == 200)
-			{			
+			{
 				var reponse = xhr_object.responseText;
 				if(reponse == 'nok')
 				{
-					
+
 				}
 				else
 				{
@@ -473,30 +473,30 @@ function check_status_dossier(surl,status,id_project)
 		xhr_object.open('GET',add_url + '/ajax/status_dossier/' + id_project + '/' + param ,false);
 		xhr_object.send(null);
 		*/
-		
-		
+
+
 		/*xhr_object = AjaxObject();
 		var param = no_cache();
-		
+
 		xhr_object.onreadystatechange = function()
 		{
 			if(xhr_object.readyState == 4 && xhr_object.status == 200)
-			{			
+			{
 				var reponse = xhr_object.responseText;
 				if(reponse == 'nok')
 				{
-					
+
 				}
 				else
 				{
 					document.getElementById('date_publication').innerHTML = reponse;
-					
+
 					var demain=new Date();
 					demain.setTime(demain.getTime() + 24 * 3600 * 1000);
-					
+
 					$("#date_pub").datepicker({
-							showOn: 'both', 
-							buttonImage: surl+'/images/admin/calendar.gif', 
+							showOn: 'both',
+							buttonImage: surl+'/images/admin/calendar.gif',
 							buttonImageOnly: true,
 							changeMonth: true,
 							changeYear: true,
@@ -533,8 +533,8 @@ function deleteMemo(id_project_comment,id_project)
 
 function valid_etape1(id_project)
 {
-	
-	var val = { 
+
+	var val = {
 		montant_etape1: $("#montant_etape1").val(),
 		duree_etape1: $("#duree_etape1").val(),
 		siren_etape1: $("#siren_etape1").val(),
@@ -543,20 +543,31 @@ function valid_etape1(id_project)
 	}
 	$.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
 		//alert(data);
-		
+
 		$("#siren").val($("#siren_etape1").val());
 		$("#montant").val($("#montant_etape1").val())
 		$('#duree option[value="'+$("#duree_etape1").val()+'"]').attr('selected', true);
-		
+
 		$("#montant_etape3").val($("#montant_etape1").val())
 		$('#duree_etape3 option[value="'+$("#duree_etape1").val()+'"]').attr('selected', true);
-		
+
 		$("#valid_etape1").slideDown();
-		
+
+		if(0 == $("#duree_etape1").val()) {
+			$("#status").css('display', 'none');
+			$("#msgProject").css('display', 'none');
+			$("#displayPeriodHS").css('display', 'block');
+			$("#msgProjectPeriodHS").css('display', 'block');
+		} else {
+			$("#status").css('display', 'block');
+			$("#msgProject").css('display', 'block');
+			$("#displayPeriodHS").css('display', 'none');
+			$("#msgProjectPeriodHS").css('display', 'none');
+		}
 		setTimeout(function() {
       		$("#valid_etape1").slideUp();
 		}, 3000);
-		
+
 	});
 }
 
@@ -566,32 +577,32 @@ function create_client(id_project)
 {
 	var val = { email: $("#email_etape2").val(),id_client: $("#id_client").val(),id_project: id_project }
 	$.post(add_url + '/ajax/create_client', val).done(function(data) {
-		
+
 		obj = jQuery.parseJSON(data);
-		
+
 		var error = obj.error;
 		if(error == 'nok')
 		{
 			$("#email_etape2").css('border-color','red');
-			$("#email_etape2").css('color','red');	
-			
+			$("#email_etape2").css('color','red');
+
 			$("#sav_email2").show();
 			$("#sav_etape2").hide();
-			
+
 			$("#valid_end").show();
 			$("#end_create").hide();
 		}
 		else
 		{
 			var id_client = obj.id_client;
-			
+
 			$("#email_etape2").css('border-color','#2F86B2');
 			$("#email_etape2").css('color','#2F86B2');
-			
+
 			$("#id_client").val(id_client);
 			$("#sav_email2").hide();
 			$("#sav_etape2").show();
-			
+
 			$("#valid_end").hide();
 			$("#end_create").show();
 		}
@@ -602,24 +613,24 @@ function valid_create(id_project)
 {
 	var val = { id_project: id_project }
 	$.post(add_url + '/ajax/valid_create', val).done(function(data) {
-		
+
 		$(location).attr('href',add_url + '/dossiers');
 	});
 }
 
 function valid_etape2(id_project)
 {
-	
+
 	if($("#same_address_etape2").attr('checked')== true) var same_address_etape2 = 1;
 	else  var same_address_etape2 = 0;
-	
+
 	var enterprise_etape2 = $('input[name=enterprise_etape2]:checked', '#dossier_etape2').val();
-	
+
 	var civilite_etape2 = $('input[name=civilite_etape2]:checked', '#dossier_etape2').val();
-	
+
 	var civilite2_etape2 = $('input[name=civilite2_etape2]:checked', '#dossier_etape2').val();
-	
-	var val = { 
+
+	var val = {
 		raison_sociale_etape2: $("#raison_sociale_etape2").val(),
 		forme_juridique_etape2: $("#forme_juridique_etape2").val(),
 		capital_social_etape2: $("#capital_social_etape2").val(),
@@ -653,11 +664,11 @@ function valid_etape2(id_project)
 	}
 	$.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
 		//alert(data);
-		
+
 		$("#title").val($("#raison_sociale_etape2").val());
 		$("#prenom").val($("#prenom_etape2").val());
 		$("#nom").val($("#nom_etape2").val());
-		
+
 		if(same_address_etape2 == 1)
 		{
 			$("#adresse").val($("#address_etape2").val());
@@ -672,20 +683,20 @@ function valid_etape2(id_project)
 			$("#zip").val($("#zip_correspondance_etape2").val());
 			$("#phone").val($("#phone_correspondance_etape2").val());
 		}
-		
-		
+
+
 		$("#valid_etape2").slideDown();
-		
+
 		setTimeout(function() {
       		$("#valid_etape2").slideUp();
 		}, 3000);
-		
+
 	});
 }
 
 function valid_etape3(id_project)
 {
-	var val = { 
+	var val = {
 		montant_etape3: $("#montant_etape3").val(),
 		duree_etape3: $("#duree_etape3").val(),
 		titre_etape3: $("#titre_etape3").val(),
@@ -698,28 +709,28 @@ function valid_etape3(id_project)
 	}
 	$.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
 		//alert(data);
-		
+
 		$("#montant").val($("#montant_etape3").val());
 		$("#montant_etape1").val($("#montant_etape3").val());
-		
+
 		$('#duree option[value="'+$("#duree_etape3").val()+'"]').attr('selected', true);
 		$('#duree_etape1 option[value="'+$("#duree_etape3").val()+'"]').attr('selected', true);
-		
+
 		$("#title").val($("#titre_etape3").val());
-		
+
 		$("#valid_etape3").slideDown();
-		
+
 		setTimeout(function() {
       		$("#valid_etape3").slideUp();
 		}, 3000);
-		
+
 	});
 }
 
 function valid_etape4(id_project)
 {
-	
-	var val = { 
+
+	var val = {
 		ca_0: $("#ca_0").val(),
 		ca_id_0: $("#ca_id_0").val(),
 		ca_1: $("#ca_1").val(),
@@ -769,7 +780,7 @@ function valid_etape4(id_project)
 		tresorie_dispo_actuellement: $("#tresorie_dispo_actuellement").val(),
 		autre_demandes_financements_prevues: $("#autre_demandes_financements_prevues").val(),
 		precisions: $("#precisions").val(),
-		
+
 		immobilisations_corporelles_1: $("#immobilisations_corporelles_1").val(),
 		immobilisations_corporelles_2: $("#immobilisations_corporelles_2").val(),
 		immobilisations_corporelles_3: $("#immobilisations_corporelles_3").val(),
@@ -809,7 +820,7 @@ function valid_etape4(id_project)
 		autres_dettes_1: $("#autres_dettes_1").val(),
 		autres_dettes_2: $("#autres_dettes_2").val(),
 		autres_dettes_3: $("#autres_dettes_3").val(),
-		
+
 		decouverts_bancaires: $("#decouverts_bancaires").val(),
 		lignes_de_tresorerie: $("#lignes_de_tresorerie").val(),
 		affacturage: $("#affacturage").val(),
@@ -827,7 +838,7 @@ function valid_etape4(id_project)
 		location_longue_duree: $("#location_longue_duree").val(),
 		pret_oseo: $("#pret_oseo").val(),
 		pret_participatif: $("#pret_participatif").val(),
-		
+
 		id_project: id_project,
 		etape: 4
 	}
@@ -835,18 +846,18 @@ function valid_etape4(id_project)
 		//alert(data);
 
 		$("#valid_etape4").slideDown();
-		
+
 		setTimeout(function() {
       		$("#valid_etape4").slideUp();
 		}, 3000);
-		
+
 	});
 }
 
 function refeshEtape4(id_project)
 {
-	
-	var val = { 
+
+	var val = {
 		id_project: id_project
 	}
 	$.post(add_url + '/ajax/refeshEtape4', val).done(function(data) {
@@ -854,7 +865,7 @@ function refeshEtape4(id_project)
 		{
 			$("#contenu_etape4").html(data);
 			$("#valid_upload_etape4").slideDown();
-		
+
 			setTimeout(function() {
 				$("#valid_upload_etape4").slideUp();
 			}, 3000);
@@ -864,7 +875,7 @@ function refeshEtape4(id_project)
 
 function valid_etape6(id_project)
 {
-	var val = { 
+	var val = {
 		question1: $("#question1").val(),
 		question2: $("#question2").val(),
 		question3: $("#question3").val(),
@@ -873,57 +884,57 @@ function valid_etape6(id_project)
 	}
 	$.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
 		//alert(data);
-		
+
 		$("#valid_etape6").slideDown();
-		
+
 		setTimeout(function() {
       		$("#valid_etape6").slideUp();
 		}, 3000);
-		
+
 	});
 }
 
 function recapdashboard(month,annee)
 {
-	var val = { 
+	var val = {
 		month: month,
 		annee: annee
 	}
 	$.post(add_url + '/ajax/recapdashboard', val).done(function(data) {
-		
-		
+
+
       	$("#recapDashboard").html(data);
-		
+
 	});
 }
 
 function ratioDashboard(month,annee)
 {
-	var val = { 
+	var val = {
 		month: month,
 		annee: annee
 	}
 	$.post(add_url + '/ajax/ratioDashboard', val).done(function(data) {
-		
-		
+
+
       	$("#ratioDashboard").html(data);
-		
+
 	});
 }
 
 
 function generer_le_mdp(id_client)
 {
-	
-	var val = { 
+
+	var val = {
 		id_client: id_client
 	}
 	$.post(add_url + '/ajax/generer_mdp', val).done(function(data) {
 		if(data != 'nok')
 		{
-			
+
 			$(".reponse").slideDown();
-		
+
 			setTimeout(function() {
 				$(".reponse").slideUp();
 			}, 3000);
@@ -933,25 +944,25 @@ function generer_le_mdp(id_client)
 
 function loadDashYear(annee)
 {
-	var val = { 
+	var val = {
 		annee: annee
 	}
 	$.post(add_url + '/ajax/loadDashYear', val).done(function(data) {
 		//alert(data);
 		if(data != 'nok')
 		{
-			
+
 			$(".contentLoadYear").html(data);
 
 		}
-	});	
+	});
 }
 
 function check_status_dossierV2(status,id_project)
 {
 	if(status == 31) var message = 'passer en revue';
-	else if(status == 30) var message = 'rejeter';	
-		
+	else if(status == 30) var message = 'rejeter';
+
 	if(confirm('Etes vous sur de '+message+' le dossier ?') == true)
 	{
 		$.post( add_url+'/ajax/check_status_dossierV2', { status: status, id_project: id_project }).done(function( data ) {
@@ -960,11 +971,11 @@ function check_status_dossierV2(status,id_project)
 				var obj = jQuery.parseJSON(data);
 				var liste = obj.liste;
 				var etape_6 = obj.etape_6;
-				
-				
+
+
 				$('#current_statut').html(liste);
 				$('#status_dossier').remove();
-				
+
 				$('#content_etape6').html(etape_6);
 			}
 			else if(data == 'nok')
@@ -983,7 +994,7 @@ function nodizaines(val,id)
 	if(val > 10)
 	{
 		alert('Vous devez renseigner un chiffre inférieur à 10');
-		$("#"+id).val('0');	
+		$("#"+id).val('0');
 	}
 }
 
@@ -992,27 +1003,27 @@ function valid_rejete_etape6(status,id_project)
 	if(status == 1) var message = 'valider';
 	else if(status == 2) var message = 'rejeter';
 	else if(status == 3) var message = 'sauvegarder';
-	
+
 	if(confirm('Etes vous sur de '+message+' le dossier ?') == true)
 	{
-		
+
 		var structure = parseFloat($('#structure').val().replace(',','.'));
 		var rentabilite = parseFloat($('#rentabilite').val().replace(',','.'));
 		var tresorerie = parseFloat($('#tresorerie').val().replace(',','.'));
-		
+
 		var individuel = parseFloat($('#individuel').val().replace(',','.'));
 		var global = parseFloat($('#global').val().replace(',','.'));
-		
+
 		var performance_fianciere = parseFloat($('#performance_fianciere').html().replace(',','.'));
 		var marche_opere = parseFloat($('#marche_opere').html().replace(',','.'));
 		var qualite_moyen_infos_financieres = parseFloat($('#qualite_moyen_infos_financieres').val().replace(',','.'));
 		var notation_externe = parseFloat($('#notation_externe').val().replace(',','.'));
 		var avis = ckedAvis.getData();
-		
+
 		var form_ok = true;
-		
-		
-		
+
+
+
 		if(isNaN(structure) != false && structure || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(qualite_moyen_infos_financieres) != false || isNaN(notation_externe) != false)
 		{
 			form_ok = false;
@@ -1020,7 +1031,7 @@ function valid_rejete_etape6(status,id_project)
 		}
 		else if(structure > 10 || rentabilite > 10 || tresorerie > 10 || performance_fianciere > 10 || individuel > 10 || global > 10 || marche_opere > 10 || qualite_moyen_infos_financieres > 10 || notation_externe > 10 || structure == 0 || rentabilite == 0 || tresorerie == 0 || performance_fianciere == 0 || individuel == 0 || global == 0 || marche_opere == 0 || qualite_moyen_infos_financieres == 0 || notation_externe == 0)
 		{
-			
+
 			if(status == 1){
 				form_ok = false;
 				alert('Vous devez renseigner un chiffre infèrieur ou égale à 10');
@@ -1030,43 +1041,43 @@ function valid_rejete_etape6(status,id_project)
 			form_ok = false;
 			alert('Vous devez renseigner un avis (50 caractères minimum)');
 		}
-		
+
 		if(form_ok == true)
 		{
 			$.post( add_url+'/ajax/valid_rejete_etape6', { status: status, id_project: id_project,structure: structure, rentabilite: rentabilite,tresorerie: tresorerie, performance_fianciere: performance_fianciere,global: global, individuel:individuel, marche_opere: marche_opere,qualite_moyen_infos_financieres:qualite_moyen_infos_financieres,notation_externe: notation_externe,avis: avis }).done(function( data ) {
-				
+
 				if(data != 'nok')
 				{
-					
+
 					// Arrondis
 					$('#structure').val(Math.round(structure*10)/10);
 					$('#rentabilite').val(Math.round(rentabilite*10)/10);
 					$('#tresorerie').val(Math.round(tresorerie*10)/10);
-					
+
 					$('#global').val(Math.round(global*10)/10);
 					$('#individuel').val(Math.round(individuel*10)/10);
-					
+
 					$('#performance_fianciere').html(Math.round(performance_fianciere*10)/10);
 					$('#marche_opere').html(Math.round(marche_opere*10)/10);
 					$('#qualite_moyen_infos_financieres').val(Math.round(qualite_moyen_infos_financieres*10)/10);
 					$('#notation_externe').val(Math.round(notation_externe*10)/10);
-					
+
 					var obj = jQuery.parseJSON(data);
 					var liste = obj.liste;
 					var etape_7 = obj.etape_7;
-					
+
 					$('#valid_etape6').slideDown();
-					
+
 					setTimeout(function() {
 						$("#valid_etape6").slideUp();
 					}, 3000);
-					
+
 					$('#current_statut').html(liste);
-					
+
 					if(status != 3)
 					{
 						$('.btnValid_rejet_etape6').remove();
-						
+
 						if(status == 1)
 						{
 
@@ -1082,11 +1093,11 @@ function valid_rejete_etape6(status,id_project)
 						}
 					}
 				}
-				
+
 			});
 		}
-		
-	
+
+
 	}
 }
 
@@ -1096,27 +1107,27 @@ function valid_rejete_etape7(status,id_project)
 	else if(status == 2) var message = 'rejeter';
 	else if(status == 3) var message = 'sauvegarder';
 	else if(status == 4) var message = 'vouloir plus d\'informations sur';
-	
+
 	if(confirm('Etes vous sur de '+message+' le dossier ?') == true)
-	{	
+	{
 		// Variables
 		var structure = parseFloat($('#structure2').val().replace(',','.'));
 		var rentabilite = parseFloat($('#rentabilite2').val().replace(',','.'));
 		var tresorerie = parseFloat($('#tresorerie2').val().replace(',','.'));
-		
+
 		var global = parseFloat($('#global2').val().replace(',','.'));
 		var individuel = parseFloat($('#individuel2').val().replace(',','.'));
-		
+
 		var performance_fianciere = parseFloat($('#performance_fianciere2').html().replace(',','.'));
 		var marche_opere = parseFloat($('#marche_opere2').html().replace(',','.'));
 		var qualite_moyen_infos_financieres = parseFloat($('#qualite_moyen_infos_financieres2').val().replace(',','.'));
 		var notation_externe = parseFloat($('#notation_externe2').val().replace(',','.'));
-		
+
 		//var note = parseFloat($('#moyenneNote_etape7').val().replace(',','.'));
 		var avis_comite = ckedAvis_comite.getData();
-		
+
 		var form_ok = true;
-		
+
 		if(isNaN(structure) != false || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(qualite_moyen_infos_financieres) != false || isNaN(notation_externe) != false)
 		{
 			form_ok = false;
@@ -1133,13 +1144,13 @@ function valid_rejete_etape7(status,id_project)
 		else if(avis_comite.length < 50 && status == 1)
 		{
 			form_ok = false;
-			alert('Vous devez renseigner un avis (50 caractères minimum)');	
+			alert('Vous devez renseigner un avis (50 caractères minimum)');
 		}
-		
+
 		if(form_ok == true)
 		{
 			$.post( add_url+'/ajax/valid_rejete_etape7', { status: status, id_project: id_project,avis_comite: avis_comite,structure: structure, rentabilite: rentabilite,tresorerie: tresorerie, performance_fianciere: performance_fianciere,global: global, individuel:individuel,marche_opere: marche_opere,qualite_moyen_infos_financieres:qualite_moyen_infos_financieres,notation_externe: notation_externe }).done(function( data ) {
-				
+
 
 				if(data != 'nok')
 				{
@@ -1147,27 +1158,27 @@ function valid_rejete_etape7(status,id_project)
 					var liste = obj.liste;
 					var btn_etape6 = obj.btn_etape6;
 					var risk = obj.content_risk;
-					
+
 					$('#valid_etape7').slideDown();
-					
+
 					setTimeout(function() {
 						$("#valid_etape7").slideUp();
 					}, 3000);
-					
+
 					$('#current_statut').html(liste);
-					
+
 					if(status != 3)
 					{
 						if(status == 4)$('.btnValid_rejet_etape7').hide();
 						else $('.btnValid_rejet_etape7').remove();
-						
+
 						$('.btnValid_rejet_etape6').remove();
 					}
 					// Plus d'infos
 					if(status == 4)
 					{
 						$('#content_etape7').hide();
-						$('.listBtn_etape6').html(btn_etape6);	
+						$('.listBtn_etape6').html(btn_etape6);
 					}
 					// valide
 					else if(status == 1)
@@ -1177,9 +1188,9 @@ function valid_rejete_etape7(status,id_project)
 						$('.change_statut').show();
 						$('.content_date_publicaion').show();
 						$('.content_date_retrait').show();
-						
+
 						var recharge = '<script type="text/javascript">$("#status").change(function() { if($("#status").val() == 40){ $(".change_statut").hide();}else{$(".change_statut").show();}});</script>';
-						
+
 						$('.recharge').html(recharge);
 					}
 				}
@@ -1193,9 +1204,9 @@ function check_force_pass()
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	new_pass = document.getElementById('new_pass').value;
-	
+
 	// On traite les donnees en POST via l'ajax
 	xhr_object.open('POST',add_url + '/ajax/check_force_pass',false);
 	xhr_object.setRequestHeader('Content-Type','application/x-www-form-urlencoded');

@@ -590,7 +590,8 @@ class rootController extends bootstrap
                         $this->email = $this->loadLib('email', array());
                         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                         $this->email->addRecipient(trim($destinataire));
-                        //$this->email->addBCCRecipient('k1@david.equinoa.net');
+                        $this->email->setReplyTo(utf8_decode($this->demande_contact->email),
+                            utf8_decode($this->demande_contact->nom) . ' ' . utf8_decode($this->demande_contact->prenom));
 
                         $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
                         $this->email->setHTMLBody($texteMail);

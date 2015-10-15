@@ -1,13 +1,13 @@
 #Mapping values
 #Fri Sep 18 17:59:49 CEST 2015
 Pays=BillingCountry
-Sfcompte=RecordTypeId
-CP=BillingPostalCode
-Siren=Siren__c
 IDClient=ID_Client__c
-EmailFacturation=Email_Facturation__c
-FormeSociale=Forme__c
-Adresse1=BillingStreet
+CP=BillingPostalCode
+Sfcompte=RecordTypeId
+Siren=Siren__c
 RaisonSociale=Name
-Ville=BillingCity
+EmailFacturation=Email_Facturation__c
+Adresse1=BillingStreet
 IDCompany=ID_Emprunteur__c
+Ville=BillingCity
+FormeSociale=Forme__c

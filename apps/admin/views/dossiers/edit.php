@@ -51,30 +51,42 @@
             changeYear: true,
             yearRange: '<?= (date('Y') - 40) ?>:<?= (date('Y')) ?>'
         });
-
+        $('#duree').change(function(){
+            if(0 == $(this).val()) {
+                $("#status").css('display', 'none');
+                $("#msgProject").css('display', 'none');
+                $("#displayPeriodHS").css('display', 'block');
+                $("#msgProjectPeriodHS").css('display', 'block');
+            } else if('' != $(".statut_fichier2").html()) {
+                $("#status").css('display', 'block');
+                $("#msgProject").css('display', 'block');
+                $("#displayPeriodHS").css('display', 'none');
+                $("#msgProjectPeriodHS").css('display', 'none');
+            }
+        });
 
         <?php
             if ($this->nb_lignes != ''){
         ?>
-                $(".tablesorter").tablesorterPager({
-                    container: $("#pager"),
-                    positionFixed: false,
-                    size: <?= $this->nb_lignes ?>
-                });
+        $(".tablesorter").tablesorterPager({
+            container: $("#pager"),
+            positionFixed: false,
+            size: <?= $this->nb_lignes ?>
+        });
         <?php } ?>
     });
     <?php
         if (isset($_SESSION['freeow'])) {
     ?>
-            $(document).ready(function () {
-                var title, message, opts, container;
-                title = "<?= $_SESSION['freeow']['title'] ?>";
-                message = "<?= $_SESSION['freeow']['message'] ?>";
-                opts = {};
-                opts.classes = ['smokey'];
-                $('#freeow-tr').freeow(title, message, opts);
+    $(document).ready(function () {
+        var title, message, opts, container;
+        title = "<?= $_SESSION['freeow']['title'] ?>";
+        message = "<?= $_SESSION['freeow']['message'] ?>";
+        opts = {};
+        opts.classes = ['smokey'];
+        $('#freeow-tr').freeow(title, message, opts);
 
-            });
+    });
     <?php
             unset($_SESSION['freeow']);
         }
@@ -117,13 +129,12 @@
                         <td>
 
                             <?php
-                                if ($this->projects->create_bo == 1) {
-                                    ?><input type="text" name="siren" id="siren" class="input_large"
-                                             value="<?= $this->companies->siren ?>"/><?
-                                } else {
-                                    ?><input type="hidden" name="siren" id="siren"value="<?= $this->companies->siren ?>"/><?
-                                    echo $this->companies->siren;
-                                }
+                            if ($this->projects->create_bo == 1) {
+                                ?><input type="text" name="siren" id="siren" class="input_large" value="<?= $this->companies->siren ?>"/><?
+                            } else {
+                                ?><input type="hidden" name="siren" id="siren"value="<?= $this->companies->siren ?>"/><?
+                                echo $this->companies->siren;
+                            }
                             ?>
                         </td>
                     </tr>
@@ -152,11 +163,11 @@
                         <td>
                             <select name="sector" id="sector" class="select">
                                 <?php
-                                    foreach ($this->lSecteurs as $k => $s) {
-                                ?>
+                                foreach ($this->lSecteurs as $k => $s) {
+                                    ?>
                                     <option <?= ($this->companies->sector == $k + 1 ? 'selected' : '') ?> value="<?= $k + 1 ?>"><?= $s ?></option>
-                                <?php
-                                    }
+                                    <?php
+                                }
                                 ?>
                             </select>
                         </td>
@@ -228,11 +239,10 @@
                             <select name="duree" id="duree" class="select"
                                     style="width:160px;background-color:#AAACAC;">
                                 <?php foreach ($this->dureePossible as $duree): ?>
-                                    <option <?= ($this->projects->period == $duree ? 'selected' : '') ?>
-                                        value="<?= $duree ?>"><?= $duree ?> mois
+                                    <option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois
                                     </option>
                                 <?php endforeach ?>
-                                <option <?= ($this->projects->period == '1000000' ? 'selected' : '') ?> value="1000000">
+                                <option <?= ((int)$this->projects->period === 1000000 || (int)$this->projects->period === 0 ? 'selected' : '') ?> value="0">
                                     je ne sais pas
                                 </option>
                             </select>
@@ -279,8 +289,8 @@
                         </td>
                     </tr>
                     <?php
-                        if ($this->virement_recu) {
-                    ?>
+                    if ($this->virement_recu) {
+                        ?>
                         <tr>
                             <th>Virement reçu le :</th>
                             <td>
@@ -306,8 +316,8 @@
                             </td>
                         </tr>
 
-                    <?php
-                        } else {
+                        <?php
+                    } else {
                         ?>
                         <tr>
                             <th>Virement à émettre avant le :</th>
@@ -315,8 +325,8 @@
                                 <label for="statut"><?= (isset($this->date_next_echeance_4jouvres_avant)) ? $this->date_next_echeance_4jouvres_avant : '' ?></label>
                             </td>
                         </tr>
-                    <?php
-                        }
+                        <?php
+                    }
                     ?>
                     <tr>
                         <th>Montant CRD (*) :</th>
@@ -325,24 +335,24 @@
                         </td>
                     </tr>
                     <?php
-                        if (false === $this->virement_recu) {
-                    ?>
+                    if (false === $this->virement_recu) {
+                        ?>
                         <tr>
                             <th>Motif à indiquer sur le virement :</th>
                             <td>
                                 <label for="statut">RA-<?= $this->projects->id_project ?></label>
                             </td>
                         </tr>
-                    <?php
-                        }
+                        <?php
+                    }
                     ?>
                 </table>
                 <?php
-                    if (!$this->virement_recu && !$this->remb_anticipe_effectue && isset($this->date_next_echeance)) {
-                ?>
+                if (!$this->virement_recu && !$this->remb_anticipe_effectue && isset($this->date_next_echeance)) {
+                    ?>
                     * : Le montant correspond aux CRD des échéances restantes après celle du <?= $this->date_next_echeance ?> qui sera prélevé normalement
-                <?php
-                    }
+                    <?php
+                }
                 ?>
 
                 <br><br><br><br>
@@ -391,11 +401,11 @@
                             <select name="analyste" id="analyste" class="select">
                                 <option value="0">Choisir</option>
                                 <?php
-                                    foreach ($this->lUsers as $u) {
-                                ?>
-                                        <option <?= ($this->projects->id_analyste == $u['id_user'] ? 'selected' : '') ?> value="<?= $u['id_user'] ?>"><?= $u['firstname'] ?> <?= $u['name'] ?></option>
-                                <?php
-                                    }
+                                foreach ($this->lUsers as $u) {
+                                    ?>
+                                    <option <?= ($this->projects->id_analyste == $u['id_user'] ? 'selected' : '') ?> value="<?= $u['id_user'] ?>"><?= $u['firstname'] ?> <?= $u['name'] ?></option>
+                                    <?php
+                                }
                                 ?>
                             </select>
                         </td>
@@ -404,52 +414,68 @@
                         <th><label for="status">Statut :</label></th>
                         <td id="current_statut">
                             <?php
-                                if ($this->current_projects_status->status == 130) {
-                                    echo "Remboursement anticipé";
-                                } else {
-                                    if (count($this->lProjects_status) > 0) {
+                            if ($this->current_projects_status->status == 130) {
+                                echo "Remboursement anticipé";
+                            } else {
+                                if (count($this->lProjects_status) > 0) {
+                                    $sDiplayPeriodHS     = 'none';
+                                    $sDisplayMsgPeriodHs = 'none';
+                                    $sDiplayStatus       = 'block';
+                                    $sDisplayMsgProject  = 'block';
+                                if (0 === (int)$this->projects->period ||
+                                    1000000 === (int)$this->projects->period ||
+                                    '' == $this->companies_details->fichier_rib) {
+                                        $sDiplayPeriodHS     = 'block';
+                                        $sDiplayStatus       = 'none';
+                                        $sDisplayMsgPeriodHs = 'block';
+                                        $sDisplayMsgProject  = 'none';
+                                    }
                             ?>
-                                    <select name="status" id="status" class="select" <?= ($this->current_projects_status->status == 130 ? '"disabled"' : "") ?>>
+                                    <span id="displayPeriodHS" style="display:<?= $sDiplayPeriodHS ?>;">
+                                        Pr&eacute;p Funding
+                                    </span>
+                                    <select name="status" id="status" class="select" style="display:<?= $sDiplayStatus ?>;" <?= ($this->current_projects_status->status == 130 ? '"disabled"' : "") ?>>
                                         <?php
-                                            foreach ($this->lProjects_status as $s) {
-                                        ?>
-                                                <option <?= ($this->current_projects_status->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
-                                        <?php
-                                            }
+                                        foreach ($this->lProjects_status as $s) {
+                                            ?>
+                                            <option <?= ($this->current_projects_status->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
+                                            <?php
+                                        }
                                         ?>
                                     </select>
-                            <?php
-                                    } else {
-                                        ?><input type="hidden" name="status" id="status"
-                                                 value="<?= $this->current_projects_status->status ?>" /><?
-                                        echo $this->current_projects_status->label;
-                                    }
+                                    <?php
+                                } else {
+                                    ?><input type="hidden" name="status" id="status"
+                                             value="<?= $this->current_projects_status->status ?>" /><?
+                                    echo $this->current_projects_status->label;
                                 }
+                            }
                             ?>
                         </td>
                     </tr>
                 </table>
                 <table class="form" style="width: 538px;">
                     <?php
-                        if (in_array($this->current_projects_status->status, array(20, 31, 33, 35))) {
-                    ?>
+                    if (in_array($this->current_projects_status->status, array(20, 31, 33, 35))) {
+                        ?>
                         <tr class="change_statut" <?= ($this->current_projects_status->status == 35 ? '' : 'style="display:none"') ?>>
                             <td colspan="2">
-                                Vous devez changer le statut du projet pour ajouter une date de publication et de retrait
+                                <span id="msgProject" style="display:<?= $sDisplayMsgProject ?>;">Vous devez changer le statut du projet pour ajouter une date de publication et de retrait</span>
+                                <span id="msgProjectPeriodHS" style="display:<?= $sDisplayMsgPeriodHs ?>;">V&eacute;rifiez la dur&eacute;e du pr&ecirc;t et le rib avant de pouvoir changer de statut</span>
                                 <div class="block_cache change_statut"></div>
                             </td>
                         </tr>
-                    <?php
-                        }
+                        <?php
+                    }
                     ?>
                     <tr class="content_date_publicaion" <?= ($this->current_projects_status->status >= 35 ? '' : 'style="display:none"') ?>>
                         <th><label for="date_publication">Date de publication* :</label></th>
                         <td id="date_publication">
                             <?php
-                                if (in_array($this->current_projects_status->status, array(20, 31, 33, 35, 40))) {
-                            ?>
-                                    <input style="background-color:#AAACAC;" type="text" name="date_publication" id="date_pub" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>" />
-                            <?php
+                            if (in_array($this->current_projects_status->status, array(20, 31, 33, 35, 40))) {
+                                ?>
+                                <input style="background-color:#AAACAC;" type="text" name="date_publication" id="date_pub" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>" />
+                                <?php
                                 // Récupération de la date enregistrée
                                 $tab_date_publication_full  = explode(" ", $this->projects->date_publication_full);
                                 $tab_date_publication_full2 = explode(":", $tab_date_publication_full[1]);
@@ -461,36 +487,36 @@
                                 if ($heure_date_publication == '00') {
                                     $heure_date_publication = $this->HdebutFunding;
                                 }
-                            ?>
+                                ?>
                                 &agrave;
                                 <select name="date_publication_heure" class="selectMini">
                                     <?php
-                                       for ($h = 0; $h < 24; $h++) {
-                                    ?>
+                                    for ($h = 0; $h < 24; $h++) {
+                                        ?>
                                         <option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_publication == $h ? "selected=selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option>
-                                    <?php
-                                        }
+                                        <?php
+                                    }
                                     ?>
                                 </select>h
 
                                 <select name="date_publication_minute" class="selectMini">
                                     <?php
-                                        for ($m = 0; $m < 60; $m++) {
-                                    ?>
+                                    for ($m = 0; $m < 60; $m++) {
+                                        ?>
                                         <option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_publication == $m ? "selected=selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
-                                    <?php
-                                        }
+                                        <?php
+                                    }
                                     ?>
                                 </select>
 
-                            <?php
+                                <?php
+                            } else {
+                                if ($this->projects->date_publication_full == '0000-00-00 00:00:00') {
+                                    echo $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') . ' 07:00';
                                 } else {
-                                    if ($this->projects->date_publication_full == '0000-00-00 00:00:00') {
-                                        echo $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') . ' 07:00';
-                                    } else {
-                                        echo $this->dates->formatDate($this->projects->date_publication_full, 'd/m/Y H:i');
-                                    }
+                                    echo $this->dates->formatDate($this->projects->date_publication_full, 'd/m/Y H:i');
                                 }
+                            }
                             ?>
                         </td>
                     </tr>
@@ -499,128 +525,128 @@
                         <th><label for="date_retrait">Date de retrait* :</label></th>
                         <td id="date_retrait">
                             <?php
-                                if (in_array($this->current_projects_status->status, array(20, 31, 33, 35, 40))) {
-                            ?>
-                                    <input  style="background-color:#AAACAC;" type="text" name="date_retrait" id="date_de_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>" />
-                            <?php
-                                    // Récupération de la date enregistrée
-                                    $tab_date_retrait_full  = explode(" ", $this->projects->date_retrait_full);
-                                    $tab_date_retrait_full2 = explode(":", $tab_date_retrait_full[1]);
-                                    $heure_date_retrait     = $tab_date_retrait_full2[0];
-                                    $minute_date_retrait    = $tab_date_retrait_full2[1];
-                                    $seconde_date_retrait   = $tab_date_retrait_full2[2];
+                            if (in_array($this->current_projects_status->status, array(20, 31, 33, 35, 40))) {
+                                ?>
+                                <input  style="background-color:#AAACAC;" type="text" name="date_retrait" id="date_de_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>" />
+                                <?php
+                                // Récupération de la date enregistrée
+                                $tab_date_retrait_full  = explode(" ", $this->projects->date_retrait_full);
+                                $tab_date_retrait_full2 = explode(":", $tab_date_retrait_full[1]);
+                                $heure_date_retrait     = $tab_date_retrait_full2[0];
+                                $minute_date_retrait    = $tab_date_retrait_full2[1];
+                                $seconde_date_retrait   = $tab_date_retrait_full2[2];
 
-                                    // si vide valeur par defaut
-                                    if ($heure_date_retrait == '00') {
-                                        $heure_date_retrait = $this->HfinFunding;
-                                    }
-                            ?>
+                                // si vide valeur par defaut
+                                if ($heure_date_retrait == '00') {
+                                    $heure_date_retrait = $this->HfinFunding;
+                                }
+                                ?>
                                 &agrave;
                                 <select name="date_retrait_heure" class="selectMini">
                                     <?php
-                                        for ($h = 0; $h < 24; $h++) {
-                                    ?>
+                                    for ($h = 0; $h < 24; $h++) {
+                                        ?>
                                         <option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_retrait == $h ? "selected=selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option>
-                                    <?php
-                                        }
+                                        <?php
+                                    }
                                     ?>
                                 </select>h
                                 <select name="date_retrait_minute" class="selectMini">
                                     <?php
-                                        for ($m = 0; $m < 60; $m++) {
-                                    ?>
+                                    for ($m = 0; $m < 60; $m++) {
+                                        ?>
                                         <option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_retrait == $m ? "selected=selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
-                                    <?php
-                                        }
+                                        <?php
+                                    }
                                     ?>
                                 </select>
-                            <?php
+                                <?php
+                            } else {
+                                if ($this->projects->date_publication_full == '0000-00-00 00:00:00') {
+                                    echo $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') . ' 16:00';
                                 } else {
-                                    if ($this->projects->date_publication_full == '0000-00-00 00:00:00') {
-                                        echo $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') . ' 16:00';
-                                    } else {
-                                        echo $this->dates->formatDate($this->projects->date_retrait_full, 'd/m/Y H:i');
-                                    }
-
-                                    if ($this->current_projects_status->status < 60) {
-                            ?>
-                                    &nbsp;&nbsp;&nbsp;<a href="<?= $this->lurl ?>/thickbox/pop_up_edit_date_retrait/<?= $this->projects->id_project ?>" class="thickbox btn_link ">Modifier</a>
-                            <?php
-                                    }
+                                    echo $this->dates->formatDate($this->projects->date_retrait_full, 'd/m/Y H:i');
                                 }
+
+                                if ($this->current_projects_status->status < 60) {
+                                    ?>
+                                    &nbsp;&nbsp;&nbsp;<a href="<?= $this->lurl ?>/thickbox/pop_up_edit_date_retrait/<?= $this->projects->id_project ?>" class="thickbox btn_link ">Modifier</a>
+                                    <?php
+                                }
+                            }
                             ?>
                         </td>
                     </tr>
                     <?php
-                        if (isset($this->retour_dates_valides) && $this->retour_dates_valides != "") {
-                    ?>
-                            <tr class="content_date_retrait">
-                                <th></th>
-                                <td style="color:red; font-weight:bold;"><?= $this->retour_dates_valides ?></td>
-                            </tr>
-                    <?php
-                        }
+                    if (isset($this->retour_dates_valides) && $this->retour_dates_valides != "") {
+                        ?>
+                        <tr class="content_date_retrait">
+                            <th></th>
+                            <td style="color:red; font-weight:bold;"><?= $this->retour_dates_valides ?></td>
+                        </tr>
+                        <?php
+                    }
                     ?>
                     <tr>
                         <td></td>
                         <td id="status_dossier">
                             <?php
-                                if (in_array($this->current_projects_status->status, array(20))) {
-                            ?>
-                                    <input  type="button" id="status_dosier_valider" class="btn" onClick="check_status_dossierV2(31,<?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
-                            <?php
-                                }
-                                if (in_array($this->current_projects_status->status, array(20))) {
-                            ?>
-                                    <input type="button" id="status_dosier_rejeter" class="btn" onClick="check_status_dossierV2(30,<?= $this->projects->id_project ?>);" style="background:#CC0000;border-color:#CC0000;font-size:10px;" value="Rejeter dossier">
-                            <?php
-                                }
+                            if (in_array($this->current_projects_status->status, array(20))) {
+                                ?>
+                                <input  type="button" id="status_dosier_valider" class="btn" onClick="check_status_dossierV2(31,<?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
+                                <?php
+                            }
+                            if (in_array($this->current_projects_status->status, array(20))) {
+                                ?>
+                                <input type="button" id="status_dosier_rejeter" class="btn" onClick="check_status_dossierV2(30,<?= $this->projects->id_project ?>);" style="background:#CC0000;border-color:#CC0000;font-size:10px;" value="Rejeter dossier">
+                                <?php
+                            }
                             ?>
                         </td>
                     </tr>
                     <?php
-                        if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1) {
-                    ?>
+                    if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1) {
+                        ?>
                         <tr>
                             <th><label for="pouvoir">Pouvoir :</label></th>
 
                             <td>
                                 <div>
                                     <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>"><?= $this->projects_pouvoir->name ?></a>
-                    <?php
-                            if ($this->projects_pouvoir->status_remb == '1') {
-                                ?><span style="color:green;">&nbsp;Validé</span><?
-                            }
-                    ?>
+                                    <?php
+                                    if ($this->projects_pouvoir->status_remb == '1') {
+                                        ?><span style="color:green;">&nbsp;Validé</span><?
+                                    }
+                                    ?>
                                 </div>
                             </td>
                         </tr>
                         <tr>
                             <th></th>
                             <td>
-                    <?php
-                            if ($this->projects_pouvoir->status_remb == '0' && $this->current_projects_status->status == 60) {
-                    ?>
-                                <select name="satut_pouvoir" id="satut_pouvoir" class="select">
-                                    <option <?= ($this->projects_pouvoir->status_remb == '0' ? 'selected' : '') ?> value="0">En attente</option>
-                                    <option <?= ($this->projects_pouvoir->status_remb == '1' ? 'selected' : '') ?> value="1">Validé</option>
-                                </select>
-                    <?
-                            }
-                    ?>
+                                <?php
+                                if ($this->projects_pouvoir->status_remb == '0' && $this->current_projects_status->status == 60) {
+                                    ?>
+                                    <select name="satut_pouvoir" id="satut_pouvoir" class="select">
+                                        <option <?= ($this->projects_pouvoir->status_remb == '0' ? 'selected' : '') ?> value="0">En attente</option>
+                                        <option <?= ($this->projects_pouvoir->status_remb == '1' ? 'selected' : '') ?> value="1">Validé</option>
+                                    </select>
+                                    <?
+                                }
+                                ?>
                             </td>
                         </tr>
-                    <?php
-                        } elseif ($this->current_projects_status->status == 60) {// si projet fundé
-                    ?>
+                        <?php
+                    } elseif ($this->current_projects_status->status == 60) {// si projet fundé
+                        ?>
                         <tr>
                             <th><label for="upload_pouvoir">Pouvoir :</label></th>
                             <td><input type="file" name="upload_pouvoir" id="upload_pouvoir"/></td>
                         </tr>
-                    <?php
-                        }
-                        if ($this->current_projects_status->status == 60) {
-                    ?>
+                        <?php
+                    }
+                    if ($this->current_projects_status->status == 60) {
+                        ?>
                         <tr>
                             <th>Prêt refusé :</th>
                             <td>
@@ -630,8 +656,8 @@
                                 </select>
                             </td>
                         </tr>
-                    <?php
-                        }
+                        <?php
+                    }
                     ?>
                 </table>
             </div>
@@ -675,8 +701,8 @@
     <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>/altares" class="btn_link">Générer les données Altares</a></div>
     <div id="table_memo">
         <?php
-            if (count($this->lProjects_comments) > 0) {
-        ?>
+        if (count($this->lProjects_comments) > 0) {
+            ?>
             <table class="tablesorter">
                 <thead>
                 <tr>
@@ -686,10 +712,10 @@
                 </tr>
                 </thead>
                 <tbody>
-        <?php
+                <?php
                 $i = 1;
                 foreach ($this->lProjects_comments as $p) {
-        ?>
+                    ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                         <td align="center"><?= $this->dates->formatDate($p['added'], 'd/m/Y H:i:s') ?></td>
                         <td><?= nl2br($p['content']) ?></td>
@@ -698,15 +724,15 @@
                             <img style="cursor:pointer;" onclick="deleteMemo(<?= $p['id_project_comment'] ?>,<?= $p['id_project'] ?>);" src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer"/>
                         </td>
                     </tr>
-        <?php
+                    <?php
                     $i++;
                 }
-        ?>
+                ?>
                 </tbody>
             </table>
-        <?php
+            <?php
             if ($this->nb_lignes != '') {
-        ?>
+                ?>
                 <table>
                     <tr>
                         <td id="pager">
@@ -721,7 +747,7 @@
                         </td>
                     </tr>
                 </table>
-        <?php
+                <?php
             }
         }
         ?>
@@ -774,7 +800,7 @@
                                         value="<?= $duree ?>"><?= $duree ?> mois
                                     </option>
                                 <? endforeach ?>
-                                <option <?= ($this->projects->period == '1000000' ? 'selected' : '') ?> value="1000000">
+                                <option <?= ((int)$this->projects->period === 1000000 || (int)$this->projects->period === 0) ? 'selected' : '' ?> value="0">
                                     je ne sais pas
                                 </option>
                             </select>
@@ -785,11 +811,9 @@
                         <td>
                             <?php
                             if ($this->projects->create_bo == 1) {
-                                ?><input type="text" name="siren_etape1" id="siren_etape1" class="input_large"
-                                         value="<?= $this->companies->siren ?>"/><?
+                                ?><input type="text" name="siren_etape1" id="siren_etape1" class="input_large" value="<?= $this->companies->siren ?>"/><?
                             } else {
-                                ?><input type="hidden" name="siren_etape1" id="siren_etape1"
-                                         value="<?= $this->companies->siren ?>"/><?
+                                ?><input type="hidden" name="siren_etape1" id="siren_etape1" value="<?= $this->companies->siren ?>"/><?
                                 echo $this->companies->siren;
                             }
                             ?>
@@ -886,11 +910,11 @@
                             <select name="status_conseil_externe_entreprise_etape2" id="status_conseil_externe_entreprise_etape2" class="select">
                                 <option value="0">Choisir</option>
                                 <?php
-                                    foreach ($this->conseil_externe as $k => $conseil_externe) {
-                                ?>
-                                        <option <?= ($this->companies->status_conseil_externe_entreprise == $k ? 'selected' : '') ?> value="<?= $k ?>" ><?= $conseil_externe ?></option>
-                                <?php
-                                    }
+                                foreach ($this->conseil_externe as $k => $conseil_externe) {
+                                    ?>
+                                    <option <?= ($this->companies->status_conseil_externe_entreprise == $k ? 'selected' : '') ?> value="<?= $k ?>" ><?= $conseil_externe ?></option>
+                                    <?php
+                                }
                                 ?>
                             </select>
                         </td>
@@ -991,7 +1015,7 @@
                                 <?php foreach ($this->dureePossible as $duree): ?>
                                     <option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
                                 <?php endforeach ?>
-                                <option <?= ($this->projects->period == '1000000' ? 'selected' : '') ?> value="1000000">
+                                <option <?= ((int)$this->projects->period === 1000000 || (int)$this->projects->period === 0 ? 'selected' : '') ?> value="0">
                                     je ne sais pas
                                 </option>
                             </select>
@@ -1069,9 +1093,9 @@
                                     <?php
                                     for ($i = 1; $i <= 31; $i++) {
                                         $numjour = (strlen($i) < 2) ? '0' . $i : $i;
-                                    ?>
+                                        ?>
                                         <option <?= ($this->date_dernier_bilan_jour == $i ? 'selected' : '') ?> value="<?= $numjour ?>"><?= $i ?></option>
-                                    <?php
+                                        <?php
                                     }
                                     ?>
                                 </select>
@@ -1088,11 +1112,11 @@
                                 </select>
                                 <select name="annee_etape4" id="annee_etape4" class="select">
                                     <?php
-                                        for ($i = 2008; $i <= date('Y') + 1; $i++) {
-                                    ?>
+                                    for ($i = 2008; $i <= date('Y') + 1; $i++) {
+                                        ?>
                                         <option <?= ($this->date_dernier_bilan_annee == $i ? 'selected' : '') ?> value="<?= $i ?>"><?= $i ?></option>
-                                    <?php
-                                        }
+                                        <?php
+                                    }
                                     ?>
                                 </select>
                             </td>
@@ -1103,16 +1127,16 @@
                     <!-- bilans -->
                     <?php
                     if (count($this->lbilans) > 0) {
-                    ?>
+                        ?>
                         <table class="tablesorter" style="text-align:center;">
                             <thead>
                             <th width="200"></th>
                             <?php
-                                foreach ($this->lbilans as $b) {
-                            ?>
-                                    <th><?= $b['date'] ?></th>
-                            <?php
-                                }
+                            foreach ($this->lbilans as $b) {
+                                ?>
+                                <th><?= $b['date'] ?></th>
+                                <?php
+                            }
                             ?>
                             </thead>
                             <tbody>
@@ -1120,12 +1144,12 @@
                                 <td>Chiffe d'affaires</td>
                                 <?php
                                 for ($i = 0; $i < 5; $i++) {
-                                ?>
-                                <td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
-                                    <input name="ca_<?= $i ?>" id="ca_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['ca'] != false ? number_format($this->lbilans[$i]['ca'], 2, ',', ' ') : ''); ?>"/>
-                                    <input type="hidden" id="ca_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
+                                    ?>
+                                    <td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
+                                        <input name="ca_<?= $i ?>" id="ca_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['ca'] != false ? number_format($this->lbilans[$i]['ca'], 2, ',', ' ') : ''); ?>"/>
+                                        <input type="hidden" id="ca_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
                                     </td>
-                                <?php
+                                    <?php
                                 }
                                 ?>
                             </tr>
@@ -1133,12 +1157,12 @@
                                 <td>Résultat brut d'exploitation</td>
                                 <?php
                                 for ($i = 0; $i < 5; $i++) {
-                                ?>
-                                <td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
-                                    <input name="resultat_brute_exploitation_<?= $i ?>" id="resultat_brute_exploitation_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['resultat_brute_exploitation'] != false ? number_format($this->lbilans[$i]['resultat_brute_exploitation'], 2, ',', ' ') : ''); ?>"/>
-                                    <input type="hidden" id="resultat_brute_exploitation_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
+                                    ?>
+                                    <td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
+                                        <input name="resultat_brute_exploitation_<?= $i ?>" id="resultat_brute_exploitation_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['resultat_brute_exploitation'] != false ? number_format($this->lbilans[$i]['resultat_brute_exploitation'], 2, ',', ' ') : ''); ?>"/>
+                                        <input type="hidden" id="resultat_brute_exploitation_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
                                     </td>
-                                <?php
+                                    <?php
                                 }
                                 ?>
                             </tr>
@@ -1146,12 +1170,12 @@
                                 <td>Résultat d'exploitation</td>
                                 <?php
                                 for ($i = 0; $i < 5; $i++) {
-                                ?>
-                                <td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
-                                    <input name="resultat_exploitation_<?= $i ?>" id="resultat_exploitation_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['resultat_exploitation'] != false ? number_format($this->lbilans[$i]['resultat_exploitation'], 2, ',', ' ') : ''); ?>"/>
-                                    <input type="hidden" id="resultat_exploitation_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
+                                    ?>
+                                    <td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
+                                        <input name="resultat_exploitation_<?= $i ?>" id="resultat_exploitation_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['resultat_exploitation'] != false ? number_format($this->lbilans[$i]['resultat_exploitation'], 2, ',', ' ') : ''); ?>"/>
+                                        <input type="hidden" id="resultat_exploitation_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
                                     </td>
-                                <?php
+                                    <?php
                                 }
                                 ?>
                             </tr>
@@ -1159,12 +1183,12 @@
                                 <td>Investissements</td>
                                 <?php
                                 for ($i = 0; $i < 5; $i++) {
-                                ?>
-                                <td <?= ($i < 3 ? 'class="grisfonceBG"' : '') ?>>
-                                    <input name="investissements_<?= $i ?>" id="investissements_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['investissements'] != false ? number_format($this->lbilans[$i]['investissements'], 2, ',', ' ') : ''); ?>"/>
-                                    <input type="hidden" id="investissements_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
+                                    ?>
+                                    <td <?= ($i < 3 ? 'class="grisfonceBG"' : '') ?>>
+                                        <input name="investissements_<?= $i ?>" id="investissements_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['investissements'] != false ? number_format($this->lbilans[$i]['investissements'], 2, ',', ' ') : ''); ?>"/>
+                                        <input type="hidden" id="investissements_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
                                     </td>
-                                <?php
+                                    <?php
                                 }
                                 ?>
                             </tr>
@@ -1172,7 +1196,7 @@
                         </table>
                         <?php
                         if ($this->nb_lignes != '') {
-                        ?>
+                            ?>
                             <table>
                                 <tr>
                                     <td id="pager">
@@ -1187,7 +1211,7 @@
                                     </td>
                                 </tr>
                             </table>
-                    <?php
+                            <?php
                         }
                     }
                     ?>
@@ -1272,13 +1296,13 @@
                         $end = end($arrayBilans);
 
                         $i = 1;
-                    ?>
+                        ?>
                         <table class="tablesorter actif_passif" style="text-align:center;">
-                        <?php
+                            <?php
                             foreach ($arrayBilans as $k => $t) {
                                 // entete
                                 if ($k == 0) {
-                        ?>
+                                    ?>
                                     <thead>
                                     <th width="300"><?= $t['title'] ?></th>
                                     <?php
@@ -1294,22 +1318,22 @@
                                     </thead>
                                     <tbody>
                                     <tr>
-                                <?php
+                                    <?php
                                 } elseif ($end['title'] != $t['title']) { //corps
-                                ?>
+                                    ?>
                                     <td><?= $t['title'] ?></td>
                                     <?php
                                     $a = 1;
                                     foreach ($this->lCompanies_actif_passif as $ap) {
-                                    ?>
+                                        ?>
                                         <td>
-                                        <input name="<?= $t['value'] ?>_<?= $ap['ordre'] ?>"
-                                               id="<?= $t['value'] ?>_<?= $ap['ordre'] ?>" type="text" class="input_moy"
-                                               value="<?= ($ap[$t['value']] != false ? number_format($ap[$t['value']], 2, '.', '') : ''); ?>"
-                                               onkeyup="cal_actif();"/>
+                                            <input name="<?= $t['value'] ?>_<?= $ap['ordre'] ?>"
+                                                   id="<?= $t['value'] ?>_<?= $ap['ordre'] ?>" type="text" class="input_moy"
+                                                   value="<?= ($ap[$t['value']] != false ? number_format($ap[$t['value']], 2, '.', '') : ''); ?>"
+                                                   onkeyup="cal_actif();"/>
 
                                         </td>
-                                    <?php
+                                        <?php
                                         if ($a == 3) {
                                             break;
                                         } else {
@@ -1319,9 +1343,9 @@
                                     ?>
                                 </tr>
                                 <tr>
-                                <?php
+                                    <?php
                                 } else { //pied
-                                ?>
+                                    ?>
                                     <td><?= $t['title'] ?></td>
                                     <?php
                                     $b = 1;
@@ -1343,126 +1367,126 @@
                                     ?>
                                     </tr>
                                     </tbody>
-                                <?php
+                                    <?php
                                 }
                             }
                             ?>
                         </table>
                         <?php
-                        }
-                        ?>
+                    }
+                    ?>
                     <br/><br/>
 
                     <h2>Passif :</h2>
 
                     <?php
                     if (count($this->lCompanies_actif_passif) > 0) {
-                    $arrayBilansPassif[0]['title'] = 'Ordre';
-                    $arrayBilansPassif[0]['value'] = '';
+                        $arrayBilansPassif[0]['title'] = 'Ordre';
+                        $arrayBilansPassif[0]['value'] = '';
 
-                    $arrayBilansPassif[1]['title'] = 'Capitaux propres';
-                    $arrayBilansPassif[1]['value'] = 'capitaux_propres';
+                        $arrayBilansPassif[1]['title'] = 'Capitaux propres';
+                        $arrayBilansPassif[1]['value'] = 'capitaux_propres';
 
-                    $arrayBilansPassif[2]['title'] = 'Provisions pour risques & charges';
-                    $arrayBilansPassif[2]['value'] = 'provisions_pour_risques_et_charges';
+                        $arrayBilansPassif[2]['title'] = 'Provisions pour risques & charges';
+                        $arrayBilansPassif[2]['value'] = 'provisions_pour_risques_et_charges';
 
-                    $arrayBilansPassif[3]['title'] = 'Amortissements sur immobilisations';
-                    $arrayBilansPassif[3]['value'] = 'amortissement_sur_immo';
+                        $arrayBilansPassif[3]['title'] = 'Amortissements sur immobilisations';
+                        $arrayBilansPassif[3]['value'] = 'amortissement_sur_immo';
 
-                    $arrayBilansPassif[4]['title'] = 'Dettes financières';
-                    $arrayBilansPassif[4]['value'] = 'dettes_financieres';
+                        $arrayBilansPassif[4]['title'] = 'Dettes financières';
+                        $arrayBilansPassif[4]['value'] = 'dettes_financieres';
 
-                    $arrayBilansPassif[5]['title'] = 'Dettes fournisseurs';
-                    $arrayBilansPassif[5]['value'] = 'dettes_fournisseurs';
+                        $arrayBilansPassif[5]['title'] = 'Dettes fournisseurs';
+                        $arrayBilansPassif[5]['value'] = 'dettes_fournisseurs';
 
-                    $arrayBilansPassif[6]['title'] = 'Autres dettes';
-                    $arrayBilansPassif[6]['value'] = 'autres_dettes';
+                        $arrayBilansPassif[6]['title'] = 'Autres dettes';
+                        $arrayBilansPassif[6]['value'] = 'autres_dettes';
 
-                    $arrayBilansPassif[7]['title'] = 'Total';
-                    $arrayBilansPassif[7]['value'] = 'totalAnneePass';
+                        $arrayBilansPassif[7]['title'] = 'Total';
+                        $arrayBilansPassif[7]['value'] = 'totalAnneePass';
 
-                    $end = end($arrayBilansPassif);
+                        $end = end($arrayBilansPassif);
 
-                    $i = 1;
-                    ?>
-                    <table class="tablesorter actif_passif" style="text-align:center;">
-
-                        <?php
-                        foreach ($arrayBilansPassif as $k => $t) {
-
-                            // entete
-                            if ($k == 0) {
-                                ?>
-                                <thead>
-                                <th width="300"><?= $t['title'] ?></th>
-                                <?php
-                                foreach ($this->lCompanies_actif_passif as $ap) {
-                                    ?>
-                                    <th><?= $ap['annee'] ?></th><?
-                                    if ($i == 3) {
-                                        break;
-                                    } else {
-                                        $i++;
-                                    }
-                                }
-                                ?>
-                                </thead>
-                                <tbody>
-                                <tr>
-                                <?php
-                            } elseif ($end['title'] != $t['title']) { //corps
-                                ?>
-                                <td><?= $t['title'] ?></td>
-                                <?php
-                                $a = 1;
-                                foreach ($this->lCompanies_actif_passif as $ap) {
-                                    ?>
-                                    <td>
-                                        <input name="<?= $t['value'] ?>_<?= $ap['ordre'] ?>"
-                                               id="<?= $t['value'] ?>_<?= $ap['ordre'] ?>" type="text" class="input_moy"
-                                               value="<?= ($ap[$t['value']] != false ? number_format($ap[$t['value']], 2, '.', '') : ''); ?>"
-                                               onkeyup="cal_passif();"/>
-                                    </td>
-                                    <?php
-                                    if ($a == 3) {
-                                        break;
-                                    } else {
-                                        $a++;
-                                    }
-                                }
-                                ?>
-                            </tr>
-                            <tr>
-                                <?php
-                            } else { //pied
-                                ?>
-                                <td><?= $t['title'] ?></td>
-                                <?php
-                                $b = 1;
-                                foreach ($this->lCompanies_actif_passif as $ap) {
-                                    $totalAnnee = ($ap[$arrayBilansPassif[1]['value']] +
-                                        $ap[$arrayBilansPassif[2]['value']] +
-                                        $ap[$arrayBilansPassif[3]['value']] +
-                                        $ap[$arrayBilansPassif[4]['value']] +
-                                        $ap[$arrayBilansPassif[5]['value']] +
-                                        $ap[$arrayBilansPassif[6]['value']])
-                                    ?>
-                                    <td id="<?= $t['value'] ?>_<?= $ap['ordre'] ?>"><?= $totalAnnee ?></td>
-                                    <?php
-                                    if ($b == 3) {
-                                        break;
-                                    } else {
-                                        $b++;
-                                    }
-                                }
-                                ?>
-                                </tr>
-                                </tbody>
-                                <?php
-                            }
-                        }
+                        $i = 1;
                         ?>
-                    </table>
+                        <table class="tablesorter actif_passif" style="text-align:center;">
+
+                            <?php
+                            foreach ($arrayBilansPassif as $k => $t) {
+
+                                // entete
+                                if ($k == 0) {
+                                    ?>
+                                    <thead>
+                                    <th width="300"><?= $t['title'] ?></th>
+                                    <?php
+                                    foreach ($this->lCompanies_actif_passif as $ap) {
+                                        ?>
+                                        <th><?= $ap['annee'] ?></th><?
+                                        if ($i == 3) {
+                                            break;
+                                        } else {
+                                            $i++;
+                                        }
+                                    }
+                                    ?>
+                                    </thead>
+                                    <tbody>
+                                    <tr>
+                                    <?php
+                                } elseif ($end['title'] != $t['title']) { //corps
+                                    ?>
+                                    <td><?= $t['title'] ?></td>
+                                    <?php
+                                    $a = 1;
+                                    foreach ($this->lCompanies_actif_passif as $ap) {
+                                        ?>
+                                        <td>
+                                            <input name="<?= $t['value'] ?>_<?= $ap['ordre'] ?>"
+                                                   id="<?= $t['value'] ?>_<?= $ap['ordre'] ?>" type="text" class="input_moy"
+                                                   value="<?= ($ap[$t['value']] != false ? number_format($ap[$t['value']], 2, '.', '') : ''); ?>"
+                                                   onkeyup="cal_passif();"/>
+                                        </td>
+                                        <?php
+                                        if ($a == 3) {
+                                            break;
+                                        } else {
+                                            $a++;
+                                        }
+                                    }
+                                    ?>
+                                </tr>
+                                <tr>
+                                    <?php
+                                } else { //pied
+                                    ?>
+                                    <td><?= $t['title'] ?></td>
+                                    <?php
+                                    $b = 1;
+                                    foreach ($this->lCompanies_actif_passif as $ap) {
+                                        $totalAnnee = ($ap[$arrayBilansPassif[1]['value']] +
+                                            $ap[$arrayBilansPassif[2]['value']] +
+                                            $ap[$arrayBilansPassif[3]['value']] +
+                                            $ap[$arrayBilansPassif[4]['value']] +
+                                            $ap[$arrayBilansPassif[5]['value']] +
+                                            $ap[$arrayBilansPassif[6]['value']])
+                                        ?>
+                                        <td id="<?= $t['value'] ?>_<?= $ap['ordre'] ?>"><?= $totalAnnee ?></td>
+                                        <?php
+                                        if ($b == 3) {
+                                            break;
+                                        } else {
+                                            $b++;
+                                        }
+                                    }
+                                    ?>
+                                    </tr>
+                                    </tbody>
+                                    <?php
+                                }
+                            }
+                            ?>
+                        </table>
                     <?php } ?>
                     <br/><br/>
                     <table class="form" style="width: 100%;">
@@ -1581,6 +1605,14 @@
                     }
                     if (obj.fichier2 == 'ok') {
                         $(".statut_fichier2").html(enregistre);
+                        if($('#displayPeriodHS').css('display') == 'block' &&
+                            0 < <?= (int)$this->projects->period ?> &&
+                            1000000 > <?= (int)$this->projects->period ?>){
+                            $("#status").css('display', 'block');
+                            $("#msgProject").css('display', 'block');
+                            $('#displayPeriodHS').css('display', 'none');
+                            $("#msgProjectPeriodHS").css('display', 'none');
+                        }
                     }
                     if (obj.fichier3 == 'ok') {
                         $(".statut_fichier3").html(enregistre);
@@ -1636,7 +1668,7 @@
                 <!-- bilans -->
                 <?php
                 if (count($this->lbilans) > 0) {
-                ?>
+                    ?>
                     <table class="tablesorter">
                         <thead>
                         <th width="200">Nom</th>
@@ -1779,7 +1811,7 @@
                     </table>
                     <?php
                     if ($this->nb_lignes != '') {
-                    ?>
+                        ?>
                         <table>
                             <tr>
                                 <td id="pager">
@@ -1795,7 +1827,7 @@
                                 </td>
                             </tr>
                         </table>
-                <?php
+                        <?php
                     }
                 }
                 ?>
@@ -1817,7 +1849,7 @@
             if ($this->current_projects_status->status >= 31) {
                 $moyenne1 = (($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1));
                 $moyenne = round($moyenne1, 1);
-            ?>
+                ?>
                 <div id="title_etape6">Etape 6</div>
                 <div id="etape6">
                     <table class="form tableNotes" style="width: 100%;">
@@ -1833,12 +1865,12 @@
 
                             <th><label for="qualite_moyen_infos_financieres">Qualité des moyens & infos financières</label></th>
                             <td>
-                                <input tabindex="6" id="qualite_moyen_infos_financieres" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->qualite_moyen_infos_financieres ?>" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value, this.id);"> /10
+                                <input tabindex="6" id="qualite_moyen_infos_financieres" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->qualite_moyen_infos_financieres ?>" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                             </td>
 
                             <th><label for="notation_externe">Notation externe</label></th>
                             <td>
-                                <input tabindex="7" id="notation_externe" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->notation_externe ?>" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value, this.id);"> /10
+                                <input tabindex="7" id="notation_externe" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->notation_externe ?>" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                             </td>
                         </tr>
                         <tr>
@@ -1847,19 +1879,19 @@
                                     <tr>
                                         <th><label for="structure">Structure</label></th>
                                         <td>
-                                            <input tabindex="1" class="input_court cal_moyen" type="text" value="<?= ($this->projects_notes->structure) ?>" name="structure" id="structure" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="1" class="input_court cal_moyen" type="text" value="<?= ($this->projects_notes->structure) ?>" name="structure" id="structure" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                     <tr>
                                         <th><label for="rentabilite">Rentabilité</label></th>
                                         <td>
-                                            <input tabindex="2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->rentabilite ?>" name="rentabilite" id="rentabilite" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->rentabilite ?>" name="rentabilite" id="rentabilite" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                     <tr>
                                         <th><label for="tresorerie">Trésorerie</label></th>
                                         <td>
-                                            <input tabindex="3" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie ?>" name="tresorerie" id="tresorerie" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="3" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie ?>" name="tresorerie" id="tresorerie" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                 </table>
@@ -1869,13 +1901,13 @@
                                     <tr>
                                         <th><label for="global">Global</label></th>
                                         <td>
-                                            <input tabindex="4" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global ?>" name="global" id="global" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="4" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global ?>" name="global" id="global" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                     <tr>
                                         <th><label for="individuel">Individuel</label></th>
                                         <td>
-                                            <input tabindex="5" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="5" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                 </table>
@@ -1887,22 +1919,36 @@
                         </tr>
                         <tr>
                             <td colspan="8" style="text-align:center;">
+                                <?php
+                                if(false === $this->bReadonlyRiskNote){
+                            ?>
                                 <label for="avis" style="text-align:left;display: block;">Avis :</label><br/>
                                 <textarea tabindex="8" name="avis" style="height:700px;" id="avis" class="textarea_large avis"/><?= $this->projects_notes->avis ?></textarea>
                                 <script type="text/javascript">var ckedAvis = CKEDITOR.replace('avis', {height: 700});</script>
+                            <?php
+                                } else {
+                            ?>
+                                <div style="color:black;"><?= $this->projects_notes->avis ?></div>
+                            <?php
+                                }
+                                ?>
                             </td>
                         </tr>
                     </table>
                     <br/><br/>
                     <div id="valid_etape6">Données sauvegardées</div>
                     <div class="btnDroite listBtn_etape6">
-                        <input type="button" onclick="valid_rejete_etape6(3,<?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
                         <?php
+                        if(false === $this->bReadonlyRiskNote) {
+                            ?>
+                            <input type="button" onclick="valid_rejete_etape6(3,<?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
+                            <?php
+                        }
                         if ($this->current_projects_status->status == 31) {
-                        ?>
+                            ?>
                             <input type="button" onclick="valid_rejete_etape6(1,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
                             <input type="button" onclick="valid_rejete_etape6(2,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape6" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
-                        <?php
+                            <?php
                         }
                         ?>
                     </div>
@@ -1958,7 +2004,7 @@
 
                     });
                 </script>
-            <?php
+                <?php
             }
             ?>
         </div>
@@ -1967,7 +2013,7 @@
             <?php
             // si statut revueA
             if ($this->current_projects_status->status >= 33) {
-            ?>
+                ?>
                 <div id="title_etape7">Etape 7</div>
                 <div id="etape7">
                     <table class="form tableNotes" style="width: 100%;">
@@ -1983,11 +2029,11 @@
 
                             <th><label for="qualite_moyen_infos_financieres2">Qualité des moyens & infos financières</label></th>
                             <td>
-                                <input tabindex="14" id="qualite_moyen_infos_financieres2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->qualite_moyen_infos_financieres ?>" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value, this.id);"> /10
+                                <input tabindex="14" id="qualite_moyen_infos_financieres2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->qualite_moyen_infos_financieres ?>" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                             </td>
                             <th><label for="notation_externe2">Notation externe</label></th>
                             <td>
-                                <input tabindex="15" id="notation_externe2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->notation_externe ?>" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value, this.id);"> /10
+                                <input tabindex="15" id="notation_externe2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->notation_externe ?>" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                             </td>
                         </tr>
                         <tr>
@@ -1996,19 +2042,19 @@
                                     <tr>
                                         <th><label for="structure2">Structure</label></th>
                                         <td>
-                                            <input tabindex="9" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->structure ?>" name="structure2" id="structure2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="9" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->structure ?>" name="structure2" id="structure2" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                     <tr>
                                         <th><label for="rentabilite2">Rentabilité</label></th>
                                         <td>
-                                            <input tabindex="10" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->rentabilite ?>" name="rentabilite2" id="rentabilite2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="10" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->rentabilite ?>" name="rentabilite2" id="rentabilite2" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                     <tr>
                                         <th><label for="tresorerie2">Trésorerie</label></th>
                                         <td>
-                                            <input tabindex="11" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie ?>" name="tresorerie2" id="tresorerie2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="11" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie ?>" name="tresorerie2" id="tresorerie2" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                 </table>
@@ -2018,13 +2064,13 @@
                                     <tr>
                                         <th><label for="global2">Global</label></th>
                                         <td>
-                                            <input tabindex="12" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global ?>" name="global2" id="global2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="12" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global ?>" name="global2" id="global2" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                     <tr>
                                         <th><label for="individuel2">Individuel</label></th>
                                         <td>
-                                            <input tabindex="13" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel2" id="individuel2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10
+                                            <input tabindex="13" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel2" id="individuel2" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                                         </td>
                                     </tr>
                                 </table>
@@ -2036,9 +2082,19 @@
                         </tr>
                         <tr>
                             <td colspan="8" style="text-align:center;">
-                                <label for="avis_comite" style="text-align:left;display: block;">Avis comité :</label><br/>
-                                <textarea tabindex="16" name="avis_comite" style="height:700px;" id="avis_comite" class="textarea_large avis_comite"><?= $this->projects_notes->avis_comite ?></textarea>
-                                <script type="text/javascript">var ckedAvis_comite = CKEDITOR.replace('avis_comite', {height: 700});</script>
+                                <?php
+                                if(false === $this->bReadonlyRiskNote){
+                                    ?>
+                                    <label for="avis_comite" style="text-align:left;display: block;">Avis comité :</label><br/>
+                                    <textarea tabindex="16" name="avis_comite" style="height:700px;" id="avis_comite" class="textarea_large avis_comite"><?= $this->projects_notes->avis_comite; ?></textarea>
+                                    <script type="text/javascript">var ckedAvis_comite = CKEDITOR.replace('avis_comite', {height: 700});</script>
+                                <?php
+                                } else {
+                                ?>
+                                    <div style="color:black;"><?= $this->projects_notes->avis_comite; ?></div>
+                                    <?php
+                                }
+                                ?>
                             </td>
                         </tr>
                     </table>
@@ -2096,19 +2152,23 @@
 
                     <div id="valid_etape7">Données sauvegardées</div>
                     <div class="btnDroite">
-                        <input type="button" onclick="valid_rejete_etape7(3,<?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
                         <?php
+                        if(false === $this->bReadonlyRiskNote) {
+                            ?>
+                            <input type="button" onclick="valid_rejete_etape7(3,<?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
+                            <?php
+                        }
                         if ($this->current_projects_status->status == 33) {
-                        ?>
+                            ?>
                             <input type="button" onclick="valid_rejete_etape7(1,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">
                             <input type="button" onclick="valid_rejete_etape7(2,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
                             <input type="button" onclick="valid_rejete_etape7(4,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" value="Plus d'informations">
-                        <?php
+                            <?php
                         }
                         ?>
                     </div>
                 </div>
-            <?php
+                <?php
             }
             ?>
         </div>
@@ -2118,9 +2178,9 @@
     <?php
         for ($i = 1; $i <= 7; $i++) {
     ?>
-            $('#title_etape<?= $i ?>').click(function () {
-                $('#etape<?= $i ?>').slideToggle();
-            });
+    $('#title_etape<?= $i ?>').click(function () {
+        $('#etape<?= $i ?>').slideToggle();
+    });
     <?php
         }
     ?>
