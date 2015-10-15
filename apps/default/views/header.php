@@ -43,6 +43,7 @@ if (isset($_SESSION['lexpress'])) {
             } else {
                 ?>
                 <div class="login-panel" style="width:525px;">
+                    <div class="login-toggle"></div>
                     <form action="" method="post" id="form_connect" name="form_connect">
 
 
