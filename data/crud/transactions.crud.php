@@ -57,6 +57,7 @@ class transactions_crud
 	public $etat;
 	public $transaction;
 	public $type_transaction;
+	public $recouvrement;
 	public $display;
 	public $ip_client;
 	public $serialize_paniers;
@@ -124,6 +125,7 @@ class transactions_crud
 		$this->etat = '';
 		$this->transaction = '';
 		$this->type_transaction = '';
+		$this->recouvrement = '';
 		$this->display = '';
 		$this->ip_client = '';
 		$this->serialize_paniers = '';
@@ -195,6 +197,7 @@ class transactions_crud
 			$this->etat = $record['etat'];
 			$this->transaction = $record['transaction'];
 			$this->type_transaction = $record['type_transaction'];
+			$this->recouvrement = $record['recouvrement'];
 			$this->display = $record['display'];
 			$this->ip_client = $record['ip_client'];
 			$this->serialize_paniers = $record['serialize_paniers'];
@@ -266,6 +269,7 @@ class transactions_crud
 		$this->etat = $this->bdd->escape_string($this->etat);
 		$this->transaction = $this->bdd->escape_string($this->transaction);
 		$this->type_transaction = $this->bdd->escape_string($this->type_transaction);
+		$this->recouvrement = $this->bdd->escape_string($this->recouvrement);
 		$this->display = $this->bdd->escape_string($this->display);
 		$this->ip_client = $this->bdd->escape_string($this->ip_client);
 		$this->serialize_paniers = $this->bdd->escape_string($this->serialize_paniers);
@@ -298,7 +302,7 @@ class transactions_crud
 		$this->colis = $this->bdd->escape_string($this->colis);
 
 		
-		$sql = 'UPDATE `transactions` SET `id_panier`="'.$this->id_panier.'",`id_backpayline`="'.$this->id_backpayline.'",`id_offre_bienvenue_detail`="'.$this->id_offre_bienvenue_detail.'",`id_parrain_filleul`="'.$this->id_parrain_filleul.'",`id_virement`="'.$this->id_virement.'",`id_prelevement`="'.$this->id_prelevement.'",`id_echeancier`="'.$this->id_echeancier.'",`id_echeancier_emprunteur`="'.$this->id_echeancier_emprunteur.'",`id_bid_remb`="'.$this->id_bid_remb.'",`id_loan_remb`="'.$this->id_loan_remb.'",`id_project`="'.$this->id_project.'",`id_client`="'.$this->id_client.'",`id_partenaire`="'.$this->id_partenaire.'",`id_livraison`="'.$this->id_livraison.'",`id_facturation`="'.$this->id_facturation.'",`id_type`="'.$this->id_type.'",`fdp`="'.$this->fdp.'",`montant`="'.$this->montant.'",`montant_unilend`="'.$this->montant_unilend.'",`montant_etat`="'.$this->montant_etat.'",`montant_reduc`="'.$this->montant_reduc.'",`id_langue`="'.$this->id_langue.'",`date_transaction`="'.$this->date_transaction.'",`type_paiement`="'.$this->type_paiement.'",`status`="'.$this->status.'",`etat`="'.$this->etat.'",`transaction`="'.$this->transaction.'",`type_transaction`="'.$this->type_transaction.'",`display`="'.$this->display.'",`ip_client`="'.$this->ip_client.'",`serialize_paniers`="'.$this->serialize_paniers.'",`serialize_paniers_produits`="'.$this->serialize_paniers_produits.'",`serialize_paniers_promos`="'.$this->serialize_paniers_promos.'",`serialize_paniers_cadeaux`="'.$this->serialize_paniers_cadeaux.'",`serialize_payline`="'.$this->serialize_payline.'",`added`="'.$this->added.'",`updated`=NOW(),`civilite_liv`="'.$this->civilite_liv.'",`nom_liv`="'.$this->nom_liv.'",`prenom_liv`="'.$this->prenom_liv.'",`societe_liv`="'.$this->societe_liv.'",`adresse1_liv`="'.$this->adresse1_liv.'",`adresse2_liv`="'.$this->adresse2_liv.'",`adresse3_liv`="'.$this->adresse3_liv.'",`cp_liv`="'.$this->cp_liv.'",`ville_liv`="'.$this->ville_liv.'",`id_pays_liv`="'.$this->id_pays_liv.'",`civilite_fac`="'.$this->civilite_fac.'",`nom_fac`="'.$this->nom_fac.'",`prenom_fac`="'.$this->prenom_fac.'",`societe_fac`="'.$this->societe_fac.'",`adresse1_fac`="'.$this->adresse1_fac.'",`adresse2_fac`="'.$this->adresse2_fac.'",`adresse3_fac`="'.$this->adresse3_fac.'",`cp_fac`="'.$this->cp_fac.'",`ville_fac`="'.$this->ville_fac.'",`id_pays_fac`="'.$this->id_pays_fac.'",`colis`="'.$this->colis.'" WHERE id_transaction="'.$this->id_transaction.'"';
+		$sql = 'UPDATE `transactions` SET `id_panier`="'.$this->id_panier.'",`id_backpayline`="'.$this->id_backpayline.'",`id_offre_bienvenue_detail`="'.$this->id_offre_bienvenue_detail.'",`id_parrain_filleul`="'.$this->id_parrain_filleul.'",`id_virement`="'.$this->id_virement.'",`id_prelevement`="'.$this->id_prelevement.'",`id_echeancier`="'.$this->id_echeancier.'",`id_echeancier_emprunteur`="'.$this->id_echeancier_emprunteur.'",`id_bid_remb`="'.$this->id_bid_remb.'",`id_loan_remb`="'.$this->id_loan_remb.'",`id_project`="'.$this->id_project.'",`id_client`="'.$this->id_client.'",`id_partenaire`="'.$this->id_partenaire.'",`id_livraison`="'.$this->id_livraison.'",`id_facturation`="'.$this->id_facturation.'",`id_type`="'.$this->id_type.'",`fdp`="'.$this->fdp.'",`montant`="'.$this->montant.'",`montant_unilend`="'.$this->montant_unilend.'",`montant_etat`="'.$this->montant_etat.'",`montant_reduc`="'.$this->montant_reduc.'",`id_langue`="'.$this->id_langue.'",`date_transaction`="'.$this->date_transaction.'",`type_paiement`="'.$this->type_paiement.'",`status`="'.$this->status.'",`etat`="'.$this->etat.'",`transaction`="'.$this->transaction.'",`type_transaction`="'.$this->type_transaction.'",`recouvrement`="'.$this->recouvrement.'",`display`="'.$this->display.'",`ip_client`="'.$this->ip_client.'",`serialize_paniers`="'.$this->serialize_paniers.'",`serialize_paniers_produits`="'.$this->serialize_paniers_produits.'",`serialize_paniers_promos`="'.$this->serialize_paniers_promos.'",`serialize_paniers_cadeaux`="'.$this->serialize_paniers_cadeaux.'",`serialize_payline`="'.$this->serialize_payline.'",`added`="'.$this->added.'",`updated`=NOW(),`civilite_liv`="'.$this->civilite_liv.'",`nom_liv`="'.$this->nom_liv.'",`prenom_liv`="'.$this->prenom_liv.'",`societe_liv`="'.$this->societe_liv.'",`adresse1_liv`="'.$this->adresse1_liv.'",`adresse2_liv`="'.$this->adresse2_liv.'",`adresse3_liv`="'.$this->adresse3_liv.'",`cp_liv`="'.$this->cp_liv.'",`ville_liv`="'.$this->ville_liv.'",`id_pays_liv`="'.$this->id_pays_liv.'",`civilite_fac`="'.$this->civilite_fac.'",`nom_fac`="'.$this->nom_fac.'",`prenom_fac`="'.$this->prenom_fac.'",`societe_fac`="'.$this->societe_fac.'",`adresse1_fac`="'.$this->adresse1_fac.'",`adresse2_fac`="'.$this->adresse2_fac.'",`adresse3_fac`="'.$this->adresse3_fac.'",`cp_fac`="'.$this->cp_fac.'",`ville_fac`="'.$this->ville_fac.'",`id_pays_fac`="'.$this->id_pays_fac.'",`colis`="'.$this->colis.'" WHERE id_transaction="'.$this->id_transaction.'"';
 		$this->bdd->query($sql);
 		
 		if($cs=='')
@@ -352,6 +356,7 @@ class transactions_crud
 		$this->etat = $this->bdd->escape_string($this->etat);
 		$this->transaction = $this->bdd->escape_string($this->transaction);
 		$this->type_transaction = $this->bdd->escape_string($this->type_transaction);
+		$this->recouvrement = $this->bdd->escape_string($this->recouvrement);
 		$this->display = $this->bdd->escape_string($this->display);
 		$this->ip_client = $this->bdd->escape_string($this->ip_client);
 		$this->serialize_paniers = $this->bdd->escape_string($this->serialize_paniers);
@@ -384,7 +389,7 @@ class transactions_crud
 		$this->colis = $this->bdd->escape_string($this->colis);
 
 		
-		$sql = 'INSERT INTO `transactions`(`id_panier`,`id_backpayline`,`id_offre_bienvenue_detail`,`id_parrain_filleul`,`id_virement`,`id_prelevement`,`id_echeancier`,`id_echeancier_emprunteur`,`id_bid_remb`,`id_loan_remb`,`id_project`,`id_client`,`id_partenaire`,`id_livraison`,`id_facturation`,`id_type`,`fdp`,`montant`,`montant_unilend`,`montant_etat`,`montant_reduc`,`id_langue`,`date_transaction`,`type_paiement`,`status`,`etat`,`transaction`,`type_transaction`,`display`,`ip_client`,`serialize_paniers`,`serialize_paniers_produits`,`serialize_paniers_promos`,`serialize_paniers_cadeaux`,`serialize_payline`,`added`,`updated`,`civilite_liv`,`nom_liv`,`prenom_liv`,`societe_liv`,`adresse1_liv`,`adresse2_liv`,`adresse3_liv`,`cp_liv`,`ville_liv`,`id_pays_liv`,`civilite_fac`,`nom_fac`,`prenom_fac`,`societe_fac`,`adresse1_fac`,`adresse2_fac`,`adresse3_fac`,`cp_fac`,`ville_fac`,`id_pays_fac`,`colis`) VALUES("'.$this->id_panier.'","'.$this->id_backpayline.'","'.$this->id_offre_bienvenue_detail.'","'.$this->id_parrain_filleul.'","'.$this->id_virement.'","'.$this->id_prelevement.'","'.$this->id_echeancier.'","'.$this->id_echeancier_emprunteur.'","'.$this->id_bid_remb.'","'.$this->id_loan_remb.'","'.$this->id_project.'","'.$this->id_client.'","'.$this->id_partenaire.'","'.$this->id_livraison.'","'.$this->id_facturation.'","'.$this->id_type.'","'.$this->fdp.'","'.$this->montant.'","'.$this->montant_unilend.'","'.$this->montant_etat.'","'.$this->montant_reduc.'","'.$this->id_langue.'","'.$this->date_transaction.'","'.$this->type_paiement.'","'.$this->status.'","'.$this->etat.'","'.$this->transaction.'","'.$this->type_transaction.'","'.$this->display.'","'.$this->ip_client.'","'.$this->serialize_paniers.'","'.$this->serialize_paniers_produits.'","'.$this->serialize_paniers_promos.'","'.$this->serialize_paniers_cadeaux.'","'.$this->serialize_payline.'",NOW(),NOW(),"'.$this->civilite_liv.'","'.$this->nom_liv.'","'.$this->prenom_liv.'","'.$this->societe_liv.'","'.$this->adresse1_liv.'","'.$this->adresse2_liv.'","'.$this->adresse3_liv.'","'.$this->cp_liv.'","'.$this->ville_liv.'","'.$this->id_pays_liv.'","'.$this->civilite_fac.'","'.$this->nom_fac.'","'.$this->prenom_fac.'","'.$this->societe_fac.'","'.$this->adresse1_fac.'","'.$this->adresse2_fac.'","'.$this->adresse3_fac.'","'.$this->cp_fac.'","'.$this->ville_fac.'","'.$this->id_pays_fac.'","'.$this->colis.'")';
+		$sql = 'INSERT INTO `transactions`(`id_panier`,`id_backpayline`,`id_offre_bienvenue_detail`,`id_parrain_filleul`,`id_virement`,`id_prelevement`,`id_echeancier`,`id_echeancier_emprunteur`,`id_bid_remb`,`id_loan_remb`,`id_project`,`id_client`,`id_partenaire`,`id_livraison`,`id_facturation`,`id_type`,`fdp`,`montant`,`montant_unilend`,`montant_etat`,`montant_reduc`,`id_langue`,`date_transaction`,`type_paiement`,`status`,`etat`,`transaction`,`type_transaction`,`recouvrement`,`display`,`ip_client`,`serialize_paniers`,`serialize_paniers_produits`,`serialize_paniers_promos`,`serialize_paniers_cadeaux`,`serialize_payline`,`added`,`updated`,`civilite_liv`,`nom_liv`,`prenom_liv`,`societe_liv`,`adresse1_liv`,`adresse2_liv`,`adresse3_liv`,`cp_liv`,`ville_liv`,`id_pays_liv`,`civilite_fac`,`nom_fac`,`prenom_fac`,`societe_fac`,`adresse1_fac`,`adresse2_fac`,`adresse3_fac`,`cp_fac`,`ville_fac`,`id_pays_fac`,`colis`) VALUES("'.$this->id_panier.'","'.$this->id_backpayline.'","'.$this->id_offre_bienvenue_detail.'","'.$this->id_parrain_filleul.'","'.$this->id_virement.'","'.$this->id_prelevement.'","'.$this->id_echeancier.'","'.$this->id_echeancier_emprunteur.'","'.$this->id_bid_remb.'","'.$this->id_loan_remb.'","'.$this->id_project.'","'.$this->id_client.'","'.$this->id_partenaire.'","'.$this->id_livraison.'","'.$this->id_facturation.'","'.$this->id_type.'","'.$this->fdp.'","'.$this->montant.'","'.$this->montant_unilend.'","'.$this->montant_etat.'","'.$this->montant_reduc.'","'.$this->id_langue.'","'.$this->date_transaction.'","'.$this->type_paiement.'","'.$this->status.'","'.$this->etat.'","'.$this->transaction.'","'.$this->type_transaction.'","'.$this->recouvrement.'","'.$this->display.'","'.$this->ip_client.'","'.$this->serialize_paniers.'","'.$this->serialize_paniers_produits.'","'.$this->serialize_paniers_promos.'","'.$this->serialize_paniers_cadeaux.'","'.$this->serialize_payline.'",NOW(),NOW(),"'.$this->civilite_liv.'","'.$this->nom_liv.'","'.$this->prenom_liv.'","'.$this->societe_liv.'","'.$this->adresse1_liv.'","'.$this->adresse2_liv.'","'.$this->adresse3_liv.'","'.$this->cp_liv.'","'.$this->ville_liv.'","'.$this->id_pays_liv.'","'.$this->civilite_fac.'","'.$this->nom_fac.'","'.$this->prenom_fac.'","'.$this->societe_fac.'","'.$this->adresse1_fac.'","'.$this->adresse2_fac.'","'.$this->adresse3_fac.'","'.$this->cp_fac.'","'.$this->ville_fac.'","'.$this->id_pays_fac.'","'.$this->colis.'")';
 		$this->bdd->query($sql);
 		
 		$this->id_transaction = $this->bdd->insert_id();
@@ -434,6 +439,7 @@ class transactions_crud
 		$this->etat = '';
 		$this->transaction = '';
 		$this->type_transaction = '';
+		$this->recouvrement = '';
 		$this->display = '';
 		$this->ip_client = '';
 		$this->serialize_paniers = '';

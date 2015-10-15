@@ -93,12 +93,17 @@ if (isset($_SESSION['freeow'])) {
                     $infos = '';
                     if (in_array($v['type_remb'], array(2, 3))) {
                         $this->receptions->get($v['id_reception'], 'id_parent');
+                        // Regularisation
                         if ($v['type_remb'] == 2) {
                             $infos = '(' . $this->types_remb[$v['type_remb']] . ' - prélèvement id : ' . $this->receptions->id_reception . ')';
-                        } else {
-                            $infos = '<a target="_blanck" href="'.$this->lurl.'/transferts/recouvrement/'.$this->receptions->id_reception.'">(' . $this->types_remb[$v['type_remb']] . ' - prélèvement id : ' . $this->receptions->id_reception . ')</a>';
                         }
-                    } elseif ($v['type_remb'] == 1) {
+                        // Recouvrement
+                        else {
+                            $infos = '<a style="text-decoration:underline;" target="_blanck" href="'.$this->lurl.'/transferts/recouvrement/'.$this->receptions->id_reception.'">(' . $this->types_remb[$v['type_remb']] . ' - prélèvement id : ' . $this->receptions->id_reception . ')</a>';
+                        }
+                    }
+                    // RA
+                    elseif ($v['type_remb'] == 1) {
                         $infos = '(' . $this->types_remb[$v['type_remb']] . ')';
                     }
                     ?>
