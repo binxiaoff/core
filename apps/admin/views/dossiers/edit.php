@@ -57,7 +57,7 @@
                 $("#msgProject").css('display', 'none');
                 $("#displayPeriodHS").css('display', 'block');
                 $("#msgProjectPeriodHS").css('display', 'block');
-            } else {
+            } else if('' != $(".statut_fichier2").html()) {
                 $("#status").css('display', 'block');
                 $("#msgProject").css('display', 'block');
                 $("#displayPeriodHS").css('display', 'none');
@@ -416,22 +416,25 @@
                             <?php
                             if ($this->current_projects_status->status == 130) {
                                 echo "Remboursement anticipé";
-                            } elseif (0 === (int)$this->projects->period ||
-                                1000000 === (int)$this->projects->period ||
-                                '' == $this->companies_details->fichier_rib) {
-                            ?>
-                                <span>
-                                    Pr&eacute;p Funding
-                                    <input type="hidden" name="status" id="status" value="<?= $this->current_projects_status->status ?>" />
-                                </span>
-                            <?php
                             } else {
                                 if (count($this->lProjects_status) > 0) {
+                                    $sDiplayPeriodHS     = 'none';
+                                    $sDisplayMsgPeriodHs = 'none';
+                                    $sDiplayStatus       = 'block';
+                                    $sDisplayMsgProject  = 'block';
+                                if (0 === (int)$this->projects->period ||
+                                    1000000 === (int)$this->projects->period ||
+                                    '' == $this->companies_details->fichier_rib) {
+                                        $sDiplayPeriodHS     = 'block';
+                                        $sDiplayStatus       = 'none';
+                                        $sDisplayMsgPeriodHs = 'block';
+                                        $sDisplayMsgProject  = 'none';
+                                    }
                             ?>
-                                    <span id="displayPeriodHS" style="display:none;">
+                                    <span id="displayPeriodHS" style="display:<?= $sDiplayPeriodHS ?>;">
                                         Pr&eacute;p Funding
                                     </span>
-                                    <select name="status" id="status" class="select" <?= ($this->current_projects_status->status == 130 ? '"disabled"' : "") ?>>
+                                    <select name="status" id="status" class="select" style="display:<?= $sDiplayStatus ?>;" <?= ($this->current_projects_status->status == 130 ? '"disabled"' : "") ?>>
                                         <?php
                                         foreach ($this->lProjects_status as $s) {
                                             ?>
@@ -457,20 +460,8 @@
                         ?>
                         <tr class="change_statut" <?= ($this->current_projects_status->status == 35 ? '' : 'style="display:none"') ?>>
                             <td colspan="2">
-                                <?php
-                                if (0 === (int)$this->projects->period ||
-                                    1000000 === (int)$this->projects->period ||
-                                    '' == $this->companies_details->fichier_rib) {
-                                    ?>
-                                    V&eacute;rifiez la dur&eacute;e du pr&ecirc;t et le rib avant de pouvoir changer de statut
-                                    <?php
-                                } else {
-                                    ?>
-                                <span id="msgProject">Vous devez changer le statut du projet pour ajouter une date de publication et de retrait</span>
-                                <span id="msgProjectPeriodHS" style="display:none;">V&eacute;rifiez la dur&eacute;e du pr&ecirc;t et le rib avant de pouvoir changer de statut</span>
-                                    <?php
-                                }
-                                ?>
+                                <span id="msgProject" style="display:<?= $sDisplayMsgProject ?>;">Vous devez changer le statut du projet pour ajouter une date de publication et de retrait</span>
+                                <span id="msgProjectPeriodHS" style="display:<?= $sDisplayMsgPeriodHs ?>;">V&eacute;rifiez la dur&eacute;e du pr&ecirc;t et le rib avant de pouvoir changer de statut</span>
                                 <div class="block_cache change_statut"></div>
                             </td>
                         </tr>
@@ -1614,6 +1605,14 @@
                     }
                     if (obj.fichier2 == 'ok') {
                         $(".statut_fichier2").html(enregistre);
+                        if($('#displayPeriodHS').css('display') == 'block' &&
+                            0 < <?= (int)$this->projects->period ?> &&
+                            1000000 > <?= (int)$this->projects->period ?>){
+                            $("#status").css('display', 'block');
+                            $("#msgProject").css('display', 'block');
+                            $('#displayPeriodHS').css('display', 'none');
+                            $("#msgProjectPeriodHS").css('display', 'none');
+                        }
                     }
                     if (obj.fichier3 == 'ok') {
                         $(".statut_fichier3").html(enregistre);
