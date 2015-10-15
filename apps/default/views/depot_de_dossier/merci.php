@@ -7,9 +7,6 @@
                     echo $this->lng['depot-de-dossier']['contenu-prospect'];
                     $this->fireView(('../templates/contact'));
                     break;
-                case 'procedure-accelere':
-                    echo $this->lng['depot-de-dossier']['procedure-accelere'];
-                    break;
                 case 'abandon':
                     echo $this->lng['depot-de-dossier']['abandon'];
                     break;

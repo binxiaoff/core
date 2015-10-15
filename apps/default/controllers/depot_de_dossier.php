@@ -575,7 +575,7 @@ class depot_de_dossierController extends bootstrap
         $this->iMinimumMonthlyPayment = round($this->financial->PMT($aMinimumRateInterval[0] / 100 / 12, $this->projects->period, - $this->projects->amount) + $fCommission);
         $this->iMaximumMonthlyPayment = round($this->financial->PMT($aMaximumRateInterval[1] / 100 / 12, $this->projects->period, - $this->projects->amount) + $fCommission);
 
-        //year considered for "latest liasse fiscal" necessary to get the information from Bilan and actif_passif
+        // year considered for "latest liasse fiscal" necessary to get the information from bilans and actif_passif
         $iLastAnnualAccountsYear  = date('Y') - 1;
         $aAnnualAccounts          = $this->companies_bilans->select('id_company = ' . $this->companies->id_company . ' AND date = ' . $iLastAnnualAccountsYear);
         $aAssetsDebts             = $this->companies_actif_passif->select('id_company = ' . $this->companies->id_company . ' AND annee = ' . $iLastAnnualAccountsYear);
@@ -583,81 +583,79 @@ class depot_de_dossierController extends bootstrap
         $iAltaresOperationIncomes = $aAnnualAccounts[0]['resultat_exploitation'];
         $iAltaresRevenue          = $aAnnualAccounts[0]['ca'];
 
-        $this->iCapitalStock     = empty($this->projects->fonds_propres_declara_client) ? $iAltaresCapitalStock : $this->projects->fonds_propres_declara_client;
-        $this->iOperatingIncomes = empty($this->projects->resultat_exploitation_declara_client) ? $iAltaresOperationIncomes : $this->projects->resultat_exploitation_declara_client;
-        $this->iRevenue          = empty($this->projects->ca_declara_client) ? $iAltaresRevenue : $this->projects->ca_declara_client;
+        $this->iCapitalStock     = isset($_SESSION['forms']['depot-de-dossier-3']['values']['fonds_propres']) ? $_SESSION['forms']['depot-de-dossier-3']['values']['fonds_propres'] : (empty($this->projects->fonds_propres_declara_client) ? $iAltaresCapitalStock : $this->projects->fonds_propres_declara_client);
+        $this->iOperatingIncomes = isset($_SESSION['forms']['depot-de-dossier-3']['values']['resultat_brute_exploitation']) ? $_SESSION['forms']['depot-de-dossier-3']['values']['resultat_brute_exploitation'] : (empty($this->projects->resultat_exploitation_declara_client) ? $iAltaresOperationIncomes : $this->projects->resultat_exploitation_declara_client);
+        $this->iRevenue          = isset($_SESSION['forms']['depot-de-dossier-3']['values']['ca']) ? $_SESSION['forms']['depot-de-dossier-3']['values']['ca'] : (empty($this->projects->ca_declara_client) ? $iAltaresRevenue : $this->projects->ca_declara_client);
+
+        // unset($_SESSION['forms']['depot-de-dossier-3']);
 
         if (isset($_POST['send_form_etape_3'])) {
-            $bFormOk = true;
+            $_SESSION['forms']['depot-de-dossier-3']['values'] = $_POST;
 
             if (
                 false === isset($_POST['fonds_propres']) || $_POST['fonds_propres'] == ''
-                || false === isset($_POST['ca']) || $_POST['ca'] == ''
                 || false === isset($_POST['resultat_brute_exploitation']) || $_POST['resultat_brute_exploitation'] == ''
-                || false === isset($_FILES['liasse_fiscal']) && $_FILES['liasse_fiscal']['name'] == ''
+                || false === isset($_POST['ca']) || $_POST['ca'] == ''
+                || false === isset($_FILES['liasse_fiscal']) || $_FILES['liasse_fiscal']['name'] == ''
             ) {
                 $this->redirect(self::PAGE_NAME_STEP_3);
             }
 
-            if ($bFormOk) {
-                $this->uploadAttachment($this->projects->id_project, 'liasse_fiscal', attachment_type::DERNIERE_LIASSE_FISCAL);
+            $this->uploadAttachment('liasse_fiscal', attachment_type::DERNIERE_LIASSE_FISCAL);
 
-                if (empty($_FILES['autre']) == false) {
-                    $this->uploadAttachment($this->projects->id_project, 'autre', attachment_type::AUTRE1);
-                }
+            if (empty($_FILES['autre']) == false) {
+                $this->uploadAttachment('autre', attachment_type::AUTRE1);
+            }
 
-                $bUpdateDeclaration                   = false;
-                $_POST['fonds_propres']               = str_replace(array(' ', ','), array('', '.'), $_POST['fonds_propres']);
-                $_POST['resultat_brute_exploitation'] = str_replace(array(' ', ','), array('', '.'), $_POST['resultat_brute_exploitation']);
-                $_POST['ca']                          = str_replace(array(' ', ','), array('', '.'), $_POST['ca']);
+            $bUpdateDeclaration                   = false;
+            $_POST['fonds_propres']               = str_replace(array(' ', ','), array('', '.'), $_POST['fonds_propres']);
+            $_POST['resultat_brute_exploitation'] = str_replace(array(' ', ','), array('', '.'), $_POST['resultat_brute_exploitation']);
+            $_POST['ca']                          = str_replace(array(' ', ','), array('', '.'), $_POST['ca']);
 
-                if ($iAltaresCapitalStock != $_POST['fonds_propres']) {
-                    $this->projects->fonds_propres_declara_client = $_POST['fonds_propres'];
-                    $bUpdateDeclaration = true;
-                } elseif (false === empty($this->projects->fonds_propres_declara_client) && $iAltaresCapitalStock == $_POST['fonds_propres']) {
-                    $this->projects->fonds_propres_declara_client = 0;
-                    $bUpdateDeclaration = true;
-                }
+            if ($iAltaresCapitalStock != $_POST['fonds_propres']) {
+                $this->projects->fonds_propres_declara_client = $_POST['fonds_propres'];
+                $bUpdateDeclaration = true;
+            } elseif (false === empty($this->projects->fonds_propres_declara_client) && $iAltaresCapitalStock == $_POST['fonds_propres']) {
+                $this->projects->fonds_propres_declara_client = 0;
+                $bUpdateDeclaration = true;
+            }
 
-                if ($iAltaresOperationIncomes != $_POST['resultat_brute_exploitation']) {
-                    $this->projects->resultat_exploitation_declara_client = $_POST['resultat_brute_exploitation'];
-                    $bUpdateDeclaration = true;
-                } elseif (false === empty($this->projects->resultat_exploitation_declara_client) && $iAltaresOperationIncomes == $_POST['resultat_brute_exploitation']) {
-                    $this->projects->resultat_exploitation_declara_client = 0;
-                    $bUpdateDeclaration = true;
-                }
+            if ($iAltaresOperationIncomes != $_POST['resultat_brute_exploitation']) {
+                $this->projects->resultat_exploitation_declara_client = $_POST['resultat_brute_exploitation'];
+                $bUpdateDeclaration = true;
+            } elseif (false === empty($this->projects->resultat_exploitation_declara_client) && $iAltaresOperationIncomes == $_POST['resultat_brute_exploitation']) {
+                $this->projects->resultat_exploitation_declara_client = 0;
+                $bUpdateDeclaration = true;
+            }
 
-                if ($iAltaresRevenue != $_POST['ca']) {
-                    $this->projects->ca_declara_client = $_POST['ca'];
-                    $bUpdateDeclaration = true;
-                } elseif (false === empty($this->projects->ca_declara_client) && $iAltaresRevenue == $_POST['ca']) {
-                    $this->projects->ca_declara_client = 0;
-                    $bUpdateDeclaration = true;
-                }
+            if ($iAltaresRevenue != $_POST['ca']) {
+                $this->projects->ca_declara_client = $_POST['ca'];
+                $bUpdateDeclaration = true;
+            } elseif (false === empty($this->projects->ca_declara_client) && $iAltaresRevenue == $_POST['ca']) {
+                $this->projects->ca_declara_client = 0;
+                $bUpdateDeclaration = true;
+            }
 
-                if ($bUpdateDeclaration) {
-                    $this->projects->update();
-                }
+            if ($bUpdateDeclaration) {
+                $this->projects->update();
+            }
 
-                if ($_POST['fonds_propres'] < 10000 || $_POST['resultat_brute_exploitation'] < 0 || $_POST['ca'] < 100000) {
-                    $this->redirect(self::PAGE_NAME_NOK, \projects_status::NOTE_EXTERNE_FAIBLE);
-                }
+            if ($_POST['fonds_propres'] < 10000 || $_POST['resultat_brute_exploitation'] < 0 || $_POST['ca'] < 100000) {
+                $this->redirect(self::PAGE_NAME_NOK, \projects_status::NOTE_EXTERNE_FAIBLE);
+            }
 
-                if (isset($_POST['procedure_acceleree'])) {
-                    $this->projects->process_fast = 1;
-                    $this->projects->update();
+            if (isset($_POST['procedure_acceleree'])) {
+                $this->projects->process_fast = 1;
+                $this->projects->update();
 
-                    //TODO une fois que le status et la constante sont crées
-                    $this->redirect(self::PAGE_NAME_FILES, \projects_status::COMPLETUDE_ETAPE_3);
-                } else {
-                    //TODO envoi de mail pour reprise de dossier
+                $this->redirect(self::PAGE_NAME_FILES, \projects_status::COMPLETUDE_ETAPE_3);
+            } else {
+                //TODO envoi de mail pour reprise de dossier
 
-                    //client stauts change to online has been done in former functions and seems to be used to validate a projet.
-                    $this->clients->status = 1;
-                    $this->clients->update();
+                $this->clients->status = 1;
+                $this->clients->update();
 
-                    $this->redirect(self::PAGE_NAME_THANK_YOU, \projects_status::A_TRAITER);
-                }
+                $this->redirect(self::PAGE_NAME_THANK_YOU, \projects_status::A_TRAITER);
             }
         }
     }
@@ -802,20 +800,26 @@ class depot_de_dossierController extends bootstrap
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-fichiers'];
         $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-fichiers'];
 
-        // if you change the method in attachement_type think of adding the new attachement types in the upload function below
-        // TODO use trads for Types of files
+        // @todo use trads for Types of files
         $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects();
 
-        if (isset($_POST['submit_files']) && ! empty($_FILES)) {
-            //reformat $_FILES so it can be treated by the upload function
-            foreach ($_FILES as $field => $file) {
-                //We made the field name = attachment type id
-                $iAttachmentType = $field;
-                $this->uploadAttachment($this->projects->id_project, $field, $iAttachmentType);
+        if (isset($_SESSION['forms']['depot-de-dossier-fichiers'])) {
+            $this->aForm = $_SESSION['forms']['depot-de-dossier-fichiers'];
+            unset($_SESSION['forms']['depot-de-dossier-fichiers']);
+        }
+
+        if (false === empty($_POST) || false === empty($_FILES)) {
+            foreach (array_keys($_FILES) as $iAttachmentType) {
+                $this->uploadAttachment($iAttachmentType, $iAttachmentType);
             }
 
-            // @todo /depot_de_dossier/merci/procedure-accelere
-            $this->redirect(self::PAGE_NAME_THANK_YOU, \projects_status::A_TRAITER);
+            if (true === $this->error_fichier) {
+                $_SESSION['forms']['depot-de-dossier-fichiers']['errors']['files'] = true;
+            } else {
+                $_SESSION['forms']['depot-de-dossier-fichiers']['success']['files'] = true;
+            }
+
+            $this->redirect(self::PAGE_NAME_FILES, \projects_status::A_TRAITER);
         }
     }
 
@@ -894,12 +898,11 @@ class depot_de_dossierController extends bootstrap
     }
 
     /**
-     * @param integer $iOwnerId
-     * @param integer $field
+     * @param string $sFieldName
      * @param integer $iAttachmentType
      * @return bool
      */
-    private function uploadAttachment($iOwnerId, $field, $iAttachmentType)
+    private function uploadAttachment($sFieldName, $iAttachmentType)
     {
         if (false === isset($this->upload) || false === $this->upload instanceof upload) {
             $this->upload = $this->loadLib('upload');
@@ -917,13 +920,11 @@ class depot_de_dossierController extends bootstrap
             $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));;
         }
 
-        //add the new name for each file
-        $sNewName = '';
-        if (isset($_FILES[$field]['name']) && $aFileInfo = pathinfo($_FILES[$field]['name'])) {
-            $sNewName = $aFileInfo['filename'] . '_' . $iOwnerId;
+        $resultUpload = false;
+        if (isset($_FILES[$sFieldName]['name']) && $aFileInfo = pathinfo($_FILES[$sFieldName]['name'])) {
+            $sFileName    = $aFileInfo['filename'] . '_' . $this->projects->id_project;
+            $resultUpload = $this->attachmentHelper->upload($this->projects->id_project, attachment::PROJECT, $iAttachmentType, $sFieldName, $this->upload, $sFileName);
         }
-
-        $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::PROJECT, $iAttachmentType, $field, $this->upload, $sNewName);
 
         if (false === $resultUpload) {
             $this->form_ok       = false;
@@ -976,8 +977,10 @@ class depot_de_dossierController extends bootstrap
                 break;
             case \projects_status::A_TRAITER:
             case \projects_status::EN_ATTENTE_PIECES:
-                if ($sPage !== self::PAGE_NAME_FILES) {
+                if (1 == $this->projects->process_fast && $sPage !== self::PAGE_NAME_FILES) {
                     $this->redirect(self::PAGE_NAME_FILES);
+                } elseif (0 == $this->projects->process_fast && $sPage !== self::PAGE_NAME_THANK_YOU) {
+                    $this->redirect(self::PAGE_NAME_THANK_YOU);
                 }
                 break;
             case \projects_status::ABANDON:
@@ -985,6 +988,7 @@ class depot_de_dossierController extends bootstrap
                 if ($sPage !== self::PAGE_NAME_THANK_YOU) {
                     $this->redirect(self::PAGE_NAME_THANK_YOU);
                 }
+                break;
         }
     }
 
