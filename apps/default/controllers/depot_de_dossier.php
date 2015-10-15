@@ -512,24 +512,30 @@ class depot_de_dossierController extends bootstrap
         $this->iOperatingIncomes = isset($_SESSION['forms']['depot-de-dossier-3']['values']['resultat_brute_exploitation']) ? $_SESSION['forms']['depot-de-dossier-3']['values']['resultat_brute_exploitation'] : (empty($this->projects->resultat_exploitation_declara_client) ? $iAltaresOperationIncomes : $this->projects->resultat_exploitation_declara_client);
         $this->iRevenue          = isset($_SESSION['forms']['depot-de-dossier-3']['values']['ca']) ? $_SESSION['forms']['depot-de-dossier-3']['values']['ca'] : (empty($this->projects->ca_declara_client) ? $iAltaresRevenue : $this->projects->ca_declara_client);
 
-        // unset($_SESSION['forms']['depot-de-dossier-3']);
+        $this->aErrors = isset($_SESSION['forms']['depot-de-dossier-3']['errors']) ? $_SESSION['forms']['depot-de-dossier-3']['errors'] : array();
+
+        unset($_SESSION['forms']['depot-de-dossier-3']);
 
         if (isset($_POST['send_form_etape_3'])) {
             $_SESSION['forms']['depot-de-dossier-3']['values'] = $_POST;
 
-            if (
-                false === isset($_POST['fonds_propres']) || $_POST['fonds_propres'] == ''
-                || false === isset($_POST['resultat_brute_exploitation']) || $_POST['resultat_brute_exploitation'] == ''
-                || false === isset($_POST['ca']) || $_POST['ca'] == ''
-                || false === isset($_FILES['liasse_fiscal']) || $_FILES['liasse_fiscal']['name'] == ''
-            ) {
-                $this->redirect(self::PAGE_NAME_STEP_3);
+            if (false === isset($_POST['fonds_propres']) || $_POST['fonds_propres'] == '') {
+                $_SESSION['forms']['depot-de-dossier-3']['errors']['fonds_propres'] = true;
             }
-
-            $this->uploadAttachment('liasse_fiscal', attachment_type::DERNIERE_LIASSE_FISCAL);
-
-            if (empty($_FILES['autre']) == false) {
-                $this->uploadAttachment('autre', attachment_type::AUTRE1);
+            if (false === isset($_POST['resultat_brute_exploitation']) || $_POST['resultat_brute_exploitation'] == '') {
+                $_SESSION['forms']['depot-de-dossier-3']['errors']['resultat_brute_exploitation'] = true;
+            }
+            if (false === isset($_POST['ca']) || $_POST['ca'] == '') {
+                $_SESSION['forms']['depot-de-dossier-3']['errors']['ca'] = true;
+            }
+            if (empty($_FILES['liasse_fiscal']['name']) || false === $this->uploadAttachment('liasse_fiscal', attachment_type::DERNIERE_LIASSE_FISCAL)) {
+                $_SESSION['forms']['depot-de-dossier-3']['errors']['liasse_fiscale'] = true;
+            }
+            if (false === empty($_FILES['autre']) && false === $this->uploadAttachment('autre', attachment_type::AUTRE1)) {
+                $_SESSION['forms']['depot-de-dossier-3']['errors']['autre'] = true;
+            }
+            if (false === empty($_SESSION['forms']['depot-de-dossier-3']['errors']))  {
+                $this->redirect(self::PAGE_NAME_STEP_3);
             }
 
             $bUpdateDeclaration                   = false;

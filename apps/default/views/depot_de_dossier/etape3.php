@@ -58,7 +58,7 @@
                         <td class="uploader">
                             <input id="liasse_fiscal" type="text"
                                    placeholder="<?= $this->lng['etape3']['aucun-fichier-selectionne'] ?>"
-                                   class="field required<?= isset($this->error_liasse_fiscal) && true === $this->error_liasse_fiscal ? ' LV_invalid_field' : '' ?>"
+                                   class="field required<?= isset($this->aErrors['liasse_fiscale']) && true === $this->aErrors['liasse_fiscale'] ? ' LV_invalid_field' : '' ?>"
                                    readonly="readonly">
                             <div class="file-holder">
                                 <span class="btn btn-small" style="float: left; margin-left: 5px;">
@@ -77,7 +77,7 @@
                         <td class="uploader">
                             <input id="autre" type="text"
                                    placeholder="<?= $this->lng['etape3']['aucun-fichier-selectionne'] ?>"
-                                   class="field required<?= isset($this->error_extrait_kbis) && true === $this->error_extrait_kbis ? ' LV_invalid_field' : '' ?>"
+                                   class="field required<?= isset($this->aErrors['autre']) && true === $this->aErrors['autre'] ? ' LV_invalid_field' : '' ?>"
                                    readonly="readonly">
                             <div class="file-holder">
                                  <span class="btn btn-small" style="float: left; margin-left: 5px;">
@@ -125,7 +125,7 @@
 
         if (val.length != 0 || val != '') {
             val = val.replace(/\\/g, '/').replace(/.*\//, '');
-            $self.closest('.uploader').find('input.field').val(val).addClass('LV_valid_field').addClass('file-uploaded');
+            $self.closest('.uploader').find('input.field').val(val).removeClass('LV_invalid_field').addClass('LV_valid_field').addClass('file-uploaded');
         }
     });
 </script>
