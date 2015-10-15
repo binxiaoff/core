@@ -111,7 +111,7 @@ class clients extends clients_crud
         }
     }
 
-    public function handleLogout()
+    public function handleLogout($bRedirect = true)
     {
         unset($_SESSION['auth']);
         unset($_SESSION['token']);
@@ -119,7 +119,9 @@ class clients extends clients_crud
         unset($_SESSION['panier']);
         unset($_SESSION['partenaire']);
 
-        header('Location: http://' . $_SERVER['HTTP_HOST'] . '/' . $this->params['lng'] . $this->loginPage);
+        if ($bRedirect) {
+            header('Location: http://' . $_SERVER['HTTP_HOST'] . '/' . $this->params['lng'] . $this->loginPage);
+        }
     }
 
     public function login($email, $pass)
