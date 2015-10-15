@@ -432,7 +432,7 @@
                                     }
                             ?>
                                     <span id="displayPeriodHS" style="display:<?= $sDiplayPeriodHS ?>;">
-                                        Pr&eacute;p Funding
+                                        <?= $this->current_projects_status->label ?>
                                     </span>
                                     <select name="status" id="status" class="select" style="display:<?= $sDiplayStatus ?>;" <?= ($this->current_projects_status->status == 130 ? '"disabled"' : "") ?>>
                                         <?php
