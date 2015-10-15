@@ -942,20 +942,6 @@
                         <td>
                             <input type="text" name="forme_juridique_etape2" id="forme_juridique_etape2" class="input_large" value="<?= $this->companies->forme ?>"/>
                         </td>
-                        <?php /* ?><td>
-                          <select name="forme_juridique_etape2" id="forme_juridique_etape2" class="select">
-                          <option value="">Choisir</option>
-                          <option <?=($this->companies->forme == 'EIRL'?'selected':'')?> value="EIRL">EIRL</option>
-                          <option <?=($this->companies->forme == 'EURL'?'selected':'')?> value="EURL">EURL</option>
-                          <option <?=($this->companies->forme == 'SASU'?'selected':'')?> value="SASU">SASU</option>
-                          <option <?=($this->companies->forme == 'SCI'?'selected':'')?> value="SCI">SCI</option>
-                          <option <?=($this->companies->forme == 'SARL'?'selected':'')?> value="SARL">SARL</option>
-                          <option <?=($this->companies->forme == 'SNC'?'selected':'')?> value="SNC">SNC</option>
-                          <option <?=($this->companies->forme == 'SA'?'selected':'')?> value="SA">SA</option>
-                          <option <?=($this->companies->forme == 'SAS'?'selected':'')?> value="SAS">SAS</option>
-                          <option <?=($this->companies->forme == 'GIE'?'selected':'')?> value="GIE">GIE</option>
-                          </select>
-                          </td><?php */ ?>
                     </tr>
                     <tr>
                         <th><label for="capital_social_etape2">Capital social :</label></th>
@@ -1026,49 +1012,24 @@
                     </tr>
                     <tr>
                         <td colspan="4" style="text-align:left;">
-                            <input <?= ($this->companies->status_client == 1 ? 'checked' : '') ?> type="radio" name="enterprise_etape2" id="enterprise1_etape2" value="1"/><label for="enterprise1_etape2"> Je suis le dirigeant de l'entreprise </label>
+                            <input <?= false === $this->bHasPrescripteur ? 'checked' : '' ?> type="radio" name="enterprise_etape2" id="enterprise1_etape2" value="1"/><label for="enterprise1_etape2"> Je suis le dirigeant de l'entreprise </label>
                         </td>
                     </tr>
                     <tr>
                         <td colspan="4" style="text-align:left;">
-                            <input <?= ($this->companies->status_client == 2 ? 'checked' : '') ?> type="radio" name="enterprise_etape2" id="enterprise2_etape2" value="2"/><label for="enterprise2_etape2"> Je ne suis pas le dirigeant de l'entreprise mais je bénéficie d'une délégation de pouvoir </label>
+                            <input <?= true === $this->bHasPrescripteur ? 'checked' : ''?> type="radio" name="enterprise_etape2" id="enterprise3_etape2" value="3"/><label for="enterprise3_etape2"> Je suis un conseil externe de l'entreprise </label>
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="4" style="text-align:left;">
-                            <input <?= ($this->companies->status_client == 3 ? 'checked' : '') ?> type="radio" name="enterprise_etape2" id="enterprise3_etape2" value="3"/><label for="enterprise3_etape2"> Je suis un conseil externe de l'entreprise </label>
-                        </td>
-                    </tr>
-                    <!---->
-                    <tr <?= ($this->companies->status_client == 3 ? '' : 'style="display:none;"') ?> class="statut_dirigeant3_etape2">
-                        <th><label for="status_conseil_externe_entreprise_etape2">Type de conseiller :</label></th>
-                        <td>
-                            <select name="status_conseil_externe_entreprise_etape2" id="status_conseil_externe_entreprise_etape2" class="select">
-                                <option value="0">Choisir</option>
-                                <?php
-                                foreach ($this->conseil_externe as $k => $conseil_externe) {
-                                    ?>
-                                    <option <?= ($this->companies->status_conseil_externe_entreprise == $k ? 'selected' : '') ?> value="<?= $k ?>" ><?= $conseil_externe ?></option><?php
-                                }
-                                ?>
-                            </select>
-                        </td>
-                        <th><label for="preciser_conseil_externe_entreprise_etape2">Autre (préciser) :</label></th>
-                        <td>
-                            <input type="text" name="preciser_conseil_externe_entreprise_etape2" id="preciser_conseil_externe_entreprise_etape2" class="input_large" value="<?= $this->companies->preciser_conseil_externe_entreprise ?>"/>
-                        </td>
-                    </tr>
-                    <!---->
-                    <tr>
-                        <th colspan="4" style="text-align:left;"><br/>Vos coordonnées :</th>
+                        <th colspan="4" style="text-align:left;"><br/>Identification du dirigeant :</th>
                     </tr>
                     <tr>
                         <th>Civilité :</th>
                         <td>
-                            <input <?= ($this->clients->civilite == 'Mme' ? 'checked' : '') ?> type="radio" name="civilite_etape2" id="civilite1_etape2" value="Mme"/>
+                            <input <?= $this->clients->civilite == 'Mme' ? 'checked' : '' ?> type="radio" name="civilite_etape2" id="civilite1_etape2" value="Mme"/>
                             <label for="civilite1_etape2">Madame</label>
 
-                            <input <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?> type="radio" name="civilite_etape2" id="civilite2_etape2" value="M."/>
+                            <input <?= $this->clients->civilite == 'M.' ? 'checked' : '' ?> type="radio" name="civilite_etape2" id="civilite2_etape2" value="M."/>
                             <label for="civilite2_etape2">Monsieur</label>
                         </td>
                         <th></th>
@@ -1102,55 +1063,48 @@
                         <th></th>
                         <td></td>
                     </tr>
-
-                    <!---->
-                    <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_etape2">
-                        <th colspan="4" style="text-align:left;"><br/>Identification du dirigeant :</th>
+                    <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="statut_dirigeant_etape2">
+                        <th colspan="4" style="text-align:left;"><br/>Porteur du projet :</th>
                     </tr>
-                    <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_etape2">
+
+                    <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="identification_prescripteur">
                         <th>Civilité :</th>
-                        <td>
-                            <input <?= ($this->companies->civilite_dirigeant == 'Mme' ? 'checked' : '') ?> type="radio" name="civilite2_etape2" id="civilite21_etape2" value="Mme"/>
-                            <label for="civilite21_etape2">Madame</label>
+                        <td id="civilite_prescripteur"><?=$this->clients_prescripteurs->civilite?></td>
+                        <th></th>
+                        <td></td>
+                    </tr>
+                    <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="identification_prescripteur">
+                        <th>Nom :</th>
+                        <td id="nom_prescripteur"><?=$this->clients_prescripteurs->nom?></td>
+                        <th>Prénom :</th>
+                        <td id="prenom_prescripteur"><?=$this->clients_prescripteurs->prenom?></td>
+                    </tr>
+                    <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="identification_prescripteur">
+                        <th>Téléphone :</th>
+                        <td id="telephone_prescripteur"><?=$this->clients_prescripteurs->telephone?></td>
+                        <th>Email :</th>
+                        <td id="email_prescripteur"><?=$this->clients_prescripteurs->email?></td>
+                    </tr>
 
-                            <input <?= ($this->companies->civilite_dirigeant == 'M.' ? 'checked' : '') ?> type="radio" name="civilite2_etape2" id="civilite22_etape2" value="M."/>
-                            <label for="civilite22_etape2">Monsieur</label>
+                    <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="statut_dirigeant_etape2">
+                        <td>
+                            <input class="input_large" name="search_prescripteur" id="search_prescripteur" placeholder="nom, prenom ou email du prescripteur" />
+                        </td>
+                        <td>
+                            <a id="btn_search_prescripteur" class="btn_link thickbox cboxElement" href="<?=$this->lurl?>/prescripteurs/search_ajax/" onclick="$(this).attr('href', '<?=$this->lurl?>/prescripteurs/search_ajax/' + $('#search_prescripteur').val());">Rechercher</a>
                         </td>
                         <th></th>
                         <td></td>
                     </tr>
-                    <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_etape2">
-                        <th><label for="nom2_etape2">Nom :</label></th>
+                    <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="statut_dirigeant_etape2">
                         <td>
-                            <input type="text" name="nom2_etape2" id="nom2_etape2" class="input_large" value="<?= $this->companies->nom_dirigeant ?>"/>
-                        </td>
-                        <th><label for="prenom2_etape2">Prénom :</label></th>
-                        <td>
-                            <input type="text" name="prenom2_etape2" id="prenom2_etape2" class="input_large" value="<?= $this->companies->prenom_dirigeant ?>"/>
+                            <a id="btn_add_prescripteur" class="btn_link thickbox cboxElement" href="<?=$this->lurl?>/prescripteurs/add_client" target="_blank">Créer un prescripteur</a>
                         </td>
                     </tr>
-                    <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_etape2">
-                        <th><label for="fonction2_etape2">Fonction :</label></th>
-                        <td>
-                            <input type="text" name="fonction2_etape2" id="fonction2_etape2" class="input_large" value="<?= $this->companies->fonction_dirigeant ?>"/>
-                        </td>
-                        <th><label for="email2_etape2">Email :</label></th>
-                        <td>
-                            <input type="text" name="email2_etape2" id="email2_etape2" class="input_large" value="<?= $this->companies->email_dirigeant ?>"/>
-                        </td>
-                    </tr>
-                    <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_etape2">
-                        <th><label for="phone_new2_etape2">Téléphone :</label></th>
-                        <td>
-                            <input type="text" name="phone_new2_etape2" id="phone_new2_etape2" class="input_moy" value="<?= $this->companies->phone_dirigeant ?>"/>
-                        </td>
-                        <th></th>
-                        <td></td>
-                    </tr>
-                    <!---->
-
+                    <input type="hidden" id="id_prescripteur" name="id_prescripteur" value="<?=$this->prescripteurs->id_prescripteur?>" />
                 </table>
-
+                <br />
+                <br />
                 <div id="valid_etape2">Données sauvegardées</div>
                 <div class="btnDroite">
                     <input type="button" class="btn_link" value="Sauvegarder" onclick="valid_etape2(<?= $this->projects->id_project ?>)">
@@ -2397,21 +2351,14 @@
     $('#enterprise1_etape2').click(function () {
         if ($(this).attr('checked') == true) {
             $('.statut_dirigeant_etape2').hide('slow');
-            $('.statut_dirigeant3_etape2').hide('slow');
-        }
-    });
-
-    $('#enterprise2_etape2').click(function () {
-        if ($(this).attr('checked') == true) {
-            $('.statut_dirigeant_etape2').show('slow');
-            $('.statut_dirigeant3_etape2').hide('slow');
+            $('.identification_prescripteur').hide('slow');
         }
     });
 
     $('#enterprise3_etape2').click(function () {
         if ($(this).attr('checked') == true) {
             $('.statut_dirigeant_etape2').show('slow');
-            $('.statut_dirigeant3_etape2').show('slow');
+            $('.identification_prescripteur').show('slow');
         }
     });
 

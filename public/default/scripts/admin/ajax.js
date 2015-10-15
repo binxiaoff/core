@@ -649,7 +649,17 @@ function valid_etape2(id_project)
 		preciser_conseil_externe_entreprise_etape2: $("#preciser_conseil_externe_entreprise_etape2").val(),
 		enterprise_etape2: enterprise_etape2,
 		id_project: id_project,
+		id_prescripteur: $("#id_prescripteur").val(),
+		has_prescripteur: $('#enterprise3_etape2').attr('checked'),
 		etape: 2
+	}
+
+	if (false === val.has_prescripteur) {
+		$("#civilite_prescripteur").html('');
+		$("#prenom_prescripteur").html('');
+		$("#nom_prescripteur").html('');
+		$("#email_prescripteur").html('');
+		$("#telephone_prescripteur").html('');
 	}
 	$.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
 		//alert(data);

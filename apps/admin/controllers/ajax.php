@@ -747,6 +747,11 @@ class ajaxController extends bootstrap
                 // on recup le client
                 $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
 
+                $iIdPrescripteur = 'true' === $_POST['has_prescripteur'] ? $_POST['id_prescripteur'] : 0;
+
+                $this->projects->id_prescripteur = $iIdPrescripteur;
+                $this->projects->update();
+
                 $this->companies->name    = $_POST['raison_sociale_etape2'];
                 $this->companies->forme   = $_POST['forme_juridique_etape2'];
                 $this->companies->capital = str_replace(' ', '', str_replace(',', '.', $_POST['capital_social_etape2']));
