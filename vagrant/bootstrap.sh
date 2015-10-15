@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 locale-gen fr_FR.UTF-8
+ln -sf /usr/share/zoneinfo/Europe/Paris /etc/localtime
 
 # install percona (MySQL)
 apt-key adv --keyserver 213.133.103.71 --recv-keys 1C4CBDCDCD2EFD2A #keys.gnupg.net
