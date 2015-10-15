@@ -654,38 +654,47 @@ class clients extends clients_crud
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    public function searchPrescripteur($iClientId = '', $nom = '', $prenom = '', $email = '', $offset = '', $limit = 100)
+    public function searchPrescripteur($iClientId = '', $nom = '', $prenom = '', $email = '', $offset = '', $limit = 100, $sOperation = 'AND')
     {
-        $where = ' WHERE 1 = 1';
+        $aWhere = array();
 
-        if ($iClientId != '') {
-            $where .= ' AND c.id_client =' . $iClientId;
+        if ('' !== $nom) {
+            $nom = $this->bdd->escape_string($nom);
+            $aWhere[] = 'c.nom LIKE "%' . $nom . '%"';
+        }
+        if ('' !== $email) {
+            $email = $this->bdd->escape_string($email);
+            $aWhere[] = 'c.email LIKE "%' . $email . '%"';
+        }
+        if ('' !== $prenom) {
+            $prenom = $this->bdd->escape_string($prenom);
+            $aWhere[] = 'c.prenom LIKE "%' . $prenom . '%"';
         }
 
-        if ('' != $nom) {
-            $where .= ' AND c.nom LIKE "%' . $nom . '%"';
-        }
-        if ('' != $email) {
-            $where .= ' AND c.email LIKE "%' . $email . '%"';
-        }
-        if ('' != $prenom) {
-            $where .= ' AND c.prenom LIKE "%' . $prenom . '%"';
+        if ('' !== $iClientId) {
+            $iClientId = $this->bdd->escape_string($iClientId);
+            $sWhere = 'c.id_client = '. $iClientId;
+        } elseif (false === empty($aWhere)) {
+            $sWhere = ' WHERE ' . implode(' '.$sOperation.' ', $aWhere);
         }
 
-        if ('' != $offset) {
+
+        if ('' !== $offset) {
+            $offset = $this->bdd->escape_string($offset);
             $offset = ' OFFSET '. $offset;
         }
 
-        if ('' != $limit) {
+        if ('' !== $limit) {
+            $limit = $this->bdd->escape_string($limit);
             $limit = ' LIMIT '. $limit;
         }
 
         $sql = 'SELECT * FROM clients c
                 INNER JOIN prescripteurs p USING (id_client)'
-                . $where
+                . $sWhere
                 . ' ORDER BY c.id_client DESC'
-                . $offset
-                . $limit;
+                . $limit
+                . $offset;
 
         $oQuery = $this->bdd->query($sql);
         $result   = array();
@@ -694,5 +703,14 @@ class clients extends clients_crud
             $result[] = $record;
         }
         return $result;
+    }
+
+    public function isPrescripteur(prescripteurs $oPrescripteurs, $iClientId = null)
+    {
+        if (null === $iClientId) {
+            $iClientId = $this->id_client;
+        }
+
+        return $oPrescripteurs->exist($iClientId, 'id_client');
     }
 }
