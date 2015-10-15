@@ -9,6 +9,7 @@
                            value="<?= $this->aForm['raison_sociale'] ?>"
                            class="field field-large required<?= isset($this->aErrors['raison_sociale']) ? ' LV_invalid_field' : '' ?>" data-validators="Presence">
                 </div>
+                <div class="row"><?= $this->lng['etape2']['identite-du-representant-de-la-societe'] ?></div>
                 <div class="row">
                     <div class="form-choose fixed">
                         <div class="radio-holder">
@@ -58,14 +59,59 @@
                             <label for="gerant-oui"><?= $this->lng['etape2']['dirigeant-entreprise'] ?></label>
                             <input type="radio" class="custom-input" name="gerant" id="gerant-oui"
                                    value="oui"<?= $this->aForm['gerant'] === 'oui' ? ' checked' : '' ?>
-                                   data-condition="show:.check">
+                                   data-condition="show:.cgv">
                         </div>
                         <div class="radio-holder">
                             <label for="gerant-non"><?= $this->lng['etape2']['conseil-externe-entreprise'] ?></label>
                             <input type="radio" class="custom-input" name="gerant" id="gerant-non"
-                                   value="non"<?= $this->aForm['gerant'] === 'non' ? ' checked' : '' ?>>
+                                   value="non"<?= $this->aForm['gerant'] === 'non' ? ' checked' : '' ?>
+                                   data-condition="show:.prescripteur">
                         </div>
                     </div>
+                </div>
+                <div class="row prescripteur"><?= $this->lng['etape2']['vos-coordonnees'] ?></div>
+                <div class="row prescripteur">
+                    <div class="form-choose fixed">
+                        <div class="radio-holder">
+                            <label for="civilite_prescripteur_madame"><?= $this->lng['etape2']['madame'] ?></label>
+                            <input type="radio" class="custom-input" name="civilite_prescripteur" id="civilite_prescripteur_madame"
+                                   value="Mme"<?= $this->aForm['civilite_prescripteur'] == 'Mme' ? ' checked' : '' ?>>
+                        </div>
+                        <div class="radio-holder">
+                            <label for="civilite_prescripteur_monsieur"><?= $this->lng['etape2']['monsieur'] ?></label>
+                            <input type="radio" class="custom-input" name="civilite_prescripteur" id="civilite_prescripteur_monsieur"
+                                   value="M."<?= $this->aForm['civilite_prescripteur'] == 'M.' ? ' checked' : '' ?>>
+                        </div>
+                    </div>
+                </div>
+                <div class="row prescripteur">
+                    <input type="text" name="prenom_prescripteur" id="prenom_prescripteur"
+                           placeholder="<?= $this->lng['etape2']['prenom'] ?>"
+                           value="<?= $this->aForm['prenom_prescripteur'] ?>"
+                           class="field required"
+                           data-validators="Presence&amp;Format,{pattern:/^([^0-9]*)$/}">
+                    <input type="text" name="nom_prescripteur" id="nom_prescripteur"
+                           placeholder="<?= $this->lng['etape2']['nom'] ?>"
+                           value="<?= $this->aForm['nom_prescripteur'] ?>"
+                           class="field required"
+                           data-validators="Presence&amp;Format,{pattern:/^([^0-9]*)$/}">
+                    <input type="text" name="fonction_prescripteur" id="fonction_prescripteur"
+                           placeholder="<?= $this->lng['etape2']['fonction'] ?>"
+                           value="<?= $this->aForm['fonction_prescripteur'] ?>"
+                           class="field required"
+                           data-validators="Presence&amp;Format,{pattern:/^([^0-9]*)$/}">
+                </div>
+                <div class="row prescripteur">
+                    <input type="email" name="email_prescripteur" id="email_prescripteur"
+                           placeholder="<?= $this->lng['etape2']['email'] ?>"
+                           value="<?= $this->aForm['email_prescripteur'] ?>"
+                           class="field required"
+                           data-validators="Presence&amp;Email">
+                    <input type="text" name="mobile_prescripteur" id="mobile_prescripteur"
+                           placeholder="<?= $this->lng['etape2']['telephone'] ?>"
+                           value="<?= $this->aForm['mobile_prescripteur'] ?>"
+                           class="field required"
+                           data-validators="Presence&amp;Numericality&amp;Length,{minimum: 9, maximum: 14}">
                 </div>
                 <?php if (true === $this->bAnnualAccountsQuestion) { ?>
                     <div class="row">
@@ -73,13 +119,11 @@
                             <span class="title"><?= $this->lng['etape2']['exercices-comptables'] ?></span>
                             <div class="radio-holder">
                                 <label for="bilans-oui"><?= $this->lng['etape2']['oui'] ?></label>
-                                <input type="radio" class="custom-input" name="bilans" id="bilans-oui"
-                                       value="oui"<?= $this->aForm['bilans'] === 'oui' ? ' checked' : '' ?>>
+                                <input type="radio" class="custom-input" name="bilans" id="bilans-oui" value="oui"<?= $this->aForm['bilans'] === 'oui' ? ' checked' : '' ?>>
                             </div>
                             <div class="radio-holder">
                                 <label for="bilans-non"><?= $this->lng['etape2']['non'] ?></label>
-                                <input type="radio" class="custom-input" name="bilans" id="bilans-non"
-                                       value="non"<?= $this->aForm['bilans'] === 'non' ? ' checked' : '' ?>>
+                                <input type="radio" class="custom-input" name="bilans" id="bilans-non" value="non"<?= $this->aForm['bilans'] === 'non' ? ' checked' : '' ?>>
                             </div>
                         </div>
                     </div>
@@ -107,9 +151,9 @@
                 </div>
                 <div class="row">
                     <div class="cb-holder">
-                        <label class="check" for="cgv"><?= $this->lng['etape2']['je-reconnais-avoir-pris-connaissance'] ?>
-                            <a style="color:#A1A5A7; text-decoration: underline;" class="check" target="_blank"
-                               href="<?= $this->lurl . '/' . $this->tree->getSlug($this->lienConditionsGenerales, $this->language) ?>"><?= $this->lng['etape2']['des-conditions-generales-de-vente'] ?></a></label>
+                        <label class="cgv" for="cgv"><?= $this->lng['etape2']['je-reconnais-avoir-pris-connaissance'] ?>
+                            <a style="color:#A1A5A7; text-decoration: underline;" class="cgv" target="_blank" href="<?= $this->lurl . '/' . $this->tree->getSlug($this->lienConditionsGenerales, $this->language) ?>"><?= $this->lng['etape2']['des-conditions-generales-de-vente'] ?></a>
+                        </label>
                         <input type="checkbox" class="custom-input" name="cgv" id="cgv">
                     </div>
                 </div>
@@ -139,7 +183,7 @@
         });
 
         $('#cgv').on('change click', function() {
-            $('.check').css('color', validColor);
+            $('.cgv').css('color', validColor);
         });
 
         if ($('input[type=radio][name=civilite]:checked').length == 0) {
@@ -150,8 +194,12 @@
             $('input[type=radio][name=gerant]').parent('.radio-holder').css('color', errorColor);
             error = true;
         }
+        if ($('input[type=radio][name=gerant]:checked').val() == 'non' && $('input[type=radio][name=civilite_prescripteur]:checked').length == 0) {
+            $('input[type=radio][name=civilite_prescripteur]').parent('.radio-holder').css('color', errorColor);
+            error = true;
+        }
         if ($('input[type=radio][name=gerant]:checked').val() == 'oui' && $('#cgv').is(':checked') == false) {
-            $('.check').css('color', errorColor);
+            $('.cgv').css('color', errorColor);
             error = true;
         }
         if ($('input[type=radio][name=bilans]').length && $('input[type=radio][name=bilans]:checked').length == 0) {
