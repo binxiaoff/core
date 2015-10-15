@@ -4,94 +4,98 @@
 // **************************************************************************************************** //
 //
 // Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
-// associated documentation files (the "Software"), to deal in the Software without restriction, 
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+// associated documentation files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+
+// associated documentation files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
 // subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies 
+// The above copyright notice and this permission notice shall be included in all copies
 // or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but 
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. 
-// In no event shall the authors or copyright holders equinoa be liable for any claim, 
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from, 
+// The Software is provided "as is", without warranty of any kind, express or implied, including but
+// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
+// In no event shall the authors or copyright holders equinoa be liable for any claim,
+// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
 // out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising 
-// or otherwise to promote the sale, use or other dealings in this Software without 
+// Except as contained in this notice, the name of equinoa shall not be used in advertising
+// or otherwise to promote the sale, use or other dealings in this Software without
 // prior written authorization from equinoa.
 //
 //  Version : 2.4.0
 //  Date : 21/03/2011
 //  Coupable : CM
-//                                                                                   
+//
 // **************************************************************************************************** //
 
 class lenders_accounts extends lenders_accounts_crud
 {
 
-	function lenders_accounts($bdd,$params='')
-    {
-        parent::lenders_accounts($bdd,$params);
-    }
-    
-    function get($id,$field='id_lender_account')
-    {
-        return parent::get($id,$field);
-    }
-    
-    function update($cs='')
-    {
-        parent::update($cs);
-    }
-    
-    function delete($id,$field='id_lender_account')
-    {
-    	parent::delete($id,$field);
-    }
-    
-    function create($cs='')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-	
-	function select($where='',$order='',$start='',$nb='')
+	function lenders_accounts($bdd, $params = '')
 	{
-		if($where != '')
-			$where = ' WHERE '.$where;
-		if($order != '')
-			$order = ' ORDER BY '.$order;
-		$sql = 'SELECT * FROM `lenders_accounts`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+		parent::lenders_accounts($bdd, $params);
+	}
+
+	function get($id, $field = 'id_lender_account')
+	{
+		return parent::get($id, $field);
+	}
+
+	function update($cs = '')
+	{
+		parent::update($cs);
+	}
+
+	function delete($id, $field = 'id_lender_account')
+	{
+		parent::delete($id, $field);
+	}
+
+	function create($cs = '')
+	{
+		$id = parent::create($cs);
+		return $id;
+	}
+
+	function select($where = '', $order = '', $start = '', $nb = '')
+	{
+		if ($where != '')
+			$where = ' WHERE ' . $where;
+		if ($order != '')
+			$order = ' ORDER BY ' . $order;
+		$sql = 'SELECT * FROM `lenders_accounts`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
 		$resultat = $this->bdd->query($sql);
-		$result = array();
-		while($record = $this->bdd->fetch_array($resultat))
-		{
+		$result   = array();
+		while ($record = $this->bdd->fetch_array($resultat)) {
 			$result[] = $record;
 		}
 		return $result;
-	} 
-	
-	function counter($where='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
-			
-		$sql='SELECT count(*) FROM `lenders_accounts` '.$where;
-
-		$result = $this->bdd->query($sql);
-		return (int)($this->bdd->result($result,0,0));
-	}
-	
-	function exist($id,$field='id_lender_account')
-	{
-		$sql = 'SELECT * FROM `lenders_accounts` WHERE '.$field.'="'.$id.'"';
-		$result = $this->bdd->query($sql);
-		return ($this->bdd->fetch_array($result,0,0)>0);
 	}
 
-	public function getValuesforTRI($lender){
+	function counter($where = '')
+	{
+		if ($where != '')
+			$where = ' WHERE ' . $where;
 
+		$sql = 'SELECT count(*) FROM `lenders_accounts` ' . $where;
+
+		$result = $this->bdd->query($sql);
+		return (int)($this->bdd->result($result, 0, 0));
+	}
+
+	function exist($id, $field = 'id_lender_account')
+	{
+		$sql    = 'SELECT * FROM `lenders_accounts` WHERE ' . $field . '="' . $id . '"';
+		$result = $this->bdd->query($sql);
+		return ($this->bdd->fetch_array($result, 0, 0) > 0);
+	}
+
+	public function getValuesforTRI($lender)
+	{
+		$aValuesTRI = array();
 		//get loans values as negativ , dates and project status
 		$sql = 'SELECT (l.amount *-1) as loan,
 					( SELECT psh.added
@@ -99,13 +103,11 @@ class lenders_accounts extends lenders_accounts_crud
 						WHERE psh.id_project_status = "8"
 						AND l.id_project = psh.id_project
 						ORDER BY psh.added ASC LIMIT 1 ) as date
-				  FROM loans l WHERE l.id_lender = '.$lender.';';
+				  FROM loans l WHERE l.id_lender = ' . $lender . ';';
 
 		$result = $this->bdd->query($sql);
-		$loansValues = array();
 		while ($record = $this->bdd->fetch_array($result)) {
-
-			$loansValues[] = array(strtotime($record["date"]) => intval($record["loan"]));
+			$aValuesTRI[$record["date"]] = $record["loan"];
 		}
 
 		//get echeancier values
@@ -124,42 +126,32 @@ class lenders_accounts extends lenders_accounts_crud
 						FROM echeanciers e
 							LEFT JOIN projects p ON e.id_project = p.id_project
 							INNER JOIN loans l ON e.id_loan = l.id_loan
-						WHERE e.id_lender = '.$lender.';';
+						WHERE e.id_lender = ' . $lender . ';';
 
 		$result = $this->bdd->query($sql);
-		$echeancesValues = array();
-
 
 		$statusKo = array(projects_status::PROBLEME, projects_status::RECOUVREMENT);
 		while ($record = $this->bdd->fetch_array($result)) {
-
-			if(in_array(intval($record["project_status"]), $statusKo) && $record["echeance_status"] == "0" ){
-
+			if (in_array($record["project_status"], $statusKo) && 0 === (int)$record["echeance_status"]) {
 				$record["montant"] = 0;
 			}
 
-			if($record["date_echeance_reel"] == "0000-00-00 00:00:00" ){
-					$record["date_echeance_reel"] = $record["date_echeance"];
-			}// end if Date echeance reele
+			if ($record["date_echeance_reel"] == "0000-00-00 00:00:00") {
+				$record["date_echeance_reel"] = $record["date_echeance"];
+			}
 
-			$echeancesValues[] = array(strtotime($record["date_echeance_reel"]) => intval($record["montant"]));
+			if (array_key_exists($record["date_echeance_reel"], $aValuesTRI)) {
+				$aValuesTRI[$record["date_echeance_reel"]] += $record["montant"];
+			} else {
+				$aValuesTRI[$record["date_echeance_reel"]] = $record["montant"];
+			}
 		}
 
-		//merge arrays into one
-		$values = array_merge($loansValues, $echeancesValues);
-
-		return $values;
+		return $aValuesTRI;
 	}
 
-	public function getAttachments($lender = null)
+	public function getAttachments($lender)
 	{
-		if (null === $lender) {
-			$lender = $this->id_lender_account;
-		}
-
-		if (! $lender) {
-			return false;
-		}
 
 		$sql = 'SELECT a.id, a.id_type, a.id_owner, a.type_owner, a.path, a.added, a.updated, a.archived
 				FROM attachment a

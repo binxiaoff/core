@@ -227,12 +227,9 @@
         <tr>
             <th>Mandat</th>
             <td>
-                <?
-                if($this->clients_mandats->get($this->clients->id_client,'id_client'))
-                {
-                    ?><a href="<?=$this->lurl?>/protected/mandat_preteur/<?=$this->clients_mandats->name?>"><?=$this->clients_mandats->name?></a><?
-                }
-                ?>
+                <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) { ?>
+                    <a href="<?=$this->lurl?>/protected/mandat_preteur/<?=$this->clients_mandats->name?>"><?=$this->clients_mandats->name?></a>
+                <?php } ?>
             </td>
         </tr>
     </table>

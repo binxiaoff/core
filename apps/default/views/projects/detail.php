@@ -38,13 +38,11 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
 }
 ?>
 
-
-<!--#include virtual="ssi-header-login.shtml"  -->
 <div class="main">
     <div class="shell">
         <div class="section-c clearfix">
             <div class="page-title clearfix">
-                <h1 class="left"><?= $this->lng['preteur-projets']['decouvrez-les'] ?><?= $_SESSION['page_projet'] ?> <?= $this->nbProjects ?> <?= $this->lng['preteur-projets']['projets-en-cours'] ?></h1>
+                <h1 class="left"><?= $this->lng['preteur-projets']['decouvrez-les'] ?> <?= $this->nbProjects ?> <?= $this->lng['preteur-projets']['projets-en-cours'] ?></h1>
                 <nav class="nav-tools left">
                     <ul>
                         <?php
@@ -154,7 +152,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                         <div class="info left">
                             <h3><?= $this->companies->name ?></h3>
                             <?= ($this->companies->city!=''?'<p><i class="icon-place"></i>'.$this->lng['preteur-projets']['localisation'].' : '.$this->companies->city.'</p>':'') ?>
-							<?= ($this->companies->sector!=''?'<p>'.$this->lng['preteur-projets']['secteur'].' : '.$this->lSecteurs[$this->companies->sector].'</p>':'') ?>
+                            <?= ($this->companies->sector!=''?'<p>'.$this->lng['preteur-projets']['secteur'].' : '.$this->lSecteurs[$this->companies->sector].'</p>':'') ?>
                             <ul class="stat-list">
                                 <li>
                                     <span class="i-holder">
