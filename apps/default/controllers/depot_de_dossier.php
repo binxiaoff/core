@@ -89,25 +89,28 @@ class depot_de_dossierController extends bootstrap
         $iSIREN  = $_SESSION['forms']['depot-de-dossier']['values']['siren'];
         $sEmail  = isset($_SESSION['forms']['depot-de-dossier']['values']['email']) && $this->ficelle->isEmail($_SESSION['forms']['depot-de-dossier']['values']['email']) ? $_SESSION['forms']['depot-de-dossier']['values']['email'] : null;
 
-//        unset($_SESSION['forms']['depot-de-dossier']['values']);
+        unset($_SESSION['forms']['depot-de-dossier']['values']);
 
         if (isset($_SESSION['client'])) {
-            $this->clients->get($_SESSION['client']['id_client'], 'id_client');
-        } else {
-            $this->clients->id_langue    = $this->language;
-            $this->clients->slug_origine = $this->tree->slug;
-            $this->clients->source       = $_SESSION['utm_source'];
-            $this->clients->source2      = $_SESSION['utm_source2'];
-
-            if (false === is_null($sEmail)) {
-                $this->clients->email = $sEmail;
-            }
-
-            $this->clients->create();
-
-            $this->clients_adresses->id_client = $this->clients->id_client;
-            $this->clients_adresses->create();
+            $this->clients->handleLogout(false);
         }
+
+        $this->clients->id_langue    = $this->language;
+        $this->clients->slug_origine = $this->tree->slug;
+        $this->clients->source       = $_SESSION['utm_source'];
+        $this->clients->source2      = $_SESSION['utm_source2'];
+
+        if (false === is_null($sEmail)) {
+            if (false === $this->clients->existEmail($sEmail)) {
+                $sEmail .= '-' . time();
+            }
+            $this->clients->email = $sEmail;
+        }
+
+        $this->clients->create();
+
+        $this->clients_adresses->id_client = $this->clients->id_client;
+        $this->clients_adresses->create();
 
         $this->companies->id_client_owner               = $this->clients->id_client;
         $this->companies->siren                         = $iSIREN;
@@ -326,13 +329,13 @@ class depot_de_dossierController extends bootstrap
             'prenom'                => isset($aForm['prenom']) ? $aForm['prenom'] : $this->clients->prenom,
             'nom'                   => isset($aForm['nom']) ? $aForm['nom'] : $this->clients->nom,
             'fonction'              => isset($aForm['fonction']) ? $aForm['fonction'] : $this->clients->fonction,
-            'email'                 => isset($aForm['email']) ? $aForm['email'] : $this->clients->email,
+            'email'                 => isset($aForm['email']) ? $aForm['email'] : $this->removeEmailSuffix($this->clients->email),
             'mobile'                => isset($aForm['mobile']) ? $aForm['mobile'] : $this->clients->mobile,
             'civilite_prescripteur' => isset($aForm['civilite_prescripteur']) ? $aForm['civilite_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->civilite),
             'prenom_prescripteur'   => isset($aForm['prenom_prescripteur']) ? $aForm['prenom_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->prenom),
             'nom_prescripteur'      => isset($aForm['nom_prescripteur']) ? $aForm['nom_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->nom),
             'fonction_prescripteur' => isset($aForm['fonction_prescripteur']) ? $aForm['fonction_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->fonction),
-            'email_prescripteur'    => isset($aForm['email_prescripteur']) ? $aForm['email_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->email),
+            'email_prescripteur'    => isset($aForm['email_prescripteur']) ? $aForm['email_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->removeEmailSuffix($this->clients_prescripteur->email)),
             'mobile_prescripteur'   => isset($aForm['mobile_prescripteur']) ? $aForm['mobile_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->mobile),
             'gerant'                => isset($aForm['gerant']) ? $aForm['gerant'] : (empty($this->clients_prescripteur->id_client) ? 'oui' : 'non'),
             'bilans'                => isset($aForm['bilans']) ? $aForm['bilans'] : '',
@@ -407,37 +410,40 @@ class depot_de_dossierController extends bootstrap
             $this->redirect(self::PAGE_NAME_STEP_2);
         }
 
-        /**
-         * @todo en attente d'éclaircissement sur le fonctionnement des prescripteurs
-         * Quelles sont les données enregistrées dans le client owner de la company si prescripteur ?
-         * Comment cela se passe-t-il si le client est déjà connecté (prêteur/emprunteur) au moment du dépôt de dossier ?
-         */
+        if (true === $this->clients->existEmail($_POST['email'])) { // Email does not exist in DB
+            $this->clients->email = $_POST['email'];
+        } elseif ($this->removeEmailSuffix($this->clients->email) !== $_POST['email']) { // Email exists but is different from previous one
+            $this->clients->email = $_POST['email'] . '-' . time();
+        }
+
         $this->clients->civilite          = $_POST['civilite'];
         $this->clients->prenom            = $_POST['prenom'];
         $this->clients->nom               = $_POST['nom'];
         $this->clients->fonction          = $_POST['fonction'];
         $this->clients->mobile            = $_POST['mobile'];
-        $this->clients->email             = $_POST['email'];
         $this->clients->id_langue         = 'fr';
         $this->clients->slug              = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
         $this->clients->status_transition = 1; // Used in bootstrap and ajax depot de dossier
         $this->clients->update();
 
         $this->companies->name          = $_POST['raison_sociale'];
-        $this->companies->email_facture = $this->clients->email;
+        $this->companies->email_facture = $_POST['email'];
         $this->companies->update();
 
         $this->companies_details->update();
 
-        // if it is not a gerant, its a prescripteur so the form needs to be validated.`
-        // CGU are only visible if its a gerant, so it is checked in the else.
         if ('non' === $_POST['gerant']) {
+            if (true === $this->clients_prescripteur->existEmail($_POST['email_prescripteur'])) { // Email does not exist in DB
+                $this->clients_prescripteur->email = $_POST['email_prescripteur'];
+            } elseif ($this->removeEmailSuffix($this->clients_prescripteur->email) !== $_POST['email_prescripteur']) { // Email exists but is different from previous one
+                $this->clients_prescripteur->email = $_POST['email_prescripteur'] . '-' . time();
+            }
+
             $this->clients_prescripteur->civilite = $_POST['civilite_prescripteur'];
             $this->clients_prescripteur->prenom   = $_POST['prenom_prescripteur'];
             $this->clients_prescripteur->nom      = $_POST['nom_prescripteur'];
             $this->clients_prescripteur->fonction = $_POST['fonction_prescripteur'];
             $this->clients_prescripteur->mobile   = $_POST['mobile_prescripteur'];
-            $this->clients_prescripteur->email    = $_POST['email_prescripteur'];
             $this->clients_prescripteur->slug     = $this->bdd->generateSlug($this->clients_prescripteur->prenom . '-' . $this->clients_prescripteur->nom);
 
             if (empty($this->clients_prescripteur->id_client)) {
@@ -467,7 +473,7 @@ class depot_de_dossierController extends bootstrap
         $this->projects->period = $_POST['duree'];
         $this->projects->update();
 
-        if ($this->bAnnualAccountsQuestion && empty($_POST['bilans'])) {
+        if ($this->bAnnualAccountsQuestion && $_POST['bilans'] === 'non') {
             $this->redirect(self::PAGE_NAME_NOK, \projects_status::PAS_3_BILANS);
         }
 
@@ -617,6 +623,12 @@ class depot_de_dossierController extends bootstrap
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
+
+
+
+                // @todo supprimer les chiffres en fin d'email
+
+
 
                 if ($this->Config['env'] == 'prod') {
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
@@ -1012,5 +1024,10 @@ class depot_de_dossierController extends bootstrap
 
         header('Location: ' . $this->lurl . '/depot_de_dossier/' . $sPage . '/' . $this->projects->hash);
         die;
+    }
+
+    private function removeEmailSuffix($sEmail)
+    {
+        return preg_replace('/^(.+)-[0-9]+$/', '$1', $sEmail);
     }
 }
