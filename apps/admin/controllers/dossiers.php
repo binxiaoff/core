@@ -21,9 +21,6 @@ class dossiersController extends bootstrap
         $this->settings->get('Altares WSDL Eligibility', 'type');
         $this->wsdl = $this->settings->value;
         $this->identification = $login . '|' . $mdp;
-
-        $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
-        $this->conseil_externe = $this->ficelle->explodeStr2array($this->settings->value);
     }
 
     public function _default()
@@ -76,6 +73,8 @@ class dossiersController extends bootstrap
         $this->notifications                 = $this->loadData('notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+        $this->prescripteurs                 = $this->loadData('prescripteurs');
+        $this->clients_prescripteurs         = $this->loadData('clients');
 
         $this->settings->get('Durée des prêts autorisées', 'type');
         $this->dureePossible = explode(',', $this->settings->value);
@@ -127,6 +126,15 @@ class dossiersController extends bootstrap
 
             $this->clients->get($this->companies->id_client_owner, 'id_client');
             $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
+
+            $this->contact = $this->clients;
+            $this->bHasPrescripteur = false;
+
+            if ($this->projects->id_prescripteur
+                && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
+                $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
+                $this->bHasPrescripteur = true;
+            }
 
             $this->aAnalysts     = $this->users->select('status = 1 AND id_user_type = 2');
             $this->aSalesPersons = $this->users->select('status = 1 AND id_user_type = 3');

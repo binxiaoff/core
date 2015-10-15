@@ -38,7 +38,19 @@ if (isset($_SESSION['freeow'])) {
     ?>
 
     <form method="post" name="edit_prescripteur" id="edit_prescripteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/prescripteurs/edit/<?= $this->clients->id_client ?>" target="_parent">           
-        <table class="formColor" style="width: 775px;margin:auto;">            	
+        <table class="formColor" style="width: 775px;margin:auto;">
+            <tr>
+                <th>Civilité :</th>
+                <td>
+                    <input <?= $this->clients->civilite == 'Mme' ? 'checked' : '' ?> type="radio" name="civilite" id="civilite_mme" value="Mme"/>
+                    <label for="civilite_mme">Madame</label>
+
+                    <input <?= $this->clients->civilite == 'M.' ? 'checked' : '' ?> type="radio" name="civilite" id="civilite_m" value="M."/>
+                    <label for="civilite_m">Monsieur</label>
+                </td>
+                <th></th>
+                <td></td>
+            </tr>
             <tr>
                 <th><label for="nom">Nom :</label></th>
                 <td><input type="text" name="nom" id="nom" class="input_large" value="<?= $this->clients->nom ?>"/></td>
