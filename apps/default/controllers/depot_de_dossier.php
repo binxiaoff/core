@@ -849,56 +849,68 @@ class depot_de_dossierController extends bootstrap
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-fin'];
         $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-fin'];
 
-        switch ($this->projects->retour_altares) {
-            case Altares::RESPONSE_CODE_INACTIVE:
-            case Altares::RESPONSE_CODE_UNKNOWN_SIREN:
-                $this->sErrorMessage = $this->lng['depot-de-dossier-fin']['no-siren'];
+        $this->bDisplayContact = false;
+        $this->sMessage        = $this->lng['depot-de-dossier-fin']['contenu-non-eligible'];
+
+        switch ($this->projects_status->status) {
+            case \projects_status::ABANDON:
+                $this->sMessage = $this->lng['depot-de-dossier-fin']['abandon'];
                 break;
-            case Altares::RESPONSE_CODE_NOT_REGISTERED:
-                $this->sErrorMessage = $this->lng['depot-de-dossier-fin']['no-rcs'];
+            case \projects_status::REVUE_ANALYSTE:
+                $this->bDisplayContact = true;
+                $this->sMessage        = $this->lng['depot-de-dossier-fin']['analyse'];
                 break;
-            case Altares::RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK:
-            case Altares::RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES:
-                $this->sErrorMessage = $this->lng['depot-de-dossier-fin']['rex-nega'];
-                break;
-            case Altares::RESPONSE_CODE_ELIGIBLE:
-                if ($this->projects_status->status == \projects_status::PAS_3_BILANS) {
-                    $this->sErrorMessage = $this->lng['depot-de-dossier-fin']['pas-3-bilans'];
-                    break;
+            case \projects_status::NOTE_EXTERNE_FAIBLE:
+                switch ($this->projects->retour_altares) {
+                    case Altares::RESPONSE_CODE_INACTIVE:
+                    case Altares::RESPONSE_CODE_UNKNOWN_SIREN:
+                        $this->sMessage = $this->lng['depot-de-dossier-fin']['no-siren'];
+                        break;
+                    case Altares::RESPONSE_CODE_NOT_REGISTERED:
+                        $this->sMessage = $this->lng['depot-de-dossier-fin']['no-rcs'];
+                        break;
+                    case Altares::RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK:
+                    case Altares::RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES:
+                        $this->sMessage = $this->lng['depot-de-dossier-fin']['rex-nega'];
+                        break;
+                    case Altares::RESPONSE_CODE_ELIGIBLE:
+                        if ($this->projects_status->status == \projects_status::PAS_3_BILANS) {
+                            $this->sMessage = $this->lng['depot-de-dossier-fin']['pas-3-bilans'];
+                            break;
+                        }
                 }
-            case Altares::RESPONSE_CODE_PROCEDURE:
-            case Altares::RESPONSE_CODE_OLD_ANNUAL_ACCOUNTS:
-            case Altares::RESPONSE_CODE_NO_ANNUAL_ACCOUNTS:
-            default:
-                $this->sErrorMessage = $this->lng['depot-de-dossier-fin']['contenu-non-eligible'];
                 break;
         }
 
-        // the idea is to display exactly the same contact form as in the contact section of the page.
+        if ($this->bDisplayContact) {
+            $this->lng['contact']  = $this->ln->selectFront('contact', $this->language, $this->App);
+            $this->demande_contact = $this->loadData('demande_contact');
 
-        //all data that is needed for the form, just as it is called in the root controller
-        //Recuperation des element de traductions
-        $this->lng['contact']  = $this->ln->selectFront('contact', $this->language, $this->App);
-        $this->demande_contact = $this->loadData('demande_contact');
+            foreach ($this->tree_elements->select('id_tree = 47 AND id_langue = "' . $this->language . '"') as $elt) {
+                $this->elements->get($elt['id_element']);
+                $this->content[$this->elements->slug] = $elt['value'];
+            }
 
-        foreach ($this->tree_elements->select('id_tree = 47 AND id_langue = "' . $this->language . '"') as $elt) {
-            $this->elements->get($elt['id_element']);
-            $this->content[$this->elements->slug]    = $elt['value'];
-            $this->complement[$this->elements->slug] = $elt['complement'];
-        }
+            if (isset($_POST['send_form_contact'])) {
+                include $this->path . 'apps/default/controllers/root.php';
 
-        $this->breadCrumb   = $this->tree->getBreadCrumb(47, $this->language);
-        $this->nbBreadCrumb = count($this->breadCrumb);
+                $oCommand = new Command('root', '_default', array(), $this->language);
+                $oRoot    = new rootController($oCommand, $this->Config, 'default');
+                $oRoot->contactForm();
 
-        // @todo get rid of the contact messages
+                $this->demande_contact = $oRoot->demande_contact;
+                $this->form_ok         = $oRoot->form_ok;
+                $this->error_demande   = $oRoot->error_demande;
+                $this->error_message   = $oRoot->error_message;
+                $this->error_nom       = $oRoot->error_nom;
+                $this->error_prenom    = $oRoot->error_prenom;
+                $this->error_email     = $oRoot->error_email;
+                $this->error_captcha   = $oRoot->error_captcha;
 
-        if (isset($_POST['send_form_contact'])) {
-            include $this->path . 'apps/default/controllers/root.php';
-
-            $oCommand = new Command('root', '_default', array(), $this->language);
-            $oRoot    = new rootController($oCommand, $this->Config, 'default');
-            $oRoot->contact();
-            $this->confirmation = $this->lng['contact']['confirmation'];
+                if ($this->form_ok) {
+                    $this->confirmation = $this->lng['contact']['confirmation'];
+                }
+            }
         }
     }
 
