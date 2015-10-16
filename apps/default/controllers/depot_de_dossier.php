@@ -5,11 +5,12 @@ use Unilend\librairies\ULogger;
 
 class depot_de_dossierController extends bootstrap
 {
-    const PAGE_NAME_STEP_2    = 'etape2';
-    const PAGE_NAME_STEP_3    = 'etape3';
-    const PAGE_NAME_FILES     = 'fichiers';
-    const PAGE_NAME_PROSPECT  = 'prospect';
-    const PAGE_NAME_END       = 'fin';
+    const PAGE_NAME_STEP_2   = 'etape2';
+    const PAGE_NAME_STEP_3   = 'etape3';
+    const PAGE_NAME_FILES    = 'fichiers';
+    const PAGE_NAME_PROSPECT = 'prospect';
+    const PAGE_NAME_END      = 'fin';
+    const PAGE_NAME_EMAILS   = 'emails';
 
     /**
      * @var attachment_helper
@@ -42,7 +43,6 @@ class depot_de_dossierController extends bootstrap
         $this->lng['etape1']                  = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
         $this->lng['etape2']                  = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
         $this->lng['etape3']                  = $this->ln->selectFront('depot-de-dossier-etape-3', $this->language, $this->App);
-        $this->lng['espace-emprunteur']       = $this->ln->selectFront('depot-de-dossier-espace-emprunteur', $this->language, $this->App);
     }
 
     public function _default()
@@ -927,8 +927,8 @@ class depot_de_dossierController extends bootstrap
             if (isset($_POST['send_form_contact'])) {
                 include $this->path . 'apps/default/controllers/root.php';
 
-                $oCommand = new Command('root', '_default', array(), $this->language);
-                $oRoot    = new rootController($oCommand, $this->Config, 'default');
+                $oCommand = new \Command('root', '_default', array(), $this->language);
+                $oRoot    = new \rootController($oCommand, $this->Config, 'default');
                 $oRoot->contactForm();
 
                 $this->demande_contact = $oRoot->demande_contact;
@@ -947,6 +947,16 @@ class depot_de_dossierController extends bootstrap
         }
     }
 
+    public function _emails()
+    {
+        $this->checkProjectHash(self::PAGE_NAME_EMAILS);
+
+        $this->projects->stop_relances = 1;
+        $this->projects->update();
+
+        $this->lng['depot-de-dossier'] = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
+    }
+
     /**
      * @param string $sFieldName
      * @param integer $iAttachmentType
@@ -954,26 +964,26 @@ class depot_de_dossierController extends bootstrap
      */
     private function uploadAttachment($sFieldName, $iAttachmentType)
     {
-        if (false === isset($this->upload) || false === $this->upload instanceof upload) {
+        if (false === isset($this->upload) || false === $this->upload instanceof \upload) {
             $this->upload = $this->loadLib('upload');
         }
 
-        if (false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
+        if (false === isset($this->attachment) || false === $this->attachment instanceof \attachment) {
             $this->attachment = $this->loadData('attachment');
         }
 
-        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
+        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof \attachment_type) {
             $this->attachment_type = $this->loadData('attachment_type');
         }
 
-        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
+        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof \attachment_helper) {
             $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));;
         }
 
         $resultUpload = false;
         if (isset($_FILES[$sFieldName]['name']) && $aFileInfo = pathinfo($_FILES[$sFieldName]['name'])) {
             $sFileName    = $aFileInfo['filename'] . '_' . $this->projects->id_project;
-            $resultUpload = $this->attachmentHelper->upload($this->projects->id_project, attachment::PROJECT, $iAttachmentType, $sFieldName, $this->upload, $sFileName);
+            $resultUpload = $this->attachmentHelper->upload($this->projects->id_project, \attachment::PROJECT, $iAttachmentType, $sFieldName, $this->upload, $sFileName);
         }
 
         if (false === $resultUpload) {
@@ -1005,6 +1015,10 @@ class depot_de_dossierController extends bootstrap
         }
 
         $this->projects_status->getLastStatut($this->projects->id_project);
+
+        if (self::PAGE_NAME_EMAILS === $sPage) {
+            return;
+        }
 
         switch ($this->projects_status->status) {
             case \projects_status::PAS_3_BILANS:
