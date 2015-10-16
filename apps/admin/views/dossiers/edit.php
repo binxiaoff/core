@@ -406,8 +406,8 @@
                         <td>
                             <select name="analyste" id="analyste" class="select">
                                 <option value="0">Choisir</option>
-                                <?php foreach ($this->lUsers as $u) { ?>
-                                    <option <?= ($this->projects->id_analyste == $u['id_user'] ? 'selected' : '') ?> value="<?= $u['id_user'] ?>"><?= $u['firstname'] ?> <?= $u['name'] ?></option>
+                                <?php foreach ($this->aAnalysts as $aAnalyst) { ?>
+                                    <option <?= ($this->projects->id_analyste == $aAnalyst['id_user'] ? 'selected' : '') ?> value="<?= $aAnalyst['id_user'] ?>"><?= $aAnalyst['firstname'] ?> <?= $aAnalyst['name'] ?></option>
                                 <?php } ?>
                             </select>
                         </td>
@@ -417,12 +417,9 @@
                         <td>
                             <select name="commercial" id="commercial" class="select">
                                 <option value="0">Choisir</option>
-                                <?php
-                                foreach ($this->aSalesPersons as $aSalesPerson) {
-                                    ?>
-                                    <option <?= ($this->projects->id_commercial == $aSalesPerson['id_user'] ? 'selected' : '') ?> value="<?= $aSalesPerson['id_user'] ?>"><?= $aSalesPerson['firstname'] ?> <?= $aSalesPerson['name'] ?></option><?php
-                                }
-                                ?>
+                                <?php foreach ($this->aSalesPersons as $aSalesPerson) { ?>
+                                    <option <?= ($this->projects->id_commercial == $aSalesPerson['id_user'] ? 'selected' : '') ?> value="<?= $aSalesPerson['id_user'] ?>"><?= $aSalesPerson['firstname'] ?> <?= $aSalesPerson['name'] ?></option>
+                                <?php } ?>
                             </select>
                         </td>
                     </tr>
@@ -1352,14 +1349,13 @@
                                     <th width="300"><?= $t['title'] ?></th>
                                     <?php
                                     foreach ($this->lCompanies_actif_passif as $ap) {
-php
-                                    foreach ($this->lCompanies_actif_passif as $ap) {
                                         ?>
                                         <th><?= $ap['annee'] ?></th><?
-                                        if ($i == 3)
+                                        if ($i == 3) {
                                             break;
-                                        else
+                                        } else {
                                             $i++;
+                                        }
                                     }
                                     ?>
                                     </thead>
@@ -1406,10 +1402,11 @@ php
                                             $ap[$arrayBilans[7]['value']])
                                         ?>
                                         <td id="<?= $t['value'] ?>_<?= $ap['ordre'] ?>" ><?= $totalAnnee ?></td><?
-                                        if ($b == 3)
+                                        if ($b == 3) {
                                             break;
-                                        else
+                                        } else {
                                             $b++;
+                                        }
                                     }
                                     ?>
                                     </tr>
@@ -1460,15 +1457,12 @@ php
 
                             <?php
                             foreach ($arrayBilansPassif as $k => $t) {
-
                                 // entete
                                 if ($k == 0) {
                                     ?>
                                     <thead>
                                     <th width="300"><?= $t['title'] ?></th>
                                     <?php
-                                    foreach ($this->lCompanies_actif_passif as $ap) {
-php
                                     foreach ($this->lCompanies_actif_passif as $ap) {
                                         ?>
                                         <th><?= $ap['annee'] ?></th><?
