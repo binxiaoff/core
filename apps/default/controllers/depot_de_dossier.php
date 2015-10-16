@@ -44,17 +44,6 @@ class depot_de_dossierController extends bootstrap
         $this->lng['etape2']                  = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
         $this->lng['etape3']                  = $this->ln->selectFront('depot-de-dossier-etape-3', $this->language, $this->App);
         $this->lng['espace-emprunteur']       = $this->ln->selectFront('depot-de-dossier-espace-emprunteur', $this->language, $this->App);
-
-        $this->settings->get('Altares login', 'type');
-        $login = $this->settings->value;
-
-        $this->settings->get('Altares mot de passe', 'type');
-        $mdp = $this->settings->value; // mdp en sha1
-
-        $this->settings->get('Altares WSDL Eligibility', 'type');
-        $this->wsdl = $this->settings->value;
-
-        $this->identification = $login . '|' . $mdp;
     }
 
     public function _default()
@@ -173,6 +162,11 @@ class depot_de_dossierController extends bootstrap
         $this->companies->altares_motif       = $oResult->myInfo->motif;
         $this->companies->update();
 
+        // @todo patch before Altares fixes bug
+        if (9 == $oResult->myInfo->codeRetour) {
+            $oResult->myInfo->eligibility = 'Oui';
+        }
+
         switch ($oResult->myInfo->eligibility) {
             case 'Oui':
                 $oIdentity                 = $oResult->myInfo->identite;
@@ -212,11 +206,13 @@ class depot_de_dossierController extends bootstrap
                  */
                 $iCurrentYear    = (int) date('Y');
                 $aAnnualAccounts = array();
-                foreach ($oResult->myInfo->bilans as $iIndex => $oAccounts) {
-                    $iYear = (int) substr($oAccounts->bilan->dateClotureN, 0, 4);
+                if (isset($oResult->myInfo->bilans) && is_array($oResult->myInfo->bilans)) {
+                    foreach ($oResult->myInfo->bilans as $iIndex => $oAccounts) {
+                        $iYear = (int) substr($oAccounts->bilan->dateClotureN, 0, 4);
 
-                    if ($iYear >= $iCurrentYear - 4 && $iYear <= $iCurrentYear) {
-                        $aAnnualAccounts[$iYear] = $iIndex;
+                        if ($iYear >= $iCurrentYear - 4 && $iYear <= $iCurrentYear) {
+                            $aAnnualAccounts[$iYear] = $iIndex;
+                        }
                     }
                 }
 
