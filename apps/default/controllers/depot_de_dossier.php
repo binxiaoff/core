@@ -581,7 +581,7 @@ class depot_de_dossierController extends bootstrap
                 $this->projects->process_fast = 1;
                 $this->projects->update();
 
-                $this->redirect(self::PAGE_NAME_FILES, \projects_status::COMPLETUDE_ETAPE_3);
+                $this->redirect(self::PAGE_NAME_FILES, \projects_status::EN_ATTENTE_PIECES);
             } else {
                 // @todo change person recieving the email from client or prescripteur if there is one
 
@@ -689,9 +689,6 @@ class depot_de_dossierController extends bootstrap
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-prospect'];
         $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-prospect'];
 
-        $this->settings->get('Lien conditions generales depot dossier', 'type');
-        $this->lienConditionsGenerales = $this->settings->value;
-
         // load date for form (client, company, project and prescripteur
         // Form depot de dossier etape 2
         if (isset($_POST['send_form_coordonnees'])) {
@@ -733,11 +730,10 @@ class depot_de_dossierController extends bootstrap
             $this->clients->mobile   = $_POST['portable_representative'];
             $this->clients->email    = $_POST['email_representative'];
 
-            if (! isset($_POST['raison-sociale']) || $_POST['raison-sociale'] == '' || $_POST['raison-sociale'] == $this->lng['etape2']['raison-sociale']) {
+            if (! isset($_POST['raison_sociale']) || $_POST['raison_sociale'] == '' || $_POST['raison_sociale'] == $this->lng['etape2']['raison_sociale']) {
                 $bForm_ok = false;
             }
-            $this->companies->name = $_POST['raison-sociale'];
-
+            $this->companies->name = $_POST['raison_sociale'];
 
             if (isset($_POST['gerant']) && $_POST['gerant'] == 3) {
                 if (! isset($_POST['gender_prescripteur']) || $_POST['gender_prescripteur'] == '') {

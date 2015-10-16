@@ -1,20 +1,10 @@
 <div class="main">
     <div class="shell">
         <p><?= $this->lng['depot-de-dossier']['prospect-720j'] ?></p>
-        <?php
-
-        if (isset($this->params[0]) && $this->params[0] == 'nok') {
-            echo $this->lng['etape1']['contenu-non-eligible'];
-        } else {
-            if ($this->error_email_representative_exist == true || $this->error_email_exist == true) {
-                ?><p style="color:#c84747;text-align:center;"><?= $this->lng['etape2']['erreur-email'] ?></p><?
-            }
-            ?>
         <div class="register-form">
             <form action="" method="post" id="form_depot_dossier" name="form_depot_dossier" enctype="multipart/form-data">
                 <div class="row">
-                    <p><?= $this->lng['etape1']['identite-de-la-societe'] ?></p>
-                    <input type="text" name="raison-sociale" id="raison-sociale"
+                    <input type="text" name="raison_sociale" id="raison_sociale"
                            placeholder="<?= $this->lng['etape2']['raison-sociale'] ?>"
                            title="<?= $this->lng['etape2']['raison-sociale'] ?>"
                            value="<?= empty($this->companies->name) ? '' : $this->companies->name ?>"
@@ -35,7 +25,7 @@
                         </div>
                     </div>
                 </div>
-                <div type=row"><p><?= $this->lng['etape2']['vos-coordonnees'] ?></p></div>
+                <div class="row"><p><?= $this->lng['etape2']['vos-coordonnees'] ?></p></div>
                 <div class="about-sections">
                     <div class="about-section identification">
                         <div class="row">
@@ -162,7 +152,6 @@
                 </div>
             </form>
         </div>
-        <?php } ?>
     </div>
 </div>
 

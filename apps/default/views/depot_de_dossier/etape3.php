@@ -17,9 +17,9 @@
                             <div class="field-holder">
                                 <input type="text" name="fonds_propres" id="fonds_propres"
                                        placeholder="<?= $this->lng['etape3']['fonds-propres'] ?>"
-                                       value="<?= $this->iCapitalStock ?>"
+                                       value="<?= empty($this->iCapitalStock) ? '' : $this->iCapitalStock ?>"
                                        class="field field-large euro-field"
-                                       data-validators="Numericality" onkeyup="lisibilite_nombre(this.value,this.id);">
+                                       data-validators="Presence&amp;Numericality" onkeyup="lisibilite_nombre(this.value,this.id);">
                             </div>
                         </td>
                     </tr>
@@ -31,9 +31,9 @@
                             <div class="field-holder">
                                 <input type="text" name="ca" id="ca"
                                        placeholder="<?= $this->lng['etape3']['ca'] ?>"
-                                       value="<?= $this->iRevenue ?>"
+                                       value="<?= empty($this->iRevenue) ? '' : $this->iRevenue ?>"
                                        class="field field-large euro-field"
-                                       data-validators="Numericality" onkeyup="lisibilite_nombre(this.value,this.id);">
+                                       data-validators="Presence&amp;Numericality" onkeyup="lisibilite_nombre(this.value,this.id);">
                             </div>
                         </td>
                     </tr>
@@ -45,9 +45,9 @@
                             <div class="field-holder">
                                 <input type="text" name="resultat_brute_exploitation" id="rbe"
                                        placeholder="<?= $this->lng['etape3']['rex'] ?>"
-                                       value="<?= $this->iOperatingIncomes ?>"
+                                       value="<?= empty($this->iOperatingIncomes) ? '' : $this->iOperatingIncomes ?>"
                                        class="field field-large euro-field"
-                                       data-validators="Numericality" onkeyup="lisibilite_nombre(this.value,this.id);">
+                                       data-validators="Presence&amp;Numericality" onkeyup="lisibilite_nombre(this.value,this.id);">
                             </div>
                         </td>
                     </tr>
