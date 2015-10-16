@@ -51,8 +51,14 @@ if (isset($_SESSION['freeow'])) {
                 <?= $this->fireView('../ajax/recouvrement') ?>
             </div>
             <br><br>
-            <input type="hidden" name="send_form_remb_preteurs">
-            <button class="btn" type="submit">Rembourser les prêteurs</button>
+            <?php
+            if ($this->bank_unilend->counter('id_project = ' . $this->projects->id_project . ' AND type = 1 AND status = 0') > 0) {
+                ?>
+                <input type="hidden" name="send_form_remb_preteurs">
+                <button class="btn" type="submit">Rembourser les prêteurs</button>
+                <?php
+            }
+            ?>
         </form>
     </div>
 </div>

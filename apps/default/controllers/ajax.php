@@ -2265,7 +2265,7 @@ class ajaxController extends bootstrap
 			2 => array(1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'], 2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'], 3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']),
 			3 => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
 			4 => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-			5 => $this->lng['preteur-operations-vos-operations']['remboursement'],
+			5 => array(1=> $this->lng['preteur-operations-vos-operations']['remboursement'],2 => $this->lng['preteur-operations-vos-operations']['recouvrement']),
 			7 => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
 			8 => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
 			16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],

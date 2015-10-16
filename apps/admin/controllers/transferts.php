@@ -361,7 +361,18 @@ class transfertsController extends bootstrap {
                     die;
                 }
 
-                $_SESSION['anti_double_action'] = 'en cours'; // check pour eviter un double envoi de form
+                if ($this->bank_unilend->counter('id_project = ' . $this->projects->id_project . ' AND type = 1 AND status = 0') <= 0) {
+                    // Mise en session du message
+                    $_SESSION['freeow']['title'] = 'Rembourser les preteurs';
+                    $_SESSION['freeow']['message'] = 'Ce remboursement preteur a deja ete fait !';
+                    // redirection
+                    header('location:' . $this->lurl . '/transferts/recouvrement/' . $this->receptions->id_reception);
+                    die;
+                }
+
+                // check pour eviter un double envoi de form
+                $_SESSION['anti_double_action'] = 'en cours';
+
                 // csv
                 if (isset($_FILES['csv']) && $_FILES['csv']['name'] != '') {
 
@@ -396,10 +407,15 @@ class transfertsController extends bootstrap {
                             // Calcule montant sans la commission
                             $com_ht = $montant_reception * $commission_ht;
                             $com = round(($com_ht * $tva) + $com_ht, 2);
-                            $montant_reception_hors_com = $montant_reception - $com;
+                            $montant_reception_hors_com = ($montant_reception - $com);
+                            $montant_reception_hors_com = (int) $montant_reception_hors_com;
 
                             // Si le montant du recouvrement est egale au montant total du csv
                             if ($montant_csv == $montant_reception_hors_com && $results != false) {
+
+                                $total_remb_brut = 0;
+                                $total_etat = 0;
+                                $total_remb_net = 0;
 
                                 foreach ($results as $data) {
 
@@ -413,10 +429,6 @@ class transfertsController extends bootstrap {
                                     $lEcheances = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND status = 0', 'date_echeance ASC');
 
                                     $recouvrement_restant = $recouvrement;
-
-                                    $total_remb_brut = 0;
-                                    $total_etat = 0;
-                                    $total_remb_net = 0;
 
                                     if ($lEcheances != false) {
                                         foreach ($lEcheances as $e) {
@@ -609,12 +621,13 @@ class transfertsController extends bootstrap {
                                 $this->transactions->id_echeancier_emprunteur = ''; // id de l'echeance emprunteur
                                 $this->transactions->id_langue = 'fr';
                                 $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                                $this->transactions->status = '1';
-                                $this->transactions->etat = '1';
+                                $this->transactions->status = 1;
+                                $this->transactions->etat = 1;
+                                $this->transactions->recouvrement = 1;
                                 $this->transactions->ip_client = $_SERVER['REMOTE_ADDR'];
                                 $this->transactions->type_transaction = 10; // remb unilend pour les preteurs
                                 $this->transactions->transaction = 2; // transaction virtuelle
-                                //$this->transactions->id_transaction = $this->transactions->create();
+                                $this->transactions->id_transaction = $this->transactions->create();
                                 // bank_unilend (on retire l'argent redistribué)
                                 $this->bank_unilend->id_transaction = $this->transactions->id_transaction;
                                 $this->bank_unilend->id_project = $this->projects->id_project;
@@ -623,7 +636,7 @@ class transfertsController extends bootstrap {
                                 $this->bank_unilend->type = 2; // remb unilend
                                 $this->bank_unilend->id_echeance_emprunteur = '';
                                 $this->bank_unilend->status = 1;
-                                //$this->bank_unilend->create();
+                                $this->bank_unilend->create();
                                 // bank_unilend
                                 $lesRembEmprun = $this->bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $this->projects->id_project, 'id_unilend ASC', 0, 1); // on ajoute la restriction pour BT 17882
                                 // On parcourt les remb non reversé aux preteurs dans bank unilend et on met a jour le satut pour dire que c'est remb
@@ -640,13 +653,13 @@ class transfertsController extends bootstrap {
                 } // end upload fichier csv
                 // fin traitement
                 unset($_SESSION['anti_double_action']);
-                die;
+                
                 // Mise en session du message
-                //$_SESSION['freeow']['title'] = 'Rembourser les preteurs';
-                //$_SESSION['freeow']['message'] = 'le remboursement a bien ete fait !';
+                $_SESSION['freeow']['title'] = 'Rembourser les preteurs';
+                $_SESSION['freeow']['message'] = 'le remboursement a bien ete fait !';
                 // redirection
-                //header('location:' . $this->lurl . '/transferts/recouvrement/' . $this->receptions->id_reception);
-                //die;
+                header('location:' . $this->lurl . '/transferts/recouvrement/' . $this->receptions->id_reception);
+                die;
             }
 
 
@@ -709,7 +722,7 @@ class transfertsController extends bootstrap {
     }
 
     // Mise a jour echeance
-    function udpdate_statut_remb_echeance($id_echeance) {
+    function udpdate_statut_remb_echeance($id_echeancier) {
         $echeanciers = $this->loadData('echeanciers');
 
         if ($echeanciers->get($id_echeancier, 'id_echeancier')) {
@@ -717,7 +730,7 @@ class transfertsController extends bootstrap {
             $echeanciers->status_emprunteur = 1; // remboursé emprunteur
             $echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
             $echeanciers->date_echeance_emprunteur_reel = date('Y-m-d H:i:s');
-            //$echeanciers->update();
+            $echeanciers->update();
         }
     }
 
@@ -747,7 +760,7 @@ class transfertsController extends bootstrap {
         $transactions->type_transaction = 5; // remb enchere
         $transactions->recouvrement = 1; //on signale que c'est un recouvrement
         $transactions->transaction = 2; // transaction virtuelle
-        //$transactions->id_transaction = $transactions->create();
+        $transactions->id_transaction = $transactions->create();
         // on enregistre la transaction dans son wallet
         $wallets_lines->id_lender = $id_lender;
         $wallets_lines->type_financial_operation = 40;
@@ -755,7 +768,7 @@ class transfertsController extends bootstrap {
         $wallets_lines->status = 1; // non utilisé
         $wallets_lines->type = 2; // transaction virtuelle
         $wallets_lines->amount = ($remb_net * 100);
-        //$wallets_lines->id_wallet_line = $wallets_lines->create();
+        $wallets_lines->id_wallet_line = $wallets_lines->create();
 
         if ($prorata) {
             $echeanciers_recouvrements_prorata->id_reception = $id_reception;
@@ -770,7 +783,7 @@ class transfertsController extends bootstrap {
             $echeanciers_recouvrements_prorata->contributions_additionnelles = $array_fiscal['contributions_additionnelles'];
             $echeanciers_recouvrements_prorata->prelevements_solidarite = $array_fiscal['prelevements_solidarite'];
             $echeanciers_recouvrements_prorata->crds = $array_fiscal['crds'];
-            //$echeanciers_recouvrements_prorata->create();
+            $echeanciers_recouvrements_prorata->create();
             // Si on a un prorata pour combler la somme manquante de l'echeance
             if ($manquant) {
                 $this->udpdate_statut_remb_echeance($id_echeancier);

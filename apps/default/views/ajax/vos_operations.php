@@ -206,10 +206,32 @@ $html = '<table class="table vos_operations transactions-history finances" borde
                             <td class="chiffres" style="color:red;">-'.number_format($t['montant_prelevement'], 2, ',', ' ').' €</td>
                             <td>&nbsp;</td>
                         </tr>
-						<tr>
-							<td colspan="4" style=" height:4px;"></td>
-						</tr>
+                        <tr>
+                                <td colspan="4" style=" height:4px;"></td>
+                        </tr>';
                         
+                                    if ($t['recouvrement'] == 1) {
+                                        $html .= '
+                                        <tr>
+                                            <td></td>
+                                            <td class="detail_left">'. $this->lng['preteur-operations-vos-operations']['com-ht'] .'</td>
+                                            <td class="chiffres" style="color:red;">-'. number_format($t['commission_ht']/100, 2, ',', ' ') .' €</td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td class="detail_left">'. $this->lng['preteur-operations-vos-operations']['com-tva'] .'</td>
+                                            <td class="chiffres" style="color:red;">-'. number_format($t['commission_tva']/100, 2, ',', ' ') .' €</td>
+                                            <td>&nbsp;</td>
+                                        </tr>
+                                        <tr>
+                                            <td></td>
+                                            <td class="detail_left">'. $this->lng['preteur-operations-vos-operations']['com-ttc'] .'</td>
+                                            <td class="chiffres" style="color:red;">-'. number_format($t['commission_ttc'], 2, ',', ' ') .' €</td>
+                                            <td>&nbsp;</td>
+                                        </tr>';
+                                    }
+                        $html .= '
                         </tbody>
                     </table>
                     </div>
