@@ -162,7 +162,7 @@ class depot_de_dossierController extends bootstrap
         $this->companies->update();
 
         // @todo patch before Altares fixes bug
-        if (9 == $oResult->myInfo->codeRetour) {
+        if (Altares::RESPONSE_CODE_OLD_ANNUAL_ACCOUNTS == $oResult->myInfo->codeRetour) {
             $oResult->myInfo->eligibility = 'Oui';
         }
 
@@ -278,6 +278,9 @@ class depot_de_dossierController extends bootstrap
                 break;
             case 'Non':
             default:
+                if (in_array($oResult->myInfo->codeRetour, array(Altares::RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK, Altares::RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES))) {
+                    $this->redirect(self::PAGE_NAME_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE);
+                }
                 $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE);
                 break;
         }
@@ -573,7 +576,7 @@ class depot_de_dossierController extends bootstrap
             }
 
             if ($_POST['fonds_propres'] < 0 || $_POST['resultat_brute_exploitation'] < 0 || $_POST['ca'] < 80000) {
-                $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE);
+                $this->redirect(self::PAGE_NAME_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE);
             }
 
             if (isset($_POST['procedure_acceleree'])) {
@@ -847,25 +850,25 @@ class depot_de_dossierController extends bootstrap
         $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-fin'];
 
         switch ($this->projects->retour_altares) {
-            case '1': // Etablissement Inactif
-            case '7': // SIREN inconnu
+            case Altares::RESPONSE_CODE_INACTIVE:
+            case Altares::RESPONSE_CODE_UNKNOWN_SIREN:
                 $this->sErrorMessage = $this->lng['depot-de-dossier-fin']['no-siren'];
                 break;
-            case '2': // Etablissement sans RCS
+            case Altares::RESPONSE_CODE_NOT_REGISTERED:
                 $this->sErrorMessage = $this->lng['depot-de-dossier-fin']['no-rcs'];
                 break;
-            case '5': // Fonds Propres Négatifs
-            case '6': // EBE Négatif
+            case Altares::RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK:
+            case Altares::RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES:
                 $this->sErrorMessage = $this->lng['depot-de-dossier-fin']['rex-nega'];
                 break;
-            case '8':
+            case Altares::RESPONSE_CODE_ELIGIBLE:
                 if ($this->projects_status->status == \projects_status::PAS_3_BILANS) {
                     $this->sErrorMessage = $this->lng['depot-de-dossier-fin']['pas-3-bilans'];
                     break;
                 }
-            case '3': // Procédure Active
-            case '4': // Bilan de plus de 450 jours
-            case '9': // bilan sup 450 jours
+            case Altares::RESPONSE_CODE_PROCEDURE:
+            case Altares::RESPONSE_CODE_OLD_ANNUAL_ACCOUNTS:
+            case Altares::RESPONSE_CODE_NO_ANNUAL_ACCOUNTS:
             default:
                 $this->sErrorMessage = $this->lng['depot-de-dossier-fin']['contenu-non-eligible'];
                 break;
@@ -994,12 +997,12 @@ class depot_de_dossierController extends bootstrap
 
     /**
      * Redirect to corresponding page and update status
-     * @param $sPage          string Page to redirect to
-     * @param $iProjectStatus int    Project status
+     * @param string $sPage          Page to redirect to
+     * @param int    $iProjectStatus Project status
      */
     private function redirect($sPage, $iProjectStatus = null)
     {
-        if (false === is_null($iProjectStatus)) {
+        if (false === is_null($iProjectStatus) && $this->projects_status->status != $iProjectStatus) {
             $this->projects_status_history->addStatus(-2, $iProjectStatus, $this->projects->id_project);
         }
 

@@ -4,6 +4,16 @@ namespace Unilend\librairies;
 
 class Altares
 {
+    const RESPONSE_CODE_INACTIVE                       = 1;
+    const RESPONSE_CODE_NOT_REGISTERED                 = 2;
+    const RESPONSE_CODE_PROCEDURE                      = 3;
+    const RESPONSE_CODE_OLD_ANNUAL_ACCOUNTS            = 4;
+    const RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK         = 5;
+    const RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES = 6;
+    const RESPONSE_CODE_UNKNOWN_SIREN                  = 7;
+    const RESPONSE_CODE_ELIGIBLE                       = 8;
+    const RESPONSE_CODE_NO_ANNUAL_ACCOUNTS             = 9;
+
     /**
      * @var string
      */
