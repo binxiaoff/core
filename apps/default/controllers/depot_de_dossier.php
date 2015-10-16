@@ -573,7 +573,7 @@ class depot_de_dossierController extends bootstrap
                 $this->projects->update();
             }
 
-            if ($_POST['fonds_propres'] < 10000 || $_POST['resultat_brute_exploitation'] < 0 || $_POST['ca'] < 100000) {
+            if ($_POST['fonds_propres'] < 0 || $_POST['resultat_brute_exploitation'] < 0 || $_POST['ca'] < 80000) {
                 $this->redirect(self::PAGE_NAME_NOK, \projects_status::NOTE_EXTERNE_FAIBLE);
             }
 
