@@ -783,53 +783,7 @@
     </style>
     <br/><br/>
     <div id="lesEtapes">
-        <div id="title_etape1">Etape 1</div>
-        <div id="etape1">
-            <form method="post" name="dossier_etape1" id="dossier_etape1" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
-                <table class="form" style="width: 100%;">
-                    <tr>
-                        <th><label for="montant_etape1">Montant :</label></th>
-                        <td><input type="text" name="montant_etape1" id="montant_etape1" class="input_moy" value="<?= number_format($this->projects->amount, 2, ',', ' ') ?>"/> €
-                        </td>
-
-                        <th><label for="duree_etape1">Durée du prêt :</label></th>
-                        <td>
-                            <select name="duree_etape1" id="duree_etape1" class="select">
-                                <?php foreach ($this->dureePossible as $duree): ?>
-                                    <option <?= ($this->projects->period == $duree ? 'selected' : '') ?>
-                                        value="<?= $duree ?>"><?= $duree ?> mois
-                                    </option>
-                                <? endforeach ?>
-                                <option <?= ((int)$this->projects->period === 1000000 || (int)$this->projects->period === 0) ? 'selected' : '' ?> value="0">
-                                    je ne sais pas
-                                </option>
-                            </select>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="siren_etape1">SIREN :</label></th>
-                        <td>
-                            <?php
-                            if ($this->projects->create_bo == 1) {
-                                ?><input type="text" name="siren_etape1" id="siren_etape1" class="input_large" value="<?= $this->companies->siren ?>"/><?
-                            } else {
-                                ?><input type="hidden" name="siren_etape1" id="siren_etape1" value="<?= $this->companies->siren ?>"/><?
-                                echo $this->companies->siren;
-                            }
-                            ?>
-                        </td>
-
-                        <th></th>
-                        <td></td>
-                    </tr>
-                </table>
-                <div id="valid_etape1">Données sauvegardées</div>
-                <div class="btnDroite"><input type="button" class="btn_link" value="Sauvegarder" onclick="valid_etape1(<?= $this->projects->id_project ?>)"></div>
-            </form>
-        </div>
-        <br/>
-
-        <div id="title_etape2">Etape 2</div>
+        <div id="title_etape2">Etape 1</div>
         <div id="etape2">
             <form method="post" name="dossier_etape2" id="dossier_etape2" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
                 <table class="form" style="width: 100%;">
@@ -999,7 +953,7 @@
         </div>
         <br/>
 
-        <div id="title_etape3">Etape 3</div>
+        <div id="title_etape3">Etape 2</div>
         <div id="etape3">
             <form method="post" name="dossier_etape3" id="dossier_etape3" enctype="multipart/form-data"
                   action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
@@ -1058,7 +1012,7 @@
         </div>
         <br/>
 
-        <div id="title_etape4">Etape 4</div>
+        <div id="title_etape4">Etape 3</div>
         <div id="etape4">
             <script language="javascript" type="text/javascript">
                 function formUploadCallbackcsv(result) {
@@ -1592,8 +1546,7 @@
             </form>
         </div>
         <br/>
-
-        <div id="title_etape5">Etape 5</div>
+        <div id="title_etape5">Etape 4</div>
         <div id="etape5">
             <script language="javascript" type="text/javascript">
                 function formUploadCallback(result) {
@@ -1850,7 +1803,7 @@
                 $moyenne1 = (($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1));
                 $moyenne = round($moyenne1, 1);
                 ?>
-                <div id="title_etape6">Etape 6</div>
+                <div id="title_etape6">Etape 5</div>
                 <div id="etape6">
                     <table class="form tableNotes" style="width: 100%;">
                         <tr>
@@ -2014,7 +1967,7 @@
             // si statut revueA
             if ($this->current_projects_status->status >= 33) {
                 ?>
-                <div id="title_etape7">Etape 7</div>
+                <div id="title_etape7">Etape 6</div>
                 <div id="etape7">
                     <table class="form tableNotes" style="width: 100%;">
                         <tr>
