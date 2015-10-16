@@ -490,7 +490,7 @@ class depot_de_dossierController extends bootstrap
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-3'];
         $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-etape-3'];
 
-        $this->financial = $this->loadLib('financial');
+        $oFinancial = new \PHPExcel_Calculation_Financial();
 
         $this->settings->get('Tri par taux intervalles', 'type');
         $aRatesIntervals      = explode(';', $this->settings->value);
@@ -501,10 +501,10 @@ class depot_de_dossierController extends bootstrap
         $fVATRate = (float) $this->settings->value;
 
         $this->settings->get('Commission remboursement', 'type');
-        $fCommission = ($this->financial->PMT($this->settings->value / 12, $this->projects->period, - $this->projects->amount) - $this->financial->PMT(0, $this->projects->period, - $this->projects->amount)) * (1 + $fVATRate);
+        $fCommission = ($oFinancial->PMT($this->settings->value / 12, $this->projects->period, - $this->projects->amount) - $oFinancial->PMT(0, $this->projects->period, - $this->projects->amount)) * (1 + $fVATRate);
 
-        $this->iMinimumMonthlyPayment = round($this->financial->PMT($aMinimumRateInterval[0] / 100 / 12, $this->projects->period, - $this->projects->amount) + $fCommission);
-        $this->iMaximumMonthlyPayment = round($this->financial->PMT($aMaximumRateInterval[1] / 100 / 12, $this->projects->period, - $this->projects->amount) + $fCommission);
+        $this->iMinimumMonthlyPayment = round($oFinancial->PMT($aMinimumRateInterval[0] / 100 / 12, $this->projects->period, - $this->projects->amount) + $fCommission);
+        $this->iMaximumMonthlyPayment = round($oFinancial->PMT($aMaximumRateInterval[1] / 100 / 12, $this->projects->period, - $this->projects->amount) + $fCommission);
 
         // year considered for "latest liasse fiscal" necessary to get the information from bilans and actif_passif
         $iLastAnnualAccountsYear  = date('Y') - 1;
