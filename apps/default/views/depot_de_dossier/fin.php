@@ -19,5 +19,6 @@
             }
         ?>
         </p>
+        <p><?= $this->sErrorMessage ?></p>
     </div>
 </div>

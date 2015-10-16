@@ -9,8 +9,7 @@ class depot_de_dossierController extends bootstrap
     const PAGE_NAME_STEP_3    = 'etape3';
     const PAGE_NAME_FILES     = 'fichiers';
     const PAGE_NAME_PROSPECT  = 'prospect';
-    const PAGE_NAME_THANK_YOU = 'merci';
-    const PAGE_NAME_NOK       = 'nok';
+    const PAGE_NAME_END       = 'fin';
 
     /**
      * @var attachment_helper
@@ -122,7 +121,7 @@ class depot_de_dossierController extends bootstrap
         $iStatusSetting = $this->settings->value;
 
         if ($iStatusSetting == 3) {
-            $this->redirect(self::PAGE_NAME_NOK, \projects_status::NOTE_EXTERNE_FAIBLE);
+            $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE);
         }
 
         $this->settings->get('Altares email alertes', 'type');
@@ -136,7 +135,7 @@ class depot_de_dossierController extends bootstrap
             $oLogger->addRecord(ULogger::ALERT, $oException->getMessage(), array('siren' => $iSIREN));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $oException->getMessage());
-            $this->redirect(self::PAGE_NAME_NOK, \projects_status::NOTE_EXTERNE_FAIBLE);
+            $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE);
         }
 
         if (false === empty($oResult->exception)) {
@@ -144,7 +143,7 @@ class depot_de_dossierController extends bootstrap
             $oLogger->addRecord(ULogger::ALERT, $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur, array('siren' => $iSIREN));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $iSIREN . ' | ' . $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur);
-            $this->redirect(self::PAGE_NAME_NOK, \projects_status::NOTE_EXTERNE_FAIBLE);
+            $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE);
         }
 
         if ($iStatusSetting == 2) {
@@ -279,7 +278,7 @@ class depot_de_dossierController extends bootstrap
                 break;
             case 'Non':
             default:
-                $this->redirect(self::PAGE_NAME_NOK, \projects_status::NOTE_EXTERNE_FAIBLE);
+                $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE);
                 break;
         }
     }
@@ -470,7 +469,7 @@ class depot_de_dossierController extends bootstrap
         $this->projects->update();
 
         if ($this->bAnnualAccountsQuestion && $_POST['bilans'] === 'non') {
-            $this->redirect(self::PAGE_NAME_NOK, \projects_status::PAS_3_BILANS);
+            $this->redirect(self::PAGE_NAME_END, \projects_status::PAS_3_BILANS);
         }
 
         $this->redirect(self::PAGE_NAME_STEP_3, \projects_status::COMPLETUDE_ETAPE_3);
@@ -574,7 +573,7 @@ class depot_de_dossierController extends bootstrap
             }
 
             if ($_POST['fonds_propres'] < 0 || $_POST['resultat_brute_exploitation'] < 0 || $_POST['ca'] < 80000) {
-                $this->redirect(self::PAGE_NAME_NOK, \projects_status::NOTE_EXTERNE_FAIBLE);
+                $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE);
             }
 
             if (isset($_POST['procedure_acceleree'])) {
@@ -672,7 +671,7 @@ class depot_de_dossierController extends bootstrap
                 $this->clients->status = 1;
                 $this->clients->update();
 
-                $this->redirect(self::PAGE_NAME_THANK_YOU, \projects_status::A_TRAITER);
+                $this->redirect(self::PAGE_NAME_END, \projects_status::A_TRAITER);
             }
         }
     }
@@ -798,7 +797,7 @@ class depot_de_dossierController extends bootstrap
                 $this->projects->update();
                 $this->prescripteurs->update();
 
-                $this->redirect(self::PAGE_NAME_THANK_YOU, \projects_status::PAS_3_BILANS);
+                $this->redirect(self::PAGE_NAME_END, \projects_status::PAS_3_BILANS);
             }
         }
     }
@@ -817,7 +816,8 @@ class depot_de_dossierController extends bootstrap
         $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects();
 
         if (isset($_SESSION['forms']['depot-de-dossier-fichiers'])) {
-            $this->aForm = $_SESSION['forms']['depot-de-dossier-fichiers'];
+            $this->aForm   = isset($_SESSION['forms']['depot-de-dossier-fichiers']['values']) ? $_SESSION['forms']['depot-de-dossier-fichiers']['values'] : array();
+            $this->aErrors = isset($_SESSION['forms']['depot-de-dossier-fichiers']['errors']) ? $_SESSION['forms']['depot-de-dossier-fichiers']['errors'] : array();
             unset($_SESSION['forms']['depot-de-dossier-fichiers']);
         }
 
@@ -828,23 +828,48 @@ class depot_de_dossierController extends bootstrap
 
             if (true === $this->error_fichier) {
                 $_SESSION['forms']['depot-de-dossier-fichiers']['errors']['files'] = true;
-            } else {
-                $_SESSION['forms']['depot-de-dossier-fichiers']['success']['files'] = true;
+                $this->redirect(self::PAGE_NAME_FILES);
             }
 
-            $this->redirect(self::PAGE_NAME_FILES, \projects_status::A_TRAITER);
+            $this->redirect(self::PAGE_NAME_END, \projects_status::A_TRAITER);
         }
     }
 
-    public function _merci()
+    public function _fin()
     {
-        $this->checkProjectHash(self::PAGE_NAME_THANK_YOU);
+        $this->checkProjectHash(self::PAGE_NAME_END);
 
-        $this->lng['depot-de-dossier'] = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
+        $this->lng['depot-de-dossier']     = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
+        $this->lng['depot-de-dossier-fin'] = $this->ln->selectFront('depot-de-dossier-fin', $this->language, $this->App);
 
-        $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-merci'];
-        $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-merci'];
-        $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-merci'];
+        $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-fin'];
+        $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-fin'];
+        $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-fin'];
+
+        switch ($this->projects->retour_altares) {
+            case '1': // Etablissement Inactif
+            case '7': // SIREN inconnu
+                $this->sErrorMessage = $this->lng['depot-de-dossier-fin']['no-siren'];
+                break;
+            case '2': // Etablissement sans RCS
+                $this->sErrorMessage = $this->lng['depot-de-dossier-fin']['no-rcs'];
+                break;
+            case '5': // Fonds Propres Négatifs
+            case '6': // EBE Négatif
+                $this->sErrorMessage = $this->lng['depot-de-dossier-fin']['rex-nega'];
+                break;
+            case '8':
+                if ($this->projects_status->status == \projects_status::PAS_3_BILANS) {
+                    $this->sErrorMessage = $this->lng['depot-de-dossier-fin']['pas-3-bilans'];
+                    break;
+                }
+            case '3': // Procédure Active
+            case '4': // Bilan de plus de 450 jours
+            case '9': // bilan sup 450 jours
+            default:
+                $this->sErrorMessage = $this->lng['depot-de-dossier-fin']['contenu-non-eligible'];
+                break;
+        }
 
         // the idea is to display exactly the same contact form as in the contact section of the page.
 
@@ -871,42 +896,6 @@ class depot_de_dossierController extends bootstrap
             $oRoot    = new rootController($oCommand, $this->Config, 'default');
             $oRoot->contact();
             $this->confirmation = $this->lng['contact']['confirmation'];
-        }
-    }
-
-    public function _nok()
-    {
-        $this->checkProjectHash(self::PAGE_NAME_NOK);
-
-        $this->lng['depot-de-dossier-nok'] = $this->ln->selectFront('depot-de-dossier-nok', $this->language, $this->App);
-
-        $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-nok'];
-        $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-nok'];
-        $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-nok'];
-
-        switch ($this->projects->retour_altares) {
-            case '1': // Etablissement Inactif
-            case '7': // SIREN inconnu
-                $this->sErrorMessage = $this->lng['depot-de-dossier-nok']['no-siren'];
-                break;
-            case '2': // Etablissement sans RCS
-                $this->sErrorMessage = $this->lng['depot-de-dossier-nok']['no-rcs'];
-                break;
-            case '5': // Fonds Propres Négatifs
-            case '6': // EBE Négatif
-                $this->sErrorMessage = $this->lng['depot-de-dossier-nok']['rex-nega'];
-                break;
-            case '8':
-                if ($this->projects_status->status == \projects_status::PAS_3_BILANS) {
-                    $this->sErrorMessage = $this->lng['depot-de-dossier-nok']['pas-3-bilans'];
-                    break;
-                }
-            case '3': // Procédure Active
-            case '4': // Bilan de plus de 450 jours
-            case '9': // bilan sup 450 jours
-            default:
-                $this->sErrorMessage = $this->lng['depot-de-dossier-nok']['contenu-non-eligible'];
-                break;
         }
     }
 
@@ -972,8 +961,8 @@ class depot_de_dossierController extends bootstrap
         switch ($this->projects_status->status) {
             case \projects_status::PAS_3_BILANS:
             case \projects_status::NOTE_EXTERNE_FAIBLE:
-                if (false === in_array($sPage, array(self::PAGE_NAME_NOK, self::PAGE_NAME_PROSPECT, self::PAGE_NAME_THANK_YOU))) {
-                    $this->redirect(self::PAGE_NAME_NOK);
+                if (false === in_array($sPage, array(self::PAGE_NAME_END, self::PAGE_NAME_PROSPECT))) {
+                    $this->redirect(self::PAGE_NAME_END);
                 }
                 break;
             case \projects_status::COMPLETUDE_ETAPE_2:
@@ -990,14 +979,14 @@ class depot_de_dossierController extends bootstrap
             case \projects_status::EN_ATTENTE_PIECES:
                 if (1 == $this->projects->process_fast && $sPage !== self::PAGE_NAME_FILES) {
                     $this->redirect(self::PAGE_NAME_FILES);
-                } elseif (0 == $this->projects->process_fast && $sPage !== self::PAGE_NAME_THANK_YOU) {
-                    $this->redirect(self::PAGE_NAME_THANK_YOU);
+                } elseif (0 == $this->projects->process_fast && $sPage !== self::PAGE_NAME_END) {
+                    $this->redirect(self::PAGE_NAME_END);
                 }
                 break;
             case \projects_status::ABANDON:
             default: // Should correspond to "Revue analyste" and above
-                if ($sPage !== self::PAGE_NAME_THANK_YOU) {
-                    $this->redirect(self::PAGE_NAME_THANK_YOU);
+                if ($sPage !== self::PAGE_NAME_END) {
+                    $this->redirect(self::PAGE_NAME_END);
                 }
                 break;
         }
