@@ -50,6 +50,11 @@ class depot_de_dossierController extends bootstrap
         $this->checkProjectHash('default');
     }
 
+    public function _reprise()
+    {
+        $this->checkProjectHash('standby');
+    }
+
     public function _stand_by()
     {
         $this->checkProjectHash('standby');
@@ -156,48 +161,53 @@ class depot_de_dossierController extends bootstrap
         $this->projects->retour_altares = $oResult->myInfo->codeRetour;
         $this->projects->update();
 
-        $this->companies->altares_eligibility = $oResult->myInfo->eligibility;
-        $this->companies->altares_codeRetour  = $oResult->myInfo->codeRetour;
-        $this->companies->altares_motif       = $oResult->myInfo->motif;
-        $this->companies->update();
-
         // @todo patch before Altares fixes bug
         if (Altares::RESPONSE_CODE_OLD_ANNUAL_ACCOUNTS == $oResult->myInfo->codeRetour) {
             $oResult->myInfo->eligibility = 'Oui';
         }
 
+        $this->companies->altares_eligibility = $oResult->myInfo->eligibility;
+        $this->companies->altares_codeRetour  = $oResult->myInfo->codeRetour;
+        $this->companies->altares_motif       = $oResult->myInfo->motif;
+        $this->companies->phone               = isset($oResult->myInfo->siege->telephone) ? str_replace(' ', '', $oResult->myInfo->siege->telephone) : '';
+
+        if (isset($oResult->myInfo->identite) && is_object($oResult->myInfo->identite)) {
+            $oIdentity                 = $oResult->myInfo->identite;
+            $sLastAccountStatementDate = isset($oIdentity->dateDernierBilan) && strlen($oIdentity->dateDernierBilan) > 0 ? substr($oIdentity->dateDernierBilan, 0, 10) : (date('Y') - 1) . '-12-31';
+            $aLastAccountStatementDate = explode('-', $sLastAccountStatementDate);
+
+            $this->companies->name                              = $oIdentity->raisonSociale;
+            $this->companies->forme                             = $oIdentity->formeJuridique;
+            $this->companies->capital                           = $oIdentity->capital;
+            $this->companies->code_naf                          = $oIdentity->naf5EntreCode;
+            $this->companies->libelle_naf                       = $oIdentity->naf5EntreLibelle;
+            $this->companies->adresse1                          = $oIdentity->rue;
+            $this->companies->city                              = $oIdentity->ville;
+            $this->companies->zip                               = $oIdentity->codePostal;
+            $this->companies->rcs                               = $oIdentity->rcs;
+            $this->companies->siret                             = $oIdentity->siret;
+            $this->companies->date_creation                     = substr($oIdentity->dateCreation, 0, 10);
+
+            $this->companies_details->date_dernier_bilan        = $sLastAccountStatementDate;
+            $this->companies_details->date_dernier_bilan_mois   = $aLastAccountStatementDate[1];
+            $this->companies_details->date_dernier_bilan_annee  = $aLastAccountStatementDate[0];
+            $this->companies_details->date_dernier_bilan_publie = $sLastAccountStatementDate;
+            $this->companies_details->update();
+        }
+
+        if (isset($oResult->myInfo->score) && is_object($oResult->myInfo->score)) {
+            $oScore = $oResult->myInfo->score;
+
+            $this->companies->altares_niveauRisque       = $oScore->niveauRisque;
+            $this->companies->altares_scoreVingt         = $oScore->scoreVingt;
+            $this->companies->altares_scoreSectorielCent = $oScore->scoreSectorielCent;
+            $this->companies->altares_dateValeur         = substr($oScore->dateValeur, 0, 10);
+        }
+
+        $this->companies->update();
+
         switch ($oResult->myInfo->eligibility) {
             case 'Oui':
-                $oIdentity                 = $oResult->myInfo->identite;
-                $oScore                    = $oResult->myInfo->score;
-                $sLastAccountStatementDate = isset($oIdentity->dateDernierBilan) && strlen($oIdentity->dateDernierBilan) > 0 ? substr($oIdentity->dateDernierBilan, 0, 10) : (date('Y') - 1) . '-12-31';
-                $aLastAccountStatementDate = explode('-', $sLastAccountStatementDate);
-
-                $this->companies->name                          = $oIdentity->raisonSociale;
-                $this->companies->forme                         = $oIdentity->formeJuridique;
-                $this->companies->capital                       = $oIdentity->capital;
-                $this->companies->code_naf                      = $oIdentity->naf5EntreCode;
-                $this->companies->libelle_naf                   = $oIdentity->naf5EntreLibelle;
-                $this->companies->adresse1                      = $oIdentity->rue;
-                $this->companies->city                          = $oIdentity->ville;
-                $this->companies->zip                           = $oIdentity->codePostal;
-                $this->companies->phone                         = str_replace(' ', '', $oResult->myInfo->siege->telephone);
-                $this->companies->rcs                           = $oIdentity->rcs;
-                $this->companies->siret                         = $oIdentity->siret;
-                $this->companies->status_adresse_correspondance = '1';
-                $this->companies->date_creation                 = substr($oIdentity->dateCreation, 0, 10);
-                $this->companies->altares_niveauRisque          = $oScore->niveauRisque;
-                $this->companies->altares_scoreVingt            = $oScore->scoreVingt;
-                $this->companies->altares_scoreSectorielCent    = $oScore->scoreSectorielCent;
-                $this->companies->altares_dateValeur            = substr($oScore->dateValeur, 0, 10);
-                $this->companies->update();
-
-                $this->companies_details->date_dernier_bilan        = $sLastAccountStatementDate;
-                $this->companies_details->date_dernier_bilan_mois   = $aLastAccountStatementDate[1];
-                $this->companies_details->date_dernier_bilan_annee  = $aLastAccountStatementDate[0];
-                $this->companies_details->date_dernier_bilan_publie = $sLastAccountStatementDate;
-                $this->companies_details->update();
-
                 /**
                  * We only keep N to N - 4 annual accounts
                  * If N to N - 2 are not created, we create them (empty)
@@ -468,7 +478,8 @@ class depot_de_dossierController extends bootstrap
             }
         }
 
-        $this->projects->period = $_POST['duree'];
+        $this->projects->comments = $_POST['commentaires'];
+        $this->projects->period   = $_POST['duree'];
         $this->projects->update();
 
         if ($this->bAnnualAccountsQuestion && $_POST['bilans'] === 'non') {
@@ -691,118 +702,140 @@ class depot_de_dossierController extends bootstrap
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-prospect'];
         $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-prospect'];
 
-        // load date for form (client, company, project and prescripteur
-        // Form depot de dossier etape 2
-        if (isset($_POST['send_form_coordonnees'])) {
-            $bForm_ok = true;
+        // @todo may probably be factorized with step 2 form
+        $aForm = isset($_SESSION['forms']['depot-de-dossier-prospect']['values']) ? $_SESSION['forms']['depot-de-dossier-prospect']['values'] : array();
 
-            if (! isset($_POST['sex_representative']) || $_POST['sex_representative'] == '') {
-                $bForm_ok = false;
+        $this->aErrors = isset($_SESSION['forms']['depot-de-dossier-prospect']['errors']) ? $_SESSION['forms']['depot-de-dossier-prospect']['errors'] : array();
+        $this->aForm   = array(
+            'raison_sociale'        => isset($aForm['raison_sociale']) ? $aForm['raison_sociale'] : $this->companies->name,
+            'civilite'              => isset($aForm['civilite']) ? $aForm['civilite'] : $this->clients->civilite,
+            'prenom'                => isset($aForm['prenom']) ? $aForm['prenom'] : $this->clients->prenom,
+            'nom'                   => isset($aForm['nom']) ? $aForm['nom'] : $this->clients->nom,
+            'fonction'              => isset($aForm['fonction']) ? $aForm['fonction'] : $this->clients->fonction,
+            'email'                 => isset($aForm['email']) ? $aForm['email'] : $this->removeEmailSuffix($this->clients->email),
+            'mobile'                => isset($aForm['mobile']) ? $aForm['mobile'] : $this->clients->mobile,
+            'civilite_prescripteur' => isset($aForm['civilite_prescripteur']) ? $aForm['civilite_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->civilite),
+            'prenom_prescripteur'   => isset($aForm['prenom_prescripteur']) ? $aForm['prenom_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->prenom),
+            'nom_prescripteur'      => isset($aForm['nom_prescripteur']) ? $aForm['nom_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->nom),
+            'fonction_prescripteur' => isset($aForm['fonction_prescripteur']) ? $aForm['fonction_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->fonction),
+            'email_prescripteur'    => isset($aForm['email_prescripteur']) ? $aForm['email_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->removeEmailSuffix($this->clients_prescripteur->email)),
+            'mobile_prescripteur'   => isset($aForm['mobile_prescripteur']) ? $aForm['mobile_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->mobile),
+            'gerant'                => isset($aForm['gerant']) ? $aForm['gerant'] : (empty($this->clients_prescripteur->id_client) ? 'oui' : 'non')
+        );
+
+        unset($_SESSION['forms']['depot-de-dossier-prospect']);
+
+        if (isset($_POST['send_form_depot_dossier'])) {
+            $this->prospectForm();
+        }
+    }
+
+    private function prospectForm()
+    {
+        $_SESSION['forms']['depot-de-dossier-prospect']['values'] = $_POST;
+
+        if (empty($_POST['raison_sociale'])) {
+            $_SESSION['forms']['depot-de-dossier-prospect']['errors']['raison_sociale'] = true;
+        }
+        if (empty($_POST['civilite'])) {
+            $_SESSION['forms']['depot-de-dossier-prospect']['errors']['civilite'] = true;
+        }
+        if (empty($_POST['prenom'])) {
+            $_SESSION['forms']['depot-de-dossier-prospect']['errors']['prenom'] = true;
+        }
+        if (empty($_POST['nom'])) {
+            $_SESSION['forms']['depot-de-dossier-prospect']['errors']['nom'] = true;
+        }
+        if (empty($_POST['fonction'])) {
+            $_SESSION['forms']['depot-de-dossier-prospect']['errors']['fonction'] = true;
+        }
+        if (empty($_POST['email']) || false === $this->ficelle->isEmail($_POST['email'])) {
+            $_SESSION['forms']['depot-de-dossier-prospect']['errors']['email'] = true;
+        }
+        if (empty($_POST['mobile'])) {
+            $_SESSION['forms']['depot-de-dossier-prospect']['errors']['mobile'] = true;
+        }
+        if (empty($_POST['gerant'])) {
+            $_SESSION['forms']['depot-de-dossier-prospect']['errors']['gerant'] = true;
+        }
+        if ('non' === $_POST['gerant']) {
+            if (empty($_POST['civilite_prescripteur'])) {
+                $_SESSION['forms']['depot-de-dossier-prospect']['errors']['civilite_prescripteur'] = true;
             }
-            if (! isset($_POST['nom_representative']) || $_POST['nom_representative'] == '' || $_POST['nom_representative'] == $this->lng['etape2']['nom']) {
-                $bForm_ok = false;
+            if (empty($_POST['prenom_prescripteur'])) {
+                $_SESSION['forms']['depot-de-dossier-prospect']['errors']['prenom_prescripteur'] = true;
             }
-            if (! isset($_POST['prenom_representative']) || $_POST['prenom_representative'] == '' || $_POST['prenom_representative'] == $this->lng['etape2']['prenom']) {
-                $bForm_ok = false;
+            if (empty($_POST['nom_prescripteur'])) {
+                $_SESSION['forms']['depot-de-dossier-prospect']['errors']['nom_prescripteur'] = true;
             }
-            if (! isset($_POST['portable_representative']) ||
-                $_POST['portable_representative'] == '' ||
-                $_POST['portable_representative'] == $this->lng['etape2']['telephone'] ||
-                strlen($_POST['portable_representative']) < 9 ||
-                strlen($_POST['portable_representative']) > 14
-            ) {
-                $bForm_ok = false;
+            if (empty($_POST['fonction_prescripteur'])) {
+                $_SESSION['forms']['depot-de-dossier-prospect']['errors']['fonction_prescripteur'] = true;
             }
-            if (! isset($_POST['fonction_representative']) || $_POST['fonction_representative'] == '' || $_POST['fonction_representative'] == $this->lng['etape2']['fonction']) {
-                $bForm_ok = false;
+            if (empty($_POST['email_prescripteur']) || false === $this->ficelle->isEmail($_POST['email_prescripteur'])) {
+                $_SESSION['forms']['depot-de-dossier-prospect']['errors']['email_prescripteur'] = true;
             }
-            if (! isset($_POST['email_representative']) ||
-                $_POST['email_representative'] == '' ||
-                $_POST['email_representative'] == $this->lng['etape2']['email'] ||
-                $this->ficelle->isEmail($_POST['email_representative']) == false ||
-                $_POST['email_representative'] != $_POST['conf_email_representative']
-            ) {
-                $bForm_ok = false;
-            }
-
-            $this->clients->civilite = $_POST['sex_representative'];
-            $this->clients->nom      = $_POST['nom_representative'];
-            $this->clients->prenom   = $_POST['prenom_representative'];
-            $this->clients->fonction = $_POST['fonction_representative'];
-            $this->clients->mobile   = $_POST['portable_representative'];
-            $this->clients->email    = $_POST['email_representative'];
-
-            if (! isset($_POST['raison_sociale']) || $_POST['raison_sociale'] == '' || $_POST['raison_sociale'] == $this->lng['etape2']['raison_sociale']) {
-                $bForm_ok = false;
-            }
-            $this->companies->name = $_POST['raison_sociale'];
-
-            if (isset($_POST['gerant']) && $_POST['gerant'] == 3) {
-                if (! isset($_POST['gender_prescripteur']) || $_POST['gender_prescripteur'] == '') {
-                    $bForm_ok = false;
-                }
-                if (! isset($_POST['prescripteur_nom']) || $_POST['prescripteur_nom'] == '' || $_POST['prescripteur_nom'] == $this->lng['etape2']['nom']) {
-                    $bForm_ok = false;
-                }
-                if (! isset($_POST['prescripteur_prenom']) || $_POST['prescripteur_prenom'] == '' || $_POST['prescripteur_prenom'] == $this->lng['etape2']['prenom']) {
-                    $bForm_ok = false;
-                }
-
-                if (! isset($_POST['prescripteur_email']) ||
-                    $_POST['prescripteur_email'] == '' ||
-                    $_POST['prescripteur_email'] == $this->lng['etape2']['email'] ||
-                    $this->ficelle->isEmail($_POST['prescripteur_email']) == false ||
-                    $_POST['prescripteur_email'] != $_POST['prescripteur_conf_email'] ||
-                    $this->clients->existEmail($_POST['prescripteur_email']) == false
-                ) {
-                    $bForm_ok = false;
-                }
-
-                if (! isset($_POST['prescripteur_phone']) ||
-                    $_POST['prescripteur_phone'] == '' ||
-                    $_POST['prescripteur_phone'] == $this->lng['etape2']['telephone'] ||
-                    strlen($_POST['prescripteur_phone']) < 9 ||
-                    strlen($_POST['prescripteur_phone']) > 14
-                ) {
-                    $bForm_ok = false;
-                }
-
-                $this->prescripteurs->civilite = $_POST['gender_prescripteur'];
-                $this->prescripteurs->nom      = $_POST['prescripteur_nom'];
-                $this->prescripteurs->prenom   = $_POST['prescripteur_prenom'];
-                $this->prescripteurs->mobile   = $_POST['prescripteur_phone'];
-                $this->prescripteurs->email    = $_POST['prescripteur_email'];
-
-            } // end if prescripteur
-
-            if ($bForm_ok) {
-
-                if ($_POST['gerant'] == 3) {
-                    if (is_numeric($this->prescripteurs->id_prescripteur)) {
-                        $this->prescripteurs->update();
-                    } else {
-                        $this->prescripteurs->id_prescripteur = $this->prescripteurs->create();
-                    }
-                    $this->projects->id_prescripteur = $this->prescripteurs->id_prescripteur;
-                }
-
-                // clients
-                $this->clients->id_langue = 'fr';
-                $this->clients->slug      = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
-
-                // l'email facture est la meme que l'email client a la creation
-                $this->companies->email_facture = $this->clients->email;
-
-                // On fait une mise à jour
-                $this->clients->update();
-                $this->companies->update();
-                $this->companies_details->update();
-                $this->projects->update();
-                $this->prescripteurs->update();
-
-                $this->redirect(self::PAGE_NAME_END, \projects_status::PAS_3_BILANS);
+            if (empty($_POST['mobile_prescripteur'])) {
+                $_SESSION['forms']['depot-de-dossier-prospect']['errors']['mobile_prescripteur'] = true;
             }
         }
+        if (false === empty($_SESSION['forms']['depot-de-dossier-prospect']['errors'])) {
+            $this->redirect(self::PAGE_NAME_PROSPECT);
+        }
+
+        if (true === $this->clients->existEmail($_POST['email'])) { // Email does not exist in DB
+            $this->clients->email = $_POST['email'];
+        } elseif ($this->removeEmailSuffix($this->clients->email) !== $_POST['email']) { // Email exists but is different from previous one
+            $this->clients->email = $_POST['email'] . '-' . time();
+        }
+
+        $this->clients->civilite          = $_POST['civilite'];
+        $this->clients->prenom            = $_POST['prenom'];
+        $this->clients->nom               = $_POST['nom'];
+        $this->clients->fonction          = $_POST['fonction'];
+        $this->clients->mobile            = $_POST['mobile'];
+        $this->clients->id_langue         = 'fr';
+        $this->clients->slug              = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
+        $this->clients->status_transition = 1; // Used in bootstrap and ajax depot de dossier
+        $this->clients->update();
+
+        $this->companies->name          = $_POST['raison_sociale'];
+        $this->companies->email_facture = $_POST['email'];
+        $this->companies->update();
+
+        $this->companies_details->update();
+
+        if ('non' === $_POST['gerant']) {
+            if (true === $this->clients_prescripteur->existEmail($_POST['email_prescripteur'])) { // Email does not exist in DB
+                $this->clients_prescripteur->email = $_POST['email_prescripteur'];
+            } elseif ($this->removeEmailSuffix($this->clients_prescripteur->email) !== $_POST['email_prescripteur']) { // Email exists but is different from previous one
+                $this->clients_prescripteur->email = $_POST['email_prescripteur'] . '-' . time();
+            }
+
+            $this->clients_prescripteur->civilite = $_POST['civilite_prescripteur'];
+            $this->clients_prescripteur->prenom   = $_POST['prenom_prescripteur'];
+            $this->clients_prescripteur->nom      = $_POST['nom_prescripteur'];
+            $this->clients_prescripteur->fonction = $_POST['fonction_prescripteur'];
+            $this->clients_prescripteur->mobile   = $_POST['mobile_prescripteur'];
+            $this->clients_prescripteur->slug     = $this->bdd->generateSlug($this->clients_prescripteur->prenom . '-' . $this->clients_prescripteur->nom);
+
+            if (empty($this->clients_prescripteur->id_client)) {
+                $this->clients_prescripteur->create();
+
+                $this->prescripteurs->id_client = $this->clients_prescripteur->id_client;
+                $this->prescripteurs->create();
+
+                $this->projects->id_prescripteur = $this->prescripteurs->id_prescripteur;
+            } else {
+                $this->clients_prescripteur->update();
+                $this->prescripteurs->update();
+            }
+        } else {
+            $this->projects->id_prescripteur = 0;
+        }
+
+        $this->projects->update();
+
+        $this->redirect(self::PAGE_NAME_END);
     }
 
     public function _fichiers()
