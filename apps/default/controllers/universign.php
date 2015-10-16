@@ -1,11 +1,17 @@
 <?php
 
+use Unilend\librairies\ULogger;
 use PhpXmlRpc\Value;
 use PhpXmlRpc\Request;
 use PhpXmlRpc\Client;
 
 class universignController extends bootstrap
 {
+    /**
+     * @var ULogger
+     */
+    private $oLogger;
+
     function universignController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
@@ -18,6 +24,7 @@ class universignController extends bootstrap
         $this->autoFireDebug  = false;
 
         $this->uni_url = $this->Config['universign_url'][$this->Config['env']];
+        $this->oLogger = new ULogger('Universign', $this->logPath, 'universign.log');
     }
 
     function _default()
@@ -35,7 +42,7 @@ class universignController extends bootstrap
             if ($this->params[0] == 'success') {
                 //used variables
                 $uni_url = $this->uni_url;
-                $uni_id = $clients_mandats->id_universign; // a collection id
+                $uni_id  = $clients_mandats->id_universign; // a collection id
 
                 //create the request
                 $c = new Client($uni_url);
@@ -43,7 +50,7 @@ class universignController extends bootstrap
 
                 //Send request and analyse response
                 $r = &$c->send($f);
-
+                $this->oLogger->addRecord(ULogger::INFO, 'Mandat send to Universign', array($clients_mandats->id_project));
                 if (!$r->faultCode()) {
                     //if the request succeeded
                     $doc['name']    = $r->value()->arrayMem(0)->structMem('name')->scalarVal();
@@ -53,7 +60,7 @@ class universignController extends bootstrap
                     file_put_contents($doc['name'], $doc['content']);
                     $clients_mandats->status = 1;
                     $clients_mandats->update();
-
+                    $this->oLogger->addRecord(ULogger::INFO, 'Mandat Ok', array($clients_mandats->id_project));
                     // redirection sur page confirmation : mandat signé
                     // on verif si on a le mandat de déjà signé
                     if ($projects_pouvoir->get($clients_mandats->id_project, 'id_project') && $projects_pouvoir->status == 1) {
@@ -107,16 +114,22 @@ class universignController extends bootstrap
                         $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
                         $this->email->setHTMLBody(utf8_decode($texteMail));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                        $this->oLogger->addRecord(ULogger::INFO, 'Mandat and Pouvoir Ok', array($clients_mandats->id_project));
                         // fin mail
+                    } else {
+                        $this->oLogger->addRecord(ULogger::INFO, 'Mandat Ok but Pouvoir not signed.', array($clients_mandats->id_project));
                     }
                 } else {
                     //displays the error code and the fault message
+                    $this->oLogger->addRecord(ULogger::ERROR, 'Return Universign Mandat NOK. ERROR : ' . $r->faultCode() . ' ; REASON : ' . $r->faultString(), array($clients_mandats->id_project));
                     mail(implode(',', $this->Config['DebugMailIt']), 'unilend erreur universign reception', 'id mandat : ' . $clients_mandats->id_mandat . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
                 }
             } elseif ($this->params[0] == 'fail') {
+                $this->oLogger->addRecord(ULogger::ERROR, 'Mandat Fail.', array($clients_mandats->id_project));
                 $clients_mandats->status = 3;
                 $clients_mandats->update();
             } elseif ($this->params[0] == 'cancel') {
+                $this->oLogger->addRecord(ULogger::ERROR, 'Mandat Cancel.', array($clients_mandats->id_project));
                 //echo 'cancel';
                 $clients_mandats->status = 2;
                 $clients_mandats->update();
@@ -125,11 +138,12 @@ class universignController extends bootstrap
             header("location:" . $this->lurl . '/universign/confirmation/mandat/' . $clients_mandats->id_mandat);
             die;
         } elseif (isset($this->params[2]) && isset($this->params[1]) && $this->params[1] == 'pouvoir' &&
-            $projects_pouvoir->get($this->params[2], 'id_pouvoir') && $projects_pouvoir->status == 0) {// Retour pouvoir
+            $projects_pouvoir->get($this->params[2], 'id_pouvoir') && $projects_pouvoir->status == 0
+        ) {// Retour pouvoir
             if ($this->params[0] == 'success') {
                 //used variables
                 $uni_url = $this->uni_url;
-                $uni_id = $projects_pouvoir->id_universign; // a collection id
+                $uni_id  = $projects_pouvoir->id_universign; // a collection id
 
                 //create the request
                 $c = new Client($uni_url);
@@ -137,7 +151,7 @@ class universignController extends bootstrap
 
                 //Send request and analyse response
                 $r = &$c->send($f);
-
+                $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir send to Universign', array($projects_pouvoir->id_project));
                 if (!$r->faultCode()) {
                     //if the request succeeded
                     $doc['name']    = $r->value()->arrayMem(0)->structMem('name')->scalarVal();
@@ -147,7 +161,7 @@ class universignController extends bootstrap
                     file_put_contents($doc['name'], $doc['content']);
                     $projects_pouvoir->status = 1;
                     $projects_pouvoir->update();
-
+                    $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir Ok', array($projects_pouvoir->id_project));
                     // on verif si on a le mandat de déjà signé
                     if ($clients_mandats->get($projects_pouvoir->id_project, 'id_project') && $clients_mandats->status == 1) {
                         // mail notifiaction admin
@@ -200,16 +214,22 @@ class universignController extends bootstrap
                         $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
                         $this->email->setHTMLBody(utf8_decode($texteMail));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                        $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir and Mandat Ok', array($projects_pouvoir->id_project));
                         // fin mail
+                    } else {
+                        $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir Ok but Mandat not signed.', array($projects_pouvoir->id_project));
                     }
                 } else {
                     //displays the error code and the fault message
-                    mail(implode(',', $this->Config['DebugMailIt']),'unilend erreur universign reception','id pouvoir : '.$projects_pouvoir->id_pouvoir.' | An error occurred: Code: ' . $r->faultCode(). ' Reason: "' . $r->faultString());
+                    $this->oLogger->addRecord(ULogger::ERROR, 'Pouvoir NOK. ERROR : ' . $r->faultCode() . ' ; REASON : ' . $r->faultString(), array($projects_pouvoir->id_project));
+                    mail(implode(',', $this->Config['DebugMailIt']), 'unilend erreur universign reception', 'id pouvoir : ' . $projects_pouvoir->id_pouvoir . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
                 }
             } elseif ($this->params[0] == 'fail') {
+                $this->oLogger->addRecord(ULogger::ERROR, 'Pouvoir Fail.', array($projects_pouvoir->id_project));
                 $projects_pouvoir->status = 3;
                 $projects_pouvoir->update();
             } elseif ($this->params[0] == 'cancel') {
+                $this->oLogger->addRecord(ULogger::ERROR, 'Pouvoir Cancel.', array($projects_pouvoir->id_project));
                 $projects_pouvoir->status = 2;
                 $projects_pouvoir->update();
             }
@@ -229,9 +249,22 @@ class universignController extends bootstrap
 
         if ($clients_mandats->get($this->params[0], 'id_mandat') && $clients_mandats->status != 1) {
             if ($clients_mandats->url_universign != '' && $clients_mandats->status == 0) {
+                $this->oLogger->addRecord(ULogger::INFO, 'Mandat not signed. Redirection to universign.', array($clients_mandats->id_project));
                 header("location:" . $clients_mandats->url_universign);
                 die;
             } else {
+                switch ($clients_mandats->status) {
+                    case 0:
+                        $sMandatStatus = 'not signed';
+                        break;
+                    case 2:
+                        $sMandatStatus = 'cancel';
+                        break;
+                    case 3:
+                        $sMandatStatus = 'fail';
+                        break;
+                }
+                $this->oLogger->addRecord(ULogger::INFO, 'Mandat status : ' . $sMandatStatus . '. Creation of pdf for send to universign.', array($clients_mandats->id_project));
                 $clients->get($clients_mandats->id_client, 'id_client');
                 //used variables
                 $uni_url     = $this->uni_url; // address of the universign server with basic authentication
@@ -299,7 +332,7 @@ class universignController extends bootstrap
 
                 //send request and stores response values
                 $r = &$c->send($f);
-
+                $this->oLogger->addRecord(ULogger::INFO, 'Mandat send to Universign', array($clients_mandats->id_project), array($clients_mandats->id_project));
                 if (!$r->faultCode()) {
                     //if the request succeeded
                     $url = $r->value()->structMem('url')->scalarVal(); //you should redirect the signatory to this url
@@ -309,12 +342,13 @@ class universignController extends bootstrap
                     $clients_mandats->url_universign = $url;
                     $clients_mandats->status         = 0;
                     $clients_mandats->update();
-
+                    $this->oLogger->addRecord(ULogger::INFO, 'Mandat response generation from universign : OK. Redirection to universign to sign.', array($clients_mandats->id_project));
                     header("location:" . $url);
                     die;
 
                 } else {
                     //displays the error code and the fault message
+                    $this->oLogger->addRecord(ULogger::ERROR, 'Mandat response generation from universign : NOK. ERROR : ' . $r->faultCode() . ' ; REASON : ' . $r->faultString(), array($clients_mandats->id_project));
                     mail(implode(',', $this->Config['DebugMailIt']), 'unilend erreur universign reception', ' creatioon mandat id mandat : ' . $clients_mandats->id_mandat . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
                 }
             }
@@ -333,9 +367,23 @@ class universignController extends bootstrap
         if ($projects_pouvoir->get($this->params[0], 'id_pouvoir') && $projects_pouvoir->status != 1) {
             // on check si deja existant en bdd avec l'url universign et si encore en cours
             if (isset($this->params[1]) && $this->params[1] == 'NoUpdateUniversign' && $projects_pouvoir->url_universign != '' && $projects_pouvoir->status == 0) {// si le meme jour alors on regenere pas le pdf universign
+                $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir not signed but flag bdd exist. Redirection to universign.', array($projects_pouvoir->id_project));
                 header("location:" . $projects_pouvoir->url_universign);
                 die;
             } else {// Sinon on crée
+                switch ($projects_pouvoir->status) {
+                    case 0:
+                        $sPouvoirStatus = 'not signed';
+                        break;
+                    case 2:
+                        $sPouvoirStatus = 'cancel';
+                        break;
+                    case 3:
+                        $sPouvoirStatus = 'fail';
+                        break;
+                }
+                $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir status : ' . $sPouvoirStatus . '. Creation of pdf for send to universign.', array($projects_pouvoir->id_project));
+
                 // on recup le projet
                 $projects->get($projects_pouvoir->id_project, 'id_project');
                 // on recup la companie
@@ -410,7 +458,7 @@ class universignController extends bootstrap
 
                 //send request and stores response values
                 $r = &$c->send($f);
-
+                $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir send to Universign', array($projects_pouvoir->id_project), array($projects_pouvoir->id_project));
                 if (!$r->faultCode()) {
                     //if the request succeeded
                     $url = $r->value()->structMem('url')->scalarVal(); //you should redirect the signatory to this url
@@ -420,11 +468,12 @@ class universignController extends bootstrap
                     $projects_pouvoir->url_universign = $url;
                     $projects_pouvoir->status         = 0;
                     $projects_pouvoir->update();
-
+                    $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir response generation from universign : OK. Redirection to universign to sign.', array($projects_pouvoir->id_project));
                     header("location:" . $url);
                     die;
                 } else {
                     //displays the error code and the fault message
+                    $this->oLogger->addRecord(ULogger::ERROR, 'Pouvoir response generation from universign : NOK. ERROR : ' . $r->faultCode() . ' ; REASON : ' . $r->faultString(), array($projects_pouvoir->id_project));
                     mail(implode(',', $this->Config['DebugMailIt']), 'unilend erreur universign reception', 'id mandat : ' . $projects_pouvoir->id_pouvoir . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
                 }
             }
@@ -459,17 +508,19 @@ class universignController extends bootstrap
                 if ($clients_mandats->status == 1) {
                     $this->titre   = 'Confirmation mandat';
                     $this->message = 'Votre mandat a bien été signé';
-                } // mandat annulé
-                elseif ($clients_mandats->status == 2) {
+                    $this->oLogger->addRecord(ULogger::INFO, 'Mandat confirmation : signed.', array($clients_mandats->id_project));
+                } elseif ($clients_mandats->status == 2) {// mandat annulé
                     $this->titre   = 'Confirmation mandat';
                     $this->message = 'Votre mandat a bien été annulé vous pouvez le signer plus tard.';
-                } // mandat fail
-                elseif ($clients_mandats->status == 3) {
+                    $this->oLogger->addRecord(ULogger::INFO, 'Mandat confirmation : cancelled.', array($clients_mandats->id_project));
+                } elseif ($clients_mandats->status == 3) {// mandat fail
                     $this->titre   = 'Confirmation mandat';
                     $this->message = 'Une erreur s\'est produite ressayez plus tard';
+                    $this->oLogger->addRecord(ULogger::ERROR, 'Mandat confirmation : error.', array($clients_mandats->id_project));
                 } else {
                     $this->titre   = 'Confirmation mandat';
                     $this->message = 'Vous n\'avez pas encore signé votre mandat';
+                    $this->oLogger->addRecord(ULogger::INFO, 'Mandat confirmation : not signed.', array($clients_mandats->id_project));
                 }
 
             } elseif ($this->params[0] == 'pouvoir' && $projects_pouvoir->get($this->params[1], 'id_pouvoir')) {// si on a le pouvoir
@@ -486,18 +537,24 @@ class universignController extends bootstrap
                 // si pouvoir ok
                 if ($projects_pouvoir->status == 1) {
                     $this->message = 'Votre pouvoir a bien été signé';
+                    $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir confirmation : signed.', array($projects_pouvoir->id_project));
                 } elseif ($projects_pouvoir->status == 2) {// pouvoir annulé
                     $this->message = 'Votre pouvoir a bien été annulé vous pouvez le signer plus tard.';
+                    $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir confirmation : cancelled.', array($projects_pouvoir->id_project));
                 } elseif ($projects_pouvoir->status == 3) {// pouvoir fail
                     $this->message = 'Une erreur s\'est produite ressayez plus tard';
+                    $this->oLogger->addRecord(ULogger::ERROR, 'Pouvoir confirmation : error.', array($projects_pouvoir->id_project));
                 } else {
                     $this->message = 'Vous n\'avez pas encore signé votre pouvoir';
+                    $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir confirmation : not signed.', array($projects_pouvoir->id_project));
                 }
             } else {
+                $this->oLogger->addRecord(ULogger::INFO, 'Confirmation not pouvoir and not mandat. Redirection home page.', array($projects_pouvoir->id_project));
                 header("location:" . $this->lurl);
                 die;
             }
         } else {
+            $this->oLogger->addRecord(ULogger::INFO, 'Confirmation not pouvoir and not mandat. Redirection home page.', array($projects_pouvoir->id_project));
             header("location:" . $this->lurl);
             die;
         }
