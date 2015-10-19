@@ -43,7 +43,7 @@ else
 							</ul>
 						</nav><?php */?>
 					</div>
-                   
+
                    <?
 				if($this->upload_pouvoir == true)
 				{
@@ -57,7 +57,7 @@ else
 				<?
 				}
 				?>
-                    
+
 					<h2><?=$this->projects->title?></h2>
 					<div class="content-col left">
 						<div class="project-c">
@@ -76,16 +76,16 @@ else
 										?><strong class="red-span"><span id="val"><?=$this->dateRest?></span></strong><?
 									}
 									?>
-									
+
                                     <?=$this->lng['preteur-projets']['le']?> <?=$this->date_retrait?> <?=$this->lng['preteur-projets']['a']?> <?=$this->heure_retrait?>h</p>
-								
+
 							</div>
 							<div class="main-project-info clearfix">
 								<?
 								if($this->projects->photo_projet != '')
 								{
 									?><div class="img-holder borderless left">
-										<img src="<?=$this->photos->display($this->projects->photo_projet,'photos_projets','photo_projet_moy')?>"  alt="<?=$this->projects->photo_projet?>">
+										<img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $this->projects->photo_projet ?>" alt="<?=$this->projects->photo_projet?>">
 										<?
 										if($this->projects->lien_video != '')
 										{
@@ -108,7 +108,7 @@ else
 											<span class="i-holder"><i class="icon-gauge tooltip-anchor" data-placement="right" data-original-title="<?=$this->lng['preteur-projets']['info-note']?>"></i></span>
 											<div class="cadreEtoiles"><div class="etoile <?=$this->lNotes[$this->companies->risk]?>"></div></div>
 										</li>
-                                        
+
 										<li>
 											<span class="i-holder"><i class="icon-graph tooltip-anchor" data-placement="right" data-original-title="<?=$this->lng['preteur-projets']['info-taux-moyen']?>"></i></span>
 											<?
@@ -171,7 +171,7 @@ else
 												{
 													if($this->lenders_accounts->id_lender_account == $e['id_lender_account'])$vous = true;
 													else $vous = false;
-													
+
 													if($this->CountEnchere >= 12)
 													{
 														if($e['ordre'] <= 5 || $e['ordre'] > $this->CountEnchere-5)
@@ -187,7 +187,7 @@ else
 														{
 															?><tr><td colspan="4" class="nth-table-row">...</td></tr><?
 														}
-														
+
 													}
 													else
 													{
@@ -196,9 +196,9 @@ else
 															<td><?=number_format($e['rate'], 1, ',', ' ')?> %</td>
 															<td><?=number_format($e['amount']/100, 0, ',', ' ')?> €</td>
 															<td class="<?=($e['status']==1?'green-span':($e['status']==2?'red-span':''))?>"><?=$this->status[$e['status']]?></td>
-														</tr><?	
+														</tr><?
 													}
-													
+
 												}
 												?>
 											</table>
@@ -215,24 +215,24 @@ else
 													$("#tri").html('ordre');
 													$("#displayAll").click();
 												});
-												
+
 												$("#triTx").click(function() {
 													$("#tri").html('rate');
 													$("#displayAll").click();
 												});
-												
+
 												$("#triAmount").click(function() {
 													$("#tri").html('amount');
 													$("#displayAll").click();
 												});
-												
+
 												$("#triStatuts").click(function() {
 													$("#tri").html('status');
 													$("#displayAll").click();
 												});
-												
+
 												$("#displayAll").click(function() {
-													
+
 													var tri = $("#tri").html();
 													var direction = $("#direction").html();
 													$.post(add_url + '/ajax/displayAll', {id: <?=$this->projects->id_project?>,tri:tri,direction:direction}).done(function(data) {
@@ -399,7 +399,7 @@ else
 															}
 															?>
 														</tr>
-														
+
 														<tr class="total-row">
 															<td class="intitule"><?=$this->lng['preteur-projets']['total-bilan-actifs']?></td>
 															<?
@@ -483,13 +483,13 @@ else
 												</td>
 											</tr>
 										</table>
-											
+
 									</div>
 
-									
+
 
 								</div><!-- /.tab -->
-								
+
 							</div>
 						</div>
 					</div>
@@ -506,7 +506,7 @@ else
 								<div class="widget-body">
 									<div class="article">
 										<p><?=$this->lng['preteur-projets']['ce-projet-est-integralement-finance-par']?> <strong class="pinky-span"> <?=number_format($this->NbPreteurs,0, ',', ' ')?> <?=$this->lng['preteur-projets']['preteur']?><?=($this->NbPreteurs>1?'s':'')?></strong> <br /><?=$this->lng['preteur-projets']['au-taux-de']?><strong class="pinky-span"> <?=number_format($this->AvgLoans,1, ',', ' ')?> %</strong> <br /><?=$this->lng['preteur-projets']['en']?> <?=($this->interDebutFin['day']>0?$this->interDebutFin['day'].' jours ':'')?><?=($this->interDebutFin['hour']>0?$this->interDebutFin['hour'].' heures ':'')?> <?=$this->lng['preteur-projets']['et']?> <?=$this->interDebutFin['minute']?> <?=$this->lng['preteur-projets']['minutes']?></p>
-										
+
 									</div>
                                     <div class="widget-cat">
                                         <a style="display:block;" class="btn darker popup-link"  href="<?=$this->lurl?>/thickbox/pop_up_modifier/<?=$this->projects->id_project?>">Modifier</a>
@@ -523,13 +523,13 @@ else
 									}*/
 									?>
 								</div>
-                                
+
 							</aside>
 						</div>
 						<?
                     }
-					
-					
+
+
 					// Funding KO
 					elseif($this->projects_status->status == 70)
 					{
@@ -541,7 +541,7 @@ else
 								</div>
 								<div class="widget-body">
 									<div class="article">
-										
+
 										<p>Merci à tous</p>
 									</div>
                                     <div class="widget-cat">
@@ -562,7 +562,7 @@ else
 									</div>
 									<div class="widget-body">
 										<div class="article">
-											
+
 											<p><?=$this->lng['preteur-projets']['projet-pret-rejete']?></p>
 										</div>
 									</div>
@@ -581,7 +581,7 @@ else
 								</div>
 								<div class="widget-body">
 									<div class="article">
-										
+
 										<p>Merci à tous</p>
 									</div>
                                     <div class="widget-cat">
@@ -620,7 +620,7 @@ else
                                             <div><span></span></div>
                                         </div>
                                     </div>
-                                    
+
                                     <?php /*?><div class="widget-cat">
                                         <p>Le solde du projet a été atteint. Voulez vous terminer la periode de funding ?</p>
                                         <br />
@@ -642,5 +642,5 @@ else
 				</div>
 			</div>
 		</div>
-		
+
 <!--#include virtual="ssi-footer.shtml"  -->

@@ -1,25 +1,24 @@
 #Mapping values
-#Fri Sep 18 18:10:53 CEST 2015
-Adresse1=MailingStreet
+#Fri Sep 25 18:33:25 CEST 2015
 Langue=ID_Langue__c
 Ville=MailingCity
+IDClient_2=ID_Client__c
 Mobile=MobilePhone
-date_inscription=Date_de_creation_du_compte__c
-DateNaissance=Birthdate
 CP=MailingPostalCode
-DateDernierLogin=Date_de_derniere_connexion__c
+IDClient=Account\:ID_Client__c
 Pays=MailingCountry
 Valide=Validation__c
 Prenom=FirstName
-DateMiseJour=Date_de_mise_jour__c
-PaysNaissance=Naissance_Pays__c
 Nom_usage=Nom_D_usage__c
 Nom=LastName
+PaysNaissance=Naissance_Pays__c
 Fonction=Title
-IDClient=ID_Client__c
-VilleNaissance=Naissance_Ville__c
 Nationalite=Nationalite_Client__c
+DateNaissance=Birthdate
+Adresse1=MailingStreet
 Email=Email
-TypeContact=Type__c
 Civilite=Salutation
+VilleNaissance=Naissance_Ville__c
+TypeContact=Type__c
 Telephone=Phone
+Sfcompte=RecordTypeId

@@ -1,18 +1,18 @@
 <!--#include virtual="ssi-header-login.shtml"  -->
 <div class="main">
     <div class="shell">
-    
+
     	<?
 		if(count($this->lProjetsFunding)>0)
-		{	
+		{
 		?>
         <div class="section-c">
             <table class="table projects-table">
             <tr>
                 <th width="350">
-                    
+
                 </th>
-                
+
                 <th width="90">
                     <div class="th-wrap"><i title="<?=$this->lng['projects']['info-1']?>" class="icon-clock tooltip-anchor"></i></div>
                 </th>
@@ -39,10 +39,10 @@
 			foreach($this->lProjetsFunding as $pf)
 			{
 				$this->projects_status->getLastStatut($pf['id_project']);
-						
+
 				$result = $this->echeanciers->getNextRembEmprunteur($pf['id_project']);
 				$montant_mensuel = $result['montant'];
-				
+
 				if($pf['date_fin'] != '0000-00-00 00:00:00') $date_fin = $pf['date_fin'];
 				else $date_fin = $pf['date_retrait'];
 				?>
@@ -51,10 +51,10 @@
 						<?
                         if($pf['photo_projet'] != '')
                         {
-                            ?><img src="<?=$this->photos->display($pf['photo_projet'],'photos_projets','photo_projet_min')?>" alt="<?=$pf['photo_projet']?>" class="thumb"><?
+                            ?><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $pf['photo_projet'] ?>" alt="<?=$pf['photo_projet']?>" class="thumb"><?
                         }
                         ?>
-                    
+
                         <div class="description">
                             <h5><a href="<?=$this->lurl?>/projects_emprunteur/detail/<?=$pf['slug']?>"><?=$pf['title']?></a></h5>
                             <h6><?=$this->companies->city.($this->companies->zip!=''?', ':'').$this->companies->zip?></h6>
@@ -66,7 +66,7 @@
                     <td><?=number_format($pf['amount'], 0, ',', ' ')?>€</td>
                     <td><?=$this->dates->formatDate($date_fin,'d-m-Y');?></td>
                     <?
-					
+
 					// rejeté
 					if($this->projects_status->status == 30 || $this->projects_status->statut == 70)
 					{
@@ -96,5 +96,5 @@
 		?>
     </div>
 </div>
-		
+
 <!--#include virtual="ssi-footer.shtml"  -->

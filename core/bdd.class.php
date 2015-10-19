@@ -29,21 +29,15 @@
 
 class bdd
 {
+    public $config = array();
+    public $option = array();
+    public $connect_id; // Identifiant de connexion MySQL
+    public $requete; // Contient la requête au format SQL
+    public $ressource; // Contient la ressource si succès ou FALSE
+    public $num_rows;
+    public $affected_rows;
 
-    var $config = array();
-    var $option = array();
-
-    var $connect_id; // Identifiant de connexion MySQL
-    var $requete; // Contient la requ�te au format SQL
-    var $ressource; // Contient la ressource si succ�s ou FALSE
-
-    var $num_rows;
-    var $affected_rows;
-
-    //public $log_error = '';
-    //public $log_debug = '';
-
-    function bdd($bdd_config, $bdd_option, $auto_connect = true)
+    public function __construct($bdd_config, $bdd_option, $auto_connect = true)
     {
         $this->config = $bdd_config;
         $this->option = $bdd_option;
@@ -53,7 +47,7 @@ class bdd
         }
     }
 
-    function error($msg = null)
+    public function error($msg = null)
     {
         $this->log_error[] = '[' . mysql_errno() . '] ' . mysql_error() . ' - ' . $msg;
 
@@ -65,7 +59,7 @@ class bdd
         }
     }
 
-    function debug($function, $time = '')
+    public function debug($function, $time = '')
     {
         $this->log_debug[] = $function . ' ' . $time;
 
@@ -74,7 +68,7 @@ class bdd
         }
     }
 
-    function connect($select_base = true, $host = null, $user = null, $password = null)
+    public function connect($select_base = true, $host = null, $user = null, $password = null)
     {
         if ($host == null) {
             $host = $this->config['HOST'];
@@ -96,9 +90,6 @@ class bdd
 
             return false;
         } else {
-            //$function = 'connect()';
-            //$this->debug($function);
-
             if ($select_base == true) {
                 $this->select_base();
             }
@@ -107,7 +98,7 @@ class bdd
         }
     }
 
-    function select_base($bdd = null, $connect_id = null)
+    public function select_base($bdd = null, $connect_id = null)
     {
 
         if ($bdd == null) {
@@ -119,15 +110,11 @@ class bdd
 
         if (!mysql_select_db($bdd, $connect_id)) {
             $this->error();
-
             return false;
-        } else {
-            //$function = 'select_base()';
-            //$this->debug($function);
         }
     }
 
-    function close($connect_id = null)
+    public function close($connect_id = null)
     {
         if ($connect_id == null) {
             $connect_id = $this->connect_id;
@@ -138,15 +125,11 @@ class bdd
             $this->error($msg);
 
             return false;
-        } else {
-            //$function = 'close()';
-            //$this->debug($function);
         }
     }
 
-    function query($requete, $connect_id = null)
+    public function query($requete, $connect_id = null)
     {
-
         if ($connect_id == null) {
             $connect_id = $this->connect_id;
         }
@@ -160,12 +143,13 @@ class bdd
 
         $this->ressource = @mysql_query($requete, $connect_id);
 
-        if ($this->option['BDD_PANIC'] == true && (true === isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] == 'fr.nuxe.com')) {
+        if ($this->option['BDD_PANIC'] == true && (true == isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] == 'fr.nuxe.com')) {
             $stop = microtime(true);
             $time = ($stop - $start);
 
-            if (($stop - $start) > $this->option['BDD_PANIC_SEUIL'])
+            if (($stop - $start) > $this->option['BDD_PANIC_SEUIL']) {
                 mail($this->option['BDD_PANIC_MAIL'], '[' . $this->config['NOM'] . '] Slow query : ' . $time, $requete . "\r\n\r\nSESSION:\r\n" . serialize($_SESSION) . "\r\n\r\nSERVER:\r\n" . serialize($_SERVER));
+            }
         }
 
         if (!$this->ressource) {
@@ -174,14 +158,12 @@ class bdd
             $this->error($msg);
             return false;
         } else {
-
             $this->debug($this->requete, $time);
-
             return $this->ressource;
         }
     }
 
-    function fetch_array($ressource = null)
+    public function fetch_array($ressource = null)
     {
         if ($ressource == null) {
             $ressource = $this->ressource;
@@ -190,19 +172,14 @@ class bdd
         $array = @mysql_fetch_array($ressource);
 
         if (!is_resource($ressource)) {
-
-            $this->error('L\'argument pass� � la fonction fetch_array() n\'est pas une ressource !');
+            $this->error('L\'argument passé à la fonction fetch_array() n\'est pas une ressource !');
         } elseif (!$array) {
-
-            //$function = 'fetch_array()';
-            //$this->debug($function);
         } else {
-
             return $array;
         }
     }
 
-    function affected_rows($connect_id = null)
+    public function affected_rows($connect_id = null)
     {
         if ($connect_id == null) {
             $connect_id = $this->connect_id;
@@ -211,21 +188,16 @@ class bdd
         $this->affected_rows = @mysql_affected_rows($connect_id);
 
         if (!is_resource($connect_id)) {
-
-            $this->error('L\'argument pass� � la fonction affected_rows() n\'est pas une ressource valide !');
+            $this->error('L\'argument passé à la fonction affected_rows() n\'est pas une ressource valide !');
         } elseif ($this->affected_rows == -1) {
 
             $this->error();
         } else {
-
-            //$function = 'affected_rows()';
-            //$this->debug($function);
-
             return $this->affected_rows;
         }
     }
 
-    function num_rows($ressource = null)
+    public function num_rows($ressource = null)
     {
         if ($ressource == null) {
             $ressource = $this->ressource;
@@ -234,18 +206,13 @@ class bdd
         $this->num_rows = @mysql_num_rows($ressource);
 
         if (!is_resource($ressource)) {
-
-            $this->error('L\'argument pass� � la fonction num_rows() n\'est pas une ressource valide !');
+            $this->error('L\'argument passé à la fonction num_rows() n\'est pas une ressource valide !');
         } else {
-
-            //$function = 'num_rows()';
-            //$this->debug($function);
-
             return $this->num_rows;
         }
     }
 
-    function escape_string($arg, $connect_id = null)
+    public function escape_string($arg, $connect_id = null)
     {
         if ($connect_id == null) {
             $connect_id = $this->connect_id;
@@ -257,12 +224,10 @@ class bdd
             $arg = stripslashes($arg);
         }
 
-        $arg = @mysql_real_escape_string($arg, $connect_id);
-
-        return $arg;
+        return @mysql_real_escape_string($arg, $connect_id);
     }
 
-    function fetch_assoc($ressource = null)
+    public function fetch_assoc($ressource = null)
     {
         if ($ressource == null) {
             $ressource = $this->ressource;
@@ -271,19 +236,14 @@ class bdd
         $array = @mysql_fetch_assoc($ressource);
 
         if (!is_resource($ressource)) {
-
-            $this->error('L\'argument pass� � la fonction fetch_assoc() n\'est pas une ressource !');
+            $this->error('L\'argument passé à la fonction fetch_assoc() n\'est pas une ressource !');
         } elseif (!$array) {
-
-            //$function = 'fetch_assoc()';
-            //$this->debug($function);
         } else {
-
             return $array;
         }
     }
 
-    function insert_id($connect_id = null)
+    public function insert_id($connect_id = null)
     {
         if ($connect_id == null) {
             $connect_id = $this->connect_id;
@@ -292,21 +252,15 @@ class bdd
         $last_insert_id = @mysql_insert_id($connect_id);
 
         if (!$last_insert_id) {
-
             $this->error();
         } elseif ($last_insert_id == 0) {
-
-            $this->error('Aucun ID g�n�r� lors de la derni�re requ�te !');
+            $this->error('Aucun ID généré lors de la dernière requête !');
         } else {
-
-            //$function = 'insert_id()';
-            //$this->debug($function);
-
             return $last_insert_id;
         }
     }
 
-    function result($ressource = null, $row = null, $field = null)
+    public function result($ressource = null, $row = null, $field = null)
     {
         if ($ressource == null) {
             $ressource = $this->ressource;
@@ -321,18 +275,13 @@ class bdd
         $champ = @mysql_result($ressource, $row, $field);
 
         if ($champ === false) {
-
             $this->error();
         } else {
-
-            //$function = 'result()';
-            //$this->debug($function);
-
             return $champ;
         }
     }
 
-    function controlSlug($table, $slug, $id_name, $id_value)
+    public function controlSlug($table, $slug, $id_name, $id_value)
     {
         $sql = 'SELECT slug FROM ' . $table . ' WHERE slug = "' . $slug . '" AND ' . $id_name . ' != "' . $id_value . '"';
         $res = $this->query($sql);
@@ -349,37 +298,14 @@ class bdd
         $this->query($sql);
     }
 
-    /*function controlSlugNew($table, $slug, $id_name, $id_value)
+    public function controlSlugMulti($table, $slug, $id_value, $list_field_value, $id_langue)
     {
-        $sql = 'SELECT slug FROM '.$table.' WHERE slug = "'.$slug.'" AND '.$id_name.' = "'.$id_value.'"';
-        $res = $this->query($sql);
-
-        if($this->num_rows($res) >= 1 || $slug == "")
-        {
-            if($table == 'tree' && $id_value == 1 && $slug == '')
-            {
-                $slug = '';
-            }
-            else
-            {
-                $slug = $slug.'-'.$id_value;
-            }
-
-            $sql = 'UPDATE '.$table.' SET slug = "'.$slug.'" WHERE '.$id_name.' = "'.$id_value.'"';
-            $this->query($sql);
-
-            return true;
-        }
-        else
-            return false;
-    }*/
-
-    function controlSlugMulti($table, $slug, $id_value, $list_field_value, $id_langue)
-    {
+        $list = '';
         foreach ($list_field_value as $champ => $valeur) {
             $list .= ' ' . $champ . ' != "' . $valeur . '" ';
-            if (next($list_field_value))
+            if (next($list_field_value)) {
                 $list .= ' OR ';
+            }
         }
 
         $sql = 'SELECT * FROM ' . $table . ' WHERE slug = "' . $slug . '" AND (' . $list . ') ';
@@ -389,9 +315,11 @@ class bdd
         if ($this->num_rows($res) >= 1) {
             $slug = $slug . '-' . $id_value;
 
-            if ($id_langue != '')
+            if ($id_langue != '') {
                 $slug .= '-' . $id_langue;
+            }
 
+            $list2 = '';
             foreach ($list_field_value as $champ => $valeur) {
                 $list2 .= ' AND ' . $champ . ' = "' . $valeur . '" ';
             }
@@ -403,35 +331,33 @@ class bdd
         }
     }
 
-    function controlSlugMultiLn($table, $slug, $id_value, $list_field_value, $id_langue)
+    public function controlSlugMultiLn($table, $slug, $id_value, $list_field_value, $id_langue)
     {
-        $sql = 'SELECT * FROM ' . $table . ' WHERE slug = "' . $slug . '" AND id_langue = "' . $id_langue . '" ';
-
-        $res = $this->query($sql);
+        $res = $this->query('SELECT * FROM ' . $table . ' WHERE slug = "' . $slug . '" AND id_langue = "' . $id_langue . '"');
 
         if ($this->num_rows($res) > 1) {
             $new_slug = $slug;
 
-            if ($id_langue != '')
+            if ($id_langue != '') {
                 $new_slug .= '-' . $id_langue;
+            }
 
             $new_slug .= '-' . $id_value;
 
+            $list2 = '';
             foreach ($list_field_value as $champ => $valeur) {
                 $list2 .= ' AND ' . $champ . ' = "' . $valeur . '" ';
             }
 
-            $sql = 'UPDATE ' . $table . ' SET slug = "' . $new_slug . '" WHERE 1=1 ' . $list2 . ' ';
-            $this->query($sql);
-
+            $this->query('UPDATE ' . $table . ' SET slug = "' . $new_slug . '" WHERE 1=1 ' . $list2);
             $this->controlSlugMultiLn($table, $new_slug, $id_value, $list_field_value, $id_langue);
         }
     }
 
-    function generateSlug($string)
+    public function generateSlug($string)
     {
         $string = strip_tags(utf8_decode($string));
-        $string = strtr($string, '�����������������������������������������������������', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
+        $string = strtr($string, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyyNn');
         $string = strtolower($string); // lower-case the string
         $string = preg_replace('/[ ]/', '-', $string); // replace special characters by score
         $string = preg_replace('/[^a-z0-9-.]/', '', $string); // replace all non-alphanumeric characters by void
@@ -440,25 +366,24 @@ class bdd
         return $string;
     }
 
-    function listEnum($nom_table, $nom_enum, $nom_champ, $selected = null)
+    public function listEnum($nom_table, $nom_enum, $nom_champ, $selected = null)
     {
-        $sql = 'SHOW COLUMNS FROM ' . $nom_table . ' LIKE "' . $nom_enum . '" ';
-        $resultat = $this->query($sql); //or die("show columns from $nom_table like '$nom_enum' ".mysql_error());
+        $resultat = $this->query('SHOW COLUMNS FROM ' . $nom_table . ' LIKE "' . $nom_enum . '"'); //or die("show columns from $nom_table like '$nom_enum' ".mysql_error());
 
-        $result = array();
         while ($result = $this->fetch_array($resultat)) {
             if (preg_match('!enum(.+)!', $result['Type'])) {
                 $enum2 = preg_replace('!^enum\((.+)\)$!', '$1', $result['Type']);
-
                 $enum1 = str_replace("'", "", $enum2);
-                $enum = explode(',', $enum1);
+                $enum  = explode(',', $enum1);
 
                 $selecteur = '<select name="' . $nom_champ . '" id="' . $nom_champ . '" class="select">';
 
                 foreach ($enum as $valeur) {
-
-                    if ($selected == $valeur) $selecteur .= ' <option selected value="' . $valeur . '">' . $valeur . '</option>';
-                    else $selecteur .= ' <option value="' . $valeur . '">' . $valeur . '</option>';
+                    if ($selected == $valeur) {
+                        $selecteur .= ' <option selected value="' . $valeur . '">' . $valeur . '</option>';
+                    } else {
+                        $selecteur .= ' <option value="' . $valeur . '">' . $valeur . '</option>';
+                    }
                 }
 
                 $selecteur .= '</select>';
@@ -468,66 +393,60 @@ class bdd
         return $selecteur;
     }
 
-
-    function getEnum($nom_table, $nom_enum)
+    public function getEnum($nom_table, $nom_enum)
     {
-        $sql = 'SHOW COLUMNS FROM ' . $nom_table . ' LIKE "' . $nom_enum . '" ';
-        $resultat = $this->query($sql);
-        $data = mysql_fetch_assoc($resultat);
-
-        $new_enum2 = preg_replace('!^enum\((.+)\)$!', '$1', $data['Type']) . ",'" . $valeur . "'";
+        $sql       = 'SHOW COLUMNS FROM ' . $nom_table . ' LIKE "' . $nom_enum . '" ';
+        $resultat  = $this->query($sql);
+        $data      = mysql_fetch_assoc($resultat);
+        $new_enum2 = preg_replace('!^enum\((.+)\)$!', '$1', $data['Type']);
         $new_enum1 = str_replace("'", "", $new_enum2);
-        $new_enum = explode(',', $new_enum1);
-
+        $new_enum  = explode(',', $new_enum1);
         return $new_enum;
     }
 
-    function majEnum($nom_table, $nom_enum, $valeur)
+    public function majEnum($nom_table, $nom_enum, $valeur)
     {
-        $sql = 'SHOW COLUMNS FROM ' . $nom_table . ' LIKE "' . $nom_enum . '" ';
-        $resultat = $this->query($sql);
-        $data = mysql_fetch_assoc($resultat);
-
+        $sql       = 'SHOW COLUMNS FROM ' . $nom_table . ' LIKE "' . $nom_enum . '" ';
+        $resultat  = $this->query($sql);
+        $data      = mysql_fetch_assoc($resultat);
         $new_enum2 = preg_replace('!^enum\((.+)\)$!', '$1', $data['Type']) . ",'" . $valeur . "'";
         $new_enum1 = str_replace("'", "", $new_enum2);
-        $new_enum = explode(',', $new_enum1);
-        $enum_tab = array();
+        $new_enum  = explode(',', $new_enum1);
+        $enum_tab  = array();
         foreach ($new_enum as $enum) {
             if ($enum != '') {
                 $enum_tab[] = $enum;
             }
         }
         $new_enum = implode('\',\'', $enum_tab);
+        $sql      = 'ALTER TABLE `' . $nom_table . '` CHANGE `' . $nom_enum . '` `' . $nom_enum . '` ENUM(\'' . $new_enum . '\') NULL DEFAULT NULL';
 
-        $sql = 'ALTER TABLE `' . $nom_table . '` CHANGE `' . $nom_enum . '` `' . $nom_enum . '` ENUM(\'' . $new_enum . '\') NULL DEFAULT NULL';
-        $resultat = $this->query($sql);
+        $this->query($sql);
     }
 
-    function deleteEnum($nom_table, $nom_enum, $valeur)
+    public function deleteEnum($nom_table, $nom_enum, $valeur)
     {
-        $sql = 'SHOW COLUMNS FROM ' . $nom_table . ' LIKE "' . $nom_enum . '" ';
-        $resultat = $this->query($sql);
-        $data = mysql_fetch_assoc($resultat);
-
+        $sql       = 'SHOW COLUMNS FROM ' . $nom_table . ' LIKE "' . $nom_enum . '" ';
+        $resultat  = $this->query($sql);
+        $data      = mysql_fetch_assoc($resultat);
         $new_enum2 = preg_replace('!^enum\((.+)\)$!', '$1', $data['Type']) . ",'" . $valeur . "'";
         $new_enum1 = str_replace("'", "", $new_enum2);
-        $new_enum = explode(',', $new_enum1);
-        $enum_tab = array();
+        $new_enum  = explode(',', $new_enum1);
+        $enum_tab  = array();
         foreach ($new_enum as $enum) {
             if ($enum != $valeur) {
                 $enum_tab[] = $enum;
             }
         }
         $new_enum = implode('\',\'', $enum_tab);
-
-        $sql = 'ALTER TABLE `' . $nom_table . '` CHANGE `' . $nom_enum . '` `' . $nom_enum . '` ENUM(\'' . $new_enum . '\') NULL DEFAULT NULL';
-        $resultat = $this->query($sql);
+        $sql      = 'ALTER TABLE `' . $nom_table . '` CHANGE `' . $nom_enum . '` `' . $nom_enum . '` ENUM(\'' . $new_enum . '\') NULL DEFAULT NULL';
+        $this->query($sql);
     }
 
-    function run($req)
+    public function run($req)
     {
         $resultat = $this->query($req);
-        $result = array();
+        $result   = array();
 
         while ($record = $this->fetch_array($resultat)) {
             $result[] = $record;
@@ -540,5 +459,3 @@ class bdd
         mysql_free_result($rSql);
     }
 }
-
-?>

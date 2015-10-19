@@ -21,13 +21,13 @@
 	<script src="<?=$this->url?>/landing-page/js/jquery.carouFredSel-6.2.1-packed.js"></script>
     <script src="<?=$this->url?>/landing-page/js/jquery.c2selectbox.js"></script>
 	<script src="<?=$this->url?>/landing-page/js/functions.js"></script>
-  
+
 </head>
 <body>
 <?php
 if($this->google_analytics != '')
 {
-?>    
+?>
     <script type="text/javascript">
         var _gaq = _gaq || [];
         _gaq.push(['_setAccount', '<?=$this->google_analytics?>']);
@@ -47,7 +47,7 @@ if($this->google_analytics != '')
 		<div class="container cf">
 			<section class="content left">
 				<header class="page-header cf">
-					<a href="<?=$this->content['lp-lien-logo']?>" class="logo left">                    	
+					<a href="<?=$this->content['lp-lien-logo']?>" class="logo left">
 						<img src="<?=$this->url?>/landing-page/css/images/logo.png" alt="" />
 					</a>
 
@@ -104,8 +104,8 @@ if($this->google_analytics != '')
 				<h2><?=$this->content['lp-titre-formulaire-inscription']?></h2>
 
 				<form action="" method="post" id="inscription" name="inscription">
-					
-                    <div class="form-row">                    	
+
+                    <div class="form-row">
                     	<span style="text-align:center; color:#C84747;"><?=$this->retour_form?></span>
                     </div>
                     <div class="form-row">
@@ -123,7 +123,7 @@ if($this->google_analytics != '')
 					<div class="form-row">
 						<input type="text" class="field " value="<?=(isset($_POST['email-confirm'])?$_POST['email-confirm']:$this->lng['landing-page']['confirmation-email'])?>" title="<?=$this->lng['landing-page']['confirmation-email']?>" name="email-confirm" id="signup-email-confirm" onpast="return false;" onKeyUp="check_conf_mail()"/>
 					</div><!-- /.form-row -->
-					<input type="hidden" name="spy_inscription_landing_page" value="1"/> 
+					<input type="hidden" name="spy_inscription_landing_page" value="1"/>
 					<button type="submit" class="button" style="font-family: 'TrendSansOne'; font-weight:normal;">
 						<?=$this->content['lp-bouton-formulaire']?>
 						<span class="arrow"></span>
@@ -146,13 +146,10 @@ if($this->google_analytics != '')
 						{
 							?>
                             <li style="list-style:none;">
-                                <div class="slide">	
-                                	<img src="<?=$this->photos->display($project['photo_projet'],'photos_projets','img_carousel_landing_page')?>"  alt="<?=$project['photo_projet']?>">                     						
-                                    
+                                <div class="slide">
+                                	<img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $project['photo_projet'] ?>"  alt="<?= $project['photo_projet'] ?>">
                                     <strong><?=$project['title']?></strong>
-        
                                     <span></span>
-        
                                     <p><?=$project['nature_project']?></p>
                                 </div>
                             </li>

@@ -2,39 +2,56 @@
 
 namespace Unilend\core;
 
-use Psr\Log\LoggerInterface;
 use Unilend\librairies\ULogger;
-use Unilend\core\Cron;
 
 require_once __DIR__ . '/bdd.class.php';
+require_once __DIR__ . '/../data/crud/settings.crud.php';
+require_once __DIR__ . '/../data/settings.data.php';
+require_once __DIR__ . '/../data/crud/lenders_accounts.crud.php';
+require_once __DIR__ . '/../data/lenders_accounts.data.php';
 
 class Bootstrap
 {
     /**
-     * @object $oInstance Instance of this object
+     * @var $oInstance Instance of this object
      */
     private static $oInstance;
 
     /**
-     * @object $oDatabase core\bdd()
+     * @var bdd
      */
     private $oDatabase;
 
     /**
      * @var ULogger
      */
-    private $oUlogger;
+    private $oLogger;
+
+    /**
+     * @var settings
+     */
+    private $oSettings;
+
+    /**
+     * @var lenders_accounts
+     */
+    private $oLendersAccount;
 
     /**
      * @array $aConfig file config in root path
      */
     public static $aConfig;
 
-    public static function getInstance()
+    /**
+     * @param array $aConfig
+     * @return Bootstrap
+     */
+    public static function getInstance($aConfig)
     {
         if (true === is_null(self::$oInstance)) {
             self::$oInstance = new Bootstrap();
             self::$oInstance->setAssert();
+            self::$oInstance->setConfig($aConfig);
         }
 
         return self::$oInstance;
@@ -66,6 +83,38 @@ class Bootstrap
         return $this->oDatabase;
     }
 
+    public function setSettings()
+    {
+        if (false === is_object($this->oDatabase)) {
+            $this->setDatabase();
+        }
+
+        $this->oSettings = new \settings($this->oDatabase);
+
+        return $this;
+    }
+
+    public function getSettings()
+    {
+        assert('is_object($this->oSettings); //Settings is not an object');
+
+        return $this->oSettings;
+    }
+
+    public function setLenders()
+    {
+        $this->oLenders = new \lenders_accounts($this->oDatabase);
+
+        return $this;
+    }
+
+    public function getLenders()
+    {
+        assert('is_object($this->oLenders); //Settings is not an object');
+
+        return $this->oLenders;
+    }
+
     /**
      * @param string $sNameChannel name of logger context
      * @param string $sNameLog name of file log
@@ -76,7 +125,7 @@ class Bootstrap
         //We check, and add if necessary, if log's name have extension .log
         $sNameLog .= (!preg_match('/(\.log)$/i', $sNameLog)) ? '.log' : '';
 
-        $this->oUlogger = new ULogger($sNameChannel, self::$aConfig['log_path'][self::$aConfig['env']], $sNameLog);
+        $this->oLogger = new ULogger($sNameChannel, self::$aConfig['log_path'][self::$aConfig['env']], $sNameLog);
 
         return $this;
     }
@@ -90,15 +139,11 @@ class Bootstrap
 
     public function getLogger()
     {
-        assert('is_object($this->oUlogger); //Logger is not an object');
+        assert('is_object($this->oLogger); //Logger is not an object');
 
-        return $this->oUlogger;
+        return $this->oLogger;
     }
 
-    public function getCron()
-    {
-        return new Cron($this->setLogger('Cron', 'cron.log')->getLogger());
-    }
 
     /**
      * @param string $sFunction name of function where assert it's in error
@@ -109,7 +154,7 @@ class Bootstrap
     {
         $this->setLogger('ErrorAssertion', 'assert.log');
         $aErrorDetails = explode('//', $sError);
-        $this->oUlogger->addRecord('error','Wrong Assertion in ' . $sFunction . ' at line ' . $sLine . '. ' . $aErrorDetails[1],
+        $this->oLogger->addRecord(ULogger::ERROR, 'Wrong Assertion in ' . $sFunction . ' at line ' . $sLine . '. ' . $aErrorDetails[1],
             array(__FILE__ . ' at ' . __LINE__));
     }
 }

@@ -7,7 +7,7 @@ class Web2Pdf {
 	function Web2Pdf($params)
 	{
         $oLogger = new ULogger('Web2Pdf', __DIR__ . '/../log/', 'web2pdf.log');
-        $oLogger->addRecord('info', 'Use Web2Pdf the '.date('Y-m-d'), array(__FILE__ . ' at line '.__LINE__));
+        $oLogger->addRecord(ULogger::INFO, 'Use Web2Pdf the '.date('Y-m-d'), array(__FILE__ . ' at line '.__LINE__));
 		$this->convert_api_compteur = $params;
 	}
 
