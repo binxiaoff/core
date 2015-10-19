@@ -52,7 +52,7 @@
             yearRange: '<?= (date('Y') - 40) ?>:<?= (date('Y')) ?>'
         });
         $('#duree').change(function(){
-            if(0 == $(this).val() && 35 === <?= $this->current_projects_status->status ?>) {
+            if(0 == $(this).val() && 35 == <?= $this->current_projects_status->status ?>) {
                 $("#status").css('display', 'none');
                 $("#msgProject").css('display', 'none');
                 $("#displayPeriodHS").css('display', 'block');
@@ -425,7 +425,7 @@
                                 if ((0 === (int)$this->projects->period ||
                                     1000000 === (int)$this->projects->period ||
                                     '' == $this->companies_details->fichier_rib) &&
-                                    $this->current_projects_status->status === 35) {
+                                    $this->current_projects_status->status == 35) {
                                         $sDiplayPeriodHS     = 'block';
                                         $sDiplayStatus       = 'none';
                                         $sDisplayMsgPeriodHs = 'block';
@@ -1609,7 +1609,7 @@
                         if($('#displayPeriodHS').css('display') == 'block' &&
                             0 < <?= (int)$this->projects->period ?> &&
                             1000000 > <?= (int)$this->projects->period ?> &&
-                            35 === <?= $this->current_projects_status->status ?>){
+                            35 == <?= $this->current_projects_status->status ?>){
                             $("#status").css('display', 'block');
                             $("#msgProject").css('display', 'block');
                             $('#displayPeriodHS').css('display', 'none');
