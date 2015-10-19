@@ -51,7 +51,7 @@
             yearRange: '<?= (date('Y') - 40) ?>:<?= (date('Y')) ?>'
         });
         $('#duree').change(function(){
-            if(0 == $(this).val() && 35 === <?= $this->current_projects_status->status ?>) {
+            if(0 == $(this).val() && 35 == <?= $this->current_projects_status->status ?>) {
                 $("#status").css('display', 'none');
                 $("#msgProject").css('display', 'none');
                 $("#displayPeriodHS").css('display', 'block');
