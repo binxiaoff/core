@@ -753,13 +753,13 @@
         ?>
     </div>
     <style type="text/css">
-        #etape1, #etape2, #etape3, #etape4, #etape5, #etape6, #etape7 {
+        #etape1, #etape2, #etape3, #etape3bis, #etape4, #etape5, #etape6, #etape7 {
             border: 2px solid #B10366;
             display: none;
             padding: 10px;
         }
 
-        #title_etape1, #title_etape2, #title_etape3, #title_etape4, #title_etape4bis, #title_etape5, #title_etape6, #title_etape7 {
+        #title_etape1, #title_etape2, #title_etape3, #title_etape3bis, #title_etape4, #title_etape5, #title_etape6, #title_etape7 {
             cursor: pointer;
             text-align: center;
             background-color: #B10366;
@@ -769,7 +769,7 @@
             font-weight: bold;
         }
 
-        #valid_etape1, #valid_etape2, #valid_etape3, #valid_etape4, #valid_etape5, #valid_etape6, #valid_etape7 {
+        #valid_etape1, #valid_etape2, #valid_etape3, #valid_etape3bis, #valid_etape4, #valid_etape5, #valid_etape6, #valid_etape7 {
             display: none;
             text-align: center;
             font-size: 16px;
@@ -1546,6 +1546,67 @@
             </form>
         </div>
         <br/>
+        <div id="title_etape3bis">Etape 3 Bis</div>
+        <div id="etape3bis">
+            <table class="tablesorter" style="text-align:center;">
+                <thead>
+                <th></th>
+                <?php
+                foreach ($this->aDisplayRatioAndAnalyse['DateBilan'] as $aDateBilans) {
+                    ?>
+                    <th><?= $aDateBilans['DateStart'] ?> - <?= $aDateBilans['DateEnd'] ?></th>
+                    <?php
+                }
+                ?>
+                </thead>
+                <tbody>
+                <?php
+                    foreach($this->aDisplayRatioAndAnalyse['TypeBilan'] as $sKeyArray => $sTypeBilan) {
+                        ?>
+                        <tr><td colspan="<?= count($this->aDisplayRatioAndAnalyse['DateBilan']) + 1 ?>" style="text-align: left; background-color: #ffffff;"><h2><?= $sTypeBilan ?> :</h2></td></tr>
+                        <?php
+                        foreach ($this->aDisplayRatioAndAnalyse['Order'.$sKeyArray] as $sKeyAltares) {
+                            ?>
+                            <tr>
+                                <td><?= $this->aDisplayRatioAndAnalyse['Trad']['Altares_' . $sKeyAltares] ?></td>
+                                <?php
+                                foreach ($this->aDisplayRatioAndAnalyse['DateBilan'] as $aDateBilans) {
+                                    if (false === isset($fTotal[$aDateBilans['Year']])) {
+                                        $fTotal[$aDateBilans['Year']] = 0;
+                                    }
+                                    ?>
+                                    <td>
+                                        <input name="<?= $aDateBilans['Year'] ?>_<?= $sKeyAltares ?>"
+                                               id="<?= $aDateBilans['Year'] ?>_<?= $sKeyAltares ?>" type="text" class="input_moy"
+                                               value="<?= (isset($this->aDisplayRatioAndAnalyse['Bilan'][$aDateBilans['Year']][$sKeyAltares])) ? $this->aDisplayRatioAndAnalyse['Bilan'][$aDateBilans['Year']][$sKeyAltares]['fValueLine'] : 0 ?>"
+                                               />
+
+                                    </td>
+                                    <?php
+                                }
+                                ?>
+                            </tr>
+                            <?php
+                        }
+                        ?>
+                        <tr>
+                            <td>Total</td>
+                            <?php
+                            foreach ($this->aDisplayRatioAndAnalyse['DateBilan'] as $aDateBilans) {
+                            ?>
+                                <td>0</td>
+                            <?php
+                            }
+                            ?>
+                        </tr>
+                        <tr><td style="background-color: #ffffff;">&nbsp;</td></tr>
+                        <?php
+                    }
+                ?>
+                </tbody>
+            </table>
+        </div>
+        <br>
         <div id="title_etape5">Etape 4</div>
         <div id="etape5">
             <script language="javascript" type="text/javascript">
@@ -2134,6 +2195,10 @@
     $('#title_etape<?= $i ?>').click(function () {
         $('#etape<?= $i ?>').slideToggle();
     });
+    $('#title_etape<?= $i ?>bis').click(function () {
+        $('#etape<?= $i ?>bis').slideToggle();
+    });
+
     <?php
         }
     ?>
