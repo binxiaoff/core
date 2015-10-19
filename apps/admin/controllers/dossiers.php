@@ -1,5 +1,7 @@
 <?php
 
+use Unilend\librairies\Altares;
+
 class dossiersController extends bootstrap
 {
     public $Command;
@@ -14,6 +16,16 @@ class dossiersController extends bootstrap
      */
     public $bReadonlyRiskNote;
 
+    /**
+     * @var Altares
+     */
+    private $oAltares;
+
+    /**
+     * @var array with all data for template
+     */
+    public $aDisplayRatioAndAnalyse;
+
     public function dossiersController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
@@ -26,18 +38,8 @@ class dossiersController extends bootstrap
         // Activation du menu
         $this->menu_admin = 'emprunteurs';
 
-        // Login altares
-        $this->settings->get('Altares login', 'type');
-        $login = $this->settings->value;
-        // Mdp altares
-        $this->settings->get('Altares mot de passe', 'type');
-        $mdp = $this->settings->value;
-        // Url wsdl
-        $this->settings->get('Altares wsdl', 'type');
-        $this->wsdl = $this->settings->value;
-        // Identification
-        $this->identification = $login . '|' . $mdp;
-//        (int)$this->projects->period === 1000000 || (int)$this->projects->period === 0
+        $this->oAltares = new Altares($this->bdd);
+
         // Liste deroulante conseil externe de l'entreprise
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $this->conseil_externe = $this->ficelle->explodeStr2array($this->settings->value);
@@ -70,12 +72,62 @@ class dossiersController extends bootstrap
                 $date2 = '';
             }
             $iNbStartPagination = (isset($_POST['nbLignePagination'])) ? (int)$_POST['nbLignePagination'] : 0;
-            $this->nb_lignes = (isset($this->nb_lignes)) ? (int)$this->nb_lignes : 100;
-            $this->lProjects = $this->projects->searchDossiers($date1, $date2, $_POST['montant'], $_POST['duree'], $_POST['status'], $_POST['analyste'], $_POST['siren'], $_POST['id'], $_POST['raison-sociale'],$iNbStartPagination,$this->nb_lignes);
+            $this->nb_lignes    = (isset($this->nb_lignes)) ? (int)$this->nb_lignes : 100;
+            $this->lProjects    = $this->projects->searchDossiers($date1, $date2, $_POST['montant'], $_POST['duree'], $_POST['status'], $_POST['analyste'], $_POST['siren'], $_POST['id'], $_POST['raison-sociale'], $iNbStartPagination, $this->nb_lignes);
         } elseif (isset($this->params[0])) {// statut
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
         $this->iCountProjects = (isset($this->lProjects) && is_array($this->lProjects)) ? array_shift($this->lProjects) : 0;
+    }
+
+    private function displayRatioAndAnalyse()
+    {
+        $aDisplayOrderActif  = array('AA', 'AB', 'AD', 'AF', 'AH', 'AJ', 'AL', 'AN', 'AP', 'AR', 'AT', 'AV', 'AX', 'CS',
+                                     'CU', 'BB', 'BD', 'BF', 'BH', 'BJ', 'BL', 'BN', 'BP', 'BR', 'BT', 'BV', 'BX', 'BZ',
+                                     'CB', 'CH', 'CF', 'CD', 'CJ', 'CW', 'CM', 'CN');
+        $aDisplayOrderPassif = array('DA', 'DL', 'DO', 'BK', 'CK', 'DR', 'DS', 'DT', 'DU', 'DV', 'DW', 'DX', 'DY', 'DZ',
+                                     'EA', 'EB', 'ED');
+        $aDisplayOrderInfos  = array('EH', 'EI', 'HP', 'HQ', 'A1', '0J', 'VH', 'VI');
+        $aDisplayOrderResult = array('FL', 'FM', 'FN', 'FO', 'FP', 'FQ', 'FS', 'FT', 'FU', 'FV', 'FW', 'FX', 'FY', 'FZ', 'GA',
+                                     'GB', 'GC', 'GD', 'GE', 'GG', 'GV', 'GU', 'GW', 'HB', 'HC', 'HF', 'HG', 'HN');
+        $aDisplayTypeBilan   = array('Actif'  => 'Actif',
+                                     'Passif' => 'Passif',
+                                     'Infos'  => 'Autres Infos',
+                                     'Result' => 'Compte de r&eacute;sultat');
+        $aDateBilan          = array();
+        $aDisplayBilan       = array();
+
+        $aTrad           = $this->ln->selectFront('dossiers', $this->language, $this->App);
+        $oAltaresBalance = $this->oAltares->getBalanceSheets($this->companies->siren)->return;
+        foreach ($oAltaresBalance->myInfo->bilans as $oBilans) {
+            $oDateCalculate = new DateTime($oBilans->dateClotureN);
+            $sDateEnd       = $oDateCalculate->format('d/m/Y');
+            $oDateCalculate->modify('-' . $oBilans->dureeN . ' month');
+            $aDateBilan[] = array(
+                'DateStart' => $oDateCalculate->format('d/m/Y'),
+                'DateEnd'   => $sDateEnd,
+                'Duration'  => $oBilans->dureeN,
+                'Year'      => substr($oBilans->dateClotureN, 0, 4)
+            );
+            foreach ($oBilans->posteList as $oDataBilan) {
+                if (array_key_exists('Altares_' . $oDataBilan->poste, $aTrad)) {
+                    $aDisplayBilan[substr($oBilans->dateClotureN, 0, 4)][$oDataBilan->poste] = array(
+                        'fValueLine' => $oDataBilan->valeur
+                    );
+                }
+            }
+        }
+
+        $this->aDisplayRatioAndAnalyse = array(
+            'Trad'        => $aTrad,
+            'TypeBilan'   => $aDisplayTypeBilan,
+            'OrderActif'  => $aDisplayOrderActif,
+            'OrderPassif' => $aDisplayOrderPassif,
+            'OrderInfos'  => $aDisplayOrderInfos,
+            'OrderResult' => $aDisplayOrderResult,
+            'DateBilan'   => $aDateBilan,
+            'Bilan'       => $aDisplayBilan
+        );
     }
 
     public function _edit()
@@ -109,8 +161,8 @@ class dossiersController extends bootstrap
         }
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            if(false === in_array($this->projects->period, $this->dureePossible)){
-                array_push($this->dureePossible,$this->projects->period);
+            if (false === in_array($this->projects->period, $this->dureePossible)) {
+                array_push($this->dureePossible, $this->projects->period);
                 sort($this->dureePossible);
             }
             $this->projects_notes->get($this->params[0], 'id_project');
@@ -348,6 +400,8 @@ class dossiersController extends bootstrap
                 $this->lProjects_status = array();
             }
 
+            $this->displayRatioAndAnalyse();
+
             //******************//
             // On lance Altares //
             //******************//
@@ -355,16 +409,16 @@ class dossiersController extends bootstrap
                 // SIREN
                 $this->siren = $this->companies->siren;
                 // Web Service Altares
-                $result = $this->ficelle->ws($this->wsdl, $this->identification, $this->siren);
+                $oResultAltares = $this->oAltares->getEligibility($this->companies->siren)->return;
 
                 $this->altares_ok = false;
 
                 // Si pas d'erreur
-                if ($result->exception == '') {
+                if ($oResultAltares->exception == '') {
                     // verif reponse
-                    $eligibility = $result->myInfo->eligibility;
-                    $score       = $result->myInfo->score;
-                    $identite    = $result->myInfo->identite;
+                    $eligibility = $oResultAltares->myInfo->eligibility;
+                    $score       = $oResultAltares->myInfo->score;
+                    $identite    = $oResultAltares->myInfo->identite;
 
                     // statut
                     $this->tablStatus = array('Oui', 'Pas de bilan');
@@ -399,7 +453,7 @@ class dossiersController extends bootstrap
                     } else { // si ok
                         $this->altares_ok = true;
 
-                        $identite = $result->myInfo->identite;
+                        $identite               = $oResultAltares->myInfo->identite;
                         $posteActifList         = array();
                         $postePassifList        = array();
                         $syntheseFinanciereInfo = array();
@@ -407,7 +461,7 @@ class dossiersController extends bootstrap
                         $derniersBilans         = array();
                         $i                      = 0;
 
-                        foreach ($result->myInfo->bilans as $b) {
+                        foreach ($oResultAltares->myInfo->bilans as $b) {
                             $annee                          = substr($b->bilan->dateClotureN, 0, 4);
                             $posteActifList[$annee]         = $b->bilanRetraiteInfo->posteActifList;
                             $postePassifList[$annee]        = $b->bilanRetraiteInfo->postePassifList;
@@ -561,8 +615,14 @@ class dossiersController extends bootstrap
             if (isset($_POST['send_form_dossier_resume'])) {
                 // On check avant la validation que la date de publication & date de retrait sont OK sinon on bloque(KLE)
                 /* La date de publication doit être au minimum dans 5min et la date de retrait à plus de 5min (pas de contrainte) */
+                $tab_date_pub_post          = explode('/', $_POST['date_publication']);
+                $date_publication_full_test = $tab_date_pub_post[2] . '-' . $tab_date_pub_post[1] . '-' . $tab_date_pub_post[0] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute'] . ':00';
+                $tab_date_retrait_post      = explode('/', $_POST['date_retrait']);
+                $date_retrait_full_test     = $tab_date_retrait_post[2] . '-' . $tab_date_retrait_post[1] . '-' . $tab_date_retrait_post[0] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':00';
+                $date_auj_plus_5min         = date("Y - m - d H:i:s", mktime(date('H'), date('i') + 5, date('s'), date("m"), date("d"), date("Y")));
+                $date_auj_plus_1jour        = date("Y - m - d H:i:s", mktime(date('H'), date('i'), date('s'), date("m"), date("d") + 1, date("Y")));
                 $dates_valide               = false;
-                if(! is_null($_POST['date_publication']) && ! empty($_POST['date_publication'])) {
+                if (!is_null($_POST['date_publication']) && !empty($_POST['date_publication'])) {
                     $tab_date_pub_post          = explode('/', $_POST['date_publication']);
                     $date_publication_full_test = $tab_date_pub_post[2] . '-' . $tab_date_pub_post[1] . '-' . $tab_date_pub_post[0] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute'] . ':00';
                     $tab_date_retrait_post      = explode('/', $_POST['date_retrait']);
@@ -577,7 +637,7 @@ class dossiersController extends bootstrap
                 $this->retour_dates_valides = "";
 
                 if (!$dates_valide && in_array('40', array($_POST['status'], $this->current_projects_status->status))) {
-                    $this->retour_dates_valides = "La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus de 24h.";
+                    $this->retour_dates_valides = "La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus de 24h . ";
                 } // si date valide
                 else {
                     $_SESSION['freeow']['title']   = 'Sauvegarde du r&eacute;sum&eacute;';
@@ -651,12 +711,12 @@ class dossiersController extends bootstrap
                     // --- Fin Génération du slug --- //
                     // en prep funding
                     if ($this->current_projects_status->status >= 35) {
-                        if (isset($_POST['date_publication']) && ! empty($_POST['date_publication'])) {
+                        if (isset($_POST['date_publication']) && !empty($_POST['date_publication'])) {
                             $this->projects->date_publication = $this->dates->formatDateFrToMysql($_POST['date_publication']);
                             // Récupération des heures/minutes/sec
                             $this->projects->date_publication_full = $this->projects->date_publication . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute'] . ':0';
                         }
-                        if (isset($_POST['date_retrait']) && ! empty($_POST['date_retrait'])) {
+                        if (isset($_POST['date_retrait']) && !empty($_POST['date_retrait'])) {
                             $this->projects->date_retrait = $this->dates->formatDateFrToMysql($_POST['date_retrait']);
                             // Récupération des heures/minutes/sec
                             $this->projects->date_retrait_full = $this->projects->date_retrait . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':0';
@@ -783,7 +843,7 @@ class dossiersController extends bootstrap
                         }
 
                         // si statut = default
-                        if ($_POST['status'] == '120') {
+                        if ($_POST['status'] == '100') {
                             // on envoie un mail aux preteurs
                             $lPreteurs = $this->loans->select('id_project = ' . $this->projects->id_project);
 
@@ -794,15 +854,6 @@ class dossiersController extends bootstrap
                             $lien_fb = $this->settings->value;
 
                             // Twitter
-                            $this->settings->get('Twitter', 'type');
-                        } elseif ($_POST['status'] == '100') { // fin statut probleme
-                            $lPreteurs = $this->loans->select('id_project = ' . $this->projects->id_project);
-
-                            $this->companies->get($this->projects->id_company, 'id_company');
-
-                            $this->settings->get('Facebook', 'type');
-                            $lien_fb = $this->settings->value;
-
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
 
@@ -874,8 +925,7 @@ class dossiersController extends bootstrap
                                     // fin mail pour preteur //
                                 }
                             }
-                        } // fin statut recouvrement
-                        elseif ($_POST['status'] == '110') {
+                        } elseif ($_POST['status'] == '110') {// fin statut recouvrement
 
                             // date du dernier probleme
                             $statusProbleme = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 9', 'added DESC');
@@ -929,8 +979,7 @@ class dossiersController extends bootstrap
                                     // fin mail pour preteur //
                                 }
                             }
-                        } // remboursé
-                        elseif ($_POST['status'] == '90') {
+                        } elseif ($_POST['status'] == '90') {// remboursé
                             // date du dernier probleme
                             $statusProbleme = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 9', 'added DESC');
                             $DateProbleme   = date('d/m/Y', strtotime($statusProbleme[0]['added']));
@@ -1379,7 +1428,7 @@ class dossiersController extends bootstrap
 
 
                                 // Renseigner l'id projet
-                                $id_project = $this->projects->id_project;
+                                $id_project     = $this->projects->id_project;
                                 $month          = $this->dates->tableauMois['fr'][date('n')];
                                 $dateStatutRemb = date('d') . ' ' . $month . ' ' . date('Y');
 
@@ -1520,7 +1569,7 @@ class dossiersController extends bootstrap
         $this->clients = $this->loadData('clients');
 
         if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->lClients = $this->clients->select('nom LIKE "%' . $this->params[0] . '%" OR prenom LIKE "%' . $this->params[0] . '%"');
+            $this->lClients = $this->clients->select('nom LIKE " % ' . $this->params[0] . ' % " OR prenom LIKE " % ' . $this->params[0] . ' % "');
         }
     }
 
@@ -1571,7 +1620,7 @@ class dossiersController extends bootstrap
                     $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->projects->id_company . '"');
 
                     $row = 0;
-                    if (($handle = fopen($this->surl . "/var/uploads/" . $this->name_csv, "r")) !== FALSE) {
+                    if (($handle = fopen($this->surl . " /var/uploads / " . $this->name_csv, "r")) !== FALSE) {
                         while (($data = fgetcsv($handle, 1000, ";")) !== FALSE) {
 
                             $result[$row] = $data;
@@ -2245,17 +2294,17 @@ class dossiersController extends bootstrap
                 // SIREN
                 $this->siren = $this->companies->siren;
                 // Web Service Altares
-                $result = $this->ficelle->ws($this->wsdl, $this->identification, $this->siren);
+                $oResultAltares = $this->oAltares->getEligibility($this->companies->siren)->return;
 
                 $this->altares_ok = false;
 
                 // Si pas d'erreur
-                if ($result->exception == '') {
+                if ($oResultAltares->exception == '') {
 
                     // verif reponse
-                    $eligibility = $result->myInfo->eligibility;
-                    $score       = $result->myInfo->score;
-                    $identite    = $result->myInfo->identite;
+                    $eligibility = $oResultAltares->myInfo->eligibility;
+                    $score       = $oResultAltares->myInfo->score;
+                    $identite    = $oResultAltares->myInfo->identite;
 
                     // statut
                     $this->tablStatus = array('Oui', 'Pas de bilan');
@@ -2293,7 +2342,7 @@ class dossiersController extends bootstrap
                     else {
                         $this->altares_ok = true;
 
-                        $identite               = $result->myInfo->identite;
+                        $identite = $oResultAltares->myInfo->identite;
 
                         $posteActifList         = array();
                         $postePassifList        = array();
@@ -2301,7 +2350,7 @@ class dossiersController extends bootstrap
                         $syntheseFinanciereList = array();
                         $derniersBilans         = array();
                         $i                      = 0;
-                        foreach ($result->myInfo->bilans as $b) {
+                        foreach ($oResultAltares->myInfo->bilans as $b) {
 
                             $annee                          = substr($b->bilan->dateClotureN, 0, 4);
                             $posteActifList[$annee]         = $b->bilanRetraiteInfo->posteActifList;
@@ -2599,7 +2648,7 @@ class dossiersController extends bootstrap
                 // On desactive
                 if ($_POST['remb_auto'] == 1) {
 
-                    $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_remb_preteurs,10) >= "' . date('Y-m-d') . '"');
+                    $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_remb_preteurs,10) >= "' . date('Y - m - d') . '"');
 
                     foreach ($listdesRembauto as $rembauto) {
                         $this->projects_remb->get($rembauto['id_project_remb'], 'id_project_remb');
@@ -2608,7 +2657,7 @@ class dossiersController extends bootstrap
                     }
                 } // On active
                 elseif ($_POST['remb_auto'] == 0) {
-                    $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = 4 AND LEFT(date_remb_preteurs,10) >= "' . date('Y-m-d') . '" AND date_remb_preteurs_reel = "0000-00-00 00:00:00"');
+                    $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = 4 AND LEFT(date_remb_preteurs,10) >= "' . date('Y - m - d') . '" AND date_remb_preteurs_reel = "0000 - 00 - 00 00:00:00"');
 
 
                     foreach ($listdesRembauto as $rembauto) {
@@ -3109,8 +3158,9 @@ class dossiersController extends bootstrap
 
                 die;
             }
-            // REMB ANTICIPE
-            //on gère ici la réception du formulaire qui déclenche le remb anticipe aux preteurs
+
+// REMB ANTICIPE
+//on gère ici la réception du formulaire qui déclenche le remb anticipe aux preteurs
             if (isset($_POST['spy_remb_anticipe']) && $_POST['id_reception'] > 0 && isset($_POST['id_reception'])) {
                 $id_reception        = $_POST['id_reception'];
                 $montant_crd_preteur = ($_POST['montant_crd_preteur'] * 100);
@@ -3168,7 +3218,7 @@ class dossiersController extends bootstrap
 
                     // on recupere les preteurs de ce projet (par loans)
                     $L_preteur_on_projet = $this->echeanciers->get_liste_preteur_on_project($this->projects->id_project);
-                    $montant_total              = 0;
+                    $montant_total       = 0;
 
                     // on veut recup le nb d'echeances restantes
                     $sum_ech_restant = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');
@@ -3478,7 +3528,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    //utilisé pour récup les infos affichées dans le cadre
+//utilisé pour récup les infos affichées dans le cadre
     function recup_info_remboursement_anticipe($id_project)
     {
 
@@ -3492,7 +3542,7 @@ class dossiersController extends bootstrap
         $next_echeanche = (isset($L_echeance[0])) ? $L_echeance[0] : null;
 
 
-        $ordre_echeance_ra = (isset($L_echeance[0])) ? $L_echeance[0]['ordre'] + 1 : 0;
+        $ordre_echeance_ra = (isset($L_echeance[0])) ? $L_echeance[0]['ordre'] + 1 : 1;
 
 
         $date_next_echeance = $next_echeanche['date_echeance'];
