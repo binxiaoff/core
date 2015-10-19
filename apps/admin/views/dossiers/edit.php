@@ -406,7 +406,7 @@
                         <td>
                             <select name="analyste" id="analyste" class="select">
                                 <option value="0">Choisir</option>
-                                <?php foreach ($this->lUsers as $u) { ?>
+                                <?php foreach ($this->aAnalysts as $u) { ?>
                                     <option <?= ($this->projects->id_analyste == $u['id_user'] ? 'selected' : '') ?> value="<?= $u['id_user'] ?>"><?= $u['firstname'] ?> <?= $u['name'] ?></option>
                                 <?php } ?>
                             </select>
@@ -785,7 +785,7 @@
         <div id="tab_email_msg">Données sauvegardées</div>
         <br />
         <div id="send_cgv">
-            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>/altares" class="btn_link">Envoi des CGV</a>
+            <a href="<?= $this->lurl ?>/dossiers/send_cgv_ajax/<?=$this->clients->id_client?>" class="btn_link">Envoi des CGV</a>
         </div>
 
     </div>
@@ -1352,8 +1352,6 @@
                                     <th width="300"><?= $t['title'] ?></th>
                                     <?php
                                     foreach ($this->lCompanies_actif_passif as $ap) {
-php
-                                    foreach ($this->lCompanies_actif_passif as $ap) {
                                         ?>
                                         <th><?= $ap['annee'] ?></th><?
                                         if ($i == 3)
@@ -1467,8 +1465,6 @@ php
                                     <thead>
                                     <th width="300"><?= $t['title'] ?></th>
                                     <?php
-                                    foreach ($this->lCompanies_actif_passif as $ap) {
-php
                                     foreach ($this->lCompanies_actif_passif as $ap) {
                                         ?>
                                         <th><?= $ap['annee'] ?></th><?

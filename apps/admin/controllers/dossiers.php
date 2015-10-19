@@ -3600,6 +3600,144 @@ class dossiersController extends bootstrap
         }
     }
 
+    public function _send_cgv_ajax()
+    {
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireView   = false;
+        $this->autoFireDebug  = false;
+
+        $oClients    = $this->loadData('clients');
+        $oProjects   = $this->loadData('projects');
+        $oCompanies  = $this->loadData('companies');
+        $oProjectCgv = $this->loadData('project_cgv');
+
+        if (false === isset($this->params[0]) || ! $oProjects->get($this->params[0], 'id_project')) {
+            echo 'project id invalid';
+            return;
+        }
+        if (! $oCompanies->get($oProjects->id_company, 'id_company')) {
+            echo 'company id invalid';
+            return;
+        }
+        if (! $oClients->get($oCompanies->id_client_owner, 'id_client')) {
+            echo 'client id invalid';
+            return;
+        }
+
+        if ($oProjectCgv->get($oProjects->id_project,'id_project')) {
+            if (empty($oProjectCgv->id_tree)) {
+                $this->settings->get('Lien conditions generales depot dossier', 'type');
+                $iTreeId = $this->settings->value;
+
+                if (!$iTreeId) {
+                    echo 'tree id invalid';
+                    return;
+                }
+
+                $oProjects->id_tree = $iTreeId;
+
+            }
+            $sCgvLink = $this->surl . $oProjectCgv->getUrlPath();
+
+            if (empty($oProjectCgv->name)) {
+                $oProjectCgv->name = $oProjectCgv->generateFileName();
+            }
+            $oProjectCgv->update();
+        } else {
+            $this->settings->get('Lien conditions generales depot dossier', 'type');
+            $iTreeId = $this->settings->value;
+
+            if (!$iTreeId) {
+                echo 'tree id invalid';
+                return;
+            }
+
+            $oProjectCgv->id_project = $oProjects->id_project;
+            $oProjectCgv->id_tree    = $iTreeId;
+            $oProjectCgv->name       = $oProjectCgv->generateFileName();
+            $oProjectCgv->status     = project_cgv::STATUS_NO_SIGN;
+            $oProjectCgv->id         = $oProjectCgv->create();
+            $sCgvLink                = $this->surl . $oProjectCgv->getUrlPath();
+        }
+
+
+        // Recuperation du pdf du tree
+        $elements = $this->tree_elements->select('id_tree = "' . $oProjectCgv->id_tree . '" AND id_element = '.elements::TYPE_PDF_CGU.' AND id_langue = "' . $this->language . '"');
+
+        if (false === isset($elements[0]['value']) || '' == $elements[0]['value']) {
+            echo 'element id invalid';
+            return;
+        }
+        $sPdfPath = $this->path . 'public/default/var/fichiers/'.$elements[0]['value'];
+
+        if (false === file_exists($sPdfPath)) {
+            echo 'file not found';
+            return;
+        }
+
+        if (false === is_dir($this->path . project_cgv::BASE_PATH)) {
+            mkdir($this->path . project_cgv::BASE_PATH);
+        }
+        if (false === file_exists($this->path . project_cgv::BASE_PATH . $oProjectCgv->name)) {
+            copy($sPdfPath, $this->path . project_cgv::BASE_PATH . $oProjectCgv->name);
+        }
+
+        // Recuperation du modele de mail
+        $oEmailText = $this->loadData('mails_text');
+        $oEmailText->get('signature-universign-de-cgv', 'lang = "' . $this->language . '" AND type');
+
+        // Motif virement
+        $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($oClients->prenom))), 0, 1);
+        $nom       = $this->ficelle->stripAccents(utf8_decode(trim($oClients->nom)));
+        $id_client = str_pad($oClients->id_client, 6, 0, STR_PAD_LEFT);
+        $sMotif    = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+
+        // FB
+        $this->settings->get('Facebook', 'type');
+        $lien_fb = $this->settings->value;
+
+        // Twitter
+        $this->settings->get('Twitter', 'type');
+        $lien_tw = $this->settings->value;
+
+        // Variables du mailing
+        $varMail = array(
+            'surl'                  => $this->surl,
+            'url'                   => $this->furl,
+            'prenom_p'              => $oClients->prenom,
+            'motif_virement'        => $sMotif,
+            'lien_cgv_universign'   => $sCgvLink,
+            'lien_tw'               => $lien_tw,
+            'lien_fb'               => $lien_fb,
+        );
+
+        // Construction du tableau avec les balises EMV
+        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+        // Attribution des données aux variables
+        $sujetMail = strtr($oEmailText->subject, $tabVars);
+        $texteMail = strtr($oEmailText->content, $tabVars);
+        $exp_name  = strtr($oEmailText->exp_name, $tabVars);
+
+        // Envoi du mail
+        $oEmail = $this->loadLib('email');
+        $oEmail->setFrom($oEmailText->exp_email, $exp_name);
+        $oEmail->setSubject(stripslashes($sujetMail));
+        $oEmail->setHTMLBody(stripslashes($texteMail));
+
+        if ($this->Config['env'] == 'prod') {
+            Mailer::sendNMP($oEmail, $this->mails_filer, $oEmailText->id_textemail, $oClients->email, $tabFiler);
+            // Injection du mail NMP dans la queue
+            $this->tnmp->sendMailNMP($tabFiler, $varMail, $oEmailText->nmp_secure, $oEmailText->id_nmp, $oEmailText->nmp_unique, $oEmailText->mode);
+        } else {
+            $oEmail->addRecipient(trim($oClients->email));
+            Mailer::send($oEmail, $this->mails_filer, $oEmailText->id_textemail);
+        }
+        echo 'OK';
+    }
+
     /**
      * @param integer $iOwnerId
      * @param integer $field
