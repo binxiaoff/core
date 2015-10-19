@@ -83,6 +83,7 @@ if (isset($_SESSION['freeow'])) {
                     <th>Montant emprunteur (I+C+ComTTC)</th>
                     <th>Capital restant</th>
                     <th>Date echeance Emprunteur</th>
+                    <th>Date d'envoi du prélèvement</th>
                     <?php /* ?><th>Statut</th><?php */ ?>
                 </tr>
             </thead>
@@ -96,7 +97,16 @@ if (isset($_SESSION['freeow'])) {
                     $capRestant -= $r['capital'];
                     if ($capRestant < 0)
                         $capRestant = 0;
+
+                    //on va récuperer la date d'envoi du prelevement, pour cela on doit lier la table echeancier_emp à prelevements, on utilisera la clé "Ordre + id_projet"
+                    $date_envoi_prelevement = "";
+
+                    if ($this->prelevements->get($r['id_project'], 'num_prelevement = ' . $r['ordre'] . ' AND id_project')) {
+
+                        $date_envoi_prelevement = $this->dates->formatDate($this->prelevements->date_execution_demande_prelevement, 'd/m/Y');
+                    }
                     ?>
+                
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
 
                         <td><?= $r['ordre'] ?></td>
@@ -107,15 +117,16 @@ if (isset($_SESSION['freeow'])) {
                         <td><?= number_format($r['tva'] / 100, 2, ',', ' ') ?></td>
                         <td><?= number_format($montantEmprunteur / 100, 2, ',', ' ') ?></td>
                         <td><?= number_format($capRestant / 100, 2, ',', ' ') ?></td>
+                        <td><?= $date_envoi_prelevement ?></td>
                         <td><?= $this->dates->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
-                        <?php /* ?><td><?=($r['status']==1?'Remboursé':'A venir')?></td><?php */ ?>
+        <?php /* ?><td><?=($r['status']==1?'Remboursé':'A venir')?></td><?php */ ?>
                     </tr>   
-                    <?
-                    $i++;
-                }
-                // ajout de la ligne du RA
-                if ($this->montant_ra > 0) {
-                    ?>
+                        <?
+                        $i++;
+                    }
+                    // ajout de la ligne du RA
+                    if ($this->montant_ra > 0) {
+                        ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
 
                         <td><?= $r['ordre'] + 1 ?></td>
@@ -127,16 +138,16 @@ if (isset($_SESSION['freeow'])) {
                         <td><?= number_format($this->montant_ra, 2, ',', ' ') ?></td>
                         <td>0</td>
                         <td><?= $this->dates->formatDate($this->date_ra, 'd/m/Y') ?></td>
-                        <?php /* ?><td><?=($r['status']==1?'Remboursé':'A venir')?></td><?php */ ?>
+        <?php /* ?><td><?=($r['status']==1?'Remboursé':'A venir')?></td><?php */ ?>
                     </tr>
-                    <?php
-                }
-                ?>
+                        <?php
+                    }
+                    ?>
             </tbody>
         </table>
-        <?
-        if ($this->nb_lignes != '') {
-            ?>
+                <?
+                if ($this->nb_lignes != '') {
+                    ?>
             <table>
                 <tr>
                     <td id="pager">
@@ -151,11 +162,11 @@ if (isset($_SESSION['freeow'])) {
                     </td>
                 </tr>
             </table>
-            <?
-        }
-        ?>
+        <?
+    }
+    ?>
         <?
     }
     ?>
 </div>
-<?php unset($_SESSION['freeow']); ?>
+    <?php unset($_SESSION['freeow']); ?>
