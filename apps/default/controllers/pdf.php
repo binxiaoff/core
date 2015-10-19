@@ -432,6 +432,70 @@ class pdfController extends bootstrap
         }
     }
 
+    public function _cgv_borrower()
+    {
+        if (false === isset($this->params[0]) || false === isset($this->params[1]) || false === is_numeric($this->params[0])) {
+            header('Location:' . $this->lurl);
+            return;
+        }
+        $iProjectId     = $this->params[0];
+        $sFileName      = $this->params[1];
+        $sNamePdfClient = 'CGV-UNILEND-' . $iProjectId;
+        $oProjectCgv    = $this->loadData('project_cgv');
+        $path           = $this->path . project_cgv::BASE_PATH;
+
+        // Check there is already a CGV
+        if ($oProjectCgv->get($iProjectId, 'id_project') && false === empty($oProjectCgv->name) && false === empty($oProjectCgv->id_tree)) {
+            // Check the file name in url for security
+            if ($sFileName !== $oProjectCgv->name) {
+                header('Location:' . $this->lurl);
+                return;
+            }
+
+            // and if it's signed
+            if (in_array($oProjectCgv->status, array(project_cgv::STATUS_SIGN_FO, project_cgv::STATUS_SIGN_UNIVERSIGN)) && file_exists($path . $oProjectCgv->name)) {
+                $this->ReadPdf($path . $oProjectCgv->name, $sNamePdfClient);
+                return;
+            }
+
+            if ('' != $oProjectCgv->url_universign) {
+                header("location:" . $oProjectCgv->url_universign);
+                return;
+            }
+        } else {
+            // We don't create the CGV line here
+            header('Location:' . $this->lurl);
+            return;
+        }
+
+        if (false === file_exists($path . $oProjectCgv->name)) {
+            // Recuperation du pdf du tree
+            $elements = $this->tree_elements->select('id_tree = "' . $oProjectCgv->id_tree . '" AND id_element = '.elements::TYPE_PDF_CGU.' AND id_langue = "' . $this->language . '"');
+
+            if (false === isset($elements[0]['value']) || '' == $elements[0]['value']) {
+                header('Location:' . $this->lurl);
+                return;
+            }
+
+            $sPdfPath = $this->path . 'public/default/var/fichiers/'.$elements[0]['value'];
+
+            if (false === file_exists($sPdfPath)) {
+                header('Location:' . $this->lurl);
+                return;
+            }
+
+            if (false === is_dir($this->path . project_cgv::BASE_PATH)) {
+                mkdir($this->path . project_cgv::BASE_PATH);
+            }
+
+            if (false === file_exists($this->path . project_cgv::BASE_PATH . $oProjectCgv->name)) {
+                copy($sPdfPath, $this->path . project_cgv::BASE_PATH . $oProjectCgv->name);
+            }
+        }
+
+        header("location:" . $this->url . '/universign/cgv_borrower/' . $oProjectCgv->id . '/' . $oProjectCgv->name);
+    }
+
     private function generateAuthorityUniversign($bInstantCreate = false)
     {
         /////////////////////////////////////////////////////

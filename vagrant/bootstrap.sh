@@ -69,7 +69,6 @@ ln -fs /vagrant/conf/vhosts/phpmyadmin.conf /etc/apache2/sites-enabled/phpmyadmi
 sed -i '/Listen 443/c Listen 443\n    NameVirtualHost *:443' /etc/apache2/ports.conf
 echo "ServerName localhost" >> /etc/apache2/httpd.conf
 service apache2 restart
-update-rc.d apache2 defaults
 
 # install php
 apt-get install -y php5 libapache2-mod-php5 php5-mcrypt php5-mysql php5-cli php5-gd php5-curl php5-memcache php5-intl php5-geoip memcached php5-xdebug php5-imagick
@@ -121,3 +120,13 @@ sed -i 's/ZSH_THEME="robbyrussell"/ZSH_THEME="pygmalion"/g' /home/vagrant/.zshrc
 sed -i 's/plugins=.*/plugins=(git colored-man colorize github jira vagrant zsh-syntax-highlighting)/' /home/vagrant/.zshrc
 printf "\nalias composer=\"/usr/bin/composer.phar\"" >> /home/vagrant/.zshrc
 chsh -s /bin/zsh vagrant
+
+# install mailcatcher
+apt-get install -y software-properties-common
+sudo apt-get remove -y ruby1.8
+sudo apt-get install -y ruby1.9.3 libsqlite3-dev
+gem install mailcatcher
+sed -i '/;sendmail_path =/c sendmail_path = /usr/bin/env catchmail' /etc/php5/apache2/php.ini
+a2enmod proxy proxy_http
+ln -fs /vagrant/conf/vhosts/mailcatcher.conf /etc/apache2/sites-enabled/mailcatcher.conf
+cp /vagrant/conf/mailcatcher.conf /etc/init/mailcatcher.conf

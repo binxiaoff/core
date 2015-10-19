@@ -26,16 +26,22 @@
 //                                                                                   
 // **************************************************************************************************** //
 
-class elements extends elements_crud
+class project_cgv extends project_cgv_crud
 {
-	const TYPE_PDF_CGU = 183;
+	const STATUS_NO_SIGN         = 0;
+	const STATUS_SIGN_FO         = 1;
+	const STATUS_SIGN_UNIVERSIGN = 2;
+	const STATUS_SIGN_FAILED     = 3;
+	const STATUS_SIGN_CANCELLED  = 2;
 
-	function elements($bdd,$params='')
+    const BASE_PATH = 'protected/pdf/cgv_borrower/';
+
+	function project_cgv($bdd,$params='')
     {
-        parent::elements($bdd,$params);
+        parent::project_cgv($bdd,$params);
     }
     
-    function get($id,$field='id_element')
+    function get($id,$field='id')
     {
         return parent::get($id,$field);
     }
@@ -45,7 +51,7 @@ class elements extends elements_crud
         parent::update($cs);
     }
     
-    function delete($id,$field='id_element')
+    function delete($id,$field='id')
     {
     	parent::delete($id,$field);
     }
@@ -62,7 +68,7 @@ class elements extends elements_crud
 			$where = ' WHERE '.$where;
 		if($order != '')
 			$order = ' ORDER BY '.$order;
-		$sql = 'SELECT * FROM `elements`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+		$sql = 'SELECT * FROM `project_cgv`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
 
 		$resultat = $this->bdd->query($sql);
 		$result = array();
@@ -78,78 +84,26 @@ class elements extends elements_crud
 		if($where != '')
 			$where = ' WHERE '.$where;
 			
-		$sql='SELECT count(*) FROM `elements` '.$where;
+		$sql='SELECT count(*) FROM `project_cgv` '.$where;
 
 		$result = $this->bdd->query($sql);
 		return (int)($this->bdd->result($result,0,0));
 	}
 	
-	function exist($id,$field='id_element')
+	function exist($id,$field='id')
 	{
-		$sql = 'SELECT * FROM `elements` WHERE '.$field.'="'.$id.'"';
+		$sql = 'SELECT * FROM `project_cgv` WHERE '.$field.'="'.$id.'"';
 		$result = $this->bdd->query($sql);
 		return ($this->bdd->fetch_array($result,0,0)>0);
 	}
-	
-	//******************************************************************************************//
-	//**************************************** AJOUTS ******************************************//
-	//******************************************************************************************//
-	
-	// Récupération de la derniere position
-	function getLastPosition($id,$champs)
+
+	public function generateFileName()
 	{
-		$sql = 'SELECT ordre FROM elements WHERE '.$champs.' = "'.$id.'" ORDER BY ordre DESC LIMIT 1';
-		$result = $this->bdd->query($sql);
-		return (int)($this->bdd->result($result,0,0));
+		return 'cgv-unilend-' . sha1($this->id_project . '_' . $this->id_tree) . '.pdf';
 	}
-	
-	// Récupération de la position
-	function getPosition($id_element,$id,$champs)
+
+	public function getUrlPath()
 	{
-		$sql = 'SELECT ordre FROM elements WHERE '.$champs.' = "'.$id.'" AND id_element = '.$id_element;
-		$result = $this->bdd->query($sql);
-		
-		return (int)($this->bdd->result($result,0,0));
-	}
-	
-	// Monter un lien
-	function moveUp($id_element,$id,$champs)
-	{
-		$position = $this->getPosition($id_element,$id,$champs);
-		
-		$sql = 'UPDATE elements SET ordre = ordre + 1 WHERE '.$champs.' = "'.$id.'" AND ordre < '.$position.' ORDER BY ordre DESC LIMIT 1';
-		$this->bdd->query($sql);
-		
-		$sql = 'UPDATE elements SET ordre = ordre - 1 WHERE '.$champs.' = "'.$id.'" AND id_element = '.$id_element;
-		$this->bdd->query($sql);
-		$this->reordre($id,$champs);
-	}
-	
-	// Descendre un lien
-	function moveDown($id_element,$id,$champs)
-	{
-		$position = $this->getPosition($id_element,$id,$champs);
-		
-		$sql = 'UPDATE elements SET ordre = ordre - 1 WHERE '.$champs.' = "'.$id.'" AND ordre > '.$position.' ORDER BY ordre ASC LIMIT 1';
-		$this->bdd->query($sql);
-		
-		$sql = 'UPDATE elements SET ordre = ordre + 1 WHERE '.$champs.' = "'.$id.'" AND id_element = '.$id_element;
-		$this->bdd->query($sql);
-		$this->reordre($id,$champs);
-	}
-	
-	// Reordonner un menu
-	function reordre($id,$champs)
-	{
-		$sql = 'SELECT * FROM elements WHERE '.$champs.' = "'.$id.'" ORDER BY ordre ASC';
-		$result = $this->bdd->query($sql);
-		
-		$i = 0;
-		while($record = $this->bdd->fetch_array($result))
-		{
-			$sql1 = 'UPDATE elements SET ordre = '.$i.' WHERE id_element = '.$record['id_element'];
-			$this->bdd->query($sql1);
-			$i++;
-		}
+		return '/pdf/cgv_borrower/' . $this->id_project . '/' . $this->generateFileName();
 	}
 }

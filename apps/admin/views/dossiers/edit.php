@@ -777,7 +777,7 @@
         <div id="tab_email_msg">Données sauvegardées</div>
         <br />
         <div id="send_cgv">
-            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>/altares" class="btn_link">Envoi des CGV</a>
+            <a href="<?= $this->lurl ?>/dossiers/send_cgv_ajax/<?=$this->projects->id_project?>" class="btn_link thickbox cboxElement">Envoi des CGV</a>
         </div>
 
     </div>
