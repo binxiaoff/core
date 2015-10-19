@@ -49,8 +49,8 @@ if (isset($_SESSION['freeow'])) {
     }
     ?>
 
-    <form method="post" name="edit_emprunteur" id="edit_emprunteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/emprunteurs/edit/<?= $this->clients->id_client ?>" target="_parent">           
-        <table class="formColor" style="width: 775px;margin:auto;">            	
+    <form method="post" name="edit_emprunteur" id="edit_emprunteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/emprunteurs/edit/<?= $this->clients->id_client ?>" target="_parent">
+        <table class="formColor" style="width: 775px;margin:auto;">
             <tr>
                 <th><label for="nom">Nom :</label></th>
                 <td><input type="text" name="nom" id="nom" class="input_large" value="<?= $this->clients->nom ?>"/></td>
@@ -137,7 +137,7 @@ if (isset($_SESSION['freeow'])) {
                 <th><label for="signature">Signature :</label></th>
                 <td>
                     <?= $this->clients->signature ?><br>
-                    <input type="file" name="signature" id="signature" value="<?= $this->ville ?>"/>
+                    <input type="file" name="signature" id="signature" value="<?= $this->clients->signature ?>"/>
                 </td>
             </tr>
             <?php /* ?><tr>
@@ -186,13 +186,13 @@ if (isset($_SESSION['freeow'])) {
         ?>
         <table class="tablesorter listeProjets">
             <thead>
-                <tr>  
+                <tr>
                     <th>ID</th>
                     <th>Projet</th>
                     <th>statut</th>
                     <th>Montant</th>
                     <th>PDF</th>
-                    <th>&nbsp;</th>  
+                    <th>&nbsp;</th>
                 </tr>
             </thead>
             <tbody>
@@ -225,7 +225,7 @@ if (isset($_SESSION['freeow'])) {
                                 <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Détails" />
                             </a>
                         </td>
-                    </tr>   
+                    </tr>
                     <?
                     $i++;
                 }
@@ -266,17 +266,17 @@ if (isset($_SESSION['freeow'])) {
         {
             if (iban == "<?= $this->companies->iban ?>" && document.getElementById('bic').value == "<?= $this->companies->bic ?>")
                 return true;
-            
-            
+
+
             List_compagnie_meme_iban = CheckIfIbanExistDeja(iban, <?= $this->clients->id_client ?>);
-            
+
             if (List_compagnie_meme_iban != "none")
-            {               
+            {
                 $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIB_iban_existant/'+List_compagnie_meme_iban});
                 return false;
-            }    
-                
-                
+            }
+
+
             if (<?= count($this->loadData('prelevements')->select('status = 0 AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0)
             {
                 $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox_no_prelev/<?= $this->clients->id_client ?>'});
@@ -286,14 +286,14 @@ if (isset($_SESSION['freeow'])) {
             {
                 return true;
             }
-            
-            
-            
+
+
+
 
             $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox/<?= $this->clients->id_client ?>'});
                 return false;
         }
-        else 
+        else
         {
             return true;
         }
@@ -331,8 +331,8 @@ if (isset($_SESSION['freeow'])) {
 
     $("#edit_emprunteur").submit(function (event) {
         var form_ok = true;
-        
-        
+
+
         if (check_bic($("#bic").val()) == false && $("#bic").val() != "")
         //if($("#bic").val().length < 8 || $("#bic").val().length > 11)
         {
