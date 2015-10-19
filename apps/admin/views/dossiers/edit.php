@@ -52,7 +52,7 @@
             yearRange: '<?= (date('Y') - 40) ?>:<?= (date('Y')) ?>'
         });
         $('#duree').change(function(){
-            if(0 == $(this).val()) {
+            if(0 == $(this).val() && 35 == <?= $this->current_projects_status->status ?>) {
                 $("#status").css('display', 'none');
                 $("#msgProject").css('display', 'none');
                 $("#displayPeriodHS").css('display', 'block');
@@ -414,17 +414,18 @@
                         <th><label for="status">Statut :</label></th>
                         <td id="current_statut">
                             <?php
+                            $sDiplayPeriodHS     = 'none';
+                            $sDisplayMsgPeriodHs = 'none';
+                            $sDiplayStatus       = 'block';
+                            $sDisplayMsgProject  = 'block';
                             if ($this->current_projects_status->status == 130) {
                                 echo "Remboursement anticipé";
                             } else {
                                 if (count($this->lProjects_status) > 0) {
-                                    $sDiplayPeriodHS     = 'none';
-                                    $sDisplayMsgPeriodHs = 'none';
-                                    $sDiplayStatus       = 'block';
-                                    $sDisplayMsgProject  = 'block';
-                                if (0 === (int)$this->projects->period ||
+                                if ((0 === (int)$this->projects->period ||
                                     1000000 === (int)$this->projects->period ||
-                                    '' == $this->companies_details->fichier_rib) {
+                                    '' == $this->companies_details->fichier_rib) &&
+                                    $this->current_projects_status->status == 35) {
                                         $sDiplayPeriodHS     = 'block';
                                         $sDiplayStatus       = 'none';
                                         $sDisplayMsgPeriodHs = 'block';
@@ -432,7 +433,7 @@
                                     }
                             ?>
                                     <span id="displayPeriodHS" style="display:<?= $sDiplayPeriodHS ?>;">
-                                        Pr&eacute;p Funding
+                                        <?= $this->current_projects_status->label ?>
                                     </span>
                                     <select name="status" id="status" class="select" style="display:<?= $sDiplayStatus ?>;" <?= ($this->current_projects_status->status == 130 ? '"disabled"' : "") ?>>
                                         <?php
@@ -1607,7 +1608,8 @@
                         $(".statut_fichier2").html(enregistre);
                         if($('#displayPeriodHS').css('display') == 'block' &&
                             0 < <?= (int)$this->projects->period ?> &&
-                            1000000 > <?= (int)$this->projects->period ?>){
+                            1000000 > <?= (int)$this->projects->period ?> &&
+                            35 == <?= $this->current_projects_status->status ?>){
                             $("#status").css('display', 'block');
                             $("#msgProject").css('display', 'block');
                             $('#displayPeriodHS').css('display', 'none');

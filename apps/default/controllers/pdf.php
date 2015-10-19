@@ -383,6 +383,7 @@ class pdfController extends bootstrap
                 //Deleting authority, not necessary (Double authority)
                 if (is_array($aProjectPouvoir) && 0 < count($aProjectPouvoir)) {
                     foreach ($aProjectPouvoir as $aProjectPouvoirToDelete) {
+                        $this->oLogger->addRecord(ULogger::INFO, 'Deleting Pouvoir id : ' . $aProjectPouvoirToDelete['id_pouvoir'], array(__FILE__ . ' at line ' . __LINE__));
                         $this->oProjectsPouvoir->delete($aProjectPouvoirToDelete['id_pouvoir'], 'id_pouvoir'); // plus de doublons comme ca !
                     }
                 }
