@@ -295,7 +295,7 @@ class universignController extends bootstrap
                     if (false === ($oProjects->id_commercial) && $oUsers->get($oProjects->id_commercial, 'id_user')) {
                         $destinaire = $oUsers->email;
                     } else {
-                        $this->settings->get('Adresse notification pouvoir mandat signe', 'type');
+                        $this->settings->get('Adresse notification cgv emprunteur signe', 'type');
                         $destinaire = $this->settings->value;
                     }
 
