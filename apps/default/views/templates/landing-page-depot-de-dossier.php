@@ -18,17 +18,17 @@
     <script src="<?= $this->url ?>/landing-page/js/jquery.c2selectbox.js"></script>
     <script src="<?= $this->url ?>/landing-page/js/functions.js"></script>
     <script src="<?= $this->url ?>/scripts/default/main.js"></script>
-    <style type="text/css">
+    <style>
         .page-landing .signup form {padding: 5px 30px 21px;}
         .page-landing .signup .field {margin-bottom: 0;}
-        .page-landing .process ul li p {text-align: center;}
+        .process ul.cf > li > p > span {color: #727272; font-size: 20px;}
         .error {color: #c84747;}
         .form-row.error {margin: 5px;}
     </style>
 </head>
 <body>
 <?php if ($this->google_analytics != '') { ?>
-    <script type="text/javascript">
+    <script>
         var _gaq = _gaq || [];
         _gaq.push(['_setAccount', '<?=$this->google_analytics?>']);
         _gaq.push(['_trackPageview']);
@@ -64,7 +64,7 @@
         <section class="content left">
             <header class="page-header cf">
                 <a target="_blank" href="<?= $this->content['lp-lien-logo-221'] ?>" class="logo left">
-                    <img src="<?= $this->url ?>/landing-page/css/images/logo.png" alt="">
+                    <img src="<?= $this->url ?>/landing-page/css/images/logo.png">
                 </a>
                 <?php if ($this->content['lp-emprunteur-empruntis'] != '') { ?>
                     <img class="empruntis" src="<?= $this->photos->display($this->content['lp-emprunteur-empruntis']) ?>" alt="Empruntis">
@@ -74,24 +74,24 @@
                 <h1><?= $this->content['lp-titre-landing-page-222'] ?></h1>
                 <ul class="cf">
                     <li>
-                        <img src="<?= $this->photos->display($this->content['lp-gauche-image-223']) ?>" alt="">
+                        <img src="<?= $this->photos->display($this->content['lp-gauche-image-223']) ?>">
                         <p>
                             <strong><?= $this->content['lp-gauche-chiffre-224'] ?></strong>
-                            <span style="color:#727272;font-size:20px;"><?= $this->content['lp-gauche-texte-225'] ?></span>
+                            <span><?= $this->content['lp-gauche-texte-225'] ?></span>
                         </p>
                     </li>
                     <li>
-                        <img src="<?= $this->photos->display($this->content['lp-centre-image-226']) ?>" alt="">
+                        <img src="<?= $this->photos->display($this->content['lp-centre-image-226']) ?>">
                         <p>
                             <strong><?= $this->content['lp-centre-chiffre-227'] ?></strong>
-                            <span style="color:#727272;font-size:20px;"><?= $this->content['lp-centre-texte-228'] ?></span>
+                            <span><?= $this->content['lp-centre-texte-228'] ?></span>
                         </p>
                     </li>
                     <li>
-                        <img src="<?= $this->photos->display($this->content['lp-droite-image-229']) ?>" alt="">
+                        <img src="<?= $this->photos->display($this->content['lp-droite-image-229']) ?>">
                         <p>
                             <strong><?= $this->content['lp-droite-chiffre-230'] ?></strong>
-                            <span style="color:#727272;font-size:20px;"><?= $this->content['lp-droite-texte-231'] ?></span>
+                            <span><?= $this->content['lp-droite-texte-231'] ?></span>
                         </p>
                     </li>
                 </ul>
@@ -103,9 +103,9 @@
         </section>
         <aside class="signup right">
             <h2><?= $this->content['lp-titre-formulaire'] ?></h2>
-            <form action="<?= $this->lurl ?>/lp-depot-de-dossier" method="post" id="depot_de_dossier" name="depot_de_dossier">
+            <form action="<?= $_SERVER['SERVER_URI'] ?>" method="post" id="depot_de_dossier" name="depot_de_dossier">
                 <?php if (isset($this->aForm['response'])) { ?>
-                <div class="form-row error" style="display:inline;"><?= $this->aForm['response'] ?></div>
+                    <div class="form-row error" style="display:inline;"><?= $this->aForm['response'] ?></div>
                 <?php } ?>
                 <div class="form-row">
                     <span class="euro-sign">€</span>
@@ -145,23 +145,16 @@
         <section class="featured-articles">
             <div class="carousel">
                 <ul class="slides cf">
-                    <?php
-                    foreach ($this->lProjetsFunding as $project) {
-                        ?>
-                        <li style="list-style:none;">
-                            <div class="slide">
-                                <img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $project['photo_projet'] ?>" alt="<?= $project['photo_projet'] ?>">
-
-                                <strong><?= $project['title'] ?></strong>
-
-                                <span></span>
-
-                                <p><?= $project['nature_project'] ?></p>
-                            </div>
-                        </li>
-                        <?php
-                    }
-                    ?>
+                <?php foreach ($this->lProjetsFunding as $project) { ?>
+                    <li style="list-style:none;">
+                        <div class="slide">
+                            <img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $project['photo_projet'] ?>" alt="<?= $project['photo_projet'] ?>">
+                            <strong><?= $project['title'] ?></strong>
+                            <span></span>
+                            <p><?= $project['nature_project'] ?></p>
+                        </div>
+                    </li>
+                <?php } ?>
                 </ul>
                 <a href="#" class="prev-slide"></a>
                 <a href="#" class="next-slide"></a>
@@ -169,13 +162,13 @@
         </section>
     <?php } ?>
     <section class="partners cf">
-        <span><img src="<?= $this->photos->display($this->content['lp-image-1-233'], '', 'partenaires_landing_page') ?>" alt=""></span>
-        <span><img src="<?= $this->photos->display($this->content['lp-image-2-234'], '', 'partenaires_landing_page') ?>" alt=""></span>
-        <span><img src="<?= $this->photos->display($this->content['lp-image-3-235'], '', 'partenaires_landing_page') ?>" alt=""></span>
-        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-4-236'], '', 'partenaires_landing_page') ?>" alt=""></span>
-        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-5-237'], '', 'partenaires_landing_page') ?>" alt=""></span>
-        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-6-238'], '', 'partenaires_landing_page') ?>" alt=""></span>
-        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-7-239'], '', 'partenaires_landing_page') ?>" alt=""></span>
+        <span><img src="<?= $this->photos->display($this->content['lp-image-1-233'], '', 'partenaires_landing_page') ?>"></span>
+        <span><img src="<?= $this->photos->display($this->content['lp-image-2-234'], '', 'partenaires_landing_page') ?>"></span>
+        <span><img src="<?= $this->photos->display($this->content['lp-image-3-235'], '', 'partenaires_landing_page') ?>"></span>
+        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-4-236'], '', 'partenaires_landing_page') ?>"></span>
+        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-5-237'], '', 'partenaires_landing_page') ?>"></span>
+        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-6-238'], '', 'partenaires_landing_page') ?>"></span>
+        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-7-239'], '', 'partenaires_landing_page') ?>"></span>
     </section>
 </div>
 </body>

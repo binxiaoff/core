@@ -1,19 +1,11 @@
 <?php
 
-$this->projects                = $this->loadData('projects');
-$this->clients                 = $this->loadData('clients');
-$this->clients_adresses        = $this->loadData('clients_adresses');
-$this->companies               = $this->loadData('companies');
-$this->companies_bilans        = $this->loadData('companies_bilans');
-$this->companies_details       = $this->loadData('companies_details');
-$this->companies_actif_passif  = $this->loadData('companies_actif_passif');
-$this->projects_status_history = $this->loadData('projects_status_history');
-$this->projects                = $this->loadData('projects');
+$this->projects = $this->loadData('projects');
 
-$this->settings->get('Somme à emprunter min','type');
+$this->settings->get('Somme à emprunter min', 'type');
 $this->sommeMin = $this->settings->value;
 
-$this->settings->get('Somme à emprunter max','type');
+$this->settings->get('Somme à emprunter max', 'type');
 $this->sommeMax = $this->settings->value;
 
 $this->lng['etape-1']          = $this->ln->selectFront('depot-de-dossier-etape1', $this->language, $this->App);
@@ -46,37 +38,37 @@ if (isset($_POST['spy_inscription_landing_page_depot_dossier'])) {
     $_SESSION['forms']['depot-de-dossier']['values'] = $_POST;
 
     if (false === empty($_POST['email']) && false === $this->ficelle->isEmail($_POST['email'])) {
-        $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['landing-page']['champs-obligatoires'];
+        $_SESSION['forms']['depot-de-dossier']['response']        = $this->lng['landing-page']['champs-obligatoires'];
         $_SESSION['forms']['depot-de-dossier']['errors']['email'] = true;
     }
 
     if (empty($_POST['montant'])) {
-        $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['landing-page']['champs-obligatoires'];
+        $_SESSION['forms']['depot-de-dossier']['response']          = $this->lng['landing-page']['champs-obligatoires'];
         $_SESSION['forms']['depot-de-dossier']['errors']['montant'] = true;
     }
 
     if (empty($_POST['siren']) || $_POST['siren'] != (int) $_POST['siren'] || strlen($_POST['siren']) !== 9) {
-        $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['landing-page']['champs-obligatoires'];
+        $_SESSION['forms']['depot-de-dossier']['response']        = $this->lng['landing-page']['champs-obligatoires'];
         $_SESSION['forms']['depot-de-dossier']['errors']['siren'] = true;
     } else {
-        $iAmount = str_replace(array(',', ' '), array('.', ''), $_POST['montant']);
+        $iAmount                                                    = str_replace(array(',', ' '), array('.', ''), $_POST['montant']);
         $_SESSION['forms']['depot-de-dossier']['values']['montant'] = $iAmount;
 
         if ($iAmount != (int) $iAmount) {
-            $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['landing-page']['champs-obligatoires'];
+            $_SESSION['forms']['depot-de-dossier']['response']          = $this->lng['landing-page']['champs-obligatoires'];
             $_SESSION['forms']['depot-de-dossier']['errors']['montant'] = true;
         } elseif ($iAmount < $this->sommeMin || $iAmount > $this->sommeMax) {
-            $_SESSION['forms']['depot-de-dossier']['response'] = $this->lng['depot-de-dossier']['montant-invalide'];
+            $_SESSION['forms']['depot-de-dossier']['response']          = $this->lng['depot-de-dossier']['montant-invalide'];
             $_SESSION['forms']['depot-de-dossier']['errors']['montant'] = true;
         }
     }
 
     if (isset($_SESSION['forms']['depot-de-dossier']['errors'])) {
-        header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
+        header('Location: ' . $_SERVER['REQUEST_URI']);
         die;
     }
 
-    header('Location: ' . $this->lurl . '/depot_de_dossier/etape1');
+    header('Location: ' . (isset($sRedirectURL) ? $sRedirectURL : $this->lurl) . '/depot_de_dossier/etape1');
     die;
 }
 
