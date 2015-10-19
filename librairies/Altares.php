@@ -47,7 +47,6 @@ class Altares
     public function getEligibility($iSIREN)
     {
         $this->oSettings->get('Altares WSDL Eligibility', 'type');
-
         return $this->soapCall($this->oSettings->value, 'getEligibility', array('siren' => $iSIREN));
     }
 
@@ -60,7 +59,6 @@ class Altares
     public function getBalanceSheets($iSIREN, $iSheetsCount = 3)
     {
         $this->oSettings->get('Altares WSDL CallistoIdentite', 'type');
-var_dump($this->oSettings->value);
         return $this->soapCall($this->oSettings->value, 'getDerniersBilans', array('siren' => $iSIREN, 'nbBilans' => $iSheetsCount));
     }
 
