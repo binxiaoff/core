@@ -82,6 +82,86 @@ class devboxController extends bootstrap
         //Migration des donées
         $this->migrateCompanyAttachment();
 
+        // Modify the folders on the server
+        $this->path;
+        if (false === is_dir($this->path.'protected/companies/autre')) {
+            mkdir($this->path.'protected/companies/autre');
+        }
+        if (false === is_dir($this->path.'protected/companies/autre2')) {
+            mkdir($this->path.'protected/companies/autre2');
+        }
+        if (false === is_dir($this->path.'protected/companies/autre3')) {
+            mkdir($this->path.'protected/companies/autre3');
+        }
+        if (false === is_dir($this->path.'protected/companies/autre4')) {
+            mkdir($this->path.'protected/companies/autre4');
+        }
+
+        if (false === rename($this->path.'protected/companies/delegation_pouvoir', $this->path.'protected/companies/cgv')) {
+            echo 'Error: rename /protected/companies/delegation_pouvoir to /protected/companies/cgv'.PHP_EOL;
+        }
+
+        $this->copyFolder($this->path.'public/default/var/images/logos_companies', $this->path.'protected/companies/autre');
+
+        if (false === rename($this->path.'protected/companies/photo_dirigeant', $this->path.'protected/companies/cni_passeport_verso')) {
+            echo 'Error: rename /protected/companies/photo_dirigeant to /protected/companies/cni_passeport_verso'.PHP_EOL;
+        }
+
+        if (false === rename($this->path.'protected/companies/derniere_liasse_fiscale', $this->path.'protected/companies/liasse_fiscale')) {
+            echo 'Error: rename /protected/companies/derniere_liasse_fiscale to /protected/companies/liasse_fiscale'.PHP_EOL;
+        }
+
+        if (false === rename($this->path.'protected/companies/derniers_comptes_approuves', $this->path.'protected/companies/liasse_fiscale_n_1')) {
+            echo 'Error: rename /protected/companies/derniers_comptes_approuves to /protected/companies/liasse_fiscale_n_1'.PHP_EOL;
+        }
+
+        if (false === rename($this->path.'protected/companies/dernier_bilan_certifie', $this->path.'protected/companies/liasse_fiscale_n_2')) {
+            echo 'Error: rename /protected/companies/dernier_bilan_certifie to /protected/companies/liasse_fiscale_n_2'.PHP_EOL;
+        }
+
+        if (false === rename($this->path.'protected/companies/arret_comptable_recent', $this->path.'protected/companies/situation_comptable_intermediaire')) {
+            echo 'Error: rename /protected/companies/arret_comptable_recent to /protected/companies/situation_comptable_intermediaire'.PHP_EOL;
+        }
+
+        if (false === rename($this->path.'protected/companies/budget_exercice_en_cours_a_venir', $this->path.'protected/companies/previsionnel')) {
+            echo 'Error: rename /protected/companies/budget_exercice_en_cours_a_venir to /protected/companies/previsionnel'.PHP_EOL;
+        }
+
+        $this->copyFolder($this->path.'protected/companies/autres', $this->path.'protected/companies/autre2');
+
+        $this->copyFolder($this->path.'protected/companies/autres', $this->path.'protected/companies/autre3');
+
+        $this->copyFolder($this->path.'protected/companies/autres', $this->path.'protected/companies/autre4');
+
+        //delete autres
+        if (false === $this->delTree($this->path.'protected/companies/autres')) {
+            echo 'Error: remove protected/companies/autres'.PHP_EOL;
+        }
+
+        // move all files
+        $files = scandir($this->path.'protected/companies/notation_banque_france');
+
+        $source = $this->path.'protected/companies/notation_banque_france/';
+        $destination = $this->path.'protected/companies/autre2/';
+
+        foreach ($files as $file) {
+            if (in_array($file, array(".",".."))) {
+                continue;
+            }
+            if (false === rename($source.$file, $destination.$file)) {
+                echo 'Error: rename '.$source.$file.' to '.$destination.$file.PHP_EOL;
+            }
+        }
+
+        //delete notation_banque_france
+        if (false === $this->delTree($this->path.'protected/companies/notation_banque_france')) {
+            echo 'Error: remove protected/companies/notation_banque_france'.PHP_EOL;
+        }
+
+        if (false === rename($this->path.'protected/companies', $this->path.'protected/projects')) {
+            echo 'Error: rename /protected/companies to /protected/projects'.PHP_EOL;
+        }
+
         // Une fois tous les attachments transférés, on supprime les anciennes colonnes
         // Backuper la table companies_details avant
         $this->bdd->query("
@@ -1372,5 +1452,35 @@ class devboxController extends bootstrap
         $attachment->added = $added;
 
         return $attachment->save();
+    }
+
+    private function copyFolder($source, $destination) {
+
+        $files = scandir($source);
+
+        if ('/' !== substr($source, -1)) {
+            $source = $source. '/';
+        }
+
+        if ('/' !== substr($destination, -1)) {
+            $destination = $destination. '/';
+        }
+
+        foreach ($files as $file) {
+            if (in_array($file, array(".",".."))) {
+                continue;
+            }
+            if (false === copy($source.$file, $destination.$file)) {
+                echo 'Error: copy '.$source.$file.' to '.$destination.$file.PHP_EOL;
+            }
+        }
+    }
+
+    private function delTree($dir) {
+        $files = array_diff(scandir($dir), array('.','..'));
+        foreach ($files as $file) {
+            (is_dir("$dir/$file")) ? delTree("$dir/$file") : unlink("$dir/$file");
+        }
+        return rmdir($dir);
     }
 }

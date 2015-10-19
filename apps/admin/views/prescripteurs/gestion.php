@@ -44,11 +44,11 @@
         <li>Gestion des prescripteurs</li>
     </ul>
     <?
-    if(isset($_POST['form_search_prescripteur']))
+    if (isset($_POST['form_search_prescripteur']))
     {
         ?><h1>Résultats de la recherche d'prescripteur <?=(count($this->aPrescripteurs)>0?'('.count($this->aPrescripteurs).')':'')?></h1><?
     }
-    else
+    elseif (isset($this->aPrescripteurs))
     {
         ?><h1>Liste des <?=count($this->aPrescripteurs)?> derniers prescripteurs</h1><?
     }
