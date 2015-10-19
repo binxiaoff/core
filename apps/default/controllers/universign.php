@@ -814,7 +814,7 @@ class universignController extends bootstrap
                 "certificateTypes" => new Value(array(new Value("timestamp", "string")), "array"),
                 "language" => new Value($language, "string"),
                 //The OTP will be sent by Email
-                "identificationType" => new Value("email", "string"),
+                "identificationType" => new Value("sms", "string"),
                 "description" => new Value("CGV Emprunteur ID : " . $oProjectCgv->id, "string"),
             );
 
