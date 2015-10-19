@@ -235,7 +235,7 @@ class emprunteursController extends bootstrap
         $this->clients_mandats   = $this->loadData('clients_mandats');
         $this->projects_pouvoir  = $this->loadData('projects_pouvoir');
         $prelevements            = $this->loadData('prelevements');
-
+        $this->clients->history  = '';
         // Liste deroulante secteurs
         $this->settings->get('Liste deroulante secteurs', 'type');
         $this->lSecteurs = explode(';', $this->settings->value);
