@@ -91,14 +91,14 @@
 			});
 		});
 
-		$doc.on('click', function(event) {
+		$doc.on('click touchend', function(event) {
 			var $target = $(event.target);
 
 			if (
 				!$target.hasClass('login-panel') && 
 				!$target.parents('.login-panel').length && 
-				!$target.hasClass('login-toggle') && 
-				!$target.parents('.login-toggle').length
+ 				!$target.hasClass('login-toggle') && 
+ 				!$target.parents('.login-toggle').length
 			) {                    
 				$html.removeClass('show-login');
 			}
