@@ -36,7 +36,7 @@ class prescripteursController extends bootstrap
 
         if (isset($_POST['form_search_prescripteur'])) {
             // Recuperation de la liste des clients
-            $this->aPrescripteurs = $this->clients->searchPrescripteur($_POST['nom'], $_POST['prenom'], $_POST['email']);
+            $this->aPrescripteurs = $this->clients->searchPrescripteur('', $_POST['nom'], $_POST['prenom'], $_POST['email']);
             // Mise en session du message
             $_SESSION['freeow']['title'] = 'Recherche d\'un client';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';

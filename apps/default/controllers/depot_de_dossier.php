@@ -23,19 +23,20 @@ class depot_de_dossierController extends bootstrap
 
         $this->catchAll = true;
 
-        $this->companies               = $this->loadData('companies');
-        $this->companies_bilans        = $this->loadData('companies_bilans');
-        $this->companies_details       = $this->loadData('companies_details');
-        $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
-        $this->projects                = $this->loadData('projects');
-        $this->projects_status         = $this->loadData('projects_status');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->clients                 = $this->loadData('clients');
-        $this->clients_adresses        = $this->loadData('clients_adresses');
-        $this->clients_prescripteur    = $this->loadData('clients');
-        $this->prescripteurs           = $this->loadData('prescripteurs');
-        $this->attachment              = $this->loadData('attachment');
-        $this->attachment_type         = $this->loadData('attachment_type');
+        $this->companies                     = $this->loadData('companies');
+        $this->companies_bilans              = $this->loadData('companies_bilans');
+        $this->companies_details             = $this->loadData('companies_details');
+        $this->companies_actif_passif        = $this->loadData('companies_actif_passif');
+        $this->projects                      = $this->loadData('projects');
+        $this->projects_status               = $this->loadData('projects_status');
+        $this->projects_status_history       = $this->loadData('projects_status_history');
+        $this->clients                       = $this->loadData('clients');
+        $this->clients_adresses              = $this->loadData('clients_adresses');
+        $this->prescripteurs                 = $this->loadData('prescripteurs');
+        $this->clients_prescripteur          = $this->loadData('clients');
+        $this->clients_adresses_prescripteur = $this->loadData('clients_adresses');
+        $this->attachment                    = $this->loadData('attachment');
+        $this->attachment_type               = $this->loadData('attachment_type');
 
         $this->navigateurActive = 3;
 
@@ -360,8 +361,6 @@ class depot_de_dossierController extends bootstrap
 
     private function step2Form()
     {
-        $_SESSION['forms']['depot-de-dossier-2']['values'] = $_POST;
-
         if (empty($_POST['raison_sociale'])) {
             $_SESSION['forms']['depot-de-dossier-2']['errors']['raison_sociale'] = true;
         }
@@ -415,6 +414,7 @@ class depot_de_dossierController extends bootstrap
             $_SESSION['forms']['depot-de-dossier-2']['errors']['cgv'] = true;
         }
         if (false === empty($_SESSION['forms']['depot-de-dossier-2']['errors'])) {
+            $_SESSION['forms']['depot-de-dossier-2']['values'] = $_POST;
             $this->redirect(self::PAGE_NAME_STEP_2);
         }
 
@@ -456,6 +456,13 @@ class depot_de_dossierController extends bootstrap
 
             if (empty($this->clients_prescripteur->id_client)) {
                 $this->clients_prescripteur->create();
+
+                $this->clients_adresses_prescripteur->id_client = $this->clients_prescripteur->id_client;
+                $this->clients_adresses_prescripteur->civilite  = $_POST['civilite_prescripteur'];
+                $this->clients_adresses_prescripteur->prenom    = $_POST['prenom_prescripteur'];
+                $this->clients_adresses_prescripteur->nom       = $_POST['nom_prescripteur'];
+                $this->clients_adresses_prescripteur->telephone = $_POST['mobile_prescripteur'];
+                $this->clients_adresses_prescripteur->create();
 
                 $this->prescripteurs->id_client = $this->clients_prescripteur->id_client;
                 $this->prescripteurs->create();
@@ -1011,7 +1018,8 @@ class depot_de_dossierController extends bootstrap
 
         if (false === empty($this->projects->id_prescripteur)) {
             $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
-            $this->clients_prescripteur->get($this->prescripteurs->id_client);
+            $this->clients_prescripteur->get($this->prescripteurs->id_client, 'id_client');
+            $this->clients_adresses_prescripteur->get($this->prescripteurs->id_client, 'id_client');
         }
 
         $this->projects_status->getLastStatut($this->projects->id_project);

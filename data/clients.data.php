@@ -677,7 +677,7 @@ class clients extends clients_crud
             $iClientId = $this->bdd->escape_string($iClientId);
             $sWhere = 'c.id_client = '. $iClientId;
         } elseif (false === empty($aWhere)) {
-            $sWhere = ' WHERE ' . implode(' '.$sOperation.' ', $aWhere);
+            $sWhere = ' WHERE ' . implode(' ' . $sOperation.' ', $aWhere);
         }
 
 
