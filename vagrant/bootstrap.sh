@@ -129,3 +129,4 @@ gem install mailcatcher
 sed -i '/;sendmail_path =/c sendmail_path = /usr/bin/env catchmail' /etc/php5/apache2/php.ini
 a2enmod proxy proxy_http
 ln -fs /vagrant/conf/vhosts/mailcatcher.conf /etc/apache2/sites-enabled/mailcatcher.conf
+cp /vagrant/conf/mailcatcher.conf /etc/init/mailcatcher.conf

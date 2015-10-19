@@ -3605,7 +3605,6 @@ class dossiersController extends bootstrap
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
-        $this->autoFireView   = false;
         $this->autoFireDebug  = false;
 
         $oClients    = $this->loadData('clients');
@@ -3614,15 +3613,15 @@ class dossiersController extends bootstrap
         $oProjectCgv = $this->loadData('project_cgv');
 
         if (false === isset($this->params[0]) || ! $oProjects->get($this->params[0], 'id_project')) {
-            echo 'project id invalid';
+            $this->result = 'project id invalid';
             return;
         }
         if (! $oCompanies->get($oProjects->id_company, 'id_company')) {
-            echo 'company id invalid';
+            $this->result = 'company id invalid';
             return;
         }
         if (! $oClients->get($oCompanies->id_client_owner, 'id_client')) {
-            echo 'client id invalid';
+            $this->result = 'client id invalid';
             return;
         }
 
@@ -3632,7 +3631,7 @@ class dossiersController extends bootstrap
                 $iTreeId = $this->settings->value;
 
                 if (!$iTreeId) {
-                    echo 'tree id invalid';
+                    $this->result = 'tree id invalid';
                     return;
                 }
 
@@ -3650,7 +3649,7 @@ class dossiersController extends bootstrap
             $iTreeId = $this->settings->value;
 
             if (!$iTreeId) {
-                echo 'tree id invalid';
+                $this->result = 'tree id invalid';
                 return;
             }
 
@@ -3667,13 +3666,13 @@ class dossiersController extends bootstrap
         $elements = $this->tree_elements->select('id_tree = "' . $oProjectCgv->id_tree . '" AND id_element = '.elements::TYPE_PDF_CGU.' AND id_langue = "' . $this->language . '"');
 
         if (false === isset($elements[0]['value']) || '' == $elements[0]['value']) {
-            echo 'element id invalid';
+            $this->result = 'element id invalid';
             return;
         }
         $sPdfPath = $this->path . 'public/default/var/fichiers/'.$elements[0]['value'];
 
         if (false === file_exists($sPdfPath)) {
-            echo 'file not found';
+            $this->result = 'file not found';
             return;
         }
 
@@ -3735,7 +3734,7 @@ class dossiersController extends bootstrap
             $oEmail->addRecipient(trim($oClients->email));
             Mailer::send($oEmail, $this->mails_filer, $oEmailText->id_textemail);
         }
-        echo 'OK';
+        $this->result = 'Envoi des CGV a été fait avec succès !';
     }
 
     /**
