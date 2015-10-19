@@ -49,7 +49,7 @@ class Bootstrap
     public static function getInstance($aConfig)
     {
         if (true === is_null(self::$oInstance)) {
-            self::$oInstance = new Bootstrap();
+            self::$oInstance = new self();
             self::$oInstance->setAssert();
             self::$oInstance->setConfig($aConfig);
         }
