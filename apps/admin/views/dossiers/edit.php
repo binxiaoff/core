@@ -424,35 +424,32 @@
                         <th><label for="status">Statut :</label></th>
                         <td id="current_statut">
                             <?php
-                            $sDiplayPeriodHS     = 'none';
+                            $sDisplayPeriodHS    = 'none';
                             $sDisplayMsgPeriodHs = 'none';
-                            $sDiplayStatus       = 'block';
+                            $sDisplayStatus      = 'block';
                             $sDisplayMsgProject  = 'block';
+
                             if ($this->current_projects_status->status == 130) {
-                                echo "Remboursement anticipé";
+                                echo 'Remboursement anticipé';
                             } else {
                                 if (count($this->lProjects_status) > 0) {
-                                if ((0 === (int)$this->projects->period ||
-                                    1000000 === (int)$this->projects->period ||
-                                    '' == $this->companies_details->fichier_rib) &&
-                                    $this->current_projects_status->status === 35) {
-                                        $sDiplayPeriodHS     = 'block';
-                                        $sDiplayStatus       = 'none';
+                                    if (
+                                        (0 == $this->projects->period || 1000000 == $this->projects->period || empty($this->aAttachments[3]['path'])) // No RIB or no duration selected
+                                        && $this->current_projects_status->status == 35
+                                    ) {
+                                        $sDisplayPeriodHS    = 'block';
+                                        $sDisplayStatus      = 'none';
                                         $sDisplayMsgPeriodHs = 'block';
                                         $sDisplayMsgProject  = 'none';
                                     }
                             ?>
-                                    <span id="displayPeriodHS" style="display:<?= $sDiplayPeriodHS ?>;">
+                                    <span id="displayPeriodHS" style="display:<?= $sDisplayPeriodHS ?>;">
                                         <?= $this->current_projects_status->label ?>
                                     </span>
-                                    <select name="status" id="status" class="select" style="display:<?= $sDiplayStatus ?>;" <?= ($this->current_projects_status->status == 130 ? '"disabled"' : "") ?>>
-                                        <?php
-                                        foreach ($this->lProjects_status as $s) {
-                                            ?>
-                                            <option <?= ($this->current_projects_status->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
-                                            <?php
-                                        }
-                                        ?>
+                                    <select name="status" id="status" class="select" style="display:<?= $sDisplayStatus ?>;" <?= ($this->current_projects_status->status == 130 ? '"disabled"' : "") ?>>
+                                    <?php foreach ($this->lProjects_status as $s) { ?>
+                                        <option <?= ($this->current_projects_status->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
+                                    <?php } ?>
                                     </select>
                                     <?php
                                 } else {
@@ -1638,80 +1635,29 @@
 
         <div id="title_etape5">Etape 5</div>
         <div id="etape5">
-            <script language="javascript" type="text/javascript">
+            <script>
                 function formUploadCallback(result) {
                     var aStatus = jQuery.parseJSON(result);
                     if(aStatus.length != 0) {
                         $.each(aStatus, function(fileType, value){
                             if ('ok' == value) {
-                                $(".statut_"+fileType).html('Enregistré');
-                            }
+                                $(".statut_" + fileType).html('Enregistré');
 
+                                <?php if (0 < $this->projects->period  && 1000000 > $this->projects->period && 35 == $this->current_projects_status->status) { ?>
+                                    if (fileType == 'fichier_3' && $('#displayPeriodHS').css('display') == 'block') { // RIB
+                                        $("#status").css('display', 'block');
+                                        $("#msgProject").css('display', 'block');
+                                        $('#displayPeriodHS').css('display', 'none');
+                                        $("#msgProjectPeriodHS").css('display', 'none');
+                                    }
+                                <?php } ?>
+                            }
                         });
                         $("#valid_etape5").slideDown();
                         setTimeout(function () {
                             $("#valid_etape5").slideUp();
                         }, 4000);
                     }
-                    if (obj.fichier2 == 'ok') {
-                        $(".statut_fichier2").html(enregistre);
-                        if($('#displayPeriodHS').css('display') == 'block' &&
-                            0 < <?= (int)$this->projects->period ?> &&
-                            1000000 > <?= (int)$this->projects->period ?>){
-                            $("#status").css('display', 'block');
-                            $("#msgProject").css('display', 'block');
-                            $('#displayPeriodHS').css('display', 'none');
-                            $("#msgProjectPeriodHS").css('display', 'none');
-                        }
-                    }
-                    if (obj.fichier3 == 'ok') {
-                        $(".statut_fichier3").html(enregistre);
-                    }
-                    if (obj.fichier4 == 'ok') {
-                        $(".statut_fichier4").html(enregistre);
-                    }
-                    if (obj.fichier5 == 'ok') {
-                        $(".statut_fichier5").html(enregistre);
-                    }
-                    if (obj.fichier6 == 'ok') {
-                        $(".statut_fichier6").html(enregistre);
-                    }
-                    if (obj.fichier7 == 'ok') {
-                        $(".statut_fichier7").html(enregistre);
-                    }
-                    if (obj.fichier8 == 'ok') {
-                        $(".statut_fichier8").html(enregistre);
-                    }
-                    if (obj.fichier9 == 'ok') {
-                        $(".statut_fichier9").html(enregistre);
-                    }
-                    if (obj.fichier10 == 'ok') {
-                        $(".statut_fichier10").html(enregistre);
-                    }
-                    if (obj.fichier11 == 'ok') {
-                        $(".statut_fichier11").html(enregistre);
-                    }
-                    if (obj.fichier12 == 'ok') {
-                        $(".statut_fichier12").html(enregistre);
-                    }
-                    if (obj.fichier13 == 'ok') {
-                        $(".statut_fichier13").html(enregistre);
-                    }
-                    if (obj.fichier15 == 'ok') {
-                        $(".statut_fichier15").html(enregistre);
-                    }
-                    if (obj.fichier16 == 'ok') {
-                        $(".statut_fichier16").html(enregistre);
-                    }
-                    if (obj.fichier17 == 'ok') {
-                        $(".statut_fichier17").html(enregistre);
-                    }
-
-                    //console.log("Upload OK:", result);
-                    $("#valid_etape5").slideDown();
-                    setTimeout(function () {
-                        $("#valid_etape5").slideUp();
-                    }, 4000);
                 }
             </script>
             <form method="post" name="dossier_etape5" id="dossier_etape5" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/file/<?= $this->params[0] ?>" target="upload_target">
@@ -1728,7 +1674,7 @@
                         <th></th>
                         </thead>
                         <tbody>
-                        <?php foreach($this->aAttachmentTypes as $sAttachmentType): ?>
+                        <?php foreach ($this->aAttachmentTypes as $sAttachmentType): ?>
                         <tr>
                             <td class="remove_col">
                                 <?php if(isset($this->aAttachments[$sAttachmentType['id']]['path'])): ?>
