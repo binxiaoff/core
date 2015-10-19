@@ -26,6 +26,8 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\librairies\Cache;
+
 class Controller
 {
     var $Command;
@@ -46,6 +48,11 @@ class Controller
 
     public $current_template = '';
 
+    /**
+     * @var Cache
+     */
+    private $oCache;
+
     public function __construct(&$command, $config, $app)
     {
         if(false === defined('ENVIRONMENT')) {
@@ -53,6 +60,11 @@ class Controller
         }
 
         $this->initUnilendAutoload();
+        $this->oCache = Cache::getInstance($config);
+        if(isset($_GET['flushCache']) && $_GET['flushCache'] == 'y') {
+            $this->oCache->flush();
+        }
+
 
         //Variables de session pour la fenetre de debug
         unset($_SESSION['error']);
