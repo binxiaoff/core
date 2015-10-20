@@ -3131,11 +3131,12 @@ class ajaxController extends bootstrap
                 <span style="color:' . $this->couleur . '">' . $this->wording . '</span>
             </p>
         ';
+        die;
     }
 
     public function _ibanExist()
     {
-
+        
         $companies = $this->loadData('companies');
         $list      = array();
         foreach ($companies->select('id_client_owner != "' . $this->bdd->escape_string($_POST['id']) . '" AND iban = "' . $this->bdd->escape_string($_POST['iban']) . '"') as $company) {
@@ -3146,10 +3147,13 @@ class ajaxController extends bootstrap
         } else {
             echo "none";
         }
+        die;
     }
 
     public function _ibanExistV2()
     {
+        $this->autoFireView = false;
+        
         $companies = $this->loadData('companies');
         $list      = array();
         foreach ($companies->select('id_client_owner != "' . $this->bdd->escape_string($_POST['id']) . '" AND iban = "' . $this->bdd->escape_string($_POST['iban']) . '"') as $company) {
@@ -3160,5 +3164,6 @@ class ajaxController extends bootstrap
         } else {
             echo "none";
         }
+        die;
     }
 }
