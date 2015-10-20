@@ -1000,4 +1000,6 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
     .login-panel .error_login_mobile{display: inline;}
     .login-panel .error_login_mobile .error_login{height: auto;text-align: center;}
+    
+    .testimonials{height: 100px;}
 }
