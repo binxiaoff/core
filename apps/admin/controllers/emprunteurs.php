@@ -770,4 +770,12 @@ class emprunteursController extends bootstrap
             }
         }
     }
+    
+    function _error_iban_lightbox(){
+        // On masque les Head, header et footer originaux plus le debug
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+    }
 }

@@ -259,39 +259,45 @@ if (isset($_SESSION['freeow'])) {
 
     function RIBediting()
     {
-        var iban = document.getElementById('iban1').value + document.getElementById('iban2').value + document.getElementById('iban3').value + document.getElementById('iban4').value + document.getElementById('iban5').value + document.getElementById('iban6').value + document.getElementById('iban7').value;
-
+        
+        var iban = $('#iban1').val() + $('#iban2').val() + $('#iban3').val() +$('#iban4').val() + $('#iban5').val() + $('#iban6').val() + $('#iban7').val();
+  
         // si vide on ne tient pas compte
         if (iban != "")
         {
-            if (iban == "<?= $this->companies->iban ?>" && document.getElementById('bic').value == "<?= $this->companies->bic ?>")
-                return true;
-
-
-            List_compagnie_meme_iban = CheckIfIbanExistDeja(iban, <?= $this->clients->id_client ?>);
-
-            if (List_compagnie_meme_iban != "none")
+            if (validateIban(iban) == false && iban != "")
             {
-                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIB_iban_existant/'+List_compagnie_meme_iban});
+                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/error_iban_lightbox/'});
                 return false;
             }
+            else{
+            
+                // si on a deja les memes infos deja 'enregistré on valide
+                if (iban == "<?= $this->companies->iban ?>" && $('#bic').val() == "<?= $this->companies->bic ?>"){
+                    return true;
+                }
 
+                List_compagnie_meme_iban = CheckIfIbanExistDeja(iban, <?= $this->clients->id_client ?>);
 
-            if (<?= count($this->loadData('prelevements')->select('status = 0 AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0)
-            {
-                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox_no_prelev/<?= $this->clients->id_client ?>'});
-                return false;
+                if (List_compagnie_meme_iban != "none")
+                {
+                    $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIB_iban_existant/'+List_compagnie_meme_iban});
+                    return false;
+                }
+
+                if (<?= count($this->loadData('prelevements')->select('status = 0 AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0)
+                {
+                    $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox_no_prelev/<?= $this->clients->id_client ?>'});
+                    return false;
+                }
+                else if (<?= count($this->loadData('prelevements')->select('date_echeance_emprunteur > CURRENT_DATE AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0)
+                {
+                    return true;
+                }
+
+                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox/<?= $this->clients->id_client ?>'});
+                    return false;
             }
-            else if (<?= count($this->loadData('prelevements')->select('date_echeance_emprunteur > CURRENT_DATE AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0)
-            {
-                return true;
-            }
-
-
-
-
-            $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox/<?= $this->clients->id_client ?>'});
-                return false;
         }
         else
         {
@@ -318,6 +324,8 @@ if (isset($_SESSION['freeow'])) {
         // IBAN
         if (champ == 2)
         {
+             var iban = $('#iban1').val() + $('#iban2').val() + $('#iban3').val() +$('#iban4').val() + $('#iban5').val() + $('#iban6').val() + $('#iban7').val();
+            
             if (validateIban($("#" + id).val()) == false)
                     //if($("#"+id).val().length != 27)
                     {
@@ -331,7 +339,6 @@ if (isset($_SESSION['freeow'])) {
 
     $("#edit_emprunteur").submit(function (event) {
         var form_ok = true;
-
 
         if (check_bic($("#bic").val()) == false && $("#bic").val() != "")
         //if($("#bic").val().length < 8 || $("#bic").val().length > 11)
