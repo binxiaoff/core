@@ -1128,6 +1128,69 @@ class dossiersController extends bootstrap
                             $projects_status_history_informations->information = $contenu_a_ajouter_mail;
                             $projects_status_history_informations->create();
                             
+                            // FB
+                            $this->settings->get('Facebook', 'type');
+                            $lien_fb = $this->settings->value;
+
+                            // Twitter
+                            $this->settings->get('Twitter', 'type');
+                            $lien_tw = $this->settings->value;
+                            
+                            // EMAIL RECOUVREMENT EMPRUNTEUR //
+                            
+                            // recup emprunteur
+                            $emprunteur = $this->loadData('clients');
+                            $emprunteur->get($this->companies->id_client_owner,'id_client');
+                            // recup date financement (date de premier passage en statut remboursement)
+                            $status_remb = $this->projects_status_history->select('id_project = '.$this->projects->id_project.' AND id_project_status = 8','added ASC',0,1);
+                            $date_financement = date('m/Y',strtotime($status_remb[0]['added']));
+                            // Recup nb preteurs
+                            $nb_preteurs = $this->loans->getNbPreteurs($this->projects->id_project);
+                            // Reucp mensualité emprunteur
+                            $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
+                            $echeanciers_emprunteur->get($this->projects->id_project,'ordre = 1 AND id_project');
+                            $montant_mensuel = (($echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva)/100);
+                            // recup capital restant du
+                            $statut_recouvrement = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 10', 'added DESC', 0, 1);
+                            if ($statut_recouvrement != false) {
+                                $lastFormatSql = date('Y-m-d', strtotime($statut_recouvrement[0]['added']));
+                            } else {
+                                $lastFormatSql = date('Y-m-d'); 
+                            }
+                            $CapitalRestantDu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) > "' . $lastFormatSql . '"', 'capital');
+
+                            
+                            // Variables du mailing
+                            $varMail = array(
+                                'surl' => $this->surl,
+                                'url' => $this->furl,
+                                'civilite_e' => $emprunteur->civilite,
+                                'nom_e' => $emprunteur->nom,
+                                'entreprise' => $this->companies->name,
+                                'date_finance' => $date_financement,
+                                'montant_emprunt' => $this->projects->amount,
+                                'nb_preteurs' => $nb_preteurs,
+                                '2_mensualites' => number_format(($montant_mensuel*2), 0, ',', ' '),
+                                'capital_restant_du' => $CapitalRestantDu,
+                                'nom_societe_recouvrement' => $this->cab,
+                                'lien_fb' => $lien_fb,
+                                'lien_tw' => $lien_tw);
+                            
+                            // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
+                            $liste_attente_mail = $this->loadData('liste_attente_mail');
+                            $liste_attente_mail->type_mail = 'statut-recouvrement-emprunteur';
+                            $liste_attente_mail->language = $this->language;
+                            $liste_attente_mail->variables = serialize($varMail);
+                            $liste_attente_mail->to = $this->clients->email;
+                            $liste_attente_mail->statut = 0; //pas envoyé
+                            $liste_attente_mail->create(); 
+                            
+                            // date du dernier probleme
+                            $statusProbleme = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 9', 'added DESC');
+                            $DateProbleme = date('d/m/Y', strtotime($statusProbleme[0]['added']));
+
+                            $this->companies->get($this->projects->id_company, 'id_company');
+                            
                             // On recuprere les lenders ayant des loans sur le projet
                             $lPreteurs = $this->loans->getPreteurs($this->projects->id_project);
 
@@ -1194,19 +1257,6 @@ class dossiersController extends bootstrap
                                         // pour chaque preteur on check si le preteur veut recevoir l'email instantané
                                         if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true)
                                         {
-                                            // date du dernier probleme
-                                            $statusProbleme = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 9', 'added DESC');
-                                            $DateProbleme = date('d/m/Y', strtotime($statusProbleme[0]['added']));
-
-                                            $this->companies->get($this->projects->id_company, 'id_company');
-
-                                            // FB
-                                            $this->settings->get('Facebook', 'type');
-                                            $lien_fb = $this->settings->value;
-
-                                            // Twitter
-                                            $this->settings->get('Twitter', 'type');
-                                            $lien_tw = $this->settings->value;
 
                                             // Variables du mailing
                                             $varMail = array(
