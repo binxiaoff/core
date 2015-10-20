@@ -63,7 +63,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                             ?><li><a class="prev notext" href="<?= $this->lurl ?>/projects/detail/<?= $this->positionProject['previous'] ?>">arrpw</a></li><?
                         }
                         ?>
-                        <li><a class="view notext" href="<?= $this->lurl ?>/<?= ($_SESSION['page_projet'] == 'projets_fo' ? $this->tree->getSlug(4, $this->language) : 'projects') ?>">view</a></li>
+                        <li><a class="view notext" href="<?= $this->lurl ?>/<?= ($_SESSION['page_projet'] == 'projets_fo' || !isset($_SESSION['page_projet'])? $this->tree->getSlug(4, $this->language) : 'projects') ?>">view</a></li>
                         <?
                         if ($this->positionProject['next'] != '') {
                             ?><li><a class="next notext" href="<?= $this->lurl ?>/projects/detail/<?= $this->positionProject['next'] ?>">arrow</a></li><?
