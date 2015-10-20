@@ -778,4 +778,11 @@ class emprunteursController extends bootstrap
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
     }
+    function _error_bic_lightbox(){
+        // On masque les Head, header et footer originaux plus le debug
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+    }
 }

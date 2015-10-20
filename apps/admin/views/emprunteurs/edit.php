@@ -270,8 +270,11 @@ if (isset($_SESSION['freeow'])) {
                 $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/error_iban_lightbox/'});
                 return false;
             }
+            else if (check_bic($("#bic").val()) == false){
+                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/error_bic_lightbox/'});
+                return false;
+            }
             else{
-            
                 // si on a deja les memes infos deja 'enregistré on valide
                 if (iban == "<?= $this->companies->iban ?>" && $('#bic').val() == "<?= $this->companies->bic ?>"){
                     return true;
