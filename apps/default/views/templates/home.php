@@ -327,7 +327,7 @@
                             <?
                         }
                         if ($pf['photo_projet'] != '') {
-                            ?><img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_min') ?>" alt="<?= $pf['photo_projet'] ?>"><?
+                            ?><img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_moy') ?>" alt="<?= $pf['photo_projet'] ?>"><?
                         }
 
 

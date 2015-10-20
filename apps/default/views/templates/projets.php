@@ -311,7 +311,7 @@ if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' || $this->lurl 
 
                 <div class="project-mobile">
                     <div class="project-mobile-image">
-                        <img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_min') ?>" alt="" />
+                        <img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_moy') ?>" alt="" />
 
                         <div class="project-mobile-image-caption">
                             <p><?= number_format($pf['amount'], 0, ',', ' ') ?>€ | 
