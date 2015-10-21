@@ -162,11 +162,6 @@ class depot_de_dossierController extends bootstrap
         $this->projects->retour_altares = $oResult->myInfo->codeRetour;
         $this->projects->update();
 
-        // @todo patch before Altares fixes bug
-        if (Altares::RESPONSE_CODE_OLD_ANNUAL_ACCOUNTS == $oResult->myInfo->codeRetour) {
-            $oResult->myInfo->eligibility = 'Oui';
-        }
-
         $this->companies->altares_eligibility = $oResult->myInfo->eligibility;
         $this->companies->altares_codeRetour  = $oResult->myInfo->codeRetour;
         $this->companies->altares_motif       = $oResult->myInfo->motif;
