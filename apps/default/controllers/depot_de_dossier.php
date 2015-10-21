@@ -598,56 +598,42 @@ class depot_de_dossierController extends bootstrap
 
                 $this->redirect(self::PAGE_NAME_FILES, \projects_status::EN_ATTENTE_PIECES);
             } else {
-                // @todo change person recieving the email from client or prescripteur if there is one
-
-                /*
-                // ENVOI DU MAIL CONFIRMATION INSCRIPTION
-                // Recuperation du modele de mail
                 $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
 
-                $surl  = $this->surl;
-                $url   = $this->lurl;
-                $login = $this->clients->email;
-                //$mdp = $lemotdepasse;
-
                 $this->settings->get('Facebook', 'type');
-                $lien_fb = $this->settings->value;
+                $sFacebookURL = $this->settings->value;
 
                 $this->settings->get('Twitter', 'type');
-                $lien_tw = $this->settings->value;
+                $sTwitterURL = $this->settings->value;
 
-                $varMail = array(
-                    'surl'     => $surl,
-                    'url'      => $url,
-                    'password' => $lemotdepasse,
-                    'lien_fb'  => $lien_fb,
-                    'lien_tw'  => $lien_tw
+                $aVariables = array(
+                    'prenom'               => empty($this->clients_prescripteur->id_client) ? $this->clients->prenom : $this->clients_prescripteur->prenom,
+                    'raison_sociale'       => $this->companies->name,
+                    'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
+                    'lien_fb'              => $sFacebookURL,
+                    'lien_tw'              => $sTwitterURL,
+                    'sujet'                => $this->mails_text->subject,
+                    'surl'                 => $this->surl,
+                    'url'                  => $this->url,
                 );
 
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
                 $this->email = $this->loadLib('email', array());
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
+                $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
+                $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
+                $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $this->tnmp->constructionVariablesServeur($aVariables))));
 
-
-
-                // @todo supprimer les chiffres en fin d'email
-
-
+                $sRecipient = empty($this->clients_prescripteur->id_client) ? $this->clients->email : $this->clients_prescripteur->email;
+                $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
 
                 if ($this->Config['env'] == 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipient, $aNMPResponse);
+                    $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                 } else {
-                    $this->email->addRecipient(trim($this->clients->email));
+                    $this->email->addRecipient($sRecipient);
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
+
+/*
 
                 // ENVOI DU MAIL NOTIFICATION INSCRIPTION
                 // destinataire
@@ -849,6 +835,8 @@ class depot_de_dossierController extends bootstrap
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-fichiers'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-fichiers'];
         $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-fichiers'];
+
+        $this->lng['espace-emprunteur'] = $this->ln->selectFront('depot-de-dossier-espace-emprunteur', $this->language, $this->App);
 
         // @todo use trads for Types of files
         $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects();
