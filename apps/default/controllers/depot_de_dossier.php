@@ -927,6 +927,27 @@ class depot_de_dossierController extends bootstrap
         $this->projects->update();
 
         $this->lng['depot-de-dossier'] = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
+
+        if ($this->projects->id_commercial > 0) {
+            $this->users = $this->loadData('users');
+            $this->users->get($this->projects->id_commercial, 'id_user');
+            $this->mails_text->get('notification-stop-relance-dossier', 'lang = "' . $this->language . '" AND type');
+
+            $aReplacements = array(
+                '[ID_PROJET]'      => $this->projects->id_project,
+                '[LIEN_BO_PROJET]' => $this->aurl . '/dossiers/edit/' . $this->projects->id_project,
+                '[RAISON_SOCIALE]' => utf8_decode($this->companies->name),
+                '[SURL]'           => $this->surl
+            );
+
+            $this->email = $this->loadLib('email', array());
+            $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
+            $this->email->setSubject(stripslashes(utf8_decode(str_replace('[ID_PROJET]', $this->projects->id_project, $this->mails_text->subject))));
+            $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->mails_text->content));
+            $this->email->addRecipient(trim($this->users->email));
+
+            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+        }
     }
 
     /**
