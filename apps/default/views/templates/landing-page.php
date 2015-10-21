@@ -89,7 +89,7 @@
         </section>
         <aside class="signup right">
             <h2><?= $this->content['lp-titre-formulaire-inscription'] ?></h2>
-            <form action="<?= $_SERVER['SERVER_URI'] ?>" method="post" id="inscription" name="inscription">
+            <form action="<?= $_SERVER['REQUEST_URI'] ?>" method="post" id="inscription" name="inscription">
                 <?php if (isset($this->aForm['response'])) { ?>
                     <div class="form-row error" style="display:inline;"><?= $this->aForm['response'] ?></div>
                 <?php } ?>
