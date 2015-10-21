@@ -673,13 +673,13 @@ class clients extends clients_crud
             $aWhere[] = 'c.prenom LIKE "%' . $prenom . '%"';
         }
 
+        $sWhere = '';
         if ('' !== $iClientId) {
             $iClientId = $this->bdd->escape_string($iClientId);
             $sWhere = 'c.id_client = '. $iClientId;
         } elseif (false === empty($aWhere)) {
             $sWhere = ' WHERE ' . implode(' ' . $sOperation.' ', $aWhere);
         }
-
 
         if ('' !== $offset) {
             $offset = $this->bdd->escape_string($offset);

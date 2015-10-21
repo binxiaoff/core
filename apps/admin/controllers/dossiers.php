@@ -175,25 +175,15 @@ class dossiersController extends bootstrap
                 $dernierBilan = date('Y');
             }
 
-            $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '"', 'annee DESC');
-
             // Si existe pas on créer les champs
-            if ($this->lCompanies_actif_passif == false) {
-                $i = 1;
-                foreach ($this->lCompanies_actif_passif as $c) {
-                //for($i=1;$i<=3;$i++)
-                    if ($c['annee'] <= $dernierBilan) {
-                        $a                                        = 0;
-                        $this->companies_actif_passif->ordre      = $i;
-                        $this->companies_actif_passif->annee      = date('Y') - $a;
-                        $this->companies_actif_passif->id_company = $this->companies->id_company;
-                        $this->companies_actif_passif->create();
-                        $a++;
-                    }
+            $aYears = range(date('Y') - 1, date('Y') - 3);
+            foreach ($aYears as $iOrder => $iYear) {
+                if (false === $this->companies_actif_passif->yearExist($this->companies->id_company, $iYear)) {
+                    $this->companies_actif_passif->ordre      = $iOrder+1;
+                    $this->companies_actif_passif->annee      = $iYear;
+                    $this->companies_actif_passif->id_company = $this->companies->id_company;
+                    $this->companies_actif_passif->create();
                 }
-
-                header('Location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
-                die;
             }
 
             $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '" AND annee <= "' . $dernierBilan . '"', 'annee DESC');
