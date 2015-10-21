@@ -51,7 +51,7 @@ class Controller
     /**
      * @var Cache
      */
-    private $oCache;
+    public $oCache;
 
     public function __construct(&$command, $config, $app)
     {
