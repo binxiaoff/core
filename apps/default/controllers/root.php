@@ -269,7 +269,7 @@ class rootController extends bootstrap
 
             $_SESSION['ordreProject'] = $this->ordreProject;
 
-            $aElementsProjects = $this->projects->getProjectsStatusAndCount($this->tabProjectDisplay, $this->tabOrdreProject[$this->ordreProject], 0, 10, $this->oCache);
+            $aElementsProjects = $this->projects->getProjectsStatusAndCount($this->tabProjectDisplay, $this->tabOrdreProject[$this->ordreProject], 0, 10);
 
             $this->lProjetsFunding = $aElementsProjects['lProjectsFunding'];
             $this->nbProjects      = $aElementsProjects['nbProjects'];
@@ -1222,7 +1222,7 @@ class rootController extends bootstrap
         $this->ordreProject = 1;
         $this->type         = 0;
 
-        $aElementsProjects = $this->projects->getProjectsStatusAndCount('50,60,80', $this->tabOrdreProject[$this->ordreProject], 0, 6, $this->oCache);
+        $aElementsProjects = $this->projects->getProjectsStatusAndCount('50,60,80', $this->tabOrdreProject[$this->ordreProject], 0, 6);
 
         // Liste des projets en funding and nombre des projets en funding
         $this->lProjetsFunding = $aElementsProjects['lProjetsFunding'];
@@ -1283,7 +1283,7 @@ class rootController extends bootstrap
         $this->ordreProject = 1;
         $this->type         = 0;
 
-        $aElementsProjects = $this->projects->getProjectsStatusAndCount('50,60,80', $this->tabOrdreProject[$this->ordreProject], 0, 6, $this->oCache);
+        $aElementsProjects = $this->projects->getProjectsStatusAndCount('50,60,80', $this->tabOrdreProject[$this->ordreProject], 0, 6);
 
         // Liste des projets en funding and nombre des projets en funding
         $this->lProjetsFunding = $aElementsProjects['lProjetsFunding'];
@@ -1344,7 +1344,7 @@ class rootController extends bootstrap
         $this->ordreProject = 1;
         $this->type         = 0;
 
-        $aElementsProjects = $this->projects->getProjectsStatusAndCount('50,60,80', $this->tabOrdreProject[$this->ordreProject], 0, 6, $this->oCache);
+        $aElementsProjects = $this->projects->getProjectsStatusAndCount('50,60,80', $this->tabOrdreProject[$this->ordreProject], 0, 6);
 
         // Liste des projets en funding and nombre des projets en funding
         $this->lProjetsFunding = $aElementsProjects['lProjetsFunding'];

@@ -62,7 +62,7 @@ class projectsController extends bootstrap
         $this->type = 0;
 
         $_SESSION['ordreProject'] = $this->ordreProject;
-        $aElementsProjects = $this->projects->getProjectsStatusAndCount($this->tabProjectDisplay, $this->tabOrdreProject[$this->ordreProject], 0, 10, $this->oCache);
+        $aElementsProjects = $this->projects->getProjectsStatusAndCount($this->tabProjectDisplay, $this->tabOrdreProject[$this->ordreProject], 0, 10);
 
         $this->lProjetsFunding = $aElementsProjects['lProjectsFunding'];
         $this->nbProjects      = $aElementsProjects['nbProjects'];
