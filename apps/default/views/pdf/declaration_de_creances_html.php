@@ -10,7 +10,7 @@
 
 <style type="text/css">
 .img{
-	background-image:url(<?=$surl?>/images/default/declaration_de_creances.jpg);
+	background-image:url(<?=$this->surl?>/images/default/declaration_de_creances.jpg);
 	background-repeat: no-repeat;
 	background-size: 960px auto;
 	width:960px;

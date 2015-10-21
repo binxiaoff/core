@@ -294,3 +294,5 @@ table.lng label { cursor: pointer; font-weight: bold; }
 
 #phoca-captcha{float:left;}
 .reloadCaptcha{float:left;margin-right:5px;margin-top:4px;cursor:pointer;}
+
+table.hidden_table{display: none;}

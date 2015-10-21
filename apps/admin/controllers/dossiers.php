@@ -1357,7 +1357,51 @@ class dossiersController extends bootstrap
                                 }
                             }
                         }
-                        // fin statut remboursé
+                        // procedure de sauvegarde 
+                        elseif ($_POST['status'] == '150')
+                        {
+                            // On bloque tous les futures prélèvements 
+                            $prelevements = $this->loadData('prelevements');
+                            $L_prelevements = $prelevements->select('id_project = ' . $this->projects->id_project.' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
+                            
+                            if($L_prelevements != false){
+                                foreach($L_prelevements as $prel)
+                                {
+                                    $prelevements->get($prel['id_prelevement']);
+                                    $prelevements->status = 4; // bloqué temporairement
+                                    $prelevements->update();
+                                }
+                            }
+                            
+                            // On stop les remb auto si y en a
+                            $projects_remb = $this->loadData('projects_remb');
+                            $lRembAuto = $projects_remb->select('status = 0 AND id_project = '.$this->projects->id_project);
+                            if($lRembAuto != false){
+                                foreach ($lRembAuto as $r){
+                                   $projects_remb->get($r['id_project_remb'],'id_project_remb');
+                                   $projects_remb->status = 4;
+                                   $projects_remb->update();
+                                }
+                            }
+                            
+                            // on récupère la variable pour savoir si on envoi le mail au preteur ou non
+                            $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_ps'];
+                            $contenu_a_ajouter_mail = $_POST['area_ps'];
+                           
+                            // on enregsitre le contenu
+                            $projects_status_history_informations = $this->loadData('projects_status_history_informations');
+                            $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                            $projects_status_history_informations->information = $contenu_a_ajouter_mail;
+                            $projects_status_history_informations->create();
+                            
+                            // FB
+                            $this->settings->get('Facebook', 'type');
+                            $lien_fb = $this->settings->value;
+
+                            // Twitter
+                            $this->settings->get('Twitter', 'type');
+                            $lien_tw = $this->settings->value;
+                        }
                     }
 
                     // Companies
