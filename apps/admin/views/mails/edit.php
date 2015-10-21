@@ -97,7 +97,7 @@
                             <th><label for="content_<?=$key?>">Contenu :</label></th>
                         </tr>
                         <tr>
-                            <td><textarea name="content_<?=$key?>" id="content_<?=$key?>" class="textarea_big"><?=htmlentities($this->mails_text->content, ENT_COMPAT | ENT_HTML401, 'UTF-8')?></textarea></td>
+                            <td><textarea name="content_<?=$key?>" id="content_<?=$key?>" class="textarea_big"><?=htmlentities($this->mails_text->content, ENT_COMPAT, 'UTF-8')?></textarea></td>
                         </tr>
                         <tr>
                             <td>
