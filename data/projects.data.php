@@ -466,4 +466,25 @@ class projects extends projects_crud
 
         return $record;
     }
+
+    public function getProjectsStatusAndCount($sListStatus, $sTabOrderProject, $iStart, $iLimit, $oCache)
+    {
+        $sKey      = $oCache->makeKey('List_Counter_Projects', $sListStatus);
+        $aElements = $oCache->get($sKey);
+        if (false === $aElements) {
+
+            // Liste des projets en funding
+            $alProjetsFunding = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $sTabOrderProject, $iStart, $iLimit);
+            // Nb projets en funding
+            $anbProjects      = $this->countSelectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0');
+            $aElements = array(
+                'lProjectsFunding' => $alProjetsFunding,
+                'nbProjects'       => $anbProjects
+            );
+
+            $oCache->set($sKey, $aElements);
+        }
+
+        return $aElements;
+    }
 }
