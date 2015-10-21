@@ -79,7 +79,7 @@ class Cache
             return false;
         }
 
-        return (!isset($_GET['noCache']) && $_GET['noCache'] != 'y') ?: true;
+        return (false !== isset($_GET['noCache']) && $_GET['noCache'] != 'y') ?: false;
     }
 
     /**
@@ -88,9 +88,14 @@ class Cache
      */
     public function get($mKey)
     {
-        if(isset($_GET['clearCache']) && $_GET['clearCache'] == 'y'){
+        if (isset($_GET['clearCache']) && $_GET['clearCache'] == 'y' ||
+            isset($_GET['noCache']) && $_GET['noCache'] == 'y'
+        ) {
             $this->delete($mKey);
+        } else if (isset($_GET['flushCache']) && $_GET['flushCache'] == 'y') {
+            $this->flush();
         }
+
         return $this->oMemcache->get($mKey);
     }
 
