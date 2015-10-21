@@ -633,42 +633,24 @@ class depot_de_dossierController extends bootstrap
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
 
-/*
-
-                // ENVOI DU MAIL NOTIFICATION INSCRIPTION
-                // destinataire
-                $this->settings->get('Adresse notification inscription emprunteur', 'type');
-                $destinataire = $this->settings->value;
-
-                // Recuperation du modele de mail
+                // Internal notification
                 $this->mails_text->get('notification-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
+                $this->settings->get('Adresse notification inscription emprunteur', 'type');
 
-                $surl         = $this->surl;
-                $url          = $this->lurl;
-                $nom_societe  = utf8_decode($this->companies->name);
-                $montant_pret = $this->projects->amount;
-                $lien         = $this->aurl . '/emprunteurs/edit/' . $this->clients->id_client;
-
-                $sujetMail = htmlentities($this->mails_text->subject);
-                eval("\$sujetMail = \"$sujetMail\";");
-
-                $texteMail = $this->mails_text->content;
-                eval("\$texteMail = \"$texteMail\";");
-
-                $exp_name = $this->mails_text->exp_name;
-                eval("\$exp_name = \"$exp_name\";");
-
-                $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
+                $aReplacements = array(
+                    '[LIEN_REPRISE]'   => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
+                    '[MONTANT]'        => $this->projects->amount,
+                    '[RAISON_SOCIALE]' => utf8_decode($this->companies->name),
+                    '[SURL]'           => $this->surl
+                );
 
                 $this->email = $this->loadLib('email', array());
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->addRecipient(trim($destinataire));
+                $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
+                $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
+                $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->mails_text->content));
+                $this->email->addRecipient(trim($this->settings->value));
 
-                $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
-                $this->email->setHTMLBody($texteMail);
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                */
 
                 $this->clients->status = 1;
                 $this->clients->update();
