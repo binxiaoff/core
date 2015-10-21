@@ -58,6 +58,9 @@ a:hover img { transition: color 300ms, background-color 300ms, opacity 300ms; -w
 
 .shell { margin:0 auto; width:960px; }
 
+.introduction {font-size:18px;}
+.introduction > span {color:#b10366; font-weight: bold;}
+
 .unstyled-list { list-style:none outside none; padding:0; color:#a1a5a7; }
 .unstyled-list li { padding-bottom:14px; }
 
