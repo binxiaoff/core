@@ -30,9 +30,9 @@ class Cache
      * @param array $aConfig
      * @return Cache|Instance
      */
-    public static function getInstance($aConfig)
+    public static function getInstance($aConfig = null)
     {
-        if (true === is_null(self::$oInstance)) {
+        if (true === is_null(self::$oInstance) && false === is_null($aConfig)) {
             self::$oInstance = new self($aConfig);
         }
 
