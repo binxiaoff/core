@@ -86,7 +86,7 @@
     </div>
 
     <?
-    if(count($this->aPrescripteurs) > 0)
+    if(isset($this->aPrescripteurs) && count($this->aPrescripteurs) > 0)
     {
         ?>
         <table class="tablesorter">

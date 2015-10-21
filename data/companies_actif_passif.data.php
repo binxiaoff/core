@@ -89,4 +89,16 @@ class companies_actif_passif extends companies_actif_passif_crud
 		$result = $this->bdd->query($sql);
 		return ($this->bdd->fetch_array($result,0,0)>0);
 	}
+
+	function yearExist($iCompanyId, $iYear)
+	{
+		$iCompanyId = $this->bdd->escape_string($iCompanyId);
+		$iYear = $this->bdd->escape_string($iYear);
+
+		$sSql = "SELECT EXISTS(SELECT 1 FROM companies_actif_passif WHERE id_company = $iCompanyId AND annee = $iYear) as exist_active";
+
+		$rResult = $this->bdd->query($sSql);
+		$aResult = $this->bdd->fetch_array($rResult);
+		return $aResult['exist_active'] == 1;
+	}
 }
