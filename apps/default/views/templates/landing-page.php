@@ -24,6 +24,8 @@
         .process ul.cf > li > p > span {color: #727272; font-size: 20px;}
         .error {color: #c84747;}
         .form-row.error {margin: 5px;}
+        .form-row > em {display: inline-block; margin: 5px;}
+        #depot_de_dossier .button.submit {font-family: 'TrendSansOne'; font-weight: normal; margin-top: 25px; text-transform: uppercase;}
     </style>
 </head>
 <body>
@@ -118,7 +120,7 @@
                            data-validators="Email">
                 </div>
                 <input type="hidden" name="spy_inscription_landing_page_depot_dossier" value="1">
-                <button type="submit" class="button" style="font-family: 'TrendSansOne'; font-weight:normal;">
+                <button type="submit" class="button submit">
                     <?= $this->content['lp-bouton-formulaire'] ?>
                     <span class="arrow"></span>
                 </button>
