@@ -3704,13 +3704,20 @@ class dossiersController extends bootstrap
         $oEmail->setSubject(stripslashes($sujetMail));
         $oEmail->setHTMLBody(stripslashes($texteMail));
 
+        if (empty($oClients->email)) {
+            $this->result = 'Erreur : L\'adresse mail du client est vide';
+            return;
+        }
         if ($this->Config['env'] == 'prod') {
             Mailer::sendNMP($oEmail, $this->mails_filer, $oEmailText->id_textemail, $oClients->email, $tabFiler);
             // Injection du mail NMP dans la queue
             $this->tnmp->sendMailNMP($tabFiler, $varMail, $oEmailText->nmp_secure, $oEmailText->id_nmp, $oEmailText->nmp_unique, $oEmailText->mode);
         } else {
             $oEmail->addRecipient(trim($oClients->email));
-            Mailer::send($oEmail, $this->mails_filer, $oEmailText->id_textemail);
+            if(! Mailer::send($oEmail, $this->mails_filer, $oEmailText->id_textemail)) {
+                $this->result = 'Erreur : L\'envoi du mail a été échoué';
+                return;
+            }
         }
         $this->result = 'Envoi des CGV a été fait avec succès !';
     }
