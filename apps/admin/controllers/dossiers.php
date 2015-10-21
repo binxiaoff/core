@@ -175,25 +175,15 @@ class dossiersController extends bootstrap
                 $dernierBilan = date('Y');
             }
 
-            // Si existe pas on créer les champs
-            $aYears = range(date('Y') - 1, date('Y') - 3);
-            foreach ($aYears as $iOrder => $iYear) {
-                if (false === $this->companies_actif_passif->yearExist($this->companies->id_company, $iYear)) {
-                    $this->companies_actif_passif->ordre      = $iOrder+1;
-                    $this->companies_actif_passif->annee      = $iYear;
-                    $this->companies_actif_passif->id_company = $this->companies->id_company;
-                    $this->companies_actif_passif->create();
-                }
-            }
-
             $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '" AND annee <= "' . $dernierBilan . '"', 'annee DESC');
 
             // Debut mise a jour actif/passif //
             // On verifie si on a bien les 3 dernieres années
-            $a = 1;
-            foreach ($this->lCompanies_actif_passif as $k => $cap) {
-                $lesDates[$k] = $cap['annee'];
-                $a++;
+            $lesDates = array();
+            if (false ===  empty($this->lCompanies_actif_passif)) {
+                foreach ($this->lCompanies_actif_passif as $k => $cap) {
+                    $lesDates[$k] = $cap['annee'];
+                }
             }
 
             if ($this->companies_details->date_dernier_bilan != '0000-00-00') {
@@ -209,10 +199,10 @@ class dossiersController extends bootstrap
             }
             $dates_nok = false;
 
-            for ($i = 1; $i <= 3; $i++) {
-                // si premiere année existe pas on crée
-                if (! in_array($date[$i], $lesDates)) {
-                    $this->companies_actif_passif->annee      = $date[$i];
+            // Si existe pas on créer les champs
+            foreach ($date as $iOrder => $iYear) {
+                if (! in_array($iYear, $lesDates)) {
+                    $this->companies_actif_passif->annee      = $iYear;
                     $this->companies_actif_passif->id_company = $this->companies->id_company;
                     $this->companies_actif_passif->create();
                     $dates_nok = true;
