@@ -1048,6 +1048,8 @@ class pdfController extends bootstrap {
             $this->echeanciers = $this->loadData('echeanciers');
             $this->companies = $this->loadData('companies');
             $this->companiesEmpr = $this->loadData('companies');
+            $this->projects_status_history = $this->loadData('projects_status_history');
+            $this->projects_status_history_informations = $this->loadData('projects_status_history_informations');
 
             $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
@@ -1082,40 +1084,52 @@ class pdfController extends bootstrap {
                 // entreprise de l'emprunteur
                 $this->companiesEmpr->get($this->projects->id_company, 'id_company');
 
-                // Nature
-                $this->nature_var = "Procédure de sauvegarde";
+                // 26 : PS , 27 RJ , 28 LJ
+                $retour = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN(26,27,28)', 'added DESC', 0, 1);
+                if ($retour != false) {
+                    $this->projects_status_history_informations->get($retour[0]['id_project_status_history'], 'id_project_status_history');
 
-                // mandataire personalisé
-                $this->mandataires_var = "";
+                    // mandataire personalisé
+                    $this->mandataires_var = $this->projects_status_history_informations->mandataire;
 
-
-                $this->arrayDeclarationCreance = array(1456 => '27/11/2014',
-                    1009 => '15/04/2015',
-                    1614 => '27/05/2015',
-                    3089 => '29/06/2015');
-
-                if ($this->loans->id_project == 1614) {
-                    //plus de mandataire dans le pdf, on l'aura que dans le mail (Note BT: 17793)
-                    //$this->mandataires_var = "
-                    //    Me ROUSSEL Bernard 
-                    //    <br />
-                    //    850, rue Etienne Lenoir. Km Delta 
-                    //    <br />
-                    //    30 900 Nîmes   
-                    //    ";
                     // Nature
-                    $this->nature_var = "Liquidation judiciaire";
-                }
-                if ($this->loans->id_project == 3089)
+                    $id_projet_status = $retour[0]['id_project_status'];
+                    if ($id_projet_status == 26) {
+                        $this->nature_var = "Procédure de sauvegarde";
+                    } elseif ($id_projet_status == 27) {
+                        $this->nature_var = "Redressement judiciaire";
+                    } elseif ($id_projet_status == 28) {
+                        $this->nature_var = "Liquidation judiciaire";
+                    }
+                    $date = date('d/m/Y', strtotime($this->projects_status_history_informations->date));
+                    $this->arrayDeclarationCreance = array($this->projects->id_project => $date);
+                } else {
+                    // Nature
                     $this->nature_var = "Procédure de sauvegarde";
 
+                    // mandataire personalisé
+                    $this->mandataires_var = "";
 
+                    $this->arrayDeclarationCreance = array(1456 => '27/11/2014',
+                        1009 => '15/04/2015',
+                        1614 => '27/05/2015',
+                        3089 => '29/06/2015');
 
-
-
-
-
-
+                    if ($this->loans->id_project == 1614) {
+                        //plus de mandataire dans le pdf, on l'aura que dans le mail (Note BT: 17793)
+                        //$this->mandataires_var = "
+                        //    Me ROUSSEL Bernard 
+                        //    <br />
+                        //    850, rue Etienne Lenoir. Km Delta 
+                        //    <br />
+                        //    30 900 Nîmes   
+                        //    ";
+                        // Nature
+                        $this->nature_var = "Liquidation judiciaire";
+                    }
+                    if ($this->loans->id_project == 3089)
+                        $this->nature_var = "Procédure de sauvegarde";
+                }
 
                 // echu
                 $this->echu = $this->echeanciers->getSumARemb($this->lenders_accounts->id_lender_account . ' AND LEFT(date_echeance,10) >= "2015-04-19" AND LEFT(date_echeance,10) <= "' . date('Y-m-d') . '" AND id_loan = ' . $this->loans->id_loan, 'montant');
@@ -1257,6 +1271,9 @@ class pdfController extends bootstrap {
                     $date_fin_time = mktime(0, 0, 0, date('m'), date('d'), $year); // date fin
                 else
                     $date_fin_time = mktime(0, 0, 0, 12, 31, $year); // date fin
+
+
+
 
                     
 // On sauvegarde la derniere action

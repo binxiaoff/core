@@ -39,6 +39,20 @@
                         changeMonth: true,
                         changeYear: true
                     });
+                    $("#date_rj").datepicker({
+                        showOn: 'both',
+                        buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+                        buttonImageOnly: true,
+                        changeMonth: true,
+                        changeYear: true
+                    });
+                    $("#date_lj").datepicker({
+                        showOn: 'both',
+                        buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+                        buttonImageOnly: true,
+                        changeMonth: true,
+                        changeYear: true
+                    });
                     $("#creation_date_etape2").datepicker({
                         showOn: 'both',
                         buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
@@ -494,6 +508,15 @@ if (isset($_SESSION['freeow'])) {
                         </td>
                     </tr>
                     <tr>
+                        <th><label for="mandataire_ps"><i>Coordonnées du mandataire judiciaire :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <textarea class="textarea_lng" name="mandataire_ps" id="mandataire_ps" style="height: 100px;width: 420px;"></textarea>
+                            <br><br>
+                        </td>
+                    </tr>
+                    <tr>
                         <th><label for="area_ps"><i>Email d'information aux prêteurs :</i></label></th>
                     </tr>
                     <tr>
@@ -508,6 +531,90 @@ if (isset($_SESSION['freeow'])) {
                             <label for="oui_envoyer_mail_ps">Oui</label>
                             <input type="radio" name="mail_a_envoyer_preteur_ps" id="non_envoyer_mail_ps" value="1" checked/>
                             <label for="non_envoyer_mail_ps">Non</label>
+                            <br><br>
+                        </td>
+                    </tr>
+                </table>
+                
+                <table class="hidden_table bloc_mail_preteur_rj">
+                    <tr>
+                        <th>
+                            <br>
+                            <label for="date_rj"><i>Date du jugement</i></label>
+                        </th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="text" name="date_rj" id="date_rj" class="input_dp" value="<?= date('d/m/Y') ?>" />
+                            <br><br><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="mandataire_rj"><i>Coordonnées du mandataire judiciaire :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <textarea class="textarea_lng" name="mandataire_rj" id="mandataire_rj" style="height: 100px;width: 420px;"></textarea>
+                            <br><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="area_rj"><i>Email d'information aux prêteurs :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td><textarea class="textarea_lng" name="area_rj" id="area_rj" style="height: 100px;width: 420px;"></textarea></td>
+                    </tr>
+                    <tr>   
+                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>                                
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="radio" name="mail_a_envoyer_preteur_rj" id="oui_envoyer_mail_rj" value="0" />
+                            <label for="oui_envoyer_mail_rj">Oui</label>
+                            <input type="radio" name="mail_a_envoyer_preteur_rj" id="non_envoyer_mail_rj" value="1" checked/>
+                            <label for="non_envoyer_mail_rj">Non</label>
+                            <br><br>
+                        </td>
+                    </tr>
+                </table>
+                
+                <table class="hidden_table bloc_mail_preteur_lj">
+                    <tr>
+                        <th>
+                            <br>
+                            <label for="date_lj"><i>Date du jugement</i></label>
+                        </th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="text" name="date_rj" id="date_lj" class="input_dp" value="<?= date('d/m/Y') ?>" />
+                            <br><br><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="mandataire_lj"><i>Coordonnées du mandataire judiciaire :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <textarea class="textarea_lng" name="mandataire_lj" id="mandataire_lj" style="height: 100px;width: 420px;"></textarea>
+                            <br><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="area_lj"><i>Email d'information aux prêteurs :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td><textarea class="textarea_lng" name="area_lj" id="area_lj" style="height: 100px;width: 420px;"></textarea></td>
+                    </tr>
+                    <tr>   
+                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>                                
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="radio" name="mail_a_envoyer_preteur_lj" id="oui_envoyer_mail_lj" value="0" />
+                            <label for="oui_envoyer_mail_lj">Oui</label>
+                            <input type="radio" name="mail_a_envoyer_preteur_lj" id="non_envoyer_mail_lj" value="1" checked/>
+                            <label for="non_envoyer_mail_lj">Non</label>
                             <br><br>
                         </td>
                     </tr>
@@ -765,6 +872,12 @@ if (isset($_SESSION['freeow'])) {
                         }
                         else if ($("#status").val() == 150) { /* proc collective, on affiche un textarea pour le mail aux preteurs*/
                             $('.bloc_mail_preteur_ps').show();
+                        }
+                        else if ($("#status").val() == 160) { /* proc redressement judiciaire, on affiche un textarea pour le mail aux preteurs*/
+                            $('.bloc_mail_preteur_rj').show();
+                        }
+                        else if ($("#status").val() == 170) { /* liquidation judiciaire, on affiche un textarea pour le mail aux preteurs*/
+                            $('.bloc_mail_preteur_lj').show();
                         }
                         else {
                             $(".change_statut").show();

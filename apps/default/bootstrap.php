@@ -621,7 +621,7 @@ class bootstrap extends Controller
 		
 		// Afficher les projets termin�s ? (1 : oui | 0 : non)
 		$this->settings->get('Afficher les projets termines','type');
-		if($this->settings->value == 1) $this->tabProjectDisplay = '50,60,70,80,90,100,110,130';
+		if($this->settings->value == 1) $this->tabProjectDisplay = '50,60,70,80,90,100,110,130,150,160,170';
 		else $this->tabProjectDisplay = '50';
 		
 		// R�cup du lien fb

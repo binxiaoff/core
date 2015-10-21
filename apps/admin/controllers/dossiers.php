@@ -1,12 +1,10 @@
 <?
 
-class dossiersController extends bootstrap
-{
+class dossiersController extends bootstrap {
 
     var $Command;
 
-    function dossiersController($command, $config, $app)
-    {
+    function dossiersController($command, $config, $app) {
         parent::__construct($command, $config, $app);
 
         $this->catchAll = true;
@@ -34,8 +32,7 @@ class dossiersController extends bootstrap
         $this->conseil_externe = $this->ficelle->explodeStr2array($this->settings->value);
     }
 
-    function _default()
-    {
+    function _default() {
         // Chargement du data
         $this->projects_status = $this->loadData('projects_status');
         $this->projects = $this->loadData('projects');
@@ -47,39 +44,30 @@ class dossiersController extends bootstrap
         $this->lUsers = $this->users->select('status = 1 AND id_user_type = 2');
 
 
-        if (isset($_POST['form_search_dossier']))
-        {
-            if ($_POST['date1'] != '')
-            {
+        if (isset($_POST['form_search_dossier'])) {
+            if ($_POST['date1'] != '') {
                 $d1 = explode('/', $_POST['date1']);
                 $date1 = $d1[2] . '-' . $d1[1] . '-' . $d1[0];
-            }
-            else
-            {
+            } else {
                 $date1 = '';
             }
 
-            if ($_POST['date2'] != '')
-            {
+            if ($_POST['date2'] != '') {
                 $d2 = explode('/', $_POST['date2']);
                 $date2 = $d2[2] . '-' . $d2[1] . '-' . $d2[0];
-            }
-            else
-            {
+            } else {
                 $date2 = '';
             }
 
             $this->lProjects = $this->projects->searchDossiers($date1, $date2, $_POST['montant'], $_POST['duree'], $_POST['status'], $_POST['analyste'], $_POST['siren'], $_POST['id'], $_POST['raison-sociale']);
         }
         // statut
-        elseif (isset($this->params[0]))
-        {
+        elseif (isset($this->params[0])) {
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
     }
 
-    function _edit()
-    {
+    function _edit() {
         // Chargement du data
         $this->projects = $this->loadData('projects');
         $this->projects_notes = $this->loadData('projects_notes');
@@ -102,8 +90,7 @@ class dossiersController extends bootstrap
         $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
 
-        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project'))
-        {
+        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->projects_notes->get($this->params[0], 'id_project');
 
             // Liste deroulante secteurs
@@ -129,8 +116,7 @@ class dossiersController extends bootstrap
             // on check le statut, si c'est la premiere fois qu'il est consulté on le passe en "à l'étude"
             $this->current_projects_status->getLastStatut($this->projects->id_project);
 
-            if ($this->current_projects_status->status == 10)
-            {
+            if ($this->current_projects_status->status == 10) {
                 $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 20, $this->projects->id_project);
                 // on reactualise l'affichage
                 $this->current_projects_status->getLastStatut($this->projects->id_project);
@@ -141,8 +127,7 @@ class dossiersController extends bootstrap
 
 
             // On recup le detail de l'entreprise
-            if (!$this->companies_details->get($this->projects->id_company, 'id_company'))
-            {
+            if (!$this->companies_details->get($this->projects->id_company, 'id_company')) {
                 $this->companies_details->id_company = $this->projects->id_company;
 
                 $this->companies_details->date_dernier_bilan = (date('Y') - 1) . '-12-31';
@@ -162,15 +147,12 @@ class dossiersController extends bootstrap
             $this->lUsers = $this->users->select('status = 1 AND id_user_type = 2');
 
             // meme adresse que le siege
-            if ($this->companies->status_adresse_correspondance == 1)
-            {
+            if ($this->companies->status_adresse_correspondance == 1) {
                 $this->adresse = $this->companies->adresse1;
                 $this->city = $this->companies->city;
                 $this->zip = $this->companies->zip;
                 $this->phone = $this->companies->phone;
-            }
-            else
-            {
+            } else {
                 $this->adresse = $this->clients_adresses->adresse1;
                 $this->city = $this->clients_adresses->ville;
                 $this->zip = $this->clients_adresses->cp;
@@ -178,26 +160,21 @@ class dossiersController extends bootstrap
             }
 
             // date dernier bilan //
-            if ($this->companies_details->date_dernier_bilan != '0000-00-00')
-            {
+            if ($this->companies_details->date_dernier_bilan != '0000-00-00') {
                 $dernierBilan = explode('-', $this->companies_details->date_dernier_bilan);
                 $dernierBilan = $dernierBilan[0];
-            }
-            else
+            } else
                 $dernierBilan = date('Y');
 
             // Liste des actif passif
             $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '"', 'annee DESC');
 
             // Si existe pas on créer les champs
-            if ($this->lCompanies_actif_passif == false)
-            {
+            if ($this->lCompanies_actif_passif == false) {
                 $i = 1;
-                foreach ($this->lCompanies_actif_passif as $c)
-                //for($i=1;$i<=3;$i++)
-                {
-                    if ($c['annee'] <= $dernierBilan)
-                    {
+                foreach ($this->lCompanies_actif_passif as $c) {
+                    //for($i=1;$i<=3;$i++)
+                    if ($c['annee'] <= $dernierBilan) {
                         $a = 0;
                         $this->companies_actif_passif->ordre = $i;
                         $this->companies_actif_passif->annee = date('Y') - $a;
@@ -216,35 +193,29 @@ class dossiersController extends bootstrap
             // Debut mise a jour actif/passif //
             // On verifie si on a bien les 3 dernieres années
             $a = 1;
-            foreach ($this->lCompanies_actif_passif as $k => $cap)
-            {
+            foreach ($this->lCompanies_actif_passif as $k => $cap) {
                 // recuperation des années en bdd
                 //$lesDates[$cap['ordre']] = $cap['annee'];
                 $lesDates[$k] = $cap['annee'];
                 $a++;
             }
 
-            if ($this->companies_details->date_dernier_bilan != '0000-00-00')
-            {
+            if ($this->companies_details->date_dernier_bilan != '0000-00-00') {
                 $dernierBilan = explode('-', $this->companies_details->date_dernier_bilan);
                 $dernierBilan = $dernierBilan[0];
                 $date[1] = $dernierBilan;
                 $date[2] = ($dernierBilan - 1);
                 $date[3] = ($dernierBilan - 2);
-            }
-            else
-            {
+            } else {
                 $date[1] = date('Y');
                 $date[2] = (date('Y') - 1);
                 $date[3] = (date('Y') - 2);
             }
             $dates_nok = false;
 
-            for ($i = 1; $i <= 3; $i++)
-            {
+            for ($i = 1; $i <= 3; $i++) {
                 // si premiere année existe pas on crée
-                if (!in_array($date[$i], $lesDates))
-                {
+                if (!in_array($date[$i], $lesDates)) {
                     $this->companies_actif_passif->annee = $date[$i];
                     $this->companies_actif_passif->id_company = $this->companies->id_company;
                     $this->companies_actif_passif->create();
@@ -252,8 +223,7 @@ class dossiersController extends bootstrap
                 }
             }
 
-            if ($this->lCompanies_actif_passif[0]['ordre'] != 1)
-            {
+            if ($this->lCompanies_actif_passif[0]['ordre'] != 1) {
                 $dates_nok = true;
             }
 
@@ -263,24 +233,19 @@ class dossiersController extends bootstrap
 
             //END REMBOURSEMENT ANTICIPE
 
-            if ($dates_nok == true)
-            {
+            if ($dates_nok == true) {
                 // on relance la Liste des actif passif classé par date DESC
                 $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '"', 'annee DESC');
 
                 $i = 1;
                 // On parcoure les lignes
-                foreach ($this->lCompanies_actif_passif as $k => $cap)
-                {
+                foreach ($this->lCompanies_actif_passif as $k => $cap) {
                     $this->companies_actif_passif->get($this->companies->id_company, 'annee = "' . $cap['annee'] . '" AND id_company');
-                    if ($cap['annee'] <= $dernierBilan && $i <= 3)
-                    {
+                    if ($cap['annee'] <= $dernierBilan && $i <= 3) {
                         // On met a jour l'ordre
                         $this->companies_actif_passif->ordre = $i;
                         $i++;
-                    }
-                    else
-                    {
+                    } else {
                         $this->companies_actif_passif->ordre = 0;
                     }
                     $this->companies_actif_passif->update();
@@ -302,8 +267,7 @@ class dossiersController extends bootstrap
             //$anneeProjet = explode('-',$this->projects->added);
             //$anneeProjet = $anneeProjet[0];
             /// date dernier bilan ///
-            if ($this->companies_details->date_dernier_bilan == '0000-00-00')
-            {
+            if ($this->companies_details->date_dernier_bilan == '0000-00-00') {
 
                 $this->date_dernier_bilan_jour = '31';
                 $this->date_dernier_bilan_mois = '12';
@@ -314,9 +278,7 @@ class dossiersController extends bootstrap
                 $this->companies_details->date_dernier_bilan_annee = (date('Y') - 1);
 
                 $anneeProjet = (date('Y') - 1);
-            }
-            else
-            {
+            } else {
                 $dateDernierBilan = explode('-', $this->companies_details->date_dernier_bilan);
                 $this->date_dernier_bilan_jour = $dateDernierBilan[2];
                 $this->date_dernier_bilan_mois = $dateDernierBilan[1];
@@ -360,17 +322,14 @@ class dossiersController extends bootstrap
             // On verifie si on est a jour sur les années //
             // On recupe les années bilans qu'on a en bdd
             $tableAnneesBilans = array();
-            foreach ($this->lbilans as $b)
-            {
+            foreach ($this->lbilans as $b) {
                 $tableAnneesBilans[$b['date']] = $b['date'];
             }
             // On parcour les années courrantes pour voir si on les a
             $creationbilansmanquant = false;
-            foreach ($ldateBilantrueYear as $annee)
-            {
+            foreach ($ldateBilantrueYear as $annee) {
                 // si existe pas on crée
-                if (!in_array($annee, $tableAnneesBilans))
-                {
+                if (!in_array($annee, $tableAnneesBilans)) {
                     $this->companies_bilans->id_company = $this->companies->id_company;
                     $this->companies_bilans->ca = '';
                     $this->companies_bilans->resultat_exploitation = '';
@@ -381,8 +340,7 @@ class dossiersController extends bootstrap
                     $creationbilansmanquant = true;
                 }
             }
-            if ($creationbilansmanquant == true)
-            {
+            if ($creationbilansmanquant == true) {
                 header('location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                 die;
             }
@@ -407,8 +365,7 @@ class dossiersController extends bootstrap
             //******************//
             // On lance Altares //
             //******************//
-            if (isset($this->params[1]) && $this->params[1] == 'altares')
-            {
+            if (isset($this->params[1]) && $this->params[1] == 'altares') {
                 // SIREN
                 $this->siren = $this->companies->siren;
                 // Web Service Altares
@@ -417,8 +374,7 @@ class dossiersController extends bootstrap
                 $this->altares_ok = false;
 
                 // Si pas d'erreur
-                if ($result->exception == '')
-                {
+                if ($result->exception == '') {
                     // verif reponse
                     $eligibility = $result->myInfo->eligibility;
                     $score = $result->myInfo->score;
@@ -439,8 +395,7 @@ class dossiersController extends bootstrap
                     $this->companies->altares_scoreVingt = $score->scoreVingt;
 
                     // si pas ok
-                    if ($eligibility == 'Société radiée' || $eligibility == 'Non' || $eligibility == 'SIREN inconnu')
-                    {
+                    if ($eligibility == 'Société radiée' || $eligibility == 'Non' || $eligibility == 'SIREN inconnu') {
                         // Mise en session du message
                         $_SESSION['freeow']['title'] = 'Donn&eacute;es Altares';
                         $_SESSION['freeow']['message'] = 'soci&eacute;t&eacute; non &eacute;ligible';
@@ -450,8 +405,7 @@ class dossiersController extends bootstrap
                     }
                     // si pas ok 2
                     //elseif(in_array($eligibility,$this->tablStatus) && $score->scoreVingt < 12 || in_array($eligibility,$this->tablStatus) && substr($identite->dateCreation,0,4) > $todayMoins3 )
-                    elseif (in_array($eligibility, $this->tablStatus) && substr($identite->dateCreation, 0, 4) > $todayMoins3)
-                    {
+                    elseif (in_array($eligibility, $this->tablStatus) && substr($identite->dateCreation, 0, 4) > $todayMoins3) {
                         // Mise en session du message
                         $_SESSION['freeow']['title'] = 'Donn&eacute;es Altares';
                         $_SESSION['freeow']['message'] = 'soci&eacute;t&eacute; non &eacute;ligible';
@@ -460,8 +414,7 @@ class dossiersController extends bootstrap
                         die;
                     }
                     // si ok
-                    else
-                    {
+                    else {
                         $this->altares_ok = true;
 
 
@@ -478,8 +431,7 @@ class dossiersController extends bootstrap
                         $syntheseFinanciereList = array();
                         $derniersBilans = array();
                         $i = 0;
-                        foreach ($result->myInfo->bilans as $b)
-                        {
+                        foreach ($result->myInfo->bilans as $b) {
 
                             $annee = substr($b->bilan->dateClotureN, 0, 4);
                             $posteActifList[$annee] = $b->bilanRetraiteInfo->posteActifList;
@@ -522,8 +474,7 @@ class dossiersController extends bootstrap
                         $dateDernierBilanString = substr($identite->dateDernierBilan, 0, 10);
                         $dateDernierBilan = explode('-', $dateDernierBilanSting);
 
-                        if ($dateDernierBilanString == false || $dateDernierBilanString == '0000-00-00')
-                        {
+                        if ($dateDernierBilanString == false || $dateDernierBilanString == '0000-00-00') {
 
                             $this->date_dernier_bilan_jour = '31';
                             $this->date_dernier_bilan_mois = '12';
@@ -532,9 +483,7 @@ class dossiersController extends bootstrap
                             $this->companies_details->date_dernier_bilan = (date('Y') - 1) . '-12-31';
                             $this->companies_details->date_dernier_bilan_mois = '12';
                             $this->companies_details->date_dernier_bilan_annee = (date('Y') - 1);
-                        }
-                        else
-                        {
+                        } else {
                             $this->companies_details->date_dernier_bilan = $dateDernierBilanString;
 
                             $this->date_dernier_bilan_jour = $dateDernierBilan[2];
@@ -554,13 +503,10 @@ class dossiersController extends bootstrap
                         $ldate[0] = date('Y') - 3;
 
                         // on génère un tableau avec les données
-                        for ($i = 0; $i < 5; $i++) // on parcourt les 5 années
-                        {
-                            for ($a = 0; $a < 3; $a++)// on parcourt les 3 dernieres années
-                            {
+                        for ($i = 0; $i < 5; $i++) { // on parcourt les 5 années
+                            for ($a = 0; $a < 3; $a++) {// on parcourt les 3 dernieres années
                                 // si y a une année du bilan qui correxpond a une année du tableau
-                                if ($derniersBilans[$a] == $ldate[$i])
-                                {
+                                if ($derniersBilans[$a] == $ldate[$i]) {
                                     // On recup les données de cette année
 
                                     $montant1 = $posteActifList[$ldate[$i]][1]->montant;
@@ -580,26 +526,21 @@ class dossiersController extends bootstrap
 
                         // Debut actif/passif
 
-                        foreach ($derniersBilans as $annees)
-                        {
-                            foreach ($posteActifList[$annees] as $a)
-                            {
+                        foreach ($derniersBilans as $annees) {
+                            foreach ($posteActifList[$annees] as $a) {
                                 $ActifPassif[$annees][$a->posteCle] = $a->montant;
                             }
-                            foreach ($postePassifList[$annees] as $p)
-                            {
+                            foreach ($postePassifList[$annees] as $p) {
                                 $ActifPassif[$annees][$p->posteCle] = $p->montant;
                             }
                         }
 
                         $i = 0;
 
-                        foreach ($this->lCompanies_actif_passif as $k => $ap)
-                        {
+                        foreach ($this->lCompanies_actif_passif as $k => $ap) {
 
 
-                            if ($this->companies_actif_passif->get($ap['annee'], 'id_company = ' . $ap['id_company'] . ' AND annee'))
-                            {
+                            if ($this->companies_actif_passif->get($ap['annee'], 'id_company = ' . $ap['id_company'] . ' AND annee')) {
 
                                 //$this->companies_actif_passif->annee = $derniersBilans[$i];
                                 //$this->companies_actif_passif->ordre = $i+1;
@@ -638,9 +579,7 @@ class dossiersController extends bootstrap
                         $_SESSION['freeow']['title'] = 'Donn&eacute;es Altares';
                         $_SESSION['freeow']['message'] = 'Donn&eacute;es Altares r&eacute;cup&eacute;r&eacute; !';
                     }
-                }
-                else
-                {
+                } else {
                     // Mise en session du message
                     $_SESSION['freeow']['title'] = 'Donn&eacute;es Altares';
                     $_SESSION['freeow']['message'] = 'Donn&eacute;es Altares &eacute;rreur !';
@@ -663,8 +602,7 @@ class dossiersController extends bootstrap
 			
 			
 			// Formulaire sauvegarder resume et actions
-            if (isset($_POST['send_form_dossier_resume']))
-            {
+            if (isset($_POST['send_form_dossier_resume'])) {
 
                 // On check avant la validation que la date de publication & date de retrait sont OK sinon on bloque(KLE)
                 /* La date de publication doit être au minimum dans 5min et la date de retrait à plus de 5min (pas de contrainte) */
@@ -679,31 +617,26 @@ class dossiersController extends bootstrap
                 $date_auj_plus_1jour = date("Y-m-d H:i:s", mktime(date('H'), date('i'), date('s'), date("m"), date("d") + 1, date("Y")));
 
                 $dates_valide = false;
-                if ($date_publication_full_test > $date_auj_plus_5min && $date_retrait_full_test > $date_auj_plus_1jour)
-                {
+                if ($date_publication_full_test > $date_auj_plus_5min && $date_retrait_full_test > $date_auj_plus_1jour) {
                     $dates_valide = true;
                 }
 
                 $this->retour_dates_valides = "";
 
-                if (!$dates_valide && in_array('40', array($_POST['status'], $this->current_projects_status->status)))
-                {
+                if (!$dates_valide && in_array('40', array($_POST['status'], $this->current_projects_status->status))) {
                     $this->retour_dates_valides = "La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus de 24h.";
                 }
                 // si date valide
-                else
-                {
+                else {
                     // Histo user //
                     $serialize = serialize(array('id_project' => $this->projects->id_project, 'post' => $_POST));
                     $this->users_history->histo(10, 'dossier edit Resume & actions', $_SESSION['user']['id_user'], $serialize);
                     ////////////////
                     // Projects
                     // photo_projet
-                    if (isset($_FILES['photo_projet']) && $_FILES['photo_projet']['name'] != '')
-                    {
+                    if (isset($_FILES['photo_projet']) && $_FILES['photo_projet']['name'] != '') {
                         $this->upload->setUploadDir($this->path, 'public/default/var/images/photos_projets/');
-                        if ($this->upload->doUpload('photo_projet'))
-                        {
+                        if ($this->upload->doUpload('photo_projet')) {
                             if ($this->projects->photo_projet != '')
                                 @unlink($this->path . 'public/default/var/images/photos_projets/' . $this->projects->photo_projet);
                             $this->projects->photo_projet = $this->upload->getName();
@@ -711,11 +644,9 @@ class dossiersController extends bootstrap
                     }
 
                     // photo_projet
-                    if (isset($_FILES['upload_pouvoir']) && $_FILES['upload_pouvoir']['name'] != '')
-                    {
+                    if (isset($_FILES['upload_pouvoir']) && $_FILES['upload_pouvoir']['name'] != '') {
                         $this->upload->setUploadDir($this->path, 'protected/pdf/pouvoir/');
-                        if ($this->upload->doUpload('upload_pouvoir'))
-                        {
+                        if ($this->upload->doUpload('upload_pouvoir')) {
                             if ($this->projects_pouvoir->name != '')
                                 @unlink($this->path . 'protected/pdf/pouvoir/' . $this->projects->photo_projet);
                             $this->projects_pouvoir->name = $this->upload->getName();
@@ -746,8 +677,7 @@ class dossiersController extends bootstrap
 
                     // --- Génération du slug --- //
                     // Génération du slug avec titre projet fo
-                    if ($this->current_projects_status->status <= 40)
-                    {
+                    if ($this->current_projects_status->status <= 40) {
                         $leSlugProjet = $this->ficelle->generateSlug($this->projects->title . '-' . $this->projects->id_project);
                         $this->projects->slug = $leSlugProjet;
                     }
@@ -759,29 +689,24 @@ class dossiersController extends bootstrap
                     $this->projects->update();
                     // --- Fin Génération du slug --- //
                     // en prep funding
-                    if ($this->current_projects_status->status >= 35)
-                    {
-                        if (isset($_POST['date_publication']))
-                        {
+                    if ($this->current_projects_status->status >= 35) {
+                        if (isset($_POST['date_publication'])) {
                             $this->projects->date_publication = $this->dates->formatDateFrToMysql($_POST['date_publication']);
                             // Récupération des heures/minutes/sec
                             $this->projects->date_publication_full = $this->projects->date_publication . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute'] . ':0';
                         }
-                        if (isset($_POST['date_retrait']))
-                        {
+                        if (isset($_POST['date_retrait'])) {
                             $this->projects->date_retrait = $this->dates->formatDateFrToMysql($_POST['date_retrait']);
                             // Récupération des heures/minutes/sec
                             $this->projects->date_retrait_full = $this->projects->date_retrait . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':0';
                         }
                     }
                     // Status
-                    if ($this->current_projects_status->status != $_POST['status'])
-                    {
+                    if ($this->current_projects_status->status != $_POST['status']) {
                         $this->projects_status_history->id_project_status_history = $this->projects_status_history->addStatusAndReturnID($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
 
                         // Si statut a funder, en funding ou fundé
-                        if (in_array($_POST['status'], array(40, 50, 60)))
-                        {
+                        if (in_array($_POST['status'], array(40, 50, 60))) {
                             //mail('courtier.damien@gmail.com','alert change statut 1','statut : '.$_POST['status'].' projet : '.$this->projects->id_project );
                             /////////////////////////////////////
                             // Partie check données manquantes //
@@ -853,18 +778,16 @@ class dossiersController extends bootstrap
 
                             $mess .= '</ul>';
 
-                            if (strlen($mess) > 9)
-                            {
+                            if (strlen($mess) > 9) {
                                 //mail('courtier.damien@gmail.com','alert change statut 2','statut : '.$_POST['status'].' projet : '.$this->projects->id_project .' strlen : '.strlen($mess).' mess : '.$mess);
 
                                 $to = 'unilend@equinoa.fr' . ', ';
-                                
-                                if($this->Config['env'] == 'prod') // nmp
-                                {
-                                        $to .= 'nicolas.lesur@unilend.fr';
+
+                                if ($this->Config['env'] == 'prod') { // nmp
+                                    $to .= 'nicolas.lesur@unilend.fr';
                                 }
-                                
-                                
+
+
                                 //$to  = 'courtier.damien@gmail.com';
                                 // subject
                                 $subject = '[Rappel] Donnees projet manquantes';
@@ -897,8 +820,7 @@ class dossiersController extends bootstrap
                         }
 
                         // si statut = default
-                        if ($_POST['status'] == '120')
-                        {
+                        if ($_POST['status'] == '120') {
 
                             // on envoie un mail aux preteurs
                             $lPreteurs = $this->loans->select('id_project = ' . $this->projects->id_project);
@@ -1004,8 +926,7 @@ class dossiersController extends bootstrap
 //							}
                         }
                         // fin statut probleme
-                        elseif ($_POST['status'] == '100')
-                        {
+                        elseif ($_POST['status'] == '100') {
                             $lPreteurs = $this->loans->select('id_project = ' . $this->projects->id_project);
 
                             $this->companies->get($this->projects->id_company, 'id_company');
@@ -1018,10 +939,8 @@ class dossiersController extends bootstrap
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
 
-                            if ($lPreteurs != false)
-                            {
-                                foreach ($lPreteurs as $p)
-                                {
+                            if ($lPreteurs != false) {
+                                foreach ($lPreteurs as $p) {
                                     $this->lenders_accounts->get($p['id_lender'], 'id_lender_account');
                                     $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
@@ -1037,8 +956,7 @@ class dossiersController extends bootstrap
                                     ////////////////////////////////////////////
                                     $lEchea = $this->echeanciers->select('id_loan = ' . $p['id_loan'] . ' AND id_project = ' . $this->projects->id_project . ' AND status = 1');
                                     $rembNet = 0;
-                                    foreach ($lEchea as $e)
-                                    {
+                                    foreach ($lEchea as $e) {
                                         // on fait la somme de tout
                                         $rembNet += ($e['montant'] / 100) - $e['prelevements_obligatoires'] - $e['retenues_source'] - $e['csg'] - $e['prelevements_sociaux'] - $e['contributions_additionnelles'] - $e['prelevements_solidarite'] - $e['crds'];
                                     }
@@ -1076,14 +994,11 @@ class dossiersController extends bootstrap
                                     $this->email->setSubject(stripslashes($sujetMail));
                                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                    if ($this->Config['env'] == 'prod') // nmp
-                                    {
+                                    if ($this->Config['env'] == 'prod') { // nmp
                                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                                         // Injection du mail NMP dans la queue
                                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                    }
-                                    else // non nmp
-                                    {
+                                    } else { // non nmp
                                         $this->email->addRecipient(trim($this->clients->email));
                                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                     }
@@ -1092,42 +1007,40 @@ class dossiersController extends bootstrap
                             }
                         }
                         // statut recouvrement
-                        elseif ($_POST['status'] == '110')
-                        {
+                        elseif ($_POST['status'] == '110') {
                             // On bloque tous les futures prélèvements 
                             $prelevements = $this->loadData('prelevements');
-                            $L_prelevements = $prelevements->select('id_project = ' . $this->projects->id_project.' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
-                            
-                            if($L_prelevements != false){
-                                foreach($L_prelevements as $prel)
-                                {
+                            $L_prelevements = $prelevements->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
+
+                            if ($L_prelevements != false) {
+                                foreach ($L_prelevements as $prel) {
                                     $prelevements->get($prel['id_prelevement']);
                                     $prelevements->status = 4; // bloqué temporairement
                                     $prelevements->update();
                                 }
                             }
-                            
+
                             // On stop les remb auto si y en a
                             $projects_remb = $this->loadData('projects_remb');
-                            $lRembAuto = $projects_remb->select('status = 0 AND id_project = '.$this->projects->id_project);
-                            if($lRembAuto != false){
-                                foreach ($lRembAuto as $r){
-                                   $projects_remb->get($r['id_project_remb'],'id_project_remb');
-                                   $projects_remb->status = 4;
-                                   $projects_remb->update();
+                            $lRembAuto = $projects_remb->select('status = 0 AND id_project = ' . $this->projects->id_project);
+                            if ($lRembAuto != false) {
+                                foreach ($lRembAuto as $r) {
+                                    $projects_remb->get($r['id_project_remb'], 'id_project_remb');
+                                    $projects_remb->status = 4;
+                                    $projects_remb->update();
                                 }
                             }
-                            
+
                             // on récupère la variable pour savoir si on envoi le mail au preteur ou non
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_probleme_recouvrement'];
                             $contenu_a_ajouter_mail = $_POST['area_recouvrement'];
-                           
+
                             // on enregsitre le contenu
                             $projects_status_history_informations = $this->loadData('projects_status_history_informations');
                             $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
                             $projects_status_history_informations->information = $contenu_a_ajouter_mail;
                             $projects_status_history_informations->create();
-                            
+
                             // FB
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
@@ -1135,31 +1048,30 @@ class dossiersController extends bootstrap
                             // Twitter
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
-                            
+
                             // EMAIL RECOUVREMENT EMPRUNTEUR //
-                            
                             // recup emprunteur
                             $emprunteur = $this->loadData('clients');
-                            $emprunteur->get($this->companies->id_client_owner,'id_client');
+                            $emprunteur->get($this->companies->id_client_owner, 'id_client');
                             // recup date financement (date de premier passage en statut remboursement)
-                            $status_remb = $this->projects_status_history->select('id_project = '.$this->projects->id_project.' AND id_project_status = 8','added ASC',0,1);
-                            $date_financement = date('m/Y',strtotime($status_remb[0]['added']));
+                            $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
+                            $date_financement = date('m/Y', strtotime($status_remb[0]['added']));
                             // Recup nb preteurs
                             $nb_preteurs = $this->loans->getNbPreteurs($this->projects->id_project);
                             // Reucp mensualité emprunteur
                             $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-                            $echeanciers_emprunteur->get($this->projects->id_project,'ordre = 1 AND id_project');
-                            $montant_mensuel = (($echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva)/100);
+                            $echeanciers_emprunteur->get($this->projects->id_project, 'ordre = 1 AND id_project');
+                            $montant_mensuel = (($echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva) / 100);
                             // recup capital restant du
                             $statut_recouvrement = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 10', 'added DESC', 0, 1);
                             if ($statut_recouvrement != false) {
                                 $lastFormatSql = date('Y-m-d', strtotime($statut_recouvrement[0]['added']));
                             } else {
-                                $lastFormatSql = date('Y-m-d'); 
+                                $lastFormatSql = date('Y-m-d');
                             }
                             $CapitalRestantDu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) > "' . $lastFormatSql . '"', 'capital');
 
-                            
+
                             // Variables du mailing
                             $varMail = array(
                                 'surl' => $this->surl,
@@ -1170,12 +1082,12 @@ class dossiersController extends bootstrap
                                 'date_finance' => $date_financement,
                                 'montant_emprunt' => $this->projects->amount,
                                 'nb_preteurs' => $nb_preteurs,
-                                '2_mensualites' => number_format(($montant_mensuel*2), 0, ',', ' '),
+                                '2_mensualites' => number_format(($montant_mensuel * 2), 0, ',', ' '),
                                 'capital_restant_du' => $CapitalRestantDu,
                                 'nom_societe_recouvrement' => $this->cab,
                                 'lien_fb' => $lien_fb,
                                 'lien_tw' => $lien_tw);
-                            
+
                             // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                             $liste_attente_mail = $this->loadData('liste_attente_mail');
                             $liste_attente_mail->type_mail = 'statut-recouvrement-emprunteur';
@@ -1183,21 +1095,19 @@ class dossiersController extends bootstrap
                             $liste_attente_mail->variables = serialize($varMail);
                             $liste_attente_mail->to = $this->clients->email;
                             $liste_attente_mail->statut = 0; //pas envoyé
-                            $liste_attente_mail->create(); 
-                            
+                            $liste_attente_mail->create();
+
                             // date du dernier probleme
                             $statusProbleme = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 9', 'added DESC');
                             $DateProbleme = date('d/m/Y', strtotime($statusProbleme[0]['added']));
 
                             $this->companies->get($this->projects->id_company, 'id_company');
-                            
+
                             // On recuprere les lenders ayant des loans sur le projet
                             $lPreteurs = $this->loans->getPreteurs($this->projects->id_project);
 
-                            if ($lPreteurs != false)
-                            {
-                                foreach ($lPreteurs as $p)
-                                {
+                            if ($lPreteurs != false) {
+                                foreach ($lPreteurs as $p) {
                                     $this->lenders_accounts->get($p['id_lender'], 'id_lender_account');
                                     $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
@@ -1208,24 +1118,22 @@ class dossiersController extends bootstrap
                                     $motif = mb_strtoupper($id_client . $pre . $nom, 'UTF-8');
 
                                     // pour chaque preteur on fait la somme des loans qu'il a sur le projet pour le mail
-                                    $L_loans = $this->loans->select('id_project = ' . $this->projects->id_project.' AND id_lender = '.$p['id_lender']);
+                                    $L_loans = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $p['id_lender']);
                                     $nb_loan = 0;
                                     $rembNet = 0;
                                     $sum_amount = 0;
-                                    foreach($L_loans as $l)
-                                    {
+                                    foreach ($L_loans as $l) {
                                         $sum_amount += $l['amount'];
                                         $nb_loan++;
                                     }
 
                                     // Gestion de l'ajout des nouvelles notifications manquantes
-                                    $this->lNotif_manquante = $this->clients_gestion_notifications->select('id_client = '.$this->clients->id_client.' AND id_notif IN (9)');
-                                    if($this->lNotif_manquante == false)
-                                    {
+                                    $this->lNotif_manquante = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client . ' AND id_notif IN (9)');
+                                    if ($this->lNotif_manquante == false) {
                                         $this->clients_gestion_type_notif = $this->loadData('clients_gestion_type_notif');
-                                        $this->lTypeNotifs_manquates = $this->clients_gestion_type_notif->select('id_client_gestion_type_notif IN (9)');                   
+                                        $this->lTypeNotifs_manquates = $this->clients_gestion_type_notif->select('id_client_gestion_type_notif IN (9)');
 
-                                        foreach($this->lTypeNotifs_manquates as $n){
+                                        foreach ($this->lTypeNotifs_manquates as $n) {
                                             $this->clients_gestion_notifications->id_client = $this->clients->id_client;
                                             $this->clients_gestion_notifications->id_notif = $n['id_client_gestion_type_notif'];
                                             $this->clients_gestion_notifications->immediatement = 1;
@@ -1250,13 +1158,10 @@ class dossiersController extends bootstrap
                                     $this->clients_gestion_mails_notif->id_loan = 0; // On peut avoir plusieurs loans donc inutile  
                                     $this->clients_gestion_mails_notif->create();
                                     //////// FIN GESTION ALERTES //////////
-
                                     //si on envoi le mail
-                                    if($mail_a_envoyer == 0)
-                                    {
+                                    if ($mail_a_envoyer == 0) {
                                         // pour chaque preteur on check si le preteur veut recevoir l'email instantané
-                                        if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true)
-                                        {
+                                        if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true) {
 
                                             // Variables du mailing
                                             $varMail = array(
@@ -1278,15 +1183,14 @@ class dossiersController extends bootstrap
                                             $liste_attente_mail->variables = serialize($varMail);
                                             $liste_attente_mail->to = $this->clients->email;
                                             $liste_attente_mail->statut = 0; //pas envoyé
-                                            $liste_attente_mail->create(); 
+                                            $liste_attente_mail->create();
                                         }
                                     }
                                 }
-                            } 
+                            }
                         }
                         // remboursé
-                        elseif ($_POST['status'] == '90')
-                        {
+                        elseif ($_POST['status'] == '90') {
                             // date du dernier probleme
                             $statusProbleme = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 9', 'added DESC');
                             $DateProbleme = date('d/m/Y', strtotime($statusProbleme[0]['added']));
@@ -1303,10 +1207,8 @@ class dossiersController extends bootstrap
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
 
-                            if ($lPreteurs != false)
-                            {
-                                foreach ($lPreteurs as $p)
-                                {
+                            if ($lPreteurs != false) {
+                                foreach ($lPreteurs as $p) {
                                     $this->lenders_accounts->get($p['id_lender'], 'id_lender_account');
                                     $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
@@ -1358,42 +1260,48 @@ class dossiersController extends bootstrap
                             }
                         }
                         // procedure de sauvegarde 
-                        elseif ($_POST['status'] == '150')
-                        {
+                        elseif ($_POST['status'] == '150') {
                             // On bloque tous les futures prélèvements 
                             $prelevements = $this->loadData('prelevements');
-                            $L_prelevements = $prelevements->select('id_project = ' . $this->projects->id_project.' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
-                            
-                            if($L_prelevements != false){
-                                foreach($L_prelevements as $prel)
-                                {
+                            $L_prelevements = $prelevements->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
+
+                            if ($L_prelevements != false) {
+                                foreach ($L_prelevements as $prel) {
                                     $prelevements->get($prel['id_prelevement']);
                                     $prelevements->status = 4; // bloqué temporairement
                                     $prelevements->update();
                                 }
                             }
-                            
+
                             // On stop les remb auto si y en a
                             $projects_remb = $this->loadData('projects_remb');
-                            $lRembAuto = $projects_remb->select('status = 0 AND id_project = '.$this->projects->id_project);
-                            if($lRembAuto != false){
-                                foreach ($lRembAuto as $r){
-                                   $projects_remb->get($r['id_project_remb'],'id_project_remb');
-                                   $projects_remb->status = 4;
-                                   $projects_remb->update();
+                            $lRembAuto = $projects_remb->select('status = 0 AND id_project = ' . $this->projects->id_project);
+                            if ($lRembAuto != false) {
+                                foreach ($lRembAuto as $r) {
+                                    $projects_remb->get($r['id_project_remb'], 'id_project_remb');
+                                    $projects_remb->status = 4;
+                                    $projects_remb->update();
                                 }
                             }
-                            
-                            // on récupère la variable pour savoir si on envoi le mail au preteur ou non
+
+                            // on récupère la variable pour savoir si on envoi le mail aux preteurs ou non
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_ps'];
                             $contenu_a_ajouter_mail = $_POST['area_ps'];
-                           
+
+                            $date_jugement = $_POST['date_ps'];
+                            $tab = explode('/', $date_jugement);
+                            $date_jugement = $tab[2] . '-' . $tab[1] . '-' . $tab[0];
+                            
+                            $mandataire = $_POST['mandataire_ps'];
+                            
                             // on enregsitre le contenu
                             $projects_status_history_informations = $this->loadData('projects_status_history_informations');
                             $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
                             $projects_status_history_informations->information = $contenu_a_ajouter_mail;
+                            $projects_status_history_informations->date = $date_jugement;
+                            $projects_status_history_informations->mandataire = $mandataire;
                             $projects_status_history_informations->create();
-                            
+
                             // FB
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
@@ -1401,9 +1309,501 @@ class dossiersController extends bootstrap
                             // Twitter
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
+
+                            // Tel emprunteur
+                            $this->settings->get('Tel emprunteur', 'type');
+                            $tel_emprunteur = $this->settings->value;
+
+                            // EMAIL RECOUVREMENT EMPRUNTEUR //
+                            // recup emprunteur
+                            $emprunteur = $this->loadData('clients');
+                            $emprunteur->get($this->companies->id_client_owner, 'id_client');
+                            // recup date financement (date de premier passage en statut remboursement)
+                            $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
+                            $date_financement = date('m/Y', strtotime($status_remb[0]['added']));
+                            // Recup nb preteurs
+                            $nb_preteurs = $this->loans->getNbPreteurs($this->projects->id_project);
+                            // recup capital restant du (a partire de la date de jugement)
+                            $CapitalRestantDu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) > "' . $date_jugement . '"', 'capital');
+
+                            // Variables du mailing
+                            $varMail = array(
+                                'surl' => $this->surl,
+                                'url' => $this->furl,
+                                'civilite_e' => $emprunteur->civilite,
+                                'nom_e' => $emprunteur->nom,
+                                'entreprise' => $this->companies->name,
+                                'date_finance' => $date_financement,
+                                'montant_emprunt' => $this->projects->amount,
+                                'capital_restant_du' => $CapitalRestantDu,
+                                'tel_emprunteur' => $tel_emprunteur,
+                                'lien_pouvoir' => $this->furl.'/pdf/pouvoir/' . $emprunteur->hash . '/' . $this->projects->id_project,
+                                'nb_preteurs' => $nb_preteurs,
+                                'lien_fb' => $lien_fb,
+                                'lien_tw' => $lien_tw);
+
+                            // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
+                            $liste_attente_mail = $this->loadData('liste_attente_mail');
+                            $liste_attente_mail->type_mail = 'statut-procedure-de-sauvegarde-emprunteur';
+                            $liste_attente_mail->language = $this->language;
+                            $liste_attente_mail->variables = serialize($varMail);
+                            $liste_attente_mail->to = $this->clients->email;
+                            $liste_attente_mail->statut = 0; //pas envoyé
+                            $liste_attente_mail->create();
+
+                            // preteur //
+                            $this->companies->get($this->projects->id_company, 'id_company');
+
+                            // On recuprere les lenders ayant des loans sur le projet
+                            $lPreteurs = $this->loans->getPreteurs($this->projects->id_project);
+
+                            if ($lPreteurs != false) {
+                                foreach ($lPreteurs as $p) {
+                                    $this->lenders_accounts->get($p['id_lender'], 'id_lender_account');
+                                    $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+
+                                    // Motif virement
+                                    $pre = substr($this->ficelle->stripAccents(utf8_decode($this->clients->prenom)), 0, 1);
+                                    $nom = $this->ficelle->stripAccents(utf8_decode($this->clients->nom));
+                                    $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
+                                    $motif = mb_strtoupper($id_client . $pre . $nom, 'UTF-8');
+
+                                    // pour chaque preteur on fait la somme des loans qu'il a sur le projet pour le mail
+                                    $L_loans = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $p['id_lender']);
+                                    $nb_loan = 0;
+                                    $rembNet = 0;
+                                    $sum_amount = 0;
+                                    foreach ($L_loans as $l) {
+                                        $sum_amount += $l['amount'];
+                                        $nb_loan++;
+                                    }
+
+                                    // Gestion de l'ajout des nouvelles notifications manquantes
+                                    $this->lNotif_manquante = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client . ' AND id_notif IN (9)');
+                                    if ($this->lNotif_manquante == false) {
+                                        $this->clients_gestion_type_notif = $this->loadData('clients_gestion_type_notif');
+                                        $this->lTypeNotifs_manquates = $this->clients_gestion_type_notif->select('id_client_gestion_type_notif IN (9)');
+
+                                        foreach ($this->lTypeNotifs_manquates as $n) {
+                                            $this->clients_gestion_notifications->id_client = $this->clients->id_client;
+                                            $this->clients_gestion_notifications->id_notif = $n['id_client_gestion_type_notif'];
+                                            $this->clients_gestion_notifications->immediatement = 1;
+                                            $this->clients_gestion_notifications->create();
+                                        }
+                                    }
+
+                                    // Ajout d'une notification
+                                    $this->notifications->type = 10; // recouvrement (type procedure de sauvegarde)
+                                    $this->notifications->id_lender = $p['id_lender'];
+                                    $this->notifications->id_project = $p['id_project'];
+                                    $this->notifications->amount = $sum_amount;
+                                    $this->notifications->id_bid = 0; // On peut avoir plusieurs bid donc inutile  
+                                    $this->notifications->id_notification = $this->notifications->create();
+
+                                    //////// GESTION ALERTES //////////
+                                    $this->clients_gestion_mails_notif->id_client = $lender->id_client_owner;
+                                    $this->clients_gestion_mails_notif->id_notif = 9; // type Notifications de retards & régularisations de retards
+                                    $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                                    $this->clients_gestion_mails_notif->id_transaction = 0;
+                                    $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
+                                    $this->clients_gestion_mails_notif->id_loan = 0; // On peut avoir plusieurs loans donc inutile  
+                                    $this->clients_gestion_mails_notif->create();
+                                    //////// FIN GESTION ALERTES //////////
+                                    //si on envoi le mail
+                                    if ($mail_a_envoyer == 0) {
+                                        // pour chaque preteur on check si le preteur veut recevoir l'email instantané
+                                        if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true) {
+
+                                            // Variables du mailing
+                                            $varMail = array(
+                                                'surl' => $this->surl,
+                                                'url' => $this->furl,
+                                                'prenom_p' => $this->clients->prenom,
+                                                'date_probleme' => $DateProbleme,
+                                                'cab_recouvrement' => $this->cab,
+                                                'nom_entreprise' => $this->companies->name,
+                                                'motif_virement' => $motif,
+                                                'contenu_mail' => $contenu_a_ajouter_mail,
+                                                'lien_fb' => $lien_fb,
+                                                'lien_tw' => $lien_tw);
+
+                                            // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
+                                            $liste_attente_mail = $this->loadData('liste_attente_mail');
+                                            $liste_attente_mail->type_mail = ''; // <---------------------
+                                            $liste_attente_mail->language = $this->language;
+                                            $liste_attente_mail->variables = serialize($varMail);
+                                            $liste_attente_mail->to = $this->clients->email;
+                                            $liste_attente_mail->statut = 0; //pas envoyé
+                                            //$liste_attente_mail->create();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        // redressement judiciaire 
+                        elseif ($_POST['status'] == '160') {
+                            // On bloque tous les futures prélèvements 
+                            $prelevements = $this->loadData('prelevements');
+                            $L_prelevements = $prelevements->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
+
+                            if ($L_prelevements != false) {
+                                foreach ($L_prelevements as $prel) {
+                                    $prelevements->get($prel['id_prelevement']);
+                                    $prelevements->status = 4; // bloqué temporairement
+                                    $prelevements->update();
+                                }
+                            }
+
+                            // On stop les remb auto si y en a
+                            $projects_remb = $this->loadData('projects_remb');
+                            $lRembAuto = $projects_remb->select('status = 0 AND id_project = ' . $this->projects->id_project);
+                            if ($lRembAuto != false) {
+                                foreach ($lRembAuto as $r) {
+                                    $projects_remb->get($r['id_project_remb'], 'id_project_remb');
+                                    $projects_remb->status = 4;
+                                    $projects_remb->update();
+                                }
+                            }
+
+                            // on récupère la variable pour savoir si on envoi le mail aux preteurs ou non
+                            $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_ps'];
+                            $contenu_a_ajouter_mail = $_POST['area_ps'];
+
+                            $date_jugement = $_POST['date_ps'];
+                            $tab = explode('/', $date_jugement);
+                            $date_jugement = $tab[2] . '-' . $tab[1] . '-' . $tab[0];
+                            
+                            $mandataire = $_POST['mandataire_ps'];
+                            
+                            // on enregsitre le contenu
+                            $projects_status_history_informations = $this->loadData('projects_status_history_informations');
+                            $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                            $projects_status_history_informations->information = $contenu_a_ajouter_mail;
+                            $projects_status_history_informations->date = $date_jugement;
+                            $projects_status_history_informations->mandataire = $mandataire;
+                            $projects_status_history_informations->create();
+
+                            // FB
+                            $this->settings->get('Facebook', 'type');
+                            $lien_fb = $this->settings->value;
+
+                            // Twitter
+                            $this->settings->get('Twitter', 'type');
+                            $lien_tw = $this->settings->value;
+
+                            // Tel emprunteur
+                            $this->settings->get('Tel emprunteur', 'type');
+                            $tel_emprunteur = $this->settings->value;
+
+                            // EMAIL RECOUVREMENT EMPRUNTEUR //
+                            // recup emprunteur
+                            $emprunteur = $this->loadData('clients');
+                            $emprunteur->get($this->companies->id_client_owner, 'id_client');
+                            // recup date financement (date de premier passage en statut remboursement)
+                            $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
+                            $date_financement = date('m/Y', strtotime($status_remb[0]['added']));
+                            // Recup nb preteurs
+                            $nb_preteurs = $this->loans->getNbPreteurs($this->projects->id_project);
+                            // recup capital restant du (a partire de la date de jugement)
+                            $CapitalRestantDu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) > "' . $date_jugement . '"', 'capital');
+
+                            // Variables du mailing
+                            $varMail = array(
+                                'surl' => $this->surl,
+                                'url' => $this->furl,
+                                'civilite_e' => $emprunteur->civilite,
+                                'nom_e' => $emprunteur->nom,
+                                'entreprise' => $this->companies->name,
+                                'date_finance' => $date_financement,
+                                'montant_emprunt' => $this->projects->amount,
+                                'capital_restant_du' => $CapitalRestantDu,
+                                'tel_emprunteur' => $tel_emprunteur,
+                                'lien_pouvoir' => $this->furl.'/pdf/pouvoir/' . $emprunteur->hash . '/' . $this->projects->id_project,
+                                'nb_preteurs' => $nb_preteurs,
+                                'lien_fb' => $lien_fb,
+                                'lien_tw' => $lien_tw);
+
+                            // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
+                            $liste_attente_mail = $this->loadData('liste_attente_mail');
+                            $liste_attente_mail->type_mail = 'statut-redressement-judiciaire-emprunteur';
+                            $liste_attente_mail->language = $this->language;
+                            $liste_attente_mail->variables = serialize($varMail);
+                            $liste_attente_mail->to = $this->clients->email;
+                            $liste_attente_mail->statut = 0; //pas envoyé
+                            $liste_attente_mail->create();
+
+                            // preteur //
+                            $this->companies->get($this->projects->id_company, 'id_company');
+
+                            // On recuprere les lenders ayant des loans sur le projet
+                            $lPreteurs = $this->loans->getPreteurs($this->projects->id_project);
+
+                            if ($lPreteurs != false) {
+                                foreach ($lPreteurs as $p) {
+                                    $this->lenders_accounts->get($p['id_lender'], 'id_lender_account');
+                                    $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+
+                                    // Motif virement
+                                    $pre = substr($this->ficelle->stripAccents(utf8_decode($this->clients->prenom)), 0, 1);
+                                    $nom = $this->ficelle->stripAccents(utf8_decode($this->clients->nom));
+                                    $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
+                                    $motif = mb_strtoupper($id_client . $pre . $nom, 'UTF-8');
+
+                                    // pour chaque preteur on fait la somme des loans qu'il a sur le projet pour le mail
+                                    $L_loans = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $p['id_lender']);
+                                    $nb_loan = 0;
+                                    $rembNet = 0;
+                                    $sum_amount = 0;
+                                    foreach ($L_loans as $l) {
+                                        $sum_amount += $l['amount'];
+                                        $nb_loan++;
+                                    }
+
+                                    // Gestion de l'ajout des nouvelles notifications manquantes
+                                    $this->lNotif_manquante = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client . ' AND id_notif IN (9)');
+                                    if ($this->lNotif_manquante == false) {
+                                        $this->clients_gestion_type_notif = $this->loadData('clients_gestion_type_notif');
+                                        $this->lTypeNotifs_manquates = $this->clients_gestion_type_notif->select('id_client_gestion_type_notif IN (9)');
+
+                                        foreach ($this->lTypeNotifs_manquates as $n) {
+                                            $this->clients_gestion_notifications->id_client = $this->clients->id_client;
+                                            $this->clients_gestion_notifications->id_notif = $n['id_client_gestion_type_notif'];
+                                            $this->clients_gestion_notifications->immediatement = 1;
+                                            $this->clients_gestion_notifications->create();
+                                        }
+                                    }
+
+                                    // Ajout d'une notification
+                                    $this->notifications->type = 10; // recouvrement (type procedure de sauvegarde)
+                                    $this->notifications->id_lender = $p['id_lender'];
+                                    $this->notifications->id_project = $p['id_project'];
+                                    $this->notifications->amount = $sum_amount;
+                                    $this->notifications->id_bid = 0; // On peut avoir plusieurs bid donc inutile  
+                                    $this->notifications->id_notification = $this->notifications->create();
+
+                                    //////// GESTION ALERTES //////////
+                                    $this->clients_gestion_mails_notif->id_client = $lender->id_client_owner;
+                                    $this->clients_gestion_mails_notif->id_notif = 9; // type Notifications de retards & régularisations de retards
+                                    $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                                    $this->clients_gestion_mails_notif->id_transaction = 0;
+                                    $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
+                                    $this->clients_gestion_mails_notif->id_loan = 0; // On peut avoir plusieurs loans donc inutile  
+                                    $this->clients_gestion_mails_notif->create();
+                                    //////// FIN GESTION ALERTES //////////
+                                    //si on envoi le mail
+                                    if ($mail_a_envoyer == 0) {
+                                        // pour chaque preteur on check si le preteur veut recevoir l'email instantané
+                                        if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true) {
+
+                                            // Variables du mailing
+                                            $varMail = array(
+                                                'surl' => $this->surl,
+                                                'url' => $this->furl,
+                                                'prenom_p' => $this->clients->prenom,
+                                                'date_probleme' => $DateProbleme,
+                                                'cab_recouvrement' => $this->cab,
+                                                'nom_entreprise' => $this->companies->name,
+                                                'motif_virement' => $motif,
+                                                'contenu_mail' => $contenu_a_ajouter_mail,
+                                                'lien_fb' => $lien_fb,
+                                                'lien_tw' => $lien_tw);
+
+                                            // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
+                                            $liste_attente_mail = $this->loadData('liste_attente_mail');
+                                            $liste_attente_mail->type_mail = ''; // <---------------------
+                                            $liste_attente_mail->language = $this->language;
+                                            $liste_attente_mail->variables = serialize($varMail);
+                                            $liste_attente_mail->to = $this->clients->email;
+                                            $liste_attente_mail->statut = 0; //pas envoyé
+                                            //$liste_attente_mail->create();
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        // liquidation judiciaire
+                        elseif ($_POST['status'] == '170') {
+                            // On bloque tous les futures prélèvements 
+                            $prelevements = $this->loadData('prelevements');
+                            $L_prelevements = $prelevements->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
+
+                            if ($L_prelevements != false) {
+                                foreach ($L_prelevements as $prel) {
+                                    $prelevements->get($prel['id_prelevement']);
+                                    $prelevements->status = 4; // bloqué temporairement
+                                    $prelevements->update();
+                                }
+                            }
+
+                            // On stop les remb auto si y en a
+                            $projects_remb = $this->loadData('projects_remb');
+                            $lRembAuto = $projects_remb->select('status = 0 AND id_project = ' . $this->projects->id_project);
+                            if ($lRembAuto != false) {
+                                foreach ($lRembAuto as $r) {
+                                    $projects_remb->get($r['id_project_remb'], 'id_project_remb');
+                                    $projects_remb->status = 4;
+                                    $projects_remb->update();
+                                }
+                            }
+
+                            // on récupère la variable pour savoir si on envoi le mail aux preteurs ou non
+                            $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_ps'];
+                            $contenu_a_ajouter_mail = $_POST['area_ps'];
+
+                            $date_jugement = $_POST['date_ps'];
+                            $tab = explode('/', $date_jugement);
+                            $date_jugement = $tab[2] . '-' . $tab[1] . '-' . $tab[0];
+                            
+                            $mandataire = $_POST['mandataire_ps'];
+                            
+                            // on enregsitre le contenu
+                            $projects_status_history_informations = $this->loadData('projects_status_history_informations');
+                            $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                            $projects_status_history_informations->information = $contenu_a_ajouter_mail;
+                            $projects_status_history_informations->date = $date_jugement;
+                            $projects_status_history_informations->mandataire = $mandataire;
+                            $projects_status_history_informations->create();
+
+                            // FB
+                            $this->settings->get('Facebook', 'type');
+                            $lien_fb = $this->settings->value;
+
+                            // Twitter
+                            $this->settings->get('Twitter', 'type');
+                            $lien_tw = $this->settings->value;
+
+                            // Tel emprunteur
+                            $this->settings->get('Tel emprunteur', 'type');
+                            $tel_emprunteur = $this->settings->value;
+
+                            // EMAIL RECOUVREMENT EMPRUNTEUR //
+                            // recup emprunteur
+                            $emprunteur = $this->loadData('clients');
+                            $emprunteur->get($this->companies->id_client_owner, 'id_client');
+                            // recup date financement (date de premier passage en statut remboursement)
+                            $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
+                            $date_financement = date('m/Y', strtotime($status_remb[0]['added']));
+                            // Recup nb preteurs
+                            $nb_preteurs = $this->loans->getNbPreteurs($this->projects->id_project);
+                            // recup capital restant du (a partire de la date de jugement)
+                            $CapitalRestantDu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) > "' . $date_jugement . '"', 'capital');
+
+                            // Variables du mailing
+                            $varMail = array(
+                                'surl' => $this->surl,
+                                'url' => $this->furl,
+                                'civilite_e' => $emprunteur->civilite,
+                                'nom_e' => $emprunteur->nom,
+                                'entreprise' => $this->companies->name,
+                                'date_finance' => $date_financement,
+                                'montant_emprunt' => $this->projects->amount,
+                                'capital_restant_du' => $CapitalRestantDu,
+                                'tel_emprunteur' => $tel_emprunteur,
+                                'lien_pouvoir' => $this->furl.'/pdf/pouvoir/' . $emprunteur->hash . '/' . $this->projects->id_project,
+                                'nb_preteurs' => $nb_preteurs,
+                                'lien_fb' => $lien_fb,
+                                'lien_tw' => $lien_tw);
+
+                            // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
+                            $liste_attente_mail = $this->loadData('liste_attente_mail');
+                            $liste_attente_mail->type_mail = 'statut-liquidation-judiciaire-emprunteur';
+                            $liste_attente_mail->language = $this->language;
+                            $liste_attente_mail->variables = serialize($varMail);
+                            $liste_attente_mail->to = $this->clients->email;
+                            $liste_attente_mail->statut = 0; //pas envoyé
+                            $liste_attente_mail->create();
+
+                            // preteur //
+                            $this->companies->get($this->projects->id_company, 'id_company');
+
+                            // On recuprere les lenders ayant des loans sur le projet
+                            $lPreteurs = $this->loans->getPreteurs($this->projects->id_project);
+
+                            if ($lPreteurs != false) {
+                                foreach ($lPreteurs as $p) {
+                                    $this->lenders_accounts->get($p['id_lender'], 'id_lender_account');
+                                    $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+
+                                    // Motif virement
+                                    $pre = substr($this->ficelle->stripAccents(utf8_decode($this->clients->prenom)), 0, 1);
+                                    $nom = $this->ficelle->stripAccents(utf8_decode($this->clients->nom));
+                                    $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
+                                    $motif = mb_strtoupper($id_client . $pre . $nom, 'UTF-8');
+
+                                    // pour chaque preteur on fait la somme des loans qu'il a sur le projet pour le mail
+                                    $L_loans = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $p['id_lender']);
+                                    $nb_loan = 0;
+                                    $rembNet = 0;
+                                    $sum_amount = 0;
+                                    foreach ($L_loans as $l) {
+                                        $sum_amount += $l['amount'];
+                                        $nb_loan++;
+                                    }
+
+                                    // Gestion de l'ajout des nouvelles notifications manquantes
+                                    $this->lNotif_manquante = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client . ' AND id_notif IN (9)');
+                                    if ($this->lNotif_manquante == false) {
+                                        $this->clients_gestion_type_notif = $this->loadData('clients_gestion_type_notif');
+                                        $this->lTypeNotifs_manquates = $this->clients_gestion_type_notif->select('id_client_gestion_type_notif IN (9)');
+
+                                        foreach ($this->lTypeNotifs_manquates as $n) {
+                                            $this->clients_gestion_notifications->id_client = $this->clients->id_client;
+                                            $this->clients_gestion_notifications->id_notif = $n['id_client_gestion_type_notif'];
+                                            $this->clients_gestion_notifications->immediatement = 1;
+                                            $this->clients_gestion_notifications->create();
+                                        }
+                                    }
+
+                                    // Ajout d'une notification
+                                    $this->notifications->type = 10; // recouvrement (type procedure de sauvegarde)
+                                    $this->notifications->id_lender = $p['id_lender'];
+                                    $this->notifications->id_project = $p['id_project'];
+                                    $this->notifications->amount = $sum_amount;
+                                    $this->notifications->id_bid = 0; // On peut avoir plusieurs bid donc inutile  
+                                    $this->notifications->id_notification = $this->notifications->create();
+
+                                    //////// GESTION ALERTES //////////
+                                    $this->clients_gestion_mails_notif->id_client = $lender->id_client_owner;
+                                    $this->clients_gestion_mails_notif->id_notif = 9; // type Notifications de retards & régularisations de retards
+                                    $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                                    $this->clients_gestion_mails_notif->id_transaction = 0;
+                                    $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
+                                    $this->clients_gestion_mails_notif->id_loan = 0; // On peut avoir plusieurs loans donc inutile  
+                                    $this->clients_gestion_mails_notif->create();
+                                    //////// FIN GESTION ALERTES //////////
+                                    //si on envoi le mail
+                                    if ($mail_a_envoyer == 0) {
+                                        // pour chaque preteur on check si le preteur veut recevoir l'email instantané
+                                        if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true) {
+
+                                            // Variables du mailing
+                                            $varMail = array(
+                                                'surl' => $this->surl,
+                                                'url' => $this->furl,
+                                                'prenom_p' => $this->clients->prenom,
+                                                'date_probleme' => $DateProbleme,
+                                                'cab_recouvrement' => $this->cab,
+                                                'nom_entreprise' => $this->companies->name,
+                                                'motif_virement' => $motif,
+                                                'contenu_mail' => $contenu_a_ajouter_mail,
+                                                'lien_fb' => $lien_fb,
+                                                'lien_tw' => $lien_tw);
+
+                                            // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
+                                            $liste_attente_mail = $this->loadData('liste_attente_mail');
+                                            $liste_attente_mail->type_mail = ''; // <---------------------
+                                            $liste_attente_mail->language = $this->language;
+                                            $liste_attente_mail->variables = serialize($varMail);
+                                            $liste_attente_mail->to = $this->clients->email;
+                                            $liste_attente_mail->statut = 0; //pas envoyé
+                                            //$liste_attente_mail->create();
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
-
+                    // fin statuts
                     // Companies
                     $this->companies->siren = $_POST['siren'];
                     $this->companies->siret = $_POST['siret'];
@@ -1417,15 +1817,12 @@ class dossiersController extends bootstrap
                     $this->companies->activite = $_POST['activite'];
                     $this->companies->lieu_exploi = $_POST['lieu_exploi'];
 
-                    if ($this->companies->status_adresse_correspondance == 1)
-                    {
+                    if ($this->companies->status_adresse_correspondance == 1) {
                         $this->companies->adresse1 = $_POST['adresse'];
                         $this->companies->city = $_POST['city'];
                         $this->companies->zip = $_POST['zip'];
                         $this->companies->phone = $_POST['phone'];
-                    }
-                    else
-                    {
+                    } else {
                         $this->clients_adresses->adresse1 = $_POST['adresse'];
                         $this->clients_adresses->ville = $_POST['city'];
                         $this->clients_adresses->cp = $_POST['zip'];
@@ -1445,8 +1842,7 @@ class dossiersController extends bootstrap
 
                     // PRET REFUSE //
 
-                    if (isset($_POST['pret_refuse']) && $_POST['pret_refuse'] == 1)
-                    {
+                    if (isset($_POST['pret_refuse']) && $_POST['pret_refuse'] == 1) {
 
                         // Chargement des datas
                         $loans = $this->loadData('loans');
@@ -1475,27 +1871,21 @@ class dossiersController extends bootstrap
                         $lesloans = $loans->select('id_project = ' . $this->projects->id_project);
 
                         $companies->get($this->projects->id_company, 'id_company');
-                        
+
                         //on supp l'écheancier du projet pour ne pas avoir de doublon d'affichage sur le front (BT 18600)
                         $echeanciers->delete($this->projects->id_project, 'id_project');
-                        
-                        foreach ($lesloans as $l)
-                        {
+
+                        foreach ($lesloans as $l) {
 
                             // On regarde si on a pas deja un remb pour ce bid
 
-                            if ($transactions->get($l['id_loan'], 'id_loan_remb') == false)
-                            {
+                            if ($transactions->get($l['id_loan'], 'id_loan_remb') == false) {
 
                                 // On recup le projet
                                 // On recup l'entreprise
-
-
                                 // On recup lender
                                 $projects->get($l['id_project'], 'id_project');
                                 // On recup l'entreprise
-                                
-
                                 // On recup lender
                                 $lenders->get($l['id_lender'], 'id_lender_account');
                                 // on recup les infos du lender
@@ -1571,14 +1961,11 @@ class dossiersController extends bootstrap
                                 $this->email->setSubject(stripslashes($sujetMail));
                                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                if ($this->Config['env'] == 'prod') // nmp
-                                {
+                                if ($this->Config['env'] == 'prod') { // nmp
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
                                     // Injection du mail NMP dans la queue
                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                }
-                                else // non nmp
-                                {
+                                } else { // non nmp
                                     $this->email->addRecipient(trim($clients->email));
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 }
@@ -1589,16 +1976,14 @@ class dossiersController extends bootstrap
                     /////////////////
                     // REMBOURSEMENT //
                     // si on a le pouvoir
-                    if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status_remb == 0)
-                    {
+                    if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status_remb == 0) {
 
 
                         $this->projects_pouvoir->status_remb = $_POST['satut_pouvoir'];
                         $this->projects_pouvoir->update();
 
                         // si on a validé le pouvoir
-                        if ($this->projects_pouvoir->status_remb == 1)
-                        {
+                        if ($this->projects_pouvoir->status_remb == 1) {
                             mail('unilend@equinoa.fr', '[ALERTE] Controle statut remboursement Debut', '[ALERTE] Controle statut remboursement pour le projet : ' . $this->projects->id_project . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
                             // debut processe chagement statut remboursement //
                             // On recup le param
@@ -1606,8 +1991,7 @@ class dossiersController extends bootstrap
                             $settingsControleRemb->get('Controle statut remboursement', 'type');
 
                             // on rentre dans le cron si statut égale 1 
-                            if ($settingsControleRemb->value == 1)
-                            {
+                            if ($settingsControleRemb->value == 1) {
                                 // On passe le statut a zero pour signaler qu'on est en cours de traitement
                                 $settingsControleRemb->value = 0;
                                 $settingsControleRemb->update();
@@ -1641,8 +2025,7 @@ class dossiersController extends bootstrap
                                 $montant -= $partUnliend;
 
                                 // si existe pas
-                                if ($this->transactions->get($this->projects->id_project, 'type_transaction = 9 AND id_project') == false)
-                                {
+                                if ($this->transactions->get($this->projects->id_project, 'type_transaction = 9 AND id_project') == false) {
 
                                     // transaction
                                     $this->transactions->id_client = $this->clients->id_client;
@@ -1706,8 +2089,7 @@ class dossiersController extends bootstrap
                                     //$echea = $echeanciers->getSumRembEmpruntByMonths($this->projects->id_project);
                                     $echea = $echeanciers_emprunteur->select('id_project = ' . $this->projects->id_project);
 
-                                    foreach ($echea as $key => $e)
-                                    {
+                                    foreach ($echea as $key => $e) {
 
                                         /* if($e['ordre'] == 1)
                                           {
@@ -1765,8 +2147,7 @@ class dossiersController extends bootstrap
                                     $this->settings->get('Twitter', 'type');
                                     $lien_tw = $this->settings->value;
 
-                                    foreach ($lLoans as $l)
-                                    {
+                                    foreach ($lLoans as $l) {
                                         // lender
                                         $lender->get($l['id_lender'], 'id_lender_account');
                                         // preteur (client)
@@ -1789,8 +2170,7 @@ class dossiersController extends bootstrap
                                         $this->clients_gestion_mails_notif->create();
                                         //////// FIN GESTION ALERTES //////////
 
-                                        if ($this->clients_gestion_notifications->getNotif($lender->id_client_owner, 4, 'immediatement') == true)
-                                        {
+                                        if ($this->clients_gestion_notifications->getNotif($lender->id_client_owner, 4, 'immediatement') == true) {
 
                                             //////// GESTION ALERTES //////////
                                             $this->clients_gestion_mails_notif->get($l['id_loan'], 'id_client = ' . $lender->id_client_owner . ' AND id_loan');
@@ -1863,14 +2243,11 @@ class dossiersController extends bootstrap
                                             $this->email->setSubject(stripslashes($sujetMail));
                                             $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                            if ($this->Config['env'] == 'prod') // nmp
-                                            {
+                                            if ($this->Config['env'] == 'prod') { // nmp
                                                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($preteur->email), $tabFiler);
                                                 // Injection du mail NMP dans la queue
                                                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                            }
-                                            else // non nmp
-                                            {
+                                            } else { // non nmp
                                                 $this->email->addRecipient(trim($preteur->email));
                                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                             }
@@ -1936,8 +2313,7 @@ class dossiersController extends bootstrap
                                 // Envoi du mail
                                 $this->email = $this->loadLib('email', array());
                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                if ($this->Config['env'] == 'prod')
-                                {
+                                if ($this->Config['env'] == 'prod') {
                                     $this->email->addBCCRecipient('nicolas.lesur@unilend.fr');
                                     $this->email->addBCCRecipient('d.nandji@equinoa.com');
 
@@ -1947,14 +2323,11 @@ class dossiersController extends bootstrap
                                 $this->email->setSubject(stripslashes($sujetMail));
                                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                if ($this->Config['env'] == 'prod') // nmp
-                                {
+                                if ($this->Config['env'] == 'prod') { // nmp
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($laCompanie->email_facture), $tabFiler);
                                     // Injection du mail NMP dans la queue
                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                }
-                                else // non nmp
-                                {
+                                } else { // non nmp
                                     $this->email->addRecipient(trim($laCompanie->email_facture));
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 }
@@ -2000,65 +2373,51 @@ class dossiersController extends bootstrap
 
 
             // Modification de la date de retrait
-            if (isset($_POST['send_form_date_retrait']))
-            {
+            if (isset($_POST['send_form_date_retrait'])) {
 
                 $form_ok = true;
 
-                if (!isset($_POST['date_de_retrait']))
-                {
+                if (!isset($_POST['date_de_retrait'])) {
                     $form_ok = false;
                 }
-                if (!isset($_POST['date_retrait_heure']))
-                {
+                if (!isset($_POST['date_retrait_heure'])) {
                     $form_ok = false;
-                }
-                elseif ($_POST['date_retrait_heure'] < 0)
-                {
+                } elseif ($_POST['date_retrait_heure'] < 0) {
                     $form_ok = false;
                 }
 
-                if (!isset($_POST['date_retrait_minute']))
-                {
+                if (!isset($_POST['date_retrait_minute'])) {
+                    $form_ok = false;
+                } elseif ($_POST['date_retrait_minute'] < 0) {
                     $form_ok = false;
                 }
-                elseif ($_POST['date_retrait_minute'] < 0)
-                {
-                    $form_ok = false;
-                }
-                if ($this->current_projects_status->status > 50)
-                {
+                if ($this->current_projects_status->status > 50) {
                     $form_ok = false;
                 }
 
 
-                if ($form_ok == true)
-                {
+                if ($form_ok == true) {
 
                     $date = explode('/', $_POST['date_de_retrait']);
                     $date = $date[2] . '-' . $date[1] . '-' . $date[0];
 
                     $dateComplete = $date . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':00';
                     // on check si la date est superieur a la date actuelle
-                    if (strtotime($dateComplete) > time())
-                    {
+                    if (strtotime($dateComplete) > time()) {
                         $this->projects->date_retrait_full = $dateComplete;
                         $this->projects->date_retrait = $date;
                         $this->projects->update();
                     }
                 }
             }
-        }
-        else
-        {
+        } else {
             // Renvoi sur la page de gestion des dossiers
             header('Location:' . $this->lurl . '/dossiers');
             die;
         }
     }
 
-    function _changeClient()
-    {
+    function _changeClient() {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
         $this->autoFireHead = false;
@@ -2068,14 +2427,12 @@ class dossiersController extends bootstrap
         // Chargement du data
         $this->clients = $this->loadData('clients');
 
-        if (isset($this->params[0]) && $this->params[0] != '')
-        {
+        if (isset($this->params[0]) && $this->params[0] != '') {
             $this->lClients = $this->clients->select('nom LIKE "%' . $this->params[0] . '%" OR prenom LIKE "%' . $this->params[0] . '%"');
         }
     }
 
-    function _addMemo()
-    {
+    function _addMemo() {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
         $this->autoFireHead = false;
@@ -2085,18 +2442,14 @@ class dossiersController extends bootstrap
         // Chargement des datas
         $this->projects_comments = $this->loadData('projects_comments');
 
-        if (isset($this->params[0]) && isset($this->params[1]) && $this->projects_comments->get($this->params[1], 'id_project_comment'))
-        {
+        if (isset($this->params[0]) && isset($this->params[1]) && $this->projects_comments->get($this->params[1], 'id_project_comment')) {
             $this->type = 'edit';
-        }
-        else
-        {
+        } else {
             $this->type = 'add';
         }
     }
 
-    function _upload_csv()
-    {
+    function _upload_csv() {
         $this->autoFireHeader = false;
         $this->autoFireHead = false;
         $this->autoFireFooter = false;
@@ -2109,14 +2462,11 @@ class dossiersController extends bootstrap
         $this->companies_bilans = $this->loadData('companies_bilans');
         $this->companies_actif_passif = $this->loadData('companies_actif_passif');
 
-        if (isset($_POST['send_csv']) && isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project'))
-        {
+        if (isset($_POST['send_csv']) && isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
 
-            if (isset($_FILES['csv']) && $_FILES['csv']['name'] != '')
-            {
+            if (isset($_FILES['csv']) && $_FILES['csv']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'public/default/var/uploads/');
-                if ($this->upload->doUpload('csv'))
-                {
+                if ($this->upload->doUpload('csv')) {
                     $this->name_csv = $this->upload->getName();
 
 
@@ -2135,10 +2485,8 @@ class dossiersController extends bootstrap
 
                     // lecture csv
                     $row = 0;
-                    if (($handle = fopen($this->surl . "/var/uploads/" . $this->name_csv, "r")) !== FALSE)
-                    {
-                        while (($data = fgetcsv($handle, 1000, ";")) !== FALSE)
-                        {
+                    if (($handle = fopen($this->surl . "/var/uploads/" . $this->name_csv, "r")) !== FALSE) {
+                        while (($data = fgetcsv($handle, 1000, ";")) !== FALSE) {
 
                             $result[$row] = $data;
                             $row++;
@@ -2353,8 +2701,7 @@ class dossiersController extends bootstrap
 
 
                     // Bilans
-                    foreach ($this->lCompanies_bilans as $k => $cb)
-                    {
+                    foreach ($this->lCompanies_bilans as $k => $cb) {
 
                         $this->companies_bilans->get($this->projects->id_company, 'date = "' . $bilan[$k]['annee'] . '" AND id_company');
                         $this->companies_bilans->ca = $bilan[$k]['ca'];
@@ -2367,8 +2714,7 @@ class dossiersController extends bootstrap
                     }
 
                     // Actif / passif
-                    foreach ($this->lCompanies_actif_passif as $k => $cap)
-                    {
+                    foreach ($this->lCompanies_actif_passif as $k => $cap) {
 
                         $this->companies_actif_passif->get($this->projects->id_company, 'ordre = "' . $actif[$k]['ordre'] . '" AND id_company');
                         $this->companies_actif_passif->immobilisations_corporelles = $actif[$k]['ic'];
@@ -2394,15 +2740,12 @@ class dossiersController extends bootstrap
                     $this->result = 'ok';
                 }
             }
-        }
-        else
-        {
+        } else {
             $this->result = 'nok';
         }
     }
 
-    function _file()
-    {
+    function _file() {
         $this->autoFireHeader = false;
         $this->autoFireHead = false;
         $this->autoFireFooter = false;
@@ -2432,8 +2775,7 @@ class dossiersController extends bootstrap
         $this->tablResult['fichier17'] = 'nok';
 
 
-        if (isset($_POST['send_etape5']) && isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project'))
-        {
+        if (isset($_POST['send_etape5']) && isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
 
             // Histo user //
             $serialize = serialize(array('id_project' => $this->params[0], 'files' => $_FILES));
@@ -2443,11 +2785,9 @@ class dossiersController extends bootstrap
             $this->companies_details->get($this->projects->id_company, 'id_company');
 
             // extrait_kbis
-            if (isset($_FILES['fichier1']) && $_FILES['fichier1']['name'] != '')
-            {
+            if (isset($_FILES['fichier1']) && $_FILES['fichier1']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/companies/extrait_kbis/');
-                if ($this->upload->doUpload('fichier1'))
-                {
+                if ($this->upload->doUpload('fichier1')) {
                     if ($this->companies_details->fichier_extrait_kbis != '')
                         @unlink($this->path . 'protected/companies/extrait_kbis/' . $this->companies_details->fichier_extrait_kbis);
                     $this->companies_details->fichier_extrait_kbis = $this->upload->getName();
@@ -2455,11 +2795,9 @@ class dossiersController extends bootstrap
                 }
             }
             // fichier_rib 
-            if (isset($_FILES['fichier2']) && $_FILES['fichier2']['name'] != '')
-            {
+            if (isset($_FILES['fichier2']) && $_FILES['fichier2']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/companies/rib/');
-                if ($this->upload->doUpload('fichier2'))
-                {
+                if ($this->upload->doUpload('fichier2')) {
                     if ($this->companies_details->fichier_rib != '')
                         @unlink($this->path . 'protected/companies/rib/' . $this->companies_details->fichier_rib);
                     $this->companies_details->fichier_rib = $this->upload->getName();
@@ -2467,11 +2805,9 @@ class dossiersController extends bootstrap
                 }
             }
             // fichier_delegation_pouvoir 
-            if (isset($_FILES['fichier3']) && $_FILES['fichier3']['name'] != '')
-            {
+            if (isset($_FILES['fichier3']) && $_FILES['fichier3']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/companies/delegation_pouvoir/');
-                if ($this->upload->doUpload('fichier3'))
-                {
+                if ($this->upload->doUpload('fichier3')) {
                     if ($this->companies_details->fichier_delegation_pouvoir != '')
                         @unlink($this->path . 'protected/companies/delegation_pouvoir/' . $this->companies_details->fichier_delegation_pouvoir);
                     $this->companies_details->fichier_delegation_pouvoir = $this->upload->getName();
@@ -2479,11 +2815,9 @@ class dossiersController extends bootstrap
                 }
             }
             // fichier_logo_societe 
-            if (isset($_FILES['fichier4']) && $_FILES['fichier4']['name'] != '')
-            {
+            if (isset($_FILES['fichier4']) && $_FILES['fichier4']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'public/default/var/images/logos_companies/');
-                if ($this->upload->doUpload('fichier4'))
-                {
+                if ($this->upload->doUpload('fichier4')) {
                     if ($this->companies_details->fichier_logo_societe != '')
                         @unlink($this->path . 'public/default/var/images/logos_companies/' . $this->companies_details->fichier_logo_societe);
                     $this->companies_details->fichier_logo_societe = $this->upload->getName();
@@ -2491,11 +2825,9 @@ class dossiersController extends bootstrap
                 }
             }
             // fichier_photo_dirigeant 
-            if (isset($_FILES['fichier5']) && $_FILES['fichier5']['name'] != '')
-            {
+            if (isset($_FILES['fichier5']) && $_FILES['fichier5']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/companies/photo_dirigeant/');
-                if ($this->upload->doUpload('fichier5'))
-                {
+                if ($this->upload->doUpload('fichier5')) {
                     if ($this->companies_details->fichier_photo_dirigeant != '')
                         @unlink($this->path . 'protected/companies/photo_dirigeant/' . $this->companies_details->fichier_photo_dirigeant);
                     $this->companies_details->fichier_photo_dirigeant = $this->upload->getName();
@@ -2506,11 +2838,9 @@ class dossiersController extends bootstrap
 
 
             // fichier_cni_passeport
-            if (isset($_FILES['fichier6']) && $_FILES['fichier6']['name'] != '')
-            {
+            if (isset($_FILES['fichier6']) && $_FILES['fichier6']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/companies/cni_passeport/');
-                if ($this->upload->doUpload('fichier6'))
-                {
+                if ($this->upload->doUpload('fichier6')) {
                     if ($this->companies_details->fichier_cni_passeport != '')
                         @unlink($this->path . 'protected/companies/cni_passeport/' . $this->companies_details->fichier_cni_passeport);
                     $this->companies_details->fichier_cni_passeport = $this->upload->getName();
@@ -2518,11 +2848,9 @@ class dossiersController extends bootstrap
                 }
             }
             // fichier_derniere_liasse_fiscale
-            if (isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '')
-            {
+            if (isset($_FILES['fichier7']) && $_FILES['fichier7']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/companies/derniere_liasse_fiscale/');
-                if ($this->upload->doUpload('fichier7'))
-                {
+                if ($this->upload->doUpload('fichier7')) {
                     if ($this->companies_details->fichier_derniere_liasse_fiscale != '')
                         @unlink($this->path . 'protected/companies/derniere_liasse_fiscale/' . $this->companies_details->fichier_derniere_liasse_fiscale);
                     $this->companies_details->fichier_derniere_liasse_fiscale = $this->upload->getName();
@@ -2530,11 +2858,9 @@ class dossiersController extends bootstrap
                 }
             }
             // fichier_derniers_comptes_approuves
-            if (isset($_FILES['fichier8']) && $_FILES['fichier8']['name'] != '')
-            {
+            if (isset($_FILES['fichier8']) && $_FILES['fichier8']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/companies/derniers_comptes_approuves/');
-                if ($this->upload->doUpload('fichier8'))
-                {
+                if ($this->upload->doUpload('fichier8')) {
                     if ($this->companies_details->fichier_derniers_comptes_approuves != '')
                         @unlink($this->path . 'protected/companies/derniers_comptes_approuves/' . $this->companies_details->fichier_derniers_comptes_approuves);
                     $this->companies_details->fichier_derniers_comptes_approuves = $this->upload->getName();
@@ -2542,11 +2868,9 @@ class dossiersController extends bootstrap
                 }
             }
             // fichier_derniers_comptes_consolides_groupe 
-            if (isset($_FILES['fichier9']) && $_FILES['fichier9']['name'] != '')
-            {
+            if (isset($_FILES['fichier9']) && $_FILES['fichier9']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/companies/derniers_comptes_consolides_groupe/');
-                if ($this->upload->doUpload('fichier9'))
-                {
+                if ($this->upload->doUpload('fichier9')) {
                     if ($this->companies_details->fichier_derniers_comptes_consolides_groupe != '')
                         @unlink($this->path . 'protected/companies/derniers_comptes_consolides_groupe/' . $this->companies_details->fichier_derniers_comptes_consolides_groupe);
                     $this->companies_details->fichier_derniers_comptes_consolides_groupe = $this->upload->getName();
@@ -2554,11 +2878,9 @@ class dossiersController extends bootstrap
                 }
             }
             // fichier_annexes_rapport_special_commissaire_compte 
-            if (isset($_FILES['fichier10']) && $_FILES['fichier10']['name'] != '')
-            {
+            if (isset($_FILES['fichier10']) && $_FILES['fichier10']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/companies/annexes_rapport_special_commissaire_compte/');
-                if ($this->upload->doUpload('fichier10'))
-                {
+                if ($this->upload->doUpload('fichier10')) {
                     if ($this->companies_details->fichier_annexes_rapport_special_commissaire_compte != '')
                         @unlink($this->path . 'protected/companies/annexes_rapport_special_commissaire_compte/' . $this->companies_details->fichier_annexes_rapport_special_commissaire_compte);
                     $this->companies_details->fichier_annexes_rapport_special_commissaire_compte = $this->upload->getName();
@@ -2566,11 +2888,9 @@ class dossiersController extends bootstrap
                 }
             }
             // fichier_arret_comptable_recent 
-            if (isset($_FILES['fichier11']) && $_FILES['fichier11']['name'] != '')
-            {
+            if (isset($_FILES['fichier11']) && $_FILES['fichier11']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/companies/arret_comptable_recent/');
-                if ($this->upload->doUpload('fichier11'))
-                {
+                if ($this->upload->doUpload('fichier11')) {
                     if ($this->companies_details->fichier_arret_comptable_recent != '')
                         @unlink($this->path . 'protected/companies/arret_comptable_recent/' . $this->companies_details->fichier_arret_comptable_recent);
                     $this->companies_details->fichier_arret_comptable_recent = $this->upload->getName();
@@ -2578,11 +2898,9 @@ class dossiersController extends bootstrap
                 }
             }
             // fichier_budget_exercice_en_cours_a_venir 
-            if (isset($_FILES['fichier12']) && $_FILES['fichier12']['name'] != '')
-            {
+            if (isset($_FILES['fichier12']) && $_FILES['fichier12']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/companies/budget_exercice_en_cours_a_venir/');
-                if ($this->upload->doUpload('fichier12'))
-                {
+                if ($this->upload->doUpload('fichier12')) {
                     if ($this->companies_details->fichier_budget_exercice_en_cours_a_venir != '')
                         @unlink($this->path . 'protected/companies/budget_exercice_en_cours_a_venir/' . $this->companies_details->fichier_budget_exercice_en_cours_a_venir);
                     $this->companies_details->fichier_budget_exercice_en_cours_a_venir = $this->upload->getName();
@@ -2590,11 +2908,9 @@ class dossiersController extends bootstrap
                 }
             }
             // fichier_notation_banque_france 
-            if (isset($_FILES['fichier13']) && $_FILES['fichier13']['name'] != '')
-            {
+            if (isset($_FILES['fichier13']) && $_FILES['fichier13']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/companies/notation_banque_france/');
-                if ($this->upload->doUpload('fichier13'))
-                {
+                if ($this->upload->doUpload('fichier13')) {
                     if ($this->companies_details->fichier_notation_banque_france != '')
                         @unlink($this->path . 'protected/companies/notation_banque_france/' . $this->companies_details->fichier_notation_banque_france);
                     $this->companies_details->fichier_notation_banque_france = $this->upload->getName();
@@ -2619,11 +2935,9 @@ class dossiersController extends bootstrap
               } */
 
             // fichier_autre_1
-            if (isset($_FILES['fichier15']) && $_FILES['fichier15']['name'] != '')
-            {
+            if (isset($_FILES['fichier15']) && $_FILES['fichier15']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/companies/autres/');
-                if ($this->upload->doUpload('fichier15'))
-                {
+                if ($this->upload->doUpload('fichier15')) {
                     if ($this->companies_details->fichier_autre_1 != '')
                         @unlink($this->path . 'protected/companies/autres/' . $this->companies_details->fichier_autre_1);
                     $this->companies_details->fichier_autre_1 = $this->upload->getName();
@@ -2632,11 +2946,9 @@ class dossiersController extends bootstrap
             }
 
             // fichier_autre_2
-            if (isset($_FILES['fichier16']) && $_FILES['fichier16']['name'] != '')
-            {
+            if (isset($_FILES['fichier16']) && $_FILES['fichier16']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/companies/autres/');
-                if ($this->upload->doUpload('fichier16'))
-                {
+                if ($this->upload->doUpload('fichier16')) {
                     if ($this->companies_details->fichier_autre_2 != '')
                         @unlink($this->path . 'protected/companies/autres/' . $this->companies_details->fichier_autre_2);
                     $this->companies_details->fichier_autre_2 = $this->upload->getName();
@@ -2645,11 +2957,9 @@ class dossiersController extends bootstrap
             }
 
             // fichier_autre_3 
-            if (isset($_FILES['fichier17']) && $_FILES['fichier17']['name'] != '')
-            {
+            if (isset($_FILES['fichier17']) && $_FILES['fichier17']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/companies/autres/');
-                if ($this->upload->doUpload('fichier17'))
-                {
+                if ($this->upload->doUpload('fichier17')) {
                     if ($this->companies_details->fichier_autre_3 != '')
                         @unlink($this->path . 'protected/companies/autres/' . $this->companies_details->fichier_autre_3);
                     $this->companies_details->fichier_autre_3 = $this->upload->getName();
@@ -2666,8 +2976,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _add()
-    {
+    function _add() {
         // Chargement du data
         $this->projects_status = $this->loadData('projects_status');
         $this->projects = $this->loadData('projects');
@@ -2678,11 +2987,9 @@ class dossiersController extends bootstrap
         $this->companies_bilans = $this->loadData('companies_bilans');
         $this->companies_actif_passif = $this->loadData('companies_actif_passif');
 
-        if (isset($_POST['send_create_etape1']))
-        {
+        if (isset($_POST['send_create_etape1'])) {
             // Si le client existe
-            if ($_POST['leclient'] == 1 && $this->clients->get($_POST['id_client'], 'id_client'))
-            {
+            if ($_POST['leclient'] == 1 && $this->clients->get($_POST['id_client'], 'id_client')) {
                 // On met a jour 
                 //$this->clients->prenom = $this->ficelle->majNom($_POST['prenom']);
                 //$this->clients->nom = $this->ficelle->majNom($_POST['nom']);
@@ -2692,35 +2999,28 @@ class dossiersController extends bootstrap
                 die;
             }
             // Si le client n'existe pas
-            elseif ($_POST['leclient'] == 2)
-            {
+            elseif ($_POST['leclient'] == 2) {
                 //$_POST['newPrenom']
                 //$_POST['newNom']
 
                 header('location:' . $this->lurl . '/dossiers/add/create_etape2');
                 die;
-            }
-            else
-            {
+            } else {
                 header('location:' . $this->lurl . '/dossiers/add/create');
                 die;
             }
         }
 
 
-        if (isset($this->params[0]) && $this->params[0] == 'create_etape2')
-        {
+        if (isset($this->params[0]) && $this->params[0] == 'create_etape2') {
             // Si on a deja un client
-            if (isset($this->params[1]) && $this->clients->get($this->params[1], 'id_client'))
-            {
+            if (isset($this->params[1]) && $this->clients->get($this->params[1], 'id_client')) {
                 // Si l'entreprise existe on a pas besoin de la creer
-                if ($this->companies->get($this->clients->id_client, 'id_client_owner'))
-                {
+                if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
                     
                 }
                 // Sinon on la creer
-                else
-                {
+                else {
                     // Creation companie
                     $this->companies->id_company = $this->companies->create();
 
@@ -2730,8 +3030,7 @@ class dossiersController extends bootstrap
 
                     // Creation companie bilans
                     $tablAnneesBilans = array(date('Y') - 3, date('Y') - 2, date('Y') - 1, date('Y'), date('Y') + 1);
-                    foreach ($tablAnneesBilans as $a)
-                    {
+                    foreach ($tablAnneesBilans as $a) {
                         $this->companies_bilans->id_company = $this->companies->id_company;
                         $this->companies_bilans->date = $a;
                         $this->companies_bilans->create();
@@ -2739,8 +3038,7 @@ class dossiersController extends bootstrap
                 }
             }
             // Si on a pas encore de client on créer l'entreprise
-            else
-            {
+            else {
                 // Creation companie
                 $this->companies->id_company = $this->companies->create();
 
@@ -2755,8 +3053,7 @@ class dossiersController extends bootstrap
 
                 // Creation companie bilans
                 $tablAnneesBilans = array(date('Y') - 3, date('Y') - 2, date('Y') - 1, date('Y'), date('Y') + 1);
-                foreach ($tablAnneesBilans as $a)
-                {
+                foreach ($tablAnneesBilans as $a) {
                     $this->companies_bilans->id_company = $this->companies->id_company;
                     $this->companies_bilans->date = $a;
                     $this->companies_bilans->create();
@@ -2777,16 +3074,14 @@ class dossiersController extends bootstrap
             $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '"', 'annee DESC');
 
             // Si existe pas on créer les champs
-            if ($this->lCompanies_actif_passif == false)
-            {
+            if ($this->lCompanies_actif_passif == false) {
 
                 // les 3 dernieres vrais années
                 $date[1] = (date('Y') - 1);
                 $date[2] = (date('Y') - 2);
                 $date[3] = (date('Y') - 3);
 
-                for ($i = 1; $i <= 3; $i++)
-                {
+                for ($i = 1; $i <= 3; $i++) {
                     $this->companies_actif_passif->annee = $date[$i];
                     $this->companies_actif_passif->ordre = $i;
                     $this->companies_actif_passif->id_company = $this->companies->id_company;
@@ -2799,9 +3094,7 @@ class dossiersController extends bootstrap
 
             header('location:' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
             die;
-        }
-        elseif (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project'))
-        {
+        } elseif (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
 
             $this->create_etape_ok = true;
 
@@ -2821,15 +3114,12 @@ class dossiersController extends bootstrap
             $this->lUsers = $this->users->select('status = 1 AND id_user_type = 2');
 
             // meme adresse que le siege
-            if ($this->companies->status_adresse_correspondance == 1)
-            {
+            if ($this->companies->status_adresse_correspondance == 1) {
                 $this->adresse = $this->companies->adresse1;
                 $this->city = $this->companies->city;
                 $this->zip = $this->companies->zip;
                 $this->phone = $this->companies->phone;
-            }
-            else
-            {
+            } else {
                 $this->adresse = $this->clients_adresses->adresse1;
                 $this->city = $this->clients_adresses->ville;
                 $this->zip = $this->clients_adresses->cp;
@@ -2840,8 +3130,7 @@ class dossiersController extends bootstrap
             //$anneeProjet = explode('-',$this->projects->added);
             //$anneeProjet = $anneeProjet[0];
             /// date dernier bilan ///
-            if ($this->companies_details->date_dernier_bilan == '0000-00-00')
-            {
+            if ($this->companies_details->date_dernier_bilan == '0000-00-00') {
 
                 $this->date_dernier_bilan_jour = '31';
                 $this->date_dernier_bilan_mois = '12';
@@ -2852,9 +3141,7 @@ class dossiersController extends bootstrap
                 $this->companies_details->date_dernier_bilan_annee = (date('Y') - 1);
 
                 $anneeProjet = (date('Y') - 1);
-            }
-            else
-            {
+            } else {
                 $dateDernierBilan = explode('-', $this->companies_details->date_dernier_bilan);
                 $this->date_dernier_bilan_jour = $dateDernierBilan[2];
                 $this->date_dernier_bilan_mois = $dateDernierBilan[1];
@@ -2907,8 +3194,7 @@ class dossiersController extends bootstrap
             //******************//
             // On lance Altares //
             //******************//
-            if (isset($this->params[1]) && $this->params[1] == 'altares')
-            {
+            if (isset($this->params[1]) && $this->params[1] == 'altares') {
 
                 // SIREN
                 $this->siren = $this->companies->siren;
@@ -2918,8 +3204,7 @@ class dossiersController extends bootstrap
                 $this->altares_ok = false;
 
                 // Si pas d'erreur
-                if ($result->exception == '')
-                {
+                if ($result->exception == '') {
 
                     // verif reponse
                     $eligibility = $result->myInfo->eligibility;
@@ -2941,8 +3226,7 @@ class dossiersController extends bootstrap
                     $this->companies->altares_scoreVingt = $score->scoreVingt;
 
                     // si pas ok
-                    if ($eligibility == 'Société radiée' || $eligibility == 'Non' || $eligibility == 'SIREN inconnu')
-                    {
+                    if ($eligibility == 'Société radiée' || $eligibility == 'Non' || $eligibility == 'SIREN inconnu') {
                         // Mise en session du message
                         $_SESSION['freeow']['title'] = 'Donn&eacute;es Altares';
                         $_SESSION['freeow']['message'] = 'soci&eacute;t&eacute; non &eacute;ligible';
@@ -2952,8 +3236,7 @@ class dossiersController extends bootstrap
                     }
                     // si pas ok 2
                     //elseif(in_array($eligibility,$this->tablStatus) && $score->scoreVingt < 12 || in_array($eligibility,$this->tablStatus) && substr($identite->dateCreation,0,4) > $todayMoins3 )
-                    elseif (in_array($eligibility, $this->tablStatus) && substr($identite->dateCreation, 0, 4) > $todayMoins3)
-                    {
+                    elseif (in_array($eligibility, $this->tablStatus) && substr($identite->dateCreation, 0, 4) > $todayMoins3) {
                         // Mise en session du message
                         $_SESSION['freeow']['title'] = 'Donn&eacute;es Altares';
                         $_SESSION['freeow']['message'] = 'soci&eacute;t&eacute; non &eacute;ligible';
@@ -2962,8 +3245,7 @@ class dossiersController extends bootstrap
                         die;
                     }
                     // si ok
-                    else
-                    {
+                    else {
                         $this->altares_ok = true;
 
                         $identite = $result->myInfo->identite;
@@ -2976,8 +3258,7 @@ class dossiersController extends bootstrap
                         $syntheseFinanciereList = array();
                         $derniersBilans = array();
                         $i = 0;
-                        foreach ($result->myInfo->bilans as $b)
-                        {
+                        foreach ($result->myInfo->bilans as $b) {
 
                             $annee = substr($b->bilan->dateClotureN, 0, 4);
                             $posteActifList[$annee] = $b->bilanRetraiteInfo->posteActifList;
@@ -3034,13 +3315,10 @@ class dossiersController extends bootstrap
                         $ldate[0] = date('Y') - 3;
 
                         // on génère un tableau avec les données
-                        for ($i = 0; $i < 5; $i++) // on parcourt les 5 années
-                        {
-                            for ($a = 0; $a < 3; $a++)// on parcourt les 3 dernieres années
-                            {
+                        for ($i = 0; $i < 5; $i++) { // on parcourt les 5 années
+                            for ($a = 0; $a < 3; $a++) {// on parcourt les 3 dernieres années
                                 // si y a une année du bilan qui correxpond a une année du tableau
-                                if ($derniersBilans[$a] == $ldate[$i])
-                                {
+                                if ($derniersBilans[$a] == $ldate[$i]) {
                                     // On recup les données de cette année	
                                     $montant1 = $posteActifList[$ldate[$i]][1]->montant;
                                     $montant2 = $posteActifList[$ldate[$i]][2]->montant;
@@ -3059,14 +3337,11 @@ class dossiersController extends bootstrap
 
                         // Debut actif/passif
 
-                        foreach ($derniersBilans as $annees)
-                        {
-                            foreach ($posteActifList[$annees] as $a)
-                            {
+                        foreach ($derniersBilans as $annees) {
+                            foreach ($posteActifList[$annees] as $a) {
                                 $ActifPassif[$annees][$a->posteCle] = $a->montant;
                             }
-                            foreach ($postePassifList[$annees] as $p)
-                            {
+                            foreach ($postePassifList[$annees] as $p) {
                                 $ActifPassif[$annees][$p->posteCle] = $p->montant;
                             }
                         }
@@ -3074,11 +3349,9 @@ class dossiersController extends bootstrap
 
 
                         $i = 0;
-                        foreach ($this->lCompanies_actif_passif as $k => $ap)
-                        {
+                        foreach ($this->lCompanies_actif_passif as $k => $ap) {
                             // que la derniere année
-                            if ($this->companies_actif_passif->get($ap['annee'], 'id_company = ' . $ap['id_company'] . ' AND annee'))
-                            {
+                            if ($this->companies_actif_passif->get($ap['annee'], 'id_company = ' . $ap['id_company'] . ' AND annee')) {
 
                                 //$this->companies_actif_passif->annee = $derniersBilans[$i];
                                 //$this->companies_actif_passif->ordre = $i+1;
@@ -3116,9 +3389,7 @@ class dossiersController extends bootstrap
                         $_SESSION['freeow']['title'] = 'Donn&eacute;es Altares';
                         $_SESSION['freeow']['message'] = 'Donn&eacute;es Altares r&eacute;cup&eacute;r&eacute; !';
                     }
-                }
-                else
-                {
+                } else {
                     // Mise en session du message
                     $_SESSION['freeow']['title'] = 'Donn&eacute;es Altares';
                     $_SESSION['freeow']['message'] = 'Donn&eacute;es Altares &eacute;rreur !';
@@ -3130,8 +3401,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _funding()
-    {
+    function _funding() {
         // Chargement du data
         $this->projects = $this->loadData('projects');
         $this->companies = $this->loadData('companies');
@@ -3141,8 +3411,7 @@ class dossiersController extends bootstrap
         $this->lProjects = $this->projects->selectProjectsByStatus(50);
     }
 
-    function _remboursements()
-    {
+    function _remboursements() {
         // Chargement du data
         $this->projects = $this->loadData('projects');
         $this->companies = $this->loadData('companies');
@@ -3154,20 +3423,16 @@ class dossiersController extends bootstrap
         $this->settings->get('TVA', 'type');
         $this->tva = $this->settings->value;
 
-        if (isset($_POST['form_search_remb']))
-        {
+        if (isset($_POST['form_search_remb'])) {
             // Liste des projets en remb
             $this->lProjects = $this->projects->searchDossiersRemb($_POST['siren'], $_POST['societe'], $_POST['nom'], $_POST['prenom'], $_POST['projet'], $_POST['email']);
-        }
-        else
-        {
+        } else {
             // Liste des projets en remb
             $this->lProjects = $this->projects->searchDossiersRemb();
         }
     }
 
-    function _no_remb()
-    {
+    function _no_remb() {
         // Chargement du data
         $this->projects = $this->loadData('projects');
         $this->companies = $this->loadData('companies');
@@ -3179,20 +3444,16 @@ class dossiersController extends bootstrap
         $this->settings->get('TVA', 'type');
         $this->tva = $this->settings->value;
 
-        if (isset($_POST['form_search_remb']))
-        {
+        if (isset($_POST['form_search_remb'])) {
             // Liste des projets en remb
             $this->lProjects = $this->projects->searchDossiersNoRemb($_POST['siren'], $_POST['societe'], $_POST['nom'], $_POST['prenom'], $_POST['projet'], $_POST['email']);
-        }
-        else
-        {
+        } else {
             // Liste des projets en remb
             $this->lProjects = $this->projects->searchDossiersNoRemb();
         }
     }
 
-    function _detail_remb()
-    {
+    function _detail_remb() {
         ini_set('memory_limit', '1024M');
         ini_set('max_execution_time', 600); //300 seconds = 5 minutes
         // Chargement du data
@@ -3221,8 +3482,7 @@ class dossiersController extends bootstrap
         $this->settings->get('TVA', 'type');
         $this->tva = $this->settings->value;
 
-        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project'))
-        {
+        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->companies->get($this->projects->id_company, 'id_company');
 
             $this->clients->get($this->companies->id_client_owner, 'id_client');
@@ -3264,11 +3524,9 @@ class dossiersController extends bootstrap
 
 
 
-            foreach ($lRembs as $k => $r)
-            {
+            foreach ($lRembs as $k => $r) {
                 // remboursement effectué
-                if ($r['status_emprunteur'] == 1)
-                {
+                if ($r['status_emprunteur'] == 1) {
                     $this->nbRembEffet += 1;
                     $MontantRemb = $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
                     $this->totalEffet += $MontantRemb;
@@ -3278,8 +3536,7 @@ class dossiersController extends bootstrap
                     $this->tvaEffet += $r['tva'];
                 }
                 // remb a venir
-                else
-                {
+                else {
                     if ($this->nextRemb == '')
                         $this->nextRemb = $r['date_echeance_emprunteur'];
 
@@ -3298,29 +3555,24 @@ class dossiersController extends bootstrap
 
 
             // activer/desactiver remb auto (eclatement)
-            if (isset($_POST['send_remb_auto']))
-            {
+            if (isset($_POST['send_remb_auto'])) {
                 // On desactive
-                if ($_POST['remb_auto'] == 1)
-                {
+                if ($_POST['remb_auto'] == 1) {
 
                     $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_remb_preteurs,10) >= "' . date('Y-m-d') . '"');
 
-                    foreach ($listdesRembauto as $rembauto)
-                    {
+                    foreach ($listdesRembauto as $rembauto) {
                         $this->projects_remb->get($rembauto['id_project_remb'], 'id_project_remb');
                         $this->projects_remb->status = 4; // remb auto desactivé
                         $this->projects_remb->update();
                     }
                 }
                 // On active
-                elseif ($_POST['remb_auto'] == 0)
-                {
+                elseif ($_POST['remb_auto'] == 0) {
                     $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = 4 AND LEFT(date_remb_preteurs,10) >= "' . date('Y-m-d') . '" AND date_remb_preteurs_reel = "0000-00-00 00:00:00"');
 
 
-                    foreach ($listdesRembauto as $rembauto)
-                    {
+                    foreach ($listdesRembauto as $rembauto) {
                         $this->projects_remb->get($rembauto['id_project_remb'], 'id_project_remb');
                         $this->projects_remb->status = 0; // remb auto desactivé
                         $this->projects_remb->update();
@@ -3331,15 +3583,13 @@ class dossiersController extends bootstrap
                 $this->projects->update();
             }
             // CTA On rembourse les preteurs pour le mois en cours
-            if (isset($this->params[1]) && $this->params[1] == 'remb')
-            {
+            if (isset($this->params[1]) && $this->params[1] == 'remb') {
                 // On recup le param
                 $settingsControleRemb = $this->loadData('settings');
                 $settingsControleRemb->get('Controle remboursements', 'type');
 
                 // on rentre dans le cron si statut égale 1 
-                if ($settingsControleRemb->value == 1)
-                {
+                if ($settingsControleRemb->value == 1) {
                     // On passe le statut a zero pour signaler qu'on est en cours de traitement
                     $settingsControleRemb->value = 0;
                     $settingsControleRemb->update();
@@ -3362,10 +3612,8 @@ class dossiersController extends bootstrap
                     // On ne passe qu'une fois par clic - BT 17882
                     $deja_passe = false;
 
-                    if ($lEcheancesRembEmprunteur != false)
-                    {
-                        foreach ($lEcheancesRembEmprunteur as $RembEmpr)
-                        {
+                    if ($lEcheancesRembEmprunteur != false) {
+                        foreach ($lEcheancesRembEmprunteur as $RembEmpr) {
 
                             // On déclare les variables
                             $montant = 0;
@@ -3390,18 +3638,13 @@ class dossiersController extends bootstrap
                             // On recup les echeanches non remboursé aux preteurs mais remb par l'emprunteur
                             $lEcheances = $this->echeanciers->select('id_project = ' . $RembEmpr['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $RembEmpr['ordre'] . ' AND status = 0');
 
-                            if ($lEcheances == false)
-                            {
+                            if ($lEcheances == false) {
                                 
-                            }
-                            else
-                            {
+                            } else {
                                 //BT 17882
-                                if (!$deja_passe)
-                                {
+                                if (!$deja_passe) {
                                     $deja_passe = true;
-                                    foreach ($lEcheances as $e)
-                                    {
+                                    foreach ($lEcheances as $e) {
 
                                         // on fait la somme de tout
                                         $montant += ($e['montant'] / 100);
@@ -3426,8 +3669,7 @@ class dossiersController extends bootstrap
                                         //echo 'Preteur '.$e['id_lender'].' remb net : '.$rembNet.' €<br>';
                                         // Partie on enregistre les mouvements
                                         // On regarde si on a pas deja
-                                        if ($this->transactions->get($e['id_echeancier'], 'id_echeancier') == false)
-                                        {
+                                        if ($this->transactions->get($e['id_echeancier'], 'id_echeancier') == false) {
 
                                             // On recup lenders_accounts
                                             $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
@@ -3486,8 +3728,7 @@ class dossiersController extends bootstrap
 
                                             ///////////////////////////
                                             // rajouter verif statut projet
-                                            if ($this->projects_status->status == 110)
-                                            {
+                                            if ($this->projects_status->status == 110) {
                                                 // mail recouvré
                                                 // on envoie un mail recouvré au lieu du mail remboursement
                                                 //*******************************************//
@@ -3527,23 +3768,18 @@ class dossiersController extends bootstrap
                                                 $this->email->setSubject(stripslashes($sujetMail));
                                                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                                if ($this->Config['env'] == 'prod') // nmp
-                                                {
+                                                if ($this->Config['env'] == 'prod') { // nmp
                                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                                                     // Injection du mail NMP dans la queue
                                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                                }
-                                                else // non nmp
-                                                {
+                                                } else { // non nmp
                                                     $this->email->addRecipient(trim($this->clients->email));
                                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                                 }
 
                                                 // et on fait passer le satut recouvrement en remboursement
                                                 ////////////////////////////
-                                            }
-                                            elseif (isset($this->params[2]) && $this->params[2] == 'regul')
-                                            {
+                                            } elseif (isset($this->params[2]) && $this->params[2] == 'regul') {
 
                                                 //*******************************************//
                                                 //*** ENVOI DU MAIL REMBOURSEMENT PRETEUR ***//
@@ -3603,14 +3839,11 @@ class dossiersController extends bootstrap
                                                 $this->email->setSubject(stripslashes($sujetMail));
                                                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                                if ($this->Config['env'] == 'prod')
-                                                { // nmp
+                                                if ($this->Config['env'] == 'prod') { // nmp
                                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                                                     // Injection du mail NMP dans la queue
                                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                                }
-                                                else
-                                                { // non nmp
+                                                } else { // non nmp
                                                     $this->email->addRecipient(trim($this->clients->email));
                                                     //$this->email->addRecipient(trim('d.courtier@equinoa.com'));
                                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
@@ -3618,11 +3851,9 @@ class dossiersController extends bootstrap
                                                 // fin mail pour preteur // 
                                             }
                                             // mail remboursement
-                                            else
-                                            {
+                                            else {
                                                 // envoi email remb ok maintenant ou non
-                                                if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 5, 'immediatement') == true)
-                                                {
+                                                if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 5, 'immediatement') == true) {
 
                                                     //////// GESTION ALERTES //////////
                                                     $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
@@ -3688,14 +3919,11 @@ class dossiersController extends bootstrap
                                                     $this->email->setSubject(stripslashes($sujetMail));
                                                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                                    if ($this->Config['env'] == 'prod') // nmp
-                                                    {
+                                                    if ($this->Config['env'] == 'prod') { // nmp
                                                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                                                         // Injection du mail NMP dans la queue
                                                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                                    }
-                                                    else // non nmp
-                                                    {
+                                                    } else { // non nmp
                                                         $this->email->addRecipient(trim($this->clients->email));
                                                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                                     }
@@ -3714,8 +3942,7 @@ class dossiersController extends bootstrap
                             $TotalEtat = $prelevements_obligatoires + $retenues_source + $csg + $prelevements_sociaux + $contributions_additionnelles + $prelevements_solidarite + $crds;
 
                             // On evite de créer une ligne qui sert a rien
-                            if ($rembNetTotal != 0)
-                            {
+                            if ($rembNetTotal != 0) {
 
                                 // On enregistre la transaction
                                 $this->transactions->montant = 0;
@@ -3804,8 +4031,7 @@ class dossiersController extends bootstrap
                                 // Envoi du mail
                                 $this->email = $this->loadLib('email', array());
                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                if ($this->Config['env'] == 'prod')
-                                {
+                                if ($this->Config['env'] == 'prod') {
                                     $this->email->addBCCRecipient('nicolas.lesur@unilend.fr');
                                     $this->email->addBCCRecipient('d.nandji@equinoa.com');
                                 }
@@ -3813,14 +4039,11 @@ class dossiersController extends bootstrap
                                 $this->email->setSubject(stripslashes($sujetMail));
                                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                if ($this->Config['env'] == 'prod') // nmp
-                                {
+                                if ($this->Config['env'] == 'prod') { // nmp
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($companies->email_facture), $tabFiler);
                                     // Injection du mail NMP dans la queue
                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                }
-                                else // non nmp
-                                {
+                                } else { // non nmp
                                     $this->email->addRecipient(trim($companies->email_facture));
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 }
@@ -3846,12 +4069,9 @@ class dossiersController extends bootstrap
                                 // Mise en session du message
                                 $_SESSION['freeow']['title'] = 'Remboursement preteur';
                                 $_SESSION['freeow']['message'] = 'Les preteurs ont bien &eacute;t&eacute; rembours&eacute; !';
-                            }
-                            else
-                            {
+                            } else {
                                 //En cas de double Echeance en attente, si on traite la premiere la deuxieme sera a rembNetTotal = 0
-                                if (!$deja_passe)
-                                {
+                                if (!$deja_passe) {
                                     // Mise en session du message
                                     $_SESSION['freeow']['title'] = 'Remboursement preteur';
                                     $_SESSION['freeow']['message'] = "Aucun remboursement n'a &eacute;t&eacute; effectu&eacute; aux preteurs !";
@@ -3867,16 +4087,14 @@ class dossiersController extends bootstrap
                     // bank_unilend
                     $lesRembEmprun = $this->bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $this->projects->id_project, 'id_unilend ASC', 0, 1); // on ajoute la restriction pour BT 17882
                     // On parcourt les remb non reversé aux preteurs dans bank unilend et on met a jour le satut pour dire que c'est remb
-                    foreach ($lesRembEmprun as $r)
-                    {
+                    foreach ($lesRembEmprun as $r) {
                         $this->bank_unilend->get($r['id_unilend'], 'id_unilend');
                         $this->bank_unilend->status = 1;
                         $this->bank_unilend->update();
                     }
 
                     // si le projet etait en statut Recouvrement/probleme on le repasse en remboursement  || $this->projects_status->status == 100
-                    if ($this->projects_status->status == 110)
-                    {
+                    if ($this->projects_status->status == 110) {
                         $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 80, $this->params['0']);
                     }
 
@@ -3891,8 +4109,7 @@ class dossiersController extends bootstrap
             }
             // REMB ANTICIPE            
             //on gère ici la réception du formulaire qui déclenche le remb anticipe aux preteurs
-            if (isset($_POST['spy_remb_anticipe']) && $_POST['id_reception'] > 0 && isset($_POST['id_reception']))
-            {
+            if (isset($_POST['spy_remb_anticipe']) && $_POST['id_reception'] > 0 && isset($_POST['id_reception'])) {
                 $id_reception = $_POST['id_reception'];
                 $montant_crd_preteur = ($_POST['montant_crd_preteur'] * 100);
 
@@ -3926,9 +4143,7 @@ class dossiersController extends bootstrap
                 //DEBUG A SUPP
                 //$sum_montant_restant = $this->receptions->montant;
                 // on fait encore un dernier controle sur le montant
-                if ($montant_crd_preteur == $this->receptions->montant) //&& $sum_montant_restant == $this->receptions->montant)
-                {
-
+                if ($montant_crd_preteur == $this->receptions->montant) { //&& $sum_montant_restant == $this->receptions->montant)
                     // REMB ECHEANCES EMPRUNTEUR ------------------------------------------------------------------
                     // on rembourse les échéances que l'emprunteur devait regler  
                     $sql = 'UPDATE `echeanciers_emprunteur` SET `status_emprunteur`="1", `status_ra`="1",`updated`=NOW(), `date_echeance_emprunteur_reel`=NOW() WHERE id_project="' . $this->projects->id_project . '" AND status_emprunteur = 0';
@@ -3970,8 +4185,7 @@ class dossiersController extends bootstrap
                     $sum_ech_restant = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');
 
                     // par loan
-                    foreach ($L_preteur_on_projet as $preteur)
-                    {
+                    foreach ($L_preteur_on_projet as $preteur) {
                         // pour chaque preteur on calcule le total qui restait à lui payer (sum capital par loan)
                         //$reste_a_payer_pour_preteur= $this->echeanciers->getSumRestanteARembByProject_capital($preteur['id_lender'],'id_loan = '.$preteur['id_loan'].' AND '.$this->projects->id_project);
 
@@ -4145,8 +4359,7 @@ class dossiersController extends bootstrap
 
                     // partie a retirer de bank unilend                    
                     // On evite de créer une ligne qui sert a rien
-                    if ($montant_total != 0)
-                    {
+                    if ($montant_total != 0) {
 
                         // On enregistre la transaction
                         $this->transactions->montant = 0;
@@ -4183,16 +4396,14 @@ class dossiersController extends bootstrap
                     // bank_unilend                    
                     $lesRembEmprun = $this->bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $this->projects->id_project, 'id_unilend ASC'); // on ajoute la restriction pour BT 17882
                     // On parcourt les remb non reversé aux preteurs dans bank unilend et on met a jour le satut pour dire que c'est remb
-                    foreach ($lesRembEmprun as $r)
-                    {
+                    foreach ($lesRembEmprun as $r) {
                         $this->bank_unilend->get($r['id_unilend'], 'id_unilend');
                         $this->bank_unilend->status = 1;
                         $this->bank_unilend->update();
                     }
 
                     // si le projet etait en statut Recouvrement/probleme on le repasse en remboursement  || $this->projects_status->status == 100
-                    if ($this->projects_status->status == 110)
-                    {
+                    if ($this->projects_status->status == 110) {
                         $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 24, $this->projects->id_project);
                     }
 
@@ -4207,8 +4418,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _detail_remb_preteur()
-    {
+    function _detail_remb_preteur() {
         // Chargement du data
         $this->clients = $this->loadData('clients');
         $this->loans = $this->loadData('loans');
@@ -4216,8 +4426,7 @@ class dossiersController extends bootstrap
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->projects = $this->loadData('projects');
 
-        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project'))
-        {
+        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
 
 
             $this->nbPeteurs = $this->loans->getNbPreteurs($this->projects->id_project);
@@ -4228,8 +4437,7 @@ class dossiersController extends bootstrap
             $montantBas = 0;
             // si fundé ou remboursement
 
-            foreach ($this->loans->select('id_project = ' . $this->projects->id_project) as $b)
-            {
+            foreach ($this->loans->select('id_project = ' . $this->projects->id_project) as $b) {
                 $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                 $montantBas += ($b['amount'] / 100);
             }
@@ -4243,8 +4451,7 @@ class dossiersController extends bootstrap
             $this->montant = 0;
             $this->MontantRemb = 0;
 
-            foreach ($lRembs as $r)
-            {
+            foreach ($lRembs as $r) {
                 $this->montant += $r['montant'];
 
                 $this->MontantRemb += $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
@@ -4255,8 +4462,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _detail_echeance_preteur()
-    {
+    function _detail_echeance_preteur() {
         // Chargement du data
         $this->clients = $this->loadData('clients');
         $this->loans = $this->loadData('loans');
@@ -4275,8 +4481,7 @@ class dossiersController extends bootstrap
         // ON recup la date de statut remb        
         $dernierStatut = $this->projects_status_history->select('id_project = ' . $this->params[0], 'added DESC', 0, 1);
 
-        if ($dernierStatut[0]['id_project_status'] == 24)
-        {
+        if ($dernierStatut[0]['id_project_status'] == 24) {
             //récupération du montant de la transaction du CRD pour afficher la ligne en fin d'échéancier
             $this->montant_ra = $this->echeanciers->sum('id_project = ' . $this->params[0] . ' AND status_ra = 1 AND status = 1 AND id_loan = ' . $this->params[1], 'capital');
 
@@ -4284,8 +4489,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    function _echeancier_emprunteur()
-    {
+    function _echeancier_emprunteur() {
         // Chargement du data
         $this->clients = $this->loadData('clients');
         $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
@@ -4295,8 +4499,7 @@ class dossiersController extends bootstrap
         $this->receptions = $this->loadData('receptions');
         $this->prelevements = $this->loadData('prelevements');
 
-        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project'))
-        {
+        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
 
 
             // liste des echeances emprunteur par mois
@@ -4313,8 +4516,7 @@ class dossiersController extends bootstrap
             $this->totalTva = 0;
             $this->capital = 0;
 
-            foreach ($this->lRemb as $r)
-            {
+            foreach ($this->lRemb as $r) {
                 $this->montantPreteur += $r['montant'];
 
                 $this->MontantEmprunteur += $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
@@ -4330,8 +4532,7 @@ class dossiersController extends bootstrap
             // ON recup la date de statut remb
             $dernierStatut = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'added DESC', 0, 1);
             $this->montant_ra = 0;
-            if ($dernierStatut[0]['id_project_status'] == 24)
-            {
+            if ($dernierStatut[0]['id_project_status'] == 24) {
                 //récupération du montant de la transaction du CRD pour afficher la ligne en fin d'échéancier
                 $this->receptions->get($this->projects->id_project, 'remb_anticipe = 1 AND status_virement = 1 AND type = 2 AND id_project');
                 $this->montant_ra = ($this->receptions->montant / 100);
@@ -4344,8 +4545,7 @@ class dossiersController extends bootstrap
     }
 
     //utilisé pour récup les infos affichées dans le cadre
-    function recup_info_remboursement_anticipe($id_project)
-    {
+    function recup_info_remboursement_anticipe($id_project) {
 
         // REMBOURSEMENT ANTICIPE
         // Recup du solde restant du de l'emprunteur
@@ -4371,14 +4571,12 @@ class dossiersController extends bootstrap
 
 
 
-        if ($dateEcheance != "" && isset($dateEcheance))
-        {
+        if ($dateEcheance != "" && isset($dateEcheance)) {
             $date_next_echeance_4jouvres_avant_stamp = $jo->display_jours_ouvres($dateEcheance, 4);
         }
 
         // on check si la date limite est pas déjà dépassé. Si oui on prend la prochaine echeance
-        if ($date_next_echeance_4jouvres_avant_stamp <= time())
-        {
+        if ($date_next_echeance_4jouvres_avant_stamp <= time()) {
             // Dans ce cas, on connait donc déjà la derniere echeance qui se déroulera normalement
             $derniere_echeance_normale = $next_echeanche;
             $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($derniere_echeance_normale['date_echeance']);
@@ -4389,8 +4587,7 @@ class dossiersController extends bootstrap
 
 
 
-            if (count($L_echeance) > 0)
-            {
+            if (count($L_echeance) > 0) {
                 // on refait le meme process pour la nouvelle date
                 $next_echeanche = $L_echeance[0];
 
@@ -4403,14 +4600,10 @@ class dossiersController extends bootstrap
                 $date_next_echeance_4jouvres_avant_stamp = $jo->display_jours_ouvres($dateEcheance, 4);
 
                 //$ordre_echeance_ra = $ordre_echeance_ra + 1; // changement on n'ajoute plus un mois supp
-            }
-            else
-            {
+            } else {
                 $this->date_next_echeance_4jouvres_avant = "Aucune &eacute;ch&eacute;ance &agrave; venir dans le futur";
             }
-        }
-        else
-        {
+        } else {
             // on va recup la date de la derniere echeance qui suit le process de base
             $L_echeance_normale = $this->echeanciers->select(" id_project = " . $id_project . " AND ordre = " . $ordre_echeance_ra + 1, 'ordre ASC', 0, 1);
 
@@ -4418,8 +4611,7 @@ class dossiersController extends bootstrap
             $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($derniere_echeance_normale['date_echeance']);
         }
 
-        if ($date_next_echeance_4jouvres_avant_stamp != "" && isset($date_next_echeance_4jouvres_avant_stamp))
-        {
+        if ($date_next_echeance_4jouvres_avant_stamp != "" && isset($date_next_echeance_4jouvres_avant_stamp)) {
             $this->date_next_echeance_4jouvres_avant = date("d/m/Y", $date_next_echeance_4jouvres_avant_stamp);
             $this->date_next_echeance = $this->dates->formatDateMysqltoFr_HourOut($date_next_echeance);
         }
@@ -4443,23 +4635,15 @@ class dossiersController extends bootstrap
         $this->remb_anticipe_effectue = false;
 
 
-        if ($statut_projet[0]['id_project_status'] == 24) //Statut remb anticipe
-        {
+        if ($statut_projet[0]['id_project_status'] == 24) { //Statut remb anticipe
             $this->phrase_resultat = "<div style='color:green;'>Remboursement anticip&eacute; effectu&eacute;</div>";
             $this->remb_anticipe_effectue = true;
-        }
-        else
-        {
-            if ($resultat_num == O)
-            {
+        } else {
+            if ($resultat_num == O) {
                 $this->phrase_resultat = "<div style='color:green;'>Remboursement possible</div>";
-            }
-            elseif ($resultat_num < O) // si emprunteur doit plus que les prets ==> Orange non bloquant
-            {
+            } elseif ($resultat_num < O) { // si emprunteur doit plus que les prets ==> Orange non bloquant
                 $this->phrase_resultat = "<div style='color:orange;'>Remboursement possible <br />(CRD Pr&ecirc;teurs :" . $this->montant_restant_du_preteur . "€ - CRD Emprunteur :" . $this->montant_restant_du_emprunteur . "€)</div>";
-            }
-            elseif ($resultat_num > O) // si preteurs doivent plus que les emprunteurs ==> rouge bloquant
-            {
+            } elseif ($resultat_num > O) { // si preteurs doivent plus que les emprunteurs ==> rouge bloquant
                 $this->phrase_resultat = "<div style='color:red;'>Remboursement impossible <br />(CRD Pr&ecirc;teurs :" . $this->montant_restant_du_preteur . "€ - CRD Emprunteur :" . $this->montant_restant_du_emprunteur . "€)</div>";
             }
         }
@@ -4471,20 +4655,16 @@ class dossiersController extends bootstrap
 
         $this->virement_recu = false;
 
-        if (count($L_vrmt_anticipe) == 1 && $statut_projet[0]['id_project_status'] != 24)
-        {
+        if (count($L_vrmt_anticipe) == 1 && $statut_projet[0]['id_project_status'] != 24) {
             $this->virement_recu = true;
             $this->virement_recu_ok = false;
 
             $this->receptions->get($L_vrmt_anticipe[0]['id_reception']);
             //on check si on a toujours le montant emprunteur Vs Preteur est toujours identique et si le virement recu est égal à ce qu'on doit
-            if ($resultat_num == 0 && ($this->receptions->montant / 100) >= $this->montant_restant_du_preteur)
-            {
+            if ($resultat_num == 0 && ($this->receptions->montant / 100) >= $this->montant_restant_du_preteur) {
                 $this->virement_recu_ok = true;
                 $this->phrase_resultat = "<div style='color:green;'>Virement re&ccedil;u conforme</div>";
-            }
-            elseif (($this->receptions->montant / 100) < $this->montant_restant_du_preteur)
-            {
+            } elseif (($this->receptions->montant / 100) < $this->montant_restant_du_preteur) {
                 $this->phrase_resultat = "<div style='color:red;'>Virement re&ccedil;u - Probl&egrave;me montant <br />(CRD Pr&ecirc;teurs :" . $this->montant_restant_du_preteur . "€ - Virement :" . ($this->receptions->montant / 100) . "€)</div>";
             }
         }
@@ -4493,8 +4673,7 @@ class dossiersController extends bootstrap
         // on check si les échéances avant le RA sont toutes payées - si on trouve quelque chose on bloque le RA
         $L_echeance_avant = $this->echeanciers->select(" id_project = " . $id_project . " AND status = 0 AND ordre < " . $this->ordre_echeance_ra);
         $this->ra_possible_all_payed = true;
-        if (count($L_echeance_avant) > 0)
-        {
+        if (count($L_echeance_avant) > 0) {
             $this->phrase_resultat = "<div style='color:red;'>Remboursement impossible <br />Toutes les &eacute;ch&eacute;ances pr&eacute;c&eacute;dentes ne sont pas rembours&eacute;es</div>";
             $this->ra_possible_all_payed = false;
         }
