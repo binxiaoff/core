@@ -985,7 +985,7 @@
                         <td></td>
                     </tr>
                     <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="statut_dirigeant_etape2">
-                        <th colspan="4" style="text-align:left;"><br/>Porteur du projet :</th>
+                        <th colspan="4" style="text-align:left;"><br/>Prescripteur :</th>
                     </tr>
 
                     <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="identification_prescripteur">
@@ -1012,7 +1012,7 @@
                             <input class="input_large" name="search_prescripteur" id="search_prescripteur" placeholder="nom, prenom ou email du prescripteur" />
                         </td>
                         <td>
-                            <a id="btn_search_prescripteur" class="btn_link thickbox cboxElement" href="<?=$this->lurl?>/prescripteurs/search_ajax/" onclick="$(this).attr('href', '<?=$this->lurl?>/prescripteurs/search_ajax/' + $('#search_prescripteur').val());">Rechercher</a>
+                            <a id="btn_search_prescripteur" class="btn_link thickbox cboxElement" href="<?=$this->lurl?>/prescripteurs/search_ajax/" onclick="$(this).attr('href', '<?=$this->lurl?>/prescripteurs/search_ajax/' + $('#search_prescripteur').val());">Rechercher un prescripteur existant</a>
                         </td>
                         <th></th>
                         <td></td>

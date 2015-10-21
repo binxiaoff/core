@@ -1,6 +1,7 @@
 <div class="main">
     <div class="shell">
-        <p><?php printf($this->lng['etape3']['contenu'], $this->iMinimumMonthlyPayment, $this->iMaximumMonthlyPayment) ?></p>
+        <p class="introduction"><?php printf($this->lng['etape3']['contenu'], $this->iMinimumMonthlyPayment, $this->iMaximumMonthlyPayment) ?></p>
+        <p><?= $this->lng['etape3']['introduction-sub'] ?></p>
         <div class="register-form">
             <form action="<?= $_SERVER['REQUEST_URI'] ?>" method="post" enctype="multipart/form-data">
                 <table class="form-table">
@@ -50,6 +51,9 @@
                                        data-validators="Presence&amp;Numericality" onkeyup="lisibilite_nombre(this.value,this.id);">
                             </div>
                         </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2">&nbsp;</td>
                     </tr>
                     <tr>
                         <td>

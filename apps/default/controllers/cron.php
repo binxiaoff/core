@@ -1913,7 +1913,7 @@ class cronController extends bootstrap
         $this->companies = $this->loadData('companies');
 
         //$lprojects = $this->projects->select('stand_by = 1');
-        $lEmprunteurs = $this->clients->select('email IS NOT NULL AND status_depot_dossier > 0 AND status_pre_emp > 1 AND status = 0');
+        $lEmprunteurs = $this->clients->select('email IS NOT NULL AND status_pre_emp > 1 AND status = 0');
 
         $time = date('Y-m-d H');
 

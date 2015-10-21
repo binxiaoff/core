@@ -1,7 +1,7 @@
 <div id="popup">
 	<a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?=$this->surl?>/images/admin/delete.png" alt="Fermer" /></a>
 	<form name="add_prescripteur" id="add_prescripteur" action="#">
-        <h1>Ajouter un prescripteur</h1>            
+        <h1>Ajouter un prescripteur</h1>
         <fieldset>
             <table class="formColor" style="width: 755px;">
                 <tr>
@@ -19,7 +19,7 @@
             	<tr>
                     <th><label for="nom">Nom :</label></th>
                     <td><input type="text" name="nom" id="nom" class="input_large" value=""/></td>
-                    
+
                     <th><label for="prenom">Prénom :</label></th>
                     <td><input type="text" name="prenom" id="prenom" class="input_large" value=""/></td>
                 </tr>
@@ -36,7 +36,7 @@
                 <tr>
                     <th><label for="cp">Code postal :</label></th>
                     <td><input type="text" name="cp" id="cp" class="input_large" value=""/></td>
-                    
+
                     <th><label for="ville">Ville :</label></th>
                     <td><input type="text" name="ville" id="ville" class="input_large" value=""/></td>
                 </tr>
@@ -71,7 +71,7 @@
             },
             success: function(data) {
                 if('OK' == data) {
-                    $("#popup").html('le prescripteur a &eacute;t&eacute; cr&eacute;t&eacute; !');
+                    $("#popup").html('le prescripteur a &eacute;t&eacute; cr&eacute;&eacute; !');
                 } else {
                     alert('An error has occurred');
                 }

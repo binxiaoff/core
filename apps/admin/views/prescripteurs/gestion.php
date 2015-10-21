@@ -53,7 +53,7 @@
         ?><h1>Liste des <?=count($this->aPrescripteurs)?> derniers prescripteurs</h1><?
     }
     ?>
-    <div class="btnDroite"><a href="<?=$this->lurl?>/prescripteurs/add_client" class="btn_link thickbox">Ajouter un prescripteu</a></div>
+    <div class="btnDroite"><a href="<?=$this->lurl?>/prescripteurs/add_client" class="btn_link thickbox">Ajouter un prescripteur</a></div>
 
     <style>
         table.formColor{width:697px;}
