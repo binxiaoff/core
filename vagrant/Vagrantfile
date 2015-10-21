@@ -21,6 +21,6 @@ Vagrant.configure(2) do |config|
 
   config.vm.provision :shell, path: "bootstrap.sh"
   config.vm.provision "shell", inline: "service apache2 restart", run: "always"
-  config.vm.provision "shell", inline: "sudo service mailcatcher start", run: "always"
+  config.vm.provision "shell", inline: "service mailcatcher start", run: "always"
 
 end
