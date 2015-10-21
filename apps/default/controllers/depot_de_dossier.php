@@ -588,7 +588,7 @@ class depot_de_dossierController extends bootstrap
                 $this->projects->update();
             }
 
-            if ($_POST['fonds_propres'] < 0 || $_POST['resultat_brute_exploitation'] < 0 || $_POST['ca'] < 80000) {
+            if ($_POST['fonds_propres'] < 0 || $_POST['resultat_brute_exploitation'] < 0 || $_POST['ca'] < \projects::MINIMUM_REVENUE) {
                 $this->redirect(self::PAGE_NAME_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE);
             }
 
@@ -865,6 +865,14 @@ class depot_de_dossierController extends bootstrap
                 $this->bDisplayContact = true;
                 $this->sMessage        = $this->lng['depot-de-dossier-fin']['analyse'];
                 break;
+            case \projects_status::A_TRAITER:
+            case \projects_status::EN_ATTENTE_PIECES:
+                if (1 == $this->projects->process_fast) {
+                    $this->sMessage = $this->lng['depot-de-dossier-fin']['procedure-acceleree'];
+                } else {
+                    $this->sMessage = $this->lng['depot-de-dossier-fin']['contenu'];
+                }
+                break;
             case \projects_status::NOTE_EXTERNE_FAIBLE:
                 switch ($this->projects->retour_altares) {
                     case Altares::RESPONSE_CODE_INACTIVE:
@@ -881,8 +889,14 @@ class depot_de_dossierController extends bootstrap
                     case Altares::RESPONSE_CODE_ELIGIBLE:
                         if ($this->projects_status->status == \projects_status::PAS_3_BILANS) {
                             $this->sMessage = $this->lng['depot-de-dossier-fin']['pas-3-bilans'];
-                            break;
+                        } elseif (
+                            $this->projects->fonds_propres_declara_client < 0
+                            || $this->projects->resultat_exploitation_declara_client < 0
+                            || $this->projects->ca_declara_client <= \projects::MINIMUM_REVENUE
+                        ) {
+                            $this->sMessage = $this->lng['depot-de-dossier-fin']['rex-nega'];
                         }
+                        break;
                 }
                 break;
         }
@@ -1033,9 +1047,9 @@ class depot_de_dossierController extends bootstrap
                 break;
             case \projects_status::A_TRAITER:
             case \projects_status::EN_ATTENTE_PIECES:
-                if (1 == $this->projects->process_fast && $sPage !== self::PAGE_NAME_FILES) {
+                if (1 == $this->projects->process_fast && false === in_array($sPage, array(self::PAGE_NAME_END, self::PAGE_NAME_FILES))) {
                     $this->redirect(self::PAGE_NAME_FILES);
-                } elseif (0 == $this->projects->process_fast && $sPage !== self::PAGE_NAME_END) {
+                } elseif ($sPage !== self::PAGE_NAME_END) {
                     $this->redirect(self::PAGE_NAME_END);
                 }
                 break;
