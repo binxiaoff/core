@@ -27,6 +27,8 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\librairies\Cache;
+
 class projects extends projects_crud
 {
 
@@ -467,8 +469,10 @@ class projects extends projects_crud
         return $record;
     }
 
-    public function getProjectsStatusAndCount($sListStatus, $sTabOrderProject, $iStart, $iLimit, $oCache)
+    public function getProjectsStatusAndCount($sListStatus, $sTabOrderProject, $iStart, $iLimit)
     {
+        $oCache = Cache::getInstance();
+
         $sKey      = $oCache->makeKey('List_Counter_Projects', $sListStatus);
         $aElements = $oCache->get($sKey);
         if (false === $aElements) {
