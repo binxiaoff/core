@@ -1,5 +1,12 @@
 <?php
 
+/**
+ * @todo
+ * Why soo many setters?
+ * $oLogger changes from channel to channel everytime we log something and is instanciated many times
+ * Assertions not configurable
+ */
+
 namespace Unilend\core;
 
 use Unilend\librairies\ULogger;
@@ -13,12 +20,12 @@ require_once __DIR__ . '/../data/lenders_accounts.data.php';
 class Bootstrap
 {
     /**
-     * @var $oInstance Instance of this object
+     * @var self $oInstance
      */
     private static $oInstance;
 
     /**
-     * @var bdd
+     * @var \bdd
      */
     private $oDatabase;
 
@@ -28,14 +35,14 @@ class Bootstrap
     private $oLogger;
 
     /**
-     * @var settings
+     * @var \settings
      */
     private $oSettings;
 
     /**
-     * @var lenders_accounts
+     * @var \lenders_accounts
      */
-    private $oLendersAccount;
+    private $oLenders;
 
     /**
      * @array $aConfig file config in root path
@@ -44,14 +51,14 @@ class Bootstrap
 
     /**
      * @param array $aConfig
-     * @return Bootstrap
+     * @return self
      */
-    public static function getInstance($aConfig)
+    public static function getInstance(array $aConfig)
     {
         if (true === is_null(self::$oInstance)) {
-            self::$oInstance = new Bootstrap();
+            self::$oInstance = new self();
             self::$oInstance->setAssert();
-            self::$oInstance->setConfig($aConfig);
+            self::$aConfig = $aConfig;
         }
 
         return self::$oInstance;
@@ -123,16 +130,9 @@ class Bootstrap
     public function setLogger($sNameChannel, $sNameLog)
     {
         //We check, and add if necessary, if log's name have extension .log
-        $sNameLog .= (!preg_match('/(\.log)$/i', $sNameLog)) ? '.log' : '';
+        $sNameLog .= (1 !== preg_match('/\.log$/i', $sNameLog)) ? '.log' : '';
 
         $this->oLogger = new ULogger($sNameChannel, self::$aConfig['log_path'][self::$aConfig['env']], $sNameLog);
-
-        return $this;
-    }
-
-    public function setConfig($sConfig)
-    {
-        self::$aConfig = $sConfig;
 
         return $this;
     }
@@ -143,7 +143,6 @@ class Bootstrap
 
         return $this->oLogger;
     }
-
 
     /**
      * @param string $sFunction name of function where assert it's in error

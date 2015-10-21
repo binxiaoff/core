@@ -1,4 +1,11 @@
 <?php
+
+/**
+ * @todo
+ * Options and descriptions may be set directly in Cron class
+ * Catch other exceptions than UnexpectedValueException
+ */
+
 require_once __DIR__ . '/../Autoloader.php';
 require_once __DIR__ . '/../config.php';
 
@@ -8,16 +15,8 @@ use Unilend\librairies\ULogger;
 
 Autoloader::register();
 
-/**
- * @object $oBootstrap Instance of Boostrap for log cron calls and set configuration
- */
 $oBootstrap = Bootstrap::getInstance($config);
-
-/**
- * @object $oCron for manage parameters required and optional
- */
-$oCron = new Cron($oBootstrap);
-
+$oCron      = new Cron($oBootstrap);
 $oCron->setOptions(
     array('d' => Cron::OPTION_REQUIRED,
           'c' => Cron::OPTION_REQUIRED,
@@ -35,8 +34,7 @@ $oCron->setOptions(
 try {
     $oCron->parseCommand();
     $oCron->executeCron();
-} catch (\UnexpectedValueException $e) {
-    echo $e->getMessage();
+} catch (\UnexpectedValueException $oException) {
     $oBootstrap->setLogger('cron', 'cron.log');
-    $oBootstrap->getLogger()->addRecord(ULogger::CRITICAL, $e->getMessage(), array(__FILE__ . ' at ' . __LINE__));
+    $oBootstrap->getLogger()->addRecord(ULogger::CRITICAL, $oException->getMessage(), array(__FILE__ . ' at ' . __LINE__));
 }
