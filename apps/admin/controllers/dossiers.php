@@ -1248,7 +1248,7 @@ class dossiersController extends bootstrap
                                     $this->clients_gestion_mails_notif->id_transaction = 0;
                                     $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
                                     $this->clients_gestion_mails_notif->id_loan = 0; // On peut avoir plusieurs loans donc inutile  
-                                    $this->clients_gestion_mails_notif->create();
+                                    $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
                                     //////// FIN GESTION ALERTES //////////
 
                                     //si on envoi le mail
@@ -1257,7 +1257,13 @@ class dossiersController extends bootstrap
                                         // pour chaque preteur on check si le preteur veut recevoir l'email instantané
                                         if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true)
                                         {
-
+                                            
+                                            //////// GESTION ALERTES //////////
+                                            $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif,'id_clients_gestion_mails_notif');
+                                            $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                                            $this->clients_gestion_mails_notif->update();
+                                            //////// FIN GESTION ALERTES //////////
+                                            
                                             // Variables du mailing
                                             $varMail = array(
                                                 'surl' => $this->surl,
