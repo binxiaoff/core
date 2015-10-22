@@ -165,7 +165,7 @@ class ficelle
 
     public function swift_validate($swift)
     {
-        if (!eregi("^([a-zA-Z]){4}([a-zA-Z]){2}([0-9a-zA-Z]){2}([0-9a-zA-Z]{3})?$", $swift)) {
+        if (! eregi("^([a-zA-Z]){4}([a-zA-Z]){2}([0-9a-zA-Z]){2}([0-9a-zA-Z]{3})?$", $swift)) {
             return false;
         } else {
             return true;
@@ -405,7 +405,7 @@ class ficelle
         // source1
         if ($utm_source != '') {
             $_SESSION['utm_source'] = $utm_source;
-        } elseif (!isset($_SESSION['utm_source']) || $_SESSION['utm_source'] == '') {
+        } elseif (! isset($_SESSION['utm_source']) || $_SESSION['utm_source'] == '') {
             if ($utm_source != '') {
                 $source = $utm_source;
             } elseif ($url != '') {
@@ -420,7 +420,7 @@ class ficelle
         // source2
         if ($utm_source2 != '') {
             $_SESSION['utm_source2'] = $utm_source2;
-        } elseif (!isset($_SESSION['utm_source2'])) {
+        } elseif (! isset($_SESSION['utm_source2'])) {
             $_SESSION['utm_source2'] = $utm_source2;
         }
     }
