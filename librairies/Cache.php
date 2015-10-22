@@ -32,27 +32,26 @@ class Cache
     private $oLogger;
 
     /**
-     * @param array $aConfig
      * @return Cache
      */
-    public static function getInstance($aConfig = null)
+    public static function getInstance()
     {
-        if (true === is_null(self::$oInstance) && false === is_null($aConfig)) {
-            self::$oInstance = new self($aConfig);
+        if (true === is_null(self::$oInstance)) {
+            self::$oInstance = new self();
         }
 
         return self::$oInstance;
     }
 
-    /**
-     * @param array $aConfig
-     */
-    private function __construct($aConfig)
+    private function __construct()
     {
-        $this->oMemcache = new Memcache();
-        $this->oMemcache->connect($aConfig['cache'][$aConfig['env']]['serverAddress'], $aConfig['cache'][$aConfig['env']]['serverPort']);
+        /* @var array $config */
+        include __DIR__ . '/../config.php';
 
-        $this->oLogger = new ULogger('Cache', __DIR__ . $aConfig['log_path'][$aConfig['env']], 'cache.log');
+        $this->oMemcache = new Memcache();
+        $this->oMemcache->connect($config['cache'][$config['env']]['serverAddress'], $config['cache'][$config['env']]['serverPort']);
+
+        $this->oLogger = new ULogger('Cache', __DIR__ . $config['log_path'][$config['env']], 'cache.log');
 
         if (isset($_GET['flushCache']) && $_GET['flushCache'] == 'y') {
             $this->flush();
@@ -69,7 +68,8 @@ class Cache
                 $this->oLogger->addRecord(ULogger::ERROR, 'Parameter : ' . $mParameters . ' not a scalar variable.');
             }
         }
-        $sKey = implode('_', $aKey);
+
+        $sKey = ENVIRONMENT . '_' . implode('_', $aKey);
 
         return (250 < strlen($sKey)) ? md5($sKey) : $sKey;
     }

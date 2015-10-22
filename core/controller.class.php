@@ -55,16 +55,8 @@ class Controller
 
     public function __construct(&$command, $config, $app)
     {
-        if(false === defined('ENVIRONMENT')) {
-            define('ENVIRONMENT', $config['env']);
-        }
-
         $this->initUnilendAutoload();
-        $this->oCache = Cache::getInstance($config);
-        if(isset($_GET['flushCache']) && $_GET['flushCache'] == 'y') {
-            $this->oCache->flush();
-        }
-
+        $this->oCache = Cache::getInstance();
 
         //Variables de session pour la fenetre de debug
         unset($_SESSION['error']);

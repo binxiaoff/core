@@ -124,7 +124,7 @@ class cronController extends bootstrap
                     $this->nouveau_projet($projects['id_project']);
                 }
             }
-            $oCache = \Unilend\librairies\Cache::getInstance($this->Config);
+            $oCache = \Unilend\librairies\Cache::getInstance();
             $sKey = $oCache->makeKey(\Unilend\librairies\Cache::LIST_PROJECTS, $this->tabProjectDisplay);
             $oCache->delete($sKey);
 

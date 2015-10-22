@@ -57,10 +57,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 if (! $nocache) {
-    $oCache             = Unilend\librairies\Cache::getInstance($config);
+    $oCache             = \Unilend\librairies\Cache::getInstance($config);
     $keyPartenaireMedia = isset($_SESSION['lexpress']) ? 'lexpress' : 'direct';
     $uri                = trim(str_replace(array('clearCache=y', 'noCache=y', 'flushCache=y'), '', $_SERVER['REQUEST_URI']), '?/');
-    $cacheKey           = $_SERVER['HTTP_HOST'] . '-cache-' . $currentController . '-' . $keyPartenaireMedia . '-' . date('dmY') . '-uri-' . str_replace('/', '_', $uri);
+    $cacheKey           = $oCache->makeKey($_SERVER['HTTP_HOST'], 'cache', $currentController, $keyPartenaireMedia, str_replace('/', '_', $uri));
     $content            = $oCache->get($cacheKey);
 
     if ($content !== false) {
