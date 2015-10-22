@@ -761,35 +761,14 @@
         ?>
     </div>
     <br>
-    <br>
-    <hr style="border: 2px solid #B10366;">
-    <br>
-    <br>
-    <h2>Email</h2>
-
-    <div id="tab_email">
-        <div id="edit_projects_tab_email">
-            <input type="checkbox" name="stop_relances" id="stop_relances" value="1" <?= $this->projects->stop_relances == 1 ? 'checked':'' ?>/> <label for="stop_relances">Arrêt des relances</label>
-            <div class="btnDroite">
-                <a href="#" class="btn_link" id="save_projects_tab_email" data-project-id="<?=$this->projects->id_project?>">Sauvegarder</a>
-            </div>
-        </div><br />
-        <div id="tab_email_msg">Données sauvegardées</div>
-        <br />
-        <div id="send_cgv">
-            <a href="<?= $this->lurl ?>/dossiers/send_cgv_ajax/<?=$this->projects->id_project?>" class="btn_link thickbox cboxElement">Envoi des CGV</a>
-        </div>
-
-    </div>
-
     <style type="text/css">
-        #etape1, #etape2, #etape3, #etape4, #etape5, #etape6, #etape7 {
+        #tab_email, #etape1, #etape2, #etape3, #etape4, #etape5, #etape6, #etape7 {
             border: 2px solid #B10366;
             display: none;
             padding: 10px;
         }
 
-        #title_etape1, #title_etape2, #title_etape3, #title_etape4, #title_etape5, #title_etape6, #title_etape7 {
+        #title_tab_email, #title_etape1, #title_etape2, #title_etape3, #title_etape4, #title_etape5, #title_etape6, #title_etape7 {
             cursor: pointer;
             text-align: center;
             background-color: #B10366;
@@ -811,8 +790,68 @@
             display: inline;
         }
     </style>
-    <br/><br/>
+
     <div id="lesEtapes">
+
+        <div id="title_tab_email">Email</div>
+
+        <div id="tab_email">
+
+            <div id="edit_projects_tab_email">
+                <h2>Configuration d'envoi d'Email</h2>
+                <input type="checkbox" name="stop_relances" id="stop_relances" value="1" <?= $this->projects->stop_relances == 1 ? 'checked':'' ?>/> <label for="stop_relances">Arrêt des relances</label>
+                <br/>
+                <br/>
+                <a href="#" class="btn_link" id="save_projects_tab_email" data-project-id="<?=$this->projects->id_project?>">Sauvegarder</a>
+            </div>
+            <br />
+            <div id="tab_email_msg">Données sauvegardées</div>
+            <br />
+            <div id="send_cgv">
+                <h2>Envoi des CGV</h2>
+                <a href="<?= $this->lurl ?>/dossiers/send_cgv_ajax/<?=$this->projects->id_project?>" class="btn_link thickbox cboxElement">Envoyer</a>
+            </div>
+            <br />
+            <div id="send_completeness">
+                <h2>Complétude - Personnalisation du message</h2>
+                <div class="liwording">
+                    <table>
+                        <?php foreach($this->completude_wording as $sSlug => $sWording):?><tr>
+                            <td>
+                                <a class="add_wording" id="add-<?=$sSlug?>"><img src="<?=$this->surl?>/images/admin/add.png"></a>
+                            </td>
+                            <td>
+                                <span class="content-add-<?=$sSlug?>"><?=$sWording?></span>
+                            </td>
+                            </tr>
+                        <?php endforeach?>
+                    </table>
+                </div>
+                <br />
+
+                <h3 class="test">Listes : </h3>
+                <div class="content_li_wording"></div>
+
+                <fieldset style="width:100%;">
+                    <table class="formColor" style="width:100%;">
+                        <tr>
+                            <td>
+                                <label for="id">Saisir votre message :</label>
+                                <textarea name="content_email_completude" id="content_email_completude"><?=$text = str_replace(array("<br>","<br />"),"",$_SESSION['content_email_completude'][$this->params[0]])?></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <a id="completude_preview" href="<?=$this->lurl?>/dossiers/completude_preview/<?=$this->projects->id_project?>" class="btn_link thickbox cboxElement">Prévisualiser</a>
+                            </th>
+                        </tr>
+                    </table>
+                </fieldset>
+            </div>
+
+        </div>
+        <br/>
+
         <div id="title_etape1">Etape 1</div>
         <div id="etape1">
             <form method="post" name="dossier_etape1" id="dossier_etape1" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
@@ -2050,6 +2089,10 @@
     });
     <?php } ?>
 
+    $('#title_tab_email').click(function() {
+        $('#tab_email').slideToggle();
+    });
+
     $("#dossier_resume").submit(function (event) {
         if ($("#statut_encours").val() == '0') {
             $("#statut_encours").val('1');
@@ -2149,6 +2192,45 @@
                 } else {
                     alert('An error has occurred');
                 }
+            }
+        });
+    });
+
+    function deleteWordingli(id){
+        var id_delete = id;
+        var id_input = id.replace("delete", "input");
+        $("#"+id_delete).remove();
+        $("#"+id_input).remove();
+    }
+
+    $(".add_wording").click(function(e) {
+        e.preventDefault();
+        var id = $(this).attr("id");
+        var content = $(".content-"+id).html();
+        if ($("#input-"+id).length == 0) {
+            var champ = "<input class=\"input_li\" type=\"text\" value=\""+content+"\" name=\"input-"+id+"\" id=\"input-"+id+"\">";
+            var clickdelete = '<a onclick="deleteWordingli(this.id)" class="delete_wording" id="delete-'+id+'"><img src="'+add_surl+'/images/admin/delete.png" ></a>';
+            $('.content_li_wording').append(champ+clickdelete);
+        }
+    });
+
+    $( "#completude_preview" ).click(function() {
+        var content = $("#content_email_completude").val();
+        var list = '';
+        $(".input_li").each(function() {
+            list = list + "<li>"+$(this).val()+"</li>";
+        });
+
+        $.post(
+            add_url+"/ajax/session_project_completude",
+            {
+                id_project: "<?=$this->projects->id_project?>",
+                content: content,
+                list: list
+            }
+        ).done(function( data ) {
+            if(data != 'nok'){
+                $( "#send_completeness" ).get(0).click();
             }
         });
     });
