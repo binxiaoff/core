@@ -207,6 +207,12 @@ class ficelle
     // 10 caractères mini / 1 chiffre / 1 caractère spécial
     public function password_bo($mdp)    // $mdp le mot de passe passé en paramètre
     {
+        $point_min        = 0;
+        $point_maj        = 0;
+        $point            = 0;
+        $point_chiffre    = 0;
+        $point_caracteres = 0;
+
         // On récupère la longueur du mot de passe
         $longueur = strlen($mdp);
 
@@ -263,6 +269,12 @@ class ficelle
     //fonction qui check la complexité d'un mot de passe
     public function testpassword($mdp)    // $mdp le mot de passe passé en paramètre
     {
+        $point_min        = 0;
+        $point_maj        = 0;
+        $point            = 0;
+        $point_chiffre    = 0;
+        $point_caracteres = 0;
+
         // On récupère la longueur du mot de passe
         $longueur = strlen($mdp);
 
