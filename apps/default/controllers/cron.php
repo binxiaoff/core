@@ -99,30 +99,35 @@ class cronController extends bootstrap
     // on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
     public function _check_projet_a_funder()
     {
+        if (true === $this->startCron('check_projet_a_funder', 5)) {
+            $this->projects                = $this->loadData('projects');
+            $this->projects_status         = $this->loadData('projects_status');
+            $this->projects_status_history = $this->loadData('projects_status_history');
 
-        $this->projects                = $this->loadData('projects');
-        $this->projects_status         = $this->loadData('projects_status');
-        $this->projects_status_history = $this->loadData('projects_status_history');
+            $this->settings->get('Heure debut periode funding', 'type');
+            $this->heureDebutFunding = $this->settings->value;
 
-        $this->settings->get('Heure debut periode funding', 'type');
-        $this->heureDebutFunding = $this->settings->value;
+            $this->lProjects = $this->projects->selectProjectsByStatus(40);
 
-        $this->lProjects = $this->projects->selectProjectsByStatus(40);
+            foreach ($this->lProjects as $projects) {
+                $tabdatePublication = explode(':', $projects['date_publication_full']);
+                $datePublication    = $tabdatePublication[0] . ':' . $tabdatePublication[1];
+                $today              = date('Y-m-d H:i');
+                echo 'datePublication : ' . $datePublication . '<br>';
+                echo 'today : ' . $today . '<br><br>';
 
-        foreach ($this->lProjects as $projects) {
-            $tabdatePublication = explode(':', $projects['date_publication_full']);
-            $datePublication    = $tabdatePublication[0] . ':' . $tabdatePublication[1];
-            $today              = date('Y-m-d H:i');
-            echo 'datePublication : ' . $datePublication . '<br>';
-            echo 'today : ' . $today . '<br><br>';
+                if ($datePublication == $today) {// on lance en fonction de l'heure definie dans le bo
+                    $this->projects_status_history->addStatus(-1, 50, $projects['id_project']);
 
-            if ($datePublication == $today) {// on lance en fonction de l'heure definie dans le bo
-                $this->projects_status_history->addStatus(-1, 50, $projects['id_project']);
-
-                // Zippage pour groupama
-                $this->zippage($projects['id_project']);
-                $this->nouveau_projet($projects['id_project']);
+                    // Zippage pour groupama
+                    $this->zippage($projects['id_project']);
+                    $this->nouveau_projet($projects['id_project']);
+                }
             }
+            $oCache = \Unilend\librairies\Cache::getInstance($this->Config);
+            $oCache->delete('List_Counter_Projects_'.$this->tabProjectDisplay);
+
+            $this->stopCron();
         }
     }
 
