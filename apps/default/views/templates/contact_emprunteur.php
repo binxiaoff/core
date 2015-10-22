@@ -39,7 +39,8 @@
         <div class="contact-block-body">
             <h2><?= $this->content['bloc-titre'] ?></h2>
             <h4><i class="icon-place"></i> <?= $this->content['bloc-adresse'] ?></h4>
-            <p><i class="icon-phone"></i> <?= $this->lng['contact']['bloc-tel'] ?> : <?= $this->lng['contact']['tel-emprunteur'] ?></p>
+            <?php $this->settings->get('Téléphone emprunteur', 'type'); ?>
+            <p><i class="icon-phone"></i> <?= $this->lng['contact']['bloc-tel'] ?> : <?= $this->settings->value ?></p>
             <p><i class="icon-mail"></i> <?= $this->lng['contact']['bloc-email'] ?> : <a href="mailto:<?= $this->content['bloc-email'] ?>"><?= $this->content['bloc-email'] ?></a></p>
         </div>
     </div>

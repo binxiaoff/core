@@ -1049,7 +1049,7 @@ class depot_de_dossierController extends bootstrap
             case \projects_status::EN_ATTENTE_PIECES:
                 if (1 == $this->projects->process_fast && false === in_array($sPage, array(self::PAGE_NAME_END, self::PAGE_NAME_FILES))) {
                     $this->redirect(self::PAGE_NAME_FILES);
-                } elseif ($sPage !== self::PAGE_NAME_END) {
+                } elseif (0 == $this->projects->process_fast && $sPage !== self::PAGE_NAME_END) {
                     $this->redirect(self::PAGE_NAME_END);
                 }
                 break;
