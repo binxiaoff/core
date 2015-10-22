@@ -147,15 +147,14 @@ class bootstrap extends Controller
             );
 
             $this->oCache->set($sKey, $aElements, \Unilend\librairies\Cache::LONG_TIME);
+        } else {
+            $this->google_webmaster_tools = $aElements['GoogleTools'];
+            $this->google_analytics       = $aElements['GoogleAnalytics'];
+            $this->baseline_title         = $aElements['BaselineTitle'];
+            $this->like_fb                = $aElements['Facebook'];
+            $this->twitter                = $aElements['Twitter'];
+            $this->id_tree_cookies        = $aElements['TreeCookies'];
         }
-
-        $this->google_webmaster_tools = $aElements['GoogleTools'];
-        $this->google_analytics       = $aElements['GoogleAnalytics'];
-        $this->baseline_title         = $aElements['BaselineTitle'];
-        $this->like_fb                = $aElements['Facebook'];
-        $this->twitter                = $aElements['Twitter'];
-        $this->id_tree_cookies        = $aElements['TreeCookies'];
-
         // super login //
 
         /////////////////
