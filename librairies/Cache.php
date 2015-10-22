@@ -12,6 +12,11 @@ class Cache
     CONST LONG_TIME   = 3600;
 
     /**
+     * constant for list and count projects
+     */
+    CONST LIST_PROJECTS = 'List_Counter_Projects';
+
+    /**
      * @var $oInstance Instance of this object
      */
     private static $oInstance;
