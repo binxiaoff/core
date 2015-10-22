@@ -3853,7 +3853,7 @@ class dossiersController extends bootstrap
             $this->mails_text->get('completude-piece-project', 'lang = "' . $this->language . '" AND type');
 
             // Attribution des données aux variables
-            $sujetMail = strtr($this->mails_text->subject, $tabVars);
+            $sujetMail = utf8_decode(strtr($this->mails_text->subject, $tabVars));
             $texteMail = strtr($this->mails_text->content, $tabVars);
             $exp_name  = strtr($this->mails_text->exp_name, $tabVars);
 
@@ -3873,7 +3873,8 @@ class dossiersController extends bootstrap
             }
 
             $oProjects_status_history = $this->loadData('projects_status_history');
-            $oProjects_status_history->addStatus($_SESSION['user']['id_user'], '20', $oProjects->id_project, $varMail['attachement_list']);
+            $this->loadData('projects_status');
+            $oProjects_status_history->addStatus($_SESSION['user']['id_user'], projects_status::EN_ATTENTE_PIECES, $oProjects->id_project, 0, $varMail['attachement_list']);
 
             // On vide la session
             unset($_SESSION['content_email_completude'][$this->clients->id_client]);
