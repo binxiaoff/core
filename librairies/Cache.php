@@ -51,7 +51,7 @@ class Cache
         $this->oMemcache = new Memcache();
         $this->oMemcache->connect($config['cache'][$config['env']]['serverAddress'], $config['cache'][$config['env']]['serverPort']);
 
-        $this->oLogger = new ULogger('Cache', __DIR__ . $config['log_path'][$config['env']], 'cache.log');
+        $this->oLogger = new ULogger('Cache', $config['log_path'][$config['env']], 'cache.log');
 
         if (isset($_GET['flushCache']) && $_GET['flushCache'] == 'y') {
             $this->flush();
