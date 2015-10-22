@@ -559,33 +559,40 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                 <div class="article">
                                     <p><?= $this->lng['preteur-projets']['vous-avez-prete'] ?> <strong class="pinky-span"><?= number_format($this->bidsvalid['solde'], 0, ',', ' ') ?> €</strong></p>
                                     <p><strong class="pinky-span"><?= number_format($this->sumRemb, 2, ',', ' ') ?> €</strong> <?= $this->lng['preteur-projets']['vous-ont-ete-rembourses-il-vous-reste'] ?> <strong class="pinky-span"><?= number_format($this->sumRestanteARemb, 2, ',', ' ') ?> €</strong> <?= $this->lng['preteur-projets']['a-percevoir-sur-une-periode-de'] ?> <strong class="pinky-span"><?= $this->nbPeriod ?> <?= $this->lng['preteur-projets']['mois'] ?></strong></p>
-                                    
+
                                     <?php
-                                    if($this->lhistoStatus != false){
-                                        foreach($this->lhistoStatus as $s){
+                                    if ($this->lhistoStatus != false) {
+                                        foreach ($this->lhistoStatus as $s) {
                                             ?>
-                                            <p><?=date('d/m/Y',strtotime($s['added']))?> : <?=$s['information']?></p>
+                                            <p><?= date('d/m/Y', strtotime($s['added'])) ?> : <?= $s['information'] ?></p>
                                             <?php
+                                            // status default
+                                            if ($s['id_project_status'] == 11) {
+
+                                                $catital_remb = $this->sumRemb;
+                                                $capital_total = $this->bidsvalid['solde'];
+
+                                                $pourcentage_capital_recup = (($catital_remb / $capital_total) * 100);
+                                                echo '<p>Vous avez récupéré <b class="pinky-span">'.number_format($pourcentage_capital_recup, 2, ',', ' ').' %</b> de votre capital.</p>';
+                                            }
                                         }
                                     }
-                                    // affichage le h'isto problemen recouvrment etc <----------------------------------
-                                    
                                     ?>
                                 </div>
                             </div><!-- /.tab -->
-                            <?
-                        }
-                        ?>
+                                    <?
+                                }
+                                ?>
                     </div>
                 </div>
             </div>
-            <?
+<?
 ///////////////////////////////////////////////////////////////////////////////////
 
-            $this->fireView('../blocs/sidebar-project');
+$this->fireView('../blocs/sidebar-project');
 
 ///////////////////////////////////////////
-            ?>
+?>
         </div>
     </div>
 </div>

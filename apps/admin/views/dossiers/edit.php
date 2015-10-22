@@ -619,6 +619,26 @@ if (isset($_SESSION['freeow'])) {
                         </td>
                     </tr>
                 </table>
+                <table class="hidden_table bloc_mail_preteur_default">
+                    <tr>
+                        <th><label for="area_lj"><i>Email d'information aux prêteurs :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td><textarea class="textarea_lng" name="area_default" id="area_default" style="height: 100px;width: 420px;"></textarea></td>
+                    </tr>
+                    <tr>   
+                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>                                
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="radio" name="mail_a_envoyer_preteur_default" id="oui_envoyer_mail_default" value="0" />
+                            <label for="oui_envoyer_mail_default">Oui</label>
+                            <input type="radio" name="mail_a_envoyer_preteur_default" id="non_envoyer_mail_default" value="1" checked/>
+                            <label for="non_envoyer_mail_default">Non</label>
+                            <br><br>
+                        </td>
+                    </tr>
+                </table>
 
                 <table class="form" style="width: 538px;">
                     <?
@@ -878,6 +898,9 @@ if (isset($_SESSION['freeow'])) {
                         }
                         else if ($("#status").val() == 170) { /* liquidation judiciaire, on affiche un textarea pour le mail aux preteurs*/
                             $('.bloc_mail_preteur_lj').show();
+                        }
+                        else if ($("#status").val() == 120) { /* default, on affiche un textarea pour le mail aux preteurs*/
+                            $('.bloc_mail_preteur_default').show();
                         }
                         else {
                             $(".change_statut").show();

@@ -85,9 +85,6 @@ class projectsController extends bootstrap
 	
 	function _detail()
 	{
-		
-		
-		
 		// restriction pour capital
 		if($this->lurl == 'http://prets-entreprises-unilend.capital.fr' || $this->lurl == 'http://partenaire.unilend.challenges.fr'){
 		//if($this->lurl == 'http://capital.unilend.fr' || $this->lurl == 'http://challenges.unilend.fr'){
@@ -828,19 +825,11 @@ class projectsController extends bootstrap
                                     $this->nbPeriod = $this->echeanciers->counterPeriodRestantes($this->lenders_accounts->id_lender_account,$this->projects->id_project);
                                     
                                     if($this->bidsvalid['solde'] > 0){
-                                        $this->lhistoStatus = $this->projects_status_history->selectHisto($this->projects->id_project,array(10,25,26,27,28));
+                                        $this->lhistoStatus = $this->projects_status_history->selectHisto($this->projects->id_project,array(10,11,25,26,27,28));
                                     }
 				}
 				//}
-				
-				
-				
-			}
-			
-			
-			
-			
-			
+			}	
 		}
 		else
 		{

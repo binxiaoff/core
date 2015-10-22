@@ -822,10 +822,38 @@ class dossiersController extends bootstrap {
                         // si statut = default
                         if ($_POST['status'] == '120') {
 
-                            // on envoie un mail aux preteurs
-                            $lPreteurs = $this->loans->select('id_project = ' . $this->projects->id_project);
+                            // On bloque tous les futures prélèvements 
+                            $prelevements = $this->loadData('prelevements');
+                            $L_prelevements = $prelevements->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
 
-                            $this->companies->get($this->projects->id_company, 'id_company');
+                            if ($L_prelevements != false) {
+                                foreach ($L_prelevements as $prel) {
+                                    $prelevements->get($prel['id_prelevement']);
+                                    $prelevements->status = 4; // bloqué temporairement
+                                    $prelevements->update();
+                                }
+                            }
+
+                            // On stop les remb auto si y en a
+                            $projects_remb = $this->loadData('projects_remb');
+                            $lRembAuto = $projects_remb->select('status = 0 AND id_project = ' . $this->projects->id_project);
+                            if ($lRembAuto != false) {
+                                foreach ($lRembAuto as $r) {
+                                    $projects_remb->get($r['id_project_remb'], 'id_project_remb');
+                                    $projects_remb->status = 4;
+                                    $projects_remb->update();
+                                }
+                            }
+
+                            // on récupère la variable pour savoir si on envoi le mail au preteur ou non
+                            $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_default'];
+                            $contenu_a_ajouter_mail = $_POST['area_default'];
+
+                            // on enregsitre le contenu
+                            $projects_status_history_informations = $this->loadData('projects_status_history_informations');
+                            $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                            $projects_status_history_informations->information = $contenu_a_ajouter_mail;
+                            $projects_status_history_informations->create();
 
                             // FB
                             $this->settings->get('Facebook', 'type');
@@ -834,96 +862,101 @@ class dossiersController extends bootstrap {
                             // Twitter
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
+                            
+                            $this->companies->get($this->projects->id_company, 'id_company');
 
-                            //if($lPreteurs != false)
-//							{
-//								foreach($lPreteurs as $p)
-//								{
-//									$this->lenders_accounts->get($p['id_lender'],'id_lender_account');
-//									$this->clients->get($this->lenders_accounts->id_client_owner,'id_client');
-//									
-//									// on recup la premiere echeance
-//									
-//									
-//									////////////////////////////////////////////
-//									// on recup la somme deja remb du preteur //
-//									////////////////////////////////////////////
-//									$lEchea = $this->echeanciers->select('id_loan = '.$p['id_loan'].' AND id_project = '.$this->projects->id_project.' AND status = 1');
-//									$rembNet = 0;
-//									foreach($lEchea as $e)
-//									{
-//										// on fait la somme de tout
-//										$rembNet += ($e['montant']/100) - $e['prelevements_obligatoires'] - $e['retenues_source'] - $e['csg'] - $e['prelevements_sociaux'] - $e['contributions_additionnelles'] - $e['prelevements_solidarite'] - $e['crds'];
-//									}
-//									////////////////////////////////////////////
-//									
-//									// le mail pour le lender
-//									
-//									// Motif virement
-//									$p = substr($this->ficelle->stripAccents(utf8_decode($this->clients->prenom)),0,1);
-//									$nom = $this->ficelle->stripAccents(utf8_decode($this->clients->nom));
-//									$id_client = str_pad($this->clients->id_client,6,0,STR_PAD_LEFT);
-//									$motif = mb_strtoupper($id_client.$p.$nom,'UTF-8');
-//									
-//									//********************************************************//
-//									//*** ENVOI DU MAIL STATUT DOSSIER DEFAUT POUR PRETEUR ***//
-//									//********************************************************//
-//									
-//									// Recuperation du modele de mail
-//									$this->mails_text->get('preteur-dossier-defaut','lang = "'.$this->language.'" AND type');
-//									
-//									// Variables du mailing
-//									$surl = $this->surl;
-//									$url = $this->furl;
-//									$projet = $this->projects->title;
-//									
-//									// Variables du mailing
-//									$varMail = array(
-//									'surl' => $surl,
-//									'url' => $url,
-//									'prenom_p' => $this->clients->prenom,
-//									'cab_recouvrement' => $this->cab,
-//									'nom_entreprise' => $this->companies->name,
-//									'montant_rembourse' => number_format($rembNet, 2, ',', ' '),
-//									'valeur_bid' => number_format($p['amount']/100, 2, ',', ' '),
-//									'motif_virement' => $motif,
-//									'lien_fb' => $lien_fb,
-//									'lien_tw' => $lien_tw);	
-//									
-//									
-//									// Construction du tableau avec les balises EMV
-//									$tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-//									
-//									/*echo '<pre>';
-//									print_r($tabVars);
-//									echo '</pre>';*/
-//									
-//									// Attribution des données aux variables
-//									$sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);				
-//									$texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
-//									$exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
-//									
-//									// Envoi du mail
-//									/*$this->email = $this->loadLib('email',array());
-//									$this->email->setFrom($this->mails_text->exp_email,$exp_name);
-//									$this->email->setSubject(stripslashes($sujetMail));
-//									$this->email->setHTMLBody(stripslashes($texteMail));
-//									
-//									if($this->Config['env'] == 'prod') // nmp
-//									{
-//										Mailer::sendNMP($this->email,$this->mails_filer,$this->mails_text->id_textemail,$this->clients->email,$tabFiler);			
-//										// Injection du mail NMP dans la queue
-//										$this->tnmp->sendMailNMP($tabFiler,$varMail,$this->mails_text->nmp_secure,$this->mails_text->id_nmp,$this->mails_text->nmp_unique,$this->mails_text->mode);
-//									}
-//									else // non nmp
-//									{
-//										$this->email->addRecipient(trim($this->clients->email));
-//										Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);	
-//									}*/
-//									// fin mail lender
-//									
-//								}
-//							}
+                            // On recuprere les lenders ayant des loans sur le projet
+                            $lPreteurs = $this->loans->getPreteurs($this->projects->id_project);
+
+                            if ($lPreteurs != false) {
+                                foreach ($lPreteurs as $p) {
+                                    $this->lenders_accounts->get($p['id_lender'], 'id_lender_account');
+                                    $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+
+                                    // Motif virement
+                                    $pre = substr($this->ficelle->stripAccents(utf8_decode($this->clients->prenom)), 0, 1);
+                                    $nom = $this->ficelle->stripAccents(utf8_decode($this->clients->nom));
+                                    $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
+                                    $motif = mb_strtoupper($id_client . $pre . $nom, 'UTF-8');
+
+                                    // pour chaque preteur on fait la somme des loans qu'il a sur le projet pour le mail
+                                    $L_loans = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $p['id_lender']);
+                                    $nb_loan = 0;
+                                    $rembNet = 0;
+                                    $sum_amount = 0;
+                                    foreach ($L_loans as $l) {
+                                        $sum_amount += $l['amount'];
+                                        $nb_loan++;
+                                    }
+
+                                    // Gestion de l'ajout des nouvelles notifications manquantes
+                                    $this->lNotif_manquante = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client . ' AND id_notif IN (9)');
+                                    if ($this->lNotif_manquante == false) {
+                                        $this->clients_gestion_type_notif = $this->loadData('clients_gestion_type_notif');
+                                        $this->lTypeNotifs_manquates = $this->clients_gestion_type_notif->select('id_client_gestion_type_notif IN (9)');
+
+                                        foreach ($this->lTypeNotifs_manquates as $n) {
+                                            $this->clients_gestion_notifications->id_client = $this->clients->id_client;
+                                            $this->clients_gestion_notifications->id_notif = $n['id_client_gestion_type_notif'];
+                                            $this->clients_gestion_notifications->immediatement = 1;
+                                            $this->clients_gestion_notifications->create();
+                                        }
+                                    }
+
+                                    // Ajout d'une notification
+                                    $this->notifications->type = 9; // type recouvrement
+                                    $this->notifications->id_lender = $p['id_lender'];
+                                    $this->notifications->id_project = $p['id_project'];
+                                    $this->notifications->amount = $sum_amount;
+                                    $this->notifications->id_bid = 0; // On peut avoir plusieurs bid donc inutile  
+                                    $this->notifications->id_notification = $this->notifications->create();
+
+                                    //////// GESTION ALERTES //////////
+                                    $this->clients_gestion_mails_notif->id_client = $lender->id_client_owner;
+                                    $this->clients_gestion_mails_notif->id_notif = 9; // type Notifications de retards & régularisations de retards
+                                    $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                                    $this->clients_gestion_mails_notif->id_transaction = 0;
+                                    $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
+                                    $this->clients_gestion_mails_notif->id_loan = 0; // On peut avoir plusieurs loans donc inutile  
+                                    $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
+                                    //////// FIN GESTION ALERTES //////////
+                                    //si on envoi le mail
+                                    if ($mail_a_envoyer == 0) {
+                                        // pour chaque preteur on check si le preteur veut recevoir l'email instantané
+                                        if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true) {
+                                            
+                                            //////// GESTION ALERTES //////////
+                                            $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif,'id_clients_gestion_mails_notif');
+                                            $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                                            $this->clients_gestion_mails_notif->update();
+                                            //////// FIN GESTION ALERTES //////////
+                                            
+                                            // Variables du mailing
+                                            $varMail = array(
+                                                'surl' => $this->surl,
+                                                'url' => $this->furl,
+                                                'prenom_p' => $this->clients->prenom,
+                                                'cab_recouvrement' => $this->cab,
+                                                'nom_entreprise' => $this->companies->name,
+                                                'montant_rembourse' => number_format($rembNet, 2, ',', ' '),
+                                                'motif_virement' => $motif,
+                                                'valeur_bid' => number_format($sum_amount/100, 2, ',', ' '),
+                                                'contenu_mail' => $contenu_a_ajouter_mail,
+                                                'lien_fb' => $lien_fb,
+                                                'lien_tw' => $lien_tw);
+
+                                            // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
+                                            $liste_attente_mail = $this->loadData('liste_attente_mail');
+                                            $liste_attente_mail->type_mail = 'preteur-dossier-defaut';
+                                            $liste_attente_mail->language = $this->language;
+                                            $liste_attente_mail->variables = serialize($varMail);
+                                            $liste_attente_mail->to = $this->clients->email;
+                                            $liste_attente_mail->statut = 0; //pas envoyé
+                                            $liste_attente_mail->create();
+                                        }
+                                    }
+                                }
+                            }
                         }
                         // fin statut probleme
                         elseif ($_POST['status'] == '100') {
@@ -1326,7 +1359,9 @@ class dossiersController extends bootstrap {
                             $emprunteur->get($this->companies->id_client_owner, 'id_client');
                             // recup date financement (date de premier passage en statut remboursement)
                             $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
-                            $date_financement = date('m/Y', strtotime($status_remb[0]['added']));
+                            $date_remb_time = strtotime($status_remb[0]['added']);
+                            $mois = $this->dates->tableauMois[$this->language][date('n', $date_remb_time)];
+                            $date_financement = $mois.' '.date('Y', $date_remb_time);
                             // Recup nb preteurs
                             $nb_preteurs = $this->loans->getNbPreteurs($this->projects->id_project);
                             // recup capital restant du (a partire de la date de jugement)
@@ -1340,8 +1375,8 @@ class dossiersController extends bootstrap {
                                 'nom_e' => $emprunteur->nom,
                                 'entreprise' => $this->companies->name,
                                 'date_finance' => $date_financement,
-                                'montant_emprunt' => $this->projects->amount,
-                                'capital_restant_du' => $CapitalRestantDu,
+                                'montant_emprunt' => number_format($this->projects->amount, 0, ',', ' '),
+                                'capital_restant_du' => number_format($CapitalRestantDu, 0, ',', ' '),
                                 'tel_emprunteur' => $tel_emprunteur,
                                 'lien_pouvoir' => $this->furl.'/pdf/pouvoir/' . $emprunteur->hash . '/' . $this->projects->id_project,
                                 'nb_preteurs' => $nb_preteurs,
@@ -1399,7 +1434,7 @@ class dossiersController extends bootstrap {
                                     }
 
                                     // Ajout d'une notification
-                                    $this->notifications->type = 10; // recouvrement (type procedure de sauvegarde)
+                                    $this->notifications->type = 9; // probleme (type procedure de sauvegarde)
                                     $this->notifications->id_lender = $p['id_lender'];
                                     $this->notifications->id_project = $p['id_project'];
                                     $this->notifications->amount = $sum_amount;
@@ -1441,7 +1476,7 @@ class dossiersController extends bootstrap {
                                             $liste_attente_mail->variables = serialize($varMail);
                                             $liste_attente_mail->to = $this->clients->email;
                                             $liste_attente_mail->statut = 0; //pas envoyé
-                                            $liste_attente_mail->create();
+                                            //$liste_attente_mail->create();
                                         //}
                                     }
                                 }
@@ -1508,7 +1543,9 @@ class dossiersController extends bootstrap {
                             $emprunteur->get($this->companies->id_client_owner, 'id_client');
                             // recup date financement (date de premier passage en statut remboursement)
                             $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
-                            $date_financement = date('m/Y', strtotime($status_remb[0]['added']));
+                            $date_remb_time = strtotime($status_remb[0]['added']);
+                            $mois = $this->dates->tableauMois[$this->language][date('n', $date_remb_time)];
+                            $date_financement = $mois.' '.date('Y', $date_remb_time);
                             // Recup nb preteurs
                             $nb_preteurs = $this->loans->getNbPreteurs($this->projects->id_project);
                             // recup capital restant du (a partire de la date de jugement)
@@ -1522,8 +1559,8 @@ class dossiersController extends bootstrap {
                                 'nom_e' => $emprunteur->nom,
                                 'entreprise' => $this->companies->name,
                                 'date_finance' => $date_financement,
-                                'montant_emprunt' => $this->projects->amount,
-                                'capital_restant_du' => $CapitalRestantDu,
+                                'montant_emprunt' => number_format($this->projects->amount, 0, ',', ' '),
+                                'capital_restant_du' => number_format($CapitalRestantDu, 0, ',', ' '),
                                 'tel_emprunteur' => $tel_emprunteur,
                                 'lien_pouvoir' => $this->furl.'/pdf/pouvoir/' . $emprunteur->hash . '/' . $this->projects->id_project,
                                 'nb_preteurs' => $nb_preteurs,
@@ -1581,7 +1618,7 @@ class dossiersController extends bootstrap {
                                     }
 
                                     // Ajout d'une notification
-                                    $this->notifications->type = 10; // recouvrement (type procedure de sauvegarde)
+                                    $this->notifications->type = 9; // probleme (type procedure de sauvegarde)
                                     $this->notifications->id_lender = $p['id_lender'];
                                     $this->notifications->id_project = $p['id_project'];
                                     $this->notifications->amount = $sum_amount;
@@ -1623,7 +1660,7 @@ class dossiersController extends bootstrap {
                                             $liste_attente_mail->variables = serialize($varMail);
                                             $liste_attente_mail->to = $this->clients->email;
                                             $liste_attente_mail->statut = 0; //pas envoyé
-                                            $liste_attente_mail->create();
+                                            //$liste_attente_mail->create();
                                         //}
                                     }
                                 }
@@ -1690,7 +1727,9 @@ class dossiersController extends bootstrap {
                             $emprunteur->get($this->companies->id_client_owner, 'id_client');
                             // recup date financement (date de premier passage en statut remboursement)
                             $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
-                            $date_financement = date('m/Y', strtotime($status_remb[0]['added']));
+                            $date_remb_time = strtotime($status_remb[0]['added']);
+                            $mois = $this->dates->tableauMois[$this->language][date('n', $date_remb_time)];
+                            $date_financement = $mois.' '.date('Y', $date_remb_time);
                             // Recup nb preteurs
                             $nb_preteurs = $this->loans->getNbPreteurs($this->projects->id_project);
                             // recup capital restant du (a partire de la date de jugement)
@@ -1704,8 +1743,8 @@ class dossiersController extends bootstrap {
                                 'nom_e' => $emprunteur->nom,
                                 'entreprise' => $this->companies->name,
                                 'date_finance' => $date_financement,
-                                'montant_emprunt' => $this->projects->amount,
-                                'capital_restant_du' => $CapitalRestantDu,
+                                'montant_emprunt' => number_format($this->projects->amount, 0, ',', ' '),
+                                'capital_restant_du' => number_format($CapitalRestantDu, 0, ',', ' '),
                                 'tel_emprunteur' => $tel_emprunteur,
                                 'lien_pouvoir' => $this->furl.'/pdf/pouvoir/' . $emprunteur->hash . '/' . $this->projects->id_project,
                                 'nb_preteurs' => $nb_preteurs,
@@ -1763,7 +1802,7 @@ class dossiersController extends bootstrap {
                                     }
 
                                     // Ajout d'une notification
-                                    $this->notifications->type = 10; // recouvrement (type procedure de sauvegarde)
+                                    $this->notifications->type = 9; // probleme (type procedure de sauvegarde)
                                     $this->notifications->id_lender = $p['id_lender'];
                                     $this->notifications->id_project = $p['id_project'];
                                     $this->notifications->amount = $sum_amount;
