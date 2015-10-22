@@ -80,7 +80,7 @@ class Controller
         $this->bdd          = new bdd($this->Config['bdd_config'][$this->Config['env']], $this->Config['bdd_option'][$this->Config['env']]);
 
         // Initialisation des propriétés nécessaires au cache
-        $this->enableCache      = $this->Config['cache'][$this->Config['env']];
+        $this->enableCache      = false;
         $this->cacheDuration    = $this->Config['cacheDuration'][$this->Config['env']];
         $this->cacheCurrentPage = false;
 

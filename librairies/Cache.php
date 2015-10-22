@@ -17,7 +17,7 @@ class Cache
     CONST LIST_PROJECTS = 'List_Counter_Projects';
 
     /**
-     * @var $oInstance Instance of this object
+     * @var self
      */
     private static $oInstance;
 
@@ -33,7 +33,7 @@ class Cache
 
     /**
      * @param array $aConfig
-     * @return Cache|Instance
+     * @return Cache
      */
     public static function getInstance($aConfig = null)
     {
@@ -52,7 +52,11 @@ class Cache
         $this->oMemcache = new Memcache();
         $this->oMemcache->connect($aConfig['cache'][$aConfig['env']]['serverAddress'], $aConfig['cache'][$aConfig['env']]['serverPort']);
 
-        $this->oLogger = new ULogger('Cache', __DIR__ . $aConfig['log_path'], 'cache.log');
+        $this->oLogger = new ULogger('Cache', __DIR__ . $aConfig['log_path'][$aConfig['env']], 'cache.log');
+
+        if (isset($_GET['flushCache']) && $_GET['flushCache'] == 'y') {
+            $this->flush();
+        }
     }
 
     public function makeKey()
@@ -79,7 +83,7 @@ class Cache
     public function set($sKey, $mValue, $iTime = self::SHORT_TIME)
     {
         if (false === $this->oMemcache->set($sKey, $mValue, false, $iTime)) {
-            $this->oLogger->addRecord(ULogger::ERROR, 'Cache impossible for Key : ' . $sKey . ' and Value : ' . $mValue);
+            $this->oLogger->addRecord(ULogger::ERROR, 'Cache impossible for Key : ' . $sKey);
 
             return false;
         }
@@ -93,12 +97,12 @@ class Cache
      */
     public function get($mKey)
     {
-        if (isset($_GET['clearCache']) && $_GET['clearCache'] == 'y' ||
-            isset($_GET['noCache']) && $_GET['noCache'] == 'y'
-        ) {
+        if (isset($_GET['noCache']) && $_GET['noCache'] == 'y') {
+            return false;
+        }
+
+        if (isset($_GET['clearCache']) && $_GET['clearCache'] == 'y') {
             $this->delete($mKey);
-        } else if (isset($_GET['flushCache']) && $_GET['flushCache'] == 'y') {
-            $this->flush();
         }
 
         return $this->oMemcache->get($mKey);
