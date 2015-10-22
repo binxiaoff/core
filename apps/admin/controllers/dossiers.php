@@ -145,10 +145,8 @@ class dossiersController extends bootstrap
             $this->contact          = $this->clients;
             $this->bHasPrescripteur = false;
 
-            if (
-                $this->projects->id_prescripteur
-                && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')
-            ) {
+            if ($this->projects->id_prescripteur
+                && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
                 $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
                 $this->bHasPrescripteur = true;
             }
@@ -325,6 +323,18 @@ class dossiersController extends bootstrap
                 $this->loadData('users_types');
                 if (in_array($this->users->id_user_type, array(users_types::TYPE_ADMIN, users_types::TYPE_ANALYSTE, users_types::TYPE_COMMERCIAL))) {
                     $this->bCanEditStatus = true;
+                }
+            }
+
+            // wording completude
+            $this->completude_wording = array();
+            if ($this->blocs->get('completude-wording-project', 'slug')) {
+                $lElements = $this->blocs_elements->select('id_bloc = '.$this->blocs->id_bloc.' AND id_langue = "' . $this->language . '"');
+                if (false === empty($lElements)) {
+                    foreach ($lElements as $b_elt) {
+                        $this->elements->get($b_elt['id_element']);
+                        $this->completude_wording[$this->elements->slug] = $b_elt['value'];
+                    }
                 }
             }
 
@@ -3710,6 +3720,199 @@ class dossiersController extends bootstrap
             }
         }
         $this->result = 'Envoi des CGV a été fait avec succès !';
+    }
+
+    public function _completude_preview()
+    {
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        /** @var projects $oProjects */
+        $oProjects = $this->loadData('projects');
+        /** @var clients $oClients */
+        $oClients = $this->loadData('clients');
+
+        if (false === isset($this->params[0]) || false === $oProjects->get($this->params[0])) {
+            $this->error = 'no projects found';
+            return;
+        }
+        /** @var companies $oCompanies */
+        $oCompanies = $this->loadData('companies');
+        if (false === $oCompanies->get($oProjects->id_company)) {
+            $this->error = 'no company found';
+            return;
+        }
+
+        $iClientId = null;
+        if ($oProjects->id_prescripteur) {
+            /** @var prescripteurs $oPrescripteurs */
+            $oPrescripteurs = $this->loadData('prescripteurs');
+            if ($oPrescripteurs->get($oProjects->id_prescripteur)) {
+                $iClientId = $oPrescripteurs->id_client;
+            }
+        } else {
+            $iClientId = $oCompanies->id_client_owner;
+        }
+
+        if ($iClientId && $oClients->get($iClientId) && $oClients->email) {
+            $this->sRecipient = $oClients->email;
+        } else {
+            $this->error = 'no client email found';
+            return;
+        }
+        $this->iClientId = $iClientId;
+        $this->iProjectId = $oProjects->id_project;
+        $this->mails_text->get('completude-piece-project', 'lang = "' . $this->language . '" AND type');
+    }
+
+    public function _completude_preview_iframe()
+    {
+        // On masque les Head, header et footer originaux plus le debug
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        /** @var projects $oProjects */
+        $oProjects = $this->loadData('projects');
+        /** @var clients $oClients */
+        $oClients = $this->loadData('clients');
+        /** @var companies $oCompanies */
+        $oCompanies = $this->loadData('companies');
+
+        if (false === isset($this->params[0]) || false === $oProjects->get($this->params[0])) {
+            echo 'no projects found';
+            return;
+        }
+
+        if (false === isset($this->params[1]) || false === $oClients->get($this->params[1])) {
+            echo 'no clients found';
+            return;
+        }
+
+        if (false === $oCompanies->get($oProjects->id_company)) {
+            echo 'no company found';
+            return;
+        }
+
+
+        // Variables du mailing
+        $varMail = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
+
+        // Construction du tableau avec les balises EMV
+        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+        // Recuperation du modele de mail
+        $this->mails_text->get('completude-piece-project', 'lang = "' . $this->language . '" AND type');
+
+        echo strtr($this->mails_text->content, $tabVars);
+    }
+
+    public function _send_completude()
+    {
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+        $this->autoFireView   = false;
+
+        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+        if ($_POST['send_completude']) {
+            /** @var projects $oProjects */
+            $oProjects = $this->loadData('projects');
+            /** @var clients $oClients */
+            $oClients = $this->loadData('clients');
+            /** @var companies $oCompanies */
+            $oCompanies = $this->loadData('companies');
+
+            if (false === isset($_POST['id_project']) || false === $oProjects->get($_POST['id_project'])) {
+                echo 'no projects found';
+                return;
+            }
+
+            if (false === isset($_POST['id_client']) || false === $oClients->get($_POST['id_client'])) {
+                echo 'no clients found';
+                return;
+            }
+
+            if (false === $oCompanies->get($oProjects->id_company)) {
+                echo 'no company found';
+                return;
+            }
+
+            // Variables du mailing
+            $varMail = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
+
+            // Construction du tableau avec les balises EMV
+            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+            // Recuperation du modele de mail
+            $this->mails_text->get('completude-piece-project', 'lang = "' . $this->language . '" AND type');
+
+            // Attribution des données aux variables
+            $sujetMail = strtr($this->mails_text->subject, $tabVars);
+            $texteMail = strtr($this->mails_text->content, $tabVars);
+            $exp_name  = strtr($this->mails_text->exp_name, $tabVars);
+
+            // Envoi du mail
+            $this->email = $this->loadLib('email', array());
+            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+            $this->email->setSubject(stripslashes($sujetMail));
+            $this->email->setHTMLBody(stripslashes($texteMail));
+
+            if ($this->Config['env'] == 'prod') {
+                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $oClients->email, $tabFiler);
+                // Injection du mail NMP dans la queue
+                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+            } else {
+                $this->email->addRecipient(trim($oClients->email));
+                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            }
+
+            $oProjects_status_history = $this->loadData('projects_status_history');
+            $oProjects_status_history->addStatus($_SESSION['user']['id_user'], '20', $oProjects->id_project, $varMail['attachement_list']);
+
+            // On vide la session
+            unset($_SESSION['content_email_completude'][$this->clients->id_client]);
+
+            echo 'Votre email a été envoyé';
+        }
+    }
+
+    private function getEmailVarCompletude($oProjects, $oClients, $oCompanies)
+    {
+        // Variables du mailing
+        $surl = $this->surl;
+        $url  = $this->lurl;
+
+        // FB
+        $this->settings->get('Facebook', 'type');
+        $lien_fb = $this->settings->value;
+
+        // Twitter
+        $this->settings->get('Twitter', 'type');
+        $lien_tw = $this->settings->value;
+
+        $sContent = isset($_SESSION['content_project_completude'][$oProjects->id_project]) ? $_SESSION['content_project_completude'][$oProjects->id_project] : '';
+
+        // Variables du mailing
+        $varMail = array(
+            'furl'                      => $this->furl,
+            'surl'                      => $surl,
+            'url'                       => $url,
+            'prenom'                    => $oClients->prenom,
+            'company_name'              => $oCompanies->name,
+            'link_upload_attachment'    => $this->furl . '/depot_de_dossier/fichiers/' . $oProjects->hash,
+            'attachement_list'          => $sContent,
+            'lien_fb'                   => $lien_fb,
+            'lien_tw'                   => $lien_tw,
+            'lien_stop_relance'         => $this->furl . '/depot_de_dossier/emails/' . $oProjects->hash,
+        );
+
+        return $varMail;
     }
 
     /**

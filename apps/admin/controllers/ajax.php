@@ -3117,6 +3117,21 @@ class ajaxController extends bootstrap
         }
     }
 
+    public function _session_project_completude()
+    {
+        $this->autoFireView = false;
+
+        if (isset($_POST['id_project']) && isset($_POST['content']) && isset($_POST['list'])) {
+
+            $content = $_POST['list'] . ($_POST['content'] != '' ? '<br>' : '') . nl2br(htmlentities($_POST['content'], ENT_COMPAT, 'UTF-8'));
+
+            $_SESSION['content_project_completude'][$_POST['id_project']] = $content;
+            echo 'ok';
+        } else {
+            echo 'nok';
+        }
+    }
+
 
     public function _check_force_pass()
     {
