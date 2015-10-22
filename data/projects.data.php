@@ -473,7 +473,7 @@ class projects extends projects_crud
     {
         $oCache = Cache::getInstance();
 
-        $sKey      = $oCache->makeKey('List_Counter_Projects', $sListStatus);
+        $sKey      = $oCache->makeKey(Cache::LIST_PROJECTS, $sListStatus);
         $aElements = $oCache->get($sKey);
         if (false === $aElements) {
 
