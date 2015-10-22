@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 if (! $nocache) {
-    $oCache             = \Unilend\librairies\Cache::getInstance($config);
+    $oCache             = Unilend\librairies\Cache::getInstance($config);
     $keyPartenaireMedia = isset($_SESSION['lexpress']) ? 'lexpress' : 'direct';
     $uri                = trim(str_replace(array('clearCache=y', 'noCache=y', 'flushCache=y'), '', $_SERVER['REQUEST_URI']), '?/');
     $cacheKey           = $oCache->makeKey($_SERVER['HTTP_HOST'], 'cache', $currentController, $keyPartenaireMedia, str_replace('/', '_', $uri));
