@@ -1113,10 +1113,10 @@ class dossiersController extends bootstrap {
                                 'nom_e' => $emprunteur->nom,
                                 'entreprise' => $this->companies->name,
                                 'date_finance' => $date_financement,
-                                'montant_emprunt' => $this->projects->amount,
+                                'montant_emprunt' => number_format($this->projects->amount, 0, ',', ' '),
                                 'nb_preteurs' => $nb_preteurs,
                                 '2_mensualites' => number_format(($montant_mensuel * 2), 0, ',', ' '),
-                                'capital_restant_du' => $CapitalRestantDu,
+                                'capital_restant_du' => number_format($CapitalRestantDu, 0, ',', ' '),
                                 'nom_societe_recouvrement' => $this->cab,
                                 'lien_fb' => $lien_fb,
                                 'lien_tw' => $lien_tw);
