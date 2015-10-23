@@ -1366,7 +1366,7 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
 
                         var DATA = '&token=' + token + '&utm_source=' + utm_source + '&utm_source2=' + utm_source2 + '&slug_origine=' + slug_origine + '&date=' + date + '&email=' + email + '&nom=' + nom + '&prenom=' + prenom + '&civilite=' + civilite;
                         
-                        alert("<?= $url_site ?>/collect/prospect");
+                        //alert("<?= $url_site ?>/collect/prospect");
                         $.ajax({
                             type: "POST",
                             url: "<?= $url_site ?>/collect/prospect",
