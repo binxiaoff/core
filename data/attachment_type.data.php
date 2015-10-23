@@ -139,10 +139,6 @@ class attachment_type extends attachment_type_crud
             self::BALANCE_CLIENT,
             self::BALANCE_FOURNISSEUR,
             self::ETAT_PRIVILEGES_NANTISSEMENTS,
-            self::AUTRE1,
-            self::AUTRE2,
-            self::AUTRE3,
-            self::AUTRE4,
             self::CGV,
             self::CNI_BENEFICIAIRE_EFFECTIF_1,
             self::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
@@ -152,6 +148,10 @@ class attachment_type extends attachment_type_crud
             self::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3,
             self::SITUATION_COMPTABLE_INTERMEDIAIRE,
             self::DERNIERS_COMPTES_CONSOLIDES,
+            self::AUTRE1,
+            self::AUTRE2,
+            self::AUTRE3,
+            self::AUTRE4
         );
 
         return $this->getAllTypes($aTypes);
@@ -170,13 +170,13 @@ class attachment_type extends attachment_type_crud
             self::DELEGATION_POUVOIR,
             self::KBIS,
             self::JUSTIFICATIF_FISCAL,
-            self::AUTRE1,
-            self::AUTRE2,
-            self::AUTRE3,
             self::DISPENSE_PRELEVEMENT_2014,
             self::DISPENSE_PRELEVEMENT_2015,
             self::DISPENSE_PRELEVEMENT_2016,
             self::DISPENSE_PRELEVEMENT_2017,
+            self::AUTRE1,
+            self::AUTRE2,
+            self::AUTRE3
         );
 
         return $this->getAllTypes($aTypes);
@@ -184,7 +184,7 @@ class attachment_type extends attachment_type_crud
 
     private function getAllTypes($aTypes)
     {
-        $sql = 'SELECT * FROM `attachment_type` ORDER BY `label`  DESC';
+        $sql = 'SELECT * FROM attachment_type ORDER BY FIELD(id, ' . implode(', ', $aTypes) . ')';
         $resultat = $this->bdd->query($sql);
         $result   = array();
         while ($record = $this->bdd->fetch_assoc($resultat)) {
