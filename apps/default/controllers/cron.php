@@ -8161,6 +8161,9 @@ class cronController extends bootstrap
                 $sStartDateField = $iStatus === \projects_status::EN_ATTENTE_PIECES ? 'psh.added' : 'p.added';
 
                 foreach ($aIntervals as $iReminderIndex => $iDaysInterval) {
+                    if ($iStatus === \projects_status::EN_ATTENTE_PIECES && $iReminderIndex === 0) {
+                        ++$iReminderIndex;
+                    }
                     $aProjects = $this->projects->getReminders($iStatus, $iDaysInterval, ++$iReminderIndex, $sStartDateField);
 
                     foreach ($aProjects as $iProjectId) {
@@ -8195,6 +8198,7 @@ class cronController extends bootstrap
                                 $aRelacements['raison_sociale']          = $this->companies->name;
                                 $aRelacements['prenom']                  = $this->clients->prenom;
                                 $aRelacements['montant']                 = $this->projects->amount;
+                                $aRelacements['delai_demande']           = $iDaysInterval;
                                 $aRelacements['lien_reprise_dossier']    = $this->furl . '/depot_de_dossier/reprise/' . $this->projects->hash;
                                 $aRelacements['lien_stop_relance']       = $this->furl . '/depot_de_dossier/emails/' . $this->projects->hash;
                                 $aRelacements['date_demande']            = strftime('%d %B %Y', $oSubmissionDate->getTimestamp());
@@ -8216,15 +8220,15 @@ class cronController extends bootstrap
                                     $this->email->addRecipient($sRecipientEmail);
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 }
+                            }
 
-                                /**
-                                 * When project is pending documents, abort status is not automatic and must be set manually in BO
-                                 */
-                                if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::EN_ATTENTE_PIECES) {
-                                    $this->projects_status_history->addStatus(-1, \projects_status::ABANDON, $iProjectId, $iReminderIndex);
-                                } else {
-                                    $this->projects_status_history->addStatus(-1, $iStatus, $iProjectId, $iReminderIndex);
-                                }
+                            /**
+                             * When project is pending documents, abort status is not automatic and must be set manually in BO
+                             */
+                            if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::EN_ATTENTE_PIECES) {
+                                $this->projects_status_history->addStatus(-1, \projects_status::ABANDON, $iProjectId, $iReminderIndex);
+                            } else {
+                                $this->projects_status_history->addStatus(-1, $iStatus, $iProjectId, $iReminderIndex);
                             }
                         }
                     }
