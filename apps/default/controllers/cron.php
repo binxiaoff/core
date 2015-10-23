@@ -8122,9 +8122,10 @@ class cronController extends bootstrap
      */
     public function _relance_completude_emprunteurs()
     {
-        $this->prescripteurs           = $this->loadData('prescripteurs');
-        $this->projects_status         = $this->loadData('projects_status');
-        $this->projects_status_history = $this->loadData('projects_status_history');
+        $this->prescripteurs                = $this->loadData('prescripteurs');
+        $this->projects_status              = $this->loadData('projects_status');
+        $this->projects_status_history      = $this->loadData('projects_status_history');
+        $this->projects_last_status_history = $this->loadData('projects_last_status_history');
 
         $this->settings->get('Intervales relances emprunteurs', 'type');
         $aReminderIntervals = json_decode($this->settings->value, true);
@@ -8165,16 +8166,19 @@ class cronController extends bootstrap
                     foreach ($aProjects as $iProjectId) {
                         if ($this->mails_text->get('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, 'lang = "' . $this->language . '" AND type')) {
                             $this->projects->get($iProjectId, 'id_project');
+                            $this->companies->get($this->projects->id_company, 'id_company');
 
                             if ($this->projects->id_prescripteur > 0) {
                                 $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
                                 $this->clients->get($this->prescripteurs->id_client, 'id_client');
                             }  else {
-                                $this->companies->get($this->projects->id_company, 'id_company');
                                 $this->clients->get($this->companies->id_client_owner, 'id_client');
                             }
 
                             if (false === empty($this->clients->email)) {
+                                $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
+                                $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
+
                                 $oSubmissionDate = new \DateTime($this->projects->added);
 
                                 // @todo arbitrary default value
@@ -8187,6 +8191,8 @@ class cronController extends bootstrap
                                     }
                                 }
 
+                                $aRelacements['liste_pieces']            = $this->projects_status_history->content;
+                                $aRelacements['raison_sociale']          = $this->companies->name;
                                 $aRelacements['prenom']                  = $this->clients->prenom;
                                 $aRelacements['montant']                 = $this->projects->amount;
                                 $aRelacements['lien_reprise_dossier']    = $this->furl . '/depot_de_dossier/reprise/' . $this->projects->hash;
@@ -8195,7 +8201,7 @@ class cronController extends bootstrap
                                 $aRelacements['pourcentage_financement'] = $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100);
                                 $aRelacements['sujet']                   = $this->mails_text->subject;
 
-                                $sRecipientEmail  = preg_replace('/^(.+)-[0-9]+$/', '$1', $this->clients->email);
+                                $sRecipientEmail  = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($this->clients->email));
                                 $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aRelacements);
 
                                 $this->email = $this->loadLib('email');

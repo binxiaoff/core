@@ -3766,7 +3766,7 @@ class dossiersController extends bootstrap
         }
         $this->iClientId = $iClientId;
         $this->iProjectId = $oProjects->id_project;
-        $this->mails_text->get('completude-piece-project', 'lang = "' . $this->language . '" AND type');
+        $this->mails_text->get('depot-dossier-relance-status-20-1', 'lang = "' . $this->language . '" AND type');
     }
 
     public function _completude_preview_iframe()
@@ -3799,15 +3799,11 @@ class dossiersController extends bootstrap
             return;
         }
 
+        $this->mails_text->get('depot-dossier-relance-status-20-1', 'lang = "' . $this->language . '" AND type');
 
-        // Variables du mailing
         $varMail = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
-
-        // Construction du tableau avec les balises EMV
+        $varMail['sujet'] = $this->mails_text->subject;
         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-        // Recuperation du modele de mail
-        $this->mails_text->get('completude-piece-project', 'lang = "' . $this->language . '" AND type');
 
         echo strtr($this->mails_text->content, $tabVars);
     }
@@ -3845,41 +3841,36 @@ class dossiersController extends bootstrap
                 return;
             }
 
-            // Variables du mailing
-            $varMail = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
+            $this->mails_text->get('depot-dossier-relance-status-20-1', 'lang = "' . $this->language . '" AND type');
 
-            // Construction du tableau avec les balises EMV
+            $varMail = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
+            $varMail['sujet'] = $this->mails_text->subject;
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-            // Recuperation du modele de mail
-            $this->mails_text->get('completude-piece-project', 'lang = "' . $this->language . '" AND type');
-
-            // Attribution des données aux variables
             $sujetMail = utf8_decode(strtr($this->mails_text->subject, $tabVars));
             $texteMail = strtr($this->mails_text->content, $tabVars);
             $exp_name  = strtr($this->mails_text->exp_name, $tabVars);
 
-            // Envoi du mail
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->setSubject(stripslashes($sujetMail));
             $this->email->setHTMLBody(stripslashes($texteMail));
 
-            if ($this->Config['env'] == 'prod') {
-                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $oClients->email, $tabFiler);
-                // Injection du mail NMP dans la queue
+            $sRecipientEmail  = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($oClients->email));
+
+            if ($this->Config['env'] === 'prod') {
+                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipientEmail, $tabFiler);
                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
             } else {
-                $this->email->addRecipient(trim($oClients->email));
+                $this->email->addRecipient($sRecipientEmail);
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
 
-            $oProjects_status_history = $this->loadData('projects_status_history');
             $this->loadData('projects_status');
-            $oProjects_status_history->addStatus($_SESSION['user']['id_user'], projects_status::EN_ATTENTE_PIECES, $oProjects->id_project, 0, $varMail['attachement_list']);
+            $oProjects_status_history = $this->loadData('projects_status_history');
+            $oProjects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::EN_ATTENTE_PIECES, $oProjects->id_project, 1, $varMail['liste_pieces']);
 
-            // On vide la session
-            unset($_SESSION['content_email_completude'][$this->clients->id_client]);
+            unset($_SESSION['project_submission_files_list'][$oProjects->id_project]);
 
             echo 'Votre email a été envoyé';
         }
@@ -3887,35 +3878,31 @@ class dossiersController extends bootstrap
 
     private function getEmailVarCompletude($oProjects, $oClients, $oCompanies)
     {
-        // Variables du mailing
-        $surl = $this->surl;
-        $url  = $this->lurl;
-
-        // FB
         $this->settings->get('Facebook', 'type');
         $lien_fb = $this->settings->value;
 
-        // Twitter
         $this->settings->get('Twitter', 'type');
         $lien_tw = $this->settings->value;
 
-        $sContent = isset($_SESSION['content_project_completude'][$oProjects->id_project]) ? $_SESSION['content_project_completude'][$oProjects->id_project] : '';
+        $this->settings->get('Adresse emprunteur', 'type');
+        $sBorrowerEmail = $this->settings->value;
 
-        // Variables du mailing
-        $varMail = array(
-            'furl'                      => $this->furl,
-            'surl'                      => $surl,
-            'url'                       => $url,
-            'prenom'                    => $oClients->prenom,
-            'company_name'              => $oCompanies->name,
-            'link_upload_attachment'    => $this->furl . '/depot_de_dossier/fichiers/' . $oProjects->hash,
-            'attachement_list'          => $sContent,
-            'lien_fb'                   => $lien_fb,
-            'lien_tw'                   => $lien_tw,
-            'lien_stop_relance'         => $this->furl . '/depot_de_dossier/emails/' . $oProjects->hash,
+        $this->settings->get('Téléphone emprunteur', 'type');
+        $sBorrowerPhoneNumber = $this->settings->value;
+
+        return array(
+            'adresse_emprunteur'   => $sBorrowerEmail,
+            'telephone_emprunteur' => $sBorrowerPhoneNumber,
+            'furl'                 => $this->furl,
+            'surl'                 => $this->surl,
+            'prenom'               => $oClients->prenom,
+            'raison_sociale'       => $oCompanies->name,
+            'lien_reprise_dossier' => $this->furl . '/depot_de_dossier/fichiers/' . $oProjects->hash,
+            'liste_pieces'         => isset($_SESSION['project_submission_files_list'][$oProjects->id_project]) ? $_SESSION['project_submission_files_list'][$oProjects->id_project] : '',
+            'lien_fb'              => $lien_fb,
+            'lien_tw'              => $lien_tw,
+            'lien_stop_relance'    => $this->furl . '/depot_de_dossier/emails/' . $oProjects->hash,
         );
-
-        return $varMail;
     }
 
     /**
