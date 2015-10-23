@@ -10,7 +10,7 @@
                 <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
                 <entry key="sfdc.password" value="07244af39be84a439c328e212b44e2fbb41f0358cd162716757bca5b9b22fc4f7d7ca470edb66c09"/>
-                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"></entry>
+                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"/>
                 <entry key="sfdc.timeoutSecs" value="540"/>
                 <entry key="sfdc.loadBatchSize" value="200"/>
                 <entry key="sfdc.entity" value="Contact"/>
@@ -35,7 +35,7 @@
                 <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
                 <entry key="sfdc.password" value="07244af39be84a439c328e212b44e2fbb41f0358cd162716757bca5b9b22fc4f7d7ca470edb66c09"/>
-                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"></entry>
+                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"/>
                 <entry key="sfdc.timeoutSecs" value="540"/>
                 <entry key="sfdc.loadBatchSize" value="200"/>
                 <entry key="sfdc.entity" value="Account"/>
@@ -60,7 +60,7 @@
                 <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
                 <entry key="sfdc.password" value="07244af39be84a439c328e212b44e2fbb41f0358cd162716757bca5b9b22fc4f7d7ca470edb66c09"/>
-                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"></entry>
+                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"/>
                 <entry key="sfdc.timeoutSecs" value="540"/>
                 <entry key="sfdc.loadBatchSize" value="200"/>
                 <entry key="sfdc.entity" value="Contact"/>
@@ -85,7 +85,7 @@
                 <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
                 <entry key="sfdc.password" value="07244af39be84a439c328e212b44e2fbb41f0358cd162716757bca5b9b22fc4f7d7ca470edb66c09"/>
-                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"></entry>
+                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"/>
                 <entry key="sfdc.timeoutSecs" value="540"/>
                 <entry key="sfdc.loadBatchSize" value="200"/>
                 <entry key="sfdc.entity" value="Dossier__c"/>
