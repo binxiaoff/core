@@ -3698,7 +3698,7 @@ class dossiersController extends bootstrap
         // Envoi du mail
         $oEmail = $this->loadLib('email');
         $oEmail->setFrom($oEmailText->exp_email, $exp_name);
-        $oEmail->setSubject(stripslashes($sujetMail));
+        $oEmail->setSubject('=?UTF-8?B?'.base64_encode(html_entity_decode($sujetMail)).'?=');
         $oEmail->setHTMLBody(stripslashes($texteMail));
 
         if (empty($oClients->email)) {

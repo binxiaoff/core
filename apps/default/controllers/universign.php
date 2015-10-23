@@ -293,44 +293,30 @@ class universignController extends bootstrap
 
                     // Adresse notifications
                     if (false === ($oProjects->id_commercial) && $oUsers->get($oProjects->id_commercial, 'id_user')) {
-                        $destinaire = $oUsers->email;
+                        $sRecipient= $oUsers->email;
                     } else {
                         $this->settings->get('Adresse notification cgv emprunteur signe', 'type');
-                        $destinaire = $this->settings->value;
+                        $sRecipient = $this->settings->value;
                     }
 
                     // Recuperation du modele de mail
                     $this->mails_text->get('notification-cgv-projet-signe', 'lang = "' . $this->language . '" AND type');
 
                     // Variables du mailing
-                    $surl = $this->surl;
-                    $url = $this->lurl;
-                    $id_projet = $oProjects->id_project;
-                    $nomProjet = $oProjects->title_bo;
-                    $nomCompany = $oCompanies->name;
-                    $sCgvBorrowerLink = $this->lurl.$oProjectCgv->getUrlPath();
+                    $aReplacements = array(
+                        '[SURL]'            => $this->surl,
+                        '[ID_PROJET]'       => $oProjects->id_project,
+                        '[COMPANY_NAME]'    => $oCompanies->name,
+                        '[PROJET_NAME]'     => $oProjects->title_bo,
+                        '[CGV_BORROWER]'    => $this->surl
+                    );
 
-                    // Attribution des données aux variables
-                    $sujetMail = htmlentities($this->mails_text->subject);
-                    eval("\$sujetMail = \"$sujetMail\";");
-
-                    $texteMail = $this->mails_text->content;
-                    eval("\$texteMail = \"$texteMail\";");
-
-                    $exp_name = $this->mails_text->exp_name;
-                    eval("\$exp_name = \"$exp_name\";");
-
-                    // Nettoyage de printemps
-                    $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                    $exp_name = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                    // Envoi du mail
                     $this->email = $this->loadLib('email', array());
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->addRecipient(trim($destinaire));
+                    $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
+                    $this->email->setSubject('=?UTF-8?B?'.base64_encode(html_entity_decode($this->mails_text->subject)).'?=');
+                    $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->mails_text->content));
+                    $this->email->addRecipient(trim($sRecipient));
 
-                    $this->email->setSubject('=?UTF-8?B?'.base64_encode(html_entity_decode($sujetMail)).'?=');
-                    $this->email->setHTMLBody(utf8_decode($texteMail));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     $this->oLogger->addRecord(ULogger::INFO, 'CGV emprunteur notification mail sent', array($oProjectCgv->id_project));
                 } else {
