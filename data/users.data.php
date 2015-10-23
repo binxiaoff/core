@@ -188,8 +188,8 @@ class users extends users_crud
 	public function login($email,$pass)
 	{
 		$email = $this->bdd->escape_string($email);
-		
-		$sql = 'SELECT * FROM '.$this->userTable.' WHERE '.$this->userMail.' = "'.$email.'" AND '.$this->userPass.' = "'.md5($pass).'"';
+
+		$sql = 'SELECT * FROM '.$this->userTable.' WHERE '.$this->userMail.' = "'.$email.'" AND '.$this->userPass.' = "'.md5($pass) . '" AND status = 1';
 		$res = $this->bdd->query($sql);
 		
 		if($this->bdd->num_rows($res) == 1)

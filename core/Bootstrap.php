@@ -7,6 +7,8 @@ use Unilend\librairies\ULogger;
 require_once __DIR__ . '/bdd.class.php';
 require_once __DIR__ . '/../data/crud/settings.crud.php';
 require_once __DIR__ . '/../data/settings.data.php';
+require_once __DIR__ . '/../data/crud/lenders_accounts.crud.php';
+require_once __DIR__ . '/../data/lenders_accounts.data.php';
 
 class Bootstrap
 {
@@ -31,6 +33,11 @@ class Bootstrap
     private $oSettings;
 
     /**
+     * @var lenders_accounts
+     */
+    private $oLendersAccount;
+
+    /**
      * @array $aConfig file config in root path
      */
     public static $aConfig;
@@ -42,7 +49,7 @@ class Bootstrap
     public static function getInstance($aConfig)
     {
         if (true === is_null(self::$oInstance)) {
-            self::$oInstance = new Bootstrap();
+            self::$oInstance = new self();
             self::$oInstance->setAssert();
             self::$oInstance->setConfig($aConfig);
         }
@@ -92,6 +99,20 @@ class Bootstrap
         assert('is_object($this->oSettings); //Settings is not an object');
 
         return $this->oSettings;
+    }
+
+    public function setLenders()
+    {
+        $this->oLenders = new \lenders_accounts($this->oDatabase);
+
+        return $this;
+    }
+
+    public function getLenders()
+    {
+        assert('is_object($this->oLenders); //Settings is not an object');
+
+        return $this->oLenders;
     }
 
     /**

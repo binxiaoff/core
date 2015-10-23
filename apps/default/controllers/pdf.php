@@ -157,6 +157,8 @@ class pdfController extends bootstrap
                 $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/styleClaims.css');
                 break;
             case 'operations':
+                $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/style.css');
+                $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/style-edit.css');
                 $this->oSnapPdf->setOption('user-style-sheet', $this->staticPath . 'styles/default/pdf/styleOperations.css');
                 break;
             case 'dec_pret':
@@ -381,6 +383,7 @@ class pdfController extends bootstrap
                 //Deleting authority, not necessary (Double authority)
                 if (is_array($aProjectPouvoir) && 0 < count($aProjectPouvoir)) {
                     foreach ($aProjectPouvoir as $aProjectPouvoirToDelete) {
+                        $this->oLogger->addRecord(ULogger::INFO, 'Deleting Pouvoir id : ' . $aProjectPouvoirToDelete['id_pouvoir'], array(__FILE__ . ' at line ' . __LINE__));
                         $this->oProjectsPouvoir->delete($aProjectPouvoirToDelete['id_pouvoir'], 'id_pouvoir'); // plus de doublons comme ca !
                     }
                 }
@@ -1000,17 +1003,12 @@ class pdfController extends bootstrap
 
             // on parcourt les mois
             for ($ordre = 1; $ordre <= $projects->period; $ordre++) {
-
-                // on prend le nombre de jours dans le mois au lieu du mois
-                $nbjourstemp = mktime(0, 0, 0, date("m") + $ordre, 1, date("Y"));
-                $nbjoursMois += date('t', $nbjourstemp);
-
                 // Date d'echeance preteur
-                $date_echeance = $this->dates->dateAddMoisJours($dateRemb, 0, $nb_jours + $nbjoursMois);
+                $date_echeance = $this->dates->dateAddMoisJoursV3($dateRemb, $ordre);
                 $date_echeance = date('Y-m-d H:i', $date_echeance) . ':00';
 
                 // Date d'echeance emprunteur
-                $date_echeance_emprunteur = $this->dates->dateAddMoisJours($dateRemb, 0, $nbjoursMois);
+                $date_echeance_emprunteur = $this->dates->dateAddMoisJoursV3($dateRemb, $ordre);
 
 
                 // on retire 6 jours ouvrés
@@ -1169,7 +1167,6 @@ class pdfController extends bootstrap
     private function GenerateOperationsHtml($sFiltreOp)
     {
         if (isset($sFiltreOp)) {
-
             $this->wallets_lines    = $this->loadData('wallets_lines');
             $this->bids             = $this->loadData('bids');
             $this->oLoans           = $this->loadData('loans');

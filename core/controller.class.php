@@ -26,17 +26,19 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\librairies\Cache;
+
 class Controller
 {
     var $Command;
     var $Config;
     var $App;
-    var $autoFireHead = true;
+    var $autoFireHead   = true;
     var $autoFireHeader = true;
-    var $autoFireView = true;
+    var $autoFireView   = true;
     var $autoFireFooter = true;
-    var $autoFireDebug = true;
-    var $catchAll = false;
+    var $autoFireDebug  = true;
+    var $catchAll       = false;
     var $bdd;
     var $js;
     var $css;
@@ -44,12 +46,17 @@ class Controller
     var $included_js;
     var $included_css;
 
+    public $current_template = '';
+
+    /**
+     * @var Cache
+     */
+    public $oCache;
+
     public function __construct(&$command, $config, $app)
     {
-        define('ENVIRONMENT', $config['env']);
-
-        $this->initVendor();
         $this->initUnilendAutoload();
+        $this->oCache = Cache::getInstance();
 
         //Variables de session pour la fenetre de debug
         unset($_SESSION['error']);
@@ -65,7 +72,7 @@ class Controller
         $this->bdd          = new bdd($this->Config['bdd_config'][$this->Config['env']], $this->Config['bdd_option'][$this->Config['env']]);
 
         // Initialisation des propriétés nécessaires au cache
-        $this->enableCache      = $this->Config['cache'][$this->Config['env']];
+        $this->enableCache      = false;
         $this->cacheDuration    = $this->Config['cacheDuration'][$this->Config['env']];
         $this->cacheCurrentPage = false;
 
@@ -217,23 +224,22 @@ class Controller
     //Gere l'affichage du corps de la page
     public function fireView($view = '')
     {
-        if ($view == '') {
+        if (empty($view) && ! empty($this->view)) {
             $view = $this->view;
         }
-        if ($view == '') {
-            $view = 'index';
-        }
 
-        if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php')) {
-            call_user_func(array(
-                &$this, '_error'
-            ), 'view not found : views/' . $this->Command->getControllerName() . '/' . $view . '.php');
-        } else {
-            if ($this->is_view_template && file_exists($this->path . 'apps/' . $this->App . '/controllers/templates/' . $view . '.php')) {
-                include($this->path . 'apps/' . $this->App . '/controllers/templates/' . $view . '.php');
+        if ($view != '') {
+            if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php')) {
+                call_user_func(array(
+                    &$this, '_error'
+                ), 'view not found : views/' . $this->Command->getControllerName() . '/' . $view . '.php');
+            } else {
+                if ($this->is_view_template && file_exists($this->path . 'apps/' . $this->App . '/controllers/templates/' . $view . '.php')) {
+                    include($this->path . 'apps/' . $this->App . '/controllers/templates/' . $view . '.php');
+                }
+
+                include($this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php');
             }
-
-            include($this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php');
         }
     }
 
@@ -255,12 +261,8 @@ class Controller
     //Gere l'affichage du pied de page
     public function fireFooter($footer = '', $morestats = '')
     {
-        if ($footer == '') {
-            $footer = $this->footer;
-        }
-        if ($footer == '') {
-            $footer = 'footer';
-        }
+        $footer = ('' == $footer && isset($this->footer)) ? $this->footer : 'footer';
+
         if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $footer . '.php')) {
             call_user_func(array(&$this, '_error'), 'footer not found : views/' . $footer . '.php');
         } else {
@@ -758,11 +760,6 @@ class Controller
         if ($this->enableCache) {
             $this->cacheCurrentPage = true;
         }
-    }
-
-    public function initVendor()
-    {
-        require_once __DIR__ . '/../vendor/autoload.php';
     }
 
     public function initUnilendAutoload()

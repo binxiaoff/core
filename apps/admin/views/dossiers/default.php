@@ -1,4 +1,5 @@
 <script>
+    var nbPages = <?= ceil($this->iCountProjects / $this->nb_lignes) ?>;
     $(document).ready(function(){
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
         $("#datepik_1").datepicker({showOn: 'both', buttonImage: '<?=$this->surl?>/images/admin/calendar.gif', buttonImageOnly: true,changeMonth: true,changeYear: true,yearRange: '<?=(date('Y')-10)?>:<?=(date('Y')+10)?>'});
@@ -16,10 +17,46 @@
         });
 
         $(".tablesorter").tablesorter({headers:{9:{sorter: false},5: { sorter:'digit' }}});
-        <?php if ($this->nb_lignes != '') { ?>
-            $(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});
-        <?php } ?>
+
+        $('#displayPager').html($('#pageActive').val()+'/'+nbPages);
+        $('#send_dossier').click(function(){
+            $('#nbLignePagination').val(0);
+            $('#pageActive').val(1);
+        });
     });
+
+    function paginationDossiers(directionPagination) {
+        var nbLignePagination = Math.round($('#nbLignePagination').val());
+        var pageActive = Math.round($('#pageActive').val());
+        var totalLignePagination = <?= $this->iCountProjects - $this->nb_lignes ?>;
+        switch(directionPagination) {
+            case 'first':
+                $('#nbLignePagination').val(0);
+                $('#pageActive').val(1);
+                break;
+            case 'prev':
+                if(nbLignePagination > <?= $this->nb_lignes ?>){
+                    nbLignePagination = nbLignePagination-<?= $this->nb_lignes ?> ;
+                    $('#pageActive').val(pageActive-1);
+                }
+                $('#nbLignePagination').val(nbLignePagination);
+                break;
+            case 'next':
+                nbLignePagination = nbLignePagination+<?= $this->nb_lignes ?>;
+                if(nbLignePagination <= totalLignePagination){
+                    $('#nbLignePagination').val(nbLignePagination);
+                    $('#pageActive').val(pageActive+1);
+                }
+                break;
+            case 'last':
+                nbLignePagination = totalLignePagination;
+                $('#nbLignePagination').val(nbLignePagination);
+                $('#pageActive').val(nbPages);
+                break;
+        }
+        $("#search_dossier").submit();
+    }
+
     <?php if (isset($_SESSION['freeow'])) { ?>
         $(document).ready(function(){
             var title, message, opts, container;
@@ -40,7 +77,7 @@
     <?php if (isset($_POST['form_search_client'])) { ?>
         <h1>Résultats de la recherche de dossiers <?=(count($this->lProjects)>0?'('.count($this->lProjects).')':'')?></h1>
     <?php } else { ?>
-        <h1>Liste des <?=count($this->lProjects)?> derniers dossiers</h1>
+        <h1>Liste des <?=(isset($this->iCountProjects)) ? $this->iCountProjects : 0?> dossiers</h1>
     <?php } ?>
     <div class="btnDroite"><a href="<?=$this->lurl?>/dossiers/add/create" class="btn_link">Créer un dossier</a></div>
     <style>
@@ -52,11 +89,16 @@
             <fieldset>
                 <table class="formColor">
                     <tr>
-                        <td><label for="id">ID :</label><br /><input type="text" name="id" id="id" class="input_court" title="id" value="<?=$_POST['id']?>"/></td>
-                        <td><label for="siren">Siren :</label><br /><input type="text" name="siren" id="siren" class="input_moy" title="siren" value="<?=$_POST['siren']?>"/></td>
-                        <td><label for="siren">Raison sociale :</label><br /><input type="text" name="raison-sociale" id="raison-sociale" class="input_moy" title="Raison sociale" value="<?=$_POST['raison-sociale']?>"/></td>
-                        <td style="padding-top:23px;"><input type="text" name="date1" id="datepik_1" class="input_dp" value="<?=$_POST['date1']?>"/></td>
-                        <td style="padding-top:23px;"><input type="text" name="date2" id="datepik_2" class="input_dp" value="<?=$_POST['date2']?>"/></td>
+                        <td>
+                            <label for="id">ID :</label><br />
+                            <input type="text" name="id" id="id" class="input_court" title="id" value="<?=(isset($_POST['id'])) ? $_POST['id'] : ''?>"/>
+                            <input type="hidden" name="nbLignePagination" id="nbLignePagination" value="<?=(isset($_POST['nbLignePagination'])) ? $_POST['nbLignePagination'] : 0?>" />
+                            <input type="hidden" name="pageActive" id="pageActive" value="<?=(isset($_POST['pageActive'])) ? $_POST['pageActive'] : 1?>" />
+                        </td>
+                        <td><label for="siren">Siren :</label><br /><input type="text" name="siren" id="siren" class="input_moy" title="siren" value="<?=(isset($_POST['siren'])) ? $_POST['siren'] : ''?>"/></td>
+                        <td><label for="siren">Raison sociale :</label><br /><input type="text" name="raison-sociale" id="raison-sociale" class="input_moy" title="Raison sociale" value="<?=(isset($_POST['raison-sociale'])) ? $_POST['raison-sociale'] : ''?>"/></td>
+                        <td style="padding-top:23px;"><input type="text" name="date1" id="datepik_1" class="input_dp" value="<?=(isset($_POST['date1'])) ? $_POST['date1'] : ''?>"/></td>
+                        <td style="padding-top:23px;"><input type="text" name="date2" id="datepik_2" class="input_dp" value="<?=(isset($_POST['date2'])) ? $_POST['date2'] : ''?>"/></td>
                         <td style="padding-top:23px;">
                             <select name="montant" id="montant" class="select">
                                 <option value="0">Montant</option>
@@ -87,7 +129,7 @@
                             <select name="status" id="status" class="select">
                                 <option value="">Status</option>
                                 <?php  foreach ($this->lProjects_status as $s) { ?>
-                                    <option <?=(isset($_POST['status']) && $_POST['status'] == $s['status'] || $this->params[0] == $s['status']?'selected':'')?> value="<?=$s['status']?>"><?=$s['label']?></option>
+                                    <option <?=(isset($_POST['status']) && $_POST['status'] == $s['status'] || isset($this->params[0]) && $this->params[0] == $s['status']?'selected':'')?> value="<?=$s['status']?>"><?=$s['label']?></option>
                                 <?php } ?>
                             </select>
                         </td>
@@ -111,7 +153,7 @@
             </fieldset>
         </form>
     </div>
-    <?php if (count($this->lProjects) > 0) { ?>
+    <?php if (isset($this->lProjects) && count($this->lProjects) > 0) { ?>
         <table class="tablesorter">
             <thead>
                 <tr>
@@ -140,7 +182,7 @@
                     <td><?=$this->dates->formatDate($p['added'],'d/m/Y')?></td>
                     <td><?=$this->dates->formatDate($p['updated'],'d/m/Y')?></td>
                     <td><?=number_format($p['amount'],2,',',' ')?> €</td>
-                    <td><?=($p['period'] == 1000000?'Je ne sais pas':$p['period'].' mois')?></td>
+                    <td><?=($p['period'] == 1000000 || $p['period'] == 0) ? 'Je ne sais pas' : $p['period'].' mois'?></td>
                     <td><?=$p['label']?></td>
                     <td><?=$this->users->firstname?> <?=$this->users->name?></td>
                     <td align="center">
@@ -164,11 +206,11 @@
             <table>
                 <tr>
                     <td id="pager">
-                        <img src="<?=$this->surl?>/images/admin/first.png" alt="Première" class="first"/>
-                        <img src="<?=$this->surl?>/images/admin/prev.png" alt="Précédente" class="prev"/>
-                        <input type="text" class="pagedisplay" />
-                        <img src="<?=$this->surl?>/images/admin/next.png" alt="Suivante" class="next"/>
-                        <img src="<?=$this->surl?>/images/admin/last.png" alt="Dernière" class="last"/>
+                        <img src="<?=$this->surl?>/images/admin/first.png" alt="Première" class="first" onclick="paginationDossiers('first');"/>
+                        <img src="<?=$this->surl?>/images/admin/prev.png" alt="Précédente" class="prev" onclick="paginationDossiers('prev');"/>
+                        <span id="displayPager"></span>
+                        <img src="<?=$this->surl?>/images/admin/next.png" alt="Suivante" class="next" onclick="paginationDossiers('next');"/>
+                        <img src="<?=$this->surl?>/images/admin/last.png" alt="Dernière" class="last" onclick="paginationDossiers('last');"/>
                         <select class="pagesize">
                             <option value="<?=$this->nb_lignes?>" selected="selected"><?=$this->nb_lignes?></option>
                            </select>

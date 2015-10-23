@@ -116,10 +116,19 @@
                             <td><?=$l['risk']?></td>
                             <td><?=number_format($l['amount'], 2, ',', ' ')?> €</td>
                             <td><?=number_format($l['rate'], 2, ',', ' ')?> %</td>
+                             <?php
+                        if($l['project_status'] == projects_status::REMBOURSEMENT_ANTICIPE){
+                            ?>
+                                <td><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></td>
+                                <td colspan="3"><p>Remboursé intégralement le <?= $this->dates->formatDate($l['status_change'], 'd/m/Y')?></p></td>
+                            <?
+                        } else {?>
                             <td><?=$this->dates->formatDate($l['debut'],'d/m/Y')?></td>
                             <td><?=$this->dates->formatDate($l['next_echeance'],'d/m/Y')?></td>
                             <td><?=$this->dates->formatDate($l['fin'],'d/m/Y')?></td>
                             <td><?=number_format($l['mensuel'], 2, ',', ' ')?> €/mois</td>
+                        <?}
+                        ?>
                            <td>
                                <?
                                if($this->projects_status->status >=80)
@@ -146,10 +155,19 @@
                             <td><?=$l['risk']?></td>
                             <td><?=number_format($l['amount'], 2, ',', ' ')?> €</td>
                             <td><?=number_format($l['rate'], 2, ',', ' ')?> %</td>
+                            <?php
+                        if($l['project_status'] == projects_status::REMBOURSEMENT_ANTICIPE){
+                            ?>
+                                <td><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></td>
+                                <td colspan="3"><p>Remboursé intégralement le <?= $this->dates->formatDate($l['status_change'], 'd/m/Y')?></p></td>
+                            <?
+                        } else {?>
                             <td><?=$this->dates->formatDate($l['debut'],'d/m/Y')?></td>
                             <td><?=$this->dates->formatDate($l['next_echeance'],'d/m/Y')?></td>
                             <td><?=$this->dates->formatDate($l['fin'],'d/m/Y')?></td>
                             <td><?=number_format($l['mensuel'], 2, ',', ' ')?> €/mois</td>
+                        <?}
+                        ?>
                             <td>
                             </td>
                         </tr>

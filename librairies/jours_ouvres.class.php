@@ -27,12 +27,12 @@ class jours_ouvres
 		{
 			$year = intval(strftime('%Y'));
 		}
-	 
+
 		$easterDate = easter_date($year);
 		$easterDay = date('j', $easterDate);
 		$easterMonth = date('n', $easterDate);
 		$easterYear = date('Y', $easterDate);
-	 
+
 		$holidays = array(
 			// Jours feries fixes
 			mktime(0, 0, 0, 1, 1, $year),// 1er janvier
@@ -43,16 +43,16 @@ class jours_ouvres
 			mktime(0, 0, 0, 11, 1, $year),// Toussaint
 			mktime(0, 0, 0, 11, 11, $year),// Armistice
 			mktime(0, 0, 0, 12, 25, $year),// Noel
-	 
+
 			// Jour feries qui dependent de paques
 			mktime(0, 0, 0, $easterMonth, $easterDay - 2, $easterYear),// vendredi saint (pour 3 departements)
 			mktime(0, 0, 0, $easterMonth, $easterDay + 1, $easterYear),// Lundi de paques
 			mktime(0, 0, 0, $easterMonth, $easterDay + 39, $easterYear),// Ascension
 			mktime(0, 0, 0, $easterMonth, $easterDay + 50, $easterYear), // Pentecote
 		);
-	 
+
 		sort($holidays);
-	 
+
 		return $holidays;
 		/* Sortie :
 		Array
@@ -71,45 +71,46 @@ class jours_ouvres
 		)
 		*/
 	}
-	
+
 	//Tester si une date est un jour férié ou un week end
-	// retoune un boolean 
+	// retoune un boolean
 	function isHoliday($timestamp)
 	{
 		$day = date('D',$timestamp);
-		
+
 		$year = date('Y',$timestamp);
-		
+
 		$lFeries = $this->getHolidays($year);
 		$weekend = array('Sat','Sun');
-		
+
 		$result = true;
-		
+
 		// jour ferié / weekend
 		if(in_array($timestamp,$lFeries) || in_array($day,$weekend))
 		{
 			$result = false;
 		}
-		
+
 		return $result;
-		
+
 	}
-	
+
 	// FONCTIONNE // (utilisé)
 	// $timestamp = date de debut
 	// $nbJours = nb jours ouvrés voulu
 	function display_jours_ouvres($timestamp,$nbJours=6){
-		
+
 		//$timestamp = strtotime('2014-05-12');
 		//echo date('d/m/Y',$timestamp);
 		//echo '<br> -------------- <br>';
-		
+
 		$nbOuvre = 0;
+		$nbNonOuvre = 0;
 		// tant qu'on a pas le bon nombre de jours ouvrés on continue
 		while($nbOuvre < $nbJours){
-			
+
 			$diff = ($nbJours - $nbOuvre);
-			
+
 			for($i=1;$i<=$diff;$i++){
 				$date = mktime(0, 0, 0, date('m',$timestamp), date('d',$timestamp) - $i, date('Y',$timestamp));
 
@@ -118,8 +119,8 @@ class jours_ouvres
 			}
 			$timestamp = $date;
 		}
-		
+
 		return $date;
 	}
-	
+
 }

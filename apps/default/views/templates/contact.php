@@ -9,7 +9,7 @@
 					<div class="contact-form">
 						<form action="" method="post">
 							<p class="system-message message-positive">
-								<?=$this->confirmation?>
+								<?=(isset($this->confirmation)) ? $this->confirmation : ''?>
 							</p><!-- /.system-message -->
 
 							<div class="row">
@@ -29,13 +29,13 @@
 							</div><!-- /.row -->
 
 							<div class="row">
-                                    <input type="text" title="<?=$this->lng['contact']['nom']?>" value="<?=($this->demande_contact->nom != false?$this->demande_contact->nom:$this->lng['contact']['nom'])?>" id="nom" name="nom" class="field field-small required <?=($this->error_nom == 'ok'?'LV_valid_field':($this->error_nom == 'nok'?'LV_invalid_field':''))?>" data-validators="Presence">
-                                    <input type="text" title="<?=$this->lng['contact']['prenom']?>" value="<?=($this->demande_contact->prenom != false?$this->demande_contact->prenom:$this->lng['contact']['prenom'])?>" name="prenom" id="prenom" class="field field-small required <?=($this->error_prenom == 'ok'?'LV_valid_field':($this->error_prenom == 'nok'?'LV_invalid_field':''))?>" data-validators="Presence">
+                                    <input type="text" title="<?=$this->lng['contact']['nom']?>" value="<?=($this->demande_contact->nom != false?$this->demande_contact->nom:$this->lng['contact']['nom'])?>" id="nom" name="nom" class="field field-small required <?=(isset($this->error_nom) && $this->error_nom == 'ok'?'LV_valid_field':(isset($this->error_nom) && $this->error_nom == 'nok'?'LV_invalid_field':''))?>" data-validators="Presence">
+                                    <input type="text" title="<?=$this->lng['contact']['prenom']?>" value="<?=($this->demande_contact->prenom != false?$this->demande_contact->prenom:$this->lng['contact']['prenom'])?>" name="prenom" id="prenom" class="field field-small required <?=(isset($this->error_prenom) && $this->error_prenom == 'ok'?'LV_valid_field':(isset($this->error_prenom) && $this->error_prenom == 'nok'?'LV_invalid_field':''))?>" data-validators="Presence">
 							</div><!-- /.row -->
 
 							<div class="row">
-                                    <input type="text" title="<?=$this->lng['contact']['email']?>" value="<?=($this->demande_contact->email != false?$this->demande_contact->email:$this->lng['contact']['email'])?>" name="email" id="email" class="field field-small required <?=($this->error_email == 'ok'?'LV_valid_field':($this->error_email == 'nok'?'LV_invalid_field':''))?>" data-validators="Email">
-									<input type="text" title="<?=$this->lng['contact']['telephone']?>" value="<?=($this->demande_contact->telephone != false?$this->demande_contact->telephone:$this->lng['contact']['telephone'])?>" name="telephone" id="phone" class="field field-small <?=($this->error_telephone == 'ok'?'LV_valid_field':($this->error_telephone == 'nok'?'LV_invalid_field':''))?>">
+                                    <input type="text" title="<?=$this->lng['contact']['email']?>" value="<?=($this->demande_contact->email != false?$this->demande_contact->email:$this->lng['contact']['email'])?>" name="email" id="email" class="field field-small required <?=(isset($this->error_email) && $this->error_email == 'ok'?'LV_valid_field':(isset($this->error_email) && $this->error_email == 'nok'?'LV_invalid_field':''))?>" data-validators="Email">
+									<input type="text" title="<?=$this->lng['contact']['telephone']?>" value="<?=($this->demande_contact->telephone != false?$this->demande_contact->telephone:$this->lng['contact']['telephone'])?>" name="telephone" id="phone" class="field field-small <?=(isset($this->error_telephone) && $this->error_telephone == 'ok'?'LV_valid_field':(isset($this->error_telephone) && $this->error_telephone == 'nok'?'LV_invalid_field':''))?>">
 							</div><!-- /.row -->
 
 							<div class="row">
@@ -43,14 +43,14 @@
 							</div><!-- /.row -->
 
 							<div class="row">
-								<textarea cols="30" rows="10" title="<?=$this->lng['contact']['message']?>" name="message" id="message" class="field field-extra-large required <?=($this->error_message == 'ok'?'LV_valid_field':($this->error_message == 'nok'?'LV_invalid_field':''))?>" data-validators="Presence"><?=($this->demande_contact->message != false?$this->demande_contact->message:$this->lng['contact']['message'])?></textarea>
+								<textarea cols="30" rows="10" title="<?=$this->lng['contact']['message']?>" name="message" id="message" class="field field-extra-large required <?=(isset($this->error_message) && $this->error_message == 'ok'?'LV_valid_field':(isset($this->error_message) && $this->error_message == 'nok'?'LV_invalid_field':''))?>" data-validators="Presence"><?=($this->demande_contact->message != false?$this->demande_contact->message:$this->lng['contact']['message'])?></textarea>
 							</div><!-- /.row -->
 
 							<div class="row row-captcha">
 								<div class="captcha-holder">
 									<img src="<?=$this->surl?>/images/default/securitecode.php" alt="captcha" />
 								</div><!-- /.captcha-holder -->
-								<input type="text" name="captcha" class="field required <?=($this->error_captcha == 'ok'?'LV_valid_field':($this->error_captcha == 'nok'?'LV_invalid_field':''))?>" id="captcha" data-validators="Presence" value="<?=$this->lng['contact']['captcha']?>" title="<?=$this->lng['contact']['captcha']?>">
+								<input type="text" name="captcha" class="field required <?=(isset($this->error_captcha) && $this->error_captcha == 'ok'?'LV_valid_field':(isset($this->error_captcha) && $this->error_captcha == 'nok'?'LV_invalid_field':''))?>" id="captcha" data-validators="Presence" value="<?=$this->lng['contact']['captcha']?>" title="<?=$this->lng['contact']['captcha']?>">
 							</div><!-- /.row row-captcha -->
 
 							<div class="form-foot">

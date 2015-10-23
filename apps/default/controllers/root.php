@@ -109,12 +109,45 @@ class rootController extends bootstrap
             }
 
             // Recuperation du contenu de la page
-            $contenu = $this->tree_elements->select('id_tree = "' . $this->tree->id_tree . '" AND id_langue = "' . $this->language . '"');
-            foreach ($contenu as $elt) {
-                $this->elements->get($elt['id_element']);
-                $this->content[$this->elements->slug]    = $elt['value'];
-                $this->complement[$this->elements->slug] = $elt['complement'];
+            $sKey      = $this->oCache->makeKey('Home_Tree_Childs_Elements', $this->tree->id_tree, $this->language);
+            $aElements = $this->oCache->get($sKey);
+            if (false === $aElements) {
+                $this->content          = array();
+                $this->complement       = array();
+                $this->childsContent    = array();
+                $this->childsComplement = array();
+
+                foreach ($this->tree_elements->select('id_tree = "' . $this->tree->id_tree . '" AND id_langue = "' . $this->language . '"') as $elt) {
+                    $this->elements->get($elt['id_element']);
+                    $this->content[$this->elements->slug]    = $elt['value'];
+                    $this->complement[$this->elements->slug] = $elt['complement'];
+                }
+
+                foreach ($this->tree->select('id_parent = "' . $this->tree->id_tree . '" AND status = 1 AND id_langue = "' . $this->language . '"', 'ordre ASC') as $child) {
+                    $contenu = $this->tree_elements->select('id_tree = "' . $child['id_tree'] . '" AND id_langue = "' . $this->language . '"');
+
+                    foreach ($contenu as $elt) {
+                        $this->elements->get($elt['id_element']);
+                        $this->childsContent[$child['id_tree']][$this->elements->slug]    = $elt['value'];
+                        $this->childsComplement[$child['id_tree']][$this->elements->slug] = $elt['complement'];
+                    }
+                }
+
+                $aElements = array(
+                    'content'          => $this->content,
+                    'complement'       => $this->complement,
+                    'childsContent'    => $this->childsContent,
+                    'childsComplement' => $this->childsComplement
+                );
+
+
+                $this->oCache->set($sKey, $aElements);
             }
+
+            $this->content          = $aElements['content'];
+            $this->complement       = $aElements['complement'];
+            $this->childsContent    = $aElements['childsContent'];
+            $this->childsComplement = $aElements['childsComplement'];
 
             // Recuperation du contenu de la page dans la previsualisation de la page
             if (isset($_POST['preview']) && $_POST['preview'] == md5($this->url . '/' . $this->tree->slug)) {
@@ -125,34 +158,34 @@ class rootController extends bootstrap
             }
 
             // Recuperation des positions des blocs
-            $this->lBlocsPosition = $this->bdd->getEnum('blocs_templates', 'position');
-
-            // Recuperation des blocs pour chaque position
-            foreach ($this->lBlocsPosition as $pos) {
-                $this->lBlocs[$pos] = $this->blocs_templates->selectBlocs('position = "' . $pos . '" AND id_template = ' . $this->tree->id_template, 'ordre ASC');
-
-                // Recuperation du contenu de chaque bloc
-                foreach ($this->lBlocs[$pos] as $bloc) {
-                    $lElements = $this->blocs_elements->select('id_bloc = ' . $bloc['id_bloc'] . ' AND id_langue = "' . $this->language . '"');
-                    foreach ($lElements as $b_elt) {
-                        $this->elements->get($b_elt['id_element']);
-                        $this->bloc_content[$this->elements->slug]    = $b_elt['value'];
-                        $this->bloc_complement[$this->elements->slug] = $b_elt['complement'];
+            $sKey      = $this->oCache->makeKey('Home_Blocs_Elements', $this->tree->id_template, $this->language);
+            $aElements = $this->oCache->get($sKey);
+            if (false === $aElements) {
+                $this->bloc_content    = array();
+                $this->bloc_complement = array();
+                // Recuperation des blocs pour chaque position
+                foreach ($this->bdd->getEnum('blocs_templates', 'position') as $pos) {
+                    // Recuperation du contenu de chaque bloc
+                    foreach ($this->blocs_templates->selectBlocs('position = "' . $pos . '" AND id_template = ' . $this->tree->id_template, 'ordre ASC') as $bloc) {
+                        $lElements = $this->blocs_elements->select('id_bloc = ' . $bloc['id_bloc'] . ' AND id_langue = "' . $this->language . '"');
+                        foreach ($lElements as $b_elt) {
+                            $this->elements->get($b_elt['id_element']);
+                            $this->bloc_content[$this->elements->slug]    = $b_elt['value'];
+                            $this->bloc_complement[$this->elements->slug] = $b_elt['complement'];
+                        }
                     }
                 }
+
+                $aElements = array(
+                    'bloc_content'    => $this->bloc_content,
+                    'bloc_complement' => $this->bloc_complement
+                );
+
+                $this->oCache->set($sKey, $aElements, \Unilend\librairies\Cache::MEDIUM_TIME);
             }
 
-            // Recuperation du contenu des enfants
-            $this->childs = $this->tree->select('id_parent = "' . $this->tree->id_tree . '" AND status = 1 AND id_langue = "' . $this->language . '"', 'ordre ASC');
-            foreach ($this->childs as $child) {
-                $contenu = $this->tree_elements->select('id_tree = "' . $child['id_tree'] . '" AND id_langue = "' . $this->language . '"');
-
-                foreach ($contenu as $elt) {
-                    $this->elements->get($elt['id_element']);
-                    $this->childsContent[$child['id_tree']][$this->elements->slug]    = $elt['value'];
-                    $this->childsComplement[$child['id_tree']][$this->elements->slug] = $elt['complement'];
-                }
-            }
+            $this->bloc_content    = $aElements['bloc_content'];
+            $this->bloc_complement = $aElements['bloc_complement'];
 
             // Creation du breadcrumb
             $this->breadCrumb   = $this->tree->getBreadCrumb($this->tree->id_tree, $this->language);
@@ -232,6 +265,15 @@ class rootController extends bootstrap
             // FIN TEMPLATE LESXPRESS Votre argent //
             ////////////////////////////
 
+            $this->ordreProject = 1;
+
+            $_SESSION['ordreProject'] = $this->ordreProject;
+
+            $aElementsProjects = $this->projects->getProjectsStatusAndCount($this->tabProjectDisplay, $this->tabOrdreProject[$this->ordreProject], 0, 10);
+
+            $this->lProjetsFunding = $aElementsProjects['lProjectsFunding'];
+            $this->nbProjects      = $aElementsProjects['nbProjects'];
+
             ////////////////////////////
             // DEBUT TEMPLATE PROJETS //
             ////////////////////////////
@@ -261,28 +303,14 @@ class rootController extends bootstrap
                 $this->triPartxInt = $this->settings->value;
                 $this->triPartxInt = explode(';', $this->triPartxInt);
 
-                // page projet tri
-                // 1 : terminé bientot
-                // 2 : nouveauté
-                //$this->tabOrdreProject[....] <--- dans le bootstrap pour etre accessible partout (page default et ajax)
+                $this->type = 0;
 
-                $this->ordreProject = 1;
-                $this->type         = 0;
-
-                $_SESSION['ordreProject'] = $this->ordreProject;
-
-                // Liste des projets en funding
-                $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
-
-                // Nb projets en funding. Ajout du statut 75 (prêts refusés) au comptage, demande nicolas d'Aout 2015
-                $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ',75', ' AND p.status = 0 AND p.display = 0');
 
                 // on signal que c'est une page du fo
                 $this->page              = 'projets_fo';
                 $_SESSION['page_projet'] = $this->page;
 
                 // restriction pour capital
-
                 if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr'
                     || $this->lurl == 'http://partenaire.unilend.challenges.fr'
                     || $this->lurl == 'http://financementparticipatifpme.lefigaro.fr'
@@ -590,7 +618,8 @@ class rootController extends bootstrap
                         $this->email = $this->loadLib('email', array());
                         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                         $this->email->addRecipient(trim($destinataire));
-                        //$this->email->addBCCRecipient('k1@david.equinoa.net');
+                        $this->email->setReplyTo(utf8_decode($this->demande_contact->email),
+                            utf8_decode($this->demande_contact->nom) . ' ' . utf8_decode($this->demande_contact->prenom));
 
                         $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
                         $this->email->setHTMLBody($texteMail);
@@ -639,13 +668,6 @@ class rootController extends bootstrap
                 // Heure fin periode funding
                 $this->settings->get('Heure fin periode funding', 'type');
                 $this->heureFinFunding = $this->settings->value;
-
-                $this->ordreProject = 1;
-
-                $_SESSION['ordreProject'] = $this->ordreProject;
-
-                $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
-                $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', 75', ' AND p.status = 0 AND p.display = 0');
 
                 // ensemblee des fonds recupérés
                 $compteurFonds = $this->transactions->sum('type_transaction = 9', 'montant_unilend-montant');
@@ -1200,11 +1222,11 @@ class rootController extends bootstrap
         $this->ordreProject = 1;
         $this->type         = 0;
 
-        // Liste des projets en funding
-        $this->lProjetsFunding = $this->projects->selectProjectsByStatus('50,60,80', ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 6);
+        $aElementsProjects = $this->projects->getProjectsStatusAndCount('50,60,80', $this->tabOrdreProject[$this->ordreProject], 0, 6);
 
-        // Nb projets en funding
-        $this->nbProjects = $this->projects->countSelectProjectsByStatus('50,60,80', ' AND p.status = 0 AND p.display = 0');
+        // Liste des projets en funding and nombre des projets en funding
+        $this->lProjetsFunding = $aElementsProjects['lProjetsFunding'];
+        $this->nbProjects      = $aElementsProjects['nbProjects'];
 
         $this->le_id_tree = 282;
         $this->le_slug    = $this->tree->getSlug($this->le_id_tree, $this->language);
@@ -1261,11 +1283,11 @@ class rootController extends bootstrap
         $this->ordreProject = 1;
         $this->type         = 0;
 
-        // Liste des projets en funding
-        $this->lProjetsFunding = $this->projects->selectProjectsByStatus('50,60,80', ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 6);
+        $aElementsProjects = $this->projects->getProjectsStatusAndCount('50,60,80', $this->tabOrdreProject[$this->ordreProject], 0, 6);
 
-        // Nb projets en funding
-        $this->nbProjects = $this->projects->countSelectProjectsByStatus('50,60,80', ' AND p.status = 0 AND p.display = 0');
+        // Liste des projets en funding and nombre des projets en funding
+        $this->lProjetsFunding = $aElementsProjects['lProjetsFunding'];
+        $this->nbProjects      = $aElementsProjects['nbProjects'];
 
         $this->le_id_tree = 282;
         $this->le_slug    = $this->tree->getSlug($this->le_id_tree, $this->language);
@@ -1322,11 +1344,11 @@ class rootController extends bootstrap
         $this->ordreProject = 1;
         $this->type         = 0;
 
-        // Liste des projets en funding
-        $this->lProjetsFunding = $this->projects->selectProjectsByStatus('50,60,80', ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 6);
+        $aElementsProjects = $this->projects->getProjectsStatusAndCount('50,60,80', $this->tabOrdreProject[$this->ordreProject], 0, 6);
 
-        // Nb projets en funding
-        $this->nbProjects = $this->projects->countSelectProjectsByStatus('50,60,80', ' AND p.status = 0 AND p.display = 0');
+        // Liste des projets en funding and nombre des projets en funding
+        $this->lProjetsFunding = $aElementsProjects['lProjetsFunding'];
+        $this->nbProjects      = $aElementsProjects['nbProjects'];
 
         $this->le_id_tree = 282;
         $this->le_slug    = $this->tree->getSlug($this->le_id_tree, $this->language);
