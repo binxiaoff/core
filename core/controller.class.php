@@ -48,6 +48,9 @@ class Controller
 
     public function __construct(&$command, $config, $app)
     {
+        setlocale(LC_TIME, 'fr_FR.utf8');
+        setlocale(LC_TIME, 'fr_FR');
+
         if(false === defined('ENVIRONMENT')) {
             define('ENVIRONMENT', $config['env']);
         }

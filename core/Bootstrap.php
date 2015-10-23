@@ -4,7 +4,8 @@
  * @todo
  * Why soo many setters?
  * $oLogger changes from channel to channel everytime we log something and is instanciated many times
- * Assertions not configurable
+ * Assertions not configurable by environment
+ * Lenders loaded here?
  */
 
 namespace Unilend\core;
@@ -57,11 +58,18 @@ class Bootstrap
     {
         if (true === is_null(self::$oInstance)) {
             self::$oInstance = new self();
+            self::$oInstance->setLocales();
             self::$oInstance->setAssert();
             self::$aConfig = $aConfig;
         }
 
         return self::$oInstance;
+    }
+
+    public function setLocales()
+    {
+        setlocale(LC_TIME, 'fr_FR.utf8');
+        setlocale(LC_TIME, 'fr_FR');
     }
 
     /**
