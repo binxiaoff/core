@@ -53,16 +53,16 @@ if (isset($_SESSION['freeow'])) {
         <tr>
             <th style="width:140px;">Total Com : </th>
             <td><?= number_format($this->commission / 100, 2, ',', ' ') ?> €</td>
-        </tr><tr>    
+        </tr><tr>
             <th style="width:140px;">Commission / Mois : </th>
             <td><?= number_format($this->comParMois / 100, 2, ',', ' ') ?> €</td>
-        </tr><tr>    
+        </tr><tr>
             <th style="width:140px;">Commission TTC / Mois : </th>
             <td><?= number_format($this->comTtcParMois / 100, 2, ',', ' ') ?> €</td>
-        </tr><tr>    
+        </tr><tr>
             <th style="width:140px;">TVA : </th>
             <td><?= number_format($this->tva / 100, 2, ',', ' ') ?> €</td>
-        </tr><tr>   
+        </tr><tr>
             <th style="width:140px;">Total TVA : </th>
             <td><?= number_format($this->totalTva / 100, 2, ',', ' ') ?> €</td>
         </tr>
@@ -73,7 +73,7 @@ if (isset($_SESSION['freeow'])) {
         ?>
         <table class="tablesorter">
             <thead>
-                <tr> 
+                <tr>
                     <th>Echeance</th>
                     <th>Interets</th>
                     <th>Capital</th>
@@ -82,8 +82,8 @@ if (isset($_SESSION['freeow'])) {
                     <th>TVA</th>
                     <th>Montant emprunteur (I+C+ComTTC)</th>
                     <th>Capital restant</th>
-                    <th>Date echeance Emprunteur</th>
                     <th>Date d'envoi du prélèvement</th>
+                    <th>Date echeance Emprunteur</th>
                     <?php /* ?><th>Statut</th><?php */ ?>
                 </tr>
             </thead>
@@ -106,7 +106,7 @@ if (isset($_SESSION['freeow'])) {
                         $date_envoi_prelevement = $this->dates->formatDate($this->prelevements->date_execution_demande_prelevement, 'd/m/Y');
                     }
                     ?>
-                
+
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
 
                         <td><?= $r['ordre'] ?></td>
@@ -120,7 +120,7 @@ if (isset($_SESSION['freeow'])) {
                         <td><?= $date_envoi_prelevement ?></td>
                         <td><?= $this->dates->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
         <?php /* ?><td><?=($r['status']==1?'Remboursé':'A venir')?></td><?php */ ?>
-                    </tr>   
+                    </tr>
                         <?
                         $i++;
                     }
