@@ -124,7 +124,7 @@ class SalesForce
                     CONVERT(CAST(REPLACE(c.nom,',','') as BINARY) USING utf8) as 'Nom',
                     CONVERT(CAST(REPLACE(c.nom_usage,',','') as BINARY) USING utf8) as 'Nom_usage',
                     CONVERT(CAST(REPLACE(c.prenom,',','') as BINARY) USING utf8) as 'Prenom',
-                    CONVERT(CAST(REPLACE(c.fonction,',','') as BINARY) USING utf8) as 'Fonction',
+                    CONVERT(REPLACE(c.fonction,',','') USING utf8) as 'Fonction',
                     CASE c.naissance
                       WHEN '0000-00-00' then '2001-01-01'
                       ELSE
