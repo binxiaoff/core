@@ -508,7 +508,7 @@
 
                                 <select name="date_publication_minute" class="selectMini">
                                     <?php
-                                    for ($m = 0; $m < 60; $m++) {
+                                    for ($m = 0; $m < 60; $m+=5) {
                                         ?>
                                         <option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_publication == $m ? "selected=selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
                                         <?php
@@ -560,7 +560,7 @@
                                 </select>h
                                 <select name="date_retrait_minute" class="selectMini">
                                     <?php
-                                    for ($m = 0; $m < 60; $m++) {
+                                    for ($m = 0; $m < 60; $m+=5) {
                                         ?>
                                         <option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_retrait == $m ? "selected=selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
                                         <?php

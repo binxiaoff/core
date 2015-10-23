@@ -26,6 +26,8 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\librairies\Cache;
+
 class Controller
 {
     var $Command;
@@ -46,16 +48,18 @@ class Controller
 
     public $current_template = '';
 
+    /**
+     * @var Cache
+     */
+    public $oCache;
+
     public function __construct(&$command, $config, $app)
     {
         setlocale(LC_TIME, 'fr_FR.utf8');
         setlocale(LC_TIME, 'fr_FR');
 
-        if(false === defined('ENVIRONMENT')) {
-            define('ENVIRONMENT', $config['env']);
-        }
-
         $this->initUnilendAutoload();
+        $this->oCache = Cache::getInstance();
 
         //Variables de session pour la fenetre de debug
         unset($_SESSION['error']);
@@ -71,7 +75,7 @@ class Controller
         $this->bdd          = new bdd($this->Config['bdd_config'][$this->Config['env']], $this->Config['bdd_option'][$this->Config['env']]);
 
         // Initialisation des propriétés nécessaires au cache
-        $this->enableCache      = $this->Config['cache'][$this->Config['env']];
+        $this->enableCache      = false;
         $this->cacheDuration    = $this->Config['cacheDuration'][$this->Config['env']];
         $this->cacheCurrentPage = false;
 

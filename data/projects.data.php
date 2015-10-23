@@ -27,6 +27,8 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\librairies\Cache;
+
 class projects extends projects_crud
 {
     const MINIMUM_CREATION_DAYS_PROSPECT = 720;
@@ -503,6 +505,28 @@ class projects extends projects_crud
         $record = $this->bdd->result($result);
 
         return $record;
+    }
+
+    public function getProjectsStatusAndCount($sListStatus, $sTabOrderProject, $iStart, $iLimit)
+    {
+        $oCache    = Cache::getInstance();
+        $sKey      = $oCache->makeKey(Cache::LIST_PROJECTS, $sListStatus);
+        $aElements = $oCache->get($sKey);
+
+        if (false === $aElements) {
+            // Liste des projets en funding
+            $alProjetsFunding = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $sTabOrderProject, $iStart, $iLimit);
+            // Nb projets en funding
+            $anbProjects      = $this->countSelectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0');
+            $aElements = array(
+                'lProjectsFunding' => $alProjetsFunding,
+                'nbProjects'       => $anbProjects
+            );
+
+            $oCache->set($sKey, $aElements);
+        }
+
+        return $aElements;
     }
 
     public function getAttachments($project = null)
