@@ -125,8 +125,12 @@ class SalesForce
                     CONVERT(CAST(REPLACE(c.prenom,',','') as BINARY) USING utf8) as 'Prenom',
                     CONVERT(CAST(REPLACE(c.fonction,',','') as BINARY) USING utf8) as 'Fonction',
                     CASE c.naissance
-                      WHEN '0000-00-00' then ''
-                      ELSE c.naissance
+                      WHEN '0000-00-00' then '2001-01-01'
+                      ELSE
+                          CASE SUBSTRING(c.naissance,1,1)
+                            WHEN '0' then '2001-01-01'
+                            ELSE c.naissance
+                          END
                     END as 'DateNaissance',
                     CONVERT(CAST(REPLACE(ville_naissance,',','') as BINARY) USING utf8) as 'VilleNaissance',
                     ccountry.fr as 'PaysNaissance',
@@ -257,8 +261,12 @@ class SalesForce
                     CONVERT(CAST(REPLACE(c.prenom,',','') as BINARY) USING utf8) as 'Prenom',
                     CONVERT(CAST(REPLACE(c.fonction,',','') as BINARY) USING utf8) as 'Fonction',
                     CASE c.naissance
-                    	WHEN '0000-00-00' then ''
-                    	ELSE c.naissance
+                    	WHEN '0000-00-00' then '2001-01-01'
+                    	ELSE
+                          CASE SUBSTRING(c.naissance,1,1)
+                            WHEN '0' then '2001-01-01'
+                            ELSE c.naissance
+                          END
                     END as 'Datenaissance',
                     CONVERT(CAST(REPLACE(ville_naissance,',','') as BINARY) USING utf8) as 'Villenaissance',
                     ccountry.fr as 'PaysNaissance',
@@ -309,7 +317,7 @@ class SalesForce
                     acountry.fr as 'Pays',
                     SUM(l.amount)/100 as 'TotalPretEur',
                     '' as 'DeletingProspect',
-                    '0012400000F6xvT' as 'Sfcompte'
+                    '0012400000K0Bxw' as 'Sfcompte'
                   FROM
                     clients c
                     LEFT JOIN clients_adresses ca on (c.id_client = ca.id_client)
@@ -449,7 +457,7 @@ class SalesForce
     {
         if (true === $this->createExtractDir()) {
             $iTimeStartCsv = microtime(true);
-            $sNameFile .= (!preg_match('/(\.csv)$/i', $sNameFile)) ? '.csv' : '';
+            $sNameFile .= (1 !== preg_match('/(\.csv)$/i', $sNameFile)) ? '.csv' : '';
             $rCsvFile   = fopen(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT . $sNameFile, 'w');
             $iCountLine = 0;
             $that       = $this;
