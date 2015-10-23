@@ -328,21 +328,16 @@ class dossiersController extends bootstrap
                 }
             }
 
-            // wording completude
-            $this->completude_wording = array();
-            if ($this->blocs->get('completude-wording-project', 'slug')) {
-                $lElements = $this->blocs_elements->select('id_bloc = '.$this->blocs->id_bloc.' AND id_langue = "' . $this->language . '"');
-                if (false === empty($lElements)) {
-                    foreach ($lElements as $b_elt) {
-                        $this->elements->get($b_elt['id_element']);
-                        $this->completude_wording[$this->elements->slug] = $b_elt['value'];
-                    }
-                }
-            }
-
             $this->attachment_type  = $this->loadData('attachment_type');
             $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects();
             $this->aAttachments     = $this->projects->getAttachments();
+
+            $this->completude_wording = array();
+            foreach ($this->aAttachmentTypes as $aAttachment) {
+                if (1 !== preg_match('/^autre/i', $aAttachment['label'])) {
+                    $this->completude_wording[] = $aAttachment['label'];
+                }
+            }
 
             if (isset($this->params[1]) && $this->params[1] == 'altares') {
                 $oAltares = new Altares($this->bdd);
