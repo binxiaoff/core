@@ -81,6 +81,7 @@ class dossiersController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->prescripteurs                 = $this->loadData('prescripteurs');
         $this->clients_prescripteurs         = $this->loadData('clients');
+        $this->companies_prescripteurs       = $this->loadData('companies');
 
         // Id Status to block risk note and risk comments.
         $aBlockRiskStatus = array(50, 60, 70, 80, 100, 110, 120, 130);
@@ -148,6 +149,7 @@ class dossiersController extends bootstrap
             if ($this->projects->id_prescripteur
                 && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
                 $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
+                $this->companies_prescripteurs->get($this->prescripteurs->id_entite, 'id_company');
                 $this->bHasPrescripteur = true;
             }
 

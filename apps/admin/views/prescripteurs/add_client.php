@@ -40,6 +40,20 @@
                     <th><label for="ville">Ville :</label></th>
                     <td><input type="text" name="ville" id="ville" class="input_large" value=""/></td>
                 </tr>
+                <tr>
+                    <th><label for="company_name">Raison sociale :</label></th>
+                    <td><input type="text" name="company_name" id="company_name" class="input_large" value=""/></td>
+
+                    <th><label for="siren">Siren :</label></th>
+                    <td><input type="text" name="siren" id="siren" class="input_large" value=""/></td>
+                </tr>
+                <tr>
+                    <th><label for="iban">IBAN :</label></th>
+                    <td><input type="text" name="iban" id="iban" class="input_large" value=""/></td>
+
+                    <th><label for="ville">BIC :</label></th>
+                    <td><input type="text" name="bic" id="bic" class="input_large" value=""/></td>
+                </tr>
             	<tr>
                 	<th colspan="4">
                         <input type="submit" value="Valider" title="Valider" name="send_add_prescripteur" id="send_add_prescripteur" class="btn" />
