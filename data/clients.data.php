@@ -656,7 +656,7 @@ class clients extends clients_crud
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    public function searchPrescripteur($iClientId = '', $nom = '', $prenom = '', $email = '', $offset = '', $limit = 100, $sOperation = 'AND')
+    public function searchPrescripteur($iClientId = '', $nom = '', $prenom = '', $email = '', $sCompanyName = '', $sSiren = '', $offset = '', $limit = 100, $sOperation = 'AND')
     {
         $aWhere = array();
 
@@ -673,10 +673,20 @@ class clients extends clients_crud
             $aWhere[] = 'c.prenom LIKE "%' . $prenom . '%"';
         }
 
+        if ('' !== $sCompanyName) {
+            $sCompanyName = $this->bdd->escape_string($sCompanyName);
+            $aWhere[] = 'com.name LIKE "%' . $sCompanyName . '%"';
+        }
+
+        if ('' !== $sSiren) {
+            $sSiren = $this->bdd->escape_string($sSiren);
+            $aWhere[] = 'com.siren = "' . $sSiren . '"';
+        }
+
         $sWhere = '';
         if ('' !== $iClientId) {
             $iClientId = $this->bdd->escape_string($iClientId);
-            $sWhere = 'c.id_client = '. $iClientId;
+            $sWhere = ' WHERE c.id_client = '. $iClientId;
         } elseif (false === empty($aWhere)) {
             $sWhere = ' WHERE ' . implode(' ' . $sOperation.' ', $aWhere);
         }
@@ -692,7 +702,8 @@ class clients extends clients_crud
         }
 
         $sql = 'SELECT * FROM clients c
-                INNER JOIN prescripteurs p USING (id_client)'
+                INNER JOIN prescripteurs p USING (id_client)
+                INNER JOIN companies com ON p.id_entite = com.id_company'
                 . $sWhere
                 . ' ORDER BY c.id_client DESC'
                 . $limit

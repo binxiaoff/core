@@ -12,8 +12,8 @@ if(!isset($this->params[0]) || $this->params[0] == '')
 
 <div id="popup">
 	<a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?=$this->surl?>/images/admin/delete.png" alt="Fermer" /></a>
-        <h1>Recherche : <?=$this->params['0']?></h1>            
-        
+        <h1>Recherche : <?=$this->params['0']?></h1>
+
         <?php if (true !== empty($this->aClients)) : ?>
 
 		<table style="margin-bottom:15px;">
@@ -27,6 +27,8 @@ if(!isset($this->params[0]) || $this->params[0] == '')
 					<input type="hidden" id="nom_change_<?=$c['id_prescripteur']?>" value="<?=$c['nom']?>">
 					<input type="hidden" id="email_change_<?=$c['id_prescripteur']?>" value="<?=$c['email']?>">
 					<input type="hidden" id="telephone_change_<?=$c['id_prescripteur']?>" value="<?=$c['telephone']?>">
+					<input type="hidden" id="company_change_<?=$c['id_prescripteur']?>" value="<?=$c['name']?>">
+					<input type="hidden" id="siren_change_<?=$c['id_prescripteur']?>" value="<?=$c['siren']?>">
 					<input class="radio" type="radio" name="prescripteurs" id="prescripteur_<?=$c['id_prescripteur']?>" value="<?=$c['id_prescripteur']?>">
 					<label for="prescripteur_<?=$c['id_prescripteur']?>"><?=$c['prenom']?> <?=$c['nom']?></label>
             	</td>
@@ -50,6 +52,8 @@ if(!isset($this->params[0]) || $this->params[0] == '')
 		var nom 		= $("#nom_change_" + id).val();
 		var email 		= $("#email_change_" + id).val();
 		var telephone 	= $("#telephone_change_" + id).val();
+		var company 	= $("#company_change_" + id).val();
+		var siren 	= $("#siren_change_" + id).val();
 
 		$("#id_prescripteur").val(id);
 		$("#civilite_prescripteur").html(civilite);
@@ -57,6 +61,8 @@ if(!isset($this->params[0]) || $this->params[0] == '')
 		$("#nom_prescripteur").html(nom);
 		$("#email_prescripteur").html(email);
 		$("#telephone_prescripteur").html(telephone);
+		$("#company_prescripteur").html(company);
+		$("#siren_prescripteur").html(siren);
 
 		$('.identification_prescripteur').show('slow');
 

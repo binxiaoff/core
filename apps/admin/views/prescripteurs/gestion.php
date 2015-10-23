@@ -72,6 +72,12 @@
                     <tr>
                         <th><label for="email">Email :</label></th>
                         <td><input type="text" name="email" id="email" class="input_large" value="<?=$_POST['email']?>"/></td>
+                        <th><label for="company_name">Raison sociale :</label></th>
+                        <td><input type="text" name="company_name" id="company_name" class="input_large" value="<?=$_POST['company_name']?>"/></td>
+                    </tr>
+                    <tr>
+                        <th><label for="siren">Siren :</label></th>
+                        <td><input type="text" name="siren" id="siren" class="input_large" value="<?=$_POST['siren']?>"/></td>
                     </tr>
                     <tr>
                         <th colspan="4" style="text-align:center;">

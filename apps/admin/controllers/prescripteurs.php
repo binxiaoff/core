@@ -23,20 +23,18 @@ class prescripteursController extends bootstrap
     public function _gestion()
     {
         // Chargement du data
-        $this->clients = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-
-        $this->prescripteurs = $this->loadData('prescripteurs');
+        /** @var clients $oClients */
+        $oClients = $this->loadData('clients');
 
         $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
         if (isset($this->params[0]) && is_numeric($this->params[0])) {
-            $this->aPrescripteurs = $this->clients->searchPrescripteur($this->params[0]);
+            $this->aPrescripteurs = $oClients->searchPrescripteur($this->params[0]);
         }
 
         if (isset($_POST['form_search_prescripteur'])) {
             // Recuperation de la liste des clients
-            $this->aPrescripteurs = $this->clients->searchPrescripteur('', $_POST['nom'], $_POST['prenom'], $_POST['email']);
+            $this->aPrescripteurs = $oClients->searchPrescripteur('', $_POST['nom'], $_POST['prenom'], $_POST['email'], $_POST['company_name'], $_POST['siren']);
             // Mise en session du message
             $_SESSION['freeow']['title'] = 'Recherche d\'un client';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
@@ -49,11 +47,13 @@ class prescripteursController extends bootstrap
         $this->clients = $this->loadData('clients');
         $this->clients_adresses = $this->loadData('clients_adresses');
         $this->prescripteurs = $this->loadData('prescripteurs');
+        $this->companies = $this->loadData('companies');
 
         if (! isset($this->params[0])
             || ! $this->clients->get($this->params[0], 'id_client')
             || ! $this->prescripteurs->get($this->clients->id_client, 'id_client')
             || ! $this->clients_adresses->get($this->clients->id_client, 'id_client')
+            || ! $this->companies->get($this->prescripteurs->id_entite, 'id_company')
         ) {
             header('Location:' . $this->lurl . '/prescripteurs/gestion/');
             return;
@@ -67,16 +67,19 @@ class prescripteursController extends bootstrap
             $this->clients->prenom = $this->ficelle->majNom($_POST['prenom']);
             $this->clients->email = trim($_POST['email']);
             $this->clients->telephone = str_replace(' ', '', $_POST['telephone']);
+            $this->clients->id_langue = 'fr';
+            $this->clients->update();
 
             $this->clients_adresses->adresse1 = $_POST['adresse'];
             $this->clients_adresses->ville = $_POST['ville'];
             $this->clients_adresses->cp = $_POST['cp'];
-
-            $this->clients->id_langue = 'fr';
-
-            // On crée le client
-            $this->clients->update();
             $this->clients_adresses->update();
+
+            $this->companies->siren = $_POST['siren'];
+            $this->companies->name = $_POST['company_name'];
+            $this->companies->iban = $_POST['iban'];
+            $this->companies->bic = $_POST['bic'];
+            $this->companies->update();
 
             // Histo user //
             $serialize = serialize(
@@ -101,58 +104,56 @@ class prescripteursController extends bootstrap
         $this->autoFireFooter = false;
         $this->autoFireDebug = false;
 
-        // On place le redirect sur la home
-        $_SESSION['request_url'] = $this->url;
-
-        // Chargement du data
-        $this->clients = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-
-        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client')) {
-            $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
-            $this->adresse = $this->clients_adresses->adresse1;
-            $this->ville = $this->clients_adresses->ville;
-            $this->cp = $this->clients_adresses->cp;
-        }
-
         $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
         if (isset($_POST['send_add_prescripteur'])) {
             $this->autoFireView = false;
+            /** @var clients $oClients */
+            $oClients = $this->loadData('clients');
+            /** @var clients_adresse $oClientsAdresses */
+            $oClientsAdresses = $this->loadData('clients_adresses');
+            /** @var prescripteurs $oPrescripteurs */
+            $oPrescripteurs = $this->loadData('prescripteurs');
+            /** @var companies $oCompanies */
+            $oCompanies = $this->loadData('companies');
 
-            $this->prescripteurs = $this->loadData('prescripteurs');
+            $oClients->civilite = $_POST['civilite'];
+            $oClients->nom = $this->ficelle->majNom($_POST['nom']);
+            $oClients->prenom = $this->ficelle->majNom($_POST['prenom']);
+            $oClients->email = trim($_POST['email']);
+            $oClients->telephone = str_replace(' ', '', $_POST['telephone']);
+            $oClients->id_langue = 'fr';
 
-            $this->clients->civilite = $_POST['civilite'];
-            $this->clients->nom = $this->ficelle->majNom($_POST['nom']);
-            $this->clients->prenom = $this->ficelle->majNom($_POST['prenom']);
-            $this->clients->email = trim($_POST['email']);
-            $this->clients->telephone = str_replace(' ', '', $_POST['telephone']);
+            $oClientsAdresses->adresse1 = $_POST['adresse'];
+            $oClientsAdresses->ville = $_POST['ville'];
+            $oClientsAdresses->cp = $_POST['cp'];
 
-            $this->clients_adresses->adresse1 = $_POST['adresse'];
-            $this->clients_adresses->ville = $_POST['ville'];
-            $this->clients_adresses->cp = $_POST['cp'];
-
-            $this->clients->id_langue = 'fr';
+            $aCompany = $oCompanies->select('siren = '.$_POST['siren'], 'added ASC', 0, 1);
+            if ($aCompany) {
+                $iCompanyId = $aCompany[0]['id_company'];
+            } else {
+                $oCompanies->siren = $_POST['siren'];
+                $oCompanies->name = $_POST['company_name'];
+                $oCompanies->iban = $_POST['iban'];
+                $oCompanies->bic = $_POST['bic'];
+                $iCompanyId = $oCompanies->create();
+            }
 
             // On crée le client
-            $this->clients->id_client = $this->clients->create();
+            $oClients->id_client = $oClients->create();
 
-            $this->clients_adresses->id_client = $this->clients->id_client;
-            $this->clients_adresses->create();
+            $oClientsAdresses->id_client = $oClients->id_client;
+            $oClientsAdresses->create();
 
-            $this->prescripteurs->id_client = $this->clients->id_client;
+            $oPrescripteurs->id_client = $oClients->id_client;
+            $oPrescripteurs->id_entite = $iCompanyId;
 
             // On crée le prescripteur
-            $this->prescripteurs->id_prescripteur = $this->prescripteurs->create();
+            $oPrescripteurs->id_prescripteur = $oPrescripteurs->create();
 
             // Histo user //
-            $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
+            $serialize = serialize(array('id_client' => $oClients->id_client, 'post' => $_POST, 'files' => $_FILES));
             $this->users_history->histo(5, 'add prescripteur', $_SESSION['user']['id_user'], $serialize);
-            ////////////////
-            // Mise en session du message
-            //$_SESSION['freeow']['title'] = 'prescripteur crt&eacute;t&eacute;';
-            //$_SESSION['freeow']['message'] = 'le prescripteur a &eacute;t&eacute; cr&eacute;t&eacute; !';
 
             echo 'OK';
         }
@@ -172,7 +173,7 @@ class prescripteursController extends bootstrap
 
             $this->clients = $this->loadData('clients');
 
-            $this->aClients = $this->clients->searchPrescripteur('', $sSearch, $sSearch, $sSearch, 0, 30, 'OR');
+            $this->aClients = $this->clients->searchPrescripteur('', $sSearch, $sSearch, $sSearch, $sSearch, $sSearch, 0, 30, 'OR');
         }
     }
 }

@@ -37,7 +37,7 @@ if (isset($_SESSION['freeow'])) {
     }
     ?>
 
-    <form method="post" name="edit_prescripteur" id="edit_prescripteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/prescripteurs/edit/<?= $this->clients->id_client ?>" target="_parent">           
+    <form method="post" name="edit_prescripteur" id="edit_prescripteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/prescripteurs/edit/<?= $this->clients->id_client ?>" target="_parent">
         <table class="formColor" style="width: 775px;margin:auto;">
             <tr>
                 <th>Civilité :</th>
@@ -74,6 +74,20 @@ if (isset($_SESSION['freeow'])) {
 
                 <th><label for="ville">Ville :</label></th>
                 <td><input type="text" name="ville" id="ville" class="input_large" value="<?= $this->clients_adresses->ville ?>"/></td>
+            </tr>
+            <tr>
+                <th><label for="company_name">Raison sociale :</label></th>
+                <td><input type="text" name="company_name" id="company_name" class="input_large" value="<?= $this->companies->name ?>"/></td>
+
+                <th><label for="siren">Siren :</label></th>
+                <td><input type="text" name="siren" id="siren" class="input_large" value="<?= $this->companies->siren ?>"/></td>
+            </tr>
+            <tr>
+                <th><label for="iban">IBAN :</label></th>
+                <td><input type="text" name="iban" id="iban" class="input_large" value="<?= $this->companies->iban ?>"/></td>
+
+                <th><label for="ville">BIC :</label></th>
+                <td><input type="text" name="bic" id="bic" class="input_large" value="<?= $this->companies->bic ?>"/></td>
             </tr>
             <tr>
                 <th colspan="4">

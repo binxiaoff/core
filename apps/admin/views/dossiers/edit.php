@@ -837,7 +837,7 @@
                         <tr>
                             <td>
                                 <label for="id">Saisir votre message :</label>
-                                <textarea name="content_email_completude" id="content_email_completude"><?=$text = str_replace(array("<br>","<br />"),"",$_SESSION['content_email_completude'][$this->params[0]])?></textarea>
+                                <textarea name="content_email_completude" id="content_email_completude"></textarea>
                             </td>
                         </tr>
                         <tr>
@@ -1044,6 +1044,12 @@
                         <td id="telephone_prescripteur"><?=$this->clients_prescripteurs->telephone?></td>
                         <th>Email :</th>
                         <td id="email_prescripteur"><?=$this->clients_prescripteurs->email?></td>
+                    </tr>
+                    <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="identification_prescripteur">
+                        <th>Raison sociale :</th>
+                        <td id="company_prescripteur"><?=$this->companies_prescripteurs->name?></td>
+                        <th>Siren :</th>
+                        <td id="siren_prescripteur"><?=$this->companies_prescripteurs->siren?></td>
                     </tr>
 
                     <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="statut_dirigeant_etape2">
