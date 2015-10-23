@@ -1901,125 +1901,6 @@ class cronController extends bootstrap
     }
 
     // cron toutes les heures
-    // On relance le mail stand by plusieur fois H+12, H+24, J+3, J+7 (stand by plus present dans la derniere version depot de dossier)
-    public function _relance_stand_by()
-    {
-
-        die;
-
-        // chargement des datas
-        $this->clients   = $this->loadData('clients');
-        $this->projects  = $this->loadData('projects');
-        $this->companies = $this->loadData('companies');
-
-        //$lprojects = $this->projects->select('stand_by = 1');
-        $lEmprunteurs = $this->clients->select('email IS NOT NULL AND status_pre_emp > 1 AND status = 0');
-
-        $time = date('Y-m-d H');
-
-        // test //
-        //$time = '2013-11-12 21';
-        //////////
-
-        foreach ($lEmprunteurs as $p) {
-            //$this->companies->get($p['id_company'],'id_company');
-            $this->clients->get($p['id_client'], 'id_client');
-
-            if ($this->clients->status == 0) {
-
-                // ladate
-                $ladate = strtotime($p['added']);
-
-                // ladate +12h
-                $ladatePlus12H = mktime(date("H", $ladate) + 12, date("i", $ladate), 0, date("m", $ladate), date("d", $ladate), date("Y", $ladate));
-
-                // ladate +24h
-                $ladatePlus24H = mktime(date("H", $ladate), date("i", $ladate), 0, date("m", $ladate), date("d", $ladate) + 1, date("Y", $ladate));
-
-                // ladate +3j
-                $ladatePlus3J = mktime(date("H", $ladate), date("i", $ladate), 0, date("m", $ladate), date("d", $ladate) + 3, date("Y", $ladate));
-
-                // ladate +7j
-                $ladatePlus7J = mktime(date("H", $ladate), date("i", $ladate), 0, date("m", $ladate), date("d", $ladate) + 7, date("Y", $ladate));
-
-                $ladatePlus12H = date('Y-m-d H', $ladatePlus12H);
-                $ladatePlus24H = date('Y-m-d H', $ladatePlus24H);
-                $ladatePlus3J  = date('Y-m-d H', $ladatePlus3J);
-                $ladatePlus7J  = date('Y-m-d H', $ladatePlus7J);
-
-                echo 'emprunteur : ' . $this->clients->id_client . ' - Nom : ' . $this->clients->prenom . ' ' . $this->clients->nom . '<br>';
-                echo $p['added'] . '<br>';
-                echo '+12h : ' . $ladatePlus12H . '<br>';
-                echo '+24h : ' . $ladatePlus24H . '<br>';
-                echo '+3j : ' . $ladatePlus3J . '<br>';
-                echo '+7j : ' . $ladatePlus7J . '<br>';
-                echo '---------------<br>';
-
-                if ($ladatePlus12H == $time || $ladatePlus24H == $time || $ladatePlus3J == $time || $ladatePlus7J == $time) {
-
-                    //******************************//
-                    //*** ENVOI DU MAIL STAND-BY ***//
-                    //******************************//
-                    // Recuperation du modele de mail
-                    $this->mails_text->get('emprunteur-stand-by-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
-
-                    // Variables du mailing
-                    $surl       = $this->surl;
-                    $url        = $this->lurl;
-                    $email      = $this->clients->email;
-                    $link_login = $this->lurl . '/depot_de_dossier/stand_by/' . $this->clients->hash;
-                    $prenom     = $this->clients->prenom;
-                    $date       = date('d/m/Y', strtotime($this->projects->added));
-
-                    // FB
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
-
-                    // Twitter
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
-
-                    // Variables du mailing
-                    $varMail = array(
-                        'surl'                   => $surl,
-                        'url'                    => $url,
-                        'prenom_e'               => $prenom,
-                        'date'                   => $date,
-                        'link_compte_emprunteur' => $link_login,
-                        'lien_fb'                => $lien_fb,
-                        'lien_tw'                => $lien_tw
-                    );
-
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email', array());
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    // Pas de mail si le compte est desactivé
-                    if ($this->clients->status == 1) {
-                        if ($this->Config['env'] == 'prod') {
-                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                            // Injection du mail NMP dans la queue
-                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                        } else {
-                            $this->email->addRecipient(trim($this->clients->email));
-                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                        }
-                    }
-                }
-            }
-        }
-
-        die;
-    }
-
-    // cron toutes les heures
     // lors des virements si on a toujours pas recu on relance le client
     public function _relance_payment_preteur()
     {
@@ -8233,6 +8114,116 @@ class cronController extends bootstrap
             }
 
             $this->stopCron();
+        }
+    }
+
+    /**
+     * Send reminder email for project submissions
+     */
+    public function _relance_completude_emprunteurs()
+    {
+        $this->prescripteurs           = $this->loadData('prescripteurs');
+        $this->projects_status         = $this->loadData('projects_status');
+        $this->projects_status_history = $this->loadData('projects_status_history');
+
+        $this->settings->get('Intervales relances emprunteurs', 'type');
+        $aReminderIntervals = json_decode($this->settings->value, true);
+
+        $this->settings->get('Durée moyenne financement', 'type');
+        $aAverageFundingDurations = json_decode($this->settings->value, true);
+
+        $this->settings->get('Facebook', 'type');
+        $sFacebookURL = $this->settings->value;
+
+        $this->settings->get('Twitter', 'type');
+        $sTwitterURL = $this->settings->value;
+
+        $this->settings->get('Adresse emprunteur', 'type');
+        $sBorrowerEmail = $this->settings->value;
+
+        $this->settings->get('Téléphone emprunteur', 'type');
+        $sBorrowerPhoneNumber = $this->settings->value;
+
+        $aRelacements = array(
+            'adresse_emprunteur'   => $sBorrowerEmail,
+            'telephone_emprunteur' => $sBorrowerPhoneNumber,
+            'furl'                 => $this->furl,
+            'surl'                 => $this->surl,
+            'lien_fb'              => $sFacebookURL,
+            'lien_tw'              => $sTwitterURL,
+        );
+
+        foreach ($aReminderIntervals as $sStatus => $aIntervals) {
+            if (1 === preg_match('/^status-([1-9][0-9]*)$/', $sStatus, $aMatches)) {
+                $iStatus         = (int) $aMatches[1];
+                $iLastIndex      = count($aIntervals);
+                $sStartDateField = $iStatus === \projects_status::EN_ATTENTE_PIECES ? 'psh.added' : 'p.added';
+
+                foreach ($aIntervals as $iReminderIndex => $iDaysInterval) {
+                    $aProjects = $this->projects->getReminders($iStatus, $iDaysInterval, ++$iReminderIndex, $sStartDateField);
+
+                    foreach ($aProjects as $iProjectId) {
+                        if ($this->mails_text->get('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, 'lang = "' . $this->language . '" AND type')) {
+                            $this->projects->get($iProjectId, 'id_project');
+
+                            if ($this->projects->id_prescripteur > 0) {
+                                $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
+                                $this->clients->get($this->prescripteurs->id_client, 'id_client');
+                            }  else {
+                                $this->companies->get($this->projects->id_company, 'id_company');
+                                $this->clients->get($this->companies->id_client_owner, 'id_client');
+                            }
+
+                            if (false === empty($this->clients->email)) {
+                                $oSubmissionDate = new \DateTime($this->projects->added);
+
+                                // @todo arbitrary default value
+                                $iAverageFundingDuration = 15;
+                                reset($aAverageFundingDurations);
+                                foreach ($aAverageFundingDurations as $aAverageFundingDuration) {
+                                    if ($this->projects->amount >= $aAverageFundingDuration['min'] && $this->projects->amount <= $aAverageFundingDuration['max']) {
+                                        $iAverageFundingDuration = $aAverageFundingDuration['heures'] / 24;
+                                        break;
+                                    }
+                                }
+
+                                $aRelacements['prenom']                  = $this->clients->prenom;
+                                $aRelacements['montant']                 = $this->projects->amount;
+                                $aRelacements['lien_reprise_dossier']    = $this->furl . '/depot_de_dossier/reprise/' . $this->projects->hash;
+                                $aRelacements['lien_stop_relance']       = $this->furl . '/depot_de_dossier/emails/' . $this->projects->hash;
+                                $aRelacements['date_demande']            = strftime('%d %B %Y', $oSubmissionDate->getTimestamp());
+                                $aRelacements['pourcentage_financement'] = $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100);
+                                $aRelacements['sujet']                   = $this->mails_text->subject;
+
+                                $sRecipientEmail  = preg_replace('/^(.+)-[0-9]+$/', '$1', $this->clients->email);
+                                $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aRelacements);
+
+                                $this->email = $this->loadLib('email');
+                                $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
+                                $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
+                                $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
+
+                                if ($this->Config['env'] === 'prod') {
+                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipientEmail, $aNMPFilters);
+                                    $this->tnmp->sendMailNMP($aNMPFilters, $aRelacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                } else {
+                                    $this->email->addRecipient($sRecipientEmail);
+                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                }
+
+                                /**
+                                 * When project is pending documents, abort status is not automatic and must be set manually in BO
+                                 */
+                                if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::EN_ATTENTE_PIECES) {
+                                    $this->projects_status_history->addStatus(-1, \projects_status::ABANDON, $iProjectId, $iReminderIndex);
+                                } else {
+                                    $this->projects_status_history->addStatus(-1, $iStatus, $iProjectId, $iReminderIndex);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 

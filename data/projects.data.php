@@ -100,14 +100,16 @@ class projects extends projects_crud
 
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
-        if ($where != '')
+        if ($where != '') {
             $where = ' WHERE ' . $where;
-        if ($order != '')
+        }
+        if ($order != '') {
             $order = ' ORDER BY ' . $order;
+        }
         $sql = 'SELECT * FROM `projects`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
-        $result = array();
+        $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
@@ -116,18 +118,19 @@ class projects extends projects_crud
 
     public function counter($where = '')
     {
-        if ($where != '')
+        if ($where != '') {
             $where = ' WHERE ' . $where;
+        }
 
         $sql = 'SELECT count(*) FROM `projects` ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int) ($this->bdd->result($result, 0, 0));
     }
 
     public function exist($id, $field = 'id_project')
     {
-        $sql = 'SELECT * FROM `projects` WHERE ' . $field . '="' . $id . '"';
+        $sql    = 'SELECT * FROM `projects` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
@@ -176,8 +179,8 @@ class projects extends projects_crud
                             (ps.label != "" or ps.label is not null)
                         ' . $where;
 
-        $rResult = $this->bdd->query($sSqlCount);
-        $iCountProjects =  (int)($this->bdd->result($rResult, 0, 0));
+        $rResult        = $this->bdd->query($sSqlCount);
+        $iCountProjects = (int) ($this->bdd->result($rResult, 0, 0));
 
         $sql = 'SELECT
                     p.*,
@@ -200,7 +203,7 @@ class projects extends projects_crud
 
         $resultat = $this->bdd->query($sql);
 
-        $result = array();
+        $result    = array();
         $result[0] = $iCountProjects;
 
         while ($record = $this->bdd->fetch_array($resultat)) {
@@ -246,11 +249,13 @@ class projects extends projects_crud
     // version slim
     public function selectProjectsByStatusSlim($status, $where = '', $order = '', $start = '', $nb = '')
     {
-        if ($where != '')
+        if ($where != '') {
             $where = ' ' . $where . ' ';
+        }
 
-        if ($order != '')
+        if ($order != '') {
             $order = ' ORDER BY ' . $order;
+        }
 
         $sql = '
             SELECT
@@ -260,7 +265,7 @@ class projects extends projects_crud
             WHERE (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1)  IN (' . $status . ')' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
-        $result = array();
+        $result   = array();
 
         $positionStart = $start + $nb;
 
@@ -305,7 +310,7 @@ class projects extends projects_crud
             $where .= ' AND c.email = "' . $email . '"';
         }
 
-        $sql = '
+        $sql      = '
             SELECT p.*,
                 co.*,
                 c.*,
@@ -318,7 +323,7 @@ class projects extends projects_crud
             ORDER BY p.added DESC
             ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $resultat = $this->bdd->query($sql);
-        $result = array();
+        $result   = array();
 
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
@@ -328,6 +333,7 @@ class projects extends projects_crud
 
     public function searchDossiersNoRemb($siren = '', $societe = '', $nom = '', $prenom = '', $projet = '', $email = '', $start = '', $nb = '')
     {
+        $where = '';
         if ($siren != '') {
             $where .= ' AND co.siren = "' . $siren . '"';
         }
@@ -347,7 +353,7 @@ class projects extends projects_crud
             $where .= ' AND c.email = "' . $email . '"';
         }
 
-        $sql = '
+        $sql      = '
             SELECT p.*,
                 co.*,
                 c.*,
@@ -360,7 +366,7 @@ class projects extends projects_crud
             ORDER BY p.added DESC
             ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $resultat = $this->bdd->query($sql);
-        $result = array();
+        $result   = array();
 
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
@@ -370,17 +376,17 @@ class projects extends projects_crud
 
     public function positionProject($id_project, $status = '', $order = '')
     {
-        if ($status == '')
+        if ($status == '') {
             $status = '50,60,80';
+        }
+
         // On recupere les en funding et les fundé
         $lProjets = $this->selectProjectsByStatus($status, ' AND p.display = 0 and p.status = 0', ($order != '' ? $order : 'p.date_publication DESC'));
-        $tabProjects = array();
 
         foreach ($lProjets as $k => $p) {
             if ($p['id_project'] == $id_project) {
                 $previous = $lProjets[$k - 1]['slug'];
-
-                $next = $lProjets[$k + 1]['slug'];
+                $next     = $lProjets[$k + 1]['slug'];
                 break;
             }
         }
@@ -394,8 +400,8 @@ class projects extends projects_crud
         $sql = 'SELECT * FROM `favoris` WHERE id_client = ' . $id_client;
 
         $resultat = $this->bdd->query($sql);
-        $lesfav = '';
-        $i = 0;
+        $lesfav   = '';
+        $i        = 0;
         while ($f = $this->bdd->fetch_array($resultat)) {
             $lesfav .= ($i > 0 ? ',' : '') . $f['id_project'];
             $i++;
@@ -404,7 +410,7 @@ class projects extends projects_crud
         $sql = 'SELECT *,DATEDIFF(date_retrait,CURRENT_DATE) as datediff FROM projects WHERE id_project IN (' . $lesfav . ') AND DATEDIFF(date_retrait,CURRENT_DATE)<=2 AND DATEDIFF(date_retrait,CURRENT_DATE)>=0 AND date_fin = "0000-00-00 00:00:00" ORDER BY datediff';
 
         $resultat = $this->bdd->query($sql);
-        $result = array();
+        $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
@@ -419,15 +425,15 @@ class projects extends projects_crud
                 ORDER BY added DESC
                 LIMIT 1';
 
-        $result = $this->bdd->query($sql);
-        $id_project = (int)($this->bdd->result($result, 0, 0));
+        $result     = $this->bdd->query($sql);
+        $id_project = (int) ($this->bdd->result($result, 0, 0));
 
         return parent::get($id_project, 'id_project');
     }
 
     public function countProjectsByStatus($status)
     {
-        if(is_array($status)){
+        if (is_array($status)) {
             $statusString = implode(",", $status);
         }
 
@@ -453,10 +459,10 @@ class projects extends projects_crud
         return $record;
     }
 
+    public function countProjectsByStatusAndLender($lender, $status)
+    {
 
-    public function countProjectsByStatusAndLender($lender, $status){
-
-        if(is_array($status)){
+        if (is_array($status)) {
             $statusString = implode(",", $status);
         }
 
@@ -477,23 +483,22 @@ class projects extends projects_crud
         return $record;
     }
 
-    public function countProjectsSinceLendersubscription($client, $status){
-
-        if(is_array($status)){
+    public function countProjectsSinceLendersubscription($client, $status)
+    {
+        if (is_array($status)) {
             $statusString = implode(",", $status);
         }
 
-        $sql = 'SELECT    COUNT(*)
+        $sql    = 'SELECT COUNT(*)
                 FROM projects p
-                WHERE  `date_publication_full` >= (
-                        SELECT `added` FROM clients
-                        WHERE id_client = '.$client.')
-                        AND (
-                              SELECT ps.status
-                              FROM projects_status ps
-                                LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status)
-                                WHERE psh.id_project = p.id_project
-                            ORDER BY psh.added DESC LIMIT 1) IN ('.$statusString.')';
+                WHERE date_publication_full >= (SELECT added FROM clients WHERE id_client = ' . $client . ')
+                    AND (
+                        SELECT ps.status
+                        FROM projects_status ps
+                        LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status)
+                        WHERE psh.id_project = p.id_project
+                        ORDER BY psh.added DESC LIMIT 1
+                    ) IN (' . $statusString . ')';
         $result = $this->bdd->query($sql);
         $record = $this->bdd->result($result);
 
@@ -502,7 +507,6 @@ class projects extends projects_crud
 
     public function getAttachments($project = null)
     {
-
         if (null === $project) {
             $project = $this->id_project;
         }
@@ -522,5 +526,37 @@ class projects extends projects_crud
             $attachments[$record["id_type"]] = $record;
         }
         return $attachments;
+    }
+
+    /**
+     * Retrieve the list of project IDs that needs email reminder
+     * @param int    $iStatus         Project status
+     * @param int    $iDaysInterval   Interval in days since project creation (or update status)
+     * @param int    $iReminderIndex  Number of reminder (nth)
+     * @param string $sStartDateField Date to check for calculating interval
+     * @return array
+     */
+    public function getReminders($iStatus, $iDaysInterval, $iReminderIndex, $sStartDateField = 'p.added')
+    {
+        $aProjects = array();
+        $rResult   = $this->bdd->query('
+            SELECT p.id_project
+            FROM projects p
+            INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
+            INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            WHERE p.stop_relances = 0
+                AND ps.status = ' . $iStatus . '
+                AND DATE_SUB(CURDATE(), INTERVAL ' . $iDaysInterval . ' DAY) = DATE_FORMAT(' . $sStartDateField . ', "%Y-%m-%d")
+                AND psh.numero_relance = ' . ($iReminderIndex - 1)
+        );
+
+        if ($this->bdd->num_rows($rResult) > 0) {
+            while ($aResult = $this->bdd->fetch_assoc($rResult)) {
+                $aProjects[] = (int) $aResult['id_project'];
+            }
+        }
+
+        return $aProjects;
     }
 }
