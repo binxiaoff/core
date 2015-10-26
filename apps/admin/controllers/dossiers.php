@@ -117,13 +117,7 @@ class dossiersController extends bootstrap
             $finFunding        = explode(':', $this->finFunding);
             $this->HfinFunding = $finFunding[0];
 
-            // on check le statut, si c'est la premiere fois qu'il est consulté on le passe en "à l'étude"
             $this->current_projects_status->getLastStatut($this->projects->id_project);
-            if ($this->current_projects_status->status == 10) {
-                $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 20, $this->projects->id_project);
-                // on reactualise l'affichage
-                $this->current_projects_status->getLastStatut($this->projects->id_project);
-            }
 
             //Check if status is eligible for block the note and comments.
             $this->bReadonlyRiskNote = (in_array($this->current_projects_status->status, $aBlockRiskStatus)) ?: false;
