@@ -536,7 +536,7 @@ class dossiersController extends bootstrap
                 // On check avant la validation que la date de publication & date de retrait sont OK sinon on bloque(KLE)
                 /* La date de publication doit être au minimum dans 5min et la date de retrait à plus de 5min (pas de contrainte) */
                 $dates_valide = false;
-                if (! is_null($_POST['date_publication']) && ! empty($_POST['date_publication'])) {
+                if (false === empty($_POST['date_publication'])) {
                     $tab_date_pub_post          = explode('/', $_POST['date_publication']);
                     $date_publication_full_test = $tab_date_pub_post[2] . '-' . $tab_date_pub_post[1] . '-' . $tab_date_pub_post[0] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute'] . ':00';
                     $tab_date_retrait_post      = explode('/', $_POST['date_retrait']);
@@ -606,9 +606,9 @@ class dossiersController extends bootstrap
                     $this->projects->amount         = str_replace(' ', '', str_replace(',', '.', $_POST['montant']));
                     $this->projects->target_rate    = '-';
                     $this->projects->id_analyste    = $_POST['analyste'];
+                    $this->projects->id_commercial  = $_POST['commercial'];
                     $this->projects->lien_video     = $_POST['lien_video'];
                     $this->projects->display        = $_POST['display_project'];
-                    $this->projects->stop_relances  = $_POST['stop_relances'];
 
                     // en prep funding
                     if ($this->current_projects_status->status >= 35) {

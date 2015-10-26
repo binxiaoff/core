@@ -155,6 +155,7 @@ class projects_status extends projects_status_crud
                 case self::ABANDON:
                     $iStatus = $oProjectStatusHistory->getBeforeLastStatut($iProjectId);
                     return $this->select('id_project_status='.$iStatus);
+                case self::A_TRAITER:
                 case self::EN_ATTENTE_PIECES:
                     $sPossibleStatus = 'status <= ' . self::EN_ATTENTE_PIECES;
                     break;

@@ -158,7 +158,7 @@
                         <td>
                             <input type="text" name="societe" id="societe" class="input_large" value="<?= $this->companies->name ?>"/>
                         </td>
-
+                    </tr>
                     <tr>
                         <th><label for="title">Titre du projet FO :</label></th>
                         <td>
@@ -398,6 +398,7 @@
                             <a id="link_search" class="btn_link thickbox" onclick="$(this).attr('href', '<?= $this->lurl ?>/dossiers/changeClient/' + $('#search').val());" href="<?= $this->lurl ?>/dossiers/changeClient/">Rechercher</a>
                         </td>
                     </tr>
+                    <?php if ($this->current_projects_status->status >= \projects_status::EN_ATTENTE_PIECES) { ?>
                     <tr>
                         <th><label for="analyste">Analyste :</label></th>
                         <td>
@@ -409,6 +410,7 @@
                             </select>
                         </td>
                     </tr>
+                    <?php } ?>
                     <tr>
                         <th><label for="commercial">Commercial :</label></th>
                         <td>
