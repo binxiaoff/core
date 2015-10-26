@@ -583,4 +583,30 @@ class projects extends projects_crud
 
         return $aProjects;
     }
+
+    /**
+     * Retrieve the of projects in fast process that still at step 3 after one hour
+     * @return array
+     */
+    public function getFastProcessStep3()
+    {
+        $aProjects = array();
+        $rResult   = $this->bdd->query('
+            SELECT p.*
+            FROM projects p
+            INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
+            INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            WHERE ps.status = ' . \projects_status::COMPLETUDE_ETAPE_3 . '
+                AND DATE_SUB(NOW(), INTERVAL 1 HOUR) > p.added'
+        );
+
+        if ($this->bdd->num_rows($rResult) > 0) {
+            while ($aResult = $this->bdd->fetch_assoc($rResult)) {
+                $aProjects[] = (int) $aResult['id_project'];
+            }
+        }
+
+        return $aProjects;
+    }
 }

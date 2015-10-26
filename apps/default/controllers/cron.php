@@ -8249,6 +8249,20 @@ class cronController extends bootstrap
         }
     }
 
+    public function _projet_process_fast_completude()
+    {
+        if ($this->startCron('projet process fast completude', 5)) {
+            $this->projects_status         = $this->loadData('projects_status');
+            $this->projects_status_history = $this->loadData('projects_status_history');
+
+            foreach ($this->projects->getFastProcessStep3() as $iProjectId) {
+                $this->projects_status_history->addStatus(-1, \projects_status::A_TRAITER, $iProjectId);
+            }
+
+            $this->stopCron();
+        }
+    }
+
     /**
      * @param $sName  string Cron name (used for settings name)
      * @param $iDelay int    Minimum delay (in minutes) before we consider cron has crashed and needs to be restarted
