@@ -38,11 +38,6 @@ class projects_status_history extends projects_status_history_crud
         return parent::get($id, $field);
     }
 
-    public function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
     public function delete($id, $field = 'id_project_status_history')
     {
         parent::delete($id, $field);
@@ -95,6 +90,42 @@ class projects_status_history extends projects_status_history_crud
         $this->numero_relance    = $numero_relance;
         $this->content           = $content;
         $this->create();
+
+        $this->statusUpdateTrigger($status, $id_project);
+    }
+
+    private function statusUpdateTrigger($iStatus, $iProjectId)
+    {
+        switch ($iStatus) {
+            case \projects_status::A_TRAITER:
+                /* @var array $config */
+                include __DIR__ . '/../config.php';
+
+                $oMailsText = new \mails_text($this->bdd);
+                $oMailsText->get('notification-projet-a-traiter', 'lang = "fr" AND type');
+
+                $oProjects = new \projects($this->bdd);
+                $oProjects->get($iProjectId, 'id_project');
+
+                $oCompanies = new \companies($this->bdd);
+                $oCompanies->get($oProjects->id_company, 'id_company');
+
+                $aReplacements = array(
+                    '[ID_PROJET]'      => $iProjectId,
+                    '[LIEN_BO_PROJET]' => $config['static_url'][ENVIRONMENT] . '/dossiers/edit/' . $iProjectId,
+                    '[RAISON_SOCIALE]' => utf8_decode($oCompanies->name),
+                    '[SURL]'           => $config['url'][ENVIRONMENT]['admin']
+                );
+
+                $oEmail = new \email();
+                $oEmail->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
+                $oEmail->setSubject($oMailsText->subject);
+                $oEmail->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $oMailsText->content));
+                $oEmail->addRecipient('analyste@unilend.fr');
+
+                Mailer::send($oEmail, new \mails_filer($this->bdd), $oMailsText->id_textemail);
+                break;
+        }
     }
 
     public function getBeforeLastStatut($iProjectId)
