@@ -281,7 +281,7 @@ class preteursController extends bootstrap
 
         //attachments
         $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects();
+        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender();
 
         // liste des bids en cour
         $this->lBids = $this->bids->select('id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND status = 0', 'added DESC');
@@ -437,7 +437,7 @@ class preteursController extends bootstrap
 
         //attachements
         $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects();
+        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender();
         // liste des cvg signé
         $this->lAcceptCGV = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
 
