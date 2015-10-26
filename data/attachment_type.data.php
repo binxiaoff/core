@@ -119,7 +119,7 @@ class attachment_type extends attachment_type_crud
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function getAllTypesForProjects()
+    public function getAllTypesForProjects($sLanguage = 'fr')
     {
         $aTypes = array(
             self::RELEVE_BANCAIRE_MOIS_N,
@@ -154,7 +154,16 @@ class attachment_type extends attachment_type_crud
             self::AUTRE4
         );
 
-        return $this->getAllTypes($aTypes);
+        $oTextes = new \textes($this->bdd);
+        $aTranslations = $oTextes->selectFront('projet', $sLanguage);
+
+        return array_map(
+            function($aType) use ($aTranslations) {
+                $aType['label'] = $aTranslations['document-type-' . $aType['id']];
+                return $aType;
+            },
+            $this->getAllTypes($aTypes)
+        );
     }
 
     public function getAllTypesForLender()

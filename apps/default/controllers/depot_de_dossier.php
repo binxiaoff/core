@@ -819,8 +819,7 @@ class depot_de_dossierController extends bootstrap
 
         $this->lng['espace-emprunteur'] = $this->ln->selectFront('depot-de-dossier-espace-emprunteur', $this->language, $this->App);
 
-        // @todo use trads for Types of files
-        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects();
+        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects($this->language);
 
         if (isset($_SESSION['forms']['depot-de-dossier-fichiers'])) {
             $this->aForm   = isset($_SESSION['forms']['depot-de-dossier-fichiers']['values']) ? $_SESSION['forms']['depot-de-dossier-fichiers']['values'] : array();

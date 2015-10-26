@@ -323,7 +323,7 @@ class dossiersController extends bootstrap
             }
 
             $this->attachment_type  = $this->loadData('attachment_type');
-            $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects();
+            $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects($this->language);
             $this->aAttachments     = $this->projects->getAttachments();
 
             $this->completude_wording = array();
@@ -2118,9 +2118,8 @@ class dossiersController extends bootstrap
             $this->date_dernier_bilan_mois  = $dateDernierBilan[1];
             $this->date_dernier_bilan_annee = $dateDernierBilan[0];
 
-            //Attachment List
             $this->attachment_type  = $this->loadData('attachment_type');
-            $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects();
+            $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects($this->language);
             $this->aAttachments     = $this->projects->getAttachments();
 
             //******************//
