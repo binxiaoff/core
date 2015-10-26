@@ -137,7 +137,7 @@
                 <div class="row">
                     <table>
                         <tr>
-                            <td style="vertical-align:middle;"><label for="duree"><?php printf($this->lng['etape2']['duree-amortissement'], $this->projects->amount); ?> &nbsp;</label></td>
+                            <td style="vertical-align:middle;"><label for="duree"><?php printf($this->lng['etape2']['choisir-duree-de-remboursement'], $this->projects->amount); ?> &nbsp;</label></td>
                             <td>
                                 <select name="duree" id="duree" class="field field-small required custom-select">
                                     <option value="0"><?= $this->lng['etape1']['duree'] ?></option>
