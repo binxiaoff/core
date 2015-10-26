@@ -19,7 +19,7 @@
                     <select class="custom-select required field">
                         <option value=""><?= $this->lng['espace-emprunteur']['selectionnez-un-document'] ?></option>
                         <?php foreach ($this->aAttachmentTypes as $aAttachmentType) { ?>
-                            <option value="<?= $aAttachmentType['id'] ?>"><?= $aAttachmentType['label'] ?></option>
+                            <option value="<?= $aAttachmentType['id'] ?>"><?= $this->lng['depot-de-dossier']['document-type-' . $aAttachmentType['id']] ?></option>
                         <?php } ?>
                     </select>
                     <div class="uploader">

@@ -41,6 +41,7 @@ class depot_de_dossierController extends bootstrap
         $this->navigateurActive = 3;
 
         $this->lng['depot-de-dossier-header'] = $this->ln->selectFront('depot-de-dossier-header', $this->language, $this->App);
+        $this->lng['depot-de-dossier']        = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
         $this->lng['etape1']                  = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
         $this->lng['etape2']                  = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
         $this->lng['etape3']                  = $this->ln->selectFront('depot-de-dossier-etape-3', $this->language, $this->App);
@@ -666,8 +667,6 @@ class depot_de_dossierController extends bootstrap
 
         $this->checkProjectHash(self::PAGE_NAME_PROSPECT);
 
-        $this->lng['depot-de-dossier'] = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
-
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-prospect'];
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-prospect'];
         $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-prospect'];
@@ -847,7 +846,6 @@ class depot_de_dossierController extends bootstrap
     {
         $this->checkProjectHash(self::PAGE_NAME_END);
 
-        $this->lng['depot-de-dossier']     = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
         $this->lng['depot-de-dossier-fin'] = $this->ln->selectFront('depot-de-dossier-fin', $this->language, $this->App);
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-fin'];
@@ -939,8 +937,6 @@ class depot_de_dossierController extends bootstrap
 
         $this->projects->stop_relances = 1;
         $this->projects->update();
-
-        $this->lng['depot-de-dossier'] = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
 
         if ($this->projects->id_commercial > 0) {
             $this->users = $this->loadData('users');
