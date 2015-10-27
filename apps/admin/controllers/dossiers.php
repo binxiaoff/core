@@ -981,13 +981,6 @@ class dossiersController extends bootstrap {
                                                 $type_mail = 'preteur-dossier-defaut-morale';
                                             }
 
-                                            echo '<pre>';
-                                            print_r($varMail);
-                                            echo '</pre>';
-
-                                            echo $type_mail;
-                                            die;
-
                                             // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                                             $liste_attente_mail = $this->loadData('liste_attente_mail');
                                             $liste_attente_mail->type_mail = $type_mail;
