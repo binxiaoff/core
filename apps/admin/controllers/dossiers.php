@@ -1212,10 +1212,15 @@ class dossiersController extends bootstrap
                                     $nb_loan = 0;
                                     $rembNet = 0;
                                     $sum_amount = 0;
-                                    foreach($L_loans as $l)
-                                    {
+                                    foreach ($L_loans as $l) {
                                         $sum_amount += $l['amount'];
                                         $nb_loan++;
+
+                                        $lEchea = $this->echeanciers->select('id_loan = ' . $l['id_loan'] . ' AND id_project = ' . $this->projects->id_project . ' AND status = 1');
+                                        foreach ($lEchea as $e) {
+                                            // on fait la somme de tout
+                                            $rembNet += ($e['montant'] / 100) - $e['prelevements_obligatoires'] - $e['retenues_source'] - $e['csg'] - $e['prelevements_sociaux'] - $e['contributions_additionnelles'] - $e['prelevements_solidarite'] - $e['crds'];
+                                        }
                                     }
 
                                     // Gestion de l'ajout des nouvelles notifications manquantes
@@ -1264,18 +1269,18 @@ class dossiersController extends bootstrap
                                             $this->clients_gestion_mails_notif->update();
                                             //////// FIN GESTION ALERTES //////////
                                             
-                                            // Variables du mailing
                                             $varMail = array(
-                                                'surl' => $this->surl,
-                                                'url' => $this->furl,
-                                                'prenom_p' => $this->clients->prenom,
-                                                'date_probleme' => $DateProbleme,
-                                                'cab_recouvrement' => $this->cab,
-                                                'nom_entreprise' => $this->companies->name,
-                                                'motif_virement' => $motif,
-                                                'contenu_mail' => $contenu_a_ajouter_mail,
-                                                'lien_fb' => $lien_fb,
-                                                'lien_tw' => $lien_tw);
+                                            'surl' => $this->surl,
+                                            'url' => $this->furl,
+                                            'prenom_p' => $this->clients->prenom,
+                                            'valeur_bid' => number_format(($sum_amount / 100), 2, ',', ' '),
+                                            'nombre_bids' => $nb_loan,
+                                            'nom_entreprise' => $this->companies->name,
+                                            'montant_rembourse' => number_format($rembNet, 2, ',', ' '),
+                                            'saisie_recouvrement' => $contenu_a_ajouter_mail,
+                                            'motif_virement' => $motif,
+                                            'lien_fb' => $lien_fb,
+                                            'lien_tw' => $lien_tw);
 
                                             // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                                             $liste_attente_mail = $this->loadData('liste_attente_mail');
