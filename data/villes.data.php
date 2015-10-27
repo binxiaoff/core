@@ -29,90 +29,93 @@
 class villes extends villes_crud
 {
 
-	function villes($bdd,$params='')
+    public function villes($bdd, $params = '')
     {
-        parent::villes($bdd,$params);
+        parent::villes($bdd, $params);
     }
 
-    function get($id,$field='id_ville')
+    public function get($id, $field = 'id_ville')
     {
-        return parent::get($id,$field);
+        return parent::get($id, $field);
     }
 
-    function update($cs='')
+    public function update($cs = '')
     {
         parent::update($cs);
     }
 
-    function delete($id,$field='id_ville')
+    public function delete($id, $field = 'id_ville')
     {
-    	parent::delete($id,$field);
+        parent::delete($id, $field);
     }
 
-    function create($cs='')
+    public function create($cs = '')
     {
         $id = parent::create($cs);
         return $id;
     }
 
-	function select($where='',$order='',$start='',$nb='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
-		if($order != '')
-			$order = ' ORDER BY '.$order;
-		$sql = 'SELECT * FROM `villes`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+    public function select($where = '', $order = '', $start = '', $nb = '')
+    {
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
+        if ($order != '') {
+            $order = ' ORDER BY ' . $order;
+        }
+        $sql = 'SELECT * FROM `villes`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-		$resultat = $this->bdd->query($sql);
-		$result = array();
-		while($record = $this->bdd->fetch_array($resultat))
-		{
-			$result[] = $record;
-		}
-		return $result;
-	}
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
 
-	function selectCp($where='',$order='',$start='',$nb='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
-		if($order != '')
-			$order = ' ORDER BY '.$order;
-		$sql = 'SELECT DISTINCT(cp) FROM `villes`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+    public function selectCp($where = '', $order = '', $start = '', $nb = '')
+    {
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
+        if ($order != '') {
+            $order = ' ORDER BY ' . $order;
+        }
+        $sql = 'SELECT DISTINCT(cp) FROM `villes`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-		$resultat = $this->bdd->query($sql);
-		$result = array();
-		while($record = $this->bdd->fetch_array($resultat))
-		{
-			$result[] = $record;
-		}
-		return $result;
-	}
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
 
-	function counter($where='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
+    public function counter($where = '')
+    {
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
 
-		$sql='SELECT count(*) FROM `villes` '.$where;
+        $sql = 'SELECT count(*) FROM `villes` ' . $where;
 
-		$result = $this->bdd->query($sql);
-		return (int)($this->bdd->result($result,0,0));
-	}
+        $result = $this->bdd->query($sql);
+        return (int)($this->bdd->result($result, 0, 0));
+    }
 
-	function exist($id,$field='id_ville')
-	{
-		$sql = 'SELECT * FROM `villes` WHERE '.$field.'="'.$id.'"';
-		$result = $this->bdd->query($sql);
-		return ($this->bdd->fetch_array($result,0,0)>0);
-	}
+    public function exist($id, $field = 'id_ville')
+    {
+        $sql    = 'SELECT * FROM `villes` WHERE ' . $field . '="' . $id . '"';
+        $result = $this->bdd->query($sql);
+        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+    }
 
-	function generateCodeInsee($sCodeDepartement, $sCodeCommune)
-	{
-		$sCodeDepartement = str_pad($sCodeDepartement, 2, 0, STR_PAD_LEFT);
-		$sPadLength = 5 - strlen($sCodeDepartement);
-		$sCodeCommune = str_pad($sCodeCommune, $sPadLength, 0, STR_PAD_LEFT);
+    public function generateCodeInsee($sCodeDepartement, $sCodeCommune)
+    {
+        $sCodeDepartement = str_pad($sCodeDepartement, 2, 0, STR_PAD_LEFT);
+        $sPadLength       = 5 - strlen($sCodeDepartement);
+        $sCodeCommune     = str_pad($sCodeCommune, $sPadLength, 0, STR_PAD_LEFT);
 
-		return $sCodeDepartement . $sCodeCommune;
-	}
+        return $sCodeDepartement . $sCodeCommune;
+    }
 }
