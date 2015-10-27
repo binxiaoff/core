@@ -259,9 +259,10 @@ if (isset($_SESSION['freeow'])) {
 
     function RIBediting()
     {
-        
-        var iban = $('#iban1').val() + $('#iban2').val() + $('#iban3').val() +$('#iban4').val() + $('#iban5').val() + $('#iban6').val() + $('#iban7').val();
-  
+
+        var iban = $('#iban1').val() + $('#iban2').val() + $('#iban3').val() +$('#iban4').val() + $('#iban5').val() + $('#iban6').val() + $('#iban7').val(),
+            bic = $('#bic').val();
+
         // si vide on ne tient pas compte
         if (iban != "")
         {
@@ -270,17 +271,17 @@ if (isset($_SESSION['freeow'])) {
                 $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/error_iban_lightbox/'});
                 return false;
             }
-            else if (check_bic($("#bic").val()) == false){
+            else if (check_bic(bic) == false){
                 $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/error_bic_lightbox/'});
                 return false;
             }
             else{
                 // si on a deja les memes infos deja 'enregistré on valide
-                if (iban == "<?= $this->companies->iban ?>" && $('#bic').val() == "<?= $this->companies->bic ?>"){
+                if (iban == "<?= $this->companies->iban ?>" && bic == "<?= $this->companies->bic ?>") {
                     return true;
                 }
 
-                List_compagnie_meme_iban = CheckIfIbanExistDeja(iban, <?= $this->clients->id_client ?>);
+                List_compagnie_meme_iban = CheckIfIbanExistDeja(iban, bic, <?= $this->clients->id_client ?>);
 
                 if (List_compagnie_meme_iban != "none")
                 {
@@ -328,7 +329,7 @@ if (isset($_SESSION['freeow'])) {
         if (champ == 2)
         {
              var iban = $('#iban1').val() + $('#iban2').val() + $('#iban3').val() +$('#iban4').val() + $('#iban5').val() + $('#iban6').val() + $('#iban7').val();
-            
+
             if (validateIban($("#" + id).val()) == false)
                     //if($("#"+id).val().length != 27)
                     {

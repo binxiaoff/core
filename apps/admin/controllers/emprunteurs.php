@@ -376,8 +376,8 @@ class emprunteursController extends bootstrap
 
                                 $nouveauNom = str_replace('mandat', 'mandat-' . $clients_mandats->id_mandat, $clients_mandats->name);
 
-                                $chemin        = $this->path . '../../protected/pdf/mandat/' . $clients_mandats->name;
-                                $nouveauChemin = '../../protected/pdf/mandat/' . $nouveauNom;
+                                $chemin        = $this->path . 'protected/pdf/mandat/' . $clients_mandats->name;
+                                $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
 
                                 rename($chemin, $nouveauChemin);
 
@@ -770,7 +770,7 @@ class emprunteursController extends bootstrap
             }
         }
     }
-    
+
     function _error_iban_lightbox(){
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
