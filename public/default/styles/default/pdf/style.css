@@ -156,8 +156,5 @@ textarea { overflow: auto; }
 
 .pdf-wrapper .case-5 { font-size: 11px; line-height: 14px; padding: 5px; color: #848484; }
 
-
 .pageBreakAfter { page-break-after: always; }
 .pageBreakBefore { page-break-before: always; }
-
-

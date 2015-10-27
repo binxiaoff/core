@@ -281,7 +281,7 @@
                             <?php
                         }
                         if ($pf['photo_projet'] != '') {
-                            ?><img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_moy') ?>" alt="<?= $pf['photo_projet'] ?>"><?php
+                            ?><img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>"><?php
                         }
 
                         //Gestion des étoiles

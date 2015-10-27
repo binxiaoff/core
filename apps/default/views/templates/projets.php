@@ -157,7 +157,7 @@ if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' || $this->lurl 
                                 }
 
                                 if ($pf['photo_projet'] != '') {
-                                    ?><a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>"><img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_min') ?>" alt="<?= $pf['photo_projet'] ?>" class="thumb"></a><?
+                                    ?><a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>"><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>" class="thumb"></a><?
                                 }
                                 ?>
                                 <div class="description">
@@ -311,7 +311,7 @@ if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' || $this->lurl 
 
                 <div class="project-mobile">
                     <div class="project-mobile-image">
-                        <img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_moy') ?>" alt="" />
+                        <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>" />
 
                         <div class="project-mobile-image-caption">
                             <p><?= number_format($pf['amount'], 0, ',', ' ') ?>€ |

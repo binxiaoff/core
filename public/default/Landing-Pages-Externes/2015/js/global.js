@@ -22,15 +22,15 @@ var isMobile = {
 /**********************************************************************/
 /*GESTION FORM*/
 var ff;
-$(window).load(function(){ 
+$(window).load(function(){
     ff = $('#form_inscription').outerHeight();
 	formactif();
 	centerform();
-});  
+});
 function formactif(){
 	if ($( window ).width() < 960) {
 		$('#form_header').addClass('formlight');
-		
+
 	} else {
 		$('#form_header').removeClass('formlight');
 		$('#form_header').removeClass('active');
@@ -38,10 +38,10 @@ function formactif(){
 	}
 }
 function centerform(){
-	if ($( window ).width() >= 960) { 
+	if ($( window ).width() >= 960) {
 		var hh = $(window).height();
 		var tt = (hh-ff)/2;
-			
+
 		$('#form').css({bottom:"auto"});
 		$('#form_inscription.etape1').css({bottom:"auto", top:tt+"px"});
 	} else {
@@ -72,9 +72,9 @@ $(function(){
             }
         }
     });
-	
 
-	$('#form_header').click(function() {		
+
+	$('#form_header').click(function() {
 		if($('#form_header').hasClass('formlight')) {
 			if($('#form_header').hasClass('active')) {
                 if( $('#form_inscription').prop('scrollHeight') + $('.form_content').prop('scrollHeight') < $(window).height()) {
@@ -137,22 +137,6 @@ $(function(){
 
     $("#slider_projet > div > div").swipe(swipeOptions);
 
-
-    /**** select duree ****/
-/* a remettre à la remise en route du simulateur
-    $('#dc_slider-step').noUiSlider({
-        start: [ 60 ],
-        connect: "lower",
-        step: 12,
-        range: {
-            'min': [  24 ],
-            'max': [ 60 ]
-        },
-        format: wNumb({
-            decimals: 0
-        })
-    });*/
-
     /**** calcul interets ****/
 
     $("#simuler").click(function() {
@@ -179,7 +163,7 @@ $(function(){
             $("#erreur_simulation").html('Le montant maximum de prêt est de 1 000 000€');
             return false;
         }
-        
+
         var taux = $("#pret_taux").val();
         var duree = $("#dc_slider-step").val();
 
@@ -286,7 +270,7 @@ $(function(){
         $('html, body').animate({
             scrollTop: 0 /*- $('nav').height() * 0.5*/
         }, 1000, 'swing');
-    }); 
+    });
 });
 
 function swipeStatus(event, phase, direction, distance) {

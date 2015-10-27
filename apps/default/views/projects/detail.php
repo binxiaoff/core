@@ -126,7 +126,7 @@ else{
 								if($this->projects->photo_projet != '')
 								{
 									?><div class="img-holder borderless left">
-										<img src="<?=$this->photos->display($this->projects->photo_projet,'photos_projets','photo_projet_moy')?>"  alt="<?=$this->projects->photo_projet?>">
+										<img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $pf['photo_projet'] ?>"  alt="<?=$this->projects->photo_projet?>">
 										<?
 										if($this->projects->lien_video != '')
 										{

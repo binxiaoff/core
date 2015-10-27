@@ -884,7 +884,7 @@
             </div>
             <div class="clear"></div>
             <p class="fleche">Choisissez vos projets. Pour les découvrir, inscrivez-vous</p>
-            <div class="scroll2"><a href="#simulez_vos_interets"></a></div>
+            <div class="scroll2"><a href="#presse"></a></div>
         </section>
     </div><!-- projet_analyse -->
 

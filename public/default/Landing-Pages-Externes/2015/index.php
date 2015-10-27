@@ -308,7 +308,7 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
                         <option value="140">Pérou    </option>
                         <option value="141">Philippines    </option>
                         <option value="142">Pologne    </option>
-						<option value="195">Polynésie française</option>
+                        <option value="195">Polynésie française</option>
                         <option value="143">Portugal    </option>
                         <option value="144">Qatar    </option>
                         <option value="145">Russie    </option>
@@ -513,7 +513,7 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
                             <option value="140">Pérou    </option>
                             <option value="141">Philippines    </option>
                             <option value="142">Pologne    </option>
-							<option value="195">Polynésie française</option>
+                            <option value="195">Polynésie française</option>
                             <option value="143">Portugal    </option>
                             <option value="144">Qatar    </option>
                             <option value="145">Russie    </option>
@@ -755,7 +755,7 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
                         <option value="140">Pérou    </option>
                         <option value="141">Philippines    </option>
                         <option value="142">Pologne    </option>
-						<option value="195">Polynésie française</option>
+                        <option value="195">Polynésie française</option>
                         <option value="143">Portugal    </option>
                         <option value="144">Qatar    </option>
                         <option value="145">Russie    </option>
@@ -846,7 +846,7 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
                     <h3><span>1</span> Choisissez</h3>
                     <p>
                         Sélectionnez les entreprises auxquelles vous souhaitez prêter.<br/>
-                        Leur capacité de remboursement a été soigneusement étudiée. 
+                        Leur capacité de remboursement a été soigneusement étudiée.
                     </p>
                 </li>
                 <li>
@@ -953,159 +953,9 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
             </div>
             <div class="clear"></div>
             <p class="fleche">Choisissez vos projets. Pour les découvrir, inscrivez-vous</p>
-            <!-- <div class="scroll2"><a href="#simulez_vos_interets"></a></div> -->
-			 <div class="scroll2"><a href="#presse"></a></div>
+            <div class="scroll2"><a href="#presse"></a></div>
         </section>
     </div><!-- projet_analyse -->
-<!--
-    <div id="simulez_vos_interets" class="wrapper100">
-        <section class="wrapper">
-            <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60"></a>
-            <h1>Simulez <span>vos intérêts</span></h1>
-
-            <section id="pret">
-                <h1>Vous prêtez</h1>
-                <div id="pret_left">
-                    <div>
-                        <p>La somme de</p>
-                        <input type="text" id="pret_somme" name="pret_somme" placeholder="ex: 1 000">
-                        <div class="clear"></div>
-                    </div>
-                    <div>
-                        <p>Au taux de</p>
-                        <select name="pret_taux" id="pret_taux" class="custom-select">
-                            <option value="">10,0 %</option>
-                            <option selected value="0.100">10,0 %</option>
-                            <option value="0.099">9,9 %</option>
-                            <option value="0.098">9,8 %</option>
-                            <option value="0.097">9,7 %</option>
-                            <option value="0.096">9,6 %</option>
-                            <option value="0.095">9,5 %</option>
-                            <option value="0.094">9,4 %</option>
-                            <option value="0.093">9,3 %</option>
-                            <option value="0.092">9,2 %</option>
-                            <option value="0.091">9,1 %</option>
-                            <option value="0.090">9,0 %</option>
-                            <option value="0.089">8,9 %</option>
-                            <option value="0.088">8,8 %</option>
-                            <option value="0.087">8,7 %</option>
-                            <option value="0.086">8,6 %</option>
-                            <option value="0.085">8,5 %</option>
-                            <option value="0.084">8,4 %</option>
-                            <option value="0.083">8,3 %</option>
-                            <option value="0.082">8,2 %</option>
-                            <option value="0.081">8,1 %</option>
-                            <option value="0.080">8,0 %</option>
-                            <option value="0.079">7,9 %</option>
-                            <option value="0.078">7,8 %</option>
-                            <option value="0.077">7,7 %</option>
-                            <option value="0.076">7,6 %</option>
-                            <option value="0.075">7,5 %</option>
-                            <option value="0.074">7,4 %</option>
-                            <option value="0.073">7,3 %</option>
-                            <option value="0.072">7,2 %</option>
-                            <option value="0.071">7,1 %</option>
-                            <option value="0.070">7,0 %</option>
-                            <option value="0.069">6,9 %</option>
-                            <option value="0.068">6,8 %</option>
-                            <option value="0.067">6,7 %</option>
-                            <option value="0.066">6,6 %</option>
-                            <option value="0.065">6,5 %</option>
-                            <option value="0.064">6,4 %</option>
-                            <option value="0.063">6,3 %</option>
-                            <option value="0.062">6,2 %</option>
-                            <option value="0.061">6,1 %</option>
-                            <option value="0.060">6,0 %</option>
-                            <option value="0.059">5,9 %</option>
-                            <option value="0.058">5,8 %</option>
-                            <option value="0.057">5,7 %</option>
-                            <option value="0.056">5,6 %</option>
-                            <option value="0.055">5,5 %</option>
-                            <option value="0.054">5,4 %</option>
-                            <option value="0.053">5,3 %</option>
-                            <option value="0.055">5,2 %</option>
-                            <option value="0.051">5,1 %</option>
-                            <option value="0.050">5,0 %</option>
-                            <option value="0.049">4,9 %</option>
-                            <option value="0.048">4,8 %</option>
-                            <option value="0.047">4,7 %</option>
-                            <option value="0.046">4,6 %</option>
-                            <option value="0.048">4,5 %</option>
-                            <option value="0.044">4,4 %</option>
-                            <option value="0.043">4,3 %</option>
-                            <option value="0.042">4,2 %</option>
-                            <option value="0.041">4,1 %</option>
-                            <option value="0.040">4,0 %</option>
-                        </select>
-                        <div class="clear"></div>
-                    </div>
-                </div>
-                <div id="pret_right">
-                    <p>Durée du prêt</p>
-                    <div id="dc_slider-step"></div>
-                    <ul>
-                        <li>
-                            <p>24</p>
-                            <p>mois</p>
-                        </li>
-                        <li>
-                            <p>36</p>
-                            <p>mois</p>
-                        </li>
-                        <li>
-                            <p>48</p>
-                            <p>mois</p>
-                        </li>
-                        <li>
-                            <p>60</p>
-                            <p>mois</p>
-                        </li>
-                    </ul>
-                    <div class="clear"></div>
-                </div>
-                <div class="clear"></div>
-                <button id="simuler">Simuler</button>
-                <p id="erreur_simulation"></p>
-            </section>
-
-            <section id="recu">
-                <div>
-                    <h1>Vous recevez</h1>
-                    <div id="recu_left">
-                        <div>
-                            <p>La somme de</p>
-                            <p id="recu_somme">1 000</p>
-                            <div class="clear"></div>
-                        </div>
-                    </div>
-                    <div id="recu_right">
-                        <p>
-                            soit <span>25,36</span> €<br/>
-                            pendant <span>48</span> mois
-                        </p>
-                    </div>
-                    <div class="clear"></div>
-                    <div id="recu_result">
-                        <p>
-                            Soit <span><span>217,40</span> €</span><br/>
-                            <span>d'intérêts bruts</span>
-                        </p>
-                        <p>=</p>
-                        <p>
-                            <span>21,74</span><br/>
-                            du montant prêté
-                        </p>
-                        <div class="clear"></div>
-                    </div>
-                </div>
-            </section>
-
-            <p class="fleche">Inscrivez-vous et commencez à prêter en quelques clics</p>
-            <div class="scroll2"><a href="#chiffres"></a></div>
-        </section>
-    </div><!-- simulez_vos_interets -->
-	
-	-->
 
     <div id="presse" class="wrapper100">
         <section class="wrapper">
@@ -1172,7 +1022,7 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
                 <li>Aux entreprises d'emprunter directement et simplement auprès du grand public</li>
                 <li>Aux épargnants de prêter de l'argent directement aux entreprises en recevant des intérêts.</li>
             </ul>
-            <p><span>Unilend</span> est édité par la Société française pour le financement des PME, SAS au capital de 515 350 euros - RCS Paris 790 766 034, agent prestataire de services de paiement mandaté par la SFPMEI et enregistré auprès de l'Autorité de contrôle prudentiel et de résolution (ACPR) sous le numéro 790 766 034.             
+            <p><span>Unilend</span> est édité par la Société française pour le financement des PME, SAS au capital de 515 350 euros - RCS Paris 790 766 034, agent prestataire de services de paiement mandaté par la SFPMEI et enregistré auprès de l'Autorité de contrôle prudentiel et de résolution (ACPR) sous le numéro 790 766 034.
             </p>
             <br/>
             <br/>
@@ -1193,7 +1043,7 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
         </section>
     </div><!-- qui_sommes_nous -->
 
-    <button id="scrollUp"></button>  
+    <button id="scrollUp"></button>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <!-- // <script src="js/jquery-1.9.1.min.js"></script> -->
@@ -1233,7 +1083,7 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
                 var id = $(this).attr("href");
                 var offset = $(id).offset().top
                 $('html, body').animate({scrollTop: offset}, 'slow');
-                //return false; 
+                //return false;
             });
             //
             $('#inscription_date_naissance').keydown(function () {
@@ -1299,7 +1149,7 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
                 var slug_origine = '<?php echo $slug_origine; ?>';
 
                 if ($('#form_inscription').hasClass('etape1')) {
-                    
+
                     var erreur = 0;
 
                     if (!inscription_civilite) {
@@ -1371,14 +1221,14 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
                         civilite = inscription_civilite;
 
                         var DATA = '&token=' + token + '&utm_source=' + utm_source + '&utm_source2=' + utm_source2 + '&slug_origine=' + slug_origine + '&date=' + date + '&email=' + email + '&nom=' + nom + '&prenom=' + prenom + '&civilite=' + civilite;
-                        
+
                         //alert("<?= $url_site ?>/collect/prospect");
                         $.ajax({
                             type: "POST",
                             url: "<?= $url_site ?>/collect/prospect",
                             data: DATA,
                             success: function (data) {
-                                var parsedDate = jQuery.parseJSON(data);                                 
+                                var parsedDate = jQuery.parseJSON(data);
 
                                 if (parsedDate.reponse == 'OK') {
                                     if (utm_source3) {
@@ -1748,7 +1598,7 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
                                         var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=13&uniqueid=' + uniqueid + '"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
 
                                         $("#tracking").html(tracking2);
-                                        //end tracking									
+                                        //end tracking
 
                                         $(location).attr('href', '<?= $url_site ?>/projets-a-financer');
                                     }
