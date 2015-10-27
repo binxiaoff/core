@@ -587,7 +587,7 @@ if (isset($_SESSION['freeow'])) {
                     </tr>
                     <tr>
                         <td>
-                            <input type="text" name="date_rj" id="date_lj" class="input_dp" value="<?= date('d/m/Y') ?>" />
+                            <input type="text" name="date_lj" id="date_lj" class="input_dp" value="<?= date('d/m/Y') ?>" />
                             <br><br><br>
                         </td>
                     </tr>
