@@ -110,18 +110,51 @@ class bootstrap extends Controller
         // On sniff le partenaire
         $this->handlePartenaire($urlParams);
 
-        // Recuperation du code Google Webmaster Tools
-        $this->settings->get('Google Webmaster Tools', 'type');
-        $this->google_webmaster_tools = $this->settings->value;
+        $sKey      = $this->oCache->makeKey('Settings_GoogleTools_Analytics_BaseLine_FB_Twitter_Cookie');
+        $aElements = $this->oCache->get($sKey);
+        if (false === $aElements) {
+            $this->settings->get('Google Webmaster Tools', 'type');
+            $this->google_webmaster_tools = $this->settings->value;
 
-        // Recuperation du code Google Analytics
-        $this->settings->get('Google Analytics', 'type');
-        $this->google_analytics = $this->settings->value;
+            // Recuperation du code Google Analytics
+            $this->settings->get('Google Analytics', 'type');
+            $this->google_analytics = $this->settings->value;
 
-        // Recuperation de la Baseline Title
-        $this->settings->get('Baseline Title', 'type');
-        $this->baseline_title = $this->settings->value;
+            // Recuperation de la Baseline Title
+            $this->settings->get('Baseline Title', 'type');
+            $this->baseline_title = $this->settings->value;
 
+
+            // Récup du lien fb
+            $this->settings->get('Facebook', 'type');
+            $this->like_fb = $this->settings->value;
+
+            // Récup du lien Twitter
+            $this->settings->get('Twitter', 'type');
+            $this->twitter = $this->settings->value;
+
+            // lien page cookies (id_tree)
+            $this->settings->get('id page cookies', 'type');
+            $this->id_tree_cookies = $this->settings->value;
+
+            $aElements = array(
+                'GoogleTools'     => $this->google_webmaster_tools,
+                'GoogleAnalytics' => $this->google_analytics,
+                'BaselineTitle'   => $this->baseline_title,
+                'Facebook'        => $this->like_fb,
+                'Twitter'         => $this->twitter,
+                'TreeCookies'     => $this->id_tree_cookies
+            );
+
+            $this->oCache->set($sKey, $aElements, \Unilend\librairies\Cache::LONG_TIME);
+        } else {
+            $this->google_webmaster_tools = $aElements['GoogleTools'];
+            $this->google_analytics       = $aElements['GoogleAnalytics'];
+            $this->baseline_title         = $aElements['BaselineTitle'];
+            $this->like_fb                = $aElements['Facebook'];
+            $this->twitter                = $aElements['Twitter'];
+            $this->id_tree_cookies        = $aElements['TreeCookies'];
+        }
         // super login //
 
         /////////////////
@@ -149,18 +182,44 @@ class bootstrap extends Controller
         );
 
         // Recuperation du bloc nos-partenaires
-        $this->blocs->get('nos-partenaires', 'slug');
-        $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
-        foreach ($lElements as $b_elt) {
-            $this->elements->get($b_elt['id_element']);
-            $this->bloc_partenaires[$this->elements->slug]           = $b_elt['value'];
-            $this->bloc_partenairesComplement[$this->elements->slug] = $b_elt['complement'];
+        $sKey      = $this->oCache->makeKey('Blocs_Partenaires', $this->blocs->id_bloc, $this->language);
+        $aElements = $this->oCache->get($sKey);
+        if(false === $aElements) {
+            $this->blocs->get('nos-partenaires', 'slug');
+            $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
+            foreach ($lElements as $b_elt) {
+                $this->elements->get($b_elt['id_element']);
+                $this->bloc_partenaires[$this->elements->slug]           = $b_elt['value'];
+                $this->bloc_partenairesComplement[$this->elements->slug] = $b_elt['complement'];
+            }
+
+            $aElements = array(
+                'blocPartenaires'           => $this->bloc_partenaires,
+                'blocPartenairesComplement' => $this->bloc_partenairesComplement
+            );
+
+            $this->oCache->set($sKey, $aElements, \Unilend\librairies\Cache::MEDIUM_TIME);
         }
 
+        $this->bloc_partenaires           = $aElements['blocPartenaires'];
+        $this->bloc_partenairesComplement = $aElements['blocPartenairesComplement'];
+
         //Recuperation des element de traductions
-        $this->lng['header'] = $this->ln->selectFront('header', $this->language, $this->App);
-        $this->lng['footer'] = $this->ln->selectFront('footer', $this->language, $this->App);
-        $this->lng['home']   = $this->ln->selectFront('home', $this->language, $this->App);
+        $sKey      = $this->oCache->makeKey('Trad_Header_Footer_home');
+        $aElements = $this->oCache->get($sKey);
+        if(false === $aElements) {
+            $aElements = array(
+                'TradHeader' => $this->ln->selectFront('header', $this->language, $this->App),
+                'TradFooter' => $this->ln->selectFront('footer', $this->language, $this->App),
+                'TradHome'   => $this->ln->selectFront('home', $this->language, $this->App)
+            );
+
+            $this->oCache->set($sKey, $aElements, \Unilend\librairies\Cache::LONG_TIME);
+        }
+
+        $this->lng['header'] = $aElements['TradHeader'];
+        $this->lng['footer'] = $aElements['TradFooter'];
+        $this->lng['home']   = $aElements['TradHome'];
 
 
         //gestion du captcha
@@ -598,18 +657,6 @@ class bootstrap extends Controller
         } else {
             $this->tabProjectDisplay = '50';
         }
-
-        // Récup du lien fb
-        $this->settings->get('Facebook', 'type');
-        $this->like_fb = $this->settings->value;
-
-        // Récup du lien Twitter
-        $this->settings->get('Twitter', 'type');
-        $this->twitter = $this->settings->value;
-
-        // lien page cookies (id_tree)
-        $this->settings->get('id page cookies', 'type');
-        $this->id_tree_cookies = $this->settings->value;
 
         $this->create_cookies = true;
         if (isset($_COOKIE['acceptCookies'])) {

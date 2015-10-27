@@ -1,4 +1,21 @@
-
+<script type="text/javascript">
+	<?
+    if(isset($_SESSION['freeow']))
+    {
+    ?>
+	$(document).ready(function(){
+		var title, message, opts, container;
+		title = "<?=$_SESSION['freeow']['title']?>";
+		message = "<?=$_SESSION['freeow']['message']?>";
+		opts = {};
+		opts.classes = ['smokey'];
+		$('#freeow-tr').freeow(title, message, opts);
+	});
+	<?
+    }
+    ?>
+</script>
+<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
 	<div class="btnDroite" style="margin:0px;">
     	<select id="loadYear" class="select" onchange="loadDashYear(this.value)" style="width:95px;" name="annee">

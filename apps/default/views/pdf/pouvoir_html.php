@@ -59,7 +59,6 @@
 							<div class="col-small">
 								<?=$this->companies->rcs?>
 							</div>
-							<div class="cl">&nbsp;</div>
 						</li>
 					</ul>
 				</div>
@@ -91,7 +90,6 @@
 							<div class="col-small">
 								<?=$this->clients->fonction?>
 							</div>
-							<div class="cl">&nbsp;</div>
 						</li>
 					</ul>
 				</div>
@@ -167,15 +165,14 @@
 							<div class="col-small">
 								<?=number_format($this->rembByMonth, 2, ',', ' ')?> &euro;
 							</div>
-							<div class="cl">&nbsp;</div>
-						</li>
-						<li>
-							<h5><?=$this->bloc_pouvoir['les-bons-nominatifs']?></h5>
 						</li>
 					</ul>
 				</div>
 				<div class="list">
 					<ul>
+						<li>
+							<h5><?=$this->bloc_pouvoir['les-bons-nominatifs']?></h5>
+						</li>
 						<li><?=$this->bloc_pouvoir['la-signature-engage']?></li>
 						<li>
 							<div class="col-long">
@@ -220,10 +217,7 @@
 					</ul>
 				</div>
 			</div>
-			<!-- End Page Break -->
-
-			<!-- Page Break -->
-			<div class="page-break">
+			<div>
 				<h3 class="pink"><?=$this->bloc_pdf_contrat['dernier-bilan']?></h3>
 				<div class="list">
 					<ul>
@@ -231,38 +225,38 @@
 							<?=$this->bloc_pdf_contrat['au']?> <?=$this->date_dernier_bilan_jour?>/<?=$this->date_dernier_bilan_mois?>/<?=$this->date_dernier_bilan_annee?>
 						</li>
 					</ul>
-				</div>
-				<h5><?=$this->bloc_pdf_contrat['actif']?></h5>
-				<div class="list">
-					<ul>
-						<li><?=$this->bloc_pdf_contrat['immo-corpo']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['immobilisations_corporelles'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['immo-incorpo']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['immobilisations_incorporelles'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['immo-financieres']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['immobilisations_financieres'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['stocks']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['stocks'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['creances']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['creances_clients'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['dispo']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['disponibilites'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['valeurs-mobilieres']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['valeurs_mobilieres_de_placement'], 2, ',', ' ')?> &euro;</div></li>
-					</ul>
-				</div>
-				<div class="total-row">
-					<?=$this->bloc_pdf_contrat['total-actif']?> : <?=number_format($this->totalActif, 2, ',', ' ')?> &euro;
-				</div>
-				<h5><?=$this->bloc_pdf_contrat['passif']?></h5>
-				<div class="list">
-					<ul>
-						<li><?=$this->bloc_pdf_contrat['capitaux']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['capitaux_propres'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['provisions']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['provisions_pour_risques_et_charges'], 2, ',', ' ')?> &euro;</div></li>
-                        <li><?=$this->bloc_pdf_contrat['amortissements-sur-immo']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['amortissement_sur_immo'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['dettes-fi']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['dettes_financieres'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['dettes-fourn']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['dettes_fournisseurs'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['autres-dettes']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['autres_dettes'], 2, ',', ' ')?> &euro;</div></li>
-					</ul>
-				</div>
-				<div class="total-row">
-					<?=$this->bloc_pdf_contrat['total-passif']?> : <?=number_format($this->totalPassif, 2, ',', ' ')?> &euro;
-				</div>
-				<div class="center-text">
-					<?=$this->bloc_pdf_contrat['certifie']?>
+					<h5><?=$this->bloc_pdf_contrat['actif']?></h5>
+					<div class="list">
+						<ul>
+							<li><?=$this->bloc_pdf_contrat['immo-corpo']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['immobilisations_corporelles'], 2, ',', ' ')?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['immo-incorpo']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['immobilisations_incorporelles'], 2, ',', ' ')?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['immo-financieres']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['immobilisations_financieres'], 2, ',', ' ')?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['stocks']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['stocks'], 2, ',', ' ')?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['creances']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['creances_clients'], 2, ',', ' ')?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['dispo']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['disponibilites'], 2, ',', ' ')?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['valeurs-mobilieres']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['valeurs_mobilieres_de_placement'], 2, ',', ' ')?> &euro;</div></li>
+						</ul>
+					</div>
+					<div class="total-row">
+						<?=$this->bloc_pdf_contrat['total-actif']?> : <?=number_format($this->totalActif, 2, ',', ' ')?> &euro;
+					</div>
+					<h5><?=$this->bloc_pdf_contrat['passif']?></h5>
+					<div class="list">
+						<ul>
+							<li><?=$this->bloc_pdf_contrat['capitaux']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['capitaux_propres'], 2, ',', ' ')?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['provisions']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['provisions_pour_risques_et_charges'], 2, ',', ' ')?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['amortissements-sur-immo']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['amortissement_sur_immo'], 2, ',', ' ')?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['dettes-fi']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['dettes_financieres'], 2, ',', ' ')?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['dettes-fourn']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['dettes_fournisseurs'], 2, ',', ' ')?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['autres-dettes']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['autres_dettes'], 2, ',', ' ')?> &euro;</div></li>
+						</ul>
+					</div>
+					<div class="total-row">
+						<?=$this->bloc_pdf_contrat['total-passif']?> : <?=number_format($this->totalPassif, 2, ',', ' ')?> &euro;
+					</div>
+					<div class="center-text">
+						<?=$this->bloc_pdf_contrat['certifie']?>
+					</div>
 				</div>
 			</div>
 			<!-- End Page Break -->
