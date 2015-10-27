@@ -163,4 +163,34 @@ class lenders_accounts extends lenders_accounts_crud
         return $attachments;
 
     }
+
+    public function getInfosben($iOffset = '', $iLimit = '')
+    {
+        $sOffset = '';
+        if ('' !== $iOffset) {
+            $sOffset = 'OFFSET '.$iOffset;
+        }
+
+        $sLimit = '';
+        if ('' !== $iLimit) {
+            $sLimit = 'LIMIT '.$iLimit;
+        }
+
+        $sql = 'SELECT DISTINCT (c.id_client), c.prenom, c.nom
+                FROM clients c
+                INNER JOIN lenders_accounts la ON la.id_client_owner = c.id_client
+                INNER JOIN loans l on l.id_lender = la.id_lender_account
+                INNER JOIN projects p ON p.id_project = l.id_project
+                INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
+                INNER JOIN projects_status_history psh USING (id_project_status_history)
+                INNER JOIN projects_status ps USING (id_project_status)
+                WHERE ps.status = 80'. ' ' . $sLimit. ' '. $sOffset;
+
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
 }

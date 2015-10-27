@@ -863,62 +863,29 @@ class statsController extends bootstrap
 
     public function _requete_infosben()
     {
-        $this->companies        = $this->loadData('companies');
-        $this->emprunteur       = $this->loadData('clients');
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->insee            = $this->loadData('insee');
-        $this->pays             = $this->loadData('pays_v2');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->projects         = $this->loadData('projects');
-        $this->loans            = $this->loadData('loans');
-
-        $this->lProjects = $this->projects->selectProjectsByStatus('80');
+        $oLendersAccounts = $this->loadData('lenders_accounts');
+        $this->aLenders = $oLendersAccounts->getInfosben();
     }
 
     public function _requete_infosben_csv()
     {
-        $this->autoFireView = false;
-        $this->hideDecoration();
-
-        $this->companies        = $this->loadData('companies');
-        $this->emprunteur       = $this->loadData('clients');
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->insee            = $this->loadData('insee');
-        $this->pays             = $this->loadData('pays_v2');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->projects         = $this->loadData('projects');
-        $this->loans            = $this->loadData('loans');
-
-        $this->lProjects = $this->projects->selectProjectsByStatus('80');
+        $oLendersAccounts = $this->loadData('lenders_accounts');
+        $this->aLenders = $oLendersAccounts->getInfosben();
 
         $header = "Cdos;Cbéné;CEtabl;CGuichet;RéfCompte;NatCompte;TypCompte;CDRC;";
-        $header = utf8_encode($header);
 
         $csv = "";
         $csv .= $header . " \n";
 
-        foreach ($this->lProjects as $p) {
-            $this->companies->get($p['id_company'], 'id_company');
-            $this->emprunteur->get($this->companies->id_client_owner, 'id_client');
+        foreach ($this->aLenders as $aLender) {
+            // Motif
+            $sPrenom   = substr($this->ficelle->stripAccents(trim($aLender['prenom'])), 0, 1);
+            $sNom      = $this->ficelle->stripAccents(trim($aLender['nom']));
+            $motif     = mb_strtoupper($aLender['id_client'] . $sPrenom . $sNom, 'UTF-8');
+            $motif     = substr($motif, 0, 10);
 
-            $this->lLoans = $this->loans->getPreteurs($p['id_project']);
-
-            foreach ($this->lLoans as $l) {
-                $this->lenders_accounts->get($l['id_lender'], 'id_lender_account');
-                $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
-
-                // Motif
-                $pre = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
-                $nom = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
-                $id_client = $this->clients->id_client;
-                $motif     = mb_strtoupper($id_client . $pre . $nom, 'UTF-8');
-                $motif = substr($motif, 0, 10);
-
-                $csv .= $this->emprunteur->id_client . ";" . $motif . ";14378;;" . $this->clients->id_client . ";4;6;P;";
-                $csv .= " \n";
-            }
+            $csv .= "1;" . $motif . ";14378;;" . $aLender['id_client'] . ";4;6;P;";
+            $csv .= " \n";
         }
 
         $titre = 'requete_infosben' . date('Ymd');
