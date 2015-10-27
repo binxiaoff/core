@@ -294,7 +294,7 @@
 
                 <div class="project-mobile">
                     <div class="project-mobile-image">
-                        <img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_moy') ?>" alt="" />
+                        <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>">
 
                         <div class="project-mobile-image-caption">
                             <p><?= number_format($pf['amount'], 0, ',', ' ') ?>€ |
