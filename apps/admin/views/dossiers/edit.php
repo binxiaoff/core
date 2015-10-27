@@ -621,7 +621,16 @@ if (isset($_SESSION['freeow'])) {
                 </table>
                 <table class="hidden_table bloc_mail_preteur_default">
                     <tr>
-                        <th><label for="area_lj"><i>Email d'information aux prêteurs :</i></label></th>
+                        <th><label for="mandataire_default"><i>Coordonnées du mandataire judiciaire :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <textarea class="textarea_lng" name="mandataire_default" id="mandataire_default" style="height: 100px;width: 420px;"></textarea>
+                            <br><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="area_default"><i>Email d'information aux prêteurs :</i></label></th>
                     </tr>
                     <tr>
                         <td><textarea class="textarea_lng" name="area_default" id="area_default" style="height: 100px;width: 420px;"></textarea></td>

@@ -848,6 +848,7 @@ class dossiersController extends bootstrap {
                             // on récupère la variable pour savoir si on envoi le mail au preteur ou non
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_default'];
                             $contenu_a_ajouter_mail = $_POST['area_default'];
+                            $mandataire = $_POST['mandataire_default'];
 
                             // on enregsitre le contenu
                             $projects_status_history_informations = $this->loadData('projects_status_history_informations');
@@ -862,6 +863,25 @@ class dossiersController extends bootstrap {
                             // Twitter
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
+
+                            // EMAIL RECOUVREMENT EMPRUNTEUR //
+                            // recup emprunteur
+                            $emprunteur = $this->loadData('clients');
+                            $emprunteur->get($this->companies->id_client_owner, 'id_client');
+                            // recup date financement (date de premier passage en statut remboursement)
+                            $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
+                            $date_remb_time = strtotime($status_remb[0]['added']);
+                            $mois = $this->dates->tableauMois[$this->language][date('n', $date_remb_time)];
+                            $year_financement = date('Y', $date_remb_time);
+                            $date_financement = $mois . ' ' . $year_financement;
+
+                            // recup date liquidation judiciare (date de dernier passage en statut liquidation judiciare)
+                            $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 28', 'added DESC', 0, 1);
+                            $date_lj_time = strtotime($status_remb[0]['added']);
+                            $mois = $this->dates->tableauMois[$this->language][date('n', $date_lj_time)];
+                            $day_lj = date('d', $date_lj_time);
+                            $year_lj = date('Y', $date_lj_time);
+                            $date_lj = $day_lj . ' ' . $mois . ' ' . $year_lj;
 
                             $this->companies->get($this->projects->id_company, 'id_company');
 
@@ -887,6 +907,12 @@ class dossiersController extends bootstrap {
                                     foreach ($L_loans as $l) {
                                         $sum_amount += $l['amount'];
                                         $nb_loan++;
+
+                                        $lEchea = $this->echeanciers->select('id_loan = ' . $l['id_loan'] . ' AND id_project = ' . $this->projects->id_project . ' AND status = 1');
+                                        foreach ($lEchea as $e) {
+                                            // on fait la somme de tout
+                                            $rembNet += ($e['montant'] / 100) - $e['prelevements_obligatoires'] - $e['retenues_source'] - $e['csg'] - $e['prelevements_sociaux'] - $e['contributions_additionnelles'] - $e['prelevements_solidarite'] - $e['crds'];
+                                        }
                                     }
 
                                     // Gestion de l'ajout des nouvelles notifications manquantes
@@ -935,18 +961,36 @@ class dossiersController extends bootstrap {
                                                 'surl' => $this->surl,
                                                 'url' => $this->furl,
                                                 'prenom_p' => $this->clients->prenom,
-                                                'cab_recouvrement' => $this->cab,
+                                                'valeur_bid' => number_format(($sum_amount / 100), 2, ',', ' '),
+                                                'nombre_bids' => $nb_loan,
                                                 'nom_entreprise' => $this->companies->name,
                                                 'montant_rembourse' => number_format($rembNet, 2, ',', ' '),
+                                                'date_envoi_email_liquidation_judiciaire' => $date_lj,
+                                                'coordonnees_mandataire' => $mandataire,
+                                                'annee_bdc' => $year_financement,
                                                 'motif_virement' => $motif,
-                                                'valeur_bid' => number_format($sum_amount / 100, 2, ',', ' '),
-                                                'contenu_mail' => $contenu_a_ajouter_mail,
                                                 'lien_fb' => $lien_fb,
                                                 'lien_tw' => $lien_tw);
 
+                                            // physique
+                                            if (in_array($this->clients->type, array(1, 3))) {
+                                                $type_mail = 'preteur-dossier-defaut';
+                                            }
+                                            // Morale
+                                            else {
+                                                $type_mail = 'preteur-dossier-defaut-morale';
+                                            }
+
+                                            echo '<pre>';
+                                            print_r($varMail);
+                                            echo '</pre>';
+
+                                            echo $type_mail;
+                                            die;
+
                                             // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                                             $liste_attente_mail = $this->loadData('liste_attente_mail');
-                                            $liste_attente_mail->type_mail = 'preteur-dossier-defaut';
+                                            $liste_attente_mail->type_mail = $type_mail;
                                             $liste_attente_mail->language = $this->language;
                                             $liste_attente_mail->variables = serialize($varMail);
                                             $liste_attente_mail->to = $this->clients->email;
@@ -1680,13 +1724,12 @@ class dossiersController extends bootstrap {
                                             'lien_fb' => $lien_fb,
                                             'lien_tw' => $lien_tw);
 
-                                        if($this->current_projects_status->status == 150){
+                                        if ($this->current_projects_status->status == 150) {
                                             $type_mail = 'statut-redressement-judiciaire-bis-preteur';
-                                        }
-                                        else{
+                                        } else {
                                             $type_mail = 'statut-redressement-judiciaire-preteur';
                                         }
-                                        
+
                                         // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                                         $liste_attente_mail = $this->loadData('liste_attente_mail');
                                         $liste_attente_mail->type_mail = $type_mail;
@@ -1732,12 +1775,12 @@ class dossiersController extends bootstrap {
                             $date_jugement = $_POST['date_lj'];
                             $tab = explode('/', $date_jugement);
                             $date_jugement = $tab[2] . '-' . $tab[1] . '-' . $tab[0];
-                            
+
                             $month_date_jugement = $this->dates->tableauMois[$this->language][$tab[1]];
                             $year_date_jugement = $tab[2];
                             $day_date_jugement = $tab[0];
                             $date_jugement_display = $day_date_jugement . ' ' . $month_date_jugement . ' ' . $year_date_jugement;
-                            
+
                             $mandataire = $_POST['mandataire_lj'];
 
                             // on enregsitre le contenu
@@ -1884,15 +1927,14 @@ class dossiersController extends bootstrap {
                                             'motif_virement' => $motif,
                                             'lien_fb' => $lien_fb,
                                             'lien_tw' => $lien_tw);
-                                        
-                                        if($this->current_projects_status->status == 150){
+
+                                        if ($this->current_projects_status->status == 150) {
                                             $type_mail = 'statut-liquidation-judiciaire-preteur';
-                                        }
-                                        else{
+                                        } else {
                                             $type_mail = 'statut-liquidation-judiciaire-bis-preteur';
                                         }
-                                        
-                                        
+
+
                                         // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                                         $liste_attente_mail = $this->loadData('liste_attente_mail');
                                         $liste_attente_mail->type_mail = $type_mail;
