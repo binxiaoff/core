@@ -1,4 +1,21 @@
-
+<script type="text/javascript">
+	<?
+    if(isset($_SESSION['freeow']))
+    {
+    ?>
+	$(document).ready(function(){
+		var title, message, opts, container;
+		title = "<?=$_SESSION['freeow']['title']?>";
+		message = "<?=$_SESSION['freeow']['message']?>";
+		opts = {};
+		opts.classes = ['smokey'];
+		$('#freeow-tr').freeow(title, message, opts);
+	});
+	<?
+    }
+    ?>
+</script>
+<div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
 	<div class="btnDroite" style="margin:0px;">
     	<select id="loadYear" class="select" onchange="loadDashYear(this.value)" style="width:95px;" name="annee">
@@ -10,18 +27,18 @@
 		?>
         </select>
     </div>
-    
+
     <div class="contentLoadYear">
-    
+
         <h1>Fonds déposés sur la plateforme (<?=date('Y')?>)</h1>
-        <div id="caannuel" style="width: 100%; height: 300px;"></div>        
+        <div id="caannuel" style="width: 100%; height: 300px;"></div>
         <br /><br />
         <style>
             table.recapDashboard,table.ratioDashboard{border :2px solid #B10366;width: 100%;}
             table.recapDashboard td,table.recapDashboard th,table.ratioDashboard td, table.ratioDashboard th{padding:10px;}
             table.recapDashboard th{width: 155px;}
             table.ratioDashboard th{width: 195px;}
-            
+
         </style>
         <div class="btnDroite" style="margin:0px;">
             <select name="annee" id="annee" class="select" style="width:95px;" onchange="recapdashboard(this.value,<?=$this->year?>)">
@@ -30,13 +47,13 @@
             {
                 if(strlen($i) < 2) $month = '0'.$i;
                 else $month = $i;
-                
+
                 ?><option <?=(date('m') == $month?'selected':'')?> value="<?=$i?>"><?=$this->dates->tableauMois['fr'][$i]?></option><?
             }
-            
-                
-                
-                
+
+
+
+
             ?>
             </select>
         </div>
@@ -46,32 +63,32 @@
                 <tr>
                     <th>Prêteurs connectés :</th>
                     <td><?=$this->nbPreteurLogin?></td>
-                    
+
                     <th>Fonds déposés :</th>
                     <td><?=number_format($this->nbFondsDeposes,2,',',' ')?> €</td>
-                    
+
                     <th>Emprunteurs connectés :</th>
-                    <td><?=$this->nbEmprunteurLogin?></td>
-                    
+                    <td><?=(isset($this->nbEmprunteurLogin)) ? $this->nbEmprunteurLogin : 0 ?></td>
+
                     <th>Dossiers déposés :</th>
-                    <td><?=$this->nbDepotDossier?></td>
+                    <td><?=(isset($this->nbDepotDossier)) ? $this->nbDepotDossier : 0 ?></td>
                 </tr>
                 <tr>
                     <th>Prêteurs inscrits :</th>
-                    <td><?=$this->nbInscriptionPreteur?></td>
-                    
+                    <td><?=(isset($this->nbInscriptionPreteur)) ? $this->nbInscriptionPreteur : 0 ?></td>
+
                     <th>Fonds prêtés :</th>
                     <td><?=number_format($this->nbFondsPretes,2,',',' ')?> €</td>
-                    
+
                     <th>Emprunteurs inscrits :</th>
-                    <td><?=$this->nbInscriptionEmprunteur?></td>
-                    
+                    <td><?=(isset($this->nbInscriptionEmprunteur)) ? $this->nbInscriptionEmprunteur : 0 ?></td>
+
                     <th>Total capital restant dus :</th>
                     <td><?=number_format($this->TotalCapitalRestant,2,',',' ')?> €</td>
                 </tr>
             </table>
         </div>
-        
+
         <br /><br /><br />
         <div class="btnDroite" style="margin:0px;">
             <select name="annee" id="annee" class="select" style="width:95px;" onchange="ratioDashboard(this.value,<?=$this->year?>)">
@@ -80,7 +97,7 @@
             {
                 if(strlen($i) < 2) $month = '0'.$i;
                 else $month = $i;
-                
+
                 ?><option <?=(date('m') == $month?'selected':'')?> value="<?=$i?>"><?=$this->dates->tableauMois['fr'][$i]?></option><?
             }
             ?>
@@ -92,21 +109,21 @@
                 <tr>
                     <th>% Dossier :</th>
                     <td><?=number_format($this->ratioProjects,2,',',' ')?> %</td>
-                    
+
                     <th>Montant déposé moyen :</th>
                     <td><?=number_format($this->moyenneDepotsFonds,2,',',' ')?> €</td>
-                    
+
                     <th>part de reprêt sur 1 financement :</th>
                     <td><?=number_format($this->tauxRepret,2,',',' ')?> %</td>
-                    
+
                     <th>Taux attrition :</th>
                     <td><?=number_format($this->tauxAttrition,2,',',' ')?> %</td>
                 </tr>
             </table>
         </div>
     </div>
-   
-    <br /><br />    
+
+    <br /><br />
     <h1><?=count($this->lProjectsNok)?> incidences de remboursement :</h1>
     <?php
 	if(count($this->lProjectsNok) > 0)
@@ -138,8 +155,8 @@
                         	<img src="<?=$this->surl?>/images/admin/modif.png" alt="Voir le dossier" title="Voir le dossier" />
                       	</a>
                   	</td>
-                </tr>   
-            <?php	
+                </tr>
+            <?php
                 $i++;
             }
             ?>
@@ -153,7 +170,7 @@
         <p>Il n'y a aucune incidence de remboursement pour le moment.</p>
     <?
     }
-    ?>    
+    ?>
     <br /><br />
     <h1>Dossiers</h1>
     <?
@@ -171,14 +188,14 @@
             <?
 			$i = 1;
 			foreach($this->lStatus as $s)
-			{	
-			
+			{
+
 				$nbProjects = $this->projects->countSelectProjectsByStatus($s['status']);
 			?>
             	<tr<?=($i%2 == 1?'':' class="odd"')?>>
                     <td align="center"><a href="<?=$this->lurl?>/dossiers/<?=$s['status']?>"><?=$s['label']?></a></td>
                     <td align="center"><?=$nbProjects?></td>
-                </tr>   
+                </tr>
             <?
 				$i++;
             }
@@ -196,12 +213,12 @@
     ?>
 </div>
 <script type="text/javascript">
-	var chart;	
+	var chart;
 	$(document).ready(function()
 	{
 		chart = new Highcharts.Chart(
 		{
-			chart: 
+			chart:
 			{
 				renderTo: 'caannuel',
 				defaultSeriesType: 'spline',
@@ -209,7 +226,7 @@
 				marginBottom: 35
 			},
 			colors: ['#B10366','#59AC26','#89A54E','#80699B','#3D96AE','#DB843D','#92A8CD','#A47D7C','#B5CA92'],
-			title: 
+			title:
 			{
 				text: '',
 				x: -20 // center
@@ -217,7 +234,7 @@
 			xAxis:
 			{
 				categories: ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aout','Sept','Oct','Nov','Déc'],
-				title: 
+				title:
 				{
 					text: 'Mois',
 					style:
@@ -244,7 +261,7 @@
 					color: '#B10366'
 				}]
 			},
-			
+
 			plotOptions:
 			{
 				column:
@@ -280,7 +297,7 @@
 					echo $this->caParmois[$i].($i!=12?',':'');
 				}
 				?>]
-			}, 
+			},
 			{
 				name: 'Fonds virés',
 				data: [
@@ -291,7 +308,7 @@
 					echo $this->VirementsParmois[$i].($i!=12?',':'');
 				}
 				?>]
-			}, 
+			},
 			{
 				name: 'Fonds remboursés',
 				data: [
@@ -303,7 +320,7 @@
 				}
 				?>]
 			}
-			
+
 			<?php
 			if(count($this->lTypes) > 0)
 			{
@@ -311,7 +328,7 @@
 				{
 					$this->partenaires_types->get($part['id_type']);
 				?>
-					, 
+					,
 					{
 						name: '<?=$this->partenaires_types->nom?>',
 						data: [
@@ -319,11 +336,15 @@
 						for($i=1;$i<=12;$i++)
 						{
 							$i = ($i<10?'0'.$i:$i);
-							echo $this->caParmoisPart[$part['id_type']][$i].($i!=12?',':'');
+							if(isset($this->caParmoisPart[$part['id_type']][$i]))
+								echo $this->caParmoisPart[$part['id_type']][$i];
+							   else
+							    echo "0.00";
+							if ($i!=12) echo ',';
 						}
 						?>]
 					}
-				<?php	
+				<?php
 				}
 			}
 			?>

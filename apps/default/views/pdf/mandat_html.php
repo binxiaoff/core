@@ -3,15 +3,10 @@
 <head>
 	<title>SFF docs</title>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-	<link rel="shortcut icon" href="<?=$this->surl?>/styles/default/pdf/images/favicon.ico" />
 	<link rel="stylesheet" href="<?=$this->surl?>/styles/default/pdf/style.css" type="text/css" media="all" />
-
-	<script src="<?=$this->surl?>/scripts/default/pdf/jquery-1.10.2.min.js" type="text/javascript" charset="utf-8"></script>
-	<script src="<?=$this->surl?>/scripts/default/pdf/functions.js" type="text/javascript" charset="utf-8"></script>
-
 </head>
 <body>
-	
+
     <style type="text/css">
 	.pdf-wrapper .shell{padding:0px;}
 	.pdf-wrapper .logo{padding: 0 0 5px;}
@@ -24,14 +19,14 @@
 		<!-- Shell -->
 		<div class="shell">
 			<div class="logo">
-				<img src="<?=$this->surl?>/styles/default/pdf/images/logo.png" alt="" />
+<!--				<img src="--><?//=$this->surl?><!--/styles/default/pdf/images/logo.png" alt="" />-->
 			</div>
 
 			<h2>MANDAT SEPA</h2>
 
 			<!-- Container -->
 			<div class="container">
-				
+
 				<!-- Case 1 -->
 				<div class="case-1">
 					<table width="100%" cellpadding="0" cellspacing="0" border="0">
@@ -43,7 +38,7 @@
                                 	<?
 									for($i=0;$i<26;$i++)
 									{
-										?><li style="text-align:center;"><?=($this->motif[$i]!= ''?$this->motif[$i]:'&nbsp;')?></li><?	
+										?><li style="text-align:center;"><?=($this->motif[$i]!= ''?$this->motif[$i]:'&nbsp;')?></li><?
 									}
 									?>
                                 </ul>
@@ -66,7 +61,7 @@
 
 				<!-- Case 3 -->
 				<div class="case-3">
-					
+
 					<table width="100%" cellpadding="0" cellspacing="0" border="0">
 						<tr>
 							<td class="col-1">
@@ -79,7 +74,7 @@
 
 								<!-- Row -->
 								<div class="row">
-                                	
+
 									<div class="text-box"><?=($this->entreprise==false?$this->clients->nom.' '.$this->clients->prenom:$this->companies->name.' / R.C.S. '.$this->companies->siren)?></div>
 									<span class="small-text">Nom / Prénoms du débiteur</span>
 								</div>
@@ -144,11 +139,11 @@
 							</td>
 							<td class="col-3">
 
-								
+
                                	<?
 								if($this->leIban != false)
 								{
-									
+
 									for($i=1;$i<=7;$i++)
 									{
 										?><span style="margin-right:10px;"><?=$this->iban[$i]?></span><?
@@ -164,13 +159,13 @@
 								</div>
 								<div class="row">
                                 	<?
-									if($this->lenders_accounts->bic != false || $this->companies->bic !=false)
+									if($this->oLendersAccounts->bic != false || $this->companies->bic !=false)
 									{
-										?><div><?=($this->entreprise==false?$this->lenders_accounts->bic:$this->companies->bic)?></div><?
+										?><div><?=($this->entreprise==false?$this->oLendersAccounts->bic:$this->companies->bic)?></div><?
 									}
 									else
 									{
-									?><div class="text-box">&nbsp;</div><?	
+									?><div class="text-box">&nbsp;</div><?
 									}
                                     ?>
 									<span class="small-text">Code international d'identification de votre banque - BIC (Bank Identifier Code)</span>
@@ -247,13 +242,13 @@
 									<div class="check-item">
 										<span class="text">Paiement récurrent / répétitif</span>
 										<ul class="refUnique" style="border: medium none;display: inline;width: 15px;">
-											<li style="text-align:center;">X</li>	
+											<li style="text-align:center;">X</li>
                                         </ul>
 									</div>
 									<div class="check-item">
 										<span class="text">Paiement ponctuel</span>
 										<ul class="refUnique" style="border: medium none;display: inline;width: 15px;">
-											<li>&nbsp;</li>	
+											<li>&nbsp;</li>
                                         </ul>
 									</div>
 									<div class="cl">&nbsp;</div>
@@ -279,35 +274,35 @@
 										<span class="small-text">Lieu</span>
 									</div>
 									<div class="box box-w-4">
-                                    
+
                                     	<ul class="refUnique" style="border: medium none;display: inline;width: 30px;">
 											<?
                                             for($i=0;$i<2;$i++)
                                             {
-                                                ?><li>&nbsp;</li><?	
+                                                ?><li>&nbsp;</li><?
                                             }
                                             ?>
                                         </ul>
-                                        
+
                                         <ul class="refUnique" style="border: medium none;display: inline;width: 30px;">
 											<?
                                             for($i=0;$i<2;$i++)
                                             {
-                                                ?><li>&nbsp;</li><?	
+                                                ?><li>&nbsp;</li><?
                                             }
                                             ?>
                                         </ul>
-                                        
+
                                         <ul class="refUnique" style="border: medium none;display: inline;width: 90px;">
 											<?
                                             for($i=0;$i<4;$i++)
                                             {
-                                                ?><li>&nbsp;</li><?	
+                                                ?><li>&nbsp;</li><?
                                             }
                                             ?>
                                         </ul>
-                                    
-										
+
+
 										<div class="cl">&nbsp;</div>
 										<span class="small-text">Date : jj/mm/aaaa</span>
 									</div>
@@ -324,7 +319,7 @@
 								Signature(s)
 							</td>
 							<td class="col-2">&nbsp;
-								
+
 							</td>
 							<td class="col-3">
 
@@ -335,7 +330,7 @@
 
 							</td>
 							<td class="col-4">&nbsp;
-								
+
 							</td>
 						</tr>
 					</table>
@@ -353,7 +348,7 @@
 
 				<!-- Case 3 -->
 				<?php /*?><div class="case-3">
-					
+
 					<h4>Informations relatives au contrat entre le créancier et le débiteur - fournies seulement à titre indicatif.</h4>
 					<table width="100%" cellpadding="0" cellspacing="0" border="0">
 						<tr>
@@ -361,7 +356,7 @@
 								Code identifiant <br />du débiteur
 							</td>
 							<td class="col-2">&nbsp;
-								
+
 							</td>
 							<td class="col-3">
 
@@ -382,7 +377,7 @@
 								Tiers débiteur pour <br />le compte duquel le <br />paiement est effectué<br />(si différent du débiteur <br />lui-même)
 							</td>
 							<td class="col-2">&nbsp;
-								
+
 							</td>
 							<td class="col-3">
 
@@ -415,7 +410,7 @@
 								Contrat concerné
 							</td>
 							<td class="col-2">&nbsp;
-								
+
 							</td>
 							<td class="col-3">
 
@@ -458,7 +453,7 @@
 			<div class="case-5">
 				(1) Cette ligne a une longueur maximum de 35 caractères
 			</div>
-			
+
 		</div>
 		<!-- End Shell -->
 	</div>

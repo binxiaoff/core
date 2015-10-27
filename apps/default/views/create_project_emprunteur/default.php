@@ -26,10 +26,9 @@
 							<select name="duree" id="duree" class="field field-large <?=($this->projects->period != 0?'':'required')?> custom-select">
 								<option <?=($this->projects->period == 0?'selected':'')?> value="0"><?=$this->lng['create-project']['duree']?></option>
                                 <option value="0"><?=$this->lng['etape1']['duree']?></option>
-                                <option <?=($this->projects->period == '24'?'selected':'')?> value="24">24 mois</option>
-                                <option <?=($this->projects->period == '36'?'selected':'')?> value="36">36 mois</option>
-                                <option <?=($this->projects->period == '48'?'selected':'')?> value="48">48 mois</option>
-                                <option <?=($this->projects->period == '60'?'selected':'')?> value="60">60 mois</option>
+								<?foreach($this->dureePossible as $duree):?>
+									<option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?=$duree?>"><?=$duree?> mois</option>
+								<?endforeach?>
                                 <option <?=($this->projects->period == '1000000'?'selected':'')?> value="1000000">je ne sais pas</option>
 							</select>
 						</div><!-- /.row -->

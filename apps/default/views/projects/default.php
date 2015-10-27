@@ -28,7 +28,7 @@
                         <option value="4"><?= $this->lng['preteur-projets']['projets-termines'] ?></option>
                     </select>
 
-                    <button style="margin-left:10px;margin-top:7px;overflow:visible;" class="btn btn-pinky btn-small multi" type="reset" name="rest" id="rest" ><?= $this->lng['preteur-projets']['reset'] ?></button> 
+                    <button style="margin-left:10px;margin-top:7px;overflow:visible;" class="btn btn-pinky btn-small multi" type="reset" name="rest" id="rest" ><?= $this->lng['preteur-projets']['reset'] ?></button>
                 </div>
 
             </form>
@@ -39,26 +39,26 @@
                 <table class="table" >
                     <tr>
                         <th width="350">
-                    <div class="th-wrap"><i title="<?= $this->lng['preteur-projets']['info-nom-projet'] ?>" class="icon-person tooltip-anchor"></i></div>
-                    </th>
-                    <th width="90">
-                    <div class="th-wrap"><i title="<?= $this->lng['preteur-projets']['info-capacite-remboursement'] ?>" class="icon-gauge tooltip-anchor"></i></div>
-                    </th>
-                    <th width="90">
-                    <div class="th-wrap"><i title="<?= $this->lng['preteur-projets']['info-montant'] ?>" class="icon-bank tooltip-anchor"></i></div>
-                    </th>
-                    <th width="60">
-                    <div class="th-wrap"><i title="<?= $this->lng['preteur-projets']['info-duree'] ?>" class="icon-calendar tooltip-anchor"></i></div>
-                    </th>
-                    <th width="60">
-                    <div class="th-wrap"><i title="<?= $this->lng['preteur-projets']['info-tx-cible'] ?>" class="icon-graph tooltip-anchor"></i></div>
-                    </th>
-                    <th width="110">
-                    <div class="th-wrap"><i title="<?= $this->lng['preteur-projets']['info-temps-restant'] ?>" class="icon-clock tooltip-anchor"></i></div>
-                    </th>
-                    <th width="120">
-                    <div class="th-wrap"><i title="<?= $this->lng['preteur-projets']['info-cta'] ?>" class="icon-arrow-next tooltip-anchor"></i></div>
-                    </th>
+                            <div class="th-wrap"><i title="<?= $this->lng['preteur-projets']['info-nom-projet'] ?>" class="icon-person tooltip-anchor"></i></div>
+                        </th>
+                        <th width="90">
+                            <div class="th-wrap"><i title="<?= $this->lng['preteur-projets']['info-capacite-remboursement'] ?>" class="icon-gauge tooltip-anchor"></i></div>
+                        </th>
+                        <th width="90">
+                            <div class="th-wrap"><i title="<?= $this->lng['preteur-projets']['info-montant'] ?>" class="icon-bank tooltip-anchor"></i></div>
+                        </th>
+                        <th width="60">
+                            <div class="th-wrap"><i title="<?= $this->lng['preteur-projets']['info-duree'] ?>" class="icon-calendar tooltip-anchor"></i></div>
+                        </th>
+                        <th width="60">
+                            <div class="th-wrap"><i title="<?= $this->lng['preteur-projets']['info-tx-cible'] ?>" class="icon-graph tooltip-anchor"></i></div>
+                        </th>
+                        <th width="110">
+                            <div class="th-wrap"><i title="<?= $this->lng['preteur-projets']['info-temps-restant'] ?>" class="icon-clock tooltip-anchor"></i></div>
+                        </th>
+                        <th width="120">
+                            <div class="th-wrap"><i title="<?= $this->lng['preteur-projets']['info-cta'] ?>" class="icon-arrow-next tooltip-anchor"></i></div>
+                        </th>
                     </tr>
                     <?
                     foreach ($this->lProjetsFunding as $pf) {
@@ -141,7 +141,7 @@
                                 }
 
                                 if ($pf['photo_projet'] != '') {
-                                    ?><a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>"><img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_moy') ?>" alt="<?= $pf['photo_projet'] ?>" class="thumb"></a><?
+                                    ?><a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>"><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>" class="thumb"></a><?
                                 }
                                 ?>
                                 <div class="description">
@@ -157,14 +157,14 @@
                                 </a>
                             </td>
                             <td style="white-space:nowrap;">
-                                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>">	
+                                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>">
                                     <?= number_format($pf['amount'], 0, ',', ' ') ?>€
                                 </a>
                             </td>
                             <td style="white-space:nowrap;">
                                 <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>">
                                     <?= ($pf['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $pf['period'] . ' ' . $this->lng['preteur-projets']['mois']) ?>
-                                </a>  
+                                </a>
                             </td>
 
                             <td>
@@ -278,36 +278,36 @@
                     $favori = '';
                 }
 
-                if ($this->projects_status->status >= 60) {
-                    $dateRest = $this->lng['preteur-projets']['termine'];
-                } else {
-                    $heure_retrait = date('H:i', strtotime($pf['date_retrait_full']));
-                    ?>
-                    <script type="text/javascript">
-                        var cible<?= $pf['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>:00');
-                        var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
-                        setTimeout('decompte(letime<?= $pf['id_project'] ?>,"min_val<?= $pf['id_project'] ?>")', 500);
-                    </script>
-                    <?
-                }
+            if ($this->projects_status->status >= 60) {
+                $dateRest = $this->lng['preteur-projets']['termine'];
+            } else {
+                $heure_retrait = date('H:i', strtotime($pf['date_retrait_full']));
                 ?>
+                <script type="text/javascript">
+                    var cible<?= $pf['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>:00');
+                    var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
+                    setTimeout('decompte(letime<?= $pf['id_project'] ?>,"min_val<?= $pf['id_project'] ?>")', 500);
+                </script>
+            <?
+            }
+            ?>
 
                 <div class="project-mobile">
                     <div class="project-mobile-image">
                         <img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_moy') ?>" alt="" />
 
                         <div class="project-mobile-image-caption">
-                            <p><?= number_format($pf['amount'], 0, ',', ' ') ?>€ | 
+                            <p><?= number_format($pf['amount'], 0, ',', ' ') ?>€ |
                                 <span class="cadreEtoiles" style="margin-right: 12px; top: 8px;display: inline-block;">
                                     <span style="display: inline-block;" class="etoile <?= $this->lNotes[$pf['risk']] ?>"></span>
-                                </span> | 
+                                </span> |
                                 <?
                                 if ($CountEnchere > 0) {
                                     ?><?= number_format($avgRate, 1, ',', ' ') ?>%<?
                                 } else {
                                     ?><?= ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %')) ?><?
                                 }
-                                ?> 
+                                ?>
                                 | <?= ($pf['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $pf['period'] . ' ' . $this->lng['preteur-projets']['mois']) ?></p>
                         </div>
                     </div>
@@ -359,13 +359,13 @@
 
         $(window).scroll(function () { // On surveille l'évènement scroll
 
-            /* Si l'élément offset est en bas de scroll, si aucun chargement 
-             n'est en cours, si le nombre de projet affiché est supérieur 
-             à 5 et si tout les projets ne sont pas affichés, alors on 
+            /* Si l'élément offset est en bas de scroll, si aucun chargement
+             n'est en cours, si le nombre de projet affiché est supérieur
+             à 5 et si tout les projets ne sont pas affichés, alors on
              lance la fonction. */
             if ((offset.top - $(window).height() <= $(window).scrollTop())
-                    && load == false && ($('.unProjet').size() >= 10) &&
-                    ($('.unProjet').size() != $('.nbProjet').text())) {
+                && load == false && ($('.unProjet').size() >= 10) &&
+                ($('.unProjet').size() != $('.nbProjet').text())) {
 
                 // la valeur passe à vrai, on va charger
                 load = true;

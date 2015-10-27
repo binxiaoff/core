@@ -9,7 +9,7 @@ class mailsController extends bootstrap
 		
 		$this->catchAll = true;
 
-		// Controle d'acces à la rubrique
+		// Controle d'acces ï¿½ la rubrique
 		$this->users->checkAccess('configuration');
 		
 		// Activation du menu
@@ -23,13 +23,13 @@ class mailsController extends bootstrap
 		echo $this->pwd_api.'<br>';
 		echo $this->key_api.'<br>';*/
 		
-		if($this->key_api != '' && $this->login_api != '' && $this->pwd_api != '' && $this->serveur_api != '')
+		if($config['env'] == 'prod' && $this->key_api != '' && $this->login_api != '' && $this->pwd_api != '' && $this->serveur_api != '')
 		{		
 			// Connection au serveur NMP
 			$this->location_nmpsoap = 'https://'.$this->serveur_api.'/apitransactional/services/TransactionalService?wsdl';
 			$this->nmpsoap = new SoapClient($this->location_nmpsoap);
 		
-			// Connexion à l'API NMP
+			// Connexion ï¿½ l'API NMP
 			$result = $this->nmpsoap->openApiConnection(array('login'=>$this->login_api,'pwd'=>$this->pwd_api,'key'=>$this->key_api));
 		
 			// Recuperation du token de session
@@ -165,7 +165,7 @@ class mailsController extends bootstrap
 					// Si NMP
 					if($this->nmpEMV)
 					{
-						// Si NMP n'est pas créé
+						// Si NMP n'est pas crï¿½ï¿½
 						if($this->mails_text->id_nmp == '' && $this->mails_text->nmp_unique == '' && $this->mails_text->nmp_secure == '')
 						{
 							// Creation du templte NMP

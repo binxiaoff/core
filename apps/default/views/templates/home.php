@@ -1,7 +1,4 @@
 <!--#include virtual="ssi-header.shtml"  -->
-<?php /* ?><div class="fonds">
-
-  </div><?php */ ?>
 <div class="banner">
     <div class="banner-content">
         <img class="ribbon person-left" src="<?= $this->surl ?>/styles/default/images/person-1.png" alt="" width="190" height="313">
@@ -10,14 +7,11 @@
         <span class="pointer-right"></span>
         <h2><?= $this->lng['home']['presentation'] ?></h2>
         <div style="padding-bottom:18px;font-size:24px;"><?= $this->lng['home']['decouvrez-comment'] ?></div>
-
         <script>
-
             $('.youtube').colorbox({iframe: true, innerWidth: 640, innerHeight: 390, opacity: 0.5, maxWidth: '90%'});
             var sCurrentUrl = document.location.href;
-            console.log(sCurrentUrl);
-            if (0 < parseInt(sCurrentUrl.search('video=1')))
-            {
+
+            if (0 < parseInt(sCurrentUrl.search('video=1'))) {
                 $('.youtube').colorbox({open: true});
             }
 
@@ -42,23 +36,17 @@
             });
         </script>
 
-        <?
-        if ($this->clients->checkAccess() && $this->clients->status_pre_emp == 1 || $this->clients->checkAccess() && $this->clients->status_pre_emp == 3) {
-            ?>
+        <?php if ($this->clients->checkAccess() && $this->clients->status_pre_emp == 1 || $this->clients->checkAccess() && $this->clients->status_pre_emp == 3) { ?>
             <a href="<?= $this->lurl ?>/projects" class="btn btn-mega btn-info">
                 <i class="icon-arrow-medium-next right"></i>
                 <?= $this->lng['home']['pretez'] ?>
             </a>
-            <?
-        } else {
-            ?>
+        <?php } else { ?>
             <a href="<?= $this->lurl . '/' . $this->tree->getSlug(127, $this->language) ?>" class="btn btn-mega btn-info" id="btn_pret">
                 <i class="icon-arrow-medium-next right"></i>
                 <?= $this->lng['home']['pretez'] ?>
             </a>
-            <?
-        }
-        ?>
+        <?php } ?>
         <a href="<?= $this->lurl . '/' . $this->tree->getSlug(128, $this->language) ?>" class="btn btn-mega">
             <i class="icon-arrow-medium-next right"></i>
             <?= $this->lng['home']['empruntez'] ?>
@@ -72,74 +60,43 @@
             <p class="hp"><?= $this->lng['home']['deja'] ?></p>
             <div class="counter-holder">
                 <?= $this->compteur ?>
-
             </div>
             <p class="hp"><?= $this->lng['home']['demprunte-sur-unilend'] ?></p>
         </div>
     </div>
 </div>
 <!-- /.counter-holder -->
-
 <div class="main">
     <div class="shell">
         <div class="section-projects-landing">
-            <?
-            if (count($this->lProjetsFunding) > 0) {
-                ?>
+            <?php if (count($this->lProjetsFunding) > 0) { ?>
                 <a href="<?= $this->lurl . '/' . $this->tree->getSlug(4, $this->language) ?>" class="view-projects-link"><i class="arrow-right"></i><?= $this->lng['home']['decouvrez-tous-les-projets'] ?></a>
-
                 <h1><?= $this->lng['home']['les-projets-en-cours'] ?></h1>
-
-
                 <table class="table">
-
                     <tr>
-
                         <th width="350">
-
-                    <div class="th-wrap"><i title="<?= $this->lng['home']['info-nom-projet'] ?>" class="icon-person tooltip-anchor"></i></div>
-
-                    </th>
-
-                    <th width="90">
-
-                    <div class="th-wrap"><i title="<?= $this->lng['home']['info-capacite-remboursement'] ?>" class="icon-gauge tooltip-anchor"></i></div>
-
-                    </th>
-
-                    <th width="90">
-
-                    <div class="th-wrap"><i title="<?= $this->lng['home']['info-montant'] ?>" class="icon-bank tooltip-anchor"></i></div>
-
-                    </th>
-
-                    <th width="60">
-
-                    <div class="th-wrap"><i title="<?= $this->lng['home']['info-duree'] ?>" class="icon-calendar tooltip-anchor"></i></div>
-
-                    </th>
-
-                    <th width="60">
-
-                    <div class="th-wrap"><i title="<?= $this->lng['home']['info-tx-cible'] ?>" class="icon-graph tooltip-anchor"></i></div>
-
-                    </th>
-
-                    <th width="110">
-
-                    <div class="th-wrap"><i title="<?= $this->lng['home']['info-temps-restant'] ?>" class="icon-clock tooltip-anchor"></i></div>
-
-                    </th>
-
-                    <th width="120">
-
-                    <div class="th-wrap"><i title="<?= $this->lng['home']['info-cta'] ?>" class="icon-arrow-next tooltip-anchor"></i></div>
-
-                    </th>
-
+                            <div class="th-wrap"><i title="<?= $this->lng['home']['info-nom-projet'] ?>" class="icon-person tooltip-anchor"></i></div>
+                        </th>
+                        <th width="90">
+                            <div class="th-wrap"><i title="<?= $this->lng['home']['info-capacite-remboursement'] ?>" class="icon-gauge tooltip-anchor"></i></div>
+                        </th>
+                        <th width="90">
+                            <div class="th-wrap"><i title="<?= $this->lng['home']['info-montant'] ?>" class="icon-bank tooltip-anchor"></i></div>
+                        </th>
+                        <th width="60">
+                            <div class="th-wrap"><i title="<?= $this->lng['home']['info-duree'] ?>" class="icon-calendar tooltip-anchor"></i></div>
+                        </th>
+                        <th width="60">
+                            <div class="th-wrap"><i title="<?= $this->lng['home']['info-tx-cible'] ?>" class="icon-graph tooltip-anchor"></i></div>
+                        </th>
+                        <th width="110">
+                            <div class="th-wrap"><i title="<?= $this->lng['home']['info-temps-restant'] ?>" class="icon-clock tooltip-anchor"></i></div>
+                        </th>
+                        <th width="120">
+                            <div class="th-wrap"><i title="<?= $this->lng['home']['info-cta'] ?>" class="icon-arrow-next tooltip-anchor"></i></div>
+                        </th>
                     </tr>
-
-                    <?
+                    <?php
                     $this->loans = $this->loadData('loans');
                     foreach ($this->lProjetsFunding as $pf) {
                         $this->projects_status->getLastStatut($pf['id_project']);
@@ -154,7 +111,7 @@
                             $dateRest = '';
 
                         $CountEnchere = $this->bids->counter('id_project = ' . $pf['id_project']);
-                        //$avgRate = $this->bids->getAVG($pf['id_project'],'rate');					
+                        //$avgRate = $this->bids->getAVG($pf['id_project'],'rate');
                         // moyenne pondéré
                         $montantHaut = 0;
                         $montantBas = 0;
@@ -197,7 +154,7 @@
 
                         <tr class="unProjet" id="project<?= $pf['id_project'] ?>">
                             <td>
-                                <?
+                                <?php
                                 if ($this->projects_status->status >= 60) {
                                     $dateRest = $this->lng['home']['termine'];
                                 } else {
@@ -210,11 +167,11 @@
                                             var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
                                             setTimeout('decompte(letime<?= $pf['id_project'] ?>,"val<?= $pf['id_project'] ?>")', 500);
                                     </script>
-                                    <?
+                                    <?php
                                 }
 
                                 if ($pf['photo_projet'] != '') {
-                                    ?><img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_min') ?>" alt="<?= $pf['photo_projet'] ?>" class="thumb"><?
+                                    ?><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>" class="thumb"><?php
                                 }
                                 ?>
                                 <div class="description">
@@ -226,36 +183,34 @@
                             <td><div class="cadreEtoiles"><div class="etoile <?= $this->lNotes[$pf['risk']] ?>"></div></div></td>
                             <td style="white-space:nowrap;"><?= number_format($pf['amount'], 0, ',', ' ') ?>&euro;</td>
                             <td style="white-space:nowrap;"><?= $pf['period'] ?> mois</td>
-                            <?
+                            <?php
                             if ($CountEnchere > 0) {
-                                ?><td><?= number_format($avgRate, 1, ',', ' ') ?>%</td><?
+                                ?><td><?= number_format($avgRate, 1, ',', ' ') ?>%</td><?php
                             } else {
-                                ?><td><?= ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %')) ?></td><?
+                                ?><td><?= ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %')) ?></td><?php
                             }
                             ?>
                             <td><strong id="val<?= $pf['id_project'] ?>"><?= $dateRest ?></strong></td>
                             <td>
-                                <?
+                                <?php
                                 if ($this->projects_status->status >= 60) {
-                                    ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn grise1 btn-info btn-small multi btn-grise"><?= $this->lng['home']['cta-voir-le-projet'] ?></a><?
+                                    ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn grise1 btn-info btn-small multi btn-grise"><?= $this->lng['home']['cta-voir-le-projet'] ?></a><?php
                                 } else {
-                                    ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small"><?= $this->lng['home']['cta-pretez'] ?></a><?
+                                    ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small"><?= $this->lng['home']['cta-pretez'] ?></a><?php
                                 }
                                 ?>
                             </td>
                         </tr>
-                        <?
+                        <?php
                     }
                     ?>
                 </table><!-- /.table -->
-                <?
+                <?php
             }
             ?>
-        </div><!-- /.section projects landing -->  
-
+        </div><!-- /.section projects landing -->
         <div class="section-projects-mobile">
-
-            <?
+            <?php
             foreach ($this->lProjetsFunding as $pf) {
                 $this->projects_status->getLastStatut($pf['id_project']);
 
@@ -269,7 +224,7 @@
                     $dateRest = '';
 
                 $CountEnchere = $this->bids->counter('id_project = ' . $pf['id_project']);
-                //$avgRate = $this->bids->getAVG($pf['id_project'],'rate');					
+                //$avgRate = $this->bids->getAVG($pf['id_project'],'rate');
                 // moyenne pondéré
                 $montantHaut = 0;
                 $montantBas = 0;
@@ -312,8 +267,7 @@
 
                 <div class="project-mobile">
                     <div class="project-mobile-image">
-
-                        <?
+                        <?php
                         if ($this->projects_status->status >= 60) {
                             $dateRest = $this->lng['home']['termine'];
                         } else {
@@ -324,28 +278,21 @@
                                     var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
                                     setTimeout('decompte(letime<?= $pf['id_project'] ?>,"min_val<?= $pf['id_project'] ?>")', 500);
                             </script>
-                            <?
+                            <?php
                         }
                         if ($pf['photo_projet'] != '') {
-                            ?><img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_moy') ?>" alt="<?= $pf['photo_projet'] ?>"><?
+                            ?><img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_moy') ?>" alt="<?= $pf['photo_projet'] ?>"><?php
                         }
 
-
                         //Gestion des étoiles
-                        ?>
-
-                        <?php
                         $nb_etoile_on = $this->lNotes[$pf['risk']];
 
                         if ($nb_etoile_on == 1) {
                             $nb_etoile_on = 3;
                         }
 
-
-
                         $nb_etoile_off = 5;
                         $nb_etoile_restant_afficher = $nb_etoile_on;
-
                         $html_etoile = "";
 
                         for ($i = 1; $i <= 5; $i++) {
@@ -357,10 +304,7 @@
                             }
                         }
 
-
-
-
-                        //gestion affichage du pourcentage   
+                        //gestion affichage du pourcentage
                         $pourcent_affichage = "";
                         if ($CountEnchere > 0) {
                             $pourcent_affichage = number_format($avgRate, 1, ',', ' ') . '%';
@@ -368,46 +312,36 @@
                             $pourcent_affichage = ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %'));
                         }
                         ?>
-
-
-
                         <div class="project-mobile-image-caption">
                             <?= number_format($pf['amount'], 0, ',', ' ') ?>&euro; | <div class="cadreEtoiles" style="display: inline-block; top:7px;left: -1px;"><div class="etoile <?= $this->lNotes[$pf['risk']] ?>"></div></div> | <?= $pourcent_affichage ?> | <?= $pf['period'] ?> mois
                         </div>
                     </div>
-
                     <div class="project-mobile-content">
                         <h3><?= $pf['title'] ?></h3>
-
                         <h4><?= $this->companies->city . ($this->companies->zip != '' ? ', ' : '') . $this->companies->zip ?></h4>
-
                         <h5>
                             <i class="ico-clock"></i>
-
                             <strong id="min_val<?= $pf['id_project'] ?>"><?= $dateRest ?></strong>
                         </h5>
-
                         <p>
-                            <?
+                            <?php
                             if ($this->projects_status->status >= 60) {
                                 ?>
                                 <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise" style="line-height: 14px;padding: 4px 11px;"><?= $this->lng['home']['cta-voir-le-projet'] ?></a>
-                                <?
+                                <?php
                             } else {
-                                ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn"><?= $this->lng['home']['cta-pretez'] ?></a><?
+                                ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn"><?= $this->lng['home']['cta-pretez'] ?></a><?php
                             }
                             ?>
-
-
                             <?= $pf['nature_project'] ?>
                         </p>
                     </div><!-- /.project-mobile-content -->
-                </div><!-- /.project-mobile -->                
-                <?
+                </div><!-- /.project-mobile -->
+                <?php
             }
             ?>
         </div><!-- /.section-projects-mobile -->
-    </div><!-- /.shell -->     
+    </div><!-- /.shell -->
 </div><!-- /.main -->
 <?= $this->fireView('../blocs/ils-parlent-de-nous') ?>
 
@@ -464,6 +398,3 @@
     <img height="1" width="1" style="border-style:none;" alt="" src="//googleads.g.doubleclick.net/pagead/viewthroughconversion/990740266/?value=0&amp;guid=ON&amp;script=0"/>
 </div>
 </noscript>
-
-
-

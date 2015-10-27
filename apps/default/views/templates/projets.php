@@ -41,7 +41,7 @@ if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' || $this->lurl 
                         <option value="4"><?= $this->lng['preteur-projets']['projets-termines'] ?></option>
                     </select>
 
-                    <button style="margin-left:10px;margin-top:7px;overflow:visible;" class="btn btn-pinky btn-small multi" type="reset" name="rest" id="rest" ><?= $this->lng['preteur-projets']['reset'] ?></button> 
+                    <button style="margin-left:10px;margin-top:7px;overflow:visible;" class="btn btn-pinky btn-small multi" type="reset" name="rest" id="rest" ><?= $this->lng['preteur-projets']['reset'] ?></button>
                 </div>
 
             </form>
@@ -229,7 +229,7 @@ if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' || $this->lurl 
 
             </div>
         </div>
-        
+
         <div class="section-projects-mobile">
             <h3 class="section-projects-mobile-title">Liste des projets</h3>
 
@@ -314,17 +314,17 @@ if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' || $this->lurl 
                         <img src="<?= $this->photos->display($pf['photo_projet'], 'photos_projets', 'photo_projet_moy') ?>" alt="" />
 
                         <div class="project-mobile-image-caption">
-                            <p><?= number_format($pf['amount'], 0, ',', ' ') ?>€ | 
+                            <p><?= number_format($pf['amount'], 0, ',', ' ') ?>€ |
                                 <span class="cadreEtoiles" style="margin-right: 12px; top: 8px;display: inline-block;">
                                     <span style="display: inline-block;" class="etoile <?= $this->lNotes[$pf['risk']] ?>"></span>
-                                </span> | 
+                                </span> |
                                 <?
                                 if ($CountEnchere > 0) {
                                     ?><?= number_format($avgRate, 1, ',', ' ') ?>%<?
                                 } else {
                                     ?><?= ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %')) ?><?
                                 }
-                                ?> 
+                                ?>
                                 | <?= ($pf['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $pf['period'] . ' ' . $this->lng['preteur-projets']['mois']) ?></p>
                         </div>
                     </div>
@@ -359,7 +359,7 @@ if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' || $this->lurl 
             }
             ?>
         </div><!-- /.section-projects-mobile -->
-        
+
     </div>
 
 </div>
@@ -377,9 +377,9 @@ if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' || $this->lurl 
 
         $(window).scroll(function () { // On surveille l'évènement scroll
 
-            /* Si l'élément offset est en bas de scroll, si aucun chargement 
-             n'est en cours, si le nombre de projet affiché est supérieur 
-             à 5 et si tout les projets ne sont pas affichés, alors on 
+            /* Si l'élément offset est en bas de scroll, si aucun chargement
+             n'est en cours, si le nombre de projet affiché est supérieur
+             à 5 et si tout les projets ne sont pas affichés, alors on
              lance la fonction. */
             if ((offset.top - $(window).height() <= $(window).scrollTop())
                     && load == false && ($('.unProjet').size() >= 10) &&

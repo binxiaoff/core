@@ -101,47 +101,62 @@ class transactions extends transactions_crud
 		return strtoupper($this->bdd->result($result,0,0));
 	}
 	
-	function recupCAByMonthForAYear($year)
+	/* Nouvelle fonction utilisée désormais par les fonctions de stats par statuts de transaction ci dessous (factorisation)*/
+	
+	function getMonthlyTransactionsBy($year=false,$status=false,$etat=false,$transaction=false,$type_transaction=array(),$type_transaction_filterout=array())
 	{
-		$sql = 'SELECT SUM(montant/100) AS montant, LEFT(date_transaction,7) AS date FROM transactions WHERE status = 1 AND etat = 1 AND transaction = 1 AND type_transaction <> 9 AND date_transaction LIKE "'.$year.'%" GROUP BY LEFT(date_transaction,7)';
+		if ($year === false) return false;
+		if ($status === false) return false;
+		if ($etat === false) return false;
+		if ($transaction === false) return false;
+		
+		
+		$sql = "SELECT SUM(montant/100) AS montant, date_format(date_transaction,'%m') AS monthTransaction FROM transactions 
+					WHERE status = ".$status."  
+					AND etat = ".$etat."
+					AND transaction = ".$transaction;
+		if (count($type_transaction_filterout) > 0)
+					$sql.=" AND type_transaction not in (".implode(",",$type_transaction_filterout).")";
+		if (count($type_transaction) > 0)
+					$sql.=" AND type_transaction in (".implode(",",$type_transaction).")";
+		
+					$sql.=" AND year(date_transaction) = ".$year." GROUP BY monthTransaction";
+		
+		
+		
 		$req = $this->bdd->query($sql);
 		$res = array();
 		while($rec = $this->bdd->fetch_array($req))
         {
-			$d = explode('-',$rec['date']);
-            $res[$d[1]] = $rec['montant'];
+			//$d = explode('-',$rec['date']);
+			//if ($rec['monthTransaction']
+            $res[$rec['monthTransaction']] = $rec['montant'];
         }
 		return $res;
+	}
+	
+	function recupCAByMonthForAYear($year)
+	{
+		return $this->getMonthlyTransactionsBy($year,1,1,1,array(),array(9));
+		
 	}
 	
 	function recupVirmentEmprByMonthForAYear($year)
 	{
-		$sql = 'SELECT SUM(montant/100) AS montant, LEFT(date_transaction,7) AS date FROM transactions WHERE status = 1 AND etat = 1 AND transaction = 1 AND type_transaction = 9 AND date_transaction LIKE "'.$year.'%" GROUP BY LEFT(date_transaction,7)';
-		$req = $this->bdd->query($sql);
-		$res = array();
-		while($rec = $this->bdd->fetch_array($req))
-        {
-			$d = explode('-',$rec['date']);
-            $res[$d[1]] = $rec['montant'];
-        }
-		return $res;
+		return $this->getMonthlyTransactionsBy($year,1,1,1,array(9),array());
+		
 	}
 	
 	function recupRembEmprByMonthForAYear($year)
 	{
-		$sql = 'SELECT SUM(montant/100) AS montant, LEFT(date_transaction,7) AS date FROM transactions WHERE status = 1 AND etat = 1 AND transaction = 1 AND type_transaction = 6 AND date_transaction LIKE "'.$year.'%" GROUP BY LEFT(date_transaction,7)';
-		$req = $this->bdd->query($sql);
-		$res = array();
-		while($rec = $this->bdd->fetch_array($req))
-        {
-			$d = explode('-',$rec['date']);
-            $res[$d[1]] = $rec['montant'];
-        }
-		return $res;
+		return $this->getMonthlyTransactionsBy($year,1,1,1,array(6),array());
+		
 	}
 	
 	function getSumDepotByMonths($id_client,$year)
 	{
+		//return $this->getMonthlyTransactionsBy($year,1,1,1,array(1,3,4),array());
+		
 		$sql = 'SELECT SUM(montant/100) AS montant, LEFT(date_transaction,7) AS date FROM transactions WHERE status = 1 AND etat = 1 AND YEAR(date_transaction) = '.$year.' AND type_transaction IN (1,3,4) AND display = 0  AND id_client = '.$id_client.' GROUP BY LEFT(date_transaction,7)';
 		$req = $this->bdd->query($sql);
 		$res = array();
@@ -153,6 +168,7 @@ class transactions extends transactions_crud
 		return $res;
 	}
 	
+	/*
 	
 	function recupCAByMonthForAYearType($year,$id_type=0)
 	{
@@ -163,6 +179,28 @@ class transactions extends transactions_crud
         {
 			$d = explode('-',$rec['date']);
             $res[$d[1]] = $rec['montant'];
+        }
+		return $res;
+	}
+	*/
+	
+	/**
+	Optimisation dashboard / David Raux
+	
+	1x requete optimisée vs 8 x requete full scan.
+	
+	**/
+	function recupMonthlyPartnershipTurnoverByYear($year)
+	{
+		
+		$sql = 'SELECT p.id_type as idTypePartenaire, date_format(date_transaction,"%m") AS monthTransaction, SUM(montant / 100) AS montant FROM transactions t inner join partenaires p on (t.id_partenaire = p.id_partenaire ) inner join partenaires_types pt on (p.id_type = pt.id_type) WHERE t.status = 1 AND t.etat != 3 AND pt.status = 1 AND year(date_transaction) = "'.$year.'" GROUP BY 1,2';
+		
+		$req = $this->bdd->query($sql);
+		$res = array();
+		while($rec = $this->bdd->fetch_array($req))
+        {
+			$montantFormate = number_format($rec['montant'],2,'.','');
+			$res[$rec['idTypePartenaire']][$rec['monthTransaction']] = $montantFormate;
         }
 		return $res;
 	}
@@ -226,6 +264,9 @@ class transactions extends transactions_crud
         return $result;
 	}
 	
+	
+	/* useless
+	
 	function recupHitProduits($limit)
 	{
 		$sql = 'SELECT reference as Reference, nom as Nom, sum(quantite) as NbVentes, round(sum(`prix_ht`*quantite),2) as CAht FROM `transactions_produits` join transactions on transactions.id_transaction = transactions_produits.id_transaction where transactions.status=1 and transactions.etat < 3 group by reference order by CAht desc limit '.$limit;	
@@ -237,7 +278,7 @@ class transactions extends transactions_crud
             $result[] = $record;
         }
         return $result;										
-	}
+	}*/
 	
 	
 	function sum($where='',$champ)
