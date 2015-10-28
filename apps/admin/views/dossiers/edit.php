@@ -9,55 +9,80 @@
 
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
-        $("#date").datepicker({showOn: 'both', buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif', buttonImageOnly: true, changeMonth: true, changeYear: true, yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'});
-                $("#date_pub").datepicker({
-                    showOn: 'both',
-                    buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
-                    buttonImageOnly: true,
-                    changeMonth: true,
-                    changeYear: true,
-                    minDate: new Date(<?= date('Y') ?>, <?= date('m') - 1 ?>, <?= (date('d')) ?>)
-                });
-                $("#date_de_retrait").datepicker({
-                    showOn: 'both',
-                    buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
-                    buttonImageOnly: true,
-                    changeMonth: true,
-                    changeYear: true,
-                    minDate: new Date(<?= date('Y') ?>, <?= date('m') - 1 ?>, <?= (date('d')) ?>)
-                });
-                $("#creation_date_etape2").datepicker({
-                    showOn: 'both',
-                    buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
-                    buttonImageOnly: true,
-                    changeMonth: true,
-                    changeYear: true,
-                    yearRange: '<?= (date('Y') - 40) ?>:<?= (date('Y')) ?>'
-                            });
+        $("#date").datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'});
+                    $("#date_pub").datepicker({
+                        showOn: 'both',
+                        buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+                        buttonImageOnly: true,
+                        changeMonth: true,
+                        changeYear: true,
+                        minDate: new Date(<?= date('Y') ?>, <?= date('m') - 1 ?>, <?= (date('d')) ?>)
+                    });
+                    $("#date_de_retrait").datepicker({
+                        showOn: 'both',
+                        buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+                        buttonImageOnly: true,
+                        changeMonth: true,
+                        changeYear: true,
+                        minDate: new Date(<?= date('Y') ?>, <?= date('m') - 1 ?>, <?= (date('d')) ?>)
+                    });
+                    $("#date_ps").datepicker({
+                        showOn: 'both',
+                        buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+                        buttonImageOnly: true,
+                        changeMonth: true,
+                        changeYear: true
+                    });
+                    $("#date_rj").datepicker({
+                        showOn: 'both',
+                        buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+                        buttonImageOnly: true,
+                        changeMonth: true,
+                        changeYear: true
+                    });
+                    $("#date_lj").datepicker({
+                        showOn: 'both',
+                        buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+                        buttonImageOnly: true,
+                        changeMonth: true,
+                        changeYear: true
+                    });
+                    $("#creation_date_etape2").datepicker({
+                        showOn: 'both',
+                        buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+                        buttonImageOnly: true,
+                        changeMonth: true,
+                        changeYear: true,
+                        yearRange: '<?= (date('Y') - 40) ?>:<?= (date('Y')) ?>'
+                                });
 
 
 <?
-if ($this->nb_lignes != '')
-{
+if ($this->nb_lignes != '') {
     ?>
-                                $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
+                                    $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
     <?
 }
 ?>
-                        });
-<?
-if (isset($_SESSION['freeow']))
-{
-    ?>
-                            $(document).ready(function () {
-                                var title, message, opts, container;
-                                title = "<?= $_SESSION['freeow']['title'] ?>";
-                                message = "<?= $_SESSION['freeow']['message'] ?>";
-                                opts = {};
-                                opts.classes = ['smokey'];
-                                $('#freeow-tr').freeow(title, message, opts);
-
                             });
+<?
+if (isset($_SESSION['freeow'])) {
+    ?>
+                                $(document).ready(function () {
+                                    var title, message, opts, container;
+                                    title = "<?= $_SESSION['freeow']['title'] ?>";
+                                    message = "<?= $_SESSION['freeow']['message'] ?>";
+                                    opts = {};
+                                    opts.classes = ['smokey'];
+                                    $('#freeow-tr').freeow(title, message, opts);
+
+                                });
     <?
     unset($_SESSION['freeow']);
 }
@@ -99,12 +124,9 @@ if (isset($_SESSION['freeow']))
                         <td>
 
                             <?
-                            if ($this->projects->create_bo == 1)
-                            {
+                            if ($this->projects->create_bo == 1) {
                                 ?><input type="text" name="siren" id="siren" class="input_large" value="<?= $this->companies->siren ?>"/><?
-                            }
-                            else
-                            {
+                            } else {
                                 ?><input type="hidden" name="siren" id="siren" value="<?= $this->companies->siren ?>"/><?
                                 echo $this->companies->siren;
                             }
@@ -135,8 +157,7 @@ if (isset($_SESSION['freeow']))
                         <th><label for="sector">Secteur de la société :</label></th>
                         <td><select name="sector" id="sector" class="select">
                                 <?
-                                foreach ($this->lSecteurs as $k => $s)
-                                {
+                                foreach ($this->lSecteurs as $k => $s) {
                                     ?><option <?= ($this->companies->sector == $k + 1 ? 'selected' : '') ?> value="<?= $k + 1 ?>"><?= $s ?></option><?
                                 }
                                 ?>
@@ -270,7 +291,7 @@ if (isset($_SESSION['freeow']))
 
                 </table>
                 <br><br>
-				<h2>Remboursement anticipé / Information</h2>
+                <h2>Remboursement anticipé / Information</h2>
                 <table class="form" style="width: 538px; border: 1px solid #B10366;">
                     <tr>
                         <th>Statut :</th>
@@ -279,40 +300,37 @@ if (isset($_SESSION['freeow']))
                         </td>
                     </tr>
                     <?php
-                    if($this->virement_recu)
-                    {
+                    if ($this->virement_recu) {
                         ?>
                         <tr>
                             <th>Virement reçu le :</th>
                             <td>                            
-                                <label for="statut"><?= $this->dates->formatDateMysqltoFr_HourOut($this->receptions->added)?></label>
+                                <label for="statut"><?= $this->dates->formatDateMysqltoFr_HourOut($this->receptions->added) ?></label>
                             </td>
                         </tr>
                         <tr>
                             <th>Identification virement :</th>
                             <td>                            
-                                <label for="statut"><?=$this->receptions->id_reception?></label>
+                                <label for="statut"><?= $this->receptions->id_reception ?></label>
                             </td>
                         </tr>
-                        
+
                         <tr>
                             <th>Montant virement :</th>
                             <td>                            
-                                <label for="statut"><?=($this->receptions->montant/100) ?> €</label>
+                                <label for="statut"><?= ($this->receptions->montant / 100) ?> €</label>
                             </td>
                         </tr>
-                        
+
                         <tr>
                             <th>Motif du virement :</th>
                             <td>                            
-                                <label for="statut"><?=$this->receptions->motif?></label>
+                                <label for="statut"><?= $this->receptions->motif ?></label>
                             </td>
                         </tr>
-                        
+
                         <?php
-                    }
-                    else
-                    {
+                    } else {
                         ?>
                         <tr>
                             <th>Virement à émettre avant le :</th>
@@ -329,34 +347,30 @@ if (isset($_SESSION['freeow']))
                             <label for="statut"><?= $this->montant_restant_du_preteur ?>€</label>
                         </td>
                     </tr>
-                    
-                    
-                    <?php            
-                    
-                    if($this->virement_recu)
-                    {
+
+
+                    <?php
+                    if ($this->virement_recu) {
                         /*
-                        if($this->virement_recu_ok)
-                        {
-                            ?>
-                            <tr>
-                                <th>Actions : (EN DEBUG)</th>
-                                <td> 
-                                    <form action="" name="action_remb_anticipe">
-                                        <input type="hidden" name="id_reception" value="<?=$this->receptions->id_reception?>">
-                                        <input type="hidden" name="montant_crd_preteur" value="<?=$this->montant_restant_du_preteur?>">
-                                        <input type="hidden" name="spy_remb_anticipe" value="ok">
-                                        <input type="submit" value="Déclencher le remboursement anticipé" class="btn"> 
-                                    </form>
-                                </td>
-                            </tr>
-                            <?php
-                        }
-                        
+                          if($this->virement_recu_ok)
+                          {
+                          ?>
+                          <tr>
+                          <th>Actions : (EN DEBUG)</th>
+                          <td>
+                          <form action="" name="action_remb_anticipe">
+                          <input type="hidden" name="id_reception" value="<?=$this->receptions->id_reception?>">
+                          <input type="hidden" name="montant_crd_preteur" value="<?=$this->montant_restant_du_preteur?>">
+                          <input type="hidden" name="spy_remb_anticipe" value="ok">
+                          <input type="submit" value="Déclencher le remboursement anticipé" class="btn">
+                          </form>
+                          </td>
+                          </tr>
+                          <?php
+                          }
+
                          */
-                    }
-                    else
-                    {
+                    } else {
                         ?>
                         <tr> 
                             <th>Motif à indiquer sur le virement :</th>
@@ -367,21 +381,19 @@ if (isset($_SESSION['freeow']))
                         <?php
                     }
                     ?>
-                    
+
                 </table>
-                
-                
+
+
                 <?php
-                if(!$this->virement_recu && !$this->remb_anticipe_effectue)
-                {
+                if (!$this->virement_recu && !$this->remb_anticipe_effectue) {
                     ?>
                     * : Le montant correspond aux CRD des échéances restantes après celle du <?= $this->date_next_echeance ?> qui sera prélevé normalement
                     <?php
                 }
-                
                 ?>
-                    
-                    
+
+
 
                 <br><br><br><br>
                 <h2>Actions</h2>
@@ -427,8 +439,7 @@ if (isset($_SESSION['freeow']))
                             <select name="analyste" id="analyste" class="select">
                                 <option value="0">Choisir</option>
                                 <?
-                                foreach ($this->lUsers as $u)
-                                {
+                                foreach ($this->lUsers as $u) {
                                     ?><option <?= ($this->projects->id_analyste == $u['id_user'] ? 'selected' : '') ?> value="<?= $u['id_user'] ?>"><?= $u['firstname'] ?> <?= $u['name'] ?></option><?
                                 }
                                 ?>
@@ -439,66 +450,238 @@ if (isset($_SESSION['freeow']))
                         <th><label for="status">Statut :</label></th>
                         <td id="current_statut">
                             <?php
-                            if($this->current_projects_status->status == 130)
-                            {
+                            if ($this->current_projects_status->status == 130) {
                                 echo "Remboursement anticipé";
-                            }
-                            else
-                            {      
-	                            if (count($this->lProjects_status) > 0)
-	                            {
-	                                ?>
-	                                <select name="status" id="status" class="select" <?=($this->current_projects_status->status == 130?'"disabled"':"")?>>
+                            } else {
+                                if (count($this->lProjects_status) > 0) {
+                                    ?>
+                                    <select name="status" id="status" class="select" <?= ($this->current_projects_status->status == 130 ? '"disabled"' : "") ?>>
                                         <?
-	                                    foreach ($this->lProjects_status as $s)
-	                                    {
-	                                        ?><option <?= ($this->current_projects_status->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option><?
-	                                    }
-	                                    ?>
-	                                </select>
-	                                <?
-	                            }
-	                            else
-	                            {
-	                                ?><input type="hidden" name="status" id="status" value="<?= $this->current_projects_status->status ?>" /><?
-	                                echo $this->current_projects_status->label;
-	                            }
-							}
+                                        foreach ($this->lProjects_status as $s) {
+                                            ?><option <?= ($this->current_projects_status->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option><?
+                                        }
+                                        ?>
+                                    </select>
+                                    <?
+                                } else {
+                                    ?><input type="hidden" name="status" id="status" value="<?= $this->current_projects_status->status ?>" /><?
+                                    echo $this->current_projects_status->label;
+                                }
+                            }
                             ?>
                         </td>	
-                    </tr>
-                    
-                <tr>
-                        
-                    <table style="display:none; margin-bottom: 20px;" class="bloc_mail_preteur_recouvrement">
-                        <tr>
-                            <th><label for="nature_project"><i>Email d'information aux prêteurs :</i></label></th>
-                        </tr>
-                        <tr>
-                            <td><textarea class="textarea_lng" name="area_recouvrement" id="area_recouvrement" style="height: 100px;width: 420px;"></textarea></td>
-                        </tr>
-                        <tr>   
-                            <th><i>Envoyer l'email d'information aux prêteurs :</i></th>                                
-                        </tr>
-                        <tr>
-                            <td>
-                                <input type="radio" name="mail_a_envoyer_preteur_probleme_recouvrement" id="oui_envoyer_mail_recouvrement" value="0" />
-                                <label for="oui_envoyer_mail">Oui</label>
-                                <input type="radio" name="mail_a_envoyer_preteur_probleme_recouvrement" id="non_envoyer_mail_recouvrement" value="1" checked/>
-                                <label for="non_envoyer_mail">Non</label>
-                            </td>
-                        </tr>
-                    </table>
-                </tr>    
-                
-                    
-                    
-                    
+                    </tr>  
                 </table>
+
+                <table class="hidden_table bloc_mail_preteur">
+                    <tr>
+                        <th>Envoyer l'email d'information aux prêteurs :</th>
+                        <td>
+                            <input type="radio" name="mail_a_envoyer_preteur_probleme" id="oui_envoyer_mail" value="0" />
+                            <label for="oui_envoyer_mail">Oui</label>
+                            <input type="radio" name="mail_a_envoyer_preteur_probleme" id="non_envoyer_mail" value="1" checked/>
+                            <label for="non_envoyer_mail">Non</label>
+                            <br><br>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="hidden_table bloc_mail_preteur_problemeX">
+                    <tr>
+                        <th><label for="nature_project"><i>Email d'information aux prêteurs :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td><textarea class="textarea_lng" name="area_problemeX" id="area_problemeX" style="height: 100px;width: 420px;"></textarea></td>
+                    </tr>
+                    <tr>   
+                        <th><i>Envoyer l'email d'information aux prêteurs :</i></th>                                
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="radio" name="mail_a_envoyer_preteur_problemeX" id="oui_envoyer_mail_problemeX" value="0" />
+                            <label for="oui_envoyer_mail">Oui</label>
+                            <input type="radio" name="mail_a_envoyer_preteur_problemeX" id="non_envoyer_mail_problemeX" value="1" checked/>
+                            <label for="non_envoyer_mail">Non</label>
+                            <br><br>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="hidden_table bloc_mail_preteur_recouvrement">
+                    <tr>
+                        <th><label for="nature_project"><i>Email d'information aux prêteurs :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td><textarea class="textarea_lng" name="area_recouvrement" id="area_recouvrement" style="height: 100px;width: 420px;"></textarea></td>
+                    </tr>
+                    <tr>   
+                        <th><i>Envoyer l'email d'information aux prêteurs :</i></th>                                
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="radio" name="mail_a_envoyer_preteur_probleme_recouvrement" id="oui_envoyer_mail_recouvrement" value="0" />
+                            <label for="oui_envoyer_mail_recouvrement">Oui</label>
+                            <input type="radio" name="mail_a_envoyer_preteur_probleme_recouvrement" id="non_envoyer_mail_recouvrement" value="1" checked/>
+                            <label for="non_envoyer_mail_recouvrement">Non</label>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="hidden_table bloc_mail_preteur_ps">
+                    <tr>
+                        <th>
+                            <br>
+                            <label for="date_ps"><i>Date du jugement</i></label>
+                        </th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="text" name="date_ps" id="date_ps" class="input_dp" value="<?= date('d/m/Y') ?>" />
+                            <br><br><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="mandataire_ps"><i>Coordonnées du mandataire judiciaire :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <textarea class="textarea_lng" name="mandataire_ps" id="mandataire_ps" style="height: 100px;width: 420px;"></textarea>
+                            <br><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="area_ps"><i>Email d'information aux prêteurs :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td><textarea class="textarea_lng" name="area_ps" id="area_ps" style="height: 100px;width: 420px;"></textarea></td>
+                    </tr>
+                    <tr>   
+                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>                                
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="radio" name="mail_a_envoyer_preteur_ps" id="oui_envoyer_mail_ps" value="0" />
+                            <label for="oui_envoyer_mail_ps">Oui</label>
+                            <input type="radio" name="mail_a_envoyer_preteur_ps" id="non_envoyer_mail_ps" value="1" checked/>
+                            <label for="non_envoyer_mail_ps">Non</label>
+                            <br><br>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="hidden_table bloc_mail_preteur_rj">
+                    <tr>
+                        <th>
+                            <br>
+                            <label for="date_rj"><i>Date du jugement</i></label>
+                        </th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="text" name="date_rj" id="date_rj" class="input_dp" value="<?= date('d/m/Y') ?>" />
+                            <br><br><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="mandataire_rj"><i>Coordonnées du mandataire judiciaire :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <textarea class="textarea_lng" name="mandataire_rj" id="mandataire_rj" style="height: 100px;width: 420px;"></textarea>
+                            <br><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="area_rj"><i>Email d'information aux prêteurs :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td><textarea class="textarea_lng" name="area_rj" id="area_rj" style="height: 100px;width: 420px;"></textarea></td>
+                    </tr>
+                    <tr>   
+                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>                                
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="radio" name="mail_a_envoyer_preteur_rj" id="oui_envoyer_mail_rj" value="0" />
+                            <label for="oui_envoyer_mail_rj">Oui</label>
+                            <input type="radio" name="mail_a_envoyer_preteur_rj" id="non_envoyer_mail_rj" value="1" checked/>
+                            <label for="non_envoyer_mail_rj">Non</label>
+                            <br><br>
+                        </td>
+                    </tr>
+                </table>
+                <table class="hidden_table bloc_mail_preteur_lj">
+                    <tr>
+                        <th>
+                            <br>
+                            <label for="date_lj"><i>Date du jugement</i></label>
+                        </th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <input type="text" name="date_lj" id="date_lj" class="input_dp" value="<?= date('d/m/Y') ?>" />
+                            <br><br><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="mandataire_lj"><i>Coordonnées du mandataire judiciaire :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <textarea class="textarea_lng" name="mandataire_lj" id="mandataire_lj" style="height: 100px;width: 420px;"></textarea>
+                            <br><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="area_lj"><i>Email d'information aux prêteurs :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td><textarea class="textarea_lng" name="area_lj" id="area_lj" style="height: 100px;width: 420px;"></textarea></td>
+                    </tr>
+                    <tr>   
+                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>                                
+                    <tr>
+                        <td>
+                            <input type="radio" name="mail_a_envoyer_preteur_lj" id="oui_envoyer_mail_lj" value="0" />
+                            <label for="oui_envoyer_mail_lj">Oui</label>
+                            <input type="radio" name="mail_a_envoyer_preteur_lj" id="non_envoyer_mail_lj" value="1" checked/>
+                            <label for="non_envoyer_mail_lj">Non</label>
+                            <br><br>
+                        </td>
+                    </tr>
+                </table>
+                <table class="hidden_table bloc_mail_preteur_default">
+                    <tr>
+                        <th><label for="mandataire_default"><i>Coordonnées du mandataire judiciaire :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td>
+                            <textarea class="textarea_lng" name="mandataire_default" id="mandataire_default" style="height: 100px;width: 420px;"></textarea>
+                            <br><br>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="area_default"><i>Email d'information aux prêteurs :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td><textarea class="textarea_lng" name="area_default" id="area_default" style="height: 100px;width: 420px;"></textarea></td>
+                    </tr>
+                    <tr>   
+                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>                                
+                    <tr>
+                        <td>
+                            <input type="radio" name="mail_a_envoyer_preteur_default" id="oui_envoyer_mail_default" value="0" />
+                            <label for="oui_envoyer_mail_default">Oui</label>
+                            <input type="radio" name="mail_a_envoyer_preteur_default" id="non_envoyer_mail_default" value="1" checked/>
+                            <label for="non_envoyer_mail_default">Non</label>
+                            <br><br>
+                        </td>
+                    </tr>
+                </table>
+
                 <table class="form" style="width: 538px;">
                     <?
-                    if (in_array($this->current_projects_status->status, array(20, 31, 33, 35)))
-                    {
+                    if (in_array($this->current_projects_status->status, array(20, 31, 33, 35))) {
                         ?>
                         <tr class="change_statut" <?= ($this->current_projects_status->status == 35 ? '' : 'style="display:none"') ?>>
                             <td colspan="2">
@@ -514,8 +697,7 @@ if (isset($_SESSION['freeow']))
                         <th><label for="date_publication">Date de publication* :</label></th>
                         <td id="date_publication">
                             <?
-                            if (in_array($this->current_projects_status->status, array(20, 31, 33, 35, 40)))
-                            {
+                            if (in_array($this->current_projects_status->status, array(20, 31, 33, 35, 40))) {
                                 ?><input style="background-color:#AAACAC;" type="text" name="date_publication" id="date_pub" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>" />
 
                                 <?php
@@ -533,8 +715,7 @@ if (isset($_SESSION['freeow']))
                                 &agrave;
                                 <select name="date_publication_heure" class="selectMini">
                                     <?php
-                                    for ($h = 0; $h < 24; $h++)
-                                    {
+                                    for ($h = 0; $h < 24; $h++) {
                                         ?><option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_publication == $h ? "selected=selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option><?
                                     }
                                     ?>                                        
@@ -542,8 +723,7 @@ if (isset($_SESSION['freeow']))
 
                                 <select name="date_publication_minute" class="selectMini">
                                     <?
-                                    for ($m = 0; $m < 60; $m++)
-                                    {
+                                    for ($m = 0; $m < 60; $m++) {
                                         ?><option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_publication == $m ? "selected=selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
                                         <?
                                     }
@@ -561,15 +741,10 @@ if (isset($_SESSION['freeow']))
                                   ?>
                                   </select><?php */ ?>
                                 <?
-                            }
-                            else
-                            {
-                                if ($this->projects->date_publication_full == '0000-00-00 00:00:00')
-                                {
+                            } else {
+                                if ($this->projects->date_publication_full == '0000-00-00 00:00:00') {
                                     echo $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') . ' 07:00';
-                                }
-                                else
-                                {
+                                } else {
                                     echo $this->dates->formatDate($this->projects->date_publication_full, 'd/m/Y H:i');
                                 }
                             }
@@ -581,8 +756,7 @@ if (isset($_SESSION['freeow']))
                         <th><label for="date_retrait">Date de retrait* :</label></th>
                         <td id="date_retrait">
                             <?
-                            if (in_array($this->current_projects_status->status, array(20, 31, 33, 35, 40)))
-                            {
+                            if (in_array($this->current_projects_status->status, array(20, 31, 33, 35, 40))) {
                                 ?><input  style="background-color:#AAACAC;" type="text" name="date_retrait" id="date_de_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>" />
 
                                 <?php
@@ -602,8 +776,7 @@ if (isset($_SESSION['freeow']))
                                 &agrave;                                
                                 <select name="date_retrait_heure" class="selectMini">
                                     <?php
-                                    for ($h = 0; $h < 24; $h++)
-                                    {
+                                    for ($h = 0; $h < 24; $h++) {
                                         ?>
                                         <option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_retrait == $h ? "selected=selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option>
                                         <?php
@@ -613,8 +786,7 @@ if (isset($_SESSION['freeow']))
 
                                 <select name="date_retrait_minute" class="selectMini">
                                     <?php
-                                    for ($m = 0; $m < 60; $m++)
-                                    {
+                                    for ($m = 0; $m < 60; $m++) {
                                         ?>
                                         <option value="<?= (strlen($m) < 2 ? "0" . $m : $m) ?>" <?= ($minute_date_retrait == $m ? "selected=selected" : "") ?>><?= (strlen($m) < 2 ? "0" . $m : $m) ?></option>
                                         <?php
@@ -635,20 +807,14 @@ if (isset($_SESSION['freeow']))
 
 
                                 <?
-                            }
-                            else
-                            {
-                                if ($this->projects->date_publication_full == '0000-00-00 00:00:00')
-                                {
+                            } else {
+                                if ($this->projects->date_publication_full == '0000-00-00 00:00:00') {
                                     echo $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') . ' 16:00';
-                                }
-                                else
-                                {
+                                } else {
                                     echo $this->dates->formatDate($this->projects->date_retrait_full, 'd/m/Y H:i');
                                 }
 
-                                if ($this->current_projects_status->status < 60)
-                                {
+                                if ($this->current_projects_status->status < 60) {
                                     ?>
                                     &nbsp;&nbsp;&nbsp;<a href="<?= $this->lurl ?>/thickbox/pop_up_edit_date_retrait/<?= $this->projects->id_project ?>" class="thickbox btn_link ">Modifier</a>
                                     <?
@@ -659,8 +825,7 @@ if (isset($_SESSION['freeow']))
                     </tr>
 
                     <?php
-                    if ($this->retour_dates_valides != "" && isset($this->retour_dates_valides))
-                    {
+                    if ($this->retour_dates_valides != "" && isset($this->retour_dates_valides)) {
                         ?>
                         <tr class="content_date_retrait">
                             <th></th>
@@ -674,12 +839,10 @@ if (isset($_SESSION['freeow']))
                         <td></td>
                         <td id="status_dossier">
                             <?
-                            if (in_array($this->current_projects_status->status, array(20)))
-                            {
+                            if (in_array($this->current_projects_status->status, array(20))) {
                                 ?><input  type="button" id="status_dosier_valider" class="btn" onClick="check_status_dossierV2(31,<?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier"> <?
                             }
-                            if (in_array($this->current_projects_status->status, array(20)))
-                            {
+                            if (in_array($this->current_projects_status->status, array(20))) {
                                 ?> <input type="button" id="status_dosier_rejeter" class="btn" onClick="check_status_dossierV2(30,<?= $this->projects->id_project ?>);" style="background:#CC0000;border-color:#CC0000;font-size:10px;" value="Rejeter dossier"><?
                             }
                             ?>
@@ -688,8 +851,7 @@ if (isset($_SESSION['freeow']))
 
 
                     <?
-                    if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1)
-                    {
+                    if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1) {
                         ?>
                         <tr>
                             <th><label for="pouvoir">Pouvoir :</label></th>
@@ -697,8 +859,7 @@ if (isset($_SESSION['freeow']))
                             <td>
                                 <div><a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>"><?= $this->projects_pouvoir->name ?></a>
                                     <?
-                                    if ($this->projects_pouvoir->status_remb == '1')
-                                    {
+                                    if ($this->projects_pouvoir->status_remb == '1') {
                                         ?><span style="color:green;">&nbsp;Validé</span><?
                                     }
                                     ?>
@@ -709,8 +870,7 @@ if (isset($_SESSION['freeow']))
                             <th></th>
                             <td>
                                 <?
-                                if ($this->projects_pouvoir->status_remb == '0' && $this->current_projects_status->status == 60)
-                                {
+                                if ($this->projects_pouvoir->status_remb == '0' && $this->current_projects_status->status == 60) {
                                     ?>
 
                                     <select name="satut_pouvoir" id="satut_pouvoir" class="select">
@@ -723,9 +883,7 @@ if (isset($_SESSION['freeow']))
                             </td>
                         </tr>
                         <?
-                    }
-                    elseif ($this->current_projects_status->status == 60) // si projet fundé
-                    {
+                    } elseif ($this->current_projects_status->status == 60) { // si projet fundé
                         ?>
                         <tr>
                             <th><label for="upload_pouvoir">Pouvoir :</label></th>
@@ -734,8 +892,7 @@ if (isset($_SESSION['freeow']))
                         <?
                     }
 
-                    if ($this->current_projects_status->status == 60)
-                    {
+                    if ($this->current_projects_status->status == 60) {
                         ?>
                         <tr>
                             <th>Prêt refusé :</th>
@@ -761,15 +918,36 @@ if (isset($_SESSION['freeow']))
             <div style="display:none" class="recharge"> 
                 <script type="text/javascript">
                     $("#status").change(function () {
+
+                        $('.hidden_table').hide();
+
                         if ($("#status").val() == 40) {
                             $(".change_statut").hide();
                         }
-                        else if($("#status").val() == 80) {
+                        else if ($("#status").val() == 80) {
                             /* dans le cas d'un changement vers probleme, on affiche une box de conf */
-                            
+
                         }
-                        else if($("#status").val() == 110) { /* Recouvrement, on affiche un textarea pour le mail aux preteurs*/
+                        else if ($("#status").val() == 100) {
+                            $('.bloc_mail_preteur').show();
+                        }
+                        else if ($("#status").val() == 140) {
+                            $('.bloc_mail_preteur_problemeX').show();
+                        }
+                        else if ($("#status").val() == 110) {
                             $('.bloc_mail_preteur_recouvrement').show();
+                        }
+                        else if ($("#status").val() == 120) {
+                            $('.bloc_mail_preteur_default').show();
+                        }
+                        else if ($("#status").val() == 150) {
+                            $('.bloc_mail_preteur_ps').show();
+                        }
+                        else if ($("#status").val() == 160) {
+                            $('.bloc_mail_preteur_rj').show();
+                        }
+                        else if ($("#status").val() == 170) {
+                            $('.bloc_mail_preteur_lj').show();
                         }
                         else {
                             $(".change_statut").show();
@@ -794,8 +972,7 @@ if (isset($_SESSION['freeow']))
     <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>/altares" class="btn_link">Générer les données Altares</a></div>
     <div id="table_memo">
         <?
-        if (count($this->lProjects_comments) > 0)
-        {
+        if (count($this->lProjects_comments) > 0) {
             ?>
             <table class="tablesorter">
                 <thead>
@@ -808,8 +985,7 @@ if (isset($_SESSION['freeow']))
                 <tbody>
                     <?
                     $i = 1;
-                    foreach ($this->lProjects_comments as $p)
-                    {
+                    foreach ($this->lProjects_comments as $p) {
                         ?>
                         <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                             <td align="center"><?= $this->dates->formatDate($p['added'], 'd/m/Y H:i:s') ?></td>
@@ -827,8 +1003,7 @@ if (isset($_SESSION['freeow']))
                 </tbody>
             </table>
             <?
-            if ($this->nb_lignes != '')
-            {
+            if ($this->nb_lignes != '') {
                 ?>
                 <table>
                     <tr>
@@ -884,12 +1059,9 @@ if (isset($_SESSION['freeow']))
                         <th><label for="siren_etape1">SIREN :</label></th>
                         <td>
                             <?
-                            if ($this->projects->create_bo == 1)
-                            {
+                            if ($this->projects->create_bo == 1) {
                                 ?><input type="text" name="siren_etape1" id="siren_etape1" class="input_large" value="<?= $this->companies->siren ?>"/><?
-                            }
-                            else
-                            {
+                            } else {
                                 ?><input type="hidden" name="siren_etape1" id="siren_etape1" value="<?= $this->companies->siren ?>"/><?
                                 echo $this->companies->siren;
                             }
@@ -992,8 +1164,7 @@ if (isset($_SESSION['freeow']))
                             <select name="status_conseil_externe_entreprise_etape2" id="status_conseil_externe_entreprise_etape2" class="select">
                                 <option value="0">Choisir</option>
                                 <?
-                                foreach ($this->conseil_externe as $k => $conseil_externe)
-                                {
+                                foreach ($this->conseil_externe as $k => $conseil_externe) {
                                     ?><option <?= ($this->companies->status_conseil_externe_entreprise == $k ? 'selected' : '') ?> value="<?= $k ?>" ><?= $conseil_externe ?></option><?
                                 }
                                 ?>
@@ -1174,8 +1345,7 @@ if (isset($_SESSION['freeow']))
                             <td>
                                 <select name="jour_etape4" id="jour_etape4" class="select">
                                     <?
-                                    for ($i = 1; $i <= 31; $i++)
-                                    {
+                                    for ($i = 1; $i <= 31; $i++) {
                                         if (strlen($i) < 2)
                                             $numjour = '0' . $i;
                                         else
@@ -1187,8 +1357,7 @@ if (isset($_SESSION['freeow']))
 
                                 <select name="mois_etape4" id="mois_etape4" class="select">
                                     <?
-                                    foreach ($this->dates->tableauMois['fr'] as $k => $mois)
-                                    {
+                                    foreach ($this->dates->tableauMois['fr'] as $k => $mois) {
                                         if (strlen($k) < 2)
                                             $numMois = '0' . $k;
                                         else
@@ -1201,8 +1370,7 @@ if (isset($_SESSION['freeow']))
                                 </select>
                                 <select name="annee_etape4" id="annee_etape4" class="select">
                                     <?
-                                    for ($i = 2008; $i <= date('Y') + 1; $i++)
-                                    {
+                                    for ($i = 2008; $i <= date('Y') + 1; $i++) {
                                         ?><option <?= ($this->date_dernier_bilan_annee == $i ? 'selected' : '') ?> value="<?= $i ?>"><?= $i ?></option><?
                                     }
                                     ?>
@@ -1214,15 +1382,13 @@ if (isset($_SESSION['freeow']))
 
                     <!-- bilans -->
                     <?
-                    if (count($this->lbilans) > 0)
-                    {
+                    if (count($this->lbilans) > 0) {
                         ?>
                         <table class="tablesorter" style="text-align:center;">
                             <thead>
                             <th width="200"></th>
                             <?
-                            foreach ($this->lbilans as $b)
-                            {
+                            foreach ($this->lbilans as $b) {
                                 ?><th><?= $b['date'] ?></th><?
                                 }
                                 ?>
@@ -1231,8 +1397,7 @@ if (isset($_SESSION['freeow']))
                                 <tr>
                                     <td>Chiffe d'affaires</td>
                                     <?
-                                    for ($i = 0; $i < 5; $i++)
-                                    {
+                                    for ($i = 0; $i < 5; $i++) {
                                         ?><td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
                                             <input name="ca_<?= $i ?>" id="ca_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['ca'] != false ? number_format($this->lbilans[$i]['ca'], 2, ',', ' ') : ''); ?>" />
                                             <input type="hidden" id="ca_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>" />
@@ -1243,8 +1408,7 @@ if (isset($_SESSION['freeow']))
                                 <tr>
                                     <td>Résultat brut d'exploitation</td>
                                     <?
-                                    for ($i = 0; $i < 5; $i++)
-                                    {
+                                    for ($i = 0; $i < 5; $i++) {
                                         ?><td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
                                             <input name="resultat_brute_exploitation_<?= $i ?>" id="resultat_brute_exploitation_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['resultat_brute_exploitation'] != false ? number_format($this->lbilans[$i]['resultat_brute_exploitation'], 2, ',', ' ') : ''); ?>" />
                                             <input type="hidden" id="resultat_brute_exploitation_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>" />
@@ -1255,8 +1419,7 @@ if (isset($_SESSION['freeow']))
                                 <tr>
                                     <td>Résultat d'exploitation</td>
                                     <?
-                                    for ($i = 0; $i < 5; $i++)
-                                    {
+                                    for ($i = 0; $i < 5; $i++) {
                                         ?><td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
                                             <input name="resultat_exploitation_<?= $i ?>" id="resultat_exploitation_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['resultat_exploitation'] != false ? number_format($this->lbilans[$i]['resultat_exploitation'], 2, ',', ' ') : ''); ?>" />
                                             <input type="hidden" id="resultat_exploitation_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>" />
@@ -1267,8 +1430,7 @@ if (isset($_SESSION['freeow']))
                                 <tr>
                                     <td>Investissements</td>
                                     <?
-                                    for ($i = 0; $i < 5; $i++)
-                                    {
+                                    for ($i = 0; $i < 5; $i++) {
                                         ?><td <?= ($i < 3 ? 'class="grisfonceBG"' : '') ?>>
                                             <input name="investissements_<?= $i ?>" id="investissements_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['investissements'] != false ? number_format($this->lbilans[$i]['investissements'], 2, ',', ' ') : ''); ?>" />
                                             <input type="hidden" id="investissements_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>" />
@@ -1279,8 +1441,7 @@ if (isset($_SESSION['freeow']))
                             </tbody>
                         </table>
                         <?
-                        if ($this->nb_lignes != '')
-                        {
+                        if ($this->nb_lignes != '') {
                             ?>
                             <table>
                                 <tr>
@@ -1334,8 +1495,7 @@ if (isset($_SESSION['freeow']))
                     </style>
                     <h2>Actif :</h2>
                     <?
-                    if (count($this->lCompanies_actif_passif) > 0)
-                    {
+                    if (count($this->lCompanies_actif_passif) > 0) {
 
                         $arrayBilans[0]['title'] = 'Ordre';
                         $arrayBilans[0]['value'] = '';
@@ -1370,17 +1530,14 @@ if (isset($_SESSION['freeow']))
                         ?>
                         <table class="tablesorter actif_passif" style="text-align:center;">
                             <?
-                            foreach ($arrayBilans as $k => $t)
-                            {
+                            foreach ($arrayBilans as $k => $t) {
                                 // entete
-                                if ($k == 0)
-                                {
+                                if ($k == 0) {
                                     ?>
                                     <thead>
                                     <th width="300"><?= $t['title'] ?></th>
                                     <?
-                                    foreach ($this->lCompanies_actif_passif as $ap)
-                                    {
+                                    foreach ($this->lCompanies_actif_passif as $ap) {
                                         ?><th><?= $ap['annee'] ?></th><?
                                             if ($i == 3)
                                                 break;
@@ -1395,14 +1552,12 @@ if (isset($_SESSION['freeow']))
                                         }
 
                                         // corps
-                                        elseif ($end['title'] != $t['title'])
-                                        {
+                                        elseif ($end['title'] != $t['title']) {
                                             ?>
                                             <td><?= $t['title'] ?></td>
                                             <?
                                             $a = 1;
-                                            foreach ($this->lCompanies_actif_passif as $ap)
-                                            {
+                                            foreach ($this->lCompanies_actif_passif as $ap) {
                                                 ?><td>
                                                     <input name="<?= $t['value'] ?>_<?= $ap['ordre'] ?>" id="<?= $t['value'] ?>_<?= $ap['ordre'] ?>" type="text" class="input_moy" value="<?= ($ap[$t['value']] != false ? number_format($ap[$t['value']], 2, '.', '') : ''); ?>" onkeyup="cal_actif();"/>
 
@@ -1417,15 +1572,13 @@ if (isset($_SESSION['freeow']))
                                             <?
                                         }
                                         // pied
-                                        else
-                                        {
+                                        else {
                                             ?>
                                             <td><?= $t['title'] ?></td>
 
                                             <?
                                             $b = 1;
-                                            foreach ($this->lCompanies_actif_passif as $ap)
-                                            {
+                                            foreach ($this->lCompanies_actif_passif as $ap) {
                                                 $totalAnnee = ($ap[$arrayBilans[0]['value']] + $ap[$arrayBilans[1]['value']] + $ap[$arrayBilans[2]['value']] + $ap[$arrayBilans[3]['value']] + $ap[$arrayBilans[4]['value']] + $ap[$arrayBilans[5]['value']] + $ap[$arrayBilans[6]['value']] + $ap[$arrayBilans[7]['value']])
                                                 ?><td id="<?= $t['value'] ?>_<?= $ap['ordre'] ?>" ><?= $totalAnnee ?></td><?
                                                 if ($b == 3)
@@ -1544,8 +1697,7 @@ if (isset($_SESSION['freeow']))
                     <h2>Passif :</h2>
 
                     <?
-                    if (count($this->lCompanies_actif_passif) > 0)
-                    {
+                    if (count($this->lCompanies_actif_passif) > 0) {
                         $arrayBilansPassif[0]['title'] = 'Ordre';
                         $arrayBilansPassif[0]['value'] = '';
 
@@ -1577,18 +1729,15 @@ if (isset($_SESSION['freeow']))
                         <table class="tablesorter actif_passif" style="text-align:center;">
 
                             <?
-                            foreach ($arrayBilansPassif as $k => $t)
-                            {
+                            foreach ($arrayBilansPassif as $k => $t) {
 
                                 // entete
-                                if ($k == 0)
-                                {
+                                if ($k == 0) {
                                     ?>
                                     <thead>
                                     <th width="300"><?= $t['title'] ?></th>
                                     <?
-                                    foreach ($this->lCompanies_actif_passif as $ap)
-                                    {
+                                    foreach ($this->lCompanies_actif_passif as $ap) {
                                         ?><th><?= $ap['annee'] ?></th><?
                                             if ($i == 3)
                                                 break;
@@ -1603,14 +1752,12 @@ if (isset($_SESSION['freeow']))
                                         }
 
                                         // corps
-                                        elseif ($end['title'] != $t['title'])
-                                        {
+                                        elseif ($end['title'] != $t['title']) {
                                             ?>
                                             <td><?= $t['title'] ?></td>
                                             <?
                                             $a = 1;
-                                            foreach ($this->lCompanies_actif_passif as $ap)
-                                            {
+                                            foreach ($this->lCompanies_actif_passif as $ap) {
                                                 ?><td>
                                                     <input name="<?= $t['value'] ?>_<?= $ap['ordre'] ?>" id="<?= $t['value'] ?>_<?= $ap['ordre'] ?>" type="text" class="input_moy" value="<?= ($ap[$t['value']] != false ? number_format($ap[$t['value']], 2, '.', '') : ''); ?>" onkeyup="cal_passif();"/>
 
@@ -1625,15 +1772,13 @@ if (isset($_SESSION['freeow']))
                                             <?
                                         }
                                         // pied
-                                        else
-                                        {
+                                        else {
                                             ?>
                                             <td><?= $t['title'] ?></td>
 
                                             <?
                                             $b = 1;
-                                            foreach ($this->lCompanies_actif_passif as $ap)
-                                            {
+                                            foreach ($this->lCompanies_actif_passif as $ap) {
                                                 $totalAnnee = ($ap[$arrayBilansPassif[0]['value']] + $ap[$arrayBilansPassif[1]['value']] + $ap[$arrayBilansPassif[2]['value']] + $ap[$arrayBilansPassif[3]['value']] + $ap[$arrayBilansPassif[4]['value']] + $ap[$arrayBilansPassif[5]['value']] + $ap[$arrayBilansPassif[6]['value']])
                                                 ?><td id="<?= $t['value'] ?>_<?= $ap['ordre'] ?>" ><?= $totalAnnee ?></td><?
                                                 if ($b == 3)
@@ -1857,8 +2002,7 @@ if (isset($_SESSION['freeow']))
             <form method="post" name="dossier_etape5" id="dossier_etape5" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/file/<?= $this->params[0] ?>" target="upload_target">
                 <!-- bilans -->
                 <?
-                if (count($this->lbilans) > 0)
-                {
+                if (count($this->lbilans) > 0) {
                     ?>
                     <table class="tablesorter">
                         <thead>
@@ -1980,8 +2124,7 @@ if (isset($_SESSION['freeow']))
                         </tbody>
                     </table>
                     <?
-                    if ($this->nb_lignes != '')
-                    {
+                    if ($this->nb_lignes != '') {
                         ?>
                         <table>
                             <tr>
@@ -2021,8 +2164,7 @@ if (isset($_SESSION['freeow']))
         <div id="content_etape6">
             <?
 // si statut revueA
-            if ($this->current_projects_status->status >= 31)
-            {
+            if ($this->current_projects_status->status >= 31) {
                 $moyenne1 = (($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1));
 
                 $moyenne = round($moyenne1, 1);
@@ -2099,8 +2241,7 @@ if (isset($_SESSION['freeow']))
                     <div class="btnDroite listBtn_etape6">
                         <input type="button" onclick="valid_rejete_etape6(3,<?= $this->projects->id_project ?>)" class="btn"  value="Sauvegarder">
                         <?
-                        if ($this->current_projects_status->status == 31)
-                        {
+                        if ($this->current_projects_status->status == 31) {
                             ?>
                             <input type="button" onclick="valid_rejete_etape6(1,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
                             <input type="button" onclick="valid_rejete_etape6(2,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape6" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
@@ -2169,8 +2310,7 @@ if (isset($_SESSION['freeow']))
         <br />
         <div id="content_etape7"><?
 // si statut revueA
-            if ($this->current_projects_status->status >= 33)
-            {
+            if ($this->current_projects_status->status >= 33) {
                 ?>
                 <div id="title_etape7">Etape 7</div> 
                 <div id="etape7">
@@ -2289,8 +2429,7 @@ if (isset($_SESSION['freeow']))
                     <div class="btnDroite">
                         <input type="button" onclick="valid_rejete_etape7(3,<?= $this->projects->id_project ?>)" class="btn"  value="Sauvegarder">
                         <?
-                        if ($this->current_projects_status->status == 33)
-                        {
+                        if ($this->current_projects_status->status == 33) {
                             ?>
                             <input type="button" onclick="valid_rejete_etape7(1,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">
                             <input type="button" onclick="valid_rejete_etape7(2,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
@@ -2319,8 +2458,7 @@ if (isset($_SESSION['freeow']))
 
 
 <?
-for ($i = 1; $i <= 7; $i++)
-{
+for ($i = 1; $i <= 7; $i++) {
     ?>
         $('#title_etape<?= $i ?>').click(function () {
             $('#etape<?= $i ?>').slideToggle();
