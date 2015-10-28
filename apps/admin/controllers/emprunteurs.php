@@ -224,7 +224,6 @@ class emprunteursController extends bootstrap
 
     function _edit()
     {
-        // Chargement du data
         $this->clients           = $this->loadData('clients');
         $this->clients_adresses  = $this->loadData('clients_adresses');
         $this->companies         = $this->loadData('companies');
@@ -236,7 +235,7 @@ class emprunteursController extends bootstrap
         $this->projects_pouvoir  = $this->loadData('projects_pouvoir');
         $prelevements            = $this->loadData('prelevements');
         $this->clients->history  = '';
-        // Liste deroulante secteurs
+
         $this->settings->get('Liste deroulante secteurs', 'type');
         $this->lSecteurs = explode(';', $this->settings->value);
 
@@ -438,28 +437,21 @@ class emprunteursController extends bootstrap
                                     'lien_tw'                => $lien_tw,
                                     'date_echeance'          => date('d/m/Y', strtotime($this->nextEcheance[0]['date_echeance_emprunteur'])));
 
-                                //echo $e->prenom."-".$projet;
-                                //continue;
-                                // Construction du tableau avec les balises EMV
                                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                                // Attribution des données aux variables
                                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                                // Envoi du mail
-                                $this->email = $this->loadLib('email', array());
+                                $this->email = $this->loadLib('email');
                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-
                                 $this->email->setSubject(stripslashes($sujetMail));
                                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                if ($this->Config['env'] == 'prod') { // nmp
+                                if ($this->Config['env'] == 'prod') {
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $e->email, $tabFiler);
-                                    // Injection du mail NMP dans la queue
                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else { // non nmp
+                                } else {
                                     $this->email->addRecipient(trim($e->email));
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 }
