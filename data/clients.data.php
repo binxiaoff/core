@@ -656,7 +656,7 @@ class clients extends clients_crud
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    public function searchPrescripteur($iClientId = '', $nom = '', $prenom = '', $email = '', $sCompanyName = '', $sSiren = '', $offset = '', $limit = 100, $sOperation = 'AND')
+    public function searchPrescripteur($iAdvisorId = '', $nom = '', $prenom = '', $email = '', $sCompanyName = '', $sSiren = '', $offset = '', $limit = 100, $sOperation = 'AND')
     {
         $aWhere = array();
 
@@ -684,9 +684,9 @@ class clients extends clients_crud
         }
 
         $sWhere = '';
-        if ('' !== $iClientId) {
-            $iClientId = $this->bdd->escape_string($iClientId);
-            $sWhere = ' WHERE c.id_client = '. $iClientId;
+        if ('' !== $iAdvisorId) {
+            $iAdvisorId = $this->bdd->escape_string($iAdvisorId);
+            $sWhere = ' WHERE p.id_prescripteur = '. $iAdvisorId;
         } elseif (false === empty($aWhere)) {
             $sWhere = ' WHERE ' . implode(' ' . $sOperation.' ', $aWhere);
         }

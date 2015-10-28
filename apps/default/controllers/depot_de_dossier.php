@@ -35,6 +35,7 @@ class depot_de_dossierController extends bootstrap
         $this->prescripteurs                 = $this->loadData('prescripteurs');
         $this->clients_prescripteur          = $this->loadData('clients');
         $this->clients_adresses_prescripteur = $this->loadData('clients_adresses');
+        $this->companies_prescripteur        = $this->loadData('companies');
         $this->attachment                    = $this->loadData('attachment');
         $this->attachment_type               = $this->loadData('attachment_type');
 
@@ -115,8 +116,11 @@ class depot_de_dossierController extends bootstrap
         $this->companies_details->id_company = $this->companies->id_company;
         $this->companies_details->create();
 
-        $this->projects->id_company = $this->companies->id_company;
-        $this->projects->amount     = $iAmount;
+        $this->projects->id_company                           = $this->companies->id_company;
+        $this->projects->amount                               = $iAmount;
+        $this->projects->ca_declara_client                    = 0;
+        $this->projects->resultat_exploitation_declara_client = 0;
+        $this->projects->fonds_propres_declara_client         = 0;
         $this->projects->create();
 
         /**
@@ -460,7 +464,10 @@ class depot_de_dossierController extends bootstrap
                 $this->clients_adresses_prescripteur->telephone = $_POST['mobile_prescripteur'];
                 $this->clients_adresses_prescripteur->create();
 
+                $this->companies_prescripteur->create();
+
                 $this->prescripteurs->id_client = $this->clients_prescripteur->id_client;
+                $this->prescripteurs->id_entite = $this->companies_prescripteur->id_company;
                 $this->prescripteurs->create();
 
                 $this->projects->id_prescripteur = $this->prescripteurs->id_prescripteur;
@@ -1015,6 +1022,7 @@ class depot_de_dossierController extends bootstrap
             $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
             $this->clients_prescripteur->get($this->prescripteurs->id_client, 'id_client');
             $this->clients_adresses_prescripteur->get($this->prescripteurs->id_client, 'id_client');
+            $this->companies_prescripteur->get($this->prescripteurs->id_entite, 'id_company');
         }
 
         $this->projects_status->getLastStatut($this->projects->id_project);
