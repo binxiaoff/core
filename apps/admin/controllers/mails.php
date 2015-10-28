@@ -23,11 +23,7 @@ class mailsController extends bootstrap
 		echo $this->pwd_api.'<br>';
 		echo $this->key_api.'<br>';*/
 		
-<<<<<<< HEAD
 		if($config['env'] == 'prod' && $this->key_api != '' && $this->login_api != '' && $this->pwd_api != '' && $this->serveur_api != '')
-=======
-		if($this->key_api != '' && $this->login_api != '' && $this->pwd_api != '' && $this->serveur_api != '' && $this->Config['env'] == 'prod') // nmp)
->>>>>>> statuts-emprunteurs
 		{		
 			// Connection au serveur NMP
 			$this->location_nmpsoap = 'https://'.$this->serveur_api.'/apitransactional/services/TransactionalService?wsdl';

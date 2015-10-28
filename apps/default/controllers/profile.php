@@ -157,13 +157,7 @@ class profileController extends bootstrap
 		8 => $this->lng['gestion-alertes']['retrait-info'],
                 9 => $this->lng['gestion-alertes']['retard-et-regulation-info']);
 		
-<<<<<<< HEAD
 		// Gestion de l'ajout des nouvelles notifications manquantes
-=======
-		
-		
-                // Gestion de l'ajout des nouvelles notifications manquantes
->>>>>>> statuts-emprunteurs
                 $this->lNotif_manquante = $this->clients_gestion_notifications->select('id_client = '.$this->clients->id_client.' AND id_notif IN (9)');
                 if($this->lNotif_manquante == false){
                         
@@ -782,10 +776,6 @@ class profileController extends bootstrap
 			// old mdp
 			if(!isset($_POST['passOld']) || $_POST['passOld'] == '' || $_POST['passOld'] == $this->lng['etape1']['ancien-mot-de-passe']){
 				$this->form_ok = false;
-<<<<<<< HEAD
-			}
-			elseif(isset($_POST['passOld']) && md5($_POST['passOld']) != $this->clients->password){
-=======
 			}
 			elseif(isset($_POST['passOld']) && md5($_POST['passOld']) != $this->clients->password){
 				$this->form_ok = false;
@@ -797,21 +787,8 @@ class profileController extends bootstrap
 			
 			// new pass
 			if(!isset($_POST['passNew']) || $_POST['passNew'] == '' || $_POST['passNew'] == $this->lng['etape1']['nouveau-mot-de-passe']){
->>>>>>> statuts-emprunteurs
-				$this->form_ok = false;
-				
-				$_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['ancien-mot-de-passe-incorrect'];
-				header('Location:'.$this->lurl.'/profile/particulier/3');
-				die;
-			}
-<<<<<<< HEAD
-			
-			// new pass
-			if(!isset($_POST['passNew']) || $_POST['passNew'] == '' || $_POST['passNew'] == $this->lng['etape1']['nouveau-mot-de-passe']){
 				$this->form_ok = false;
 			}
-=======
->>>>>>> statuts-emprunteurs
 			elseif(isset($_POST['passNew']) && $this->ficelle->password_fo($_POST['passNew'],6) == false){
 				$this->form_ok = false;
 			}
@@ -1004,7 +981,6 @@ class profileController extends bootstrap
                 9 => $this->lng['gestion-alertes']['retard-et-regulation-info']);
 		
 		////// Liste des notifs //////
-<<<<<<< HEAD
 		// Gestion de l'ajout des nouvelles notifications manquantes
                 $this->lNotif_manquante = $this->clients_gestion_notifications->select('id_client = '.$this->clients->id_client.' AND id_notif IN (9)');
                 if($this->lNotif_manquante == false){
@@ -1021,25 +997,6 @@ class profileController extends bootstrap
                 
                 $this->lTypeNotifs = $this->clients_gestion_type_notif->select();                
                 $this->lNotifs = $this->clients_gestion_notifications->select('id_client = '.$this->clients->id_client);
-=======
-                
-                // Gestion de l'ajout des nouvelles notifications manquantes
-                $this->lNotif_manquante = $this->clients_gestion_notifications->select('id_client = '.$this->clients->id_client.' AND id_notif IN (9)');
-                if($this->lNotif_manquante == false){
-
-                    $this->lTypeNotifs_manquates = $this->clients_gestion_type_notif->select('id_client_gestion_type_notif IN (9)');                   
-
-                    foreach($this->lTypeNotifs_manquates as $n){
-                        $this->clients_gestion_notifications->id_client = $this->clients->id_client;
-                        $this->clients_gestion_notifications->id_notif = $n['id_client_gestion_type_notif'];
-                        $this->clients_gestion_notifications->immediatement = 1;
-                        $this->clients_gestion_notifications->create();
-                    }
-		}
-                
-		$this->lTypeNotifs = $this->clients_gestion_type_notif->select();
-		$this->lNotifs = $this->clients_gestion_notifications->select('id_client = '.$this->clients->id_client);
->>>>>>> statuts-emprunteurs
 		$this->NotifC = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
 		
 		// formulaire particulier gestion de vos alertes
@@ -1874,7 +1831,6 @@ class profileController extends bootstrap
 		}
 		
 		
-<<<<<<< HEAD
 	}
 	
 	
@@ -2960,8 +2916,6 @@ class profileController extends bootstrap
 		/*echo '<pre>';
 		print_r($this->lTrans);
 		echo '</pre>';*/
-=======
->>>>>>> statuts-emprunteurs
 	}
 	
 	function _info_perso()
