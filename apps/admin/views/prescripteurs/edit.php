@@ -37,7 +37,7 @@ if (isset($_SESSION['freeow'])) {
     }
     ?>
 
-    <form method="post" name="edit_prescripteur" id="edit_prescripteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/prescripteurs/edit/<?= $this->clients->id_client ?>" target="_parent">
+    <form method="post" name="edit_prescripteur" id="edit_prescripteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/prescripteurs/edit/<?= $this->prescripteurs->id_prescripteur ?>" target="_parent">
         <table class="formColor" style="width: 775px;margin:auto;">
             <tr>
                 <th>Civilité :</th>

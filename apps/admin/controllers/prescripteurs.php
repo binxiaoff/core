@@ -80,13 +80,13 @@ class prescripteursController extends bootstrap
             $this->companies->bic   = $_POST['bic'];
             $this->companies->update();
 
-            $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
+            $serialize = serialize(array('id_prescripteur' => $this->prescripteurs->id_prescripteur, 'post' => $_POST));
             $this->users_history->histo(5, 'edit prescripteur', $_SESSION['user']['id_user'], $serialize);
 
             $_SESSION['freeow']['title']   = 'prescripteur mis a jour';
             $_SESSION['freeow']['message'] = 'le prescripteur a &eacute;t&eacute; mis a jour !';
 
-            header('Location: ' . $this->lurl . '/prescripteurs/edit/' . $this->clients->id_client);
+            header('Location: ' . $this->lurl . '/prescripteurs/edit/' . $this->prescripteurs->id_prescripteur);
         }
     }
 
@@ -143,7 +143,7 @@ class prescripteursController extends bootstrap
 
             $oPrescripteurs->id_prescripteur = $oPrescripteurs->create();
 
-            $serialize = serialize(array('id_client' => $oClients->id_client, 'post' => $_POST, 'files' => $_FILES));
+            $serialize = serialize(array('id_prescripteur' => $oPrescripteurs->id_prescripteur, 'post' => $_POST, 'files' => $_FILES));
             $this->users_history->histo(5, 'add prescripteur', $_SESSION['user']['id_user'], $serialize);
 
             echo 'OK';
