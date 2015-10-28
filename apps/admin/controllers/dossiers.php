@@ -60,28 +60,30 @@ class dossiersController extends bootstrap
 
     public function _edit()
     {
-        $this->projects                      = $this->loadData('projects');
-        $this->projects_notes                = $this->loadData('projects_notes');
-        $this->companies                     = $this->loadData('companies');
-        $this->companies_bilans              = $this->loadData('companies_bilans');
-        $this->companies_details             = $this->loadData('companies_details');
-        $this->companies_actif_passif        = $this->loadData('companies_actif_passif');
-        $this->clients                       = $this->loadData('clients');
-        $this->clients_adresses              = $this->loadData('clients_adresses');
-        $this->projects_comments             = $this->loadData('projects_comments');
-        $this->projects_status               = $this->loadData('projects_status');
-        $this->current_projects_status       = $this->loadData('projects_status');
-        $this->projects_status_history       = $this->loadData('projects_status_history');
-        $this->loans                         = $this->loadData('loans');
-        $this->projects_pouvoir              = $this->loadData('projects_pouvoir');
-        $this->lenders_accounts              = $this->loadData('lenders_accounts');
-        $this->echeanciers                   = $this->loadData('echeanciers');
-        $this->notifications                 = $this->loadData('notifications');
-        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
-        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $this->prescripteurs                 = $this->loadData('prescripteurs');
-        $this->clients_prescripteurs         = $this->loadData('clients');
-        $this->companies_prescripteurs       = $this->loadData('companies');
+        $this->projects                        = $this->loadData('projects');
+        $this->projects_notes                  = $this->loadData('projects_notes');
+        $this->companies                       = $this->loadData('companies');
+        $this->companies_bilans                = $this->loadData('companies_bilans');
+        $this->companies_details               = $this->loadData('companies_details');
+        $this->companies_actif_passif          = $this->loadData('companies_actif_passif');
+        $this->clients                         = $this->loadData('clients');
+        $this->clients_adresses                = $this->loadData('clients_adresses');
+        $this->projects_comments               = $this->loadData('projects_comments');
+        $this->projects_status                 = $this->loadData('projects_status');
+        $this->current_projects_status         = $this->loadData('projects_status');
+        $this->projects_status_history         = $this->loadData('projects_status_history');
+        $this->current_projects_status_history = $this->loadData('projects_status_history');
+        $this->projects_last_status_history    = $this->loadData('projects_last_status_history');
+        $this->loans                           = $this->loadData('loans');
+        $this->projects_pouvoir                = $this->loadData('projects_pouvoir');
+        $this->lenders_accounts                = $this->loadData('lenders_accounts');
+        $this->echeanciers                     = $this->loadData('echeanciers');
+        $this->notifications                   = $this->loadData('notifications');
+        $this->clients_gestion_mails_notif     = $this->loadData('clients_gestion_mails_notif');
+        $this->clients_gestion_notifications   = $this->loadData('clients_gestion_notifications');
+        $this->prescripteurs                   = $this->loadData('prescripteurs');
+        $this->clients_prescripteurs           = $this->loadData('clients');
+        $this->companies_prescripteurs         = $this->loadData('companies');
 
         // Id Status to block risk note and risk comments.
         $aBlockRiskStatus = array(50, 60, 70, 80, 100, 110, 120, 130);
@@ -313,6 +315,8 @@ class dossiersController extends bootstrap
             // les statuts dispo sont conditionnés par le statut courant
             $this->projects_status->getLastStatut($this->projects->id_project);
             $this->lProjects_status = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
+            $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
+            $this->current_projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
 
             $this->bCanEditStatus = false;
             if ($this->users->get($_SESSION['user']['id_user'], 'id_user')) {

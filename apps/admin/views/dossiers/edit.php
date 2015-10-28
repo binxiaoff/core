@@ -463,6 +463,12 @@
                             ?>
                         </td>
                     </tr>
+                    <?php if (false === empty($this->current_projects_status_history->content)) { ?>
+                    <tr>
+                        <th><label for="status">Motif :</label></th>
+                        <td><?= $this->current_projects_status_history->content ?></td>
+                    </tr>
+                    <?php } ?>
                 </table>
                 <table class="form" style="width: 538px;">
                     <?php

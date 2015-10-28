@@ -133,7 +133,7 @@ class depot_de_dossierController extends bootstrap
         $iStatusSetting = $this->settings->value;
 
         if ($iStatusSetting == 3) {
-            $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE);
+            $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'Altares débrayé');
         }
 
         $this->settings->get('Altares email alertes', 'type');
@@ -147,7 +147,7 @@ class depot_de_dossierController extends bootstrap
             $oLogger->addRecord(ULogger::ALERT, $oException->getMessage(), array('siren' => $iSIREN));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $oException->getMessage());
-            $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE);
+            $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'Erreur Altares');
         }
 
         if (false === empty($oResult->exception)) {
@@ -155,7 +155,7 @@ class depot_de_dossierController extends bootstrap
             $oLogger->addRecord(ULogger::ALERT, $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur, array('siren' => $iSIREN));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $iSIREN . ' | ' . $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur);
-            $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE);
+            $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'Erreur Altares');
         }
 
         if ($iStatusSetting == 2) {
@@ -291,9 +291,9 @@ class depot_de_dossierController extends bootstrap
             case 'Non':
             default:
                 if (in_array($oResult->myInfo->codeRetour, array(Altares::RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK, Altares::RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES))) {
-                    $this->redirect(self::PAGE_NAME_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE);
+                    $this->redirect(self::PAGE_NAME_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, $oResult->myInfo->motif);
                 }
-                $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE);
+                $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE, $oResult->myInfo->motif);
                 break;
         }
     }
@@ -597,8 +597,16 @@ class depot_de_dossierController extends bootstrap
                 $this->projects->update();
             }
 
-            if ($_POST['fonds_propres'] < 0 || $_POST['resultat_brute_exploitation'] < 0 || $_POST['ca'] < \projects::MINIMUM_REVENUE) {
-                $this->redirect(self::PAGE_NAME_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE);
+            if ($_POST['fonds_propres'] < 0) {
+                $this->redirect(self::PAGE_NAME_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, 'Fonds propres négatifs');
+            }
+
+            if ($_POST['resultat_brute_exploitation'] < 0) {
+                $this->redirect(self::PAGE_NAME_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, 'REX négatif');
+            }
+
+            if ($_POST['ca'] < \projects::MINIMUM_REVENUE) {
+                $this->redirect(self::PAGE_NAME_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, 'CA trop faibles');
             }
 
             if (isset($_POST['procedure_acceleree'])) {
@@ -1071,10 +1079,10 @@ class depot_de_dossierController extends bootstrap
      * @param string $sPage          Page to redirect to
      * @param int    $iProjectStatus Project status
      */
-    private function redirect($sPage, $iProjectStatus = null)
+    private function redirect($sPage, $iProjectStatus = null, $sRejectionMessage = '')
     {
         if (false === is_null($iProjectStatus) && $this->projects_status->status != $iProjectStatus) {
-            $this->projects_status_history->addStatus(-2, $iProjectStatus, $this->projects->id_project);
+            $this->projects_status_history->addStatus(-2, $iProjectStatus, $this->projects->id_project, 0, $sRejectionMessage);
         }
 
         header('Location: ' . $this->lurl . '/depot_de_dossier/' . $sPage . '/' . $this->projects->hash);
