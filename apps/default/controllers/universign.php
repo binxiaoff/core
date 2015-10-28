@@ -12,7 +12,7 @@ class universignController extends bootstrap
      */
     private $oLogger;
 
-    function universignController($command, $config, $app)
+    public function universignController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
@@ -27,9 +27,8 @@ class universignController extends bootstrap
         $this->oLogger = new ULogger('Universign', $this->logPath, 'universign.log');
     }
 
-    function _default()
+    public function _default()
     {
-        // chargement des datas
         $clients          = $this->loadData('clients');
         $clients_mandats  = $this->loadData('clients_mandats');
         $companies        = $this->loadData('companies');
@@ -221,9 +220,8 @@ class universignController extends bootstrap
         }
     }
 
-    function _mandat()
+    public function _mandat()
     {
-        // chargement des datas
         $clients         = $this->loadData('clients');
         $clients_mandats = $this->loadData('clients_mandats');
 
@@ -246,7 +244,7 @@ class universignController extends bootstrap
                 }
                 $this->oLogger->addRecord(ULogger::INFO, 'Mandat status : ' . $sMandatStatus . '. Creation of pdf for send to universign.', array($clients_mandats->id_project));
                 $clients->get($clients_mandats->id_client, 'id_client');
-                //used variables
+
                 $uni_url     = $this->uni_url; // address of the universign server with basic authentication
                 $firstname   = utf8_decode($clients->prenom); // the signatory first name
                 $lastname    = utf8_decode($clients->nom); // the signatory last name
@@ -335,9 +333,8 @@ class universignController extends bootstrap
         }
     }
 
-    function _pouvoir()
+    public function _pouvoir()
     {
-        // chargement des datas
         $companies        = $this->loadData('companies');
         $projects_pouvoir = $this->loadData('projects_pouvoir');
         $clients          = $this->loadData('clients');
@@ -462,14 +459,13 @@ class universignController extends bootstrap
         }
     }
 
-    function _confirmation()
+    public function _confirmation()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = true;
         $this->autoFireHead   = true;
         $this->autoFireFooter = true;
 
-        // chargement des datas
         $clients          = $this->loadData('clients');
         $clients_mandats  = $this->loadData('clients_mandats');
         $companies        = $this->loadData('companies');

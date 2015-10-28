@@ -2,29 +2,24 @@
 
 class emprunteursController extends bootstrap
 {
-
-    var $Command;
-
-    function emprunteursController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
         $this->catchAll = true;
 
-        // Controle d'acces à la rubrique
         $this->users->checkAccess('emprunteurs');
 
-        // Activation du menu
         $this->menu_admin = 'emprunteurs';
     }
 
-    function _default()
+    public function _default()
     {
         // On remonte la page dans l'arborescence
         if (isset($this->params[0]) && $this->params[0] == 'up') {
             $this->tree->moveUp($this->params[1]);
 
-            header('Location:' . $this->lurl . '/emprunteurs');
+            header('Location: ' . $this->lurl . '/emprunteurs');
             die;
         }
 
@@ -32,7 +27,7 @@ class emprunteursController extends bootstrap
         if (isset($this->params[0]) && $this->params[0] == 'down') {
             $this->tree->moveDown($this->params[1]);
 
-            header('Location:' . $this->lurl . '/emprunteurs');
+            header('Location: ' . $this->lurl . '/emprunteurs');
             die;
         }
 
@@ -44,28 +39,29 @@ class emprunteursController extends bootstrap
             $_SESSION['freeow']['title']   = 'Suppression d\'une page';
             $_SESSION['freeow']['message'] = 'La page et ses enfants ont bien &eacute;t&eacute; supprim&eacute;s !';
 
-            header('Location:' . $this->lurl . '/emprunteurs');
+            header('Location: ' . $this->lurl . '/emprunteurs');
             die;
         }
     }
 
-    function _gestion()
+    public function _gestion()
     {
-        // Chargement du data
         $this->clients           = $this->loadData('clients');
         $this->clients_adresses  = $this->loadData('clients_adresses');
         $this->companies         = $this->loadData('companies');
         $this->companies_details = $this->loadData('companies_details');
         $this->companies_bilans  = $this->loadData('companies_bilans');
 
-        if ($this->clients->telephone != '')
+        if ($this->clients->telephone != '') {
             $this->clients->telephone = trim(chunk_split($this->clients->telephone, 2, ' '));
+        }
 
         if (isset($_POST['form_search_emprunteur'])) {
-            if ($_POST['status'] == 'choisir')
+            if ($_POST['status'] == 'choisir') {
                 $statut = '';
-            else
+            } else {
                 $statut = $_POST['status'];
+            }
 
             // Recuperation de la liste des clients
             $this->lClients = $this->clients->searchEmprunteurs('', $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['societe'], $_POST['siret'], $statut);
@@ -97,8 +93,9 @@ class emprunteursController extends bootstrap
             if (isset($_FILES['cni_passeport']) && $_FILES['cni_passeport']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/clients/cni_passeport/');
                 if ($this->upload->doUpload('cni_passeport')) {
-                    if ($this->clients->cni_passeport != '')
+                    if ($this->clients->cni_passeport != '') {
                         @unlink($this->path . 'protected/clients/cni_passeport/' . $this->clients->cni_passeport);
+                    }
                     $this->clients->cni_passeport = $this->upload->getName();
                 }
             }
@@ -106,8 +103,9 @@ class emprunteursController extends bootstrap
             if (isset($_FILES['signature']) && $_FILES['signature']['name'] != '') {
                 $this->upload->setUploadDir($this->path, 'protected/clients/signature/');
                 if ($this->upload->doUpload('signature')) {
-                    if ($this->clients->signature != '')
+                    if ($this->clients->signature != '') {
                         @unlink($this->path . 'protected/clients/signature/' . $this->clients->signature);
+                    }
                     $this->clients->signature = $this->upload->getName();
                 }
             }
@@ -144,23 +142,20 @@ class emprunteursController extends bootstrap
             $_SESSION['freeow']['title']   = 'emprunteur crt&eacute;t&eacute;';
             $_SESSION['freeow']['message'] = 'l\'emprunteur a &eacute;t&eacute; crt&eacute;t&eacute; !';
 
-            header('Location:' . $this->lurl . '/emprunteurs/gestion/' . $this->clients->id_client);
+            header('Location: ' . $this->lurl . '/emprunteurs/gestion/' . $this->clients->id_client);
             die;
         }
     }
 
-    function _edit_client()
+    public function _edit_client()
     {
-        // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
 
-        // On place le redirect sur la home
         $_SESSION['request_url'] = $this->url;
 
-        // Chargement du data
         $this->clients          = $this->loadData('clients');
         $this->clients_adresses = $this->loadData('clients_adresses');
         $this->companies        = $this->loadData('companies');
@@ -183,24 +178,19 @@ class emprunteursController extends bootstrap
         }
     }
 
-    function _add_client()
+    public function _add_client()
     {
-        // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
 
-        // On place le redirect sur la home
         $_SESSION['request_url'] = $this->url;
 
-        // Chargement du data
         $this->clients          = $this->loadData('clients');
         $this->clients_adresses = $this->loadData('clients_adresses');
         $this->companies        = $this->loadData('companies');
 
-
-        // Liste deroulante secteurs
         $this->settings->get('Liste deroulante secteurs', 'type');
         $this->lSecteurs = explode(';', $this->settings->value);
 
@@ -222,7 +212,7 @@ class emprunteursController extends bootstrap
         }
     }
 
-    function _edit()
+    public function _edit()
     {
         $this->clients           = $this->loadData('clients');
         $this->clients_adresses  = $this->loadData('clients_adresses');
@@ -253,8 +243,9 @@ class emprunteursController extends bootstrap
             //$this->lMandats = $this->clients_mandats->select('id_client = '.$this->clients->id_client);
             //$this->clients_mandats->get($this->clients->id_client,'id_client');
 
-            if ($this->clients->telephone != '')
+            if ($this->clients->telephone != '') {
                 $this->clients->telephone = trim(chunk_split($this->clients->telephone, 2, ' '));
+            }
 
             if (isset($_POST['form_edit_emprunteur'])) {
                 $this->clients->nom    = $this->ficelle->majNom($_POST['nom']);
@@ -270,8 +261,9 @@ class emprunteursController extends bootstrap
                     }
 
                     $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id ' . $les_id_client_email_exist;
-                } else
+                } else {
                     $this->clients->email = $_POST['email'];
+                }
 
                 ////////////////////////////
 
@@ -288,8 +280,8 @@ class emprunteursController extends bootstrap
 
                 $this->companies->bic  = str_replace(' ', '', strtoupper($_POST['bic']));
                 $this->companies->iban = str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7']));
-
                 $this->companies->email_facture = trim($_POST['email_facture']);
+
                 // on verif si le bic est good
                 if ($this->companies->bic != '' && $this->ficelle->swift_validate(trim($this->companies->bic)) == false) {
                     //if(strlen($this->companies->bic) < 8 || strlen($this->companies->bic) > 11)
@@ -300,7 +292,7 @@ class emprunteursController extends bootstrap
                     $_SESSION['freeow']['message'] = 'Le BIC est invalide';
                     //$_SESSION['freeow']['message'] = 'Le BIC doit contenir entre 8 et 11 caractères';
 
-                    header('Location:' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
+                    header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
                     die;
                 }
 
@@ -311,7 +303,7 @@ class emprunteursController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Erreur IBAN';
                     $_SESSION['freeow']['message'] = 'L\'IBAN est invalide';
 
-                    header('Location:' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
+                    header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
                     die;
                 }
 
@@ -336,8 +328,9 @@ class emprunteursController extends bootstrap
                 if (isset($_FILES['cni_passeport']) && $_FILES['cni_passeport']['name'] != '') {
                     $this->upload->setUploadDir($this->path, 'protected/clients/cni_passeport/');
                     if ($this->upload->doUpload('cni_passeport')) {
-                        if ($this->clients->cni_passeport != '')
+                        if ($this->clients->cni_passeport != '') {
                             @unlink($this->path . 'protected/clients/cni_passeport/' . $this->clients->cni_passeport);
+                        }
                         $this->clients->cni_passeport = $this->upload->getName();
                     }
                 }
@@ -345,20 +338,18 @@ class emprunteursController extends bootstrap
                 if (isset($_FILES['signature']) && $_FILES['signature']['name'] != '') {
                     $this->upload->setUploadDir($this->path, 'protected/clients/signature/');
                     if ($this->upload->doUpload('signature')) {
-                        if ($this->clients->signature != '')
+                        if ($this->clients->signature != '') {
                             @unlink($this->path . 'protected/clients/signature/' . $this->clients->signature);
+                        }
                         $this->clients->signature = $this->upload->getName();
                     }
                 }
 
-                // On met a jour les infos
                 $this->companies->update();
                 $this->clients->update();
                 $this->clients_adresses->update();
 
                 if ($edited_rib) {
-
-                    // Chargement des datas
                     $e                      = $this->loadData('clients');
                     $loan                   = $this->loadData('loans');
                     $project                = $this->loadData('projects');
@@ -368,19 +359,17 @@ class emprunteursController extends bootstrap
                     $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
                     foreach ($companie->select('id_client_owner = ' . $this->clients->id_client) as $company2) {
                         foreach ($project->select('id_company = ' . $company2['id_company']) as $projects) {
-
-                            // si on a deja un mandat
                             if ($clients_mandats->get($this->params[0], 'status <> 4 AND id_project = "' . $projects['id_project'] . '" AND id_client')) {
                                 $clients_mandats->status = 4;
 
-                                $nouveauNom = str_replace('mandat', 'mandat-' . $clients_mandats->id_mandat, $clients_mandats->name);
-
+                                // Rename old mandate (prefix name with mandate ID)
+                                $oldname       = $clients_mandats->name;
+                                $nouveauNom    = str_replace('mandat', 'mandat-' . $clients_mandats->id_mandat, $clients_mandats->name);
                                 $chemin        = $this->path . 'protected/pdf/mandat/' . $clients_mandats->name;
                                 $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
 
                                 rename($chemin, $nouveauChemin);
 
-                                $oldname               = $clients_mandats->name;
                                 $clients_mandats->name = $nouveauNom;
                                 $clients_mandats->update();
 
@@ -389,7 +378,6 @@ class emprunteursController extends bootstrap
                                 $clients_mandats->id_universign  = '';
                                 $clients_mandats->url_universign = '';
                                 $clients_mandats->create();
-
 
                                 //**********************************************//
                                 //*** ENVOI DU MAIL FUNDE EMPRUNTEUR TERMINE ***//
@@ -435,7 +423,8 @@ class emprunteursController extends bootstrap
                                     'projet'                 => $projet,
                                     'lien_fb'                => $lien_fb,
                                     'lien_tw'                => $lien_tw,
-                                    'date_echeance'          => date('d/m/Y', strtotime($this->nextEcheance[0]['date_echeance_emprunteur'])));
+                                    'date_echeance'          => date('d/m/Y', strtotime($this->nextEcheance[0]['date_echeance_emprunteur']))
+                                );
 
                                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
@@ -467,252 +456,22 @@ class emprunteursController extends bootstrap
                 $_SESSION['freeow']['title']   = 'emprunteur mis a jour';
                 $_SESSION['freeow']['message'] = 'l\'emprunteur a &eacute;t&eacute; mis a jour !';
 
-                header('Location:' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
+                header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
                 die;
             }
         } else {
-            header('Location:' . $this->lurl . '/emprunteurs/gestion/');
+            header('Location: ' . $this->lurl . '/emprunteurs/gestion/');
             die;
         }
     }
 
-    function _edit_old2()
+    public function _RIBlightbox()
     {
-        // Chargement du data
-        $this->clients           = $this->loadData('clients');
-        $this->clients_adresses  = $this->loadData('clients_adresses');
-        $this->companies         = $this->loadData('companies');
-        $this->companies_bilans  = $this->loadData('companies_bilans');
-        $this->companies_details = $this->loadData('companies_details');
-        $this->projects          = $this->loadData('projects');
-        $this->projects_status   = $this->loadData('projects_status');
-        $this->clients_mandats   = $this->loadData('clients_mandats');
-        $this->projects_pouvoir  = $this->loadData('projects_pouvoir');
-        $prelevements            = $this->loadData('prelevements');
-
-        // Liste deroulante secteurs
-        $this->settings->get('Liste deroulante secteurs', 'type');
-        $this->lSecteurs = explode(';', $this->settings->value);
-
-        // On recup les infos du client
-        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->status_pre_emp >= 2) {
-            $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
-            // Companies
-            $this->companies->get($this->clients->id_client, 'id_client_owner');
-
-            // liste des projets
-            $this->lprojects = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
-
-            if ($this->clients->telephone != '')
-                $this->clients->telephone = trim(chunk_split($this->clients->telephone, 2, ' '));
-
-            if (isset($_POST['form_edit_emprunteur'])) {
-                $this->clients->nom       = $this->ficelle->majNom($_POST['nom']);
-                $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
-                $this->clients->email     = $_POST['email'];
-                $this->clients->telephone = str_replace(' ', '', $_POST['telephone']);
-
-                $this->companies->name          = $_POST['societe'];
-                $this->companies->sector        = $_POST['secteur'];
-                $this->companies->bic           = str_replace(' ', '', strtoupper($_POST['bic']));
-                $this->companies->iban          = str_replace(' ', '', strtoupper($_POST['iban']));
-                $this->companies->email_facture = trim($_POST['email_facture']);
-                // on verif si le bic est good
-                if (strlen($this->companies->bic) < 8 || strlen($this->companies->bic) > 11) {
-                    $_SESSION['erreurBic'] = '';
-
-                    // Mise en session du message
-                    $_SESSION['freeow']['title']   = 'Erreur BIC';
-                    $_SESSION['freeow']['message'] = 'Le BIC doit contenir entre 8 et 11 caractères';
-
-                    header('Location:' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
-                    die;
-                }
-
-                // on met a jour les prelevement en cours si y en a.
-                foreach ($this->lprojects as $p) {
-                    $prelevements->updateIbanBic($p['id_project'], $this->companies->bic, $this->companies->iban);
-                }
-
-
-                // meme adresse que le siege
-                if ($this->companies->status_adresse_correspondance == 1) {
-                    $this->companies->adresse1 = $_POST['adresse'];
-                    $this->companies->city     = $_POST['ville'];
-                    $this->companies->zip      = $_POST['cp'];
-                }
-
-                $this->clients_adresses->adresse1 = $_POST['adresse'];
-                $this->clients_adresses->ville    = $_POST['ville'];
-                $this->clients_adresses->cp       = $_POST['cp'];
-
-                // cni/passeport
-                if (isset($_FILES['cni_passeport']) && $_FILES['cni_passeport']['name'] != '') {
-                    $this->upload->setUploadDir($this->path, 'protected/clients/cni_passeport/');
-                    if ($this->upload->doUpload('cni_passeport')) {
-                        if ($this->clients->cni_passeport != '')
-                            @unlink($this->path . 'protected/clients/cni_passeport/' . $this->clients->cni_passeport);
-                        $this->clients->cni_passeport = $this->upload->getName();
-                    }
-                }
-                // fichier_rib
-                if (isset($_FILES['signature']) && $_FILES['signature']['name'] != '') {
-                    $this->upload->setUploadDir($this->path, 'protected/clients/signature/');
-                    if ($this->upload->doUpload('signature')) {
-                        if ($this->clients->signature != '')
-                            @unlink($this->path . 'protected/clients/signature/' . $this->clients->signature);
-                        $this->clients->signature = $this->upload->getName();
-                    }
-                }
-
-                // On met a jour les infos
-                $this->companies->update();
-                $this->clients->update();
-                $this->clients_adresses->update();
-
-                // Histo user //
-                $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
-                $this->users_history->histo(6, 'edit emprunteur', $_SESSION['user']['id_user'], $serialize);
-                ////////////////
-                // Mise en session du message
-                $_SESSION['freeow']['title']   = 'emprunteur mis a jour';
-                $_SESSION['freeow']['message'] = 'l\'emprunteur a &eacute;t&eacute; mis a jour !';
-
-                header('Location:' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
-                die;
-            }
-        } else {
-            header('Location:' . $this->lurl . '/emprunteurs/gestion/');
-            die;
-        }
-    }
-
-    function _edit_old()
-    {
-        // Chargement du data
-        $this->clients           = $this->loadData('clients');
-        $this->clients_adresses  = $this->loadData('clients_adresses');
-        $this->companies         = $this->loadData('companies');
-        $this->companies_bilans  = $this->loadData('companies_bilans');
-        $this->companies_details = $this->loadData('companies_details');
-        $this->projects          = $this->loadData('projects');
-        $this->projects_status   = $this->loadData('projects_status');
-        $this->clients_mandats   = $this->loadData('clients_mandats');
-        $this->projects_pouvoir  = $this->loadData('projects_pouvoir');
-        $prelevements            = $this->loadData('prelevements');
-
-        // Liste deroulante secteurs
-        $this->settings->get('Liste deroulante secteurs', 'type');
-        $this->lSecteurs = explode(';', $this->settings->value);
-
-        // On recup les infos du client
-        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->status_pre_emp >= 2) {
-            $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
-            // Companies
-            $this->companies->get($this->clients->id_client, 'id_client_owner');
-
-            // liste des projets
-            $this->lprojects = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
-
-            // liste des mandat uploadépar le client
-            //$this->lMandats = $this->clients_mandats->select('id_client = '.$this->clients->id_client);
-            $this->clients_mandats->get($this->clients->id_client, 'id_client');
-
-            if ($this->clients->telephone != '')
-                $this->clients->telephone = trim(chunk_split($this->clients->telephone, 2, ' '));
-
-            if (isset($_POST['form_edit_emprunteur'])) {
-                $this->clients->nom       = $this->ficelle->majNom($_POST['nom']);
-                $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
-                $this->clients->email     = $_POST['email'];
-                $this->clients->telephone = str_replace(' ', '', $_POST['telephone']);
-
-                $this->companies->name   = $_POST['societe'];
-                $this->companies->sector = $_POST['secteur'];
-                $this->companies->bic    = str_replace(' ', '', strtoupper($_POST['bic']));
-                $this->companies->iban   = str_replace(' ', '', strtoupper($_POST['iban']));
-
-                // on verif si le bic est good
-                if (strlen($this->companies->bic) < 8 || strlen($this->companies->bic) > 11) {
-                    $_SESSION['erreurBic'] = '';
-
-                    // Mise en session du message
-                    $_SESSION['freeow']['title']   = 'Erreur BIC';
-                    $_SESSION['freeow']['message'] = 'Le BIC doit contenir entre 8 et 11 caractères';
-
-                    header('Location:' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
-                    die;
-                }
-
-                // on met a jour les prelevement en cours si y en a.
-                foreach ($this->lprojects as $p) {
-                    $prelevements->updateIbanBic($p['id_project'], $this->companies->bic, $this->companies->iban);
-                }
-
-
-                // meme adresse que le siege
-                if ($this->companies->status_adresse_correspondance == 1) {
-                    $this->companies->adresse1 = $_POST['adresse'];
-                    $this->companies->city     = $_POST['ville'];
-                    $this->companies->zip      = $_POST['cp'];
-                }
-
-                $this->clients_adresses->adresse1 = $_POST['adresse'];
-                $this->clients_adresses->ville    = $_POST['ville'];
-                $this->clients_adresses->cp       = $_POST['cp'];
-
-                // cni/passeport
-                if (isset($_FILES['cni_passeport']) && $_FILES['cni_passeport']['name'] != '') {
-                    $this->upload->setUploadDir($this->path, 'protected/clients/cni_passeport/');
-                    if ($this->upload->doUpload('cni_passeport')) {
-                        if ($this->clients->cni_passeport != '')
-                            @unlink($this->path . 'protected/clients/cni_passeport/' . $this->clients->cni_passeport);
-                        $this->clients->cni_passeport = $this->upload->getName();
-                    }
-                }
-                // fichier_rib
-                if (isset($_FILES['signature']) && $_FILES['signature']['name'] != '') {
-                    $this->upload->setUploadDir($this->path, 'protected/clients/signature/');
-                    if ($this->upload->doUpload('signature')) {
-                        if ($this->clients->signature != '')
-                            @unlink($this->path . 'protected/clients/signature/' . $this->clients->signature);
-                        $this->clients->signature = $this->upload->getName();
-                    }
-                }
-
-                // On met a jour les infos
-                $this->companies->update();
-                $this->clients->update();
-                $this->clients_adresses->update();
-
-                // Histo user //
-                $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
-                $this->users_history->histo(6, 'edit emprunteur', $_SESSION['user']['id_user'], $serialize);
-                ////////////////
-                // Mise en session du message
-                $_SESSION['freeow']['title']   = 'emprunteur mis a jour';
-                $_SESSION['freeow']['message'] = 'l\'emprunteur a &eacute;t&eacute; mis a jour !';
-
-                header('Location:' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
-                die;
-            }
-        } else {
-            header('Location:' . $this->lurl . '/emprunteurs/gestion/');
-            die;
-        }
-    }
-
-    function _RIBlightbox()
-    {
-        // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
 
-        // On place le redirect sur la home
         $_SESSION['request_url'] = $this->url;
 
         $prelevements       = $this->loadData('prelevements');
@@ -724,30 +483,26 @@ class emprunteursController extends bootstrap
         $this->sendedEcheance = $this->sendedEcheance[0]['date_echeance_emprunteur'];
     }
 
-    function _RIBlightbox_no_prelev()
+    public function _RIBlightbox_no_prelev()
     {
-        // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
 
-        // On place le redirect sur la home
         $_SESSION['request_url'] = $this->url;
 
         $prelevements          = $this->loadData('prelevements');
         $this->date_activation = date('d/m/Y');
     }
 
-    function _RIB_iban_existant()
+    public function _RIB_iban_existant()
     {
-        // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
 
-        // On place le redirect sur la home
         $_SESSION['request_url'] = $this->url;
 
         //recuperation de la liste des compagnies avec le même iban
@@ -763,15 +518,16 @@ class emprunteursController extends bootstrap
         }
     }
 
-    function _error_iban_lightbox(){
-        // On masque les Head, header et footer originaux plus le debug
+    public function _error_iban_lightbox()
+    {
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
     }
-    function _error_bic_lightbox(){
-        // On masque les Head, header et footer originaux plus le debug
+
+    public function _error_bic_lightbox()
+    {
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;

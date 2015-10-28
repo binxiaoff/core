@@ -52,7 +52,7 @@ class pdfController extends bootstrap
     public $sDisplay;
 
 
-    public function pdfController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
@@ -195,7 +195,6 @@ class pdfController extends bootstrap
 
     public function _mandat_preteur()
     {
-        // chargement des datas
         $this->clients->get($this->params[0], 'hash');
 
         $sNamePdfClient = 'MANDAT-UNILEND-' . $this->clients->id_client;
@@ -207,67 +206,57 @@ class pdfController extends bootstrap
     // mandat emprunteur
     public function _mandat()
     {
-        // chargement des datas
-        $oClientsMandats = $this->loadData('clients_mandats');
+        if (
+            isset($this->params[0], $this->params[1])
+            && $this->clients->get($this->params[0], 'hash')
+            && $this->projects->get($this->params[1], 'id_project')
+            && $this->companies->get($this->clients->id_client, 'id_client_owner')
+            && $this->projects->id_company == $this->companies->id_company
+        ) {
+            $path  = $this->path . 'protected/pdf/mandat/';
+            $slug  = $this->params[0];
+            $name  = 'mandat';
+            $bSign = false;
+            //TODO : modifier le nom du fichier ?
+            $sNamePdfClient = 'MANDAT-UNILEND-' . $this->projects->slug . '-' . $this->clients->id_client;
+            //TODO : modifier le nom du fichier ?
+            $nom_fichier = ($this->params[1] != '') ? $name . '-' . $slug . '-' . $this->params[1] . '.pdf' : name . '-' . $slug . '.pdf';
 
-        // On recup le client
-        if ($this->clients->get($this->params[0], 'hash') && isset($this->params[1])) {
-            // si on a un params 1 on check si on a une entreprise et un projet
+            // on check si y a deja un traitement universign de fait
+            $oClientsMandats  = $this->loadData('clients_mandats');
+            $aSignedMandates  = $oClientsMandats->select('id_project = ' . $this->params[1] . ' AND id_client = ' . $this->clients->id_client . ' AND status = 1', 'updated DESC', 0, 1);
+            $aPendingMandates = $oClientsMandats->select('id_project = ' . $this->params[1] . ' AND id_client = ' . $this->clients->id_client . ' AND status = 0', 'updated DESC', 0, 1);
 
-            // on chek si le projet est bien au client
-            if ($this->companies->get($this->clients->id_client, 'id_client_owner') &&
-                $this->projects->get($this->params[1], 'id_project') &&
-                $this->projects->id_company == $this->companies->id_company
-            ) {
+            if (count($aSignedMandates) > 0 && $oClientsMandats->get($aSignedMandates[0]['id_mandat'], 'id_mandat')) {
+                if ($oClientsMandats->id_universign == 'no_universign') { // Mandat chargé manuelement
+                    $this->ReadPdf($path . $oClientsMandats->name, $oClientsMandats->name);
+                    die;
+                }
 
-                // la c'est good on peut faire le traitement
+                $bSign = true;
+                $oClientsMandats->update();
+            } else {
+                $this->GenerateWarrantyHtml();
+                $this->WritePdf($path . $nom_fichier, 'warranty');
 
-                $path  = $this->path . 'protected/pdf/mandat/';
-                $slug  = $this->params[0];
-                $name  = 'mandat';
-                $bSign = false;
-                //TODO : modifier le nom du fichier ?
-                $sNamePdfClient = 'MANDAT-UNILEND-' . $this->projects->slug . '-' . $this->clients->id_client;
-                //TODO : modifier le nom du fichier ?
-                $nom_fichier = ($this->params[1] != '') ? $name . '-' . $slug . "-" . $this->params[1] . ".pdf" : name . '-' . $slug . ".pdf";
-
-
-                // on check si y a deja un traitement universign de fait
-                if ($oClientsMandats->get($this->clients->id_client, 'id_project = ' . $this->params[1] . ' AND id_client')) {
-                    // Si on a affaire a un mandat charger manuelement
-                    if ($oClientsMandats->id_universign == 'no_universign') {
-                        // on recup directement le pdf
-                        $this->ReadPdf($path . $oClientsMandats->name, $oClientsMandats->name);
-                        die;
-                    }
-
-                    $bSign = ($oClientsMandats->status > 0) ?: false;
-                    $oClientsMandats->update();
-                } else {
-                    $this->GenerateWarrantyHtml();
-                    //We generate pdf file
-                    $this->WritePdf($path . $nom_fichier, 'warranty');
-
+                if (count($aPendingMandates) === 0) {
                     $oClientsMandats->id_client  = $this->clients->id_client;
                     $oClientsMandats->url_pdf    = '/pdf/mandat/' . $this->params[0] . '/' . (isset($this->params[1]) ? $this->params[1] . '/' : '');
                     $oClientsMandats->name       = $nom_fichier;
                     $oClientsMandats->id_project = $this->projects->id_project;
                     $oClientsMandats->id_mandat  = $oClientsMandats->create();
-
+                } else {
+                    $oClientsMandats->get($aPendingMandates[0]['id_mandat'], 'id_mandat');
                 }
+            }
 
-                if (true === $this->CheckUniversign($path . $nom_fichier, true, $bSign)) {
-                    header("location:" . $this->url . '/universign/mandat/' . $oClientsMandats->id_mandat);
-                } else { //Si Mandat Signé
-                    $this->ReadPdf($path . $nom_fichier, $sNamePdfClient);
-                }
-            } else {
-                // pas good on redirige
-                header("location:" . $this->lurl);
-                die;
+            if (true === $this->CheckUniversign($path . $nom_fichier, true, $bSign)) {
+                header('Location: ' . $this->url . '/universign/mandat/' . $oClientsMandats->id_mandat);
+            } else { //Si Mandat Signé
+                $this->ReadPdf($path . $nom_fichier, $sNamePdfClient);
             }
         } else {
-            header("location:" . $this->lurl);
+            header('Location: ' . $this->lurl);
             die;
         }
     }
@@ -279,7 +268,6 @@ class pdfController extends bootstrap
         $this->oLendersAccounts = $this->loadData('lenders_accounts');
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
 
         if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
             $this->entreprise = true;
@@ -347,14 +335,12 @@ class pdfController extends bootstrap
         $this->settings->get('Créancier code identifiant', 'type');
         $this->creancier_code_id = $this->settings->value;
 
-
         // Adresse retour
         $this->settings->get('Adresse retour', 'type');
         $this->adresse_retour = $this->settings->value;
 
         $this->setDisplay('mandat_html');
     }
-
 
     public function _pouvoir()
     {
@@ -423,11 +409,11 @@ class pdfController extends bootstrap
                     $this->ReadPdf($path . $nom_fichier, $sNamePdfClient);
                 }
             } else {
-                header('Location:' . $this->lurl);
+                header('Location: ' . $this->lurl);
                 die;
             }
         } else {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->lurl);
             die;
         }
     }
@@ -452,7 +438,7 @@ class pdfController extends bootstrap
         ///////////////////////////////
         // FIN mise a jour echeances //
         ///////////////////////////////
-        header("location:" . $this->url . '/universign/pouvoir/' . $this->oProjectsPouvoir->id_pouvoir . $regenerationUniversign);
+        header('Location: ' . $this->url . '/universign/pouvoir/' . $this->oProjectsPouvoir->id_pouvoir . $regenerationUniversign);
     }
 
     private function GenerateAuthorityHtml()
@@ -544,7 +530,7 @@ class pdfController extends bootstrap
     public function _contrat()
     {
         if ((false === $this->clients->checkAccess() || $this->clients->hash != $this->params[0]) && (false === isset($_SESSION['user']['id_user']) || $_SESSION['user']['id_user'] == '')) {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->lurl);
             exit;
         }
 
@@ -647,7 +633,7 @@ class pdfController extends bootstrap
             $this->setDisplay('contrat_html');
 
         } else {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->lurl);
         }
     }
 
@@ -927,11 +913,9 @@ class pdfController extends bootstrap
                 $compteur = $this->compteur_factures->compteurJournalier($this->projects->id_project);
 
                 $this->num_facture = 'FR-E' . date('Ymd', $time_date_echeance_reel) . str_pad($compteur, 5, "0", STR_PAD_LEFT);
-
-                $this->ht    = ($this->oEcheanciersEmprunteur->commission / 100);
-                $this->taxes = ($this->oEcheanciersEmprunteur->tva / 100);
-                $this->ttc   = ($this->ht + $this->taxes);
-
+                $this->ht          = ($this->oEcheanciersEmprunteur->commission / 100);
+                $this->taxes       = ($this->oEcheanciersEmprunteur->tva / 100);
+                $this->ttc         = ($this->ht + $this->taxes);
 
                 if (!$this->factures->get($this->projects->id_project, 'ordre = ' . $iOrdre . ' AND  type_commission = 2 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
                     $this->factures->num_facture     = $this->num_facture;
@@ -945,9 +929,7 @@ class pdfController extends bootstrap
                     $this->factures->tva             = ($this->taxes * 100);
                     $this->factures->montant_ttc     = ($this->ttc * 100);
                     $this->factures->create();
-
                 }
-
             }
 
             $this->setDisplay('facture_ER_html');
@@ -957,19 +939,10 @@ class pdfController extends bootstrap
         }
     }
 
-    function _testupdate()
-    {
-        $this->updateEcheances(3384, '2014-11-28 17:26:26');
-        die;
-    }
-
-
     // Mise a jour des dates echeances preteurs et emprunteur (utilisé pour se baser sur la date de creation du pouvoir)
     public function updateEcheances($id_project, $dateRemb)
     {
-
         ini_set('max_execution_time', 300); //300 seconds = 5 minutes
-        // chargement des datas
         $projects                = $this->loadData('projects');
         $projects_status         = $this->loadData('projects_status');
         $projects_status_history = $this->loadData('projects_status_history');
@@ -1142,7 +1115,7 @@ class pdfController extends bootstrap
             $this->setDisplay('declaration_de_creances_html');
 
         } else {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->lurl);
         }
     }
 
