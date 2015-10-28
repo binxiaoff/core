@@ -307,7 +307,7 @@ class clients extends clients_crud
 
     public function searchEmprunteurs($ref = '', $nom = '', $email = '', $prenom = '', $societe = '', $siret = '', $status = '', $start = '', $nb = '')
     {
-        $where = 'WHERE 1 = 1';
+        $where = '1 = 1';
 
         if ($ref != '') {
             $where .= ' AND c.id_client IN(' . $ref . ')';
@@ -331,11 +331,16 @@ class clients extends clients_crud
             $where .= ' AND c.status LIKE "%' . $status . '%"';
         }
 
-        $where .= ' AND c.status_pre_emp > 1';
-
-        $sql      = 'SELECT c.*,co.* FROM clients c LEFT JOIN companies co ON c.id_client = co.id_client_owner ' . $where . ' GROUP BY c.id_client ORDER BY c.id_client DESC' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-        $resultat = $this->bdd->query($sql);
         $result   = array();
+        $resultat = $this->bdd->query('
+            SELECT c.*,
+                co.*
+            FROM clients c
+            LEFT JOIN companies co ON c.id_client = co.id_client_owner
+            WHERE ' . $where . '
+            GROUP BY c.id_client
+            ORDER BY c.id_client DESC' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''))
+        );
 
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;

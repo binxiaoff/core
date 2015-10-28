@@ -91,10 +91,11 @@ class depot_de_dossierController extends bootstrap
             $this->clients->handleLogout(false);
         }
 
-        $this->clients->id_langue    = $this->language;
-        $this->clients->slug_origine = $this->tree->slug;
-        $this->clients->source       = $_SESSION['utm_source'];
-        $this->clients->source2      = $_SESSION['utm_source2'];
+        $this->clients->id_langue      = $this->language;
+        $this->clients->slug_origine   = $this->tree->slug;
+        $this->clients->source         = $_SESSION['utm_source'];
+        $this->clients->source2        = $_SESSION['utm_source2'];
+        $this->clients->status_pre_emp = 2;
 
         if (false === is_null($sEmail)) {
             if (false === $this->clients->existEmail($sEmail)) {
