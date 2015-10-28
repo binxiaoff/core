@@ -1695,6 +1695,7 @@ class dossiersController extends bootstrap {
                                     $this->clients_gestion_mails_notif->id_loan = 0; // On peut avoir plusieurs loans donc inutile  
                                     $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                                     $this->clients_gestion_mails_notif->create();
+
                                     //////// FIN GESTION ALERTES //////////
                                     //si on envoi le mail
                                     if ($mail_a_envoyer == 0) {
