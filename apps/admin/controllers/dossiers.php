@@ -1693,10 +1693,13 @@ class dossiersController extends bootstrap {
                                     $this->clients_gestion_mails_notif->id_transaction = 0;
                                     $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
                                     $this->clients_gestion_mails_notif->id_loan = 0; // On peut avoir plusieurs loans donc inutile  
+
                                     $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                                     $this->clients_gestion_mails_notif->create();
+
                                     //////// FIN GESTION ALERTES //////////
                                     //si on envoi le mail
+
                                     if ($mail_a_envoyer == 0) {
                                         // pour chaque preteur on check si le preteur veut recevoir l'email instantané (mail obligatoire)
                                         //if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true) {
@@ -1716,6 +1719,7 @@ class dossiersController extends bootstrap {
                                             'motif_virement' => $motif,
                                             'lien_fb' => $lien_fb,
                                             'lien_tw' => $lien_tw);
+
 
                                         if ($this->current_projects_status->status == 150) {
                                             $type_mail = 'statut-redressement-judiciaire-bis-preteur';
