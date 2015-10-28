@@ -17,7 +17,11 @@ if (isset($_SESSION['lexpress'])) {
         </div><!-- /.shell -->
     </div><!-- /.header -->
     <?
+<<<<<<< HEAD
 // preteur
+=======
+    // preteur
+>>>>>>> statuts-emprunteurs
     if ($this->clients->status_pre_emp == 1) {
 
         //Affichage de la popup de CGV si on a pas encore valide 	
@@ -90,6 +94,7 @@ if (isset($_SESSION['lexpress'])) {
                         <div class="bell-notif">
                             <?
                             if ($this->NbNotifHeader > 0) {
+<<<<<<< HEAD
 
                                 if ($this->NbNotifHeader < 100) {
                                     ?>
@@ -108,6 +113,26 @@ if (isset($_SESSION['lexpress'])) {
                             <div class="content">
                                 <div class="title_notif" style="padding-left:5px;">Notifications <?= ($this->NbNotifHeader > 0 ? '<a class="marquerlu">Marquer comme lu</a>' : '') ?></div>
 
+=======
+
+                                if ($this->NbNotifHeader < 100) {
+                                    ?>
+                                    <span class="nb-notif" <?= ($this->NbNotifHeader > 9 ? 'style="padding-left: 1px;"' : '') ?> >
+                                        <?= $this->NbNotifHeader ?>
+                                    </span>
+                                    <?
+                                } else {
+                                    ?><span class="nb-notif" style="padding-left: 2px;" >...</span><?
+                                }
+                            }
+                            ?></div>
+
+                        <div class="dd">
+                            <span class="bullet notext">bullet</span>
+                            <div class="content">
+                                <div class="title_notif" style="padding-left:5px;">Notifications <?= ($this->NbNotifHeader > 0 ? '<a class="marquerlu">Marquer comme lu</a>' : '') ?></div>
+
+>>>>>>> statuts-emprunteurs
                                 <?
                                 foreach ($this->lNotifHeader as $r) {
                                     ?>
@@ -220,6 +245,7 @@ if (isset($_SESSION['lexpress'])) {
                                             </div>
                                             <?
                                         }
+<<<<<<< HEAD
                                         // recouvrement
                                         elseif ($r['type'] == 10) {
                                             $this->projects_notifs->get($r['id_project'], 'id_project');
@@ -230,6 +256,8 @@ if (isset($_SESSION['lexpress'])) {
                                             </div>
                                             <?
                                         }
+=======
+>>>>>>> statuts-emprunteurs
                                         ?>
                                         <span class="date_notif" ><?= date('d/m/Y', strtotime($r['added'])) ?></span>
                                     </div>
@@ -295,7 +323,11 @@ if (isset($_SESSION['lexpress'])) {
         </div><!-- /.navigation -->
         <?
     }
+<<<<<<< HEAD
 // emprunteur
+=======
+    // emprunteur
+>>>>>>> statuts-emprunteurs
     else {
         ?>
         <style type="text/css">

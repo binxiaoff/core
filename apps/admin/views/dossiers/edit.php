@@ -270,7 +270,7 @@ if (isset($_SESSION['freeow']))
 
                 </table>
                 <br><br>
-				<h2>Remboursement anticipé / Information</h2>
+                <h2>Remboursement anticipé / Information</h2>
                 <table class="form" style="width: 538px; border: 1px solid #B10366;">
                     <tr>
                         <th>Statut :</th>
@@ -279,36 +279,36 @@ if (isset($_SESSION['freeow']))
                         </td>
                     </tr>
                     <?php
-                    if($this->virement_recu)
+                    if ($this->virement_recu)
                     {
                         ?>
                         <tr>
                             <th>Virement reçu le :</th>
                             <td>                            
-                                <label for="statut"><?= $this->dates->formatDateMysqltoFr_HourOut($this->receptions->added)?></label>
+                                <label for="statut"><?= $this->dates->formatDateMysqltoFr_HourOut($this->receptions->added) ?></label>
                             </td>
                         </tr>
                         <tr>
                             <th>Identification virement :</th>
                             <td>                            
-                                <label for="statut"><?=$this->receptions->id_reception?></label>
+                                <label for="statut"><?= $this->receptions->id_reception ?></label>
                             </td>
                         </tr>
-                        
+
                         <tr>
                             <th>Montant virement :</th>
                             <td>                            
-                                <label for="statut"><?=($this->receptions->montant/100) ?> €</label>
+                                <label for="statut"><?= ($this->receptions->montant / 100) ?> €</label>
                             </td>
                         </tr>
-                        
+
                         <tr>
                             <th>Motif du virement :</th>
                             <td>                            
-                                <label for="statut"><?=$this->receptions->motif?></label>
+                                <label for="statut"><?= $this->receptions->motif ?></label>
                             </td>
                         </tr>
-                        
+
                         <?php
                     }
                     else
@@ -329,30 +329,29 @@ if (isset($_SESSION['freeow']))
                             <label for="statut"><?= $this->montant_restant_du_preteur ?>€</label>
                         </td>
                     </tr>
-                    
-                    
-                    <?php            
-                    
-                    if($this->virement_recu)
+
+
+                    <?php
+                    if ($this->virement_recu)
                     {
                         /*
-                        if($this->virement_recu_ok)
-                        {
-                            ?>
-                            <tr>
-                                <th>Actions : (EN DEBUG)</th>
-                                <td> 
-                                    <form action="" name="action_remb_anticipe">
-                                        <input type="hidden" name="id_reception" value="<?=$this->receptions->id_reception?>">
-                                        <input type="hidden" name="montant_crd_preteur" value="<?=$this->montant_restant_du_preteur?>">
-                                        <input type="hidden" name="spy_remb_anticipe" value="ok">
-                                        <input type="submit" value="Déclencher le remboursement anticipé" class="btn"> 
-                                    </form>
-                                </td>
-                            </tr>
-                            <?php
-                        }
-                        
+                          if($this->virement_recu_ok)
+                          {
+                          ?>
+                          <tr>
+                          <th>Actions : (EN DEBUG)</th>
+                          <td>
+                          <form action="" name="action_remb_anticipe">
+                          <input type="hidden" name="id_reception" value="<?=$this->receptions->id_reception?>">
+                          <input type="hidden" name="montant_crd_preteur" value="<?=$this->montant_restant_du_preteur?>">
+                          <input type="hidden" name="spy_remb_anticipe" value="ok">
+                          <input type="submit" value="Déclencher le remboursement anticipé" class="btn">
+                          </form>
+                          </td>
+                          </tr>
+                          <?php
+                          }
+
                          */
                     }
                     else
@@ -367,21 +366,20 @@ if (isset($_SESSION['freeow']))
                         <?php
                     }
                     ?>
-                    
+
                 </table>
-                
-                
+
+
                 <?php
-                if(!$this->virement_recu && !$this->remb_anticipe_effectue)
+                if (!$this->virement_recu && !$this->remb_anticipe_effectue)
                 {
                     ?>
                     * : Le montant correspond aux CRD des échéances restantes après celle du <?= $this->date_next_echeance ?> qui sera prélevé normalement
                     <?php
                 }
-                
                 ?>
-                    
-                    
+
+
 
                 <br><br><br><br>
                 <h2>Actions</h2>
@@ -439,35 +437,40 @@ if (isset($_SESSION['freeow']))
                         <th><label for="status">Statut :</label></th>
                         <td id="current_statut">
                             <?php
-                            if($this->current_projects_status->status == 130)
+                            if ($this->current_projects_status->status == 130)
                             {
                                 echo "Remboursement anticipé";
                             }
                             else
-                            {      
-	                            if (count($this->lProjects_status) > 0)
-	                            {
-	                                ?>
-	                                <select name="status" id="status" class="select" <?=($this->current_projects_status->status == 130?'"disabled"':"")?>>
+                            {
+                                if (count($this->lProjects_status) > 0)
+                                {
+                                    ?>
+                                    <select name="status" id="status" class="select" <?= ($this->current_projects_status->status == 130 ? '"disabled"' : "") ?>>
                                         <?
-	                                    foreach ($this->lProjects_status as $s)
-	                                    {
-	                                        ?><option <?= ($this->current_projects_status->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option><?
-	                                    }
-	                                    ?>
-	                                </select>
-	                                <?
-	                            }
-	                            else
-	                            {
-	                                ?><input type="hidden" name="status" id="status" value="<?= $this->current_projects_status->status ?>" /><?
-	                                echo $this->current_projects_status->label;
-	                            }
-							}
+                                        foreach ($this->lProjects_status as $s)
+                                        {                                            
+                                            //on remplace le J+X par le settings
+                                            $this->settings->get('probleme j+X', 'type');
+                                            $nb_jour_probleme = $this->settings->value;
+                                            $nom_statut = str_replace('J+X','J+'.$nb_jour_probleme,$s['label']);
+                                            ?><option <?= ($this->current_projects_status->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $nom_statut ?></option><?
+                                        }
+                                        ?>
+                                    </select>
+                                    <?
+                                }
+                                else
+                                {
+                                    ?><input type="hidden" name="status" id="status" value="<?= $this->current_projects_status->status ?>" /><?
+                                    echo $this->current_projects_status->label;
+                                }
+                            }
                             ?>
                         </td>	
                     </tr>
                     
+<<<<<<< HEAD
                 <tr>
                         
                     <table style="display:none; margin-bottom: 20px;" class="bloc_mail_preteur_recouvrement">
@@ -493,6 +496,64 @@ if (isset($_SESSION['freeow']))
                 
                     
                     
+=======
+                    <tr style="display:none;" class="bloc_mail_preteur">
+                        <th>Envoyer l'email d'information aux prêteurs :</th>
+                        <td>
+                            <input type="radio" name="mail_a_envoyer_preteur_probleme" id="oui_envoyer_mail" value="0" />
+                            <label for="oui_envoyer_mail">Oui</label>
+                            <input type="radio" name="mail_a_envoyer_preteur_probleme" id="non_envoyer_mail" value="1" checked/>
+                            <label for="non_envoyer_mail">Non</label>
+                        </td>
+                    </tr>
+                    
+                    <tr>
+                        
+                    <table style="display:none; margin-bottom: 20px;" class="bloc_mail_preteur_problemeX">
+                            <tr>
+                                <th><label for="nature_project"><i>Email d'information aux prêteurs :</i></label></th>
+                            </tr>
+                            <tr>
+                                <td><textarea class="textarea_lng" name="area_problemeX" id="area_problemeX" style="height: 100px;width: 420px;"></textarea></td>
+                            </tr>
+                            <tr>   
+                                <th><i>Envoyer l'email d'information aux prêteurs :</i></th>                                
+                            </tr>
+                            <tr>
+                                <td>
+                                    <input type="radio" name="mail_a_envoyer_preteur_problemeX" id="oui_envoyer_mail_problemeX" value="0" />
+                                    <label for="oui_envoyer_mail">Oui</label>
+                                    <input type="radio" name="mail_a_envoyer_preteur_problemeX" id="non_envoyer_mail_problemeX" value="1" checked/>
+                                    <label for="non_envoyer_mail">Non</label>
+                                </td>
+                            </tr>
+                        </table>
+                    </tr>
+                    
+                    
+                    <tr>
+                        
+                        <table style="display:none; margin-bottom: 20px;" class="bloc_mail_preteur_recouvrement">
+                            <tr>
+                                <th><label for="nature_project"><i>Email d'information aux prêteurs :</i></label></th>
+                            </tr>
+                            <tr>
+                                <td><textarea class="textarea_lng" name="area_recouvrement" id="area_recouvrement" style="height: 100px;width: 420px;"></textarea></td>
+                            </tr>
+                            <tr>   
+                                <th><i>Envoyer l'email d'information aux prêteurs :</i></th>                                
+                            </tr>
+                            <tr>
+                                <td>
+                                    <input type="radio" name="mail_a_envoyer_preteur_probleme_recouvrement" id="oui_envoyer_mail_recouvrement" value="0" />
+                                    <label for="oui_envoyer_mail">Oui</label>
+                                    <input type="radio" name="mail_a_envoyer_preteur_probleme_recouvrement" id="non_envoyer_mail_recouvrement" value="1" checked/>
+                                    <label for="non_envoyer_mail">Non</label>
+                                </td>
+                            </tr>
+                        </table>
+                    </tr>
+>>>>>>> statuts-emprunteurs
                     
                 </table>
                 <table class="form" style="width: 538px;">
@@ -761,18 +822,39 @@ if (isset($_SESSION['freeow']))
             <div style="display:none" class="recharge"> 
                 <script type="text/javascript">
                     $("#status").change(function () {
+                                               
                         if ($("#status").val() == 40) {
                             $(".change_statut").hide();
                         }
+<<<<<<< HEAD
                         else if($("#status").val() == 80) {
                             /* dans le cas d'un changement vers probleme, on affiche une box de conf */
                             
                         }
                         else if($("#status").val() == 110) { /* Recouvrement, on affiche un textarea pour le mail aux preteurs*/
                             $('.bloc_mail_preteur_recouvrement').show();
+=======
+                        else if($("#status").val() == 100) { /* probleme, on affiche le choix d'envoi de mail preteur*/
+                            $('.bloc_mail_preteur').show();
+                            $('.bloc_mail_preteur_problemeX').hide();
+                            $('.bloc_mail_preteur_recouvrement').hide();
+                        }
+                        else if($("#status").val() == 140) { /* probleme J+X, on affiche le choix d'envoi de mail preteur*/
+                            $('.bloc_mail_preteur_problemeX').show();
+                            $('.bloc_mail_preteur').hide();
+                            $('.bloc_mail_preteur_recouvrement').hide();
+                        }
+                        else if($("#status").val() == 110) { /* Recouvrement, on affiche un textarea pour le mail aux preteurs*/
+                            $('.bloc_mail_preteur_recouvrement').show();
+                            $('.bloc_mail_preteur').hide();
+                            $('.bloc_mail_preteur_problemeX').hide();
+>>>>>>> statuts-emprunteurs
                         }
                         else {
                             $(".change_statut").show();
+                            $('.bloc_mail_preteur').hide();
+                            $('.bloc_mail_preteur_recouvrement').hide();
+                            $('.bloc_mail_preteur_problemeX').hide();
                         }
                     });
                 </script>
@@ -2258,6 +2340,7 @@ if (isset($_SESSION['freeow']))
                             var performance_fianciere = ((structure + rentabilite + tresorerie) / 3)
                             performance_fianciere = (Math.round(performance_fianciere * 10) / 10);
 
+
                             // Arrondis
                             var marche_opere = ((global + individuel) / 2)
                             marche_opere = (Math.round(marche_opere * 10) / 10);
@@ -2265,7 +2348,8 @@ if (isset($_SESSION['freeow']))
                             // --- Fin chiffre et marché ---
 
                             // Variables
-                            var qualite_moyen_infos_financieres = parseFloat($("#qualite_moyen_infos_financieres2").val().replace(",", "."));
+                            var qualite_moyen_infos_financieres = parseFloat($("#qualite_moyen_infos_financieres2").val().replace(",", "."
+                                    ));
                             var notation_externe = parseFloat($("#notation_externe2").val().replace(",", "."));
 
                             // Arrondis

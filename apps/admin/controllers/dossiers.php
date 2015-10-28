@@ -125,6 +125,9 @@ class dossiersController extends bootstrap {
             // On recup l'entreprise
             $this->companies->get($this->projects->id_company, 'id_company');
 
+            // Récupération du nombre de jour pour le statut probleme J+X
+            $this->settings->get('Statut problème J+X', 'type');
+            $this->nb_jour_statut_probleme = $this->settings->value;
 
             // On recup le detail de l'entreprise
             if (!$this->companies_details->get($this->projects->id_company, 'id_company')) {

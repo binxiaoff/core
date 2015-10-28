@@ -270,7 +270,7 @@ class bootstrap extends Controller
 									$this->clients_gestion_notifications->id_notif = $n['id_client_gestion_type_notif'];
 									$id_notif = $n['id_client_gestion_type_notif'];
 									// immediatement
-									if(in_array($id_notif,array(3,6,7,8)))
+									if(in_array($id_notif,array(3,6,7,8,9)))
 										$this->clients_gestion_notifications->immediatement = 1;
 									else 
 										$this->clients_gestion_notifications->immediatement = 0;

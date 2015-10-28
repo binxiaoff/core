@@ -52,5 +52,5 @@ class thickboxController extends bootstrap
 		$this->heure_date_retrait = $heure_min[0];
 		$this->minute_date_retrait = $heure_min[1];
 		
-	}
+	}        
 }

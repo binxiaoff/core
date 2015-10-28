@@ -55,10 +55,19 @@
                         </th>
                         </tr>
                         <?
+<<<<<<< HEAD
                         foreach ($this->lTypeNotifs as $k => $n) {
 
                             $id_notif = $n['id_client_gestion_type_notif'];
                             if (in_array($id_notif, array(1, 2, 3, 4, 9))) {
+=======
+                        foreach ($this->lTypeNotifs as $k => $n)
+                        {
+
+                            $id_notif = $n['id_client_gestion_type_notif'];
+                            if (in_array($id_notif, array(1, 2, 3, 4, 9)))
+                            {
+>>>>>>> statuts-emprunteurs
                                 ?>
                                 <tr>
                                     <td>
@@ -80,7 +89,12 @@
 
                                     <td>
                                         <?
+<<<<<<< HEAD
                                         if (!in_array($id_notif, array(9))) {
+=======
+                                        if (!in_array($id_notif, array(9)))
+                                        {
+>>>>>>> statuts-emprunteurs
                                             ?>
                                             <div class="form-controls">
                                                 <div class="checkbox">
@@ -92,11 +106,46 @@
                                             <?
                                         }
                                         ?>
+<<<<<<< HEAD
                                     </td>
 
                                     <td>
                                         <?
                                         if (!in_array($id_notif, array(2, 3, 9))) {
+=======
+                                        
+                                        
+                                        
+                                    </td>
+
+                                    <?php /* ?><td>
+                                      <div class="form-controls">
+                                      <div class="checkbox">
+                                      <input onchange="checkbox(this.id)" type="checkbox" id="hebdomadaire_<?=$id_notif?>" name="hebdomadaire_<?=$id_notif?>" <?=(in_array($id_notif,array(2))?'class="check-delete" disabled checked':($this->NotifC[$id_notif]['hebdomadaire']==1?'checked':''))?> />
+
+                                      <label for="hebdomadaire_<?=$id_notif?>"></label>
+                                      </div> /.checkbox
+                                      </div> /.form-controls
+                                      </td>
+
+                                      <td>
+                                      <div class="form-controls">
+                                      <div class="checkbox">
+                                      <input onchange="checkbox(this.id)" type="checkbox" id="mensuelle_<?=$id_notif?>" name="mensuelle_<?=$id_notif?>" <?=(in_array($id_notif,array(1,2))?'class="check-delete" disabled checked':($this->NotifC[$id_notif]['mensuelle']==1?'checked':''))?> />
+
+                                      <label for="mensuelle_<?=$id_notif?>"></label>
+                                      </div><!-- /.checkbox -->
+                                      </div><!-- /.form-controls -->
+                                      </td>
+
+
+                                      <?php */ ?>
+
+                                    <td>
+                                        <?
+                                        if (!in_array($id_notif, array(2, 3, 9)))
+                                        {
+>>>>>>> statuts-emprunteurs
                                             ?>
                                             <div class="form-controls">
                                                 <div class="checkbox">
@@ -112,7 +161,12 @@
 
                                     <td>
                                         <?
+<<<<<<< HEAD
                                         if (!in_array($id_notif, array(1, 2, 3, 9))) {
+=======
+                                        if (!in_array($id_notif, array(1, 2, 3, 9)))
+                                        {
+>>>>>>> statuts-emprunteurs
                                             ?>
                                             <div class="form-controls">
                                                 <div class="checkbox">
@@ -177,9 +231,17 @@
                         </tr>
 
                         <?
+<<<<<<< HEAD
                         foreach ($this->lTypeNotifs as $k => $n) {
                             $id_notif = $n['id_client_gestion_type_notif'];
                             if (in_array($id_notif, array(5))) {
+=======
+                        foreach ($this->lTypeNotifs as $k => $n)
+                        {
+                            $id_notif = $n['id_client_gestion_type_notif'];
+                            if (in_array($id_notif, array(5)))
+                            {
+>>>>>>> statuts-emprunteurs
                                 ?>
                                 <tr>
                                     <td>
@@ -279,9 +341,17 @@
                         </tr>
 
                         <?
+<<<<<<< HEAD
                         foreach ($this->lTypeNotifs as $k => $n) {
                             $id_notif = $n['id_client_gestion_type_notif'];
                             if (in_array($id_notif, array(6, 7, 8))) {
+=======
+                        foreach ($this->lTypeNotifs as $k => $n)
+                        {
+                            $id_notif = $n['id_client_gestion_type_notif'];
+                            if (in_array($id_notif, array(6, 7, 8)))
+                            {
+>>>>>>> statuts-emprunteurs
                                 ?>
                                 <tr>
                                     <td>
@@ -304,6 +374,38 @@
                                     <td></td>
                                     <td></td>
                                     <td></td>
+<<<<<<< HEAD
+=======
+                                    <?php /* ?><td>
+                                      <div class="form-controls">
+                                      <div class="checkbox">
+                                      <input onchange="checkbox(this.id)" type="checkbox" id="quotidienne_<?=$id_notif?>" name="quotidienne_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['quotidienne']==1?'checked':'')?> />
+
+                                      <label for="quotidienne_<?=$id_notif?>"></label>
+                                      </div><!-- /.checkbox -->
+                                      </div><!-- /.form-controls -->
+                                      </td>
+
+                                      <td>
+                                      <div class="form-controls">
+                                      <div class="checkbox">
+                                      <input onchange="checkbox(this.id)" type="checkbox" id="hebdomadaire_<?=$id_notif?>" name="hebdomadaire_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['hebdomadaire']==1?'checked':'')?> />
+
+                                      <label for="hebdomadaire_<?=$id_notif?>"></label>
+                                      </div><!-- /.checkbox -->
+                                      </div><!-- /.form-controls -->
+                                      </td>
+
+                                      <td>
+                                      <div class="form-controls">
+                                      <div class="checkbox">
+                                      <input onchange="checkbox(this.id)" type="checkbox" id="mensuelle_<?=$id_notif?>" name="mensuelle_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['mensuelle']==1?'checked':'')?> />
+
+                                      <label for="mensuelle_<?=$id_notif?>"></label>
+                                      </div><!-- /.checkbox -->
+                                      </div><!-- /.form-controls -->
+                                      </td><?php */ ?>
+>>>>>>> statuts-emprunteurs
 
                                     <td>
                                         <div class="form-controls">
@@ -333,6 +435,7 @@
 
 <script type="application/javascript">
     function radio_uniquement(id){
+<<<<<<< HEAD
         if($('#'+id).prop('checked') == true){
 
             var num = id;
@@ -345,10 +448,24 @@
             if(num != 2)$('#hebdomadaire_'+num).attr('checked',false);
             if(num != 1 && num != 2)$('#mensuelle_'+num).attr('checked',false);
         }
+=======
+    if($('#'+id).prop('checked') == true){
+
+    var num = id;
+    num = num.split("_"); 
+    num = num[2];
+
+    $('#immediatement_'+num).attr('checked',false);
+    $('#quotidienne_'+num).attr('checked',false);
+    if(num != 2)$('#hebdomadaire_'+num).attr('checked',false);
+    if(num != 1 && num != 2)$('#mensuelle_'+num).attr('checked',false);
+    }
+>>>>>>> statuts-emprunteurs
     }
 
     function checkbox(id){
 
+<<<<<<< HEAD
         var num = id;
         num = num.split("_"); 
         num = num[1];
@@ -392,6 +509,51 @@
 
             if(champs == true){$('#uniquement_notif_'+num).click();}
         }
+=======
+    var num = id;
+    num = num.split("_"); 
+    num = num[1];
+
+    if($('#'+id).prop('checked') == true) $('#uniquement_notif_'+num).attr('checked',false);
+    else{
+
+    var champs = false;
+
+    // cas 1
+    if(num == 1){
+    if($('#immediatement_'+num).prop('checked') == false 
+    && $('#quotidienne_'+num).prop('checked') == false 
+    && $('#hebdomadaire_'+num).prop('checked') == false){
+    champs = true;
+    }
+    }
+    // cas 2 ou cas 3
+    else if(num == 2 || num == 3){
+    if($('#immediatement_'+num).prop('checked')== false 
+    && $('#quotidienne_'+num).prop('checked')== false){
+    champs = true;	
+    }
+    }
+    // cas 6,7,8
+    else if(num == 6 || num == 7 || num == 8){
+    if($('#immediatement_'+num).prop('checked')== false){
+    champs = true;	
+    }
+    }
+    // tous
+    else{
+
+    if($('#immediatement_'+num).prop('checked')== false 
+    && $('#quotidienne_'+num).prop('checked')== false 
+    && $('#hebdomadaire_'+num).prop('checked')== false 
+    && $('#mensuelle_'+num).prop('checked')== false){
+    champs = true;
+    }
+    }
+
+    if(champs == true){$('#uniquement_notif_'+num).click();}
+    }
+>>>>>>> statuts-emprunteurs
     }
 
 </script>

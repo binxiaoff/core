@@ -9,10 +9,13 @@ class devboxController extends bootstrap
 		parent::__construct($command,$config,$app);
 		
 		$this->catchAll = true;
-
+                
 		if($_SERVER['REMOTE_ADDR'] != "93.26.42.99")
 		{
+                    if($this->Config['env'] == 'prod') // nmp
+                    {
 			die;
+                    }
 		}
 	}	
 	
@@ -1228,6 +1231,57 @@ class devboxController extends bootstrap
         print_r($result);
         die;
     }
+    
+    
+    // Permet de générer les params de tous les lenders déjà inscrit pour celle nouvelle notification
+    function _ajout_nouvelle_notif()
+    {
+        $id_notif = 9;
+        
+        // Récupération de toutes les notifications déjà présentes dans la table et on ajoute la nouvelle
+        $L_client = $this->recuperation_id_client_table_client_gestion_notification($id_notif);
+                
+        $ligne_cree = 0;
+        foreach($L_client as $clt)
+        {            
+            $clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+            // on ajoute un check pour voir si la ligne existe pas deja
+            if(!$clients_gestion_notifications->get('id_notif = '.$id_notif.' AND id_client = '.$clt['id_client']))
+            {
+            
+                $clients_gestion_notifications->id_client = $clt['id_client'];
+                $clients_gestion_notifications->id_notif = $id_notif;
+                $clients_gestion_notifications->immediatement = 1; // par defaut on met tous les preteurs en mail immédiat
+                $clients_gestion_notifications->quotidienne = 0;
+                $clients_gestion_notifications->hebdomadaire = 0;
+                $clients_gestion_notifications->mensuelle = 0;
+                $clients_gestion_notifications->uniquement_notif = 0;
+                $clients_gestion_notifications->create();
+
+                $ligne_cree++;
+            }
+        }
+        
+        
+        echo "Fin du script, ".$ligne_cree." lignes crees";
+        die;
+    }
+    
+    // fonction qui retourne la liste des id_clients present dans la table clients_gestion_notifications  (sans aucune restriction, mais sans doublon)
+    function recuperation_id_client_table_client_gestion_notification($id_notif)
+    {
+        $sql = "SELECT id_client FROM clients_gestion_notifications
+                WHERE id_client NOT IN (SELECT id_client FROM clients_gestion_notifications WHERE id_notif = ".$id_notif." AND immediatement IN (0,1))
+                GROUP BY id_client ";
+        $resultat = $this->bdd->query($sql);
+        $result = array();
+        while($record = $this->bdd->fetch_array($resultat))
+        {
+                $result[] = $record;
+        }
+        return $result;
+    }
+    
      
      // BT 18600
     // Correction transaction de degel du projet 13996

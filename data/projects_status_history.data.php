@@ -49,6 +49,7 @@ class projects_status_history extends projects_status_history_crud {
         $id = parent::create($cs);
         return $id;
     }
+<<<<<<< HEAD
 
     function select($where = '', $order = '', $start = '', $nb = '') {
         if ($where != '')
@@ -136,3 +137,71 @@ class projects_status_history extends projects_status_history_crud {
     }
 
 }
+=======
+	
+	function select($where='',$order='',$start='',$nb='')
+	{
+		if($where != '')
+			$where = ' WHERE '.$where;
+		if($order != '')
+			$order = ' ORDER BY '.$order;
+		$sql = 'SELECT * FROM `projects_status_history`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+
+		$resultat = $this->bdd->query($sql);
+		$result = array();
+		while($record = $this->bdd->fetch_array($resultat))
+		{
+			$result[] = $record;
+		}
+		return $result;
+	} 
+	
+	function counter($where='')
+	{
+		if($where != '')
+			$where = ' WHERE '.$where;
+			
+		$sql='SELECT count(*) FROM `projects_status_history` '.$where;
+
+		$result = $this->bdd->query($sql);
+		return (int)($this->bdd->result($result,0,0));
+	}
+	
+	function exist($id,$field='id_project_status_history')
+	{
+		$sql = 'SELECT * FROM `projects_status_history` WHERE '.$field.'="'.$id.'"';
+		$result = $this->bdd->query($sql);
+		return ($this->bdd->fetch_array($result,0,0)>0);
+	} 
+	
+	function addStatus($id_user,$status,$id_project)
+	{
+		$sql='SELECT id_project_status FROM `projects_status` WHERE status = '.$status.' ';
+
+		$result = $this->bdd->query($sql);
+		$id_project_status = (int)($this->bdd->result($result,0,0));
+		
+		
+		$this->id_project = $id_project;
+		$this->id_project_status = $id_project_status;
+		$this->id_user = $id_user;
+		
+		$this->create();
+	}
+        
+        function addStatusAndReturnID($id_user,$status,$id_project)
+	{
+		$sql='SELECT id_project_status FROM `projects_status` WHERE status = '.$status.' ';
+
+		$result = $this->bdd->query($sql);
+		$id_project_status = (int)($this->bdd->result($result,0,0));
+		
+		
+		$this->id_project = $id_project;
+		$this->id_project_status = $id_project_status;
+		$this->id_user = $id_user;
+		
+		return $this->create();
+	}
+}
+>>>>>>> statuts-emprunteurs
