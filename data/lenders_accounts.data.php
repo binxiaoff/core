@@ -57,10 +57,12 @@ class lenders_accounts extends lenders_accounts_crud
 
     function select($where = '', $order = '', $start = '', $nb = '')
     {
-        if ($where != '')
+        if ($where != '') {
             $where = ' WHERE ' . $where;
-        if ($order != '')
+        }
+        if ($order != '') {
             $order = ' ORDER BY ' . $order;
+        }
         $sql = 'SELECT * FROM `lenders_accounts`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
@@ -73,8 +75,9 @@ class lenders_accounts extends lenders_accounts_crud
 
     function counter($where = '')
     {
-        if ($where != '')
+        if ($where != '') {
             $where = ' WHERE ' . $where;
+        }
 
         $sql = 'SELECT count(*) FROM `lenders_accounts` ' . $where;
 
@@ -166,14 +169,17 @@ class lenders_accounts extends lenders_accounts_crud
 
     public function getInfosben($iOffset = '', $iLimit = '')
     {
+        $iOffset = $this->bdd->escape_string($iOffset);
+        $iLimit  = $this->bdd->escape_string($iLimit);
+
         $sOffset = '';
         if ('' !== $iOffset) {
-            $sOffset = 'OFFSET '.$iOffset;
+            $sOffset = 'OFFSET ' . $iOffset;
         }
 
         $sLimit = '';
         if ('' !== $iLimit) {
-            $sLimit = 'LIMIT '.$iLimit;
+            $sLimit = 'LIMIT ' . $iLimit;
         }
 
         $sql = 'SELECT DISTINCT (c.id_client), c.prenom, c.nom
@@ -184,7 +190,7 @@ class lenders_accounts extends lenders_accounts_crud
                 INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
                 INNER JOIN projects_status_history psh USING (id_project_status_history)
                 INNER JOIN projects_status ps USING (id_project_status)
-                WHERE ps.status = 80'. ' ' . $sLimit. ' '. $sOffset;
+                WHERE ps.status > 80'. ' ' . $sLimit. ' '. $sOffset;
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
