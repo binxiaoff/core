@@ -3840,8 +3840,8 @@ class dossiersController extends bootstrap
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
             $sujetMail = utf8_decode(strtr($this->mails_text->subject, $tabVars));
-            $texteMail = strtr($this->mails_text->content, $tabVars);
-            $exp_name  = strtr($this->mails_text->exp_name, $tabVars);
+            $texteMail = htmlentities(strtr($this->mails_text->content, $tabVars));
+            $exp_name  = htmlentities(strtr($this->mails_text->exp_name, $tabVars));
 
             $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
