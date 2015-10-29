@@ -43,7 +43,7 @@ class devboxController extends bootstrap
             $this->projects->get($iProjectId, 'id_project');
             $this->companies->get($this->projects->id_company, 'id_company');
 
-            foreach (array_slice($this->clients->selectPreteursByStatus(60, '', '', 1818, 100000), 1818) as $preteur) {
+            foreach ($this->clients->selectPreteursByStatus(60, '', '', 1818, 100000) as $preteur) {
                 $this->notifications->type            = 8; // nouveau projet
                 $this->notifications->id_lender       = $preteur['id_lender'];
                 $this->notifications->id_project      = $iProjectId;
