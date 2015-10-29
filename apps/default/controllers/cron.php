@@ -877,22 +877,16 @@ class cronController extends bootstrap
                 $donneesEcheances = $tabl[1];
                 $lEcheanciers     = $tabl[2];
 
-                $nbjoursMois = 0;
                 // on crée les echeances de chaques preteurs
                 foreach ($lEcheanciers as $k => $e) {
-                    // on prend le nombre de jours dans le mois au lieu du mois
-                    $nbjourstemp = mktime(0, 0, 0, date("m") + $k, 1, date("Y"));
-                    $nbjoursMois += date('t', $nbjourstemp);
-
                     // Date d'echeance preteur
-                    $dateEcheance = $this->dates->dateAddMoisJours($this->projects->date_fin, 0, $nb_jours + $nbjoursMois);
+                    $dateEcheance = $this->dates->dateAddMoisJoursV3($this->projects->date_fin,$k);
                     $dateEcheance = date('Y-m-d H:i', $dateEcheance) . ':00';
 
                     // Date d'echeance emprunteur
-                    $dateEcheance_emprunteur = $this->dates->dateAddMoisJours($this->projects->date_fin, 0, $nbjoursMois);
+                    $dateEcheance_emprunteur = $this->dates->dateAddMoisJoursV3($this->projects->date_fin,$k);
                     // on retire 6 jours ouvrés
                     $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur, 6);
-
                     $dateEcheance_emprunteur = date('Y-m-d H:i', $dateEcheance_emprunteur) . ':00';
 
                     // particulier
@@ -1012,13 +1006,9 @@ class cronController extends bootstrap
 
         $lEcheanciers = $echeanciers->getSumRembEmpruntByMonths($projects->id_project);
 
-        $nbjoursMois = 0;
         foreach ($lEcheanciers as $k => $e) {
-            $nbjourstemp = mktime(0, 0, 0, date("m") + $k, 1, date("Y"));
-            $nbjoursMois += date('t', $nbjourstemp);
-
             // Date d'echeance emprunteur
-            $dateEcheance_emprunteur = $this->dates->dateAddMoisJours($projects->date_fin, 0, $nbjoursMois);
+            $dateEcheance_emprunteur = $this->dates->dateAddMoisJoursV3($projects->date_fin, $k);
             // on retire 6 jours ouvrés
             $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur, 6);
 
@@ -5399,69 +5389,6 @@ class cronController extends bootstrap
 
             $this->stopCron();
         }
-    }
-
-    // cron journalier (00h00  0 0 * * *) new => 0 * * * * (toutes les heures)
-    public function _checkControles()
-    {
-        if (true === $this->startCron('checkControles', 5)) {
-
-            $settings = $this->loadData('settings');
-
-            $settings->get('Controle cron checkBids', 'type');
-            $ctrlCheckBids   = $settings->value;
-            $updateCheckBids = $settings->updated;
-
-            $settings->get('Controle cron checkEmailBidKO', 'type');
-            $ctrlCheckEmailBidKO   = $settings->value;
-            $updateCheckEmailBidKO = $settings->updated;
-
-            $settings->get('Controle cron check_projet_en_funding', 'type');
-            $ctrlCheck_projet_en_funding   = $settings->value;
-            $updateCheck_projet_en_funding = $settings->updated;
-
-            $settings->get('Controle statut remboursement', 'type');
-            $ctrlRemb = $settings->value;
-
-            $settings->get('Controle remboursements', 'type');
-            $ctrlRembPreteurs = $settings->value;
-
-            if ($ctrlCheckBids == 0 || $ctrlCheckEmailBidKO == 0 || $ctrlCheck_projet_en_funding == 0 || $ctrlRemb == 0) {
-                $todayMoins1h = mktime(date("H") - 1, date("i"), date("s"), date("m"), date("d"), date("Y"));
-                // Si la valeur est a zero et que la derniere mise a jour date de plus d'une heure
-                if ($ctrlCheckBids == 0 && strtotime($updateCheckBids) < $todayMoins1h) {
-                    $this->oLogger->addRecord(ULogger::ERROR,
-                        'Cron : ' . __METHOD__ . ' Controle cron checkBids value 0 in settings at date : ' . date('Y-m-d H:i:s'),
-                        array($this->Config['env']));
-                }
-                // Si la valeur est a zero et que la derniere mise a jour date de plus d'une heure
-                if ($ctrlCheckEmailBidKO == 0 && strtotime($updateCheckEmailBidKO) < $todayMoins1h) {
-                    $this->oLogger->addRecord(ULogger::ERROR,
-                        'Cron : ' . __METHOD__ . ' Controle cron checkEmailBidKO value 0 in settings at date : ' . date('Y-m-d H:i:s'),
-                        array($this->Config['env']));
-                }
-                // si la valeur est a zero
-                if ($ctrlCheck_projet_en_funding == 0 && strtotime($updateCheck_projet_en_funding) < $todayMoins1h) {
-                    $this->oLogger->addRecord(ULogger::ERROR,
-                        'Cron : ' . __METHOD__ . ' Controle cron check_projet_en_fundings value 0 in settings at date : ' . date('Y-m-d H:i:s'),
-                        array($this->Config['env']));
-                }
-                if ($ctrlRemb == 0) {
-                    $this->oLogger->addRecord(ULogger::ERROR,
-                        'Cron : ' . __METHOD__ . ' Controle cron remboursement value 0 in settings at date : ' . date('Y-m-d H:i:s'),
-                        array($this->Config['env']));
-                }
-                if ($ctrlRembPreteurs == 0) {
-                    $this->oLogger->addRecord(ULogger::ERROR,
-                        'Cron : ' . __METHOD__ . ' Controle cron statut remboursements des prêteurs value 0 in settings at date : ' . date('Y-m-d H:i:s'),
-                        array($this->Config['env']));
-                }
-            } else {
-                echo 'OK';
-            }
-            $this->stopCron();
-        }
-        die;
     }
 
     // relance une completude a j+8 (add le 22/07/2014)
