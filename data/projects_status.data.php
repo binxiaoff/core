@@ -153,8 +153,7 @@ class projects_status extends projects_status_crud
         } else {
             switch ($this->status) {
                 case self::ABANDON:
-                    $iStatus = $oProjectStatusHistory->getBeforeLastStatut($iProjectId);
-                    return $this->select('id_project_status='.$iStatus);
+                    return $this->select('id_project_status = ' . $oProjectStatusHistory->getBeforeLastStatut($iProjectId) . ' OR status = ' . $this->status);
                 case self::A_TRAITER:
                 case self::EN_ATTENTE_PIECES:
                     $sPossibleStatus = 'status <= ' . self::EN_ATTENTE_PIECES;
