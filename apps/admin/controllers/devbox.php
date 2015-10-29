@@ -14,99 +14,6 @@ class devboxController extends bootstrap
         }
     }
 
-    public function _rejouer_notifications_nouveaux_projets()
-    {
-        $this->autoFireDebug  = false;
-        $this->autoFireView   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireHead   = false;
-        $this->autoFireHeader = false;
-
-        error_reporting(-1);
-        ini_set('display_errors', true);
-
-        $this->clients                       = $this->loadData('clients');
-        $this->notifications                 = $this->loadData('notifications');
-        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
-        $this->projects                      = $this->loadData('projects');
-        $this->companies                     = $this->loadData('companies');
-
-        $this->settings->get('Facebook', 'type');
-        $lien_fb = $this->settings->value;
-
-        $this->settings->get('Twitter', 'type');
-        $lien_tw = $this->settings->value;
-
-        $aProjects = array(18150, 17657);
-        foreach ($aProjects as $iProjectId) {
-            $this->projects->get($iProjectId, 'id_project');
-            $this->companies->get($this->projects->id_company, 'id_company');
-
-            foreach ($this->clients->selectPreteursByStatus(60, '', '', 1818, 100000) as $preteur) {
-                $this->notifications->type            = 8; // nouveau projet
-                $this->notifications->id_lender       = $preteur['id_lender'];
-                $this->notifications->id_project      = $iProjectId;
-                $this->notifications->id_notification = $this->notifications->create();
-
-                $this->clients_gestion_mails_notif->id_client                      = $preteur['id_client'];
-                $this->clients_gestion_mails_notif->id_notif                       = 1; // type nouveau projet
-                $this->clients_gestion_mails_notif->id_notification                = $this->notifications->id_notification;
-                $this->clients_gestion_mails_notif->id_project                     = $iProjectId;
-                $this->clients_gestion_mails_notif->date_notif                     = $this->projects->date_publication_full;
-                $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
-
-                if ($this->clients_gestion_notifications->getNotif($preteur['id_client'], 1, 'immediatement') == true) {
-                    $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                    $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
-                    $this->clients_gestion_mails_notif->update();
-
-                    $this->mails_text->get('nouveau-projet', 'lang = "' . $this->language . '" AND type');
-                    $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($preteur['prenom']))), 0, 1);
-                    $nom       = $this->ficelle->stripAccents(utf8_decode(trim($preteur['nom'])));
-                    $id_client = str_pad($preteur['id_client'], 6, 0, STR_PAD_LEFT);
-                    $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-
-                    $varMail = array(
-                        'surl'            => $this->surl,
-                        'url'             => $this->furl,
-                        'prenom_p'        => $preteur['prenom'],
-                        'nom_entreprise'  => $this->companies->name,
-                        'projet-p'        => $this->furl . '/projects/detail/' . $this->projects->slug,
-                        'montant'         => number_format($this->projects->amount, 0, ',', ' '),
-                        'duree'           => $this->projects->period,
-                        'motif_virement'  => $motif,
-                        'gestion_alertes' => $this->lurl . '/profile',
-                        'lien_fb'         => $lien_fb,
-                        'lien_tw'         => $lien_tw
-                    );
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email', array());
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($preteur['status'] == 1) {
-                        if ($this->Config['env'] == 'prod') {
-                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteur['email'], $tabFiler);
-                            // Injection du mail NMP dans la queue
-                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                        } else {
-                            $this->email->addRecipient(trim($preteur['email']));
-                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                        }
-                    }
-                }
-            }
-        }
-        die;
-    }
-
     public function _listes_repartitions_old()
     {
         // recup�ration des comptes bloques avant le 31/07/14
@@ -117,23 +24,22 @@ class devboxController extends bootstrap
         echo '<br>';
         echo '<br>';
 
-
         // 2 preteurs avec nom/prenom/email
         echo $sql = '
-			SELECT
-				c.*
-				FROM clients c
-				LEFT JOIN prospects p ON c.email = p.email
-				LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
-				WHERE c.nom != ""
-				AND c.prenom != ""
-				AND c.status = 0
-				AND status_inscription_preteur = 0
-				AND LEFT(c.added,10) < "2014-07-31"
-				AND c.email != ""
-				AND c.type IN (1,2,3,4)
-				AND p.email IS NULL
-				AND la.id_lender_account != ""';
+            SELECT
+                c.*
+                FROM clients c
+                LEFT JOIN prospects p ON c.email = p.email
+                LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
+                WHERE c.nom != ""
+                AND c.prenom != ""
+                AND c.status = 0
+                AND status_inscription_preteur = 0
+                AND LEFT(c.added,10) < "2014-07-31"
+                AND c.email != ""
+                AND c.type IN (1,2,3,4)
+                AND p.email IS NULL
+                AND la.id_lender_account != ""';
         $this->Preteurs2 = $this->clients->get_preteurs_restriction($sql);
         $this->Preteurs2 = count($this->Preteurs2);
         echo '<br>';
@@ -141,26 +47,26 @@ class devboxController extends bootstrap
 
         // 3 preteurs avec nom/prenom/email/tel/adresse
         echo $sql = '
-			SELECT
-				c.id_client,
-				c.email,
-				ad.id_client,
-				ad.ville,
-				c.status_pre_emp,
-				c.etape_inscription_preteur
-				FROM clients c
-				LEFT JOIN clients_adresses ad ON c.id_client = ad.id_client
-				LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
-				WHERE c.telephone != ""
-				AND c.nom != ""
-				AND c.prenom != ""
-				AND c.status = 0
-				AND LEFT(c.added,10) < "2014-07-31"
-				AND c.email != ""
-				AND c.type IN (1,2,3,4)
-				AND ad.adresse1 != ""
-				AND la.id_lender_account != ""
-				AND c.status_inscription_preteur = 0';
+            SELECT
+                c.id_client,
+                c.email,
+                ad.id_client,
+                ad.ville,
+                c.status_pre_emp,
+                c.etape_inscription_preteur
+                FROM clients c
+                LEFT JOIN clients_adresses ad ON c.id_client = ad.id_client
+                LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
+                WHERE c.telephone != ""
+                AND c.nom != ""
+                AND c.prenom != ""
+                AND c.status = 0
+                AND LEFT(c.added,10) < "2014-07-31"
+                AND c.email != ""
+                AND c.type IN (1,2,3,4)
+                AND ad.adresse1 != ""
+                AND la.id_lender_account != ""
+                AND c.status_inscription_preteur = 0';
         $this->Preteurs3 = $this->clients->get_preteurs_restriction($sql);
         $this->Preteurs3 = count($this->Preteurs3);
         echo '<br>';
@@ -168,27 +74,27 @@ class devboxController extends bootstrap
 
         // 4 preteurs avec nom/prenom/email/tel/adresse / info bancaire
         echo $sql = '
-			SELECT
-				c.id_client,
-				c.email,
-				ad.id_client,
-				ad.ville,
-				c.status_pre_emp,
-				c.etape_inscription_preteur
-				FROM clients c
-				LEFT JOIN clients_adresses ad ON c.id_client = ad.id_client
-				LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
-				WHERE c.telephone != ""
-				AND c.nom != ""
-				AND c.prenom != ""
-				AND c.status = 0
-				AND LEFT(c.added,10) < "2014-07-31"
-				AND c.email != ""
-				AND c.type IN (1,2,3,4)
-				AND ad.adresse1 != ""
-				AND la.id_lender_account != ""
-				AND c.status_inscription_preteur = 0
-				AND la.iban != ""';
+            SELECT
+                c.id_client,
+                c.email,
+                ad.id_client,
+                ad.ville,
+                c.status_pre_emp,
+                c.etape_inscription_preteur
+                FROM clients c
+                LEFT JOIN clients_adresses ad ON c.id_client = ad.id_client
+                LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
+                WHERE c.telephone != ""
+                AND c.nom != ""
+                AND c.prenom != ""
+                AND c.status = 0
+                AND LEFT(c.added,10) < "2014-07-31"
+                AND c.email != ""
+                AND c.type IN (1,2,3,4)
+                AND ad.adresse1 != ""
+                AND la.id_lender_account != ""
+                AND c.status_inscription_preteur = 0
+                AND la.iban != ""';
         $this->Preteurs4 = $this->clients->get_preteurs_restriction($sql);
         $this->Preteurs4 = count($this->Preteurs4);
 
@@ -222,20 +128,20 @@ class devboxController extends bootstrap
 
         // 2 preteurs avec nom/prenom/email
         echo $sql = '
-			SELECT
-				c.*
-				FROM clients c
-				LEFT JOIN prospects p ON c.email = p.email
-				LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
-				WHERE c.nom != ""
-				AND c.prenom != ""
-				AND c.status = 0
-				AND status_inscription_preteur = 0
-				AND LEFT(c.added,10) < "2014-07-31"
-				AND c.email != ""
-				AND c.type IN (1,2,3,4)
-				AND p.email IS NULL
-				AND la.id_lender_account != ""';
+            SELECT
+                c.*
+                FROM clients c
+                LEFT JOIN prospects p ON c.email = p.email
+                LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
+                WHERE c.nom != ""
+                AND c.prenom != ""
+                AND c.status = 0
+                AND status_inscription_preteur = 0
+                AND LEFT(c.added,10) < "2014-07-31"
+                AND c.email != ""
+                AND c.type IN (1,2,3,4)
+                AND p.email IS NULL
+                AND la.id_lender_account != ""';
         $this->Preteurs2      = $this->clients->get_preteurs_restriction($sql);
         $this->countPreteurs2 = count($this->Preteurs2);
 
@@ -258,26 +164,26 @@ class devboxController extends bootstrap
 
         // 3 preteurs avec nom/prenom/email/tel/adresse
         echo $sql = '
-			SELECT
-				c.id_client,
-				c.email,
-				ad.id_client,
-				ad.ville,
-				c.status_pre_emp,
-				c.etape_inscription_preteur
-				FROM clients c
-				LEFT JOIN clients_adresses ad ON c.id_client = ad.id_client
-				LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
-				WHERE c.telephone != ""
-				AND c.nom != ""
-				AND c.prenom != ""
-				AND c.status = 0
-				AND LEFT(c.added,10) < "2014-07-31"
-				AND c.email != ""
-				AND c.type IN (1,2,3,4)
-				AND ad.adresse1 != ""
-				AND la.id_lender_account != ""
-				AND c.status_inscription_preteur = 0';
+            SELECT
+                c.id_client,
+                c.email,
+                ad.id_client,
+                ad.ville,
+                c.status_pre_emp,
+                c.etape_inscription_preteur
+                FROM clients c
+                LEFT JOIN clients_adresses ad ON c.id_client = ad.id_client
+                LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
+                WHERE c.telephone != ""
+                AND c.nom != ""
+                AND c.prenom != ""
+                AND c.status = 0
+                AND LEFT(c.added,10) < "2014-07-31"
+                AND c.email != ""
+                AND c.type IN (1,2,3,4)
+                AND ad.adresse1 != ""
+                AND la.id_lender_account != ""
+                AND c.status_inscription_preteur = 0';
         $this->Preteurs3      = $this->clients->get_preteurs_restriction($sql);
         $this->countPreteurs3 = count($this->Preteurs3);
         echo '<br>';
@@ -285,31 +191,31 @@ class devboxController extends bootstrap
 
         // 4 preteurs avec nom/prenom/email/tel/adresse / info bancaire
         echo $sql = '
-			SELECT
-				c.id_client,
-				c.email,
-				ad.id_client,
-				ad.ville,
-				c.status_pre_emp,
-				c.etape_inscription_preteur,
-				c.status_inscription_preteur,
-				c.id_nationalite,
-				c.type,
-				c.status
-				FROM clients c
-				LEFT JOIN clients_adresses ad ON c.id_client = ad.id_client
-				LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
-				WHERE c.telephone != ""
-				AND c.nom != ""
-				AND c.prenom != ""
-				AND c.status = 0
-				AND LEFT(c.added,10) < "2014-07-31"
-				AND c.email != ""
-				AND c.type IN (1,2,3,4)
-				AND ad.adresse1 != ""
-				AND la.id_lender_account != ""
-				AND c.status_inscription_preteur = 0
-				AND la.iban != ""';
+            SELECT
+                c.id_client,
+                c.email,
+                ad.id_client,
+                ad.ville,
+                c.status_pre_emp,
+                c.etape_inscription_preteur,
+                c.status_inscription_preteur,
+                c.id_nationalite,
+                c.type,
+                c.status
+                FROM clients c
+                LEFT JOIN clients_adresses ad ON c.id_client = ad.id_client
+                LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
+                WHERE c.telephone != ""
+                AND c.nom != ""
+                AND c.prenom != ""
+                AND c.status = 0
+                AND LEFT(c.added,10) < "2014-07-31"
+                AND c.email != ""
+                AND c.type IN (1,2,3,4)
+                AND ad.adresse1 != ""
+                AND la.id_lender_account != ""
+                AND c.status_inscription_preteur = 0
+                AND la.iban != ""';
         $this->Preteurs4      = $this->clients->get_preteurs_restriction($sql);
         $this->countPreteurs4 = count($this->Preteurs4);
 
@@ -383,13 +289,13 @@ class devboxController extends bootstrap
 
         //AND LEFT(c.added,10) < "2014-07-31"
         echo $sql = "
-		SELECT
-				c.id_client,c.email,p.id_prospect,p.email as email_prospect
-				FROM clients c
-				LEFT JOIN prospects p ON c.email = p.email
-				LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
-				WHERE p.email IS NOT NULL
-				AND la.id_lender_account != ''
+        SELECT
+                c.id_client,c.email,p.id_prospect,p.email as email_prospect
+                FROM clients c
+                LEFT JOIN prospects p ON c.email = p.email
+                LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
+                WHERE p.email IS NOT NULL
+                AND la.id_lender_account != ''
                 AND c.status_inscription_preteur = 1
                 AND p.email != ''";
         $this->inscripts = $this->clients->get_preteurs_restriction($sql);
@@ -417,9 +323,9 @@ class devboxController extends bootstrap
         $this->clients = $this->loadData('clients');
 
         $sql = "
-		SELECT c.id_client,c.email,c.added,c.updated,c.lastlogin,c.status
-		FROM clients c
-		WHERE (SELECT csh.id_client_status FROM clients_status_history csh WHERE csh.id_client = c.id_client ORDER BY csh.added LIMIT 1) IN(1,2) ";
+        SELECT c.id_client,c.email,c.added,c.updated,c.lastlogin,c.status
+        FROM clients c
+        WHERE (SELECT csh.id_client_status FROM clients_status_history csh WHERE csh.id_client = c.id_client ORDER BY csh.added LIMIT 1) IN(1,2) ";
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -443,7 +349,7 @@ class devboxController extends bootstrap
         $this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
 
         $sql      = '
-		SELECT lih1.id_lender,
+        SELECT lih1.id_lender,
                     (
                         SELECT lih2.id_pays
                         FROM `lenders_imposition_history` lih2
@@ -877,9 +783,9 @@ class devboxController extends bootstrap
 
                 SET SQL_BIG_SELECTS=1;
 
-		( SELECT t.*,
+        ( SELECT t.*,
 
-			CASE
+            CASE
                             WHEN t.type_transaction = 1 THEN "Dépôt de fonds" WHEN t.type_transaction = 2 AND t.montant <= 0 AND (SELECT lo.id_loan FROM loans lo WHERE lo.id_bid = b.id_bid AND lo.status = 0) IS NULL THEN "Offre proposée" WHEN t.type_transaction = 2 AND t.montant > 0 THEN "Offre rejetée" WHEN t.type_transaction = 2 AND t.montant <= 0 AND (SELECT lo.id_loan FROM loans lo WHERE lo.id_bid = b.id_bid AND lo.status = 0) IS NOT NULL THEN "Offre proposée"
                             WHEN t.type_transaction = 3 THEN "Dépôt de fonds"
                             WHEN t.type_transaction = 4 THEN "Dépôt de fonds"
@@ -892,91 +798,91 @@ class devboxController extends bootstrap
                             WHEN t.type_transaction = 20 THEN "Gain parrain"
                             WHEN t.type_transaction = 22 THEN "Remboursement anticipé"
                             WHEN t.type_transaction = 23 THEN "Remboursement anticipé"
-				ELSE ""
-			END as type_transaction_alpha,
+                ELSE ""
+            END as type_transaction_alpha,
 
-			CASE
-				WHEN t.type_transaction = 5 THEN (SELECT ech.id_project FROM echeanciers ech WHERE ech.id_echeancier = t.id_echeancier)
-				WHEN b.id_project IS NULL THEN b2.id_project
-				ELSE b.id_project
-			END as le_id_project,
+            CASE
+                WHEN t.type_transaction = 5 THEN (SELECT ech.id_project FROM echeanciers ech WHERE ech.id_echeancier = t.id_echeancier)
+                WHEN b.id_project IS NULL THEN b2.id_project
+                ELSE b.id_project
+            END as le_id_project,
 
 
-			date_transaction as date_tri,
+            date_transaction as date_tri,
 
-			(SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.id_transaction <= t.id_transaction ) as solde,
+            (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.id_transaction <= t.id_transaction ) as solde,
 
-			CASE t.type_transaction
-				WHEN 2 THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
-				WHEN 5 THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
+            CASE t.type_transaction
+                WHEN 2 THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
+                WHEN 5 THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
                                 WHEN 23 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
-				ELSE ""
-			END as title,
+                ELSE ""
+            END as title,
 
-			CASE t.type_transaction
-				WHEN 2 THEN (SELECT loa.id_loan FROM loans loa WHERE loa.id_bid = b.id_bid AND loa.status = 0)
-				WHEN 5 THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_echeancier = t.id_echeancier)
+            CASE t.type_transaction
+                WHEN 2 THEN (SELECT loa.id_loan FROM loans loa WHERE loa.id_bid = b.id_bid AND loa.status = 0)
+                WHEN 5 THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_echeancier = t.id_echeancier)
                                 WHEN 23 THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_project = t.id_project AND w.id_lender = e.id_lender LIMIT 1)
-				ELSE ""
-			END as bdc
+                ELSE ""
+            END as bdc
 
 
 
-			FROM transactions t
-			LEFT JOIN wallets_lines w ON t.id_transaction = w.id_transaction
-			LEFT JOIN bids b ON w.id_wallet_line = b.id_lender_wallet_line
-			LEFT JOIN bids b2 ON t.id_bid_remb = b2.id_bid
-			WHERE 1=1
+            FROM transactions t
+            LEFT JOIN wallets_lines w ON t.id_transaction = w.id_transaction
+            LEFT JOIN bids b ON w.id_wallet_line = b.id_lender_wallet_line
+            LEFT JOIN bids b2 ON t.id_bid_remb = b2.id_bid
+            WHERE 1=1
                         AND t.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20,23)
                         AND t.status = 1
                         AND t.etat = 1
                         AND t.display = 0
                         AND t.id_client = 1
                         AND LEFT(t.date_transaction,10) >= "2015-06-22" ORDER BY id_transaction DESC
-		)
+        )
 
-		UNION ALL
+        UNION ALL
 
-		(
-			SELECT t.*,  "Offre acceptée" as type_transaction_alpha,
-				CASE
-					WHEN t.type_transaction = 5 THEN (SELECT ech.id_project FROM echeanciers ech WHERE ech.id_echeancier = t.id_echeancier)
-					WHEN b.id_project IS NULL THEN b2.id_project
-					ELSE b.id_project
-				END as le_id_project,
+        (
+            SELECT t.*,  "Offre acceptée" as type_transaction_alpha,
+                CASE
+                    WHEN t.type_transaction = 5 THEN (SELECT ech.id_project FROM echeanciers ech WHERE ech.id_echeancier = t.id_echeancier)
+                    WHEN b.id_project IS NULL THEN b2.id_project
+                    ELSE b.id_project
+                END as le_id_project,
 
-				(SELECT psh.added FROM projects_status_history psh WHERE psh.id_project = le_id_project AND id_project_status = 8 ORDER BY added ASC LIMIT 1) as date_tri,
+                (SELECT psh.added FROM projects_status_history psh WHERE psh.id_project = le_id_project AND id_project_status = 8 ORDER BY added ASC LIMIT 1) as date_tri,
 
-				(SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.date_transaction < date_tri ) as solde,
+                (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.date_transaction < date_tri ) as solde,
 
-				CASE t.type_transaction
-					WHEN 2 THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
-					WHEN 5 THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
+                CASE t.type_transaction
+                    WHEN 2 THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
+                    WHEN 5 THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
                                         WHEN 23 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
-					ELSE ""
-				END as title,
+                    ELSE ""
+                END as title,
 
-				lo.id_loan as bdc
+                lo.id_loan as bdc
 
-			FROM loans lo
-			LEFT JOIN bids b ON lo.id_bid = b.id_bid
-			LEFT JOIN wallets_lines w ON w.id_wallet_line = b.id_lender_wallet_line
-			LEFT JOIN transactions t ON t.id_transaction = w.id_transaction
-			LEFT JOIN bids b2 ON t.id_bid_remb = b2.id_bid
-			WHERE 1=1
-			AND lo.status = 0
-			 AND t.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20,23)
-						AND t.status = 1
-						AND t.etat = 1
-						AND t.display = 0
-						AND t.id_client = 1
-						AND LEFT(t.date_transaction,10) >= "2015-06-22"
+            FROM loans lo
+            LEFT JOIN bids b ON lo.id_bid = b.id_bid
+            LEFT JOIN wallets_lines w ON w.id_wallet_line = b.id_lender_wallet_line
+            LEFT JOIN transactions t ON t.id_transaction = w.id_transaction
+            LEFT JOIN bids b2 ON t.id_bid_remb = b2.id_bid
+            WHERE 1=1
+            AND lo.status = 0
+             AND t.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20,23)
+                        AND t.status = 1
+                        AND t.etat = 1
+                        AND t.display = 0
+                        AND t.id_client = 1
+                        AND LEFT(t.date_transaction,10) >= "2015-06-22"
 
 
-			 ORDER BY id_transaction DESC
+             ORDER BY id_transaction DESC
 
-		)
-		 ORDER BY id_transaction DESC
+        )
+         ORDER BY id_transaction DESC
         ';
         $resultat = $this->bdd->query($sql);
         $result   = array();
