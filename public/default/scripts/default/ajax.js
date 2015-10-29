@@ -265,3 +265,26 @@ function controleCp(elmCp, elmCountry, async)
 
 	return result;
 }
+
+function controleCity(elmCity, elmCountry, async)
+{
+	async = typeof async !== 'undefined' ? async : true;
+	var result = false;
+	$.ajax({
+		url: add_url + '/ajax/checkCity/' + elmCity.val() + '/' + elmCountry.val(),
+		method: 'GET',
+		async: async
+	}).done(function(data){
+		if (data == 'ok') {
+			elmCity.addClass('LV_valid_field');
+			elmCity.removeClass('LV_invalid_field');
+			result = true;
+		} else {
+			elmCity.addClass('LV_invalid_field');
+			elmCity.removeClass('LV_valid_field');
+			result = false;
+		}
+	});
+
+	return result;
+}

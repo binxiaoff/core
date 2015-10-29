@@ -61,6 +61,27 @@ class ajaxController extends bootstrap
         echo $response;
     }
 
+    public function _checkCity()
+    {
+        $this->autoFireView = false;
+        $response = 'nok';
+
+        if (isset($this->params[1]) && 1 != $this->params[1]) {
+            echo 'ok';
+            return;
+        }
+        if (isset($this->params[0])) {
+            /** @var villes $oVille */
+            $oVille = $this->loadData('villes');
+
+            if ($oVille->exist($this->params[0], 'ville')) {
+                $response = 'ok';
+            }
+            unset($oVille);
+        }
+        echo $response;
+    }
+
     public function _load_project()
     {
         $this->autoFireView = false;

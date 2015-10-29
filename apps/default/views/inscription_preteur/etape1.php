@@ -194,14 +194,14 @@
         // cgu
         if ($('#accept-cgu').is(':checked') == false) {
             $('.check').css('color', '#C84747');
-            radio = false
+            radio = false;
         } else {
             $('.check').css('color', '#727272');
         }
 
         // controle mdp
         if (controleMdp($('#pass').val(), 'pass', false) == false) {
-            radio = false
+            radio = false;
         }
 
         if ($('#jour_naissance').val() == '<?=$this->lng['etape1']['jour']?>') {
@@ -210,6 +210,12 @@
         } else {
             $("#jour_naissance").removeClass("LV_invalid_field");
             $("#jour_naissance").addClass("LV_valid_field");
+        }
+
+        if (controleCity($('#naissance'), $('#pays3'), false) == false) {
+            $("#jour_naissance").removeClass("LV_valid_field");
+            $("#jour_naissance").addClass("LV_invalid_field");
+            radio = false;
         }
 
         if (radio == false) {

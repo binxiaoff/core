@@ -140,13 +140,19 @@ class villes extends villes_crud
             $sIncludeOldCity = 'AND active = 1';
         }
 
-        $sql = 'SELECT id_ville,ville,cp,insee
-                FROM villes
-                WHERE ('.$sWhere.') '.$sIncludeOldCity.'
+        $sql = 'SELECT * FROM (
+                  SELECT id_ville,ville,cp,insee
+                  FROM villes
+                  WHERE ('.$sWhere.') '.$sIncludeOldCity.'
+                  ORDER BY ville ASC
+                ) start_by
                 UNION
-                SELECT id_ville,ville,cp,insee
-                FROM villes
-                WHERE ('.$sWhereBis.') '.$sIncludeOldCity;
+                SELECT * FROM (
+                    SELECT id_ville,ville,cp,insee
+                    FROM villes
+                    WHERE (' . $sWhereBis . ') ' . $sIncludeOldCity . '
+                    ORDER BY ville ASC
+                ) contain';
         $oQuery = $this->bdd->query($sql);
         $aResult   = array();
         while ($aRow = $this->bdd->fetch_array($oQuery)) {
