@@ -249,7 +249,7 @@
                         <td>
                             <select name="duree" id="duree" class="select" style="width:160px;background-color:#AAACAC;" >
                                 <?php foreach($this->dureePossible as $duree): ?>
-                                    <option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?=$duree?>"><?=$duree?> mois</option>
+                                    <option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
                                 <?php endforeach ?>
                                 <option <?= ((int)$this->projects->period === 1000000 || (int)$this->projects->period === 0 ? 'selected' : '') ?> value="0">Je ne sais pas</option>
                             </select>
@@ -463,7 +463,7 @@
                             ?>
                         </td>
                     </tr>
-                    <?php if (false === empty($this->current_projects_status_history->content)) { ?>
+                    <?php if ($this->current_projects_status->status == \projects_status::NOTE_EXTERNE_FAIBLE && false === empty($this->current_projects_status_history->content)) { ?>
                     <tr>
                         <th><label for="status">Motif :</label></th>
                         <td><?= $this->current_projects_status_history->content ?></td>
@@ -810,14 +810,14 @@
                 <input type="checkbox" name="stop_relances" id="stop_relances" value="1" <?= $this->projects->stop_relances == 1 ? 'checked':'' ?>/> <label for="stop_relances">Arrêt des relances</label>
                 <br/>
                 <br/>
-                <a href="#" class="btn_link" id="save_projects_tab_email" data-project-id="<?=$this->projects->id_project?>">Sauvegarder</a>
+                <a href="#" class="btn_link" id="save_projects_tab_email" data-project-id="<?= $this->projects->id_project ?>">Sauvegarder</a>
             </div>
             <br />
             <div id="tab_email_msg">Données sauvegardées</div>
             <br />
             <div id="send_cgv">
                 <h2>Envoi des CGV</h2>
-                <a href="<?= $this->lurl ?>/dossiers/send_cgv_ajax/<?=$this->projects->id_project?>" class="btn_link thickbox cboxElement">Envoyer</a>
+                <a href="<?= $this->lurl ?>/dossiers/send_cgv_ajax/<?= $this->projects->id_project ?>" class="btn_link thickbox cboxElement">Envoyer</a>
             </div>
             <br />
             <div id="send_completeness">
@@ -826,10 +826,10 @@
                     <table>
                         <?php foreach($this->completude_wording as $sSlug => $sWording):?><tr>
                             <td>
-                                <a class="add_wording" id="add-<?=$sSlug?>"><img src="<?=$this->surl?>/images/admin/add.png"></a>
+                                <a class="add_wording" id="add-<?= $sSlug ?>"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
                             </td>
                             <td>
-                                <span class="content-add-<?=$sSlug?>"><?=$sWording?></span>
+                                <span class="content-add-<?= $sSlug ?>"><?= $sWording ?></span>
                             </td>
                             </tr>
                         <?php endforeach?>
@@ -850,7 +850,7 @@
                         </tr>
                         <tr>
                             <th>
-                                <a id="completude_preview" href="<?=$this->lurl?>/dossiers/completude_preview/<?=$this->projects->id_project?>" class="btn_link thickbox cboxElement">Prévisualiser</a>
+                                <a id="completude_preview" href="<?= $this->lurl ?>/dossiers/completude_preview/<?= $this->projects->id_project ?>" class="btn_link thickbox cboxElement">Prévisualiser</a>
                             </th>
                         </tr>
                     </table>
@@ -1037,27 +1037,27 @@
 
                     <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="identification_prescripteur">
                         <th>Civilité :</th>
-                        <td id="civilite_prescripteur"><?=$this->clients_prescripteurs->civilite?></td>
+                        <td id="civilite_prescripteur"><?= $this->clients_prescripteurs->civilite ?></td>
                         <th></th>
                         <td></td>
                     </tr>
                     <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="identification_prescripteur">
                         <th>Nom :</th>
-                        <td id="nom_prescripteur"><?=$this->clients_prescripteurs->nom?></td>
+                        <td id="nom_prescripteur"><?= $this->clients_prescripteurs->nom ?></td>
                         <th>Prénom :</th>
-                        <td id="prenom_prescripteur"><?=$this->clients_prescripteurs->prenom?></td>
+                        <td id="prenom_prescripteur"><?= $this->clients_prescripteurs->prenom ?></td>
                     </tr>
                     <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="identification_prescripteur">
                         <th>Téléphone :</th>
-                        <td id="telephone_prescripteur"><?=$this->clients_prescripteurs->telephone?></td>
+                        <td id="telephone_prescripteur"><?= $this->clients_prescripteurs->telephone ?></td>
                         <th>Email :</th>
-                        <td id="email_prescripteur"><?=$this->clients_prescripteurs->email?></td>
+                        <td id="email_prescripteur"><?= $this->clients_prescripteurs->email ?></td>
                     </tr>
                     <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="identification_prescripteur">
                         <th>Raison sociale :</th>
-                        <td id="company_prescripteur"><?=$this->companies_prescripteurs->name?></td>
+                        <td id="company_prescripteur"><?= $this->companies_prescripteurs->name ?></td>
                         <th>Siren :</th>
-                        <td id="siren_prescripteur"><?=$this->companies_prescripteurs->siren?></td>
+                        <td id="siren_prescripteur"><?= $this->companies_prescripteurs->siren ?></td>
                     </tr>
 
                     <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="statut_dirigeant_etape2">
@@ -1065,17 +1065,17 @@
                             <input class="input_large" name="search_prescripteur" id="search_prescripteur" placeholder="nom, prenom ou email du prescripteur" />
                         </td>
                         <td>
-                            <a id="btn_search_prescripteur" class="btn_link thickbox cboxElement" href="<?=$this->lurl?>/prescripteurs/search_ajax/" onclick="$(this).attr('href', '<?=$this->lurl?>/prescripteurs/search_ajax/' + $('#search_prescripteur').val());">Rechercher un prescripteur existant</a>
+                            <a id="btn_search_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/search_ajax/" onclick="$(this).attr('href', '<?= $this->lurl ?>/prescripteurs/search_ajax/' + $('#search_prescripteur').val());">Rechercher un prescripteur existant</a>
                         </td>
                         <th></th>
                         <td></td>
                     </tr>
                     <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="statut_dirigeant_etape2">
                         <td>
-                            <a id="btn_add_prescripteur" class="btn_link thickbox cboxElement" href="<?=$this->lurl?>/prescripteurs/add_client" target="_blank">Créer un prescripteur</a>
+                            <a id="btn_add_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/add_client" target="_blank">Créer un prescripteur</a>
                         </td>
                     </tr>
-                    <input type="hidden" id="id_prescripteur" name="id_prescripteur" value="<?=$this->prescripteurs->id_prescripteur?>" />
+                    <input type="hidden" id="id_prescripteur" name="id_prescripteur" value="<?= $this->prescripteurs->id_prescripteur ?>" />
                 </table>
                 <br />
                 <br />
@@ -1305,17 +1305,17 @@
                         <tr>
                             <th><label for="ca_declara_client">Chiffe d'affaires declaré par client</label></th>
                             <td>
-                                <input type="text" name="ca_declara_client" id="ca_declara_client" class="input_moy" value="<?=$this->projects->ca_declara_client?>"/>
+                                <input type="text" name="ca_declara_client" id="ca_declara_client" class="input_moy" value="<?= $this->projects->ca_declara_client ?>"/>
                             </td>
                             <th><label for="resultat_exploitation_declara_client">Résultat d'exploitation declaré par client</label></th>
                             <td>
-                                <input type="text" name="resultat_exploitation_declara_client" id="resultat_exploitation_declara_client" class="input_moy" value="<?=$this->projects->resultat_exploitation_declara_client?>"/>
+                                <input type="text" name="resultat_exploitation_declara_client" id="resultat_exploitation_declara_client" class="input_moy" value="<?= $this->projects->resultat_exploitation_declara_client ?>"/>
                             </td>
                         </tr>
                         <tr>
                             <th><label for="fonds_propres_declara_client">Fonds propres declarés par client</label></th>
                             <td>
-                                <input type="text" name="fonds_propres_declara_client" id="fonds_propres_declara_client" class="input_moy" value="<?=$this->projects->fonds_propres_declara_client?>"/>
+                                <input type="text" name="fonds_propres_declara_client" id="fonds_propres_declara_client" class="input_moy" value="<?= $this->projects->fonds_propres_declara_client ?>"/>
                             </td>
                         </tr>
 
@@ -1727,28 +1727,26 @@
                         <th></th>
                         </thead>
                         <tbody>
-                        <?php foreach ($this->aAttachmentTypes as $sAttachmentType): ?>
+                        <?php foreach ($this->aAttachmentTypes as $sAttachmentType) { ?>
                         <tr>
                             <td class="remove_col">
-                                <?php if(isset($this->aAttachments[$sAttachmentType['id']]['path'])): ?>
-                                    <a href="#" data-id="<?=$this->aAttachments[$sAttachmentType['id']]['id']?>" data-label="<?=$sAttachmentType['label']?>" class="icon_remove_attachment"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" title="Supprimer"></a>
-                                <?php endif; ?>
+                                <?php if (isset($this->aAttachments[$sAttachmentType['id']]['path'])) { ?>
+                                    <a href="#" data-id="<?= $this->aAttachments[$sAttachmentType['id']]['id'] ?>" data-label="<?= $sAttachmentType['label'] ?>" class="icon_remove_attachment"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" title="Supprimer"></a>
+                                <?php } ?>
                             </td>
-                            <td class="type_col"><?=$sAttachmentType['label']?></td>
+                            <td class="type_col"><?= $sAttachmentType['label'] ?></td>
                             <td class="label_col">
-                                <?php if(isset($this->aAttachments[$sAttachmentType['id']]['path'])): ?>
+                                <?php if (isset($this->aAttachments[$sAttachmentType['id']]['path'])) { ?>
                                     <a href="<?= $this->url ?>/attachment/download/id/<?= $this->aAttachments[$sAttachmentType['id']]['id'] ?>/file/<?= urlencode($this->aAttachments[$sAttachmentType['id']]['path']) ?>"><?= $this->aAttachments[$sAttachmentType['id']]['path'] ?></a>
-                                <?php endif; ?>
+                                <?php } ?>
                             </td>
-                            <td class="statut_fichier_<?=$sAttachmentType['id']?>" id="statut_fichier_id_<?= $this->aAttachments[$sAttachmentType['id']]['id']?>"><?= isset($this->aAttachments[$sAttachmentType['id']]) === true ? 'Enregistré' : '' ?></td>
-                            <td><input type="file" name="<?=$sAttachmentType['id']?>" id="fichier_project_<?=$sAttachmentType['id']?>"/></td>
+                            <td class="statut_fichier_<?= $sAttachmentType['id'] ?>" id="statut_fichier_id_<?= $sAttachmentType['id'] ?>"><?= isset($this->aAttachments[$sAttachmentType['id']]) === true ? 'Enregistré' : '' ?></td>
+                            <td><input type="file" name="<?= $sAttachmentType['id'] ?>" id="fichier_project_<?= $sAttachmentType['id'] ?>"/></td>
                         </tr>
-                        <?php endforeach; ?>
+                        <?php } ?>
                         </tbody>
                     </table>
-                    <?php
-                    if ($this->nb_lignes != '') {
-                        ?>
+                    <?php if ($this->nb_lignes != '') { ?>
                         <table>
                             <tr>
                                 <td id="pager">
@@ -1764,10 +1762,8 @@
                                 </td>
                             </tr>
                         </table>
-                        <?php
-                    }
-                }
-                ?>
+                    <?php } ?>
+                <?php } ?>
                 <br/>
 
                 <div id="valid_etape5">Données sauvegardées</div>
@@ -1848,19 +1844,13 @@
                         </tr>
                         <tr>
                             <td colspan="8" style="text-align:center;">
-                                <?php
-                                if(false === $this->bReadonlyRiskNote){
-                            ?>
+                            <?php if (false === $this->bReadonlyRiskNote) { ?>
                                 <label for="avis" style="text-align:left;display: block;">Avis :</label><br/>
                                 <textarea tabindex="8" name="avis" style="height:700px;" id="avis" class="textarea_large avis"/><?= $this->projects_notes->avis ?></textarea>
                                 <script type="text/javascript">var ckedAvis = CKEDITOR.replace('avis', {height: 700});</script>
-                            <?php
-                                } else {
-                            ?>
+                            <?php } else { ?>
                                 <div style="color:black;"><?= $this->projects_notes->avis ?></div>
-                            <?php
-                                }
-                                ?>
+                            <?php } ?>
                             </td>
                         </tr>
                     </table>
@@ -2004,19 +1994,13 @@
                         </tr>
                         <tr>
                             <td colspan="8" style="text-align:center;">
-                                <?php
-                                if(false === $this->bReadonlyRiskNote){
-                                    ?>
-                                    <label for="avis_comite" style="text-align:left;display: block;">Avis comité :</label><br/>
-                                    <textarea tabindex="16" name="avis_comite" style="height:700px;" id="avis_comite" class="textarea_large avis_comite"><?= $this->projects_notes->avis_comite; ?></textarea>
-                                    <script type="text/javascript">var ckedAvis_comite = CKEDITOR.replace('avis_comite', {height: 700});</script>
-                                <?php
-                                } else {
-                                ?>
-                                    <div style="color:black;"><?= $this->projects_notes->avis_comite; ?></div>
-                                    <?php
-                                }
-                                ?>
+                            <?php if (false === $this->bReadonlyRiskNote) { ?>
+                                <label for="avis_comite" style="text-align:left;display: block;">Avis comité :</label><br/>
+                                <textarea tabindex="16" name="avis_comite" style="height:700px;" id="avis_comite" class="textarea_large avis_comite"><?= $this->projects_notes->avis_comite; ?></textarea>
+                                <script type="text/javascript">var ckedAvis_comite = CKEDITOR.replace('avis_comite', {height: 700});</script>
+                            <?php } else { ?>
+                                <div style="color:black;"><?= $this->projects_notes->avis_comite; ?></div>
+                            <?php } ?>
                             </td>
                         </tr>
                     </table>
@@ -2147,7 +2131,7 @@
         var response = confirm("Voulez-vous supprimer " + type + "?");
         if (response == true) {
             $.ajax({
-                url: "<?=$this->lurl?>/dossiers/remove_file",
+                url: "<?= $this->lurl ?>/dossiers/remove_file",
                 dataType: 'json',
                 type: 'POST',
                 data: {
@@ -2188,7 +2172,7 @@
         }
 
         $.ajax({
-            url: "<?=$this->lurl?>/dossiers/tab_email",
+            url: "<?= $this->lurl ?>/dossiers/tab_email",
             type: 'POST',
             data: {
                 project_id: iProjectId,
@@ -2238,7 +2222,7 @@
         $.post(
             add_url+"/ajax/session_project_completude",
             {
-                id_project: "<?=$this->projects->id_project?>",
+                id_project: "<?= $this->projects->id_project ?>",
                 content: content,
                 list: list
             }
