@@ -33,73 +33,83 @@ class insee_pays extends insee_pays_crud
         parent::insee_pays($bdd, $params);
     }
 
-    public function create($list_field_value = array())
+    function get($id,$field='CODEISO2')
     {
-        parent::create($list_field_value);
+        return parent::get($id,$field);
     }
 
-    public function select($where = '', $order = '', $start = '', $nb = '')
+    function update($cs='')
     {
-        if ($where != '') {
-            $where = ' WHERE ' . $where;
-        }
-        if ($order != '') {
-            $order = ' ORDER BY ' . $order;
-        }
-        $sql = 'SELECT * FROM insee_pays' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
+        parent::update($cs);
     }
 
-    public function counter($where = '')
+    function delete($id,$field='CODEISO2')
     {
-        if ($where != '') {
-            $where = ' WHERE ' . $where;
-        }
-
-        $sql = 'SELECT count(*) FROM insee_pays ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+    	parent::delete($id,$field);
     }
 
-    public function exist($list_field_value)
+    function create($cs='')
     {
-        $list = '';
-        foreach ($list_field_value as $champ => $valeur) {
-            $list .= ' AND ' . $champ . ' = "' . $valeur . '" ';
-        }
-
-        $sql    = 'SELECT * FROM insee_pays WHERE 1=1 ' . $list . ' ';
-        $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        $id = parent::create($cs);
+        return $id;
     }
 
-    public function getByCountryName($sCountryName)
-    {
-        $result = $this->bdd->query('SELECT * FROM insee_pays WHERE LIBCOG LIKE "' . $sCountryName . '"');
+	function select($where='',$order='',$start='',$nb='')
+	{
+		if($where != '')
+			$where = ' WHERE '.$where;
+		if($order != '')
+			$order = ' ORDER BY '.$order;
+		$sql = 'SELECT * FROM `insee_pays`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
 
-        if ($this->bdd->num_rows() == 1) {
-            $record = $this->bdd->fetch_array($result);
+		$resultat = $this->bdd->query($sql);
+		$result = array();
+		while($record = $this->bdd->fetch_array($resultat))
+		{
+			$result[] = $record;
+		}
+		return $result;
+	}
 
-            $this->COG    = $record['COG'];
-            $this->ACTUAL = $record['ACTUAL'];
-            $this->CAPAY  = $record['CAPAY'];
-            $this->CRPAY  = $record['CRPAY'];
-            $this->ANI    = $record['ANI'];
-            $this->LIBCOG = $record['LIBCOG'];
-            $this->LIBENR = $record['LIBENR'];
-            $this->ANCNOM = $record['ANCNOM'];
+	function counter($where='')
+	{
+		if($where != '')
+			$where = ' WHERE '.$where;
 
-            return true;
-        } else {
-            $this->unsetData();
-            return false;
-        }
-    }
+		$sql='SELECT count(*) FROM `insee_pays` '.$where;
+
+		$result = $this->bdd->query($sql);
+		return (int)($this->bdd->result($result,0,0));
+	}
+
+	function exist($id,$field='CODEISO2')
+	{
+		$sql = 'SELECT * FROM `insee_pays` WHERE '.$field.'="'.$id.'"';
+		$result = $this->bdd->query($sql);
+		return ($this->bdd->fetch_array($result,0,0)>0);
+	}
+
+	public function getByCountryName($sCountryName)
+	{
+		$result = $this->bdd->query('SELECT * FROM insee_pays WHERE LIBCOG LIKE "' . $sCountryName . '"');
+
+		if ($this->bdd->num_rows() == 1) {
+			$record = $this->bdd->fetch_array($result);
+
+			$this->CODEISO2 =$record['CODEISO2'];
+			$this->COG      = $record['COG'];
+			$this->ACTUAL   = $record['ACTUAL'];
+			$this->CAPAY    = $record['CAPAY'];
+			$this->CRPAY    = $record['CRPAY'];
+			$this->ANI      = $record['ANI'];
+			$this->LIBCOG   = $record['LIBCOG'];
+			$this->LIBENR   = $record['LIBENR'];
+			$this->ANCNOM   = $record['ANCNOM'];
+
+			return true;
+		} else {
+			$this->unsetData();
+			return false;
+		}
+	}
 }

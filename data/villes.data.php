@@ -118,4 +118,45 @@ class villes extends villes_crud
 
         return $sCodeDepartement . $sCodeCommune;
     }
+
+    public function lookupCities($sTerm, $aSearchFields = array('ville', 'cp'), $bIncludeOldCity = false)
+    {
+        if (empty($aSearchFields)) {
+            return array();
+        }
+
+        $sWhere = '';
+        $sWhereBis = '';
+        foreach ($aSearchFields as $sField) {
+            if ('' !== $sWhere) {
+                $sWhere .= ' OR ';
+                $sWhereBis .= ' OR ';
+            }
+            $sWhere .= $sField . ' LIKE "'.$sTerm.'%"';
+            $sWhereBis .= $sField . ' LIKE "%'.$sTerm.'%"';
+        }
+        $sIncludeOldCity = '';
+        if (false === $bIncludeOldCity) {
+            $sIncludeOldCity = 'AND active = 1';
+        }
+
+        $sql = 'SELECT id_ville,ville,cp,insee
+                FROM villes
+                WHERE ('.$sWhere.') '.$sIncludeOldCity.'
+                UNION
+                SELECT id_ville,ville,cp,insee
+                FROM villes
+                WHERE ('.$sWhereBis.') '.$sIncludeOldCity;
+        $oQuery = $this->bdd->query($sql);
+        $aResult   = array();
+        while ($aRow = $this->bdd->fetch_array($oQuery)) {
+            $aResult[] = $aRow;
+        }
+        return $aResult;
+    }
+
+    public function lookupPostalCode()
+    {
+
+    }
 }

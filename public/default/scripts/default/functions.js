@@ -12,21 +12,21 @@
 		navPos = 0,
 		sidPos = 0,
 		footerPos = 0;
-		
+
 	$doc.on('ready', function(){
 
 		navPos = $('.navigation').offset().top;
-		
+
 		var sidebar_exist = false;
 		if($('.sidebar').length)
 		{
 			sidPos = $('.sidebar').offset().top;
 			footerPos = $('.footer').offset().top;
 		}
-		
-		
-		
-		
+
+
+
+
 		// Blink fields
 		$doc.on('focusin', '.field, textarea', function(){
 			if(this.title==this.value) {
@@ -44,13 +44,13 @@
 			}else{
 				$(this).addClass('populated');
 			}
-			
+
 		}).on('click', 'a.popup-close, .close-btn', function(event){
 			event.preventDefault();
 			$.colorbox.close();
 
 		});
-		
+
 		$('.logedin-panel').hover(function(){
 			$(this).find('.dd').stop(true,true).show();
 		},function(){
@@ -60,7 +60,7 @@
 		$('.tooltip-anchor').tooltip();
 
 		$('.custom-select').c2Selectbox();
-		
+
 		$( "#datepicker" ).datepicker({
 			inline: true,
 			changeMonth: true,
@@ -108,25 +108,25 @@
 				$('.progressBar').each(function(){
 					var per = $(this).data('percent');
 					progress(per, $(this));
-				});		
+				});
 			}
 			function progress(percent, $element) {
 				var progressBarWidth = percent * $element.width() / 100;
 				$element.find('div').animate({ width: progressBarWidth }, 1200, function(){
 					var leftP = $(this).width();
-					
-					
-					$(this).find('span').html(percent.toString().replace('.',',') + "%&nbsp;").css('left', leftP);	
+
+
+					$(this).find('span').html(percent.toString().replace('.',',') + "%&nbsp;").css('left', leftP);
 				})
 			}
 		})
-		
+
 		// Pass fields
 		$('.pass-field-holder').each(function(){
 			var $self = $(this),
 				$input = $self.find('input'),
 				$fake = $('<span class="fake-field">' + $input.attr('title') + '</span>');
-			
+
 			$self.append($fake);
 			$fake.on('click', function(){
 				$fake.hide()
@@ -138,13 +138,13 @@
 			}
 		});
 
-		
-		
-		
 
 		$('.euro-field').each(function(){
 			$(this).before('<span class="euro-sign">&euro;</span>')
 		});
+
+
+
 
 
 
@@ -159,10 +159,10 @@
 							val = $self.val()
 						if( val.length != 0 || val != '' ){
 							$self.closest('.uploader').find('input.field').val(val);
-							
+
 							var idx = $('#rule-selector').val();
 							$('.rules-list li[data-rule="'+idx+'"]').addClass('valid');
-							
+
 						}
 					})
 
@@ -173,23 +173,20 @@
 				}
 
 		});
-		
-                
-                
-                
-		
+
+
 		Highcharts.setOptions({
 			lang: {
 				decimalPoint: ","
 			}
 		});
-		
+
 		// Graphic Chart
 		if( $('.graphic-box').length ){
 			var titlePrete = $('#titlePrete').html();
 			var titleArgentRemb = $('#titleArgentRemb').html();
 			var titleInteretsRecu = $('#titleInteretsRecu').html();
-			
+
 			var leSoldePourcent = parseFloat($('#leSoldePourcent').html());
 			var sumBidsEncoursPourcent = parseFloat($('#sumBidsEncoursPourcent').html());
 			var sumPretsPourcent = parseFloat($('#sumPretsPourcent').html());
@@ -206,7 +203,7 @@
 		        title: {
 		            text: ''
 		        },
-		        
+
 		        plotOptions: {
 		            pie: {
 		                allowPointSelect: true,
@@ -238,9 +235,9 @@
 			var argentPrete = parseFloat($('#argentPrete').html());
 			var argentRemb = parseFloat($('#argentRemb').html());
 			var interets = parseFloat($('#interets').html());
-			
+
 			$('#bar-chart').highcharts({
-				
+
 	            chart: {
 					backgroundColor:'#fafafa',
 	                type: 'bar',
@@ -278,7 +275,7 @@
 				tooltip: {
 					valueSuffix: ' €',
 				},
-			
+
 	            plotOptions: {
 		            bar: {
 		            	pointWidth: 35,
@@ -306,18 +303,18 @@
 						color: '#ee5396',
 						y: interets
 					}
-		                
+
 		            ]
 	            }]
 	        });
-			
-			
+
+
 
 		}
 
 	});
-		
-		
+
+
 		/*$doc.on('click', 'a.popup-close, .close-btn', function(event){
 			event.preventDefault();
 			$.colorbox.close();
@@ -327,36 +324,36 @@
 	$win.on('scroll', function(){
 		if($('body').is('.has-fixed-nav')){
 			var scrolled = $win.scrollTop();
-			
+
 			var newfooterPos = footerPos-800;
-			
+
 			if(scrolled >= navPos){
 				$('body').addClass('nav-fixed');
-				
+
 			}else{
 				$('body').removeClass('nav-fixed');
-				
+
 			}
-			
+
 			if($('.sidebar').length)
 			{
 				//if(scrolled >= sidPos-60 && scrolled < newfooterPos){
 				if(scrolled >= sidPos-60){
-					
+
 					$('.sidebar').addClass('sidebar-fixed');
 				}else{
-					
+
 					$('.sidebar').removeClass('sidebar-fixed');
 				}
 				//if(scrolled >= newfooterPos){
-//					
+//
 //					$('.sidebar').addClass('sidebar-fixed2');
 //				}else{
-//					
+//
 //					$('.sidebar').removeClass('sidebar-fixed2');
 //				}
 			}
-			
+
 		}
 	});
 
@@ -453,25 +450,25 @@ var Form = (function($){
 		initAutocomplete(settings.selector);
 		initConditionals(settings.selector);
 		initValidation(settings.selector);
-		
+
 	}
 
 	function bindEvents(){
 		$(settings.selector).on('submit', function(event){
 			var $form = $(this);
-			
+
 			/*if($('.validationRadio1').attr("checked"))
 			{
 				alert('check');
-				
+
 			}
 			else
 			{
-				alert('ncheck');	
+				alert('ncheck');
 			}*/
-			
-			
-			
+
+
+
 			if(
 				$('.LV_invalid_field:visible', $form).length ||
 				$('input.required:visible', $form).value == '' ||
@@ -479,10 +476,10 @@ var Form = (function($){
 				$('select.required', $form).next('.c2-sb-wrap:visible:not(.populated)').length ||
 				$('.required[type="checkbox"]:not(:checked)', $form).length
 			){
-				
+
 				if(!$('select.required', $form).next('.c2-sb-wrap:visible').is('.populated')){
 					$('select.required', $form).next('.c2-sb-wrap:visible:not(.populated)').addClass('field-error');
-					
+
 				}
 				return false;
 			}
@@ -495,8 +492,8 @@ var Form = (function($){
 				fieldTitle = $self[0].title,
 				validators = $self.data('validators').split('&'),
 				validationObject = new LiveValidation(this.id);
-				
-			
+
+
 			for (var i = validators.length - 1; i >= 0; i--) {
 				var str = 'validationObject.add(Validate.' + validators[i] + ')';
 				eval(str);
@@ -520,34 +517,34 @@ var Form = (function($){
 		});
 
 	}*/
-	
+
 	function initAutocomplete($cnt){
 		$('[data-autocomplete]', $cnt).each(function(){
 			var $field = $(this);
-			
+
 			if($field.data('autocomplete') == 'cities')
 			{
 				$field.autocomplete({
 					source: add_url + '/ajax/villes/',
 					minLength: 2,
 					select: function( event, ui ) {
-						
+
 						if($(this).attr('id') == 'ville_inscription' || $(this).attr('id') == 'ville')
 						{
-							var val = { 
+							var val = {
 								ville: ui.item.value
 							}
 							$.post(add_url + '/ajax/autocompleteCp', val).done(function(data) {
-								
+
 								if(data != 'nok')
 								{
 									$("#postal").val(data);
 								}
 							});
-							
+
 						}
 					}
-				});	
+				});
 			}
 			else if($field.data('autocomplete') == 'postCodes')
 			{
@@ -556,11 +553,11 @@ var Form = (function($){
 					minLength: 2
 				});
 			}
-			
+
 		});
 
 	}
-	
+
 
 	function initConditionals($cnt){
 		$('[data-condition]', $cnt).on('change', function(){
@@ -590,7 +587,6 @@ var Form = (function($){
 			}
 		})
 	}
-
 
 	return {
 		initialise: initialise

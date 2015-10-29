@@ -151,49 +151,18 @@
 
     // Submit formulaire inscription preteur particulier
     $("#form_inscription_preteur_particulier_etape_1").submit(function (event) {
-        var radio = true,
-            id_ville = 'ville_inscription',
-            id_cp = 'postal',
-            cp = $('#' + id_cp).val(),
-            ville = $('#' + id_ville).val(),
-            title_cp = $('#' + id_cp).attr("title"),
-            title_ville = $('#' + id_ville).attr("title");
+        var radio = true;
 
-        if (title_ville == ville) ville = '';
-        if (title_cp == cp) cp = '';
-
-        $.post(add_url + '/ajax/checkCp', {ville: ville, cp: cp}, function (data) {
-            if (data != 'ok') {
-                $('#' + id_cp).addClass('LV_invalid_field');
-                $('#' + id_cp).removeClass('LV_valid_field');
-                radio = false;
-            } else {
-                $('#' + id_cp).addClass('LV_valid_field');
-                $('#' + id_cp).removeClass('LV_invalid_field');
-            }
-        });
+        // controle cp
+        if (controleCp($('#postal'), $('#pays1'), false) == false) {
+            radio = false
+        }
 
         if ($('#mon-addresse').is(':checked') == false) {
-            var id_ville = 'ville2',
-                id_cp = 'postal2',
-                cp = $('#' + id_cp).val(),
-                ville = $('#' + id_ville).val(),
-                title_cp = $('#' + id_cp).attr("title"),
-                title_ville = $('#' + id_ville).attr("title");
-
-            if (title_ville == ville) ville = '';
-            if (title_cp == cp) cp = '';
-
-            $.post(add_url + '/ajax/checkCp', {ville: ville, cp: cp}, function (data) {
-                if (data != 'ok') {
-                    $('#' + id_cp).addClass('LV_invalid_field');
-                    $('#' + id_cp).removeClass('LV_valid_field');
-                    radio = false;
-                } else {
-                    $('#' + id_cp).addClass('LV_valid_field');
-                    $('#' + id_cp).removeClass('LV_invalid_field');
-                }
-            });
+            // controle cp
+            if (controleCp($('#postal2'), $('#pays2'), false) == false) {
+                radio = false
+            }
         }
 
         // date de naissance
@@ -231,7 +200,7 @@
         }
 
         // controle mdp
-        if (controleMdp($('#pass').val(), 'pass') == false) {
+        if (controleMdp($('#pass').val(), 'pass', false) == false) {
             radio = false
         }
 
@@ -250,51 +219,18 @@
 
     // Submit formulaire inscription preteur societe
     $("#form_inscription_preteur_societe_etape_1").submit(function (event) {
-        var radio = true,
-            id_ville = 'ville_inscriptionE',
-            id_cp = 'postalE',
-            cp = $('#' + id_cp).val(),
-            ville = $('#' + id_ville).val(),
-            title_cp = $('#' + id_cp).attr("title"),
-            title_ville = $('#' + id_ville).attr("title");
-
-        if (title_ville == ville) ville = '';
-        if (title_cp == cp) cp = '';
-
-        $.post(add_url + '/ajax/checkCp', {ville: ville, cp: cp}, function (data) {
-            if (data != 'ok') {
-                $('#' + id_cp).addClass('LV_invalid_field');
-                $('#' + id_cp).removeClass('LV_valid_field');
-                radio = false;
-            } else {
-                $('#' + id_cp).addClass('LV_valid_field');
-                $('#' + id_cp).removeClass('LV_invalid_field');
-            }
-        });
-
-        if ($('#mon-addresse').is(':checked') == false) {
-            var id_ville = 'ville2E',
-                id_cp = 'postal2E',
-                cp = $('#' + id_cp).val(),
-                ville = $('#' + id_ville).val(),
-                title_cp = $('#' + id_cp).attr("title"),
-                title_ville = $('#' + id_ville).attr("title");
-
-            if (title_ville == ville) ville = '';
-            if (title_cp == cp) cp = '';
-
-            $.post(add_url + '/ajax/checkCp', {ville: ville, cp: cp}, function (data) {
-                if (data != 'ok') {
-                    $('#' + id_cp).addClass('LV_invalid_field');
-                    $('#' + id_cp).removeClass('LV_valid_field');
-                    radio = false;
-                } else {
-                    $('#' + id_cp).addClass('LV_valid_field');
-                    $('#' + id_cp).removeClass('LV_invalid_field');
-                }
-            });
+        var radio = true;
+        // controle cp
+        if (controleCp($('#postalE'), $('#pays1E'), false) == false) {
+            radio = false
         }
 
+        if ($('#mon-addresse').is(':checked') == false) {
+            // controle cp
+            if (controleCp($('#postal2E'), $('#pays2E'), false) == false) {
+                radio = false
+            }
+        }
         // Civilite vos cordonnées
         if ($('input[type=radio][name=genre1]:checked').length) {
             $('#radio_genre1').css('color', '#727272');
@@ -326,7 +262,7 @@
         }
 
         <?php if ($this->emprunteurCreatePreteur == false) { ?>
-        if (controleMdp($('#passE').val(), 'passE') == false) {
+        if (controleMdp($('#passE').val(), 'passE', false) == false) {
             radio = false
         }
         <?php } ?>

@@ -23,7 +23,7 @@ function AjaxObject()
 		return xhr_object;
 	}
 	else
-	{ 
+	{
 		alert('Votre navigateur ne supporte pas les objets XMLHTTPRequest...');
 		return;
 	}
@@ -34,11 +34,11 @@ function activeModificationsTraduction(etat,url)
 {
 	xhr_object = AjaxObject();
 	var param = no_cache();
-	
+
 	xhr_object.onreadystatechange = function()
 	{
 		if(xhr_object.readyState == 4 && xhr_object.status == 200)
-		{			
+		{
 			var reponse = xhr_object.responseText;
 			document.location.href = url;
 		}
@@ -49,10 +49,10 @@ function activeModificationsTraduction(etat,url)
 
 function session_etape2_lender()
 {
-	
+
 	var radio1 = $('input[name=radio1]:checked', '#form_inscription_preteur_etape2').val();
 
-	var val = { 
+	var val = {
 		bic: $("#bic").val(),
 		iban1: $("#iban-1").val(),
 		iban2: $("#iban-2").val(),
@@ -73,11 +73,11 @@ function session_etape2_lender()
 
 function autocompleteCp(laval,id_cp)
 {
-	var val = { 
+	var val = {
 		ville: laval
 	}
 	$.post(add_url + '/ajax/autocompleteCp', val).done(function(data) {
-		
+
 		if(data != 'nok')
 		{
 			$("#"+id_cp).val(data);
@@ -85,28 +85,10 @@ function autocompleteCp(laval,id_cp)
 	});
 }
 
-function checkCp(id_ville,id_cp)
-{
-	var cp = $('#'+id_cp).val();
-	var ville =  $('#'+id_ville).val();
-	
-	var title_cp = $('#'+id_cp).attr("title");
-	var title_ville = $('#'+id_ville).attr("title");
-	
-	if(title_ville == ville) ville = '';
-	if(title_cp == cp) cp = '';
-	
-	$.post(add_url + '/ajax/checkCp', { ville: ville, cp: cp },function(data){ 
-		if(data != 'ok'){ $('#'+id_cp).addClass('LV_invalid_field'); $('#'+id_cp).removeClass('LV_valid_field'); }
-		else{ $('#'+id_cp).addClass('LV_valid_field'); $('#'+id_cp).removeClass('LV_invalid_field'); }
-	});
-	
-}
-
 function favori(id_project,id,id_client,page)
 {
 	$.post(add_url + '/ajax/favori', {id_project: id_project,id_client: id_client}).done(function(data) {
-		
+
 		if(data != 'nok')
 		{
 			if(data== 'create')
@@ -120,18 +102,18 @@ function favori(id_project,id,id_client,page)
 				if(page != 0)$('#'+id).html('Ajouter à mes favoris <i></i>')
 			}
 		}
-		
+
 	});
 }
 
 function load_transac(year,id_client)
 {
-	var val = { 
+	var val = {
 		year: year,
 		id_client: id_client
 	}
 	$.post(add_url + '/ajax/load_transac', val).done(function(data) {
-		
+
 		if(data != 'nok')
 		{
 			$(".transac").html(data);
@@ -141,13 +123,13 @@ function load_transac(year,id_client)
 
 function load_finances(year,id_lender)
 {
-	
-	var val = { 
+
+	var val = {
 		year: year,
 		id_lender: id_lender
 	}
 	$.post(add_url + '/ajax/load_finances', val).done(function(data) {
-		
+
 		if(data != 'nok')
 		{
 			$(".finances").html(data);
@@ -156,98 +138,130 @@ function load_finances(year,id_lender)
 }
 
 function transfert(id_client)
-{	
+{
 
 	if($("#mot-de-passe").val() != '' && $("#montant").val() != '')
 	{
-		var val = { 
+		var val = {
 			mdp: $("#mot-de-passe").val(),
 			montant: $("#montant").val(),
 			id_client: id_client
 		}
 		$.post(add_url + '/ajax/transfert', val).done(function(data) {
-			
+
 			if(data != 'nok')
 			{
 				if(data == 'noMdp'){$("#mot-de-passe").addClass('LV_invalid_field'); $("#mot-de-passe").removeClass('LV_valid_field');}
 				else {$("#mot-de-passe").addClass('LV_valid_field');$("#mot-de-passe").removeClass('LV_invalid_field');}
-				
+
 				if(data == 'noMontant' || data == 'noMontant2' || data == 'noMontant3'){ $("#montant").addClass('LV_invalid_field'); $("#montant").removeClass('LV_valid_field');}
 				else {$("#montant").addClass('LV_valid_field');$("#montant").removeClass('LV_invalid_field');}
-				
+
 				if(data == 'noMontant3') $(".error_montant_offre").show();
 				else $(".error_montant_offre").hide();
-				
+
 				/*noMdp
 				noMontant
 				noMontant2
 				ok*/
-				
+
 				if(data == 'noBic' || data == 'noIban'){ $(".noBicIban").slideDown();}
-				
+
 				if(data == 'ok')
 				{
-					$(".reponse").slideDown();	
-					
-					var val = { 
+					$(".reponse").slideDown();
+
+					var val = {
 						id_client: id_client
 					}
 					$.post(add_url + '/ajax/solde', val).done(function(data) {
-						
+
 						if(data != 'nok')
 						{
 							$("#solde").html(data);
 						}
 					});
-					
-					
+
+
 				}
-				
+
 			}
 		});
-		
-		
-		
+
+
+
 	}
 	else
 	{
-		
+
 		if($("#mot-de-passe").val() == ''){$("#mot-de-passe").addClass('LV_invalid_field');$("#mot-de-passe").removeClass('LV_valid_field');}
 		else {$("#mot-de-passe").addClass('LV_valid_field');$("#mot-de-passe").removeClass('LV_invalid_field');}
-		
+
 		if($("#montant").val() == $("#montant").attr('title')){ $("#montant").addClass('LV_invalid_field'); $("#montant").removeClass('LV_valid_field');}
 		else {$("#montant").addClass('LV_valid_field');$("#montant").removeClass('LV_invalid_field');}
 	}
 }
 
 // fonction controle mdp
-function controleMdp(mdp,id)
+function controleMdp(mdp,id,async)
 {
-	$.post( add_url+"/ajax/complexMdp", { mdp: mdp }).done(function( data ) {
+	async = typeof async !== 'undefined' ? async : true;
+	var result = false;
+
+	$.ajax({
+		url: add_url+"/ajax/complexMdp",
+		data: { mdp: mdp },
+		method: 'POST',
+		async: async
+	}).done(function(data){
 		if(data == 'ok'){
 			$("#"+id).removeClass("LV_invalid_field");$("#"+id).addClass("LV_valid_field");
-		}
-		else{
+			result = true;
+		} else{
 			$("#"+id).removeClass("LV_valid_field");$("#"+id).addClass("LV_invalid_field");
+			result = false;
 		}
 	});
+	return result;
 }
 
 // fonction controle mdp
 function acceptCookies()
-{	
+{
 	$.post( add_url+"/ajax/acceptCookies").done(function( data ) {
 
 		var obj = jQuery.parseJSON(data);
-		
+
 		if(obj.reponse == true){
 			$('.cookies').slideUp();
 			setTimeout(function(){ $( ".cookies" ).remove(); }, 3000);
-			
+
 		}
 		else{
-			
+
 		}
 	});
 }
 
+function controleCp(elmCp, elmCountry, async)
+{
+	async = typeof async !== 'undefined' ? async : true;
+	var result = false;
+	$.ajax({
+		url: add_url + '/ajax/checkCp/' + elmCp.val() + '/' + elmCountry.val(),
+		method: 'GET',
+		async: async
+	}).done(function(data){
+		if (data == 'ok') {
+			elmCp.addClass('LV_valid_field');
+			elmCp.removeClass('LV_invalid_field');
+			result = true;
+		} else {
+			elmCp.addClass('LV_invalid_field');
+			elmCp.removeClass('LV_valid_field');
+			result = false;
+		}
+	});
+
+	return result;
+}
