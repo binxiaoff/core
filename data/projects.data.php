@@ -475,12 +475,10 @@ class projects extends projects_crud
 
         $sKey      = $oCache->makeKey(Cache::LIST_PROJECTS, $sListStatus);
         $aElements = $oCache->get($sKey);
-        if (false === $aElements) {
 
-            // Liste des projets en funding
+        if (false === $aElements) {
             $alProjetsFunding = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $sTabOrderProject, $iStart, $iLimit);
-            // Nb projets en funding
-            $anbProjects      = $this->countSelectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0');
+            $anbProjects      = $this->countSelectProjectsByStatus($sListStatus . ', 75', ' AND p.status = 0 AND p.display = 0');
             $aElements = array(
                 'lProjectsFunding' => $alProjetsFunding,
                 'nbProjects'       => $anbProjects
