@@ -12,7 +12,7 @@ class universignController extends bootstrap
      */
     private $oLogger;
 
-    function universignController($command, $config, $app)
+    public function universignController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
@@ -27,9 +27,8 @@ class universignController extends bootstrap
         $this->oLogger = new ULogger('Universign', $this->logPath, 'universign.log');
     }
 
-    function _default()
+    public function _default()
     {
-        // chargement des datas
         $clients          = $this->loadData('clients');
         $clients_mandats  = $this->loadData('clients_mandats');
         $companies        = $this->loadData('companies');
@@ -64,34 +63,25 @@ class universignController extends bootstrap
                     // redirection sur page confirmation : mandat signé
                     // on verif si on a le mandat de déjà signé
                     if ($projects_pouvoir->get($clients_mandats->id_project, 'id_project') && $projects_pouvoir->status == 1) {
-                        // mail notifiaction admin
-                        // Adresse notifications
                         $this->settings->get('Adresse notification pouvoir mandat signe', 'type');
                         $destinaire = $this->settings->value;
 
-                        // on recup le projet
                         $projects->get($projects_pouvoir->id_project, 'id_project');
-                        // on recup la companie
                         $companies->get($projects->id_company, 'id_company');
-                        // on recup l'emprunteur
                         $clients->get($companies->id_client_owner, 'id_client');
 
                         $lien_pdf_pouvoir = $this->lurl . $projects_pouvoir->url_pdf;
                         $lien_pdf_mandat  = $this->lurl . $clients_mandats->url_pdf;
 
-                        // Recuperation du modele de mail
                         $this->mails_text->get('notification-pouvoir-mandat-signe', 'lang = "' . $this->language . '" AND type');
 
-                        // Variables du mailing
                         $surl         = $this->surl;
-                        $url          = $this->lurl;
                         $id_projet    = $projects->id_project;
                         $nomProjet    = utf8_decode($projects->title_bo);
                         $nomCompany   = utf8_decode($companies->name);
                         $lien_pouvoir = $lien_pdf_pouvoir;
                         $lien_mandat  = $lien_pdf_mandat;
 
-                        // Attribution des données aux variables
                         $sujetMail = htmlentities($this->mails_text->subject);
                         eval("\$sujetMail = \"$sujetMail\";");
 
@@ -101,21 +91,17 @@ class universignController extends bootstrap
                         $exp_name = $this->mails_text->exp_name;
                         eval("\$exp_name = \"$exp_name\";");
 
-                        // Nettoyage de printemps
                         $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                         $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
+                        $this->email = $this->loadLib('email');
                         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                         $this->email->addRecipient(trim($destinaire));
-                        //$this->email->addBCCRecipient('');
-
                         $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
                         $this->email->setHTMLBody(utf8_decode($texteMail));
+
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                         $this->oLogger->addRecord(ULogger::INFO, 'Mandat and Pouvoir Ok', array($clients_mandats->id_project));
-                        // fin mail
                     } else {
                         $this->oLogger->addRecord(ULogger::INFO, 'Mandat Ok but Pouvoir not signed.', array($clients_mandats->id_project));
                     }
@@ -169,29 +155,22 @@ class universignController extends bootstrap
                         $this->settings->get('Adresse notification pouvoir mandat signe', 'type');
                         $destinaire = $this->settings->value;
 
-                        // on recup le projet
                         $projects->get($projects_pouvoir->id_project, 'id_project');
-                        // on recup la companie
                         $companies->get($projects->id_company, 'id_company');
-                        // on recup l'emprunteur
                         $clients->get($companies->id_client_owner, 'id_client');
 
                         $lien_pdf_pouvoir = $this->lurl . $projects_pouvoir->url_pdf;
                         $lien_pdf_mandat  = $this->lurl . $clients_mandats->url_pdf;
 
-                        // Recuperation du modele de mail
                         $this->mails_text->get('notification-pouvoir-mandat-signe', 'lang = "' . $this->language . '" AND type');
 
-                        // Variables du mailing
                         $surl         = $this->surl;
-                        $url          = $this->lurl;
                         $id_projet    = $projects->id_project;
                         $nomProjet    = utf8_decode($projects->title_bo);
                         $nomCompany   = utf8_decode($companies->name);
                         $lien_pouvoir = $lien_pdf_pouvoir;
                         $lien_mandat  = $lien_pdf_mandat;
 
-                        // Attribution des données aux variables
                         $sujetMail = htmlentities($this->mails_text->subject);
                         eval("\$sujetMail = \"$sujetMail\";");
 
@@ -241,9 +220,8 @@ class universignController extends bootstrap
         }
     }
 
-    function _mandat()
+    public function _mandat()
     {
-        // chargement des datas
         $clients         = $this->loadData('clients');
         $clients_mandats = $this->loadData('clients_mandats');
 
@@ -266,7 +244,7 @@ class universignController extends bootstrap
                 }
                 $this->oLogger->addRecord(ULogger::INFO, 'Mandat status : ' . $sMandatStatus . '. Creation of pdf for send to universign.', array($clients_mandats->id_project));
                 $clients->get($clients_mandats->id_client, 'id_client');
-                //used variables
+
                 $uni_url     = $this->uni_url; // address of the universign server with basic authentication
                 $firstname   = utf8_decode($clients->prenom); // the signatory first name
                 $lastname    = utf8_decode($clients->nom); // the signatory last name
@@ -355,9 +333,8 @@ class universignController extends bootstrap
         }
     }
 
-    function _pouvoir()
+    public function _pouvoir()
     {
-        // chargement des datas
         $companies        = $this->loadData('companies');
         $projects_pouvoir = $this->loadData('projects_pouvoir');
         $clients          = $this->loadData('clients');
@@ -482,14 +459,13 @@ class universignController extends bootstrap
         }
     }
 
-    function _confirmation()
+    public function _confirmation()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = true;
         $this->autoFireHead   = true;
         $this->autoFireFooter = true;
 
-        // chargement des datas
         $clients          = $this->loadData('clients');
         $clients_mandats  = $this->loadData('clients_mandats');
         $companies        = $this->loadData('companies');

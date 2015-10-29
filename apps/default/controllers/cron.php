@@ -877,22 +877,16 @@ class cronController extends bootstrap
                 $donneesEcheances = $tabl[1];
                 $lEcheanciers     = $tabl[2];
 
-                $nbjoursMois = 0;
                 // on crée les echeances de chaques preteurs
                 foreach ($lEcheanciers as $k => $e) {
-                    // on prend le nombre de jours dans le mois au lieu du mois
-                    $nbjourstemp = mktime(0, 0, 0, date("m") + $k, 1, date("Y"));
-                    $nbjoursMois += date('t', $nbjourstemp);
-
                     // Date d'echeance preteur
-                    $dateEcheance = $this->dates->dateAddMoisJours($this->projects->date_fin, 0, $nb_jours + $nbjoursMois);
+                    $dateEcheance = $this->dates->dateAddMoisJoursV3($this->projects->date_fin,$k);
                     $dateEcheance = date('Y-m-d H:i', $dateEcheance) . ':00';
 
                     // Date d'echeance emprunteur
-                    $dateEcheance_emprunteur = $this->dates->dateAddMoisJours($this->projects->date_fin, 0, $nbjoursMois);
+                    $dateEcheance_emprunteur = $this->dates->dateAddMoisJoursV3($this->projects->date_fin,$k);
                     // on retire 6 jours ouvrés
                     $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur, 6);
-
                     $dateEcheance_emprunteur = date('Y-m-d H:i', $dateEcheance_emprunteur) . ':00';
 
                     // particulier
@@ -1012,13 +1006,9 @@ class cronController extends bootstrap
 
         $lEcheanciers = $echeanciers->getSumRembEmpruntByMonths($projects->id_project);
 
-        $nbjoursMois = 0;
         foreach ($lEcheanciers as $k => $e) {
-            $nbjourstemp = mktime(0, 0, 0, date("m") + $k, 1, date("Y"));
-            $nbjoursMois += date('t', $nbjourstemp);
-
             // Date d'echeance emprunteur
-            $dateEcheance_emprunteur = $this->dates->dateAddMoisJours($projects->date_fin, 0, $nbjoursMois);
+            $dateEcheance_emprunteur = $this->dates->dateAddMoisJoursV3($projects->date_fin, $k);
             // on retire 6 jours ouvrés
             $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur, 6);
 
@@ -5827,7 +5817,7 @@ class cronController extends bootstrap
             $dateFinOffreAcceptee   = mktime(21, 0, 0, date('m'), date('d'), date('Y'));
 
             if (time() >= $dateDebutNewProject && time() < $dateFinNewProject) {
-            $id_notif = 1;
+                $id_notif = 1;
 
                 //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
                 $lPreteurs = $clients->selectPreteursByStatusSlim(60);
