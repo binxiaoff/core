@@ -701,15 +701,12 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                     </li>
                 </ul>
             </div>
-            <!-- /.single-project-stats -->
-
             <div class="single-project-price">
                 <ul>
                     <li>
                         <strong><?= number_format($this->payer, $this->decimales, ',', ' ') ?> €</strong>
                         <?= $this->lng['preteur-projets']['de-pretes'] ?>
                     </li>
-
                     <li>
                         <span class="price">
                             <strong><?= number_format($this->resteApayer, $this->decimales, ',', ' ') ?> €</strong>
@@ -717,16 +714,11 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                         </span>
                     </li>
                 </ul>
-
                 <div class="single-project-progress-bar">
                     <span style="width: <?= number_format($this->pourcentage, $this->decimalesPourcentage, '.', '') ?>%"><small><?= number_format($this->pourcentage, $this->decimalesPourcentage, '.', '') ?>%</small></span>
                 </div>
-                <!-- /.single-project-progress-bar -->
             </div>
-            <!-- /.single-project-price -->
-
-            <img src="<?= $this->photos->display($this->projects->photo_projet, 'photos_projets', 'photo_projet_moy') ?>" alt="<?= $this->projects->photo_projet ?>">
-
+            <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $this->projects->photo_projet ?>" alt="<?= $this->projects->photo_projet ?>">
             <?php
             // si on est connecté
             if ($this->clients->checkAccess()) {
@@ -734,10 +726,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
             ?>
             <div class="single-project-actions">
                 <a href="<?= $this->lurl . '/thickbox/pop_up_offer_mobile/' . $this->projects->id_project ?>" class="btn popup-link"><?= $this->lng['preteur-projets']['preter'] ?></a>
-
             </div>
-            <!-- /.single-project-actions -->
-
             <?php
             }
             } else {
