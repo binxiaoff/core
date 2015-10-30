@@ -800,11 +800,24 @@
     </style>
 
     <div id="lesEtapes">
-
         <div id="title_tab_email">Email</div>
-
         <div id="tab_email">
-
+            <div style="float: right; min-width: 550px;">
+                <h2>Historique</h2>
+                <table class="tablesorter">
+                    <tbody>
+                    <?php foreach ($this->aEmails as $aEmail) { ?>
+                        <tr>
+                            <td>
+                                <?php $this->users->get($aEmail['id_user'], 'id_user'); ?>
+                                Envoyé le <?= date('d/m/Y H:i:s', strtotime($aEmail['added'])) ?> par <?= $this->users->name ?><br>
+                                <?= $aEmail['content'] ?>
+                            </td>
+                        </tr>
+                    <?php } ?>
+                    </tbody>
+                </table>
+            </div>
             <div id="edit_projects_tab_email">
                 <h2>Configuration d'envoi d'Email</h2>
                 <input type="checkbox" name="stop_relances" id="stop_relances" value="1" <?= $this->projects->stop_relances == 1 ? 'checked':'' ?>/> <label for="stop_relances">Arrêt des relances</label>

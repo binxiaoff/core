@@ -244,8 +244,6 @@ class dossiersController extends bootstrap
             $this->lProjects_comments = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added ASC');
 
             // on recup l'année du projet
-            //$anneeProjet = explode('-',$this->projects->added);
-            //$anneeProjet = $anneeProjet[0];
             /// date dernier bilan ///
             if ($this->companies_details->date_dernier_bilan == '0000-00-00') {
                 $this->date_dernier_bilan_jour  = '31';
@@ -336,6 +334,8 @@ class dossiersController extends bootstrap
                     $this->completude_wording[] = $aAttachment['label'];
                 }
             }
+
+            $this->aEmails = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'added DESC');
 
             if (isset($this->params[1]) && $this->params[1] == 'altares') {
                 $oAltares = new Altares($this->bdd);
