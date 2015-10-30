@@ -8172,7 +8172,7 @@ class cronController extends bootstrap
                         if ($iStatus === \projects_status::EN_ATTENTE_PIECES && $iReminderIndex === 0) {
                             ++$iReminderIndex;
                         }
-                        $aProjects = $this->projects->getReminders($iStatus, $iDaysInterval, ++$iReminderIndex, $sStartDateField);
+                        $aProjects = $this->projects->getReminders($iStatus, $iDaysInterval, $iReminderIndex++, $sStartDateField);
 
                         foreach ($aProjects as $iProjectId) {
                             if ($this->mails_text->get('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, 'lang = "' . $this->language . '" AND type')) {
