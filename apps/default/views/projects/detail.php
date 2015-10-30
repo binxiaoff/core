@@ -113,7 +113,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                     <div class="main-project-info clearfix">
                         <?php if ($this->projects->photo_projet != '') { ?>
                         <div class="img-holder borderless left">
-                            <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $pf['photo_projet'] ?>" alt="<?= $this->projects->photo_projet ?>">
+                            <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $this->projects->photo_projet ?>" alt="<?= $this->projects->photo_projet ?>">
                             <?php if ($this->projects->lien_video != '') { ?>
                             <a class="link" target="_blank" href="<?= $this->projects->lien_video ?>"><?= $this->lng['preteur-projets']['lancer-la-video'] ?></a>
                             <?php } ?>
