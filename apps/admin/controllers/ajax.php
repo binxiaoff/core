@@ -3106,11 +3106,7 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_client']) && isset($_POST['content']) && isset($_POST['liste'])) {
-
-            $content = utf8_decode($_POST['liste']) . ($_POST['content'] != '' ? '<br>' : '') . nl2br(htmlentities(utf8_decode($_POST['content'])));
-
-            $_SESSION['content_email_completude'][$_POST['id_client']] = $content;
-            //$_SESSION['content_email_completude'][$_POST['id_client']]['liste_piece_manquante'] = $_POST['liste'];
+            $_SESSION['content_email_completude'][$_POST['id_client']] = utf8_decode($_POST['liste']) . ($_POST['content'] != '' ? '<br>' : '') . nl2br(htmlentities(utf8_decode($_POST['content'])));
             echo 'ok';
         } else {
             echo 'nok';
@@ -3122,9 +3118,7 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_project']) && isset($_POST['content']) && isset($_POST['list'])) {
-            $content = $_POST['list'] . ($_POST['content'] != '' ? '<br>' : '') . nl2br(htmlentities($_POST['content'], ENT_COMPAT, 'UTF-8'));
-
-            $_SESSION['project_submission_files_list'][$_POST['id_project']] = $content;
+            $_SESSION['project_submission_files_list'][$_POST['id_project']] = '<ul>' . utf8_decode($this->ficelle->speChar2HtmlEntities($_POST['list'])) . '</ul>' . nl2br(htmlentities(utf8_decode($_POST['content'])));
             echo 'ok';
         } else {
             echo 'nok';

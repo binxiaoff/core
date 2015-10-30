@@ -5350,7 +5350,6 @@ class cronController extends bootstrap
     public function _relance_completude()
     {
         if (true === $this->startCron('relanceCompletude', 5)) {
-
             $this->clients                = $this->loadData('clients');
             $this->clients_status         = $this->loadData('clients_status');
             $this->clients_status_history = $this->loadData('clients_status_history');
@@ -7463,7 +7462,6 @@ class cronController extends bootstrap
                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                                 } else {
                                     $this->email->addRecipient(trim($clients->email));
-                                    //$this->email->addRecipient('d.courtier@relance.fr');
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 }
                             }
@@ -8131,7 +8129,7 @@ class cronController extends bootstrap
         ini_set('memory_limit', '1G');
         ini_set('max_execution_time', 300);
 
-        if ($this->startCron('relance completude', 5)) {
+        if ($this->startCron('relance completude emprunteurs', 5)) {
             $this->prescripteurs                = $this->loadData('prescripteurs');
             $this->projects_status              = $this->loadData('projects_status');
             $this->projects_status_history      = $this->loadData('projects_status_history');

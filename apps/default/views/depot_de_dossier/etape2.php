@@ -179,15 +179,15 @@
         var error = false;
 
         $('input[type=radio]').on('change click', function() {
-           $(this).parent('.radio-holder').css('color', validColor);
+           $(this).parent('.radio-holder').css('color', validColor).css('font-weight', '');
         });
 
         $('#cgv').on('change click', function() {
-            $('.cgv').css('color', validColor);
+            $('.cgv').css('color', validColor).css('font-weight', '');
         });
 
         if ($('input[type=radio][name=civilite]:checked').length == 0) {
-            $('input[type=radio][name=civilite]').parent('.radio-holder').css('color', errorColor);
+            $('input[type=radio][name=civilite]').parent('.radio-holder').css('color', errorColor).css('font-weight', 'bold');
             error = true;
         }
         if ($('input[type=radio][name=gerant]:checked').length == 0) {
@@ -199,7 +199,7 @@
             error = true;
         }
         if ($('input[type=radio][name=gerant]:checked').val() == 'oui' && $('#cgv').is(':checked') == false) {
-            $('.cgv').css('color', errorColor);
+            $('.cgv').css('color', errorColor).css('font-weight', 'bold');
             error = true;
         }
         if ($('input[type=radio][name=bilans]').length && $('input[type=radio][name=bilans]:checked').length == 0) {

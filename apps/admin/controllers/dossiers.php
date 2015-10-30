@@ -3840,8 +3840,8 @@ class dossiersController extends bootstrap
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
             $sujetMail = utf8_decode(strtr($this->mails_text->subject, $tabVars));
-            $texteMail = htmlentities(strtr($this->mails_text->content, $tabVars));
-            $exp_name  = htmlentities(strtr($this->mails_text->exp_name, $tabVars));
+            $texteMail = strtr($this->mails_text->content, $tabVars);
+            $exp_name  = strtr($this->mails_text->exp_name, $tabVars);
 
             $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
@@ -3890,7 +3890,7 @@ class dossiersController extends bootstrap
             'prenom'               => $oClients->prenom,
             'raison_sociale'       => $oCompanies->name,
             'lien_reprise_dossier' => $this->furl . '/depot_de_dossier/fichiers/' . $oProjects->hash,
-            'liste_pieces'         => isset($_SESSION['project_submission_files_list'][$oProjects->id_project]) ? $_SESSION['project_submission_files_list'][$oProjects->id_project] : '',
+            'liste_pieces'         => isset($_SESSION['project_submission_files_list'][$oProjects->id_project]) ? utf8_encode($_SESSION['project_submission_files_list'][$oProjects->id_project]) : '',
             'lien_fb'              => $lien_fb,
             'lien_tw'              => $lien_tw,
             'lien_stop_relance'    => $this->furl . '/depot_de_dossier/emails/' . $oProjects->hash,

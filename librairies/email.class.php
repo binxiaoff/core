@@ -305,6 +305,7 @@ abstract class Mailer
                 }
 
                 if (defined('ENVIRONMENT') && ENVIRONMENT !== 'prod') {
+                    // @todo once mailcatcher is installed on every dev/demo, email domain check may be deleted (not subject prefixing)
                     $aRecipients = explode(', ', $recipients);
 
                     foreach ($aRecipients as $iIndex => $sRecipient) {

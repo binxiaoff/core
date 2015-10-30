@@ -835,7 +835,21 @@ class depot_de_dossierController extends bootstrap
 
         $this->lng['espace-emprunteur'] = $this->ln->selectFront('depot-de-dossier-espace-emprunteur', $this->language, $this->App);
 
+        $this->sAttachmentList  = '';
         $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects($this->language);
+
+        $this->projects_last_status_history = $this->loadData('projects_last_status_history');
+        $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
+        $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
+
+        if (false === empty($this->projects_status_history->content)) {
+            $oDOMElement = new DOMDocument();
+            $oDOMElement->loadHTML($this->projects_status_history->content);
+            $oList = $oDOMElement->getElementsByTagName('ul');
+            if ($oList->length > 0 && $oList->item(0)->childNodes->length > 0) {
+                $this->sAttachmentList = $oList->item(0)->C14N();
+            }
+        }
 
         if (isset($_SESSION['forms']['depot-de-dossier-fichiers'])) {
             $this->aForm   = isset($_SESSION['forms']['depot-de-dossier-fichiers']['values']) ? $_SESSION['forms']['depot-de-dossier-fichiers']['values'] : array();
