@@ -3836,7 +3836,7 @@ class dossiersController extends bootstrap
             $this->mails_text->get('depot-dossier-relance-status-20-1', 'lang = "' . $this->language . '" AND type');
 
             $varMail = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
-            $varMail['sujet'] = $this->mails_text->subject;
+            $varMail['sujet'] = utf8_decode($this->mails_text->subject);
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
             $sujetMail = utf8_decode(strtr($this->mails_text->subject, $tabVars));
