@@ -118,8 +118,8 @@ class projects_status extends projects_status_crud
 
     public function getLastStatut($id_project)
     {
-        $result            = $this->bdd->query('SELECT id_project_status FROM `projects_status_history` WHERE id_project = ' . $id_project . ' ORDER BY added DESC LIMIT 1');
-        $id_project_statut = (int)($this->bdd->result($result, 0, 0));
+        $result            = $this->bdd->query('SELECT id_project_status FROM projects_status_history WHERE id_project = ' . $id_project . ' ORDER BY id_project_status_history DESC LIMIT 1');
+        $id_project_statut = (int) $this->bdd->result($result, 0, 0);
 
         return parent::get($id_project_statut, 'id_project_status');
     }
