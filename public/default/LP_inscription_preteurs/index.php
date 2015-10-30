@@ -15,9 +15,10 @@
     <meta name="viewport" content="initial-scale = 1.0,maximum-scale = 1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes">
 
-    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
     <link href="css/font.css" type="text/css" rel="stylesheet" media="all">
-      <link href="css/base.css" type="text/css" rel="stylesheet" media="all">
+    <link href="css/base.css" type="text/css" rel="stylesheet" media="all">
     <link href="css/global.css" type="text/css" rel="stylesheet" media="all">
     <link href="css/responsive.css" type="text/css" rel="stylesheet" media="all">
     <link href="css/jquery.c2selectbox.css" type="text/css" rel="stylesheet" media="all" />
@@ -35,6 +36,7 @@
     '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-MB66VL');</script>
     <!-- End Google Tag Manager -->
+
 </head>
 <body>
     <?php
@@ -89,8 +91,10 @@
                     <input type="text" id="inscription_question" name="question" placeholder="Choisissez une question secr&egrave;te" maxlength="255">
                     <input type="text" id="inscription_reponse" name="reponse" placeholder="Choisissez une r&eacute;ponse" maxlength="255">
                     <input type="text" id="inscription_adresse_fiscale" name="adresse_fiscale" placeholder="Adresse" maxlength="255">
-                    <input type="text" id="inscription_ville_fiscale" name="ville_fiscale" placeholder="Ville" maxlength="255">
-                    <input type="text" id="inscription_cp_fiscale" name="cp_fiscale" placeholder="Code postal" maxlength="5">
+                    <input type="text" id="inscription_cp_fiscale" name="cp_fiscale" placeholder="Code postal" maxlength="5"
+                           data-autocomplete="post_code" onblur="controleCp($('#inscription_cp_fiscale'), $('#inscription_id_pays_fiscale'))" />
+                    <input type="text" id="inscription_ville_fiscale" name="ville_fiscale" placeholder="Ville" maxlength="255" data-autocomplete="city" >
+                    <input type="hidden" id="insee" class="insee" name="insee">
                     <select id="inscription_id_pays_fiscale" name="id_pays_fiscale" class="custom-select">
                         <option value="">Pays</option>
                         <option value="1">France </option>
@@ -294,8 +298,9 @@
                     </div>
                     <div id="inscription_correspondance">
                         <input type="text" id="inscription_adresse_correspondance" name="adresse" placeholder="Adresse" maxlength="255">
-                        <input type="text" id="inscription_ville_correspondance" name="ville" placeholder="Ville" maxlength="255">
-                        <input type="text" id="inscription_cp_correspondance" name="cp" placeholder="Code postal" maxlength="5">
+                        <input type="text" id="inscription_cp_correspondance" name="cp" placeholder="Code postal" maxlength="5"
+                               data-autocomplete="post_code" onblur="controleCp($('#inscription_cp_correspondance'), $('#inscription_id_pays_correspondance'))">
+                        <input type="text" id="inscription_ville_correspondance" name="ville" placeholder="Ville" maxlength="255" data-autocomplete="city">
                         <select id="inscription_id_pays_correspondance" name="id_pays" class="custom-select">
                             <option value="">Pays</option>
                             <option value="1">France </option>
@@ -538,7 +543,9 @@
                     <div class="clear"></div>
                     <input type="text" id="inscription_date_naissance" name="date_naissance" placeholder="Date de naissance (jj/mm/aaaa)" maxlength="10">
                     <p id="errorAge"></p>
-                    <input type="text" id="inscription_commune_naissance" name="commune_naissance" placeholder="Commune de naissance" maxlength="255">
+                    <input type="text" id="inscription_commune_naissance" name="commune_naissance" placeholder="Commune de naissance" maxlength="255"
+                           data-autocomplete="birth_city" onblur="controleCity($('#inscription_commune_naissance'), $('#inscription_id_pays_naissance'))"/>
+                    <input type="hidden" name="insee_birth" class="insee_birth" id="insee_birth">
                     <select id="inscription_id_pays_naissance" name="id_pays_naissance" class="custom-select">
                         <option value="">Pays de naissance</option>
                         <option value="1">France </option>
@@ -1046,6 +1053,7 @@
     <script src="js/jquery.touchSwipe.min.js" type="text/javascript"></script>
     <script src="https://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/md5.js"></script>
     <script src="js/global.js" type="text/javascript"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
     <script>
         $(function () {
 
@@ -1096,6 +1104,7 @@
                 var inscription_adresse_fiscale = $.trim($('#inscription_adresse_fiscale').val());
                 var inscription_ville_fiscale = $.trim($('#inscription_ville_fiscale').val());
                 var inscription_cp_fiscale = $.trim($('#inscription_cp_fiscale').val());
+                var insee = $('#insee').val();
                 var inscription_id_pays_fiscale = $('#inscription_id_pays_fiscale').val();
                 // var inscription_check_adresse = $('#inscription_check_adresse').val();
                 var inscription_adresse_correspondance = $.trim($('#inscription_adresse_correspondance').val());
@@ -1107,6 +1116,7 @@
                 var inscription_date_naissance = $('#inscription_date_naissance').val();
                 var inscription_commune_naissance = $.trim($('#inscription_commune_naissance').val());
                 var inscription_id_pays_naissance = $('#inscription_id_pays_naissance').val();
+                var insee_birth = $('#insee_birth').val();
                 var inscription_cgv = $('#inscription_cgv');
                 var utm_source = '<?php echo $source; ?>';
                 var utm_source2 = '<?php echo $source2; ?>';
@@ -1118,29 +1128,28 @@
 
                     if(!inscription_civilite) {
                         $('#inscription_civilite').next('.c2-sb-wrap').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_nom) {
                         $('#inscription_nom').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_prenom) {
                         $('#inscription_prenom').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_email) {
                         $('#inscription_email').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if (!validateEmail(inscription_email)) {
                         $('#inscription_email').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
-                    if (erreur == 1) { return false; }
-                    else {
-
+                    if (erreur == 1) {
+                        return false;
+                    } else {
                         // AJAX
-
                         var key = 'unilend';
                         var hash = CryptoJS.MD5(key);
                         var time = $.now();
@@ -1194,11 +1203,6 @@
                                     });
                                 }
                                 else {
-                                    var key = 'unilend';
-                                    var hash = CryptoJS.MD5(key);
-                                    var time = $.now();
-                                    var token = $.base64.btoa(hash+'-'+time);
-
                                     $.each( parsedDate.reponse, function( index, value ){
                                         var intituleErreur = value.erreur;
 
@@ -1260,95 +1264,96 @@
 
                     if(!inscription_mdp) {
                         $('#inscription_mdp').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(inscription_mdp.length < 6) {
                         $('#inscription_mdp').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(inscription_mdp.replace(/[^A-Z]/g, "").length == 0) {
                         $('#inscription_mdp').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_mdp2) {
                         $('#inscription_mdp2').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(inscription_mdp2 != inscription_mdp) {
                         $('#inscription_mdp2').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_adresse_fiscale) {
                         $('#inscription_adresse_fiscale').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_ville_fiscale) {
                         $('#inscription_ville_fiscale').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_cp_fiscale) {
                         $('#inscription_cp_fiscale').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
+                    } else if (controleCp($('#inscription_cp_fiscale'),$('#inscription_id_pays_fiscale'),false) == false) {
+                        erreur = 1;
                     }
                     if(!$.isNumeric(inscription_cp_fiscale)) {
                         $('#inscription_cp_fiscale').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_id_pays_fiscale) {
                         $('#inscription_id_pays_fiscale').next('.c2-sb-wrap').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
-                    if(!inscription_adresse_correspondance && !inscription_ville_correspondance && !inscription_cp_correspondance && !inscription_id_pays_correspondance) {
+                    if ($('#inscription_check_adresse').is(':checked')) {
                         inscription_adresse_correspondance = '';
                         inscription_ville_correspondance = '';
                         inscription_cp_correspondance = '';
                         inscription_id_pays_correspondance = '';
-                    }
-                    else {
+                    } else {
                         if (!inscription_adresse_correspondance) {
                             $('#inscription_adresse_correspondance').addClass('error');
-                            var erreur = 1;
+                            erreur = 1;
                         }
                         if(!inscription_ville_correspondance) {
                             $('#inscription_ville_correspondance').addClass('error');
-                            var erreur = 1;
+                            erreur = 1;
                         }
                         if(!inscription_cp_correspondance) {
                             $('#inscription_cp_correspondance').addClass('error');
-                            var erreur = 1;
+                            erreur = 1;
                         }
                         if(!$.isNumeric(inscription_cp_correspondance)) {
                             $('#inscription_cp_correspondance').addClass('error');
-                            var erreur = 1;
+                            erreur = 1;
                         }
                         if(!inscription_id_pays_correspondance) {
                             $('#inscription_id_pays_correspondance').next('.c2-sb-wrap').addClass('error');
-                            var erreur = 1;
+                            erreur = 1;
                         }
                     }
                     if(!inscription_telephone) {
                         $('#inscription_telephone').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(inscription_telephone.length != 10 || !$.isNumeric(inscription_telephone)) {
                         $('#inscription_telephone').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_id_nationalite) {
                         $('#inscription_id_nationalite').next('.c2-sb-wrap').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     var verif_date = 0;
                     if(!inscription_date_naissance) {
                         $('#inscription_date_naissance').addClass('error');
-                        var erreur = 1;
-                        var verif_date = 1;
+                        erreur = 1;
+                        verif_date = 1;
                     }
                     if (!validateDate(inscription_date_naissance)) {
                         $('#inscription_date_naissance').addClass('error');
                         if(verif_date == 0) { $('#errorAge').html('La date doit &ecirc;tre au format jj/mm/aaaa'); }
-                        var erreur = 1;
-                        var verif_date = 1;
+                        erreur = 1;
+                        verif_date = 1;
                     }
                     var date_naissance = inscription_date_naissance;
                     var split_date = date_naissance.split('/');
@@ -1356,20 +1361,20 @@
                     if(split_date[2] > annee) {
                         $('#inscription_date_naissance').addClass('error');
                         if(verif_date == 0) { $('#errorAge').html('Ann&eacute;e invalide'); }
-                        var erreur = 1;
-                        var verif_date = 1;
+                        erreur = 1;
+                        verif_date = 1;
                     }
                     if(split_date[1] > 12) {
                         $('#inscription_date_naissance').addClass('error');
                         if(verif_date == 0) { $('#errorAge').html('Mois invalide'); }
-                        var erreur = 1;
-                        var verif_date = 1;
+                        erreur = 1;
+                        verif_date = 1;
                     }
                     if(split_date[0] > 31) {
                         $('#inscription_date_naissance').addClass('error');
                         if(verif_date == 0) { $('#errorAge').html('Jours invalide'); }
-                        var erreur = 1;
-                        var verif_date = 1;
+                        erreur = 1;
+                        verif_date = 1;
                     }
 
                     var majeur = 0;
@@ -1388,21 +1393,26 @@
                     if(majeur == 0 && verif_date == 0) {
                         $('#inscription_date_naissance').addClass('error');
                         $('#errorAge').html('Vous devez &ecirc;tre majeur');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_commune_naissance) {
                         $('#inscription_commune_naissance').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
+                    } else if (false == controleCity($('#inscription_commune_naissance'), $('#inscription_id_pays_naissance'), false)) {
+                        erreur = 1;
                     }
                     if(!inscription_id_pays_naissance) {
                         $('#inscription_id_pays_naissance').next('.c2-sb-wrap').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
+
                     if(!inscription_cgv.is(":checked")) {
                         $('#inscription_cgv').parent().find('label').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
-                    if(erreur == 1) { return false; }
+                    if(erreur == 1) {
+                        return false;
+                    }
                     else {
 
                         // AJAX
@@ -1411,37 +1421,40 @@
                         var hash = CryptoJS.MD5(key);
                         var time = $.now();
                         var token = $.base64.btoa(hash+'-'+time);
+                        var passwordMd5 = CryptoJS.MD5(inscription_mdp);
 
-                        var date = annee + '-' + mois + '-' + jour + ' ' + heure + ':' + minutes + ':' + secondes;
-                        email = inscription_email;
-                        nom = inscription_nom;
-                        prenom = inscription_prenom;
-                        civilite = inscription_civilite;
-                        var password = CryptoJS.MD5(inscription_mdp);
-                        var question = inscription_question;
-                        var reponse = inscription_reponse;
-                        var adresse_fiscale = inscription_adresse_fiscale;
-                        var ville_fiscale = inscription_ville_fiscale;
-                        var cp_fiscale = inscription_cp_fiscale;
-                        var id_pays_fiscale = inscription_id_pays_fiscale;
-                        var adresse = inscription_adresse_correspondance;
-                        var ville = inscription_ville_correspondance;
-                        var cp = inscription_cp_correspondance;
-                        var id_pays = inscription_id_pays_correspondance;
-                        var telephone = inscription_telephone;
-                        var id_nationalite = inscription_id_nationalite;
-                        var new_date_naissance = split_date[2] + '-' + split_date[1] + '-' + split_date[0];
-                        var commune_naissance = inscription_commune_naissance;
-                        var id_pays_naissance = inscription_id_pays_naissance;
-                        var signature_cgv = 1;
-                        var forme_preteur = 1;
-
-                        var DATA = '&token=' + token + '&utm_source=' + utm_source + '&utm_source2=' + utm_source2 + '&slug_origine=' + slug_origine + '&date=' + date + '&email=' + email + '&nom=' + nom + '&prenom=' + prenom + '&civilite=' + civilite + '&password=' + password + '&question=' + question + '&reponse=' + reponse + '&adresse_fiscale=' + adresse_fiscale + '&ville_fiscale=' + ville_fiscale + '&cp_fiscale=' + cp_fiscale + '&id_pays_fiscale=' + id_pays_fiscale + '&adresse=' + adresse + '&ville=' + ville + '&cp=' + cp + '&id_pays=' + id_pays + '&telephone=' + telephone + '&id_nationalite=' + id_nationalite + '&date_naissance=' + new_date_naissance + '&commune_naissance=' + commune_naissance + '&id_pays_naissance=' + id_pays_naissance + '&signature_cgv=' + signature_cgv + '&forme_preteur=' + forme_preteur;
-
+                        var DATA = '';
                         $.ajax({
-                            type: "POST",
-                            url: "<?= $url_site ?>/collect/inscription",
-                            data: DATA,
+                            method: "POST",
+                            url: "/collect/inscription",
+                            data: 'token=' + token
+                                + '&utm_source=' + utm_source
+                                + '&utm_source2=' + utm_source2
+                                + '&slug_origine=' + slug_origine
+                                + '&date=' + annee + '-' + mois + '-' + jour + ' ' + heure + ':' + minutes + ':' + secondes
+                                + '&email=' + inscription_email
+                                + '&nom=' + inscription_nom
+                                + '&prenom=' + inscription_prenom
+                                + '&civilite=' + inscription_civilite
+                                + '&password=' + passwordMd5
+                                + '&question=' + inscription_question
+                                + '&reponse=' + inscription_reponse
+                                + '&adresse_fiscale=' + inscription_adresse_fiscale
+                                + '&ville_fiscale=' + inscription_ville_fiscale
+                                + '&cp_fiscale=' + inscription_cp_fiscale
+                                + '&id_pays_fiscale=' + inscription_id_pays_fiscale
+                                + '&adresse=' + inscription_adresse_correspondance
+                                + '&ville=' + inscription_ville_correspondance
+                                + '&cp=' + inscription_cp_correspondance
+                                + '&id_pays=' + inscription_id_pays_correspondance
+                                + '&telephone=' + inscription_telephone
+                                + '&id_nationalite=' + inscription_id_nationalite
+                                + '&date_naissance=' + split_date[2] + '-' + split_date[1] + '-' + split_date[0]
+                                + '&commune_naissance=' + inscription_commune_naissance
+                                + '&id_pays_naissance=' + inscription_id_pays_naissance
+                                + '&insee_birth=' + insee_birth
+                                + '&signature_cgv=' + 1
+                                + '&forme_preteur=' + 1,
                             success: function(data){
                                 var parsedDate = jQuery.parseJSON(data);
 
@@ -1454,11 +1467,6 @@
                                     else if(idSubmit == "voir_projets") { $(location).attr('href', '<?= $url_site ?>/projets-a-financer'); }
                                 }
                                 else {
-                                    var key = 'unilend';
-                                    var hash = CryptoJS.MD5(key);
-                                    var time = $.now();
-                                    var token = $.base64.btoa(hash+'-'+time);
-
                                     $.each( parsedDate.reponse, function( index, value ){
                                         var intituleErreur = value.erreur;
 
@@ -1528,24 +1536,114 @@
                 }
             });
 
-            function validateEmail(emailAddress) {
-                var emailRegex = new RegExp(/^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/);
-                var valid = emailRegex.test(emailAddress);
-                if (!valid) {
-                    return false;
-                } else
-                    return true;
-            }
-
-            function validateDate(date) {
-                var dateRegex = new RegExp(/^([0-9]{2}[\/][0-9]{2}[\/][0-9]{4})$/);
-                var valid = dateRegex.test(date);
-                if (!valid) {
-                    return false;
-                } else
-                    return true;
-            }
+            initAutocompleteCity();
         });
+        function validateEmail(emailAddress) {
+            var emailRegex = new RegExp(/^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/);
+            var valid = emailRegex.test(emailAddress);
+            if (!valid) {
+                return false;
+            } else
+                return true;
+        }
+
+        function validateDate(date) {
+            var dateRegex = new RegExp(/^([0-9]{2}[\/][0-9]{2}[\/][0-9]{4})$/);
+            var valid = dateRegex.test(date);
+            if (!valid) {
+                return false;
+            } else
+                return true;
+        }
+        function initAutocompleteCity()
+        {
+            $('[data-autocomplete]').each(function()
+            {
+                if($(this).data('autocomplete') == 'city' || $(this).data('autocomplete') == 'post_code' || $(this).data('autocomplete') == 'birth_city') {
+                    $(this).autocomplete({
+                        source: '/ajax/get_cities/',
+                        minLength: 3,
+                        search: function( event, ui ) {
+                            switch ($(this).data('autocomplete')) {
+                                case 'birth_city' :
+                                    $(this).siblings(".insee_birth").val('');
+                                    break;
+                                case 'city' :
+                                case 'post_code' :
+                                    $(this).siblings(".insee").val('');
+                                    break;
+                            }
+                        },
+                        select: function( event, ui ) {
+                            event.preventDefault();
+
+                            var myRegexp = /(.+)\s\((.+)\)/;
+                            var match = myRegexp.exec(ui.item.label);
+
+                            if(match != null) {
+                                switch ($(this).data('autocomplete')) {
+                                    case 'birth_city' :
+                                        $(this).val(match[1]);
+                                        $(this).siblings(".insee_birth").val(ui.item.value);
+                                        break;
+                                    case 'city' :
+                                        $(this).val(match[1]);
+                                        $(this).siblings("[data-autocomplete='post_code']").val( match[2]);
+                                        $(this).siblings(".insee").val(ui.item.value);
+                                        break;
+                                    case 'post_code' :
+                                        $(this).siblings("[data-autocomplete='city']").val(match[1]);
+                                        $(this).val( match[2]);
+                                        $(this).siblings(".insee").val(ui.item.value);
+                                        break;
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        }
+        function controleCp(elmCp, elmCountry, async)
+        {
+            async = typeof async !== 'undefined' ? async : true;
+            var result = false;
+            $.ajax({
+                url: '/ajax/checkCp/' + elmCp.val() + '/' + elmCountry.val(),
+                method: 'GET',
+                async: async
+            }).done(function(data){
+                if (data == 'ok') {
+                    elmCp.removeClass('error');
+                    result = true;
+                } else {
+                    elmCp.addClass('error');
+                    result = false;
+                }
+            });
+
+            return result;
+        }
+
+        function controleCity(elmCity, elmCountry, async)
+        {
+            async = typeof async !== 'undefined' ? async : true;
+            var result = false;
+            $.ajax({
+                url: '/ajax/checkCity/' + elmCity.val() + '/' + elmCountry.val(),
+                method: 'GET',
+                async: async
+            }).done(function(data){
+                if (data == 'ok') {
+                    elmCity.removeClass('error');
+                    result = true;
+                } else {
+                    elmCity.addClass('error');
+                    result = false;
+                }
+            });
+
+            return result;
+        }
     </script>
-</body>
+	</body>
 </html>

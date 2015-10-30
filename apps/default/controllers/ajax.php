@@ -74,7 +74,7 @@ class ajaxController extends bootstrap
             /** @var villes $oVille */
             $oVille = $this->loadData('villes');
 
-            if ($oVille->exist($this->params[0], 'ville')) {
+            if ($oVille->exist(urldecode($this->params[0]), 'ville')) {
                 $response = 'ok';
             }
             unset($oVille);
