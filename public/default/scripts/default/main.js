@@ -150,7 +150,7 @@ function decompte(time, id) {
 
     // on fait en sorte d'etre a lheure fr quelque soit le fuseau horaire
     var ecartFuseau = aujourdhui.getTimezoneOffset();
-    aujourdhui.setHours(aujourdhui.getHours() + (ecartFuseau / 60 + 2));
+    aujourdhui.setHours(aujourdhui.getHours() + (ecartFuseau / 60 + 1));
 
     time_tmp = parseInt(aujourdhui.getTime() / 1000, 10);
     restant  = time - time_tmp;
