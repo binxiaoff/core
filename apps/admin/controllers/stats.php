@@ -4,6 +4,9 @@ class statsController extends bootstrap
 {
     public function __construct(&$command, $config, $app)
     {
+        ini_set('memory_limit', '2G');
+        ini_set('max_execution_time', 1200);
+
         parent::__construct($command, $config, $app);
 
         $this->catchAll = true;
@@ -648,41 +651,10 @@ class statsController extends bootstrap
             LEFT JOIN clients_adresses ca ON c.id_client = ca.id_client
             WHERE c.id_client <> 'NULL'";
 
-        $this->result = $this->bdd->query($sql);
-
-        if (isset($this->params[0]) && $this->params[0] == "csv") {
-            $this->autoFireView = false;
-            $this->hideDecoration();
-
-            $i = 1;
-            $csv = '';
-            while ($e = $this->bdd->fetch_array($this->result)) {
-                if ($i == 1) {
-                    foreach ($e as $key => $field) {
-                        if (! is_numeric($key)) {
-                            $csv .= $key . "; ";
-                        }
-                    }
-                    $csv .= " \n";
-                }
-
-                foreach ($e as $key => $field) {
-                    if (! is_numeric($key)) {
-                        if ($key == 'Adresse') {
-                            $field = preg_replace('~[\r\n\t]+~', '', $field);
-                        }
-                        $csv .= $field . "; ";
-                    }
-                }
-                $csv .= " \n";
-                $i++;
-            }
-
-            $titre = 'requete_etude_base_preteur_' . date('Ymd');
-            header("Content-type: application/vnd.ms-excel");
-            header("Content-disposition: attachment; filename=\"" . $titre . ".csv\"");
-
-            print(utf8_decode($csv));
+        if (isset($this->params[0]) && $this->params[0] === 'csv') {
+            $this->exportQueryCSV($sql, 'requete_etude_base_preteur_' . date('Ymd'));
+        } else {
+            $this->result = $this->bdd->query($sql);
         }
     }
 
@@ -1268,29 +1240,7 @@ class statsController extends bootstrap
             ORDER BY l.added DESC';
 
         if (isset($this->params[0]) && $this->params[0] == 'csv') {
-            $this->autoFireView = false;
-            $this->hideDecoration();
-
-            $titre = 'infos_preteurs_' . date('Ymd');
-            header("Content-type: application/vnd.ms-excel");
-            header("Content-disposition: attachment; filename=\"" . $titre . ".csv\"");
-
-            $header = "id_client;civilite;nom;nom_usage;prenom;fonction;naissance;telephone;email;source;adresse;cp;ville;adresse_fiscal;ville_fiscal;cp_fiscal;exonere;debut_exoneration;fin_exoneration;origine_des_fonds;Entreprise;id_company;forme_juridique;siren;execices_comptables;rcs;tribunal_com;activite;lieu_exploi;capital;date_creation;adresse_company;cp_company;ville_company;telephone_company;status_client;status_conseil_externe_entreprise;civilite_dirigeant;nom_dirigeant;prenom_dirigeant;fonction_dirigeant;email_dirigeant;phone_dirigeant;sector;risk;code_banque";
-            $header = utf8_encode($header);
-
-            $csv = "";
-            $csv .= $header . " \n";
-
-            $resultat = $this->bdd->query($this->sql);
-            while ($record = $this->bdd->fetch_array($resultat)) {
-
-                for ($a = 0; $a <= 45; $a++) {
-                    $csv .= $record[$a] . ";";
-                }
-                $csv .= " \n";
-            }
-
-            print(utf8_decode($csv));
+            $this->exportQueryCSV($this->sql, 'infos_preteurs_' . date('Ymd'), array('id_client', 'civilite', 'nom', 'nom_usage', 'prenom', 'fonction', 'naissance', 'telephone', 'email', 'source', 'adresse', 'cp', 'ville', 'adresse_fiscal', 'ville_fiscal', 'cp_fiscal', 'exonere', 'debut_exoneration', 'fin_exoneration', 'origine_des_fonds', 'Entreprise', 'id_company', 'forme_juridique', 'siren', 'execices_comptables', 'rcs', 'tribunal_com', 'activite', 'lieu_exploi', 'capital', 'date_creation', 'adresse_company', 'cp_company', 'ville_company', 'telephone_company', 'status_client', 'status_conseil_externe_entreprise', 'civilite_dirigeant', 'nom_dirigeant', 'prenom_dirigeant', 'fonction_dirigeant', 'email_dirigeant', 'phone_dirigeant', 'sector', 'risk', 'code_banque'));
         }
     }
 
@@ -1418,7 +1368,8 @@ class statsController extends bootstrap
     private function exportQueryCSV($sQuery, $sFileName, array $aHeaders = null)
     {
         $aResult = array();
-        while ($aRow = $this->bdd->fetch_assoc($this->bdd->query($sQuery))) {
+        $rQuery = $this->bdd->query($sQuery);
+        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
             $aResult[] = $aRow;
         }
 
@@ -1431,11 +1382,7 @@ class statsController extends bootstrap
 
     private function exportCSV($aData, $sFileName, array $aHeaders = null)
     {
-        ini_set('memory_limit', '2G');
-        ini_set('max_execution_time', 1200);
-
-        $this->autoFireview = false;
-        $this->hideDecoration();
+        $this->bdd->close();
 
         PHPExcel_Settings::setCacheStorageMethod(
             PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
@@ -1466,5 +1413,7 @@ class statsController extends bootstrap
         $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
         $oWriter->setDelimiter(';');
         $oWriter->save('php://output');
+
+        die;
     }
 }
