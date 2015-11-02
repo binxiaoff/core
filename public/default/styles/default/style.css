@@ -602,7 +602,7 @@ a:hover > .icon-big-facebook { background-position:-60px -90px; }
 .testimonials .slide-prev { margin-left:-520px; }
 .testimonials .slide-next { margin-left:500px; }
 
-.testimonials .slides-container { margin:0 45px; }
+.testimonials .slides-container { margin:0 auto; max-width: 960px; }
 .testimonials .slides { list-style:none outside none; padding:0; font-size:18px; *zoom:1; }
 .testimonials .slides:after { content:''; display:table; clear:both; }
 .testimonials .slides li { float:left; width:960px; }
