@@ -239,7 +239,11 @@ class SalesForce
                     LEFT JOIN
                         projects_notes pn ON (p.id_project = pn.id_project)
                     LEFT JOIN
-                        projects_status ps ON (p.status = ps.id_project_status)";
+                      projects_last_status_history  pslh on pslh.id_project = p.id_project
+                    LEFT JOIN
+                      projects_status_history psh on psh.id_project_status_history = pslh.id_project_status_history
+                    LEFT JOIN
+                      projects_status ps on ps.id_project_status = psh.id_project_status";
 
         $this->tryIt($sQuery, 'projects');
     }
