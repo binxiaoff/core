@@ -606,6 +606,38 @@
 
 
 <script type="text/javascript">
+    
+    /*
+    Add icons with tooltips to all table rows
+    They will be visible below tablet landscape breakpoint
+    and will replace the table head icons
+    */
+   $('.hp-counter + .main .table tr, #table_tri tr, .vos_prets table.detail-ope tr').each(function () {
+       $(this).find('td').each(function (indx) {
+           var $icon = $(this).closest('.table').find('th').eq(indx).html();
+
+           $($icon).prependTo($(this));
+       });
+   });
+    
+   $(window).on('load resize', function () {
+        if ($(window).width() < 768) {
+
+            $('.detail-ope .th-wrap').show();
+            $('.detail-ope .th-wrap.th-wrap-v2').parent().show();
+        }
+        else{
+
+
+            $('.detail-ope .th-wrap.th-wrap-v2').parent().hide();
+            $('.detail-ope .th-wrap').hide();
+
+            $('.detail-ope th .th-wrap').show();
+            $('.detail-ope th .th-wrap.th-wrap-v2').parent().show();
+        }
+    });
+    
+    
     $("#order_titre,#order_note,#order_montant,#order_interet,#order_debut,#order_prochaine,#order_fin,#order_mensualite,input,select").click(function () {
 
         if ($(this).attr('id') == 'order_titre') {

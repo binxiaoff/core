@@ -26,18 +26,7 @@
             $html.toggleClass('show-search').removeClass('show-nav show-login');
         });
 
-        /*
-         Add icons with tooltips to all table rows
-         They will be visible below tablet landscape breakpoint
-         and will replace the table head icons
-         */
-        $('.hp-counter + .main .table tr, #table_tri tr, .vos_prets table.detail-ope tr').each(function () {
-            $(this).find('td').each(function (indx) {
-                var $icon = $(this).closest('.table').find('th').eq(indx).html();
-
-                $($icon).prependTo($(this));
-            });
-        });
+        
 
         $('.popup-link').colorbox({
             maxWidth: '90%',
@@ -61,6 +50,10 @@
 
         $win.on('load resize', function () {
             if ($win.width() < 768) {
+                
+                //$('.detail-ope .th-wrap').show();
+                //$('.detail-ope .th-wrap.th-wrap-v2').parent().show();
+                
                 if ($('#pie-chart').length) {
                     pieChart = $('#pie-chart').highcharts();
                     pieChartOpts = pieChart.options;
@@ -82,6 +75,15 @@
 
                     $('#bar-chart').highcharts(barChartOpts);
                 }
+            }
+            else{
+                
+                
+                //$('.detail-ope .th-wrap.th-wrap-v2').parent().hide();
+                //$('.detail-ope .th-wrap').hide();
+                
+                //$('.detail-ope th .th-wrap').show();
+               //$('.detail-ope th .th-wrap.th-wrap-v2').parent().show();
             }
         });
 
