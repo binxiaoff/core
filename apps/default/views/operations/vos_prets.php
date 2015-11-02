@@ -32,13 +32,13 @@
     }
 
     .detail-ope.table td {
-        padding-left: 0px;
-        padding-right: 0px;
+        padding-left: 0;
+        padding-right: 0;
     }
 
     .detail-ope.table th:first-child {
-        padding-left: 0px;
-        widows: 189px;
+        padding-left: 0;
+        windows: 189px;
     }
 
     .detail-ope .cadreEtoiles {
@@ -130,7 +130,7 @@
         line-height: 18px !important;
         height: 15px !important;
         padding: 0 4px !important;
-        top: 0px !important;
+        top: 0 !important;
         width: 10px;
     }
 
@@ -263,12 +263,7 @@
                                 <h6><?= $l['city'] ?>, <?= $l['zip'] ?></h6>
                             </div>
                         </td>
-                        <td>
-                            <div class="cadreEtoiles">
-<!--                                <div class="etoile --><?//= $this->lNotes[$l['risk']]?><!--"></div>-->
-                                <div><?=$l['project_status']?></div>
-                            </div>
-                        </td>
+                        <td><div class="cadreEtoiles"><div class="etoile <?= $this->lNotes[$l['risk']] ?>">&nbsp;</div></div></td>
                         <td style="white-space: nowrap;"><?= number_format($l['amount'], 2, ',', ' ') ?> €</td>
                         <td style="white-space: nowrap;"><?= number_format($l['rate'], 2, ',', ' ') ?> %</td>
                         <?php
@@ -288,17 +283,11 @@
                         <?}
                         ?>
                         <td>
-                            <?
-                            if ($this->projects_status->status >= 80) {
-
-                                ?>
+                            <?php if ($this->projects_status->status >= 80) { ?>
                                 <a href="<?= $this->lurl . '/pdf/contrat/' . $this->clients->hash . '/' . $l['id_loan_if_one_loan'] ?>"><img
                                         src="<?= $this->surl ?>/styles/default/images/pdf50.png"
                                         class="btn-detailLoans_<?= $k ?>" style="margin-right: 20px;"/></a>
-                                <?php
-
-                            }
-                            ?>
+                            <?php } ?>
                         </td>
                     </tr>
                     <?php
@@ -377,10 +366,6 @@
                         <?}
                         ?>
                         <td>
-                            <?php /*?><a class="btn btn-info btn-small btn-detailLoans_<?=$k?>"><?=$this->lng['profile']['details']?></a><?php */
-                            ?>
-                            <?php /*?><a class="btn btn-info btn-small btn-detailLoans_<?=$k?>" style="line-height: 27px; padding: 0px 7px 2px 7px; height:20px; width: 9px; ">+</a><?php */
-                            ?>
                             <img src="<?= $this->surl ?>/styles/default/images/pdf50.png"
                                  class="btn-detailLoans_<?= $k ?>"/>
                             <a class="btn btn-small btn-detailLoans_<?= $k ?> override_plus">+</a>
@@ -388,9 +373,9 @@
                     </tr>
 
                     <tr class="<?= ($i % 2 == 1 ? '' : 'odd') ?>">
-                        <td colspan="7" style="padding:0px;">
+                        <td colspan="7" style="padding:0;">
                             <div class="detailLoans loans_<?= $k ?>" style="display:none;">
-                                <table class="table" style="margin-bottom:0px;">
+                                <table class="table" style="margin-bottom:0;">
                                     <?
                                     $a          = 0;
                                     $listeLoans = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $l['id_project']);
@@ -483,27 +468,19 @@
                                 <span class="calandar-ech"><?= $this->dates->formatDate($l['fin'], 'd/m/Y') ?></span>
                             </td>
                             <td><?= number_format($l['mensuel'], 2, ',', ' ') ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
-                            <?php /*?><a class="btn btn-info btn-small btn-detailLoans_<?=$k?>"><?=$this->lng['profile']['details']?></a><?php */
-                            ?>
-                            <?php /*?><a class="btn btn-info btn-small btn-detailLoans_<?=$k?>" style="line-height: 27px; padding: 0px 7px 2px 7px; height:20px; width: 9px; ">+</a><?php */
-                            ?>
-
                             <td>
-
-
                                 <a class="btn btn-info btn-small btn-detailLoans_declaration_creances_<?= $k ?> override_plus override_plus_<?= $k ?>"
                                    style="float:right;margin-right: 15px;">+</a><br/><br/>
                                 <a style="font-size: 10px;vertical-align: middle;margin-right: 13px;"
                                    class="btn-detailLoans_declaration_creances_<?= $k ?> btn-grise btn-warning btn btn-info btn-small multi"><?= $this->lng['preteur-operations-detail']['declaration-de-creances'] ?></a>
-
                             </td>
                         </tr>
 
                         <tr class="<?= ($i % 2 == 1 ? '' : 'odd') ?>">
-                            <td colspan="7" style="padding:0px;">
+                            <td colspan="7" style="padding:0;">
                                 <div class="detailLoans_declaration_creances loans_declaration_creances_<?= $k ?>"
                                      style="display:none;">
-                                    <table class="table" style="margin-bottom:0px;">
+                                    <table class="table" style="margin-bottom:0;">
                                         <?
                                         $a          = 0;
                                         $listeLoans = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $l['id_project']);
