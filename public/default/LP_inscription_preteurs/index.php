@@ -542,7 +542,7 @@
                     <div class="clear"></div>
                     <input type="text" id="inscription_date_naissance" name="date_naissance" placeholder="Date de naissance (jj/mm/aaaa)" maxlength="10">
                     <p id="errorAge"></p>
-                    <input type="text" id="inscription_commune_naissance" name="commune_naissance" placeholder="Commune de naissance" maxlength="255"
+                    <input type="text" id="inscription_commune_naissance" name="commune_naissance" placeholder="Commune de naissance*" maxlength="255"
                            data-autocomplete="birth_city" onblur="controleCity($('#inscription_commune_naissance'), $('#inscription_id_pays_naissance'))"/>
                     <input type="hidden" name="insee_birth" id="insee_birth">
                     <select id="inscription_id_pays_naissance" name="id_pays_naissance" class="custom-select">
@@ -1412,16 +1412,13 @@
                         return false;
                     }
                     else {
-
                         // AJAX
-
                         var key = 'unilend';
                         var hash = CryptoJS.MD5(key);
                         var time = $.now();
                         var token = $.base64.btoa(hash+'-'+time);
                         var passwordMd5 = CryptoJS.MD5(inscription_mdp);
 
-                        var DATA = '';
                         $.ajax({
                             method: "POST",
                             url: "/collect/inscription",

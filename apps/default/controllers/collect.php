@@ -206,7 +206,7 @@ class collectController extends bootstrap
 			$id_pays_naissance = trim($_POST['id_pays_naissance']);
 			$signature_cgv = trim($_POST['signature_cgv']);
 			$date = trim($_POST['date']);
-			$insee_birth = trim($_POST['insee_birth']);
+			$insee_birth = isset($_POST['insee_birth']) ? trim($_POST['insee_birth']) : '';
 
 			// test //
 
@@ -391,6 +391,35 @@ class collectController extends bootstrap
 				$form_ok = false;
 				$erreur .= 'Pays de naissance;';
 			}
+			// Verif code insee de naissance
+			if (1 == $id_pays_naissance) {
+				//Check birth city
+				if ('' == $insee_birth) {
+					$oVilles = $this->loadData('villes');
+					//for France, the code insee is empty means that the city is not verified with table "villes", check again here.
+					if (false === $oVilles->get($_POST['naissance'], 'ville')) {
+						$form_ok = false;
+						$erreur .= 'Code INSEE de naissance;';
+					} else {
+						$insee_birth = $oVilles->insee;
+					}
+					unset($oVilles);
+				}
+			} else {
+				/** @var pays_v2 $oPays */
+				$oPays = $this->loadData('pays_v2');
+				/** @var insee_pays $oInseePays */
+				$oInseePays = $this->loadData('insee_pays');
+
+				if ($oPays->get($id_pays_naissance) && $oInseePays->get($oPays->iso)) {
+					$insee_birth = $oInseePays->COG;
+				} else {
+					$form_ok = false;
+					$erreur .= 'Code INSEE de naissance;';
+				}
+				unset($oPays, $oInseePays);
+			}
+
 			// Verif signature cgv
 			if(!isset($signature_cgv) || $signature_cgv != 1){
 				$form_ok = false;

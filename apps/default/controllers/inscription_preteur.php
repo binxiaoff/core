@@ -251,31 +251,31 @@ class inscription_preteurController extends bootstrap
             //Get the insee code for birth place: if in France, city insee code; if overseas, country insee code
             $sCodeInsee = '';
             if (1 == $_POST['pays3']) { // if France
-                /** @var villes $oVilles */
-                $oVilles = $this->loadData('villes');
-
                 //Check birth city
                 if (!isset($_POST['insee_birth']) || '' === $_POST['insee_birth']) {
+					/** @var villes $oVilles */
+					$oVilles = $this->loadData('villes');
                     //for France, the code insee is empty means that the city is not verified with table "villes", check again here.
                     if (false === $oVilles->get($_POST['naissance'], 'ville')) {
                         $this->form_ok = false;
                     } else {
                         $sCodeInsee = $oVilles->insee;
                     }
+					unset($oVilles);
                 } else {
                     $sCodeInsee = $_POST['insee_birth'];
                 }
-                unset($oVilles);
             } else {
                 /** @var pays_v2 $oPays */
                 $oPays = $this->loadData('pays_v2');
                 /** @var insee_pays $oInseePays */
                 $oInseePays = $this->loadData('insee_pays');
 
-                if ($oPays->get($_POST['pays3'])) {
-                    $oInseePays->get($oPays->iso);
+                if ($oPays->get($_POST['pays3']) && $oInseePays->get($oPays->iso)) {
                     $sCodeInsee = $oInseePays->COG;
-                }
+                } else {
+					$this->form_ok = false;
+				}
                 unset($oPays, $oInseePays);
             }
 
