@@ -724,12 +724,7 @@ class statsController extends bootstrap
         $this->retenuesource = $this->settings->value;
         $this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60');
 
-        $header = "Cbene;Nom;Qualité;NomJFille;Prénom;DateNaissance;DépNaissance;ComNaissance;LieuNaissance;NomMari;Siret;AdISO;Adresse;Voie;CodeCommune;Commune;CodePostal;Ville / nom pays;IdFiscal;PaysISO;Entité;ToRS;Plib;Tél;Banque;IBAN;BIC;EMAIL;Obs;";
-        $header = utf8_encode($header);
-
-        $csv = "";
-        $csv .= $header . " \n";
-
+        $aData = array();
         foreach ($this->lPre as $e) {
             $this->clients_adresses->get($e['id_client'], 'id_client');
             $this->lenders_accounts->get($e['id_client'], 'id_client_owner');
@@ -830,7 +825,7 @@ class statsController extends bootstrap
                         }
                         $this->pays->get($id_pays, 'id_pays');
 
-                        $this->insee_pays->get($this->pays->fr, 'LIBCOG');
+                        $this->insee_pays->getByCountryName(trim($this->pays->fr));
                         $cp = $this->insee_pays->COG;
 
                         $retenuesource = number_format($this->retenuesource * 100, 2, ',', ' ') . '%';
@@ -877,30 +872,21 @@ class statsController extends bootstrap
                     }
                 } // fin particulier
 
-                // Motif
-                $p   = substr($this->ficelle->stripAccents(utf8_decode(trim($e['prenom']))), 0, 1);
-                $nom = $this->ficelle->stripAccents(utf8_decode(trim($e['nom'])));
-                //$id_client = str_pad($e['id_client'],6,0,STR_PAD_LEFT);
+                $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($e['prenom']))), 0, 1);
+                $nom       = $this->ficelle->stripAccents(utf8_decode(trim($e['nom'])));
                 $id_client = $e['id_client'];
                 $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-                //$motif = mb_strtoupper($id_client.$nom,'UTF-8');
-                $motif = substr($motif, 0, 10);
+                $motif     = substr($motif, 0, 10);
 
                 if ($entreprise == true) {
-                    $csv .= $motif . ";" . $this->companies->name . ";;;;;;;;;" . $this->companies->siret . ";" . $isoFiscal . ";;" . str_replace(';', ',', $this->companies->adresse1) . ";" . $codeCom . ";;" . $this->companies->zip . ";" . $ville_paysFiscal . ";;" . $isoFiscal . ";X;" . $retenuesource . ";N;" . $this->companies->phone . ";;" . $this->lenders_accounts->iban . ";" . $this->lenders_accounts->bic . ";" . $e['email'] . ";;";
+                    $aData[] = array($motif, $this->companies->name, '', '', '', '', '', '', '', '', $this->companies->siret, $isoFiscal, '', str_replace(';', ',', $this->companies->adresse1), $codeCom, '', $this->companies->zip, $ville_paysFiscal, '', $isoFiscal, 'X', $retenuesource, 'N', $this->companies->phone, '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
                 } else {
-                    $csv .= $motif . ";" . $e['nom'] . ";" . $e['civilite'] . ";" . $e['nom'] . ";" . $e['prenom'] . ";" . $naissance . ";" . $depNaiss . ";" . $codeComNaissance . ";" . $e['ville_naissance'] . ";;;" . $isoFiscal . ";;" . str_replace(';', ',', $adresse_fiscal) . ";" . $codeCom . ";" . $commune . ";" . $cp . ";" . $ville_paysFiscal . ";;" . $isoNaissance . ";X;" . $retenuesource . ";N;" . $e['telephone'] . ";;" . $this->lenders_accounts->iban . ";" . $this->lenders_accounts->bic . ";" . $e['email'] . ";;";
+                    $aData[] = array($motif, $e['nom'], $e['civilite'], $e['nom'], $e['prenom'], $naissance, $depNaiss, $codeComNaissance, $e['ville_naissance'], '', '', $isoFiscal, '', str_replace(';', ',', $adresse_fiscal), $codeCom, $commune, $cp, $ville_paysFiscal, '', $isoNaissance, 'X', $retenuesource, 'N', $e['telephone'], '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
                 }
-
-                $csv .= " \n";
             }
         }
 
-        $titre = 'requete_beneficiaires' . date('Ymd');
-        header("Content-type: application/vnd.ms-excel");
-        header("Content-disposition: attachment; filename=\"" . $titre . ".csv\"");
-
-        print(utf8_decode($csv));
+        $this->exportCSV($aData, 'requete_beneficiaires' . date('Ymd'), array('Cbene', 'Nom', 'Qualité', 'NomJFille', 'Prénom', 'DateNaissance', 'DépNaissance', 'ComNaissance', 'LieuNaissance', 'NomMari', 'Siret', 'AdISO', 'Adresse', 'Voie', 'CodeCommune', 'Commune', 'CodePostal', 'Ville / nom pays', 'IdFiscal', 'PaysISO', 'Entité', 'ToRS', 'Plib', 'Tél', 'Banque', 'IBAN', 'BIC', 'EMAIL', 'Obs', ''));
     }
 
     public function _requete_infosben()
@@ -1427,5 +1413,58 @@ class statsController extends bootstrap
 
             print(utf8_decode($csv));
         }
+    }
+
+    private function exportQueryCSV($sQuery, $sFileName, array $aHeaders = null)
+    {
+        $aResult = array();
+        while ($aRow = $this->bdd->fetch_assoc($this->bdd->query($sQuery))) {
+            $aResult[] = $aRow;
+        }
+
+        if (count($aResult) > 0 && is_null($aHeaders)) {
+            $aHeaders = array_keys($aResult[0]);
+        }
+
+        $this->exportCSV($aResult, $sFileName, $aHeaders);
+    }
+
+    private function exportCSV($aData, $sFileName, array $aHeaders = null)
+    {
+        ini_set('memory_limit', '2G');
+        ini_set('max_execution_time', 1200);
+
+        $this->autoFireview = false;
+        $this->hideDecoration();
+
+        PHPExcel_Settings::setCacheStorageMethod(
+            PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
+            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+        );
+
+        $oDocument    = new PHPExcel();
+        $oActiveSheet = $oDocument->setActiveSheetIndex(0);
+
+        if (count($aHeaders) > 0) {
+            foreach ($aHeaders as $iIndex => $sColumnName) {
+                $oActiveSheet->setCellValueByColumnAndRow($iIndex, 1, $sColumnName);
+            }
+        }
+
+        foreach ($aData as $iRowIndex => $aRow) {
+            $iColIndex = 0;
+            foreach ($aRow as $sCellValue) {
+                $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $sCellValue);
+            }
+        }
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename=' . $sFileName . '.csv');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
+
+        $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
+        $oWriter->setDelimiter(';');
+        $oWriter->save('php://output');
     }
 }
