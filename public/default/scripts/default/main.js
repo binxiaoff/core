@@ -342,3 +342,47 @@ function validateIban(iban) {
 
     return previousModulo == 1;
 }
+
+function initAutocompleteCity($cnt)
+{
+	$('[data-autocomplete]', $cnt).each(function() {
+		if($(this).data('autocomplete') == 'city' || $(this).data('autocomplete') == 'post_code' || $(this).data('autocomplete') == 'birth_city') {
+			$(this).autocomplete({
+				source: add_url + '/ajax/get_cities/',
+				minLength: 3,
+
+				search: function( event, ui ) {
+					if ($(this).data('autocomplete') == 'birth_city'){
+						$("#insee_birth").val('');
+					}
+				},
+
+				select: function( event, ui ) {
+					event.preventDefault();
+
+					var myRegexp = /(.+)\s\((.+)\)/;
+					var match = myRegexp.exec(ui.item.label);
+
+					if(match != null) {
+						var row = $(this).parent(".row");
+
+						switch ($(this).data('autocomplete')) {
+							case 'birth_city' :
+								$(this).val(match[1]);
+								$("#insee_birth").val(ui.item.value);
+								break;
+							case 'city' :
+								$(this).val(match[1]);
+								$(this).siblings("[data-autocomplete='post_code']").val( match[2]);
+								break;
+							case 'post_code' :
+								$(this).val( match[2]);
+								$(this).siblings("[data-autocomplete='city']").val(match[1]);
+								break;
+						}
+					}
+				}
+			});
+		}
+	});
+}

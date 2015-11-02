@@ -94,7 +94,6 @@
                     <input type="text" id="inscription_cp_fiscale" name="cp_fiscale" placeholder="Code postal" maxlength="5"
                            data-autocomplete="post_code" onblur="controleCp($('#inscription_cp_fiscale'), $('#inscription_id_pays_fiscale'))" />
                     <input type="text" id="inscription_ville_fiscale" name="ville_fiscale" placeholder="Ville" maxlength="255" data-autocomplete="city" >
-                    <input type="hidden" id="insee" class="insee" name="insee">
                     <select id="inscription_id_pays_fiscale" name="id_pays_fiscale" class="custom-select">
                         <option value="">Pays</option>
                         <option value="1">France </option>
@@ -545,7 +544,7 @@
                     <p id="errorAge"></p>
                     <input type="text" id="inscription_commune_naissance" name="commune_naissance" placeholder="Commune de naissance" maxlength="255"
                            data-autocomplete="birth_city" onblur="controleCity($('#inscription_commune_naissance'), $('#inscription_id_pays_naissance'))"/>
-                    <input type="hidden" name="insee_birth" class="insee_birth" id="insee_birth">
+                    <input type="hidden" name="insee_birth" id="insee_birth">
                     <select id="inscription_id_pays_naissance" name="id_pays_naissance" class="custom-select">
                         <option value="">Pays de naissance</option>
                         <option value="1">France </option>
@@ -1104,7 +1103,6 @@
                 var inscription_adresse_fiscale = $.trim($('#inscription_adresse_fiscale').val());
                 var inscription_ville_fiscale = $.trim($('#inscription_ville_fiscale').val());
                 var inscription_cp_fiscale = $.trim($('#inscription_cp_fiscale').val());
-                var insee = $('#insee').val();
                 var inscription_id_pays_fiscale = $('#inscription_id_pays_fiscale').val();
                 // var inscription_check_adresse = $('#inscription_check_adresse').val();
                 var inscription_adresse_correspondance = $.trim($('#inscription_adresse_correspondance').val());
@@ -1564,14 +1562,8 @@
                         source: '/ajax/get_cities/',
                         minLength: 3,
                         search: function( event, ui ) {
-                            switch ($(this).data('autocomplete')) {
-                                case 'birth_city' :
-                                    $(this).siblings(".insee_birth").val('');
-                                    break;
-                                case 'city' :
-                                case 'post_code' :
-                                    $(this).siblings(".insee").val('');
-                                    break;
+                            if ($(this).data('autocomplete') == 'birth_city') {
+                                $(this).siblings(".insee_birth").val('');
                             }
                         },
                         select: function( event, ui ) {
@@ -1584,17 +1576,15 @@
                                 switch ($(this).data('autocomplete')) {
                                     case 'birth_city' :
                                         $(this).val(match[1]);
-                                        $(this).siblings(".insee_birth").val(ui.item.value);
+                                        $("#insee_birth").val(ui.item.value);
                                         break;
                                     case 'city' :
                                         $(this).val(match[1]);
                                         $(this).siblings("[data-autocomplete='post_code']").val( match[2]);
-                                        $(this).siblings(".insee").val(ui.item.value);
                                         break;
                                     case 'post_code' :
-                                        $(this).siblings("[data-autocomplete='city']").val(match[1]);
                                         $(this).val( match[2]);
-                                        $(this).siblings(".insee").val(ui.item.value);
+                                        $(this).siblings("[data-autocomplete='city']").val(match[1]);
                                         break;
                                 }
                             }

@@ -250,7 +250,7 @@ class inscription_preteurController extends bootstrap
 
             //Get the insee code for birth place: if in France, city insee code; if overseas, country insee code
             $sCodeInsee = '';
-            if (1 == $_POST['pays3']) {
+            if (1 == $_POST['pays3']) { // if France
                 /** @var villes $oVilles */
                 $oVilles = $this->loadData('villes');
 
@@ -390,8 +390,8 @@ class inscription_preteurController extends bootstrap
 			/** @var villes $oVilles */
 			$oVilles = $this->loadData('villes');
 			//Check cp
-			if (1 == $_POST['pays1'] && !isset($_POST['insee']) || '' === $_POST['insee']) {
-				//for France, the code insee is empty means that the city and postal code is not verified with table "villes", check again here.
+			if (1 == $_POST['pays1']) {
+				//for France, check post code here.
 				if (false === $oVilles->exist($_POST['postal'], 'cp')) {
 					$this->form_ok = false;
 				}
@@ -675,8 +675,8 @@ class inscription_preteurController extends bootstrap
             /** @var villes $oVilles */
             $oVilles = $this->loadData('villes');
             //Check cp
-            if (1 == $_POST['pays1E'] && !isset($_POST['inseeE']) || '' === $_POST['inseeE']) {
-                //for France, the code insee is empty means that the city and postal code is not verified with table "villes", check again here.
+            if (1 == $_POST['pays1E']) {
+                //for France, check post code here.
                 if (false === $oVilles->exist($_POST['postalE'], 'cp')) {
                     $this->form_ok = false;
                 }

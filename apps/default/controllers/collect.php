@@ -318,7 +318,8 @@ class collectController extends bootstrap
 				$erreur .= 'Ville fiscale;';
 			}
 			// Verif cp fiscale
-			if(!isset($cp_fiscale) || strlen($cp_fiscale) != 5){
+			$oVilles = $this->loadData('villes');
+			if (!isset($cp_fiscale) || false === $oVilles->exist($_POST['postal'], 'cp')) {
 				$form_ok = false;
 				$erreur .= 'Code postal fiscale;';
 			}

@@ -25,7 +25,6 @@
                    placeholder="<?=$this->lng['etape1']['code-postal']?>" title="<?= $this->lng['etape1']['code-postal'] ?>" value="<?= ($this->companies->zip != 0 ? $this->companies->zip : '') ?>" />
             <input type="text" id="ville_inscriptionE" name="ville_inscriptionE" class="field field-small required" data-validators="Presence" data-autocomplete="city"
                    placeholder="<?=$this->lng['etape1']['ville']?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->companies->city != '' ? $this->companies->city : '') ?>" />
-            <input type="hidden" class="insee" name="inseeE"/>
             <select name="pays1E" id="pays1E" class="custom-select required field-small">
                 <option value=""><?= $this->lng['etape1']['pays'] ?></option>
                 <option value=""><?= $this->lng['etape1']['pays'] ?></option>

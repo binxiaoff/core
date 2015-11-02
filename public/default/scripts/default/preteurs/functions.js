@@ -793,7 +793,6 @@ var Form = (function($){
 		bindEvents();
 
 		initAutocompleteCity(settings.selector);
-		initAutocompleteBirthCity(settings.selector);
 		initConditionals(settings.selector);
 		initValidation(settings.selector);
 

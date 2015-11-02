@@ -56,7 +56,6 @@
                    placeholder="<?=$this->lng['etape1']['code-postal']?>" title="<?=$this->lng['etape1']['code-postal']?>" value="<?=($this->clients_adresses->cp_fiscal!=0?$this->clients_adresses->cp_fiscal:'')?>"/>
             <input type="text" id="ville_inscription" name="ville_inscription" class="field field-small required" data-autocomplete="city" data-validators="Presence"
                    placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=($this->clients_adresses->ville_fiscal!=''?$this->clients_adresses->ville_fiscal:'')?>"/>
-            <input type="hidden" class="insee" name="insee"/>
             <select name="pays1" id="pays1" class="custom-select required field-small">
                 <option value=""><?=$this->lng['etape1']['pays']?></option>
                 <option value=""><?=$this->lng['etape1']['pays']?></option>
@@ -145,7 +144,7 @@
             <span class="inline-text inline-text-alt inline-text-alt-small"><?=$this->lng['etape1']['commune-de-naissance']?> :</span>
             <input type="text" name="naissance" id="naissance" class="field field-small required" data-autocomplete="birth_city" onblur="controleCity($('#naissance'), $('#pays3'))"
                    placeholder="<?=$this->lng['etape1']['commune-de-naissance']?>" title="<?=$this->lng['etape1']['commune-de-naissance']?>" value="<?=($this->clients->ville_naissance!=''?$this->clients->ville_naissance:'')?>">
-            <input type="hidden" class="insee" name="insee_birth"/>
+            <input type="hidden" id="insee_birth" name="insee_birth"/>
             <span class="inline-text inline-text-alt inline-text-alt-small"><?=$this->lng['etape1']['pays-de-naissance']?> :</span>
             <select name="pays3" id="pays3" class="custom-select required field-small">
                 <option value=""><?=$this->lng['etape1']['pays-de-naissance']?></option>
