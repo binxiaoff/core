@@ -171,7 +171,7 @@
                                 }
 
                                 if ($pf['photo_projet'] != '') {
-                                    ?><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>" class="thumb"><?php
+                                    ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>"><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>" class="thumb"></a><?php
                                 }
                                 ?>
                                 <div class="description">
@@ -281,7 +281,7 @@
                             <?php
                         }
                         if ($pf['photo_projet'] != '') {
-                            ?><img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>"><?php
+                            ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>"><img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>"></a><?php
                         }
 
                         //Gestion des étoiles

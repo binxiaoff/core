@@ -42,7 +42,7 @@
                 <label for="offer-sum" class="form-label"><?= $this->lng['preteur-projets']['la-somme-de'] ?></label>
 
                 <div class="form-controls">
-                    <input type="text" id="montant_pM" class="field" value="<?= $this->lng['preteur-projets']['montant-exemple'] ?>" name="montant_p" title="<?= $this->lng['preteur-projets']['montant-exemple'] ?>" onkeyup="lisibilite_nombre(this.value, this.id);"/>
+                    <input type="text" id="montant_pM" class="field field-currency" value="<?= $this->lng['preteur-projets']['montant-exemple'] ?>" name="montant_p" title="<?= $this->lng['preteur-projets']['montant-exemple'] ?>" onkeyup="lisibilite_nombre(this.value, this.id);"/>
 
                     <span class="currency">€</span>
                 </div><!-- /.form-controls -->
@@ -58,7 +58,7 @@
                 <br />
 
                 <?php
-                // on check si on a coché les cgv ou pas 
+                // on check si on a coché les cgv ou pas
                 // cgu societe
                 if (in_array($this->clients->type, array(2, 4))) {
                     $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
@@ -88,7 +88,7 @@
                 }
                 ?>
 
-                <a style="width:76px; display:block;margin:auto;" href="<?= (!$this->accept_ok_header ? $this->lurl . '/thickbox/pop_up_cgv' : $this->lurl . '/thickbox/pop_valid_pret_mobile/' . $this->projects->id_project) ?>" class="btn btn-medium popup-linkM <?= (!$this->accept_ok_header ? 'thickbox' : '') ?>"><?= $this->lng['preteur-projets']['preter'] ?></a> 
+                <a style="width:76px; display:block;margin:auto;" href="<?= (!$this->accept_ok_header ? $this->lurl . '/thickbox/pop_up_cgv' : $this->lurl . '/thickbox/pop_valid_pret_mobile/' . $this->projects->id_project) ?>" class="btn btn-medium popup-linkM <?= (!$this->accept_ok_header ? 'thickbox' : '') ?>"><?= $this->lng['preteur-projets']['preter'] ?></a>
             </div><!-- /.form-actions -->
         </form>
     </div><!-- /popup-cnt -->

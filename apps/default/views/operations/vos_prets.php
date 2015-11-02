@@ -38,7 +38,7 @@
 
     .detail-ope.table th:first-child {
         padding-left: 0px;
-        widows: 189px;
+        windows: 189px;
     }
 
     .detail-ope .cadreEtoiles {
@@ -167,93 +167,62 @@
 <div class="loadDetailOp">
     <table class="table detail-ope finances">
         <tr>
-            <th align="left" class="col1" id="order_titre">
+            <th align="left" class="col1" id="order_titre_prets">
                 <div class="th-wrap">
-                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-projet'] ?>"
-                       class="icon-person tooltip-anchor"></i>
-
-                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-projet'] ?>&nbsp;<i
-                            class="icon-arrows"></i></div>
+                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-projet'] ?>" class="icon-person tooltip-anchor"></i>
+                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-projet'] ?>&nbsp;<i class="icon-arrows"></i></div>
                 </div>
             </th>
-            <th class="col2" id="order_note">
+            <th class="col2" id="order_note_prets">
                 <div class="th-wrap">
-                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-note'] ?>"
-                       class="icon-gauge tooltip-anchor"></i>
-
-                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-note'] ?>&nbsp;<i
-                            class="icon-arrows"></i></div>
-                </div>
-
-            </th>
-            <th class="col3" id="order_montant">
-                <div class="th-wrap">
-                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-montant'] ?>"
-                       class="icon-euro tooltip-anchor"></i>
-
-                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-montant'] ?>&nbsp;<i
-                            class="icon-arrows"></i></div>
+                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-note'] ?>" class="icon-gauge tooltip-anchor"></i>
+                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-note'] ?>&nbsp;<i class="icon-arrows"></i></div>
                 </div>
             </th>
-            <th class="col4" id="order_interet">
+            <th class="col3" id="order_montant_prets">
                 <div class="th-wrap">
-                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-interet'] ?>"
-                       class="icon-graph tooltip-anchor"></i>
-
-                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-interet'] ?>&nbsp;<i
-                            class="icon-arrows"></i></div>
+                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-montant'] ?>" class="icon-euro tooltip-anchor"></i>
+                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-montant'] ?>&nbsp;<i class="icon-arrows"></i></div>
+                </div>
+            </th>
+            <th class="col4" id="order_interet_prets">
+                <div class="th-wrap">
+                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-interet'] ?>" class="icon-graph tooltip-anchor"></i>
+                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-interet'] ?>&nbsp;<i class="icon-arrows"></i></div>
                 </div>
             </th>
             <th>
                 <div class="th-wrap th-wrap-v2">
-                    <i title="<?= $this->lng['preteur-operations-detail']['info-calendrier'] ?>"
-                       class="icon-calendar tooltip-anchor"></i>
-
+                    <i title="<?= $this->lng['preteur-operations-detail']['info-calendrier'] ?>" class="icon-calendar tooltip-anchor"></i>
                     <div class="calendar-title" style="margin-top: 8.5px;">
-                        <span style=" width:75px;"
-                              id="order_debut"><?= $this->lng['preteur-operations-detail']['titre-debut'] ?>&nbsp;<i
-                                class="icon-arrows"></i></span>
-                        <span style=" width:79px;"
-                              id="order_prochaine"><?= $this->lng['preteur-operations-detail']['titre-prochaine'] ?>
-                            &nbsp;<i class="icon-arrows"></i></span>
-                        <span style=" width:75px;"
-                              id="order_fin"><?= $this->lng['preteur-operations-detail']['titre-fin'] ?>&nbsp;<i
-                                class="icon-arrows"></i></span>
+                        <span style=" width:75px;" id="order_debut_prets"><?= $this->lng['preteur-operations-detail']['titre-debut'] ?>&nbsp;<i class="icon-arrows"></i></span>
+                        <span style=" width:79px;" id="order_prochaine_prets"><?= $this->lng['preteur-operations-detail']['titre-prochaine'] ?> &nbsp;<i class="icon-arrows"></i></span>
+                        <span style=" width:75px;" id="order_fin_prets"><?= $this->lng['preteur-operations-detail']['titre-fin'] ?>&nbsp;<i class="icon-arrows"></i></span>
                     </div>
                 </div>
             </th>
-
-            <th class="col6" id="order_mensualite">
+            <th class="col6" id="order_mensualite_prets">
                 <div class="th-wrap">
-                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-mensualite'] ?>"
-                       class="icon-bank tooltip-anchor"></i>
-
-                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-mensualite'] ?>&nbsp;<i
-                            class="icon-arrows"></i></div>
+                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-mensualite'] ?>" class="icon-bank tooltip-anchor"></i>
+                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-mensualite'] ?>&nbsp;<i class="icon-arrows"></i></div>
                 </div>
             </th>
             <th>
-                <div class="th-wrap"><i title="<?= $this->lng['preteur-operations-detail']['info-contrat'] ?>"
-                                        class="icon-arrow-next tooltip-anchor"></i></div>
+                <div class="th-wrap"><i title="<?= $this->lng['preteur-operations-detail']['info-contrat'] ?>" class="icon-arrow-next tooltip-anchor"></i></div>
             </th>
         </tr>
-
-        <?
+        <?php
 
         if ($this->lSumLoans != false) {
             $i = 1;
             foreach ($this->lSumLoans as $k => $l) {
-
                 $Le_projects = $this->loadData('projects');
                 $Le_projects->get($l['id_project']);
-
 
                 $this->projects_status->getLastStatut($l['id_project']);
 
                 //si un seul loan sur le projet
                 if ($l['nb_loan'] == 1) {
-                    //$SumAremb = $this->echeanciers->select('id_loan = '.$l['id_loan'].' AND status = 0','ordre ASC',0,1)
-
                     ?>
                     <tr class="<?= ($i % 2 == 1 ? '' : 'odd') ?>">
                         <td>
@@ -564,11 +533,8 @@
                                             $(".btn-detailLoans_declaration_creances_<?=$k?>").addClass("on_display");
                                             $(".btn-detailLoans_declaration_creances_<?=$k?>").removeClass("off_display");
                                         }
-
                                     });
                                 </script>
-
-
                             </td>
                         </tr>
                         <?
@@ -580,29 +546,28 @@
         }
         ?>
     </table>
-    <!-- /.table -->
 </div>
 
 <script type="text/javascript">
     $("input,select").change(function () {
-
         $(".load").fadeIn();
         var val = {
             order: "",
             type: "",
             annee: $("#anneeDetailPret").val()
-
         };
-        $.post(add_url + "/ajax/detail_op", val).done(function (data) {
 
+        $.post(add_url + "/ajax/detail_op", val).done(function (data) {
             if (data != 'nok') {
                 $(".loadDetailOp").html(data);
                 $(".load").fadeOut();
             }
-
         });
     });
-</script>
+
+    $("#order_titre_prets, #order_note_prets, #order_montant_prets, #order_interet_prets, #order_debut_prets, #order_prochaine_prets, #order_fin_prets, #order_mensualite_prets,input,select").click(function () {
+        if ($(this).attr('id') == 'order_titre_prets' ) {
+            var type = 'order_titre_prets' ;
 
 
 <script type="text/javascript">
@@ -643,84 +608,84 @@
         if ($(this).attr('id') == 'order_titre') {
             var type = 'order_titre';
 
-            if ($("#order_titre.asc").length) {
+            if ($("#order_titre_prets. asc").length) {
+
                 var order = 'desc';
             }
             else {
                 var order = 'asc';
             }
         }
-        else if ($(this).attr('id') == 'order_note') {
-            var type = 'order_note';
+        else if ($(this).attr('id') == 'order_note_prets') {
+            var type = 'order_note_prets';
 
-            if ($("#order_note.asc").length) {
+            if ($("#order_note_prets.asc").length) {
                 var order = 'desc';
             }
             else {
                 var order = 'asc';
             }
         }
-        else if ($(this).attr('id') == 'order_montant') {
-            var type = 'order_montant';
+        else if ($(this).attr('id') == 'order_montant_prets') {
+            var type = 'order_montant_prets';
 
-            if ($("#order_montant.asc").length) {
+            if ($("#order_montant_prets.asc").length) {
                 var order = 'desc';
             }
             else {
                 var order = 'asc';
             }
         }
-        else if ($(this).attr('id') == 'order_interet') {
-            var type = 'order_interet';
+        else if ($(this).attr('id') == 'order_interet_prets') {
+            var type = 'order_interet_prets';
 
-            if ($("#order_interet.asc").length) {
+            if ($("#order_interet_prets.asc").length) {
                 var order = 'desc';
             }
             else {
                 var order = 'asc';
             }
         }
-        else if ($(this).attr('id') == 'order_debut') {
-            var type = 'order_debut';
+        else if ($(this).attr('id') == 'order_debut_prets') {
+            var type = 'order_debut_prets';
 
-            if ($("#order_debut.asc").length) {
+            if ($("#order_debut_prets.asc").length) {
                 var order = 'desc';
             }
             else {
                 var order = 'asc';
             }
         }
-        else if ($(this).attr('id') == 'order_prochaine') {
-            var type = 'order_prochaine';
+        else if ($(this).attr('id') == 'order_prochaine_prets') {
+            var type = 'order_prochaine_prets';
 
-            if ($("#order_prochaine.asc").length) {
+            if ($("#order_prochaine_prets.asc").length) {
                 var order = 'desc';
             }
             else {
                 var order = 'asc';
             }
         }
-        else if ($(this).attr('id') == 'order_fin') {
-            var type = 'order_fin';
+        else if ($(this).attr('id') == 'order_fin_prets') {
+            var type = 'order_fin_prets';
 
-            if ($("#order_fin.asc").length) {
+            if ($("#order_fin_prets.asc").length) {
                 var order = 'desc';
             }
             else {
                 var order = 'asc';
             }
         }
-        else if ($(this).attr('id') == 'order_mensualite') {
-            var type = 'order_mensualite';
+        else if ($(this).attr('id') == 'order_mensualite_prets') {
+            var type = 'order_mensualite_prets';
 
-            if ($("#order_mensualite.asc").length) {
+            if ($("#order_mensualite_prets.asc").length) {
                 var order = 'desc';
             }
             else {
                 var order = 'asc';
             }
         }
-
 
         $(".load").fadeIn();
 
@@ -729,13 +694,12 @@
             type: type,
             annee: $("#anneeDetailPret").val()
         }
-        $.post(add_url + "/ajax/detail_op", val).done(function (data) {
 
+        $.post(add_url + "/ajax/detail_op", val).done(function (data) {
             if (data != 'nok') {
                 $(".loadDetailOp").html(data);
                 $(".load").fadeOut();
             }
-
         });
     });
 </script>

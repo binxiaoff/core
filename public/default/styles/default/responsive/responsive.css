@@ -72,6 +72,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .banner-content { width: auto; }
     .testimonials .slide-prev { margin-left: -500px; }
     .testimonials .slide-next { margin-left: 480px; }
+    .testimonials .slides-container { margin:0 45px; }
 
     .main .load,
     .main .load_table_vos_operations { left: 50%; margin-left: -56px; }
@@ -182,7 +183,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
         -ms-transform: translateX(-100%);
         transform: translateX(-100%);
     }
-    
+
     .show-login .login-panel,
     .show-login .logedin-panel {
         -webkit-transform: translateY(0%);
@@ -194,11 +195,11 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .logedin-panel .login-toggle { background: url(images/ico-times.png) no-repeat 50% 50%; background-size: 12px 12px; -webkit-background-size: 12px 12px; }
 
     .show-nav .nav-toggle:before,
-    .show-nav .nav-toggle:after { content: ""; position: absolute; background: #b20066; border-radius: 3px; 
+    .show-nav .nav-toggle:after { content: ""; position: absolute; background: #b20066; border-radius: 3px;
 
-                                  -webkit-transform: rotate(45deg); 
-                                  -ms-transform: rotate(45deg); 
-                                  transform: rotate(45deg); 
+                                  -webkit-transform: rotate(45deg);
+                                  -ms-transform: rotate(45deg);
+                                  transform: rotate(45deg);
     }
 
     .show-nav .nav-toggle:before { width: 6%; height: 60%; top: 20%; left: 45%; }
@@ -286,7 +287,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
     .form-page form .row-triple-fields .field,
     .form-page form .row-triple-fields .field ~ .field,
-    .form-page form .row-triple-fields .field ~ .c2-sb-wrap, 
+    .form-page form .row-triple-fields .field ~ .c2-sb-wrap,
     .form-page form .row-triple-fields .c2-sb-wrap { width: 32% !important; float: left; }
 
     .form-page form .row-triple-fields .field ~ .field { margin-left: 2% !important; }
@@ -366,7 +367,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .page-title .nav-tools li a.prev { background-image: url(images/ico-chevron-left.png); -webkit-background-size: 8px 13px; background-size: 8px 13px; }
     .page-title .nav-tools li a.next { background-image: url(images/ico-chevron-right.png); -webkit-background-size: 8px 13px; background-size: 8px 13px; }
     .page-title .nav-tools li a.view { background-image: url(images/ico-list.png); -webkit-background-size: 18px 12px; background-size: 18px 12px; }
-    
+
     .content-col.left,
     .sidebar.right { width: auto; float: none; display: block; }
 
@@ -404,18 +405,31 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .post-schedule > div:first-child { margin: -2px 50px 0 0!important; }
 
     .bank-data .line-content span.label { position: relative; }
-    .bank-data .line-content span.label .icon-help { position: absolute; top: 3px; right: 10px; }	
+    .bank-data .line-content span.label .icon-help { position: absolute; top: 3px; right: 10px; }
 
     .tab-form:after { content: ''; line-height: 0; display: table; clear: both; }
 
     .table .fav-btn { display: inline-block; vertical-align: top; margin: -2px 0 0 10px; }
 
-    .statistic-table { margin-bottom: 20px; }
+    .single-project-mobile .statistic-table { margin-bottom: 20px; }
 
-    .statistic-table td:last-child, 
-    .statistic-table th:last-child { padding-right: 18px; }
+    .single-project-mobile .statistic-table th,
+    .single-project-mobile .statistic-table td { font-size: 10px; }
 
-    .statistic-table td { height: auto; padding: 5px 0; }
+    .single-project-mobile .statistic-table td { height: auto; padding: 5px 0 !important; }
+    .single-project-mobile .statistic-table th { padding: 0 0 0 5px; line-height: 28px; }
+
+    .single-project-mobile .statistic-table td:first-child { padding-left: 0; }
+    .single-project-mobile .statistic-table td:last-child { padding-right: 0; }
+    .single-project-mobile .statistic-table td:not(:first-child) { white-space: nowrap; }
+
+    .single-project-mobile .statistic-table .year-nav th { background-color: #a1a5a7; text-align: center; font-size: 12px; }
+    .single-project-mobile .statistic-table .year-nav th:first-child { background-color: #fff; }
+
+    .single-project-mobile .statistic-table td.intitule { width: auto; }
+    .single-project-mobile .statistic-table td.sameSize { width: 60px; }
+
+    .single-project-mobile .statistic-table td.inner-table { padding: 0 !important; }
 
     .tab .table-filter .period,
     .tab .table-filter .export,
@@ -456,7 +470,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
     .cookies { display: none !important; }
 
-    ul, 
+    ul,
     ol { padding-left: 25px; }
 
     .header { margin-bottom: 40px; }
@@ -467,8 +481,8 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
     .search { margin-top: 68px; }
 
-    .nav-toggle, 
-    .login-toggle, 
+    .nav-toggle,
+    .login-toggle,
     .search-toggle { margin: 0; }
 
     .banner-content { min-height: 163px; height: 163px; padding: 0 0 59px; position: relative; overflow: hidden; }
@@ -487,10 +501,10 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
     .banner .btn { font-size: 15px; line-height: 20px; width: 50%; height: auto; position: absolute; top: auto; bottom: 0; right: 0; padding: 10px; border-bottom: 3px solid #5b0134; margin: 0; border-radius: 0; box-sizing: border-box; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; }
     .banner .btn small { font-size: 10px; }
-    .banner .btn i { display: inline-block; position: relative; top: -2px; right: auto; margin: 0; 
-                     -webkit-transform: scale(0.5); 
-                     -ms-transform: scale(0.5); 
-                     transform: scale(0.5); 
+    .banner .btn i { display: inline-block; position: relative; top: -2px; right: auto; margin: 0;
+                     -webkit-transform: scale(0.5);
+                     -ms-transform: scale(0.5);
+                     transform: scale(0.5);
     }
 
     .banner .btn:before,
@@ -531,7 +545,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .copyrights { text-align: center; padding: 10px 0; }
     .copyrights a:first-of-type:before { content: ''; line-height: 0; display: table; clear: both; }
 
-    .footer-partners li, 
+    .footer-partners li,
     .footer-partners li + li { display: block; padding: 10px 0; }
 
     .show-login .login-panel {
@@ -555,14 +569,14 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .form-page form .row .pass-field-holder,
     .form-page form .row .pass-field-holder ~ .pass-field-holder,
     .form-page form .row-triple-fields .field ~ .c2-sb-wrap,
-    .form-page form .row-alt .inline-text-alt, 
-    .form-page form .row-triple-fields-alt .inline-text-alt ~ .field, 
+    .form-page form .row-alt .inline-text-alt,
+    .form-page form .row-triple-fields-alt .inline-text-alt ~ .field,
     .form-page form .row-triple-fields-alt .inline-text-alt ~ .c2-sb-wrap,
-    .form-page form .row-alt .inline-text-alt + .field, 
+    .form-page form .row-alt .inline-text-alt + .field,
     .form-page form .row-alt .inline-text-alt ~ .inline-text-alt ~ .c2-sb-wrap,
-    #form_depot_dossier .row .field-large, 
+    #form_depot_dossier .row .field-large,
     #form_depot_dossier .row .uploader,
-    #form_depot_dossier .row .field-large ~ .field-large, 
+    #form_depot_dossier .row .field-large ~ .field-large,
     #form_depot_dossier .row .uploader ~ .uploader,
     .register-form .euro-field.field-large,
     .register-form .euro-field.field-large ~ .c2-sb-wrap,
@@ -572,12 +586,12 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .form-page form .row .field,
     .form-page form .row .field ~ .field,
     .form-page form .row-triple-fields .field ~ .c2-sb-wrap,
-    .form-page form .row-triple-fields-alt .inline-text-alt ~ .field, 
+    .form-page form .row-triple-fields-alt .inline-text-alt ~ .field,
     .form-page form .row-triple-fields-alt .inline-text-alt ~ .c2-sb-wrap,
-    .form-page form .row-alt .inline-text-alt + .field, 
+    .form-page form .row-alt .inline-text-alt + .field,
     .form-page form .row-alt .inline-text-alt ~ .inline-text-alt ~ .c2-sb-wrap,
-    #form_depot_dossier .row .field-large, 
-    #form_depot_dossier .row .field-large ~ .field-large, 
+    #form_depot_dossier .row .field-large,
+    #form_depot_dossier .row .field-large ~ .field-large,
     .register-form .euro-field.field-large,
     .register-form .euro-field.field-large ~ .c2-sb-wrap,
     #form_etape_1 .field { height: 35px; }
@@ -600,7 +614,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .form-page .row-bank .field-holder .field-extra-tiny,
     .form-page .row-bank .field-holder .field-extra-tiny + .field-extra-tiny { width: 100%; float: none; margin: 10px 0 0 !important; }
 
-    .form-page form .row-upload .uploader, 
+    .form-page form .row-upload .uploader,
     .form-page form .row-upload .file-holder { float: none; }
     .form-page form .row-upload .file-holder { margin-top: 15px; }
 
@@ -616,6 +630,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
     .popup-cnt { padding: 0 !important; }
     .popup-cnt .field { width: 100%; height: 35px; float: none; display: block; box-sizing: border-box; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; }
+    .popup-cnt .field-currency { padding-right: 33px; }
 
     .popup-cnt form table,
     .popup-cnt form table thead,
@@ -673,7 +688,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .tabs-nav ul { overflow: hidden; padding: 0; }
     .tabs-nav li { max-width: 32%; }
     .tabs-nav li a { font-size: 13px; line-height: 20px; font-weight: normal; }
-    .tabs-nav li a:hover, 
+    .tabs-nav li a:hover,
     .tabs-nav li.active a { min-height: 42px; line-height: 20px; }
     .tabs-nav li.active a { border-bottom: 1px solid #b10366; margin-bottom: -1px; }
 
@@ -718,15 +733,6 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
     .year-nav ul { padding: 0 0 25px; margin: 0; float: none; display: block; text-align: center; }
     .year-nav li { display: inline-block; float: none; padding: 0 2px; }
-
-    .statistic-table th:first-child,
-    .statistic-table td:first-child { padding-left: 0 !important; }
-
-    .statistic-table th:last-child,
-    .statistic-table td:last-child { padding-right: 0; }
-
-    .statistic-table th,
-    .statistic-table td { font-size: 10px; }
 
     .table-filter .period table,
     .table-filter .period thead,
@@ -842,7 +848,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
     .account-data #form_mdp .row .field-help-before { left: 12px; top: -1px; }
 
-    .account-data form .row.small-select select.field-tiny, 
+    .account-data form .row.small-select select.field-tiny,
     .account-data form .row.small-select select.field-tiny + .c2-sb-wrap,
     .account-data form .row-upload .uploader { width: 100%; }
     .account-data form .row-upload .uploader .btn { float: none; }
@@ -873,6 +879,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .single-project-mobile p.single-project-meta strong { color: #00a453; font-weight: 400; }
 
     .single-project-mobile .single-project-stats { text-align: center; }
+    .single-project-mobile .single-project-stats > h2 { letter-spacing: normal; }
 
     .single-project-mobile .single-project-stats [class^="ico-"] { font-size: 0; line-height: 0; display: inline-block; vertical-align: middle; position: relative; top: -2px; background-repeat: no-repeat; background-position: 0 0; -webkit-background-size: 100% 100%; background-size: 100% 100%; }
     .single-project-mobile .single-project-stats .ico-pig { width: 20px; height: 19px; background-image: url(images/ico-pig.png); }
@@ -979,7 +986,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
         line-height: 15px;
         text-transform: uppercase;
     }
-    .single-project-mobile td{padding: 5px !important ;font-size: 15px;}
+    .single-project-mobile td {padding: 5px !important; font-size: 15px; }
 
     .single-project-mobile .enchereVous{left: 0px;}
 
@@ -1001,6 +1008,6 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
     .login-panel .error_login_mobile{display: inline;}
     .login-panel .error_login_mobile .error_login{height: auto;text-align: center;}
-    
+
     .testimonials{height: 100px;}
 }
