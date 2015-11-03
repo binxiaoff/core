@@ -69,7 +69,6 @@ class cronController extends bootstrap
     public function _minute()
     {
         if (true === $this->startCron('correctionOffreAccepteAucuneDate', 5)) {
-
             $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
             $this->loans                   = $this->loadData('loans');
             $this->transactions            = $this->loadData('transactions');
@@ -4637,12 +4636,8 @@ class cronController extends bootstrap
                     foreach ($lLoans as $l) {
                         $projects->get($l['id_project'], 'id_project');
 
-                        $pathAnnee = $this->path . 'protected/declarationContratPret/' . substr($l['added'], 0, 4) . '/';
-                        if (false === file_exists($pathAnnee)) {
-                            mkdir($pathAnnee);
-                        }
-                        $path = $pathAnnee . $projects->slug . '/';
-                        $nom = 'Unilend_declarationContratPret_' . $l['id_loan'] . '.pdf';
+                        $path = $this->path . 'protected/declarationContratPret/' . substr($l['added'], 0, 4) . '/' . $projects->slug . '/';
+                        $nom  = 'Unilend_declarationContratPret_' . $l['id_loan'] . '.pdf';
 
                         $oCommandPdf = new Command('pdf', 'declarationContratPret_html', array($l['id_loan'], $path), $this->language);
                         $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
@@ -5587,21 +5582,17 @@ class cronController extends bootstrap
             $companies   = $this->loadData('companies');
             $emprunteurs = $this->loadData('clients');
 
-            $listeRemb = $factures->selectEcheancesRembAndNoFacture();
-            if ($listeRemb != false) {
-                foreach ($listeRemb as $r) {
-                    $oCommandPdf = new Command('pdf', 'facture_ER', array($r['hash'], $r['id_project'], $r['ordre']), $this->language);
-                    $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                    $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre']);
-                }
+            foreach ($factures->selectEcheancesRembAndNoFacture() as $r) {
+                $oCommandPdf = new Command('pdf', 'facture_ER', array($r['hash'], $r['id_project'], $r['ordre']), $this->language);
+                $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
+                $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre']);
             }
 
-            $lProjetsEnremb = $projects->selectProjectsByStatus(80);
-            foreach ($lProjetsEnremb as $projet) {
-                // Les projets n'ayant pas encore de facture EF
-                if ($factures->get($projet['id_project'], 'type_commission = 1 AND id_project') == false) {
+            foreach ($projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT) as $projet) {
+                if (false === $factures->get($projet['id_project'], 'type_commission = 1 AND id_project')) {
                     $companies->get($projet['id_company'], 'id_company');
                     $emprunteurs->get($companies->id_client_owner, 'id_client');
+
                     $oCommandPdf = new Command('pdf', 'facture_EF', array($emprunteurs->hash, $r['id_project']), $this->language);
                     $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
                     $oPdf->_facture_EF($emprunteurs->hash, $r['id_project']);
@@ -5617,7 +5608,6 @@ class cronController extends bootstrap
     public function _check_alim_cb()
     {
         if (true === $this->startCron('checkAlimCb', 5)) {
-
             $this->autoFireHeader = false;
             $this->autoFireHead   = false;
             $this->autoFireView   = false;
