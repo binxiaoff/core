@@ -7937,34 +7937,44 @@ class cronController extends bootstrap
     public function _stabilisation_mails()
     {
         if ($this->startCron('stabilisationMail', 10)) {
-            $debut            = time();
-            $nbJOursEnMOins   = 30;
-            $limite           = 2000;
-            $dateMoinsNbJours = date('Y-m-d', mktime(0, 0, 0, date('m'), date('d') - $nbJOursEnMOins, date('Y')));
+            $iStartTime       = time();
+            $iRetentionDays   = 30;
+            $iLimit           = 2000;
+            $sMinimumDate     = date('Y-m-d', mktime(0, 0, 0, date('m'), date('d') - $iRetentionDays, date('Y')));
 
-            $this->oLogger->addRecord(ULogger::INFO, 'Current date with an offset of ' . $nbJOursEnMOins . ' days: ' . $dateMoinsNbJours, array('ID' => $debut));
+            $this->oLogger->addRecord(ULogger::INFO, 'Current date with an offset of ' . $iRetentionDays . ' days: ' . $sMinimumDate, array('ID' => $iStartTime));
 
             $this->bdd->query("
                 INSERT IGNORE INTO mails_filer_backup (`id_filermails`, `id_textemail`, `desabo`, `email_nmp`, `from`, `to`, `subject`, `content`, `headers`, `added`, `updated`)
-                SELECT m1.* FROM mails_filer m1 WHERE LEFT(m1.added, 10) <= '" . $dateMoinsNbJours . "' ORDER BY m1.added ASC LIMIT " . $limite
+                SELECT m1.* FROM mails_filer m1 WHERE LEFT(m1.added, 10) <= '" . $sMinimumDate . "' ORDER BY m1.added ASC LIMIT " . $iLimit
             );
 
-            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` backuped lines: ' . mysql_affected_rows(), array('ID' => $debut));
+            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` backuped lines: ' . mysql_affected_rows(), array('ID' => $iStartTime));
 
-            $this->bdd->query('DELETE FROM `mails_filer` WHERE LEFT(added, 10) <= "' . $dateMoinsNbJours . '" ORDER BY added ASC LIMIT ' . $limite);
+            $this->bdd->query('DELETE FROM `mails_filer` WHERE LEFT(added, 10) <= "' . $sMinimumDate . '" ORDER BY added ASC LIMIT ' . $iLimit);
 
-            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` deleted lines: ' . mysql_affected_rows(), array('ID' => $debut));
+            $iDeletedRows = mysql_affected_rows();
+            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` deleted lines: ' . $iDeletedRows, array('ID' => $iStartTime));
+
+            if ($iDeletedRows < $iLimit) {
+                $this->bdd->query('OPTIMIZE TABLE `mails_filer`');
+            }
 
             $this->bdd->query("
                 INSERT IGNORE INTO nmp_backup (`id_nmp`, `serialize_content`, `date`, `mailto`, `reponse`, `erreur`, `status`, `date_sent`, `added`, `updated`)
-                SELECT n1.* FROM nmp n1  WHERE LEFT(n1.added, 10) <= '" . $dateMoinsNbJours . "' AND mailto NOT LIKE '%unilend.fr' ORDER BY n1.added ASC LIMIT " . $limite
+                SELECT n1.* FROM nmp n1  WHERE LEFT(n1.added, 10) <= '" . $sMinimumDate . "' AND mailto NOT LIKE '%unilend.fr' ORDER BY n1.added ASC LIMIT " . $iLimit
             );
 
-            $this->oLogger->addRecord(ULogger::INFO, '`nmp` backuped lines: ' . mysql_affected_rows(), array('ID' => $debut));
+            $this->oLogger->addRecord(ULogger::INFO, '`nmp` backuped lines: ' . mysql_affected_rows(), array('ID' => $iStartTime));
 
-            $this->bdd->query('DELETE FROM `nmp` WHERE LEFT(added, 10) <= "' . $dateMoinsNbJours . '" ORDER BY added ASC LIMIT ' . $limite);
+            $this->bdd->query('DELETE FROM `nmp` WHERE LEFT(added, 10) <= "' . $sMinimumDate . '" ORDER BY added ASC LIMIT ' . $iLimit);
 
-            $this->oLogger->addRecord(ULogger::INFO, '`nmp` deleted lines: ' . mysql_affected_rows(), array('ID' => $debut));
+            $iDeletedRows = mysql_affected_rows();
+            $this->oLogger->addRecord(ULogger::INFO, '`nmp` deleted lines: ' . $iDeletedRows, array('ID' => $iStartTime));
+
+            if ($iDeletedRows < $iLimit) {
+                $this->bdd->query('OPTIMIZE TABLE `nmp`');
+            }
 
             $this->stopCron();
         }

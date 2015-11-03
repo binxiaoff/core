@@ -22,7 +22,7 @@
 						<li>Code postal<div class="col-small"><?=$this->companiesEmprunteur->zip?></div></li>
 						<li>Ville<div class="col-small"><?=$this->companiesEmprunteur->city?></div></li>
 						<li>Tribunal de commerce<div class="col-small"><?=$this->companiesEmprunteur->tribunal_com?></div></li>
-						<li>R.C.S.<div class="col-small"><?=$this->companiesEmprunteur->rcs?></div></li>
+						<li>R.C.S.<div class="col-small"><?=$this->companiesEmprunteur->siren?></div></li>
 						<li>Activité<div class="col-small"><?=$this->companiesEmprunteur->activite?></div></li>
 						<li>Lieu d'exploitation<div class="col-small"><?=$this->companiesEmprunteur->lieu_exploi?></div></li>
 					</ul>
@@ -52,7 +52,7 @@
                             <li>Code postal<div class="col-small"><?=$this->companiesPreteur->zip?></div></li>
                             <li>Ville<div class="col-small"><?=$this->companiesPreteur->city?></div></li>
                             <li>Tribunal de commerce<div class="col-small"><?=$this->companiesPreteur->tribunal_com?></div></li>
-                            <li>R.C.S.<div class="col-small"><?=$this->companiesPreteur->rcs?></div></li>
+                            <li>R.C.S.<div class="col-small"><?=$this->companiesPreteur->siren?></div></li>
                             <?
 						}
 						?>
