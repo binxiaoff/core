@@ -31,7 +31,7 @@
 
             $(window).on('load resize', function () {
                 if ($(window).width() < 768) {
-                    $('#btn_pret').attr("href", "<?= $this->lurl . '/Landing-Pages-Externes/2015' ?>");
+                    $('#btn_pret').attr("href", "<?= $this->lurl ?>/LP_inscription_preteurs/");
                 }
             });
         </script>
