@@ -3172,4 +3172,25 @@ class ajaxController extends bootstrap
         }
         die;
     }
+
+    public function _get_cities()
+    {
+        $this->autoFireView = false;
+        $aCities = array();
+        if (isset($_GET['term']) && '' !== trim($_GET['term'])) {
+            $_GET  = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
+            $oVilles = $this->loadData('villes');
+            $aResults = $oVilles->lookupCities($_GET['term']);
+            if (false === empty($aResults)) {
+                foreach($aResults as $aItem) {
+                    $aCities[] = array(
+                        'label' => $aItem['ville'] . ' (' . $aItem['cp'] . ')',
+                        'value' => $aItem['insee']
+                    );
+                }
+            }
+        }
+
+        echo json_encode($aCities);
+    }
 }

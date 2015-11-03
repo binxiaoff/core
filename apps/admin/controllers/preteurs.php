@@ -327,6 +327,8 @@ class preteursController extends bootstrap
 
     function _edit_preteur()
     {
+        $this->loadJs('default/jquery-ui-1.10.3.custom.min');
+
         //On appelle la fonction de chargement des données
         $this->loadGestionData();
 
@@ -561,6 +563,7 @@ class preteursController extends bootstrap
 
                 $this->clients->telephone       = str_replace(' ', '', $_POST['phone']);
                 $this->clients->ville_naissance = $_POST['com-naissance'];
+                $this->clients->insee_birth = $_POST['insee_birth'];
 
                 // Naissance
                 $naissance                        = explode('/', $_POST['naissance']);
