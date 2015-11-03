@@ -139,6 +139,8 @@
     }
 
 
+
+
 </style>
 
 <h2><?= $this->lng['preteur-operations']['titre-3'] ?></h2>
@@ -146,7 +148,7 @@
 <div class="table-filter clearfix">
     <p class="left"><?= $this->lng['profile']['historique-des-projets'] ?><?= $this->clients->id_client ?></p>
 
-    <div class="select-box right" style="margin-left:10px;   width: 175px !important;">
+    <div class="select-box right" style="margin-left:10px; width: 175px !important;">
         <select name="anneeDetailPret" id="anneeDetailPret" class="custom-select field-mini">
             <option value="<?= date('Y') ?>"><?= $this->lng['profile']['annee'] ?> <?= date('Y') ?></option>
             <?
@@ -167,93 +169,62 @@
 <div class="loadDetailOp">
     <table class="table detail-ope finances">
         <tr>
-            <th align="left" class="col1" id="order_titre">
+            <th align="left" class="col1" id="order_titre_prets">
                 <div class="th-wrap">
-                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-projet'] ?>"
-                       class="icon-person tooltip-anchor"></i>
-
-                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-projet'] ?>&nbsp;<i
-                            class="icon-arrows"></i></div>
+                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-projet'] ?>" class="icon-person tooltip-anchor"></i>
+                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-projet'] ?>&nbsp;<i class="icon-arrows"></i></div>
                 </div>
             </th>
-            <th class="col2" id="order_note">
+            <th class="col2" id="order_note_prets">
                 <div class="th-wrap">
-                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-note'] ?>"
-                       class="icon-gauge tooltip-anchor"></i>
-
-                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-note'] ?>&nbsp;<i
-                            class="icon-arrows"></i></div>
-                </div>
-
-            </th>
-            <th class="col3" id="order_montant">
-                <div class="th-wrap">
-                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-montant'] ?>"
-                       class="icon-euro tooltip-anchor"></i>
-
-                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-montant'] ?>&nbsp;<i
-                            class="icon-arrows"></i></div>
+                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-note'] ?>" class="icon-gauge tooltip-anchor"></i>
+                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-note'] ?>&nbsp;<i class="icon-arrows"></i></div>
                 </div>
             </th>
-            <th class="col4" id="order_interet">
+            <th class="col3" id="order_montant_prets">
                 <div class="th-wrap">
-                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-interet'] ?>"
-                       class="icon-graph tooltip-anchor"></i>
-
-                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-interet'] ?>&nbsp;<i
-                            class="icon-arrows"></i></div>
+                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-montant'] ?>" class="icon-euro tooltip-anchor"></i>
+                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-montant'] ?>&nbsp;<i class="icon-arrows"></i></div>
+                </div>
+            </th>
+            <th class="col4" id="order_interet_prets">
+                <div class="th-wrap">
+                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-interet'] ?>" class="icon-graph tooltip-anchor"></i>
+                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-interet'] ?>&nbsp;<i class="icon-arrows"></i></div>
                 </div>
             </th>
             <th>
                 <div class="th-wrap th-wrap-v2">
-                    <i title="<?= $this->lng['preteur-operations-detail']['info-calendrier'] ?>"
-                       class="icon-calendar tooltip-anchor"></i>
-
+                    <i title="<?= $this->lng['preteur-operations-detail']['info-calendrier'] ?>" class="icon-calendar tooltip-anchor"></i>
                     <div class="calendar-title" style="margin-top: 8.5px;">
-                        <span style=" width:75px;"
-                              id="order_debut"><?= $this->lng['preteur-operations-detail']['titre-debut'] ?>&nbsp;<i
-                                class="icon-arrows"></i></span>
-                        <span style=" width:79px;"
-                              id="order_prochaine"><?= $this->lng['preteur-operations-detail']['titre-prochaine'] ?>
-                            &nbsp;<i class="icon-arrows"></i></span>
-                        <span style=" width:75px;"
-                              id="order_fin"><?= $this->lng['preteur-operations-detail']['titre-fin'] ?>&nbsp;<i
-                                class="icon-arrows"></i></span>
+                        <span style=" width:75px;" id="order_debut_prets"><?= $this->lng['preteur-operations-detail']['titre-debut'] ?>&nbsp;<i class="icon-arrows"></i></span>
+                        <span style=" width:79px;" id="order_prochaine_prets"><?= $this->lng['preteur-operations-detail']['titre-prochaine'] ?>&nbsp;<i class="icon-arrows"></i></span>
+                        <span style=" width:75px;" id="order_fin_prets"><?= $this->lng['preteur-operations-detail']['titre-fin'] ?>&nbsp;<i class="icon-arrows"></i></span>
                     </div>
                 </div>
             </th>
-
-            <th class="col6" id="order_mensualite">
+            <th class="col6" id="order_mensualite_prets">
                 <div class="th-wrap">
-                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-mensualite'] ?>"
-                       class="icon-bank tooltip-anchor"></i>
-
-                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-mensualite'] ?>&nbsp;<i
-                            class="icon-arrows"></i></div>
+                    <i title="<?= $this->lng['preteur-operations-detail']['info-titre-mensualite'] ?>" class="icon-bank tooltip-anchor"></i>
+                    <div class="title-ope"><?= $this->lng['preteur-operations-detail']['titre-mensualite'] ?>&nbsp;<i class="icon-arrows"></i></div>
                 </div>
             </th>
             <th>
-                <div class="th-wrap"><i title="<?= $this->lng['preteur-operations-detail']['info-contrat'] ?>"
-                                        class="icon-arrow-next tooltip-anchor"></i></div>
+                <div class="th-wrap"><i title="<?= $this->lng['preteur-operations-detail']['info-contrat'] ?>" class="icon-arrow-next tooltip-anchor"></i></div>
             </th>
         </tr>
-
-        <?
+        <?php
 
         if ($this->lSumLoans != false) {
             $i = 1;
             foreach ($this->lSumLoans as $k => $l) {
-
                 $Le_projects = $this->loadData('projects');
                 $Le_projects->get($l['id_project']);
-
 
                 $this->projects_status->getLastStatut($l['id_project']);
 
                 //si un seul loan sur le projet
                 if ($l['nb_loan'] == 1) {
-                    //$SumAremb = $this->echeanciers->select('id_loan = '.$l['id_loan'].' AND status = 0','ordre ASC',0,1)
-
                     ?>
                     <tr class="<?= ($i % 2 == 1 ? '' : 'odd') ?>">
                         <td>
@@ -266,28 +237,25 @@
                         <td><div class="cadreEtoiles"><div class="etoile <?= $this->lNotes[$l['risk']] ?>">&nbsp;</div></div></td>
                         <td style="white-space: nowrap;"><?= number_format($l['amount'], 2, ',', ' ') ?> €</td>
                         <td style="white-space: nowrap;"><?= number_format($l['rate'], 2, ',', ' ') ?> %</td>
-                        <?php
-                        if($l['project_status'] == projects_status::REMBOURSEMENT_ANTICIPE){
-                            ?>
+                        <?php if ($l['project_status'] == projects_status::REMBOURSEMENT_ANTICIPE) { ?>
                             <td colspan="2">
                                 <span class="calandar-ech" style="width: 79px;"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
                                 <span class="calandar-ech" style="width: 237px;"><p>Remboursé intégralement <br /> le <?= $this->dates->formatDate($l['status_change'], 'd/m/Y')?></p></span>
                             </td>
-                            <?
-                        } else {?>
-                            <td><span class="calandar-ech"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
+                        <?php } else { ?>
+                            <td>
+                                <span class="calandar-ech"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
                                 <span class="calandar-ech"><?= $this->dates->formatDate($l['next_echeance'], 'd/m/Y') ?></span>
                                 <span class="calandar-ech"><?= $this->dates->formatDate($l['fin'], 'd/m/Y') ?></span>
                             </td>
                             <td><?= number_format($l['mensuel'], 2, ',', ' ') ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
-                        <?}
-                        ?>
+                        <?php } ?>
                         <td>
-                            <?php if ($this->projects_status->status >= 80) { ?>
-                                <a href="<?= $this->lurl . '/pdf/contrat/' . $this->clients->hash . '/' . $l['id_loan_if_one_loan'] ?>"><img
-                                        src="<?= $this->surl ?>/styles/default/images/pdf50.png"
-                                        class="btn-detailLoans_<?= $k ?>" style="margin-right: 20px;"/></a>
-                            <?php } ?>
+                        <?php if ($this->projects_status->status >= 80) { ?>
+                            <a href="<?= $this->lurl . '/pdf/contrat/' . $this->clients->hash . '/' . $l['id_loan_if_one_loan'] ?>"><img
+                               src="<?= $this->surl ?>/styles/default/images/pdf50.png"
+                               class="btn-detailLoans_<?= $k ?>" style="margin-right: 20px;"/></a>
+                        <?php } ?>
                         </td>
                     </tr>
                     <?php
@@ -348,23 +316,19 @@
                         </td>
                         <td style="white-space: nowrap;"><?= number_format($l['amount'], 2, ',', ' ') ?> €</td>
                         <td style="white-space: nowrap;"><?= number_format($l['rate'], 2, ',', ' ') ?> %</td>
-                        <td>
-                            <?php
-                            if($l['project_status'] == projects_status::REMBOURSEMENT_ANTICIPE){
-                            ?>
-                        <td colspan="2">
-                            <span class="calandar-ech" style="width: 79px;"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
-                            <span class="calandar-ech" style="width: 237px; "><p>Remboursé intégralement <br /> le <?= $this->dates->formatDate($l['status_change'], 'd/m/Y')?></p></span>
-                        </td>
-                        <?
-                        } else {?>
-                            <td><span class="calandar-ech"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
+                        <?php if ($l['project_status'] == projects_status::REMBOURSEMENT_ANTICIPE) { ?>
+                            <td colspan="2">
+                                <span class="calandar-ech" style="width: 79px;"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
+                                <span class="calandar-ech" style="width: 237px; "><p>Remboursé intégralement <br /> le <?= $this->dates->formatDate($l['status_change'], 'd/m/Y')?></p></span>
+                            </td>
+                        <?php } else { ?>
+                            <td>
+                                <span class="calandar-ech"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
                                 <span class="calandar-ech"><?= $this->dates->formatDate($l['next_echeance'], 'd/m/Y') ?></span>
                                 <span class="calandar-ech"><?= $this->dates->formatDate($l['fin'], 'd/m/Y') ?></span>
                             </td>
                             <td><?= number_format($l['mensuel'], 2, ',', ' ') ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
-                        <?}
-                        ?>
+                        <?php } ?>
                         <td>
                             <img src="<?= $this->surl ?>/styles/default/images/pdf50.png"
                                  class="btn-detailLoans_<?= $k ?>"/>
@@ -478,10 +442,9 @@
 
                         <tr class="<?= ($i % 2 == 1 ? '' : 'odd') ?>">
                             <td colspan="7" style="padding:0;">
-                                <div class="detailLoans_declaration_creances loans_declaration_creances_<?= $k ?>"
-                                     style="display:none;">
+                                <div class="detailLoans_declaration_creances loans_declaration_creances_<?= $k ?>" style="display:none;">
                                     <table class="table" style="margin-bottom:0;">
-                                        <?
+                                        <?php
                                         $a          = 0;
                                         $listeLoans = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $l['id_project']);
                                         foreach ($listeLoans as $loan) {
@@ -541,11 +504,8 @@
                                             $(".btn-detailLoans_declaration_creances_<?=$k?>").addClass("on_display");
                                             $(".btn-detailLoans_declaration_creances_<?=$k?>").removeClass("off_display");
                                         }
-
                                     });
                                 </script>
-
-
                             </td>
                         </tr>
                         <?
@@ -557,115 +517,79 @@
         }
         ?>
     </table>
-    <!-- /.table -->
 </div>
 
 <script type="text/javascript">
     $("input,select").change(function () {
-
         $(".load").fadeIn();
         var val = {
             order: "",
             type: "",
             annee: $("#anneeDetailPret").val()
-
         };
-        $.post(add_url + "/ajax/detail_op", val).done(function (data) {
 
+        $.post(add_url + "/ajax/detail_op", val).done(function (data) {
             if (data != 'nok') {
                 $(".loadDetailOp").html(data);
                 $(".load").fadeOut();
             }
-
         });
     });
-</script>
 
+    /**
+    Add icons with tooltips to all table rows
+    They will be visible below tablet landscape breakpoint
+    and will replace the table head icons
+    */
+   $('.hp-counter + .main .table tr, #table_tri tr, .vos_prets table.detail-ope tr').each(function() {
+       $(this).find('td').each(function(indx) {
+           var $icon = $(this).closest('.table').find('th').eq(indx).html();
+           $($icon).prependTo($(this))
+       });
+   });
 
-<script type="text/javascript">
-    $("#order_titre,#order_note,#order_montant,#order_interet,#order_debut,#order_prochaine,#order_fin,#order_mensualite,input,select").click(function () {
-
-        if ($(this).attr('id') == 'order_titre') {
-            var type = 'order_titre';
-
-            if ($("#order_titre.asc").length) {
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+   $(window).on('load resize', function() {
+        if ($(window).width() < 768) {
+            $('.detail-ope .th-wrap').show();
+        } else {
+            $('.detail-ope .th-wrap').hide();
+            $('.detail-ope th .th-wrap').show();
         }
-        else if ($(this).attr('id') == 'order_note') {
-            var type = 'order_note';
+    });
 
-            if ($("#order_note.asc").length) {
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+    $("#order_titre_prets, #order_note_prets, #order_montant_prets, #order_interet_prets, #order_debut_prets, #order_prochaine_prets, #order_fin_prets, #order_mensualite_prets,input,select").click(function() {
+        if ($(this).attr('id') == 'order_titre_prets' ) {
+            var type = 'order_titre_prets',
+                order = $("#order_titre_prets. asc").length ? 'desc' : 'asc';
         }
-        else if ($(this).attr('id') == 'order_montant') {
-            var type = 'order_montant';
-
-            if ($("#order_montant.asc").length) {
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+        else if ($(this).attr('id') == 'order_note_prets') {
+            var type = 'order_note_prets',
+                order = $("#order_note_prets.asc").length ? 'desc' : 'asc';
         }
-        else if ($(this).attr('id') == 'order_interet') {
-            var type = 'order_interet';
-
-            if ($("#order_interet.asc").length) {
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+        else if ($(this).attr('id') == 'order_montant_prets') {
+            var type = 'order_montant_prets',
+                order = $("#order_montant_prets.asc").length ? 'desc' : 'asc';
         }
-        else if ($(this).attr('id') == 'order_debut') {
-            var type = 'order_debut';
-
-            if ($("#order_debut.asc").length) {
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+        else if ($(this).attr('id') == 'order_interet_prets') {
+            var type = 'order_interet_prets',
+                order = $("#order_interet_prets.asc").length ? 'desc' : 'asc';
         }
-        else if ($(this).attr('id') == 'order_prochaine') {
-            var type = 'order_prochaine';
-
-            if ($("#order_prochaine.asc").length) {
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+        else if ($(this).attr('id') == 'order_debut_prets') {
+            var type = 'order_debut_prets',
+                order = $("#order_debut_prets.asc").length ? 'desc' : 'asc';
         }
-        else if ($(this).attr('id') == 'order_fin') {
-            var type = 'order_fin';
-
-            if ($("#order_fin.asc").length) {
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+        else if ($(this).attr('id') == 'order_prochaine_prets') {
+            var type = 'order_prochaine_prets',
+                order = $("#order_prochaine_prets.asc").length ?  'desc' : 'asc';
         }
-        else if ($(this).attr('id') == 'order_mensualite') {
-            var type = 'order_mensualite';
-
-            if ($("#order_mensualite.asc").length) {
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+        else if ($(this).attr('id') == 'order_fin_prets') {
+            var type = 'order_fin_prets'
+                order = $("#order_fin_prets.asc").length ?  'desc' : 'asc';
         }
-
+        else if ($(this).attr('id') == 'order_mensualite_prets') {
+            var type = 'order_mensualite_prets'
+                order = $("#order_mensualite_prets.asc").length ?  'desc' : 'asc';
+        }
 
         $(".load").fadeIn();
 
@@ -674,13 +598,12 @@
             type: type,
             annee: $("#anneeDetailPret").val()
         }
-        $.post(add_url + "/ajax/detail_op", val).done(function (data) {
 
+        $.post(add_url + "/ajax/detail_op", val).done(function (data) {
             if (data != 'nok') {
                 $(".loadDetailOp").html(data);
                 $(".load").fadeOut();
             }
-
         });
     });
 </script>

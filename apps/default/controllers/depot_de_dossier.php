@@ -357,21 +357,25 @@ class depot_de_dossierController extends bootstrap
                     $syntheseFinanciereList = array();
                     $derniersBilans = array();
                     $i = 0;
-                    foreach ($result->myInfo->bilans as $b)
+
+                    if(count($result->myInfo->bilans)> 0)
                     {
-                        $annee = substr($b->bilan->dateClotureN, 0, 4);
-                        $posteActifList[$annee] = $b->bilanRetraiteInfo->posteActifList;
-                        $postePassifList[$annee] = $b->bilanRetraiteInfo->postePassifList;
-                        $syntheseFinanciereInfo[$annee] = $b->syntheseFinanciereInfo;
-                        $syntheseFinanciereList[$annee] = $b->syntheseFinanciereInfo->syntheseFinanciereList;
+                        foreach ($result->myInfo->bilans as $b)
+                        {
+                            $annee = substr($b->bilan->dateClotureN, 0, 4);
+                            $posteActifList[$annee] = $b->bilanRetraiteInfo->posteActifList;
+                            $postePassifList[$annee] = $b->bilanRetraiteInfo->postePassifList;
+                            $syntheseFinanciereInfo[$annee] = $b->syntheseFinanciereInfo;
+                            $syntheseFinanciereList[$annee] = $b->syntheseFinanciereInfo->syntheseFinanciereList;
 
-                        $soldeIntermediaireGestionInfo[$annee] = $b->soldeIntermediaireGestionInfo->SIGList;
-                        $investissement[$annee] = $b->bilan->posteList[0]->valeur;
+                            $soldeIntermediaireGestionInfo[$annee] = $b->soldeIntermediaireGestionInfo->SIGList;
+                            $investissement[$annee] = $b->bilan->posteList[0]->valeur;
 
-                        // date des derniers bilans
-                        $derniersBilans[$i] = $annee;
+                            // date des derniers bilans
+                            $derniersBilans[$i] = $annee;
 
-                        $i++;
+                            $i++;
+                        }
                     }
 
                     $ldate = $lesdates;
@@ -894,7 +898,8 @@ class depot_de_dossierController extends bootstrap
                         $this->companies_details->fichier_derniere_liasse_fiscale = $this->upload->getName();
                     }
                 }
-                if ($this->companies_details->fichier_derniere_liasse_fiscale == '')
+
+                if ($this->companies_details->fichier_derniere_liasse_fiscale == '' && $_POST['is_responsive']!= "true")
                 {
                     $form_ok = false;
                 }
@@ -1103,9 +1108,27 @@ class depot_de_dossierController extends bootstrap
                     // On fait une mise à jour
                     $this->clients->update();
                     $this->clients_adresses->update();
-                    $this->companies->update();
+                    $this->companies->id_compagny = $this->companies->update();
                     $this->companies_details->update();
                     $this->projects->update();
+
+
+                    //Si on est en responsive on ajoute l'emprunteur dans la table prospect ([Masquage champs + nouvelle entrée dans la table prospect emprunteur]Aucune autre action, conversation avec DN 06-08-15)
+                    if($_POST['is_responsive']== "true")
+                    {
+                        $this->prospects_emprunteurs = $this->loadData('prospects_emprunteurs');
+                        $this->prospects_emprunteurs->prenom = $this->clients->prenom;
+                        $this->prospects_emprunteurs->nom = $this->clients->nom;
+                        $this->prospects_emprunteurs->email = $this->clients->email;
+                        $this->prospects_emprunteurs->source = $this->clients->source;
+                        $this->prospects_emprunteurs->id_compagny = $this->companies->id_compagny;
+                        $this->prospects_emprunteurs->id_project = $this->projects->id_project;
+                        $this->prospects_emprunteurs->id_client = $this->clients->id_client;
+                        $this->prospects_emprunteurs->create();
+
+                    }
+
+
 
 
                     // -- acceptation des cgu -- //

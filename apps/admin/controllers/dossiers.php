@@ -37,7 +37,7 @@ class dossiersController extends bootstrap
         $this->wsdl = $this->settings->value;
         // Identification
         $this->identification = $login . '|' . $mdp;
-//        (int)$this->projects->period === 1000000 || (int)$this->projects->period === 0
+
         // Liste deroulante conseil externe de l'entreprise
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $this->conseil_externe = $this->ficelle->explodeStr2array($this->settings->value);
@@ -2006,7 +2006,7 @@ class dossiersController extends bootstrap
                     $credit_bail = $result[45][1];
                     // Location avec option d'achat
                     $location_avec_option_achat = $result[46][1];
-                    // Location financi?re
+                    // Location financière
                     $location_financiere = $result[47][1];
                     // Location longue duree
                     $location_longue_duree = $result[48][1];

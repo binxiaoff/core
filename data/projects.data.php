@@ -194,7 +194,7 @@ class projects extends projects_crud
         //mail('d.courtier@equinoa.com','test unilend sql',$sql);
         $resultat = $this->bdd->query($sql);
         $result = array();
-
+      
         $positionStart = $start + $nb;
 
         while ($record = $this->bdd->fetch_array($resultat)) {
