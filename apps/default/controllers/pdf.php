@@ -51,15 +51,14 @@ class pdfController extends bootstrap
      */
     public $sDisplay;
 
-
     public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
-        //If we don't pass by execute.
-        $this->params = (isset($this->params)) ? $this->params : $command->getParameters();
+        if (false === isset($this->params)) {
+            $this->params = $command->getParameters();
+        }
 
-        // Recuperation du bloc
         $this->blocs->get('pdf-contrat', 'slug');
         $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
         foreach ($lElements as $b_elt) {
@@ -70,7 +69,6 @@ class pdfController extends bootstrap
 
         $this->catchAll = true;
 
-        // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
@@ -79,7 +77,6 @@ class pdfController extends bootstrap
         $this->oSnapPdf = new Pdf('/usr/bin/wkhtmltopdf');
         $this->oLogger  = new ULogger('PdfManagement', $this->logPath, self::NAME_LOG);
     }
-
 
     /**
      * @param string $sPathPdf Pdf file's path
@@ -91,10 +88,11 @@ class pdfController extends bootstrap
     private function CheckUniversign($sPathPdf, $bCheckSign = false, $bSign = false, $bIsPouvoir = false)
     {
         if (true === $bCheckSign && false === $bSign) {
-            if (true === $bIsPouvoir &&
-                file_exists($sPathPdf) &&
-                filesize($sPathPdf) > 0 &&
-                date("Y-m-d", filemtime($sPathPdf)) != date('Y-m-d')
+            if (
+                true === $bIsPouvoir
+                && file_exists($sPathPdf)
+                && filesize($sPathPdf) > 0
+                && date('Y-m-d', filemtime($sPathPdf)) != date('Y-m-d')
             ) {
                 unlink($sPathPdf);
                 $this->oLogger->addRecord(ULogger::INFO, 'File : ' . $sPathPdf . ' deleting.', array(__FILE__ . ' on line ' . __LINE__));
@@ -111,24 +109,25 @@ class pdfController extends bootstrap
     public function setDisplay($sView = '', $sContent = null)
     {
         $this->content = (false === is_null($sContent)) ? $sContent : '';
-
-        //Change view name for generate document
-        $this->view = $sView;
+        $this->view    = $sView;
 
         ob_start();
-        if ($this->autoFireHead)
+        if ($this->autoFireHead) {
             $this->fireHead();
-        if ($this->autoFireHeader)
+        }
+        if ($this->autoFireHeader) {
             $this->fireHeader();
-        if ($this->autoFireView)
+        }
+        if ($this->autoFireView) {
             $this->fireView();
-        if ($this->autoFireFooter)
+        }
+        if ($this->autoFireFooter) {
             $this->fireFooter();
+        }
 
         $this->sDisplay = ob_get_contents();
         ob_end_clean();
 
-        //set back view name
         $this->view = '';
     }
 
@@ -183,8 +182,9 @@ class pdfController extends bootstrap
      */
     public function ReadPdf($sPathPdf, $sNamePdf)
     {
-        // We check if PathPdf get pdf extension
-        $sPathPdf .= (!preg_match('/(\.pdf)$/i', $sPathPdf)) ? '.pdf' : '';
+        if (1 !== preg_match('/\.pdf$/i', $sPathPdf)) {
+            $sPathPdf .= '.pdf';
+        }
 
         header("Content-disposition: attachment; filename=" . $sNamePdf . ".pdf");
         header("Content-Type: application/force-download");
@@ -264,9 +264,10 @@ class pdfController extends bootstrap
 
     private function GenerateWarrantyHtml()
     {
-        $this->pays = $this->loadData('pays');
-        $this->pays->get($this->clients->id_langue, 'id_langue');
+        $this->pays             = $this->loadData('pays');
         $this->oLendersAccounts = $this->loadData('lenders_accounts');
+
+        $this->pays->get($this->clients->id_langue, 'id_langue');
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
@@ -298,14 +299,12 @@ class pdfController extends bootstrap
 
         // pour savoir si Preteur ou emprunteur
         if (isset($this->params[1]) && $this->projects->get($this->params[1], 'id_project')) {
-            // Motif mandat emprunteur
             $p           = substr($this->ficelle->stripAccents(utf8_decode($this->clients->prenom)), 0, 1);
             $nom         = $this->ficelle->stripAccents(utf8_decode($this->clients->nom));
             $id_project  = str_pad($this->projects->id_project, 6, 0, STR_PAD_LEFT);
             $this->motif = mb_strtoupper($id_project . 'E' . $p . preg_replace('/\s/', '', $nom), 'UTF-8');
             $this->motif = $this->ficelle->str_split_unicode('UNILEND' . $this->motif);
         } else {
-            // Motif mandat preteur
             $p           = substr($this->ficelle->stripAccents(utf8_decode($this->clients->prenom)), 0, 1);
             $nom         = $this->ficelle->stripAccents(utf8_decode($this->clients->nom));
             $id_client   = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
@@ -313,30 +312,27 @@ class pdfController extends bootstrap
             $this->motif = $this->ficelle->str_split_unicode('UNILEND' . $this->motif);
         }
 
-
-        // Créancier adresse
         $this->settings->get('Créancier adresse', 'type');
         $this->creancier_adresse = $this->settings->value;
-        // Créancier cp
+
         $this->settings->get('Créancier cp', 'type');
         $this->creancier_cp = $this->settings->value;
-        // Créancier identifiant
+
         $this->settings->get('ICS de SFPMEI', 'type');
         $this->creancier_identifiant = $this->settings->value;
-        // Créancier nom
+
         $this->settings->get('Créancier nom', 'type');
         $this->creancier = $this->settings->value;
-        // Créancier pays
+
         $this->settings->get('Créancier pays', 'type');
         $this->creancier_pays = $this->settings->value;
-        // Créancier ville
+
         $this->settings->get('Créancier ville', 'type');
         $this->creancier_ville = $this->settings->value;
-        // Créancier code identifiant
+
         $this->settings->get('Créancier code identifiant', 'type');
         $this->creancier_code_id = $this->settings->value;
 
-        // Adresse retour
         $this->settings->get('Adresse retour', 'type');
         $this->adresse_retour = $this->settings->value;
 
@@ -345,15 +341,12 @@ class pdfController extends bootstrap
 
     public function _pouvoir()
     {
-        // si le client existe
         if ($this->clients->get($this->params[0], 'hash') && isset($this->params[1])) {
             $this->oProjectsPouvoir = $this->loadData('projects_pouvoir');
 
-            //on recup l'entreprise
             $this->companies->get($this->clients->id_client, 'id_client_owner');
 
             if ($this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
-
                 $path  = $this->path . 'protected/pdf/pouvoir/'; // path d'enregistrement
                 $slug  = $this->params[0]; // hash client
                 $name  = 'pouvoir'; // nom du pdf (type PDF)
@@ -363,7 +356,6 @@ class pdfController extends bootstrap
                 //TODO : modifier le nom du fichier ?
                 $nom_fichier = ($this->params[1] != '') ? $name . '-' . $slug . "-" . $this->params[1] . ".pdf" : $name . '-' . $slug . ".pdf";;
 
-                // on check si y a deja un pouvoir
                 $aProjectPouvoir        = $this->oProjectsPouvoir->select('id_project = ' . $this->projects->id_project, 'added ASC');
                 $aProjectPouvoirToTreat = (is_array($aProjectPouvoir) && false === empty($aProjectPouvoir)) ? array_shift($aProjectPouvoir) : null;
 
@@ -375,7 +367,7 @@ class pdfController extends bootstrap
                     }
                 }
 
-                // si on a une ligne deja créée
+                // si on a une ligne déjà créée
                 if (false === is_null($aProjectPouvoirToTreat)) {
 
                     // si c'est un upload manuel du BO on affiche directement
@@ -387,12 +379,10 @@ class pdfController extends bootstrap
                     // Si pouvoir signé
                     $bSign = ($aProjectPouvoirToTreat['status'] > 0) ?: false;
 
-                    // On recup le pouvoir
                     $this->oProjectsPouvoir->get($aProjectPouvoirToTreat['id_pouvoir'], 'id_pouvoir');
                     $bInstantCreate = false;
                 } else { // Si pas de pouvoir on créer une ligne
                     $this->GenerateAuthorityHtml();
-                    //We generate pdf file
                     $this->WritePdf($path . $nom_fichier, 'authority');
 
                     $this->oProjectsPouvoir->id_project = $this->projects->id_project;
@@ -421,10 +411,10 @@ class pdfController extends bootstrap
 
     private function generateAuthorityUniversign($bInstantCreate = false)
     {
-        /////////////////////////////////////////////////////
-        //   	  On met a jour les dates d'echeances      //
-        // en se basant sur la date de creation du pouvoir //
-        /////////////////////////////////////////////////////
+        /**
+        /* On met a jour les dates d'echeances
+        /* en se basant sur la date de creation du pouvoir
+        */
         if (date('Y-m-d', strtotime($this->oProjectsPouvoir->updated)) == date('Y-m-d') && false === $bInstantCreate) {
             $regenerationUniversign = '/NoUpdateUniversign'; // On crée pas de nouveau universign
         } // Ici on creera un nouveau universign car la date est différente
@@ -432,22 +422,16 @@ class pdfController extends bootstrap
             $regenerationUniversign = '';
             // On met a jour la date des echeances en se basant sur la date de signature du pouvoir c'est a dire aujourd'hui
             $this->updateEcheances($this->oProjectsPouvoir->id_project, date('Y-m-d H:i:s'));
-
-            // On met a jour la ligne pouvoir, pour changer la date update
             $this->oProjectsPouvoir->update();
         }
-        ///////////////////////////////
-        // FIN mise a jour echeances //
-        ///////////////////////////////
+
         header('Location: ' . $this->url . '/universign/pouvoir/' . $this->oProjectsPouvoir->id_pouvoir . $regenerationUniversign);
     }
 
     private function GenerateAuthorityHtml()
     {
-        //Recuperation des element de traductions
         $this->lng['pdf-pouvoir'] = $this->ln->selectFront('pdf-pouvoir', $this->language, $this->App);
 
-        // Recuperation du bloc
         $this->blocs->get('pouvoir', 'slug');
         $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
         foreach ($lElements as $b_elt) {
@@ -463,48 +447,29 @@ class pdfController extends bootstrap
         $this->oLendersAccounts       = $this->loadData('lenders_accounts');
         $this->companies_actif_passif = $this->loadData('companies_actif_passif');
 
-        //on recup l'entreprise
-
         $this->companies_details->get($this->companies->id_company, 'id_company');
 
-
-        // date_dernier_bilan_mois
         $date_dernier_bilan             = explode('-', $this->companies_details->date_dernier_bilan);
         $this->date_dernier_bilan_annee = $date_dernier_bilan[0];
         $this->date_dernier_bilan_mois  = $date_dernier_bilan[1];
         $this->date_dernier_bilan_jour  = $date_dernier_bilan[2];
 
-        // Montant prété a l'emprunteur
         $this->montantPrete = $this->projects->amount;
 
-        // moyenne pondéré
         $montantHaut = 0;
         $montantBas  = 0;
-        // si fundé ou remboursement
-
         foreach ($this->oLoans->select('id_project = ' . $this->projects->id_project) as $b) {
             $montantHaut += ($b['rate'] * ($b['amount'] / 100));
             $montantBas += ($b['amount'] / 100);
         }
-        $this->taux = (0 < $montantBas) ? ($montantHaut / $montantBas) : 0;
 
-        $this->nbLoans = $this->oLoans->counter('id_project = ' . $this->projects->id_project);
-
-        // Remb emprunteur par mois
-        $this->echeanceEmprun = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project . ' AND ordre = 1');
-
-        $this->rembByMonth = $this->echeanciers->getMontantRembEmprunteur($this->echeanceEmprun[0]['montant'], $this->echeanceEmprun[0]['commission'], $this->echeanceEmprun[0]['tva']);
-        $this->rembByMonth = ($this->rembByMonth / 100);
-
-        // date premiere echance
-
-        //$this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheance($this->projects->id_project);
+        $this->taux             = (0 < $montantBas) ? ($montantHaut / $montantBas) : 0;
+        $this->nbLoans          = $this->oLoans->counter('id_project = ' . $this->projects->id_project);
+        $this->echeanceEmprun   = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project . ' AND ordre = 1');
+        $this->rembByMonth      = $this->echeanciers->getMontantRembEmprunteur($this->echeanceEmprun[0]['montant'], $this->echeanceEmprun[0]['commission'], $this->echeanceEmprun[0]['tva']);
+        $this->rembByMonth      = ($this->rembByMonth / 100);
         $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
-
-
-        // liste des echeances emprunteur par mois
-
-        $this->lRemb = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
+        $this->lRemb            = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
 
         $this->capital = 0;
         foreach ($this->lRemb as $r) {
@@ -566,10 +531,8 @@ class pdfController extends bootstrap
                 $this->companiesPreteur->get($this->clients->id_client, 'id_client_owner');
             }
 
-            // date premiere echance
             $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
 
-            // date_dernier_bilan_mois
             $date_dernier_bilan             = explode('-', $this->companies_detailsEmprunteur->date_dernier_bilan);
             $this->date_dernier_bilan_annee = $date_dernier_bilan[0];
             $this->date_dernier_bilan_mois  = $date_dernier_bilan[1];
@@ -585,7 +548,6 @@ class pdfController extends bootstrap
                 $this->capital += $r['capital'];
             }
 
-            // si on a le pouvoir
             if ($this->oProjectsPouvoir->get($this->projects->id_project, 'id_project')) {
                 $this->dateContrat = date('d/m/Y', strtotime($this->oProjectsPouvoir->updated));
                 $this->dateRemb    = date('d/m/Y', strtotime($this->oProjectsPouvoir->updated));
@@ -594,7 +556,6 @@ class pdfController extends bootstrap
                 $this->dateRemb    = date('d/m/Y');
             }
 
-            // On recup la date de statut remb
             $remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
 
             if ($remb[0]['added'] != "") {
@@ -606,21 +567,8 @@ class pdfController extends bootstrap
             $this->dateContrat = $this->dateRemb;
 
             $this->setDisplay('contrat_html');
-
         } else {
             header('Location: ' . $this->lurl);
-        }
-    }
-
-    public function _piedpage()
-    {
-        // Recuperation du bloc
-        $this->blocs->get('pouvoir', 'slug');
-        $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
-        foreach ($lElements as $b_elt) {
-            $this->elements->get($b_elt['id_element']);
-            $this->bloc_pouvoir[$this->elements->slug]           = $b_elt['value'];
-            $this->bloc_pouvoirComplement[$this->elements->slug] = $b_elt['complement'];
         }
     }
 
@@ -642,23 +590,11 @@ class pdfController extends bootstrap
             $this->settings->get('Declaration contrat pret - raison sociale', 'type');
             $this->raisonSociale = $this->settings->value;
 
-            // Coté emprunteur
-
-            // On recup le projet
             $this->projects->get($this->oLoans->id_project, 'id_project');
-            // On recup la companie
             $this->companiesEmp->get($this->projects->id_company, 'id_company');
-            // On recup l'emprunteur
             $this->emprunteur->get($this->companiesEmp->id_client_owner, 'id_client');
-
-
-            // Coté preteur
-
-            // On recup le lender
             $this->lender->get($this->oLoans->id_lender, 'id_lender_account');
-            // On recup le preteur
             $this->preteur->get($this->lender->id_client_owner, 'id_client');
-            // On recup l'adresse preteur
             $this->preteur_adresse->get($this->lender->id_client_owner, 'id_client');
 
             $this->lEcheances = $this->echeanciers->getSumByAnnee($this->oLoans->id_loan);
@@ -677,10 +613,8 @@ class pdfController extends bootstrap
                 $this->villePreteur   = $this->preteur_adresse->ville;
             }
 
-
             $this->setDisplay('declarationContratPret_html');
-            $sNamePdfClient = 'Unilend_declarationContratPret_' . $iIdLoan . '.pdf';
-            $this->WritePdf($sPath . $sNamePdfClient, 'dec_pret');
+            $this->WritePdf($sPath . 'Unilend_declarationContratPret_' . $iIdLoan, 'dec_pret');
         }
     }
 
@@ -690,23 +624,18 @@ class pdfController extends bootstrap
         $iIdProject = (false === is_null($iIdProject)) ? $iIdProject : $this->params[1];
         $bRead      = (true === isset($this->params)) ?: false;
 
-        // si le client existe
         if ($this->clients->get($sHash, 'hash') && isset($iIdProject)) {
-
-            //on recup l'entreprise
             $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-            // et on recup le projet
             if ($this->projects->get($iIdProject, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
-
                 $path           = $this->path . 'protected/pdf/facture/'; // path d'enregistrement
                 $sNamePdfClient = 'FACTURE-UNILEND-' . $this->projects->slug;
                 $name           = 'facture_EF'; // nom du pdf (type PDF)
                 $nom_fichier    = ($iIdProject != '') ? $name . '-' . $sHash . "-" . $iIdProject . ".pdf" : $name . '-' . $sHash . ".pdf";
 
                 $this->GenerateInvoiceEFHtml($iIdProject);
-                //We generate pdf file
                 $this->WritePdf($path . $nom_fichier, 'invoice');
+
                 if (true === $bRead) {
                     $this->ReadPdf($path . $nom_fichier, $sNamePdfClient);
                 }
@@ -718,35 +647,27 @@ class pdfController extends bootstrap
     {
         $this->lng['pdf-facture'] = $this->ln->selectFront('pdf-facture', $this->language, $this->App);
 
-        // titulaire du compte
         $this->settings->get('titulaire du compte', 'type');
         $this->titreUnilend = mb_strtoupper($this->settings->value, 'UTF-8');
 
-        // Declaration contrat pret - raison sociale
         $this->settings->get('Declaration contrat pret - raison sociale', 'type');
         $this->raisonSociale = mb_strtoupper($this->settings->value, 'UTF-8');
 
-        // Facture - SFF PME
         $this->settings->get('Facture - SFF PME', 'type');
         $this->sffpme = mb_strtoupper($this->settings->value, 'UTF-8');
 
-        // Facture - capital
         $this->settings->get('Facture - capital', 'type');
         $this->capital = mb_strtoupper($this->settings->value, 'UTF-8');
 
-        // Declaration contrat pret - adresse
         $this->settings->get('Declaration contrat pret - adresse', 'type');
         $this->raisonSocialeAdresse = mb_strtoupper($this->settings->value, 'UTF-8');
 
-        // Facture - telephone
         $this->settings->get('Facture - telephone', 'type');
         $this->telephone = mb_strtoupper($this->settings->value, 'UTF-8');
 
-        // Facture - RCS
         $this->settings->get('Facture - RCS', 'type');
         $this->rcs = mb_strtoupper($this->settings->value, 'UTF-8');
 
-        // Facture - TVA INTRACOMMUNAUTAIRE
         $this->settings->get('Facture - TVA INTRACOMMUNAUTAIRE', 'type');
         $this->tvaIntra = mb_strtoupper($this->settings->value, 'UTF-8');
 
@@ -758,43 +679,30 @@ class pdfController extends bootstrap
     {
         $this->lng['pdf-facture'] = $this->ln->selectFront('pdf-facture', $this->language, $this->App);
 
-        // si le client existe
         $this->compteur_factures       = $this->loadData('compteur_factures');
         $this->transactions            = $this->loadData('transactions');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->factures                = $this->loadData('factures');
 
-        // TVA
         $this->settings->get('TVA', 'type');
         $this->tva = $this->settings->value;
 
-        //on recup l'entreprise
         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-        // et on recup le projet
         if ($this->projects->get($iIdProject, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
-
             $histoRemb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added DESC', 0, 1);
+
             if ($histoRemb != false) {
-                $this->dateRemb = $histoRemb[0]['added'];
-
-                $timeDateRemb = strtotime($this->dateRemb);
-
-
-                $compteur = $this->compteur_factures->compteurJournalier($this->projects->id_project);
-
-                $this->num_facture = 'FR-E' . date('Ymd', $timeDateRemb) . str_pad($compteur, 5, "0", STR_PAD_LEFT);
-
                 $this->transactions->get($this->projects->id_project, 'type_transaction = 9 AND status = 1 AND etat = 1 AND id_project');
 
-                $this->ttc = ($this->transactions->montant_unilend / 100);
-
-                $cm          = ($this->tva + 1); // CM
-                $this->ht    = ($this->ttc / $cm); // HT
-                $this->taxes = ($this->ttc - $this->ht); // TVA
-
-                $montant = ((str_replace('-', '', $this->transactions->montant) + $this->transactions->montant_unilend) / 100); // Montant pret
-                $txCom   = (0 < $montant) ? round(($this->ht / $montant) * 100, 0) : 0; // taux commission
+                $this->dateRemb    = $histoRemb[0]['added'];
+                $this->num_facture = 'FR-E' . date('Ymd', strtotime($this->dateRemb)) . str_pad($this->compteur_factures->compteurJournalier($this->projects->id_project), 5, "0", STR_PAD_LEFT);
+                $this->ttc         = ($this->transactions->montant_unilend / 100);
+                $cm                = ($this->tva + 1); // CM
+                $this->ht          = ($this->ttc / $cm); // HT
+                $this->taxes       = ($this->ttc - $this->ht); // TVA
+                $montant           = ((str_replace('-', '', $this->transactions->montant) + $this->transactions->montant_unilend) / 100); // Montant pret
+                $txCom             = (0 < $montant) ? round(($this->ht / $montant) * 100, 0) : 0; // taux commission
 
                 if (!$this->factures->get($this->projects->id_project, 'type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
                     $this->factures->num_facture     = $this->num_facture;
@@ -808,7 +716,6 @@ class pdfController extends bootstrap
                     $this->factures->tva             = ($this->taxes * 100);
                     $this->factures->montant_ttc     = ($this->ttc * 100);
                     $this->factures->create();
-
                 }
             }
 
@@ -824,19 +731,14 @@ class pdfController extends bootstrap
         $sHash      = (false === is_null($sHash)) ? $sHash : $this->params[0];
         $iIdProject = (false === is_null($iIdProject)) ? $iIdProject : $this->params[1];
         $iOrdre     = (false === is_null($iOrdre)) ? $iOrdre : $this->params[2];
+        $bRead      = (true === isset($this->params)) ?: false;
 
-        $bRead = (true === isset($this->params)) ?: false;
-
-        // si le client existe
         if ($this->clients->get($sHash, 'hash') && isset($iIdProject)) {
             $this->oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
 
-            //on recup l'entreprise
             $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-            // et on recup le projet
             if ($this->projects->get($iIdProject, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
-                // on recup l'echeance concernée
                 if ($this->oEcheanciersEmprunteur->get($this->projects->id_project, 'ordre = ' . $iOrdre . '  AND id_project')) {
                     $path           = $this->path . 'protected/pdf/facture/';
                     $sNamePdfClient = 'FACTURE-UNILEND-' . $sHash;
@@ -844,8 +746,8 @@ class pdfController extends bootstrap
                     $nom_fichier    = ($iIdProject != '') ? $name . '-' . $sHash . "-" . $iIdProject . "-" . $iOrdre . ".pdf" : $name . '-' . $sHash . ".pdf";
 
                     $this->GenerateInvoiceERHtml($iIdProject, $iOrdre);
-                    //We generate pdf file
                     $this->WritePdf($path . $nom_fichier, 'invoice');
+
                     if (true === $bRead) {
                         $this->ReadPdf($path . $nom_fichier, $sNamePdfClient);
                     }
@@ -858,31 +760,23 @@ class pdfController extends bootstrap
     {
         $this->lng['pdf-facture'] = $this->ln->selectFront('pdf-facture', $this->language, $this->App);
 
-        // si le client existe
         $this->compteur_factures = $this->loadData('compteur_factures');
         $this->echeanciers       = $this->loadData('echeanciers');
         $this->factures          = $this->loadData('factures');
 
-        // TVA
         $this->settings->get('TVA', 'type');
         $this->tva = $this->settings->value;
 
-        // Commission remboursement
         $this->settings->get('Commission remboursement', 'type');
         $txcom = $this->settings->value;
 
-
-        //on recup l'entreprise
         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-        // et on recup le projet
         if ($this->projects->get($iIdProject, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
             $uneEcheancePreteur       = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . $iOrdre, '', 0, 1);
             $this->date_echeance_reel = $uneEcheancePreteur[0]['date_echeance_reel'];
+            $time_date_echeance_reel  = strtotime($this->date_echeance_reel);
 
-            $time_date_echeance_reel = strtotime($this->date_echeance_reel);
-
-            // on recup l'echeance concernée
             if ($this->oEcheanciersEmprunteur->get($this->projects->id_project, 'ordre = ' . $iOrdre . '  AND id_project')) {
                 $compteur = $this->compteur_factures->compteurJournalier($this->projects->id_project);
 
@@ -916,60 +810,35 @@ class pdfController extends bootstrap
     // Mise a jour des dates echeances preteurs et emprunteur (utilisé pour se baser sur la date de creation du pouvoir)
     public function updateEcheances($id_project, $dateRemb)
     {
-        ini_set('max_execution_time', 300); //300 seconds = 5 minutes
+        ini_set('max_execution_time', 300);
+
         $projects                = $this->loadData('projects');
         $projects_status         = $this->loadData('projects_status');
         $projects_status_history = $this->loadData('projects_status_history');
         $echeanciers             = $this->loadData('echeanciers');
         $echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
 
-        // Chargement des librairies
         $jo = $this->loadLib('jours_ouvres');
 
-        // On definit le nombre de mois et de jours apres la date de fin pour commencer le remboursement
         $this->settings->get('Nombre de mois apres financement pour remboursement', 'type');
         $nb_mois = $this->settings->value;
+
         $this->settings->get('Nombre de jours apres financement pour remboursement', 'type');
         $nb_jours = $this->settings->value;
 
-        // ID PROJECT //
-        $id_project = $id_project;
-
-        // On recup le projet
         $projects->get($id_project, 'id_project');
-
-        // On recupere le statut
         $projects_status->getLastStatut($projects->id_project);
 
-        // si c'est fundé
-        if ($projects_status->status == 60) {
-            //echo 'ici';
-            // On recup la date de statut remb
-            //$remb = $projects_status_history->select('id_project = '.$projects->id_project.' AND id_project_status = 8','added DESC',0,1);
-            //$dateRemb = $remb[0]['added'];
-
-            // on parcourt les mois
+        if ($projects_status->status == \projects_status::FUNDE) {
             for ($ordre = 1; $ordre <= $projects->period; $ordre++) {
-                // Date d'echeance preteur
                 $date_echeance = $this->dates->dateAddMoisJoursV3($dateRemb, $ordre);
                 $date_echeance = date('Y-m-d H:i', $date_echeance) . ':00';
 
-                // Date d'echeance emprunteur
                 $date_echeance_emprunteur = $this->dates->dateAddMoisJoursV3($dateRemb, $ordre);
-
-
-                // on retire 6 jours ouvrés
                 $date_echeance_emprunteur = $jo->display_jours_ouvres($date_echeance_emprunteur, 6);
                 $date_echeance_emprunteur = date('Y-m-d H:i', $date_echeance_emprunteur) . ':00';
 
-                /*echo '------------------<br>';
-                echo $date_echeance.'<br>';
-                echo $date_echeance_emprunteur.'<br>';*/
-
-                // Update echeanciers preteurs
                 $echeanciers->onMetAjourLesDatesEcheances($projects->id_project, $ordre, $date_echeance, $date_echeance_emprunteur);
-
-                // Update echeanciers emprunteurs
                 $echeanciers_emprunteur->onMetAjourLesDatesEcheancesE($id_project, $ordre, $date_echeance_emprunteur);
             }
         }
@@ -977,7 +846,6 @@ class pdfController extends bootstrap
 
     public function _declaration_de_creances()
     {
-        // si le client existe
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'hash') && isset($this->params[1])) {
             $this->oLendersAccounts = $this->loadData('lenders_accounts');
             $this->oLoans           = $this->loadData('loans');
@@ -994,7 +862,6 @@ class pdfController extends bootstrap
                 $nom_fichier    = ($this->params[1] != '') ? $name . '-' . $slug . "-" . $this->params[1] . ".pdf" : $name . '-' . $slug . ".pdf";
 
                 $this->GenerateClaimsHtml();
-                //We generate pdf file
                 $this->WritePdf($path . $nom_fichier, 'claims');
                 $this->ReadPdf($path . $nom_fichier, $sNamePdfClient);
             }
@@ -1013,7 +880,6 @@ class pdfController extends bootstrap
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
         if ($this->oLoans->get($this->oLendersAccounts->id_lender_account, 'id_loan = ' . $this->params[1] . ' AND id_lender')) {
-
             // particulier
             if (in_array($this->clients->type, array(1, 4))) {
 
@@ -1030,30 +896,26 @@ class pdfController extends bootstrap
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
 
                 // pays fiscal
-                if ($this->companies->id_pays == 0) $this->companies->id_pays = 1;
+                if ($this->companies->id_pays == 0) {
+                    $this->companies->id_pays = 1;
+                }
                 $this->pays->get($this->companies->id_pays, 'id_pays');
                 $this->pays_fiscal = $this->pays->fr;
             }
 
-            // projet
             $this->projects->get($this->oLoans->id_project, 'id_project');
-
-            // entreprise de l'emprunteur
             $this->companiesEmpr->get($this->projects->id_company, 'id_company');
 
-            // Nature
-            $this->nature_var = "Procédure de sauvegarde";
-
-            // mandataire personalisé
-            $this->mandataires_var = "";
-
-
-            $this->arrayDeclarationCreance = array(1456  => '27/11/2014',
-                                                   1009  => '15/04/2015',
-                                                   1614  => '27/05/2015',
-                                                   3089  => '29/06/2015',
-                                                   10971 => '06/08/2015',
-                                                   970   => '30/09/2015');
+            $this->nature_var              = 'Procédure de sauvegarde';
+            $this->mandataires_var         = '';
+            $this->arrayDeclarationCreance = array(
+                1456  => '27/11/2014',
+                1009  => '15/04/2015',
+                1614  => '27/05/2015',
+                3089  => '29/06/2015',
+                10971 => '06/08/2015',
+                970   => '30/09/2015'
+            );
 
             if ($this->oLoans->id_project == 1614) {
                 //plus de mandataire dans le pdf, on l'aura que dans le mail (Note BT: 17793)
@@ -1072,17 +934,9 @@ class pdfController extends bootstrap
             if ($this->oLoans->id_project == 3089)
                 $this->nature_var = "Procédure de sauvegarde";
 
-
-            // echu
-            $this->echu = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND LEFT(date_echeance,10) >= "2015-04-19" AND LEFT(date_echeance,10) <= "' . date('Y-m-d') . '" AND id_loan = ' . $this->oLoans->id_loan, 'montant');
-
-            // echoir
-            $this->echoir = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND LEFT(date_echeance,10) > "' . date('Y-m-d') . '" AND id_loan = ' . $this->oLoans->id_loan, 'capital');
-
-            // total
-            $this->total = ($this->echu + $this->echoir);
-
-            // last echeance
+            $this->echu         = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND LEFT(date_echeance,10) >= "2015-04-19" AND LEFT(date_echeance,10) <= "' . date('Y-m-d') . '" AND id_loan = ' . $this->oLoans->id_loan, 'montant');
+            $this->echoir       = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND LEFT(date_echeance,10) > "' . date('Y-m-d') . '" AND id_loan = ' . $this->oLoans->id_loan, 'capital');
+            $this->total        = ($this->echu + $this->echoir);
             $lastEcheance       = $this->echeanciers->select('id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_loan = ' . $this->oLoans->id_loan, 'ordre DESC', 0, 1);
             $this->lastEcheance = date('d/m/Y', strtotime($lastEcheance[0]['date_echeance']));
 
@@ -1093,20 +947,15 @@ class pdfController extends bootstrap
         }
     }
 
-
     public function _vos_operations_pdf_indexation()
     {
-        $post_id_client = $_SESSION['filtre_vos_operations']['id_client'];
-
-
+        $post_id_client        = $_SESSION['filtre_vos_operations']['id_client'];
         $filtre_vos_operations = serialize($_SESSION['filtre_vos_operations']);
         $filtre_vos_operations = $this->ficelle->base64url_encode($filtre_vos_operations);
-
-        $path           = $this->path . 'protected/operations_export_pdf/' . $post_id_client . '/'; // path d'enregistrement
-        $sNamePdfClient = 'vos_operations_' . date('Y-m-d') . '.pdf';
+        $path                  = $this->path . 'protected/operations_export_pdf/' . $post_id_client . '/'; // path d'enregistrement
+        $sNamePdfClient        = 'vos_operations_' . date('Y-m-d') . '.pdf';
 
         $this->GenerateOperationsHtml($filtre_vos_operations);
-        //We generate pdf file
         $this->WritePdf($path . $sNamePdfClient, 'operations');
         $this->ReadPdf($path . $sNamePdfClient, $sNamePdfClient);
     }
@@ -1122,7 +971,6 @@ class pdfController extends bootstrap
 
             $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
             $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
-
 
             $filtre_vos_operations = $this->ficelle->base64url_decode($sFiltreOp);
             $filtre_vos_operations = unserialize($filtre_vos_operations);
@@ -1153,9 +1001,7 @@ class pdfController extends bootstrap
                 // On sauvegarde la derniere action
                 $_SESSION['id_last_action'] = $post_id_last_action;
 
-            } // NB mois
-            elseif (isset($post_id_last_action) && $post_id_last_action == 'nbMois') {
-
+            } elseif (isset($post_id_last_action) && $post_id_last_action == 'nbMois') {
                 $nbMois = $post_nbMois;
 
                 $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y')); // date debut
@@ -1163,8 +1009,7 @@ class pdfController extends bootstrap
 
                 // On sauvegarde la derniere action
                 $_SESSION['id_last_action'] = $post_id_last_action;
-            } // Annee
-            elseif (isset($post_id_last_action) && $post_id_last_action == 'annee') {
+            } elseif (isset($post_id_last_action) && $post_id_last_action == 'annee') {
 
                 $year = $post_annee;
 
@@ -1203,16 +1048,12 @@ class pdfController extends bootstrap
                 }
             } // Par defaut (on se base sur le 1M)
             else {
-                //echo 'cc';
                 $date_debut_time = mktime(0, 0, 0, date("m") - 1, date("d"), date('Y')); // date debut
                 $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date fin
             }
 
-            // on recup au format sql
             $this->date_debut = date('Y-m-d', $date_debut_time);
             $this->date_fin   = date('Y-m-d', $date_fin_time);
-            //////////// FIN PARTIE DATES //////////////
-
 
             $array_type_transactions = array(
                 1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
@@ -1228,7 +1069,6 @@ class pdfController extends bootstrap
                 20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
                 22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
                 23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur']);
-            ////////// DEBUT PARTIE TRI TYPE TRANSAC /////////////
 
             $array_type_transactions_liste_deroulante = array(
                 1 => '1,2,3,4,5,7,8,16,17,19,20,23',
@@ -1236,31 +1076,23 @@ class pdfController extends bootstrap
                 3 => '3,4,7',
                 4 => '8',
                 5 => '2',
-                6 => '5,23');
+                6 => '5,23'
+            );
 
             if (isset($post_tri_type_transac)) {
-
                 $tri_type_transac = $array_type_transactions_liste_deroulante[$post_tri_type_transac];
             }
 
-            ////////// FIN PARTIE TRI TYPE TRANSAC /////////////
-
-
-            ////////// DEBUT TRI PAR PROJET /////////////
             if (isset($post_tri_projects)) {
                 if (in_array($post_tri_projects, array(0, 1))) {
                     $tri_project = '';
                 } else {
-                    //$tri_project = ' HAVING le_id_project = '.$post_tri_projects;
                     $tri_project = ' AND le_id_project = ' . $post_tri_projects;
                 }
             }
-            ////////// FIN TRI PAR PROJET /////////////
-
 
             $order = 'date_operation DESC, id_transaction DESC';
             if (isset($post_type) && isset($post_order)) {
-
                 $this->type  = $post_type;
                 $this->order = $post_order;
 
@@ -1299,14 +1131,9 @@ class pdfController extends bootstrap
                 }
             }
 
-
             $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
 
-
-            // On va chercher ce qu'on a dans la table d'indexage
-            $this->lTrans = $this->indexage_vos_operations->select('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"' . $tri_project, $order);
-
-            // filtre secondaire
+            $this->lTrans         = $this->indexage_vos_operations->select('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"' . $tri_project, $order);
             $this->lProjectsLoans = $this->indexage_vos_operations->get_liste_libelle_projet('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"');
 
             $this->setDisplay('vos_operations_pdf_html_indexation');

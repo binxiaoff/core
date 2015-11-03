@@ -4618,7 +4618,6 @@ class cronController extends bootstrap
         ini_set('max_execution_time', 300); //300 seconds = 5 minutes
 
         if (true === $this->startCron('declarationContratPret', 5)) {
-
             $loans    = $this->loadData('loans');
             $projects = $this->loadData('projects');
 
@@ -4636,22 +4635,19 @@ class cronController extends bootstrap
                 $lLoans = $loans->select('status = "0" AND fichier_declarationContratPret = "" AND id_project IN(' . $lesProjets . ')', 'id_loan ASC', 0, 10);
                 if (count($lLoans) > 0) {
                     foreach ($lLoans as $l) {
-                        $annee = substr($l['added'], 0, 4);
                         $projects->get($l['id_project'], 'id_project');
-                        // Dossier année
-                        $pathAnnee = $this->path . 'protected/declarationContratPret/' . $annee . '/';
-                        // chemin où l'on enregistre
-                        $path = $this->path . 'protected/declarationContratPret/' . $annee . '/' . $projects->slug . '/';
-                        // Nom du fichier
+
+                        $pathAnnee = $this->path . 'protected/declarationContratPret/' . substr($l['added'], 0, 4) . '/';
+                        if (false === file_exists($pathAnnee)) {
+                            mkdir($pathAnnee);
+                        }
+                        $path = $pathAnnee . $projects->slug . '/';
                         $nom = 'Unilend_declarationContratPret_' . $l['id_loan'] . '.pdf';
 
-                        $oCommandPdf = new Command('pdf', 'declarationContratPret_html', array(
-                            $l['id_loan'], $path
-                        ), $this->language);
+                        $oCommandPdf = new Command('pdf', 'declarationContratPret_html', array($l['id_loan'], $path), $this->language);
                         $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
                         $oPdf->_declarationContratPret_html($l['id_loan'], $path);
 
-                        // On met a jour le loan pour savoir qu'on la deja enregistré
                         $loans->get($l['id_loan'], 'id_loan');
                         $loans->fichier_declarationContratPret = $nom;
                         $loans->update();
