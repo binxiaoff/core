@@ -137,8 +137,8 @@
     .title-ope {
         margin-top: 12.5px !important;
     }
-    
-    
+
+
 
 
 </style>
@@ -198,7 +198,7 @@
                     <i title="<?= $this->lng['preteur-operations-detail']['info-calendrier'] ?>" class="icon-calendar tooltip-anchor"></i>
                     <div class="calendar-title" style="margin-top: 8.5px;">
                         <span style=" width:75px;" id="order_debut_prets"><?= $this->lng['preteur-operations-detail']['titre-debut'] ?>&nbsp;<i class="icon-arrows"></i></span>
-                        <span style=" width:79px;" id="order_prochaine_prets"><?= $this->lng['preteur-operations-detail']['titre-prochaine'] ?> &nbsp;<i class="icon-arrows"></i></span>
+                        <span style=" width:79px;" id="order_prochaine_prets"><?= $this->lng['preteur-operations-detail']['titre-prochaine'] ?>&nbsp;<i class="icon-arrows"></i></span>
                         <span style=" width:75px;" id="order_fin_prets"><?= $this->lng['preteur-operations-detail']['titre-fin'] ?>&nbsp;<i class="icon-arrows"></i></span>
                     </div>
                 </div>
@@ -316,22 +316,19 @@
                         </td>
                         <td style="white-space: nowrap;"><?= number_format($l['amount'], 2, ',', ' ') ?> €</td>
                         <td style="white-space: nowrap;"><?= number_format($l['rate'], 2, ',', ' ') ?> %</td>
-                            <?php
-                            if($l['project_status'] == projects_status::REMBOURSEMENT_ANTICIPE){
-                            ?>
-                        <td colspan="2">
-                            <span class="calandar-ech" style="width: 79px;"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
-                            <span class="calandar-ech" style="width: 237px; "><p>Remboursé intégralement <br /> le <?= $this->dates->formatDate($l['status_change'], 'd/m/Y')?></p></span>
-                        </td>
-                        <?
-                        } else {?>
-                            <td><span class="calandar-ech"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
+                        <?php if ($l['project_status'] == projects_status::REMBOURSEMENT_ANTICIPE) { ?>
+                            <td colspan="2">
+                                <span class="calandar-ech" style="width: 79px;"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
+                                <span class="calandar-ech" style="width: 237px; "><p>Remboursé intégralement <br /> le <?= $this->dates->formatDate($l['status_change'], 'd/m/Y')?></p></span>
+                            </td>
+                        <?php } else { ?>
+                            <td>
+                                <span class="calandar-ech"><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></span>
                                 <span class="calandar-ech"><?= $this->dates->formatDate($l['next_echeance'], 'd/m/Y') ?></span>
                                 <span class="calandar-ech"><?= $this->dates->formatDate($l['fin'], 'd/m/Y') ?></span>
                             </td>
                             <td><?= number_format($l['mensuel'], 2, ',', ' ') ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
-                        <?}
-                        ?>
+                        <?php } ?>
                         <td>
                             <img src="<?= $this->surl ?>/styles/default/images/pdf50.png"
                                  class="btn-detailLoans_<?= $k ?>"/>
