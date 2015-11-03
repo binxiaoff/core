@@ -547,10 +547,6 @@
    $('.hp-counter + .main .table tr, #table_tri tr, .vos_prets table.detail-ope tr').each(function() {
        $(this).find('td').each(function(indx) {
            var $icon = $(this).closest('.table').find('th').eq(indx).html();
-<<<<<<< HEAD
-=======
-
->>>>>>> d2b656f1c7dfbfa684c35daa9fa6f9d919b61b5d
            $($icon).prependTo($(this))
        });
    });
@@ -558,19 +554,9 @@
    $(window).on('load resize', function() {
         if ($(window).width() < 768) {
             $('.detail-ope .th-wrap').show();
-<<<<<<< HEAD
         } else {
-=======
-            $('.detail-ope .th-wrap.th-wrap-v2').show();
-        } else {
-            $('.detail-ope .th-wrap.th-wrap-v2').hide();
->>>>>>> d2b656f1c7dfbfa684c35daa9fa6f9d919b61b5d
             $('.detail-ope .th-wrap').hide();
             $('.detail-ope th .th-wrap').show();
-<<<<<<< HEAD
-=======
-            $('.detail-ope th .th-wrap.th-wrap-v2').show();
->>>>>>> d2b656f1c7dfbfa684c35daa9fa6f9d919b61b5d
         }
     });
 
