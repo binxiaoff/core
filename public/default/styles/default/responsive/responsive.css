@@ -92,7 +92,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
     .toggle-buttons { display: block; }
 
-    .login-panel { width: 240px !important; position: absolute; top: 15px; left: 50%; z-index: 10; padding: 10px 20px; margin-left: -140px; background-color: #fff; box-shadow: 10px 10px 20px rgba(0,0,0,.5); }
+    .login-panel { width: 240px !important; position: fixed; top: 15px; left: 50%; z-index: 10; padding: 10px 20px; margin-left: -140px; background-color: #fff; box-shadow: 10px 10px 20px rgba(0,0,0,.5); }
     .login-panel form > div:first-child { height: auto !important; padding-top: 5px; margin: -15px 0 -5px; }
     .login-panel form > div:last-child { float: none; display: block !important; width: auto !important; text-align: center; padding: 5px; }
     .login-panel form:after { content: ''; line-height: 0; display: table; clear: both; }
