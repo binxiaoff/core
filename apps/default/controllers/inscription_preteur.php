@@ -386,17 +386,18 @@ class inscription_preteurController extends bootstrap
 			//postal
 			if(!isset($_POST['postal']) || $_POST['postal'] == $this->lng['etape1']['code-postal']){
 				$this->form_ok = false;
-			}
-			/** @var villes $oVilles */
-			$oVilles = $this->loadData('villes');
-			//Check cp
-			if (1 == $_POST['pays1']) {
-				//for France, check post code here.
-				if (false === $oVilles->exist($_POST['postal'], 'cp')) {
-					$this->form_ok = false;
-				}
-			}
-			unset($oVilles);
+			} else {
+                /** @var villes $oVilles */
+                $oVilles = $this->loadData('villes');
+                //Check cp
+                if (isset($_POST['pays1']) && 1 == $_POST['pays1']) {
+                    //for France, check post code here.
+                    if (false === $oVilles->exist($_POST['postal'], 'cp')) {
+                        $this->form_ok = false;
+                    }
+                }
+                unset($oVilles);
+            }
 			// pas la meme
 			if($this->clients_adresses->meme_adresse_fiscal == 0){
 				// adresse client
@@ -672,16 +673,6 @@ class inscription_preteurController extends bootstrap
             } else{
                 $this->companies->status_adresse_correspondance = '0'; // pas la meme
             }
-            /** @var villes $oVilles */
-            $oVilles = $this->loadData('villes');
-            //Check cp
-            if (1 == $_POST['pays1E']) {
-                //for France, check post code here.
-                if (false === $oVilles->exist($_POST['postalE'], 'cp')) {
-                    $this->form_ok = false;
-                }
-            }
-            unset($oVilles);
 			// adresse fiscal (siege de l'entreprise)
 			$this->companies->adresse1 = $_POST['adresse_inscriptionE'];
 			$this->companies->city = $_POST['ville_inscriptionE'];
@@ -792,6 +783,17 @@ class inscription_preteurController extends bootstrap
 			//postal
 			if(!isset($_POST['postalE']) || $_POST['postalE'] == $this->lng['etape1']['code-postal']){
 				$this->form_ok = false;
+			} else {
+				/** @var villes $oVilles */
+				$oVilles = $this->loadData('villes');
+				//Check cp
+				if (isset($_POST['pays1E']) && 1 == $_POST['pays1E']) {
+					//for France, check post code here.
+					if (false === $oVilles->exist($_POST['postalE'], 'cp')) {
+						$this->form_ok = false;
+					}
+				}
+				unset($oVilles);
 			}
 
 			// pas la meme

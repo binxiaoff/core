@@ -343,9 +343,9 @@ function validateIban(iban) {
     return previousModulo == 1;
 }
 
-function initAutocompleteCity($cnt)
+function initAutocompleteCity()
 {
-	$('[data-autocomplete]', $cnt).each(function() {
+	$('[data-autocomplete]').each(function() {
 		if($(this).data('autocomplete') == 'city' || $(this).data('autocomplete') == 'post_code' || $(this).data('autocomplete') == 'birth_city') {
 			$(this).autocomplete({
 				source: add_url + '/ajax/get_cities/',

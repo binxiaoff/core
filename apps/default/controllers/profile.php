@@ -321,11 +321,43 @@ class profileController extends bootstrap
                 $this->clients->nom_usage = $this->ficelle->majNom($_POST['nom-dusage']);
             }
 
+            //Get the insee code for birth place: if in France, city insee code; if overseas, country insee code
+            $sCodeInsee = '';
+            if (1 == $_POST['pays3']) { // if France
+                //Check birth city
+                if (!isset($_POST['insee_birth']) || '' === $_POST['insee_birth']) {
+                    /** @var villes $oVilles */
+                    $oVilles = $this->loadData('villes');
+                    //for France, the code insee is empty means that the city is not verified with table "villes", check again here.
+                    if (false === $oVilles->get($_POST['naissance'], 'ville')) {
+                        $this->form_ok = false;
+                    } else {
+                        $sCodeInsee = $oVilles->insee;
+                    }
+                    unset($oVilles);
+                } else {
+                    $sCodeInsee = $_POST['insee_birth'];
+                }
+            } else {
+                /** @var pays_v2 $oPays */
+                $oPays = $this->loadData('pays_v2');
+                /** @var insee_pays $oInseePays */
+                $oInseePays = $this->loadData('insee_pays');
+
+                if ($oPays->get($_POST['pays3']) && $oInseePays->get($oPays->iso)) {
+                    $sCodeInsee = $oInseePays->COG;
+                } else {
+                    $this->form_ok = false;
+                }
+                unset($oPays, $oInseePays);
+            }
+
             $this->clients->prenom            = $this->ficelle->majNom($_POST['prenom']);
             $this->clients->email             = $_POST['email'];
             $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
             $this->clients->id_pays_naissance = $_POST['pays3'];
             $this->clients->ville_naissance   = $_POST['naissance'];
+            $this->clients->insee_birth       = $sCodeInsee;
             $this->clients->id_nationalite    = $_POST['nationalite'];
             $this->clients->naissance         = $_POST['annee_naissance'] . '-' . $_POST['mois_naissance'] . '-' . $_POST['jour_naissance'];
             // Verif //
@@ -382,7 +414,19 @@ class profileController extends bootstrap
             //postal
             if (! isset($_POST['postal']) || $_POST['postal'] == $this->lng['etape1']['code-postal']) {
                 $this->form_ok = false;
+            } else {
+                /** @var villes $oVilles */
+                $oVilles = $this->loadData('villes');
+                //Check cp
+                if (isset($_POST['pays1']) && 1 == $_POST['pays1']) {
+                    //for France, check post code here.
+                    if (false === $oVilles->exist($_POST['postal'], 'cp')) {
+                        $this->form_ok = false;
+                    }
+                }
+                unset($oVilles);
             }
+
             // telephone
             if (! isset($_POST['phone']) || $_POST['phone'] == $this->lng['etape1']['telephone']) {
                 $this->form_ok = false;
@@ -1274,6 +1318,17 @@ class profileController extends bootstrap
             //postal
             if (! isset($_POST['postalE']) || $_POST['postalE'] == $this->lng['etape1']['code-postal']) {
                 $this->form_ok = false;
+            } else {
+                /** @var villes $oVilles */
+                $oVilles = $this->loadData('villes');
+                //Check cp
+                if (isset($_POST['pays1E']) && 1 == $_POST['pays1E']) {
+                    //for France, check post code here.
+                    if (false === $oVilles->exist($_POST['postalE'], 'cp')) {
+                        $this->form_ok = false;
+                    }
+                }
+                unset($oVilles);
             }
 
             // pas la meme

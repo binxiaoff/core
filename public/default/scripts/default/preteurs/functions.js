@@ -792,7 +792,7 @@ var Form = (function($){
 
 		bindEvents();
 
-		initAutocompleteCity(settings.selector);
+		initAutocompleteCity();
 		initConditionals(settings.selector);
 		initValidation(settings.selector);
 
