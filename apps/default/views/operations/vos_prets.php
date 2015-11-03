@@ -146,7 +146,7 @@
 <div class="table-filter clearfix">
     <p class="left"><?= $this->lng['profile']['historique-des-projets'] ?><?= $this->clients->id_client ?></p>
 
-    <div class="select-box right" style="margin-left:10px;   width: 175px !important;">
+    <div class="select-box right" style="margin-left:10px; width: 175px !important;">
         <select name="anneeDetailPret" id="anneeDetailPret" class="custom-select field-mini">
             <option value="<?= date('Y') ?>"><?= $this->lng['profile']['annee'] ?> <?= date('Y') ?></option>
             <?
@@ -565,14 +565,7 @@
         });
     });
 
-    $("#order_titre_prets, #order_note_prets, #order_montant_prets, #order_interet_prets, #order_debut_prets, #order_prochaine_prets, #order_fin_prets, #order_mensualite_prets,input,select").click(function () {
-        if ($(this).attr('id') == 'order_titre_prets' ) {
-            var type = 'order_titre_prets' ;
-
-
-<script type="text/javascript">
-    
-    /*
+    /**
     Add icons with tooltips to all table rows
     They will be visible below tablet landscape breakpoint
     and will replace the table head icons
@@ -584,16 +577,12 @@
            $($icon).prependTo($(this));
        });
    });
-    
+
    $(window).on('load resize', function () {
         if ($(window).width() < 768) {
-
             $('.detail-ope .th-wrap').show();
             $('.detail-ope .th-wrap.th-wrap-v2').parent().show();
-        }
-        else{
-
-
+        } else{
             $('.detail-ope .th-wrap.th-wrap-v2').parent().hide();
             $('.detail-ope .th-wrap').hide();
 
@@ -601,90 +590,39 @@
             $('.detail-ope th .th-wrap.th-wrap-v2').parent().show();
         }
     });
-    
-    
-    $("#order_titre,#order_note,#order_montant,#order_interet,#order_debut,#order_prochaine,#order_fin,#order_mensualite,input,select").click(function () {
 
-        if ($(this).attr('id') == 'order_titre') {
-            var type = 'order_titre';
-
-            if ($("#order_titre_prets. asc").length) {
-
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+    $("#order_titre_prets, #order_note_prets, #order_montant_prets, #order_interet_prets, #order_debut_prets, #order_prochaine_prets, #order_fin_prets, #order_mensualite_prets,input,select").click(function () {
+        if ($(this).attr('id') == 'order_titre_prets' ) {
+            var type = 'order_titre_prets',
+                order = $("#order_titre_prets. asc").length ? 'desc' : 'asc';
         }
         else if ($(this).attr('id') == 'order_note_prets') {
-            var type = 'order_note_prets';
-
-            if ($("#order_note_prets.asc").length) {
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+            var type = 'order_note_prets',
+                order = $("#order_note_prets.asc").length ? 'desc' : 'asc';
         }
         else if ($(this).attr('id') == 'order_montant_prets') {
-            var type = 'order_montant_prets';
-
-            if ($("#order_montant_prets.asc").length) {
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+            var type = 'order_montant_prets',
+                order = $("#order_montant_prets.asc").length ? 'desc' : 'asc';
         }
         else if ($(this).attr('id') == 'order_interet_prets') {
-            var type = 'order_interet_prets';
-
-            if ($("#order_interet_prets.asc").length) {
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+            var type = 'order_interet_prets',
+                order = $("#order_interet_prets.asc").length ? 'desc' : 'asc';
         }
         else if ($(this).attr('id') == 'order_debut_prets') {
-            var type = 'order_debut_prets';
-
-            if ($("#order_debut_prets.asc").length) {
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+            var type = 'order_debut_prets',
+                order = $("#order_debut_prets.asc").length ? 'desc' : 'asc';
         }
         else if ($(this).attr('id') == 'order_prochaine_prets') {
-            var type = 'order_prochaine_prets';
-
-            if ($("#order_prochaine_prets.asc").length) {
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+            var type = 'order_prochaine_prets',
+                order = $("#order_prochaine_prets.asc").length ?  'desc' : 'asc';
         }
         else if ($(this).attr('id') == 'order_fin_prets') {
-            var type = 'order_fin_prets';
-
-            if ($("#order_fin_prets.asc").length) {
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+            var type = 'order_fin_prets'
+                order = $("#order_fin_prets.asc").length ?  'desc' : 'asc';
         }
         else if ($(this).attr('id') == 'order_mensualite_prets') {
-            var type = 'order_mensualite_prets';
-
-            if ($("#order_mensualite_prets.asc").length) {
-                var order = 'desc';
-            }
-            else {
-                var order = 'asc';
-            }
+            var type = 'order_mensualite_prets'
+                order = $("#order_mensualite_prets.asc").length ?  'desc' : 'asc';
         }
 
         $(".load").fadeIn();
