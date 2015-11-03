@@ -138,8 +138,9 @@ class pdfController extends bootstrap
      */
     public function WritePdf($sPathPdf, $sTypePdf = 'authority')
     {
-        // We check if PathPdf get pdf extension
-        $sPathPdf .= (!preg_match('/(\.pdf)$/i', $sPathPdf)) ? '.pdf' : '';
+        if (1 !== preg_match('/\.pdf$/i', $sPathPdf)) {
+            $sPathPdf .= '.pdf';
+        }
 
         $iTimeStartPdf = microtime(true);
 
@@ -509,20 +510,12 @@ class pdfController extends bootstrap
         foreach ($this->lRemb as $r) {
             $this->capital += $r['capital'];
         }
-        //echo $this->capital;
 
-        // Liste des actif passif
-        $this->l_AP = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '" AND annee = ' . $this->date_dernier_bilan_annee, 'annee DESC');
-
-
-        $this->totalActif = ($this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement']);
-
+        $this->l_AP        = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '" AND annee = ' . $this->date_dernier_bilan_annee, 'annee DESC');
+        $this->totalActif  = ($this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement']);
         $this->totalPassif = ($this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes']);
-
-        // liste des encheres
-        $this->lLenders = $this->oLoans->select('id_project = ' . $this->projects->id_project, 'rate ASC');
-
-        $this->dateRemb = date('d/m/Y');
+        $this->lLenders    = $this->oLoans->select('id_project = ' . $this->projects->id_project, 'rate ASC');
+        $this->dateRemb    = date('d/m/Y');
 
         $this->setDisplay('pouvoir_html');
     }
@@ -558,34 +551,22 @@ class pdfController extends bootstrap
         $this->companies_actif_passif      = $this->loadData('companies_actif_passif');
         $this->projects_status_history     = $this->loadData('projects_status_history');
         $this->oProjectsPouvoir            = $this->loadData('projects_pouvoir');
-        // on recup adresse preteur
-        $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-        // preteur
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
-        // si le loan existe
         if ($this->oLoans->get($this->params[1], 'id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_loan')) {
-            // On recup le projet
+            $this->clients_adresses->get($this->clients->id_client, 'id_client');
             $this->projects->get($this->oLoans->id_project, 'id_project');
-            // On recup l'entreprise
             $this->companiesEmprunteur->get($this->projects->id_company, 'id_company');
-            // On recup le detail entreprise emprunteur
             $this->companies_detailsEmprunteur->get($this->projects->id_company, 'id_company');
-
-            // On recup l'emprunteur
             $this->emprunteur->get($this->companiesEmprunteur->id_client_owner, 'id_client');
 
             // Si preteur morale
             if ($this->clients->type == 2) {
-                // entreprise preteur;
-
                 $this->companiesPreteur->get($this->clients->id_client, 'id_client_owner');
-
             }
 
             // date premiere echance
-            //$this->dateFirstEcheance = $this->echeanciers->getDatePremiereEcheance($this->projects->id_project);
             $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
 
             // date_dernier_bilan_mois
@@ -594,16 +575,10 @@ class pdfController extends bootstrap
             $this->date_dernier_bilan_mois  = $date_dernier_bilan[1];
             $this->date_dernier_bilan_jour  = $date_dernier_bilan[2];
 
-            // Liste des actif passif
-            $this->l_AP = $this->companies_actif_passif->select('id_company = "' . $this->companiesEmprunteur->id_company . '" AND annee = ' . $this->date_dernier_bilan_annee, 'annee DESC');
-
-            $this->totalActif = ($this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement']);
-
+            $this->l_AP        = $this->companies_actif_passif->select('id_company = "' . $this->companiesEmprunteur->id_company . '" AND annee = ' . $this->date_dernier_bilan_annee, 'annee DESC');
+            $this->totalActif  = ($this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement']);
             $this->totalPassif = ($this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes']);
-
-
-            // les remb d'une enchere
-            $this->lRemb = $this->echeanciers->select('id_loan = ' . $this->oLoans->id_loan, 'ordre ASC');
+            $this->lRemb       = $this->echeanciers->select('id_loan = ' . $this->oLoans->id_loan, 'ordre ASC');
 
             $this->capital = 0;
             foreach ($this->lRemb as $r) {
@@ -661,7 +636,6 @@ class pdfController extends bootstrap
         $this->echeanciers     = $this->loadData('echeanciers');
 
         if (isset($iIdLoan) && $this->oLoans->get($iIdLoan, 'status = "0" AND id_loan')) {
-
             $this->settings->get('Declaration contrat pret - adresse', 'type');
             $this->adresse = $this->settings->value;
 

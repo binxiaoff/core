@@ -5586,25 +5586,20 @@ class cronController extends bootstrap
     public function _genere_factures()
     {
         if (true === $this->startCron('genereFacture', 5)) {
-
             $projects    = $this->loadData('projects');
             $factures    = $this->loadData('factures');
             $companies   = $this->loadData('companies');
             $emprunteurs = $this->loadData('clients');
 
-            // FACTURE ER
             $listeRemb = $factures->selectEcheancesRembAndNoFacture();
             if ($listeRemb != false) {
                 foreach ($listeRemb as $r) {
-                    $oCommandPdf = new Command('pdf', 'facture_ER', array(
-                        $r['hash'], $r['id_project'], $r['ordre'], $path
-                    ), $this->language);
+                    $oCommandPdf = new Command('pdf', 'facture_ER', array($r['hash'], $r['id_project'], $r['ordre']), $this->language);
                     $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
                     $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre']);
                 }
             }
 
-            // FACTURE EF
             $lProjetsEnremb = $projects->selectProjectsByStatus(80);
             foreach ($lProjetsEnremb as $projet) {
                 // Les projets n'ayant pas encore de facture EF

@@ -1365,15 +1365,11 @@ class rootController extends bootstrap
     // Enregistrement et lecture du pdf cgv
     public function _pdf_cgv_preteurs()
     {
-        // Inclusion controller pdf
-        include($this->path . '/apps/default/controllers/pdf.php');
-        // Si connecté
-        if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
+        include_once $this->path . '/apps/default/controllers/pdf.php';
 
-            // on regarde si c'est bien un preteur
+        if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
             $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'preteur', $this->clients->id_client);
 
-            // CGU
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $id_tree_cgu = $this->settings->value;
 
@@ -1390,26 +1386,21 @@ class rootController extends bootstrap
 
             // si c'est un ancien cgv de la liste on lance le pdf
             if (in_array($id_tree_cgu, array(92, 95, 93, 254, 255))) {
-                $name = $this->content['pdf-cgu'];
-
-                header("Content-disposition: attachment; filename=" . $name);
+                header("Content-disposition: attachment; filename=" . $this->content['pdf-cgu']);
                 header("Content-Type: application/force-download");
                 @readfile($this->surl . '/var/fichiers/' . $this->content['pdf-cgu']);
             } else {
-
+                $oCommandPdf    = new Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
+                $oPdf           = new pdfController($oCommandPdf, $this->Config, 'default');
                 $path           = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client . '/';
-                $sNamePdf       = 'CGV-UNILEND-PRETEUR-' . $this->clients->hash . '-' . $id_tree_cgu;
+                $sNamePdf       = 'cgv_preteurs-' . $this->clients->hash . '-' . $id_tree_cgu;
                 $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
 
-                $this->tree->get(array('id_tree' => $id_tree_cgu, 'id_langue' => 'fr'));
+                if (false === file_exists($path . $sNamePdf)) {
+                    $this->_cgv_preteurs(true, $oPdf, array($this->clients->hash));
+                    $oPdf->WritePdf($path . $sNamePdf, 'cgv_preteurs');
+                }
 
-                // Génération pdf
-                $oCommandPdf = new Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
-                $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-
-                $this->_cgv_preteurs(true, $oPdf, array($this->clients->hash));
-
-                $oPdf->WritePdf($path . $sNamePdf, 'cgv_preteurs');
                 $oPdf->ReadPdf($path . $sNamePdf, $sNamePdfClient);
             }
         }
@@ -1421,16 +1412,13 @@ class rootController extends bootstrap
     {
         $this->params = (false === is_null($aParams)) ? $aParams : $this->params;
 
-        // DATAS
         $this->pays                    = $this->loadData('pays_v2');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->companies               = $this->loadData('companies');
 
-        // CGU
         $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
         $id_tree_cgu = $this->settings->value;
 
-        // Recuperation du contenu de la page
         $contenu = $this->tree_elements->select('id_tree = "' . $id_tree_cgu . '" AND id_langue = "' . $this->language . '"');
         foreach ($contenu as $elt) {
             $this->elements->get($elt['id_element']);
@@ -1438,14 +1426,10 @@ class rootController extends bootstrap
             $this->complement[$this->elements->slug] = $elt['complement'];
         }
 
-        // Si connecté ou si on a le hash du client
         if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
-
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-            // Si c'est le pdf qui appel on retire les truc en trop
             if (isset($this->params[0]) && $this->params[0] != 'morale' && $this->params[0] != 'nosign') {
-                // On masque les Head, header et footer originaux plus le debug
                 $this->autoFireHeader = false;
                 $this->autoFireHead   = true;
                 $this->autoFireFooter = false;
@@ -1454,8 +1438,6 @@ class rootController extends bootstrap
 
             // Particulier
             if (in_array($this->clients->type, array(1, 3))) {
-
-                // Date naissance
                 $naissance = date('d/m/Y', strtotime($this->clients->naissance));
 
                 // Pays fiscal
@@ -1472,22 +1454,19 @@ class rootController extends bootstrap
                     $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC');
                     $dateAccept  = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($listeAccept[0]['added'])); // date dernier CGV
                 }
-                $variables = array('[Civilite]', '[Prenom]', '[Nom]', '[date]', '[ville_naissance]', '[adresse_fiscale]', '[date_validation_cgv]');
 
-                // Contenu
-                $contentVariables = array(
-                    $this->clients->civilite,
-                    $this->clients->prenom,
-                    $this->clients->nom,
-                    $naissance,
-                    $this->clients->ville_naissance,
-                    $this->clients_adresses->adresse_fiscal . ', ' . $this->clients_adresses->ville_fiscal . ', ' . $this->clients_adresses->cp_fiscal . ', ' . $pays_fiscal,
-                    $dateAccept
+                $aReplacements = array(
+                    '[Civilite]'            => $this->clients->civilite,
+                    '[Prenom]'              => utf8_encode($this->clients->prenom),
+                    '[Nom]'                 => utf8_encode($this->clients->nom),
+                    '[date]'                => $naissance,
+                    '[ville_naissance]'     => utf8_encode($this->clients->ville_naissance),
+                    '[adresse_fiscale]'     => utf8_encode($this->clients_adresses->adresse_fiscal . ', ' . $this->clients_adresses->ville_fiscal . ', ' . $this->clients_adresses->cp_fiscal . ', ' . $pays_fiscal),
+                    '[date_validation_cgv]' => $dateAccept
                 );
 
-                $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement']);
+                $this->mandat_de_recouvrement = str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement']);
             } else { // Entreprise
-
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
 
                 // Pays fiscal
@@ -1504,33 +1483,30 @@ class rootController extends bootstrap
                     $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC');
                     $dateAccept  = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($listeAccept[0]['added'])); // date dernier CGV
                 }
-                $variables = array('[Civilite]', '[Prenom]', '[Nom]', '[Fonction]', '[Raison_sociale]', '[adresse_fiscale]', '[date_validation_cgv]');
 
-                $contentVariables = array(
-                    $this->clients->civilite,
-                    $this->clients->prenom,
-                    $this->clients->nom,
-                    $this->clients->fonction,
-                    $this->companies->name,
-                    $this->companies->adresse1 . ', ' . $this->companies->zip . ', ' . $this->companies->city . ', ' . $pays_fiscal,
-                    $dateAccept
+                $aReplacements = array(
+                    '[Civilite]'            => $this->clients->civilite,
+                    '[Prenom]'              => utf8_encode($this->clients->prenom),
+                    '[Nom]'                 => utf8_encode($this->clients->nom),
+                    '[Fonction]'            => utf8_encode($this->clients->fonction),
+                    '[Raison_sociale]'      => utf8_encode($this->companies->name),
+                    '[adresse_fiscale]'     => utf8_encode($this->companies->adresse1 . ', ' . $this->companies->zip . ', ' . $this->companies->city . ', ' . $pays_fiscal),
+                    '[date_validation_cgv]' => $dateAccept
                 );
 
-                $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement-personne-morale']);
+                $this->mandat_de_recouvrement = str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement-personne-morale']);
             }
-        } else { // Si pas connecté
-            if (isset($this->params[0]) && $this->params[0] == 'morale') {
-                $variables                    = array('[Civilite]', '[Prenom]', '[Nom]', '[Fonction]', '[Raison_sociale]', '[adresse_fiscale]', '[date_validation_cgv]');
-                $tabVariables                 = explode(';', $this->content['contenu-variables-par-defaut-morale']);
-                $contentVariables             = $tabVariables;
-                $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement-personne-morale']);
-            } else {
-                $variables    = array('[Civilite]', '[Prenom]', '[Nom]', '[date]', '[ville_naissance]', '[adresse_fiscale]', '[date_validation_cgv]');
-                $tabVariables = explode(';', $this->content['contenu-variables-par-defaut']);
+        } elseif (isset($this->params[0]) && $this->params[0] == 'morale') {
+            $variables                    = array('[Civilite]', '[Prenom]', '[Nom]', '[Fonction]', '[Raison_sociale]', '[adresse_fiscale]', '[date_validation_cgv]');
+            $tabVariables                 = explode(';', $this->content['contenu-variables-par-defaut-morale']);
+            $contentVariables             = $tabVariables;
+            $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement-personne-morale']);
+        } else {
+            $variables    = array('[Civilite]', '[Prenom]', '[Nom]', '[date]', '[ville_naissance]', '[adresse_fiscale]', '[date_validation_cgv]');
+            $tabVariables = explode(';', $this->content['contenu-variables-par-defaut']);
 
-                $contentVariables             = $tabVariables;
-                $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement']);
-            }
+            $contentVariables             = $tabVariables;
+            $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement']);
         }
 
         if (true === $bPdf && false === is_null($oPdf)) {
