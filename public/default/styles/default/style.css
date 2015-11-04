@@ -232,7 +232,7 @@ form p { padding-left:13px; }
 .btn-block { padding:0; display:block; width:100%; }
 
 .file-upload { position:absolute; top:0; left:0; right:0; bottom:0; overflow:hidden; cursor:pointer; opacity:0; filter:alpha(opacity=0); }
-.file-upload input { position:absolute; bottom:0; right:0; font-size:40px; cursor:pointer; opacity:0; filter:alpha(opacity=0); }
+.file-upload input { position:absolute; bottom:0; right:0; font-size:40px; cursor:pointer; opacity:0; filter:alpha(opacity=0); height:100%; }
 
 .fav-btn { position: relative; display: block; padding: 0 30px 0 13px; margin-top: 3px; background: #fff; border: 1px solid #d0d2d3; border-radius: 5px; line-height: 32px; font-size: 14px; color: #a1a5a7; font-weight:bold; }
 .fav-btn i { position:absolute; top: 8px; right: 8px; display:block; width: 18px; height: 18px; background: url(images/sprite.png) no-repeat -18px -17px; }
