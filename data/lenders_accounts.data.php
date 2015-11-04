@@ -167,7 +167,7 @@ class lenders_accounts extends lenders_accounts_crud
 
     }
 
-    public function getInfosben($iOffset = '', $iLimit = '')
+    public function getInfosben($iLimit = '', $iOffset = '')
     {
         $iOffset = $this->bdd->escape_string($iOffset);
         $iLimit  = $this->bdd->escape_string($iLimit);
@@ -191,6 +191,34 @@ class lenders_accounts extends lenders_accounts_crud
                 INNER JOIN projects_status_history psh USING (id_project_status_history)
                 INNER JOIN projects_status ps USING (id_project_status)
                 WHERE ps.status > 80'. ' ' . $sLimit. ' '. $sOffset;
+
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
+
+    public function getLendersToMatchCP($iLimit = '', $iOffset = '')
+    {
+        $iOffset = $this->bdd->escape_string($iOffset);
+        $iLimit  = $this->bdd->escape_string($iLimit);
+
+        $sOffset = '';
+        if ('' !== $iOffset) {
+            $sOffset = 'OFFSET ' . $iOffset;
+        }
+
+        $sLimit = '';
+        if ('' !== $iLimit) {
+            $sLimit = 'LIMIT ' . $iLimit;
+        }
+
+        $sql = 'SELECT ca.*
+                FROM clients_adresses ca
+                INNER JOIN lenders_accounts la ON la.id_client_owner = ca.id_client
+                WHERE NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp)' . ' ' . $sLimit. ' '. $sOffset;
 
         $resultat = $this->bdd->query($sql);
         $result   = array();

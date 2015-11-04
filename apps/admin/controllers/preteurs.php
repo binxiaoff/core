@@ -2422,4 +2422,11 @@ class preteursController extends bootstrap
 
     }
 
+    public function _control_post_code()
+    {
+        /** @var lenders_accounts $oLenders */
+        $oLenders = $this->loadData('lenders_accounts');
+        $aLenders = $oLenders->getLendersToMatchCP(500);
+    }
+
 }
