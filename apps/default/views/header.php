@@ -65,7 +65,7 @@
                         </span>
 
                         <div style="width:48px;display:inline-block;">
-                            <div class="btn_login" <?= (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5 ? 'style="display:none;"' : '') ?>>
+                            <div class="btn_login" <?= (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && π <= 5 ? 'style="display:none;"' : '') ?>>
                                 <button type="submit" name="connect" class="btn btn-mini btn-warning"><?= $this->lng['header']['ok'] ?></button>
                             </div>
                             <div class="error_wait" <?= (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5 ? 'style="display:block;"' : '') ?>>
@@ -73,10 +73,7 @@
                             </div>
                         </div>
                     </form>
-                    <?php
-                    // On desactive la validation par la touche enter
-                    if (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5) {
-                        ?>
+                    <?php if (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5) { ?>
                         <script type="text/javascript">
                             $("input").keypress(function (event) {
                                 if (event.keyCode == 13) {
@@ -84,9 +81,7 @@
                                 }
                             });
                         </script>
-                        <?php
-                    }
-                    ?>
+                    <?php } ?>
                     <div style="clear:both;"></div>
                     <a class="popup-link lienHeader" style="margin-right:65px;" href="<?= $this->lurl ?>/thickbox/pop_up_mdp"><?= $this->lng['header']['mot-de-passe-oublie'] ?></a>
                     <a class="lienHeader" style="margin-right:75px;" href="<?= $this->lurl . '/' . $this->tree->getSlug(127, $this->language) ?>"><?= $this->lng['header']['se-creer-un-compte'] ?></a>
