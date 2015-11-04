@@ -842,7 +842,7 @@
             </ul>
             <div class="conditions" id="bloc_mentions">Conditions de l'offre</div>
             <div class="mentions">
-                Offre valable jusqu’au 31/08/2015 réservée aux personnes physiques, capables, majeures.
+                Offre valable jusqu’au 30/11/2015 réservée aux personnes physiques, capables, majeures.
                 L’offre est réservée aux nouveaux inscrits dont l’inscription est validée par Unilend. Seules les personnes physiques de nationalité française, ou possédant une nationalité d’un pays de l’Espace Economique Européen, et disposant d’un compte bancaire en euros en France pourront bénéficier de l’offre.
                 Les 20 € seront versés sur le compte Unilend du client dans le mois suivant la validation du compte et ne pourront servir qu’à prêter sur Unilend. Le client pourra prêter cette somme à l’entreprise de son choix parmi les entreprises présentées sur le site et ce dans un délai de 3 mois suivant la validation de son inscription. En cas de non utilisation de cette somme dans ce délai pour un prêt, Unilend se réserve le droit de reprendre ce montant non utilisé.
                 Une seule prime de 20 € par personne et par compte Unilend est octroyée. Offre non cumulable avec toute offre commerciale ou de parrainage en cours. Cette offre est régie par la loi française.
