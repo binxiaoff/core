@@ -1527,16 +1527,6 @@
                 return true;
         }
 
-        function set_source3(email, source3, utm_source3_autre) {
-            var DATA = '&email=' + email + '&source3=' + source3 + '&utm_source3_autre=' + utm_source3_autre;
-
-            $.ajax({
-                type: "POST",
-                url: "https://www.unilend.fr/Landing-Pages-Externes/2015/source3.php",
-                data: DATA
-            });
-        }
-
         function initAutocompleteCity()
         {
             $('[data-autocomplete]').each(function()
