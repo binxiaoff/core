@@ -6216,6 +6216,9 @@ class cronController extends bootstrap
         $this->projects                      = $this->loadData('projects');
         $this->companies                     = $this->loadData('companies');
 
+        $oLogger = new ULogger('notifications', $this->logPath, 'notifications.log');
+        $oLogger->addRecord(ULogger::DEBUG, 'Project ID: ' . $id_project);
+
         $this->settings->get('Facebook', 'type');
         $lien_fb = $this->settings->value;
 
@@ -6226,6 +6229,8 @@ class cronController extends bootstrap
         $this->companies->get($this->projects->id_company, 'id_company');
 
         $lPreteurs = $this->clients->selectPreteursByStatus(60);
+
+        $oLogger->addRecord(ULogger::DEBUG, 'Lenders count: ' . count($lPreteurs));
 
         foreach ($lPreteurs as $preteur) {
             $this->notifications->type            = 8; // nouveau projet
@@ -6241,7 +6246,12 @@ class cronController extends bootstrap
             $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
 
             if ($this->clients_gestion_notifications->getNotif($preteur['id_client'], 1, 'immediatement') == true) {
-                $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
+                $bReturn = $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
+
+                if (false === $bReturn) {
+                    $oLogger->addRecord(ULogger::ALERT, 'Unable to get mail notification: ' . $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif);
+                }
+
                 $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                 $this->clients_gestion_mails_notif->update();
 
@@ -6270,15 +6280,16 @@ class cronController extends bootstrap
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
                 if ($preteur['status'] == 1) {
+                    $oLogger->addRecord(ULogger::DEBUG, 'Email sent to: ' . $preteur['email']);
+
                     if ($this->Config['env'] == 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteur['email'], $tabFiler);
-                        // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                     } else {
                         $this->email->addRecipient(trim($preteur['email']));
