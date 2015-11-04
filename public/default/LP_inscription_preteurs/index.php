@@ -1,31 +1,31 @@
-﻿<!DOCTYPE html>
+﻿<?php $url_site = 'https://' . $_SERVER['HTTP_HOST']; ?>
+<!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="lt-ie9 lt-ie8 lt-ie7" lang="fr"> <![endif]-->
 <!--[if IE 7]>         <html class="lt-ie9 lt-ie8" lang="fr"> <![endif]-->
 <!--[if IE 8]>         <html class="lt-ie9" lang="fr"> <![endif]-->
 <!--[if gt IE 8]><!--> <html lang="fr"> <!--<![endif]-->
 <head>
     <title>Unilend : les particuliers pr&ecirc;tent aux entreprises fran&ccedil;aises</title>
-	<meta charset="utf-8">
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-	<meta name="Author" content="dynamic creative - Agence cr&eacute;ative pas NET, mais WEB &eacute;norm&eacute;ment" />
-	<meta name="description" content="Sur Unilend, tout le monde peut pr&ecirc;ter aux entreprises fran&ccedil;aises et recevoir des int&eacute;r&ecirc;ts." />
-	<meta name="keywords" content="Financement entreprise, pr&ecirc;t &agrave; des entreprises, investissement direct, peer-to-peer lending, crowdfunding" />
+    <meta name="Author" content="dynamic creative - Agence cr&eacute;ative pas NET, mais WEB &eacute;norm&eacute;ment" />
+    <meta name="description" content="Sur Unilend, tout le monde peut pr&ecirc;ter aux entreprises fran&ccedil;aises et recevoir des int&eacute;r&ecirc;ts." />
+    <meta name="keywords" content="Financement entreprise, pr&ecirc;t &agrave; des entreprises, investissement direct, peer-to-peer lending, crowdfunding" />
     <meta name="viewport" content="initial-scale = 1.0,maximum-scale = 1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes">
 
-	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link href="css/font.css" type="text/css" rel="stylesheet" media="all">
-  	<link href="css/base.css" type="text/css" rel="stylesheet" media="all">
-	<link href="css/global.css" type="text/css" rel="stylesheet" media="all">
+      <link href="css/base.css" type="text/css" rel="stylesheet" media="all">
+    <link href="css/global.css" type="text/css" rel="stylesheet" media="all">
     <link href="css/responsive.css" type="text/css" rel="stylesheet" media="all">
     <link href="css/jquery.c2selectbox.css" type="text/css" rel="stylesheet" media="all" />
     <link href="css/bootstrap.css" type="text/css" rel="stylesheet" media="all" />
     <link rel="stylesheet" href="css/jquery.nouislider.css" />
 
-	<!--[if IE]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
-    
-    
+    <!--[if IE]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
     <!-- Google Tag Manager -->
     <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -35,9 +35,7 @@
     '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-MB66VL');</script>
     <!-- End Google Tag Manager -->
-    
 </head>
-
 <body>
     <?php
 
@@ -53,28 +51,18 @@
     else $email = "";
     if(!empty($_GET["civilite"])) $civilite = $_GET["civilite"];
     else $civilite = "";
-	
-	//$source3 = str_replace('/','',$_SERVER['REQUEST_URI']);
-	$slug_origine = "LP_inscription_preteurs";
-	
-	
-	//$url = 'http://unilend.demo2.equinoa.net'; 	// Demo
-	$url = 'https://www.unilend.fr'; 			// Prod
-	
 
-	$page = (isset($_GET['page']) && $_GET['page'] == 'lexpress'?$_GET['page']:'');
-	
-	if($page == 'lexpress'){
-		
-		$slug_origine = 'LP_inscription_preteurs_lexpress'
-		?>
-		<style type="text/css">
-		#chiffres,#presse{display:none;}
-		</style>
-		<?php	
-	}
-	
-	
+    $slug_origine = 'LP_inscription_preteurs';
+    $page         = (isset($_GET['page']) && $_GET['page'] == 'lexpress' ? $_GET['page'] : '');
+
+    if ($page == 'lexpress') {
+        $slug_origine = 'LP_inscription_preteurs_lexpress'
+        ?>
+        <style type="text/css">
+        #chiffres,#presse{display:none;}
+        </style>
+        <?php
+    }
     ?>
     <div id="form">
         <section class="wrapper">
@@ -247,6 +235,7 @@
                         <option value="140">P&eacute;rou    </option>
                         <option value="141">Philippines    </option>
                         <option value="142">Pologne    </option>
+                        <option value="195">Polynésie française</option>
                         <option value="143">Portugal    </option>
                         <option value="144">Qatar    </option>
                         <option value="145">Russie    </option>
@@ -451,6 +440,7 @@
                             <option value="140">P&eacute;rou    </option>
                             <option value="141">Philippines    </option>
                             <option value="142">Pologne    </option>
+                            <option value="195">Polynésie française</option>
                             <option value="143">Portugal    </option>
                             <option value="144">Qatar    </option>
                             <option value="145">Russie    </option>
@@ -534,6 +524,7 @@
                         <option value="23">Norv&egrave;ge</option>
                         <option value="24">Pays-Bas</option>
                         <option value="25">Pologne</option>
+                        <option value="195">Polynésie française</option>
                         <option value="26">Portugal</option>
                         <option value="27">R&eacute;publique tch&egrave;que</option>
                         <option value="28">Roumanie</option>
@@ -692,6 +683,7 @@
                         <option value="140">P&eacute;rou    </option>
                         <option value="141">Philippines    </option>
                         <option value="142">Pologne    </option>
+                        <option value="195">Polynésie française</option>
                         <option value="143">Portugal    </option>
                         <option value="144">Qatar    </option>
                         <option value="145">Russie    </option>
@@ -747,7 +739,7 @@
                     <div class="clear"></div>
                     <div class="cb-holder">
                         <label id="label_checkbox_inscription_cgv" for="inscription_cgv"></label>
-                        <p id="label_inscription_cgv">J'ai lu et j'accepte les <a href="https://www.unilend.fr/cgu-preteur-individual-1" target="_blank">Conditions G&eacute;n&eacute;rales de Vente</a> d'Unilend</p>
+                        <p id="label_inscription_cgv">J'ai lu et j'accepte les <a href="<?= $url_site ?>/cgu-preteur-individual-1" target="_blank">Conditions G&eacute;n&eacute;rales de Vente</a> d'Unilend</p>
                         <input type="checkbox" class="custom-chekckbox" name="inscription_cgv" id="inscription_cgv">
                     </div>
                     <!-- <p id="errorContainer2"></p> -->
@@ -826,7 +818,7 @@
             </ul>
             <p id="projet_analyse_tous"></p>
             <p id="projet_analyse_tous2">
-              Les projets &agrave; financer sur Unilend pr&eacute;sentent 
+              Les projets &agrave; financer sur Unilend pr&eacute;sentent
                 une capacit&eacute; de remboursement &eacute;prouv&eacute;e
             </p>
             <div class="clear"></div>
@@ -835,11 +827,11 @@
                 <div>
                     <button id="slide_prec"></button>
                     <div>
-                        
+
                         <div>
                             <div>
-                                <img src="img/vision.jpg" alt="Vision du Ciel" width="160" height="120">
-                                <p>Vision du Ciel</p>
+                                <img src="img/Giglam.jpeg" alt="Giglam" width="160" height="120">
+                                <p>Giglam Conseils</p>
                             </div>
                             <div>
                                 <img src="img/hmbc.png" alt="HMBC" width="160" height="120">
@@ -862,7 +854,7 @@
                                 <p>SNRI</p>
                             </div>
                         </div>
-                        
+
                     </div>
                     <button id="slide_suiv"></button>
                 </div>
@@ -872,153 +864,6 @@
             <div class="scroll"></div>
         </section>
     </div><!-- projet_analyse -->
-
-    <div id="simulez_vos_interets" class="wrapper100">
-        <section class="wrapper">
-            <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos int&eacute;r&ecirc;ts se rencontrent" width="252" height="60"></a>
-            <h1>Simulez <span>vos int&eacute;r&ecirc;ts</span></h1>
-
-            <section id="pret">
-                <h1>Vous pr&ecirc;tez</h1>
-                <div id="pret_left">
-                    <div>
-                        <p>La somme de</p>
-                        <input type="text" id="pret_somme" name="pret_somme" placeholder="ex: 1 000">
-                        <div class="clear"></div>
-                    </div>
-                    <div>
-                        <p>Au taux de</p>
-                        <select name="pret_taux" id="pret_taux" class="custom-select">
-                            <option value="">10,0 %</option>
-                            <option selected value="0.100">10,0 %</option>
-                            <option value="0.099">9,9 %</option>
-                            <option value="0.098">9,8 %</option>
-                            <option value="0.097">9,7 %</option>
-                            <option value="0.096">9,6 %</option>
-                            <option value="0.095">9,5 %</option>
-                            <option value="0.094">9,4 %</option>
-                            <option value="0.093">9,3 %</option>
-                            <option value="0.092">9,2 %</option>
-                            <option value="0.091">9,1 %</option>
-                            <option value="0.090">9,0 %</option>
-                            <option value="0.089">8,9 %</option>
-                            <option value="0.088">8,8 %</option>
-                            <option value="0.087">8,7 %</option>
-                            <option value="0.086">8,6 %</option>
-                            <option value="0.085">8,5 %</option>
-                            <option value="0.084">8,4 %</option>
-                            <option value="0.083">8,3 %</option>
-                            <option value="0.082">8,2 %</option>
-                            <option value="0.081">8,1 %</option>
-                            <option value="0.080">8,0 %</option>
-                            <option value="0.079">7,9 %</option>
-                            <option value="0.078">7,8 %</option>
-                            <option value="0.077">7,7 %</option>
-                            <option value="0.076">7,6 %</option>
-                            <option value="0.075">7,5 %</option>
-                            <option value="0.074">7,4 %</option>
-                            <option value="0.073">7,3 %</option>
-                            <option value="0.072">7,2 %</option>
-                            <option value="0.071">7,1 %</option>
-                            <option value="0.070">7,0 %</option>
-                            <option value="0.069">6,9 %</option>
-                            <option value="0.068">6,8 %</option>
-                            <option value="0.067">6,7 %</option>
-                            <option value="0.066">6,6 %</option>
-                            <option value="0.065">6,5 %</option>
-                            <option value="0.064">6,4 %</option>
-                            <option value="0.063">6,3 %</option>
-                            <option value="0.062">6,2 %</option>
-                            <option value="0.061">6,1 %</option>
-                            <option value="0.060">6,0 %</option>
-                            <option value="0.059">5,9 %</option>
-                            <option value="0.058">5,8 %</option>
-                            <option value="0.057">5,7 %</option>
-                            <option value="0.056">5,6 %</option>
-                            <option value="0.055">5,5 %</option>
-                            <option value="0.054">5,4 %</option>
-                            <option value="0.053">5,3 %</option>
-                            <option value="0.055">5,2 %</option>
-                            <option value="0.051">5,1 %</option>
-                            <option value="0.050">5,0 %</option>
-                            <option value="0.049">4,9 %</option>
-                            <option value="0.048">4,8 %</option>
-                            <option value="0.047">4,7 %</option>
-                            <option value="0.046">4,6 %</option>
-                            <option value="0.048">4,5 %</option>
-                            <option value="0.044">4,4 %</option>
-                            <option value="0.043">4,3 %</option>
-                            <option value="0.042">4,2 %</option>
-                            <option value="0.041">4,1 %</option>
-                            <option value="0.040">4,0 %</option>
-                        </select>
-                        <div class="clear"></div>
-                    </div>
-                </div>
-                <div id="pret_right">
-                    <p>Dur&eacute;e du pr&ecirc;t</p>
-                    <div id="dc_slider-step"></div>
-                    <ul>
-                        <li>
-                            <p>24</p>
-                            <p>mois</p>
-                        </li>
-                        <li>
-                            <p>36</p>
-                            <p>mois</p>
-                        </li>
-                        <li>
-                            <p>48</p>
-                            <p>mois</p>
-                        </li>
-                        <li>
-                            <p>60</p>
-                            <p>mois</p>
-                        </li>
-                    </ul>
-                    <div class="clear"></div>
-                </div>
-                <div class="clear"></div>
-                <button id="simuler">Simuler</button>
-                <p id="erreur_simulation"></p>
-            </section>
-
-            <section id="recu">
-                <div>
-                    <h1>Vous recevez</h1>
-                    <div id="recu_left">
-                        <div>
-                            <p>La somme de</p>
-                            <p id="recu_somme">1 000</p>
-                            <div class="clear"></div>
-                        </div>
-                    </div>
-                    <div id="recu_right">
-                        <p>
-                            soit <span>25,36</span> &euro;<br/>
-                            pendant <span>48</span> mois
-                        </p>
-                    </div>
-                    <div class="clear"></div>
-                    <div id="recu_result">
-                        <p>
-                            Soit <span><span>217,40</span> &euro;</span><br/>
-                            <span>d'int&eacute;r&ecirc;ts bruts</span>
-                        </p>
-                        <p>=</p>
-                        <p>
-                            <span>21,74</span><br/>
-                            du montant pr&ecirc;t&eacute;
-                        </p>
-                        <div class="clear"></div>
-                    </div>
-                </div>
-            </section>
-
-            <p class="fleche">Inscrivez-vous et commencez &agrave; pr&ecirc;ter en quelques clics</p>
-            <div class="scroll"></div>
-        </section>
-    </div><!-- simulez_vos_interets -->
 
     <div id="chiffres" class="wrapper100 bg_gris">
         <section class="wrapper">
@@ -1170,17 +1015,16 @@
             <p>
                Le service de paiement <span>Unilend</span> est distribu&eacute; par la Soci&eacute;t&eacute; fran&ccedil;aise pour le financement des PME - SFF PME SAS, agent prestataire de services de paiement mandat&eacute; par la SFPMEI et d&eacute;clar&eacute; aupr&egrave;s de l'Autorit&eacute; de contr&ocirc;le prudentiel et de r&eacute;solution (ACPR).
             </p>
-			<br/>
-			<p>
-			<strong>Pr&ecirc;ter pr&eacute;sente un risque de non-remboursement : r&eacute;partissez bien vos pr&ecirc;ts et ne pr&ecirc;tez que de l'argent dont vous n'avez pas besoin imm&eacute;diatement.</strong>
-			</p>
+            <br/>
+            <p>
+            <strong>Pr&ecirc;ter pr&eacute;sente un risque de non-remboursement : r&eacute;partissez bien vos pr&ecirc;ts et ne pr&ecirc;tez que de l'argent dont vous n'avez pas besoin imm&eacute;diatement.</strong>
+            </p>
             <h2>Nos partenaires</h2>
             <div>
                 <ul>
                     <li><img src="img/sfpmei.png" alt="SFPMEI" width="110" height="62"></li>
                     <li><img src="img/altares.png" alt="Altares - La connaissance inter-entreprises" width="110" height="62"></li>
                     <li><img src="img/norton.png" alt="Norton secured - powered by VeriSign" width="110" height="62"></li>
-                    <!--li><img src="img/acpr.png" alt="ACPR - Banque de France" width="110" height="62"></li-->
                     <li><img src="img/financement-participatif-france.png" alt="Financement Participatif France" width="110" height="62"></li>
                 </ul>
                 <div class="clear"></div>
@@ -1189,7 +1033,7 @@
         </section>
     </div><!-- qui_sommes_nous -->
 
-    <button id="scrollUp"></button>  
+    <button id="scrollUp"></button>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <!-- // <script src="js/jquery-1.9.1.min.js"></script> -->
@@ -1266,7 +1110,7 @@
                 var inscription_cgv = $('#inscription_cgv');
                 var utm_source = '<?php echo $source; ?>';
                 var utm_source2 = '<?php echo $source2; ?>';
-				var slug_origine = '<?php echo $slug_origine; ?>';
+                var slug_origine = '<?php echo $slug_origine; ?>';
 
                 if($('#form_inscription').hasClass('etape1')) {
 
@@ -1300,8 +1144,6 @@
                         var key = 'unilend';
                         var hash = CryptoJS.MD5(key);
                         var time = $.now();
-
-                        // var token = '<?php echo $token; ?>';
                         var token = $.base64.btoa(hash+'-'+time);
                         var localdate = new Date();
                         var mois = localdate.getMonth()+1;
@@ -1314,7 +1156,7 @@
                         if(heure<10) { heure = '0'+heure; }
                         if(minutes<10) { minutes = '0'+minutes; }
                         if(secondes<10) { secondes = '0'+secondes; }
-                                            
+
                         var date = localdate.getFullYear() + '-' + mois + '-' + jour + ' ' + heure + ':' + minutes + ':' + secondes;
                         email = inscription_email;
                         nom = inscription_nom;
@@ -1325,7 +1167,7 @@
 
                         $.ajax({
                             type: "POST",
-                            url: "https://www.unilend.fr/collect/prospect",
+                            url: "<?= $url_site ?>/collect/prospect",
                             data: DATA,
                             success: function(data){
                                 var parsedDate = jQuery.parseJSON(data);
@@ -1346,9 +1188,8 @@
                                     $('#form_inscription > .form_content.etape1').fadeOut('fast', function() {
                                         $('#form').css('position','relative');
                                         $('#form > .wrapper').addClass('etape2');
-                                        <?php /*  old tracking ?>$("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');<?php */?>
-										$("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=cpca&pid=3&type=15"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');
-										
+                                        $("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=cpca&pid=3&type=15"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');
+
                                         $('#form_inscription > .form_content.etape2').fadeIn();
                                     });
                                 }
@@ -1385,9 +1226,8 @@
                                             $('#form_inscription > .form_content.etape1').fadeOut('fast', function() {
                                                 $('#form').css('position','relative');
                                                 $('#form > .wrapper').addClass('etape2');
-                                                <?php /*?>$("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');<?php */?>
-												$("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=cpca&pid=3&type=15"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');
-												
+                                                $("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=cpca&pid=3&type=15"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');
+
                                                 $('#form_inscription > .form_content.etape2').fadeIn();
                                             });
                                         }
@@ -1571,7 +1411,7 @@
                         var hash = CryptoJS.MD5(key);
                         var time = $.now();
                         var token = $.base64.btoa(hash+'-'+time);
-                                            
+
                         var date = annee + '-' + mois + '-' + jour + ' ' + heure + ':' + minutes + ':' + secondes;
                         email = inscription_email;
                         nom = inscription_nom;
@@ -1600,7 +1440,7 @@
 
                         $.ajax({
                             type: "POST",
-                            url: "https://www.unilend.fr/collect/inscription",
+                            url: "<?= $url_site ?>/collect/inscription",
                             data: DATA,
                             success: function(data){
                                 var parsedDate = jQuery.parseJSON(data);
@@ -1611,7 +1451,7 @@
                                     var url = parsedDate.URL;
 
                                     if(idSubmit == "inscription_submit2") { $(location).attr('href', url); }
-                                    else if(idSubmit == "voir_projets") { $(location).attr('href', 'https://www.unilend.fr/projets-a-financer'); }
+                                    else if(idSubmit == "voir_projets") { $(location).attr('href', '<?= $url_site ?>/projets-a-financer'); }
                                 }
                                 else {
                                     var key = 'unilend';
@@ -1686,8 +1526,6 @@
                 else {
                     return false;
                 }
-
-
             });
 
             function validateEmail(emailAddress) {
@@ -1709,6 +1547,5 @@
             }
         });
     </script>
-
-	</body>
+</body>
 </html>

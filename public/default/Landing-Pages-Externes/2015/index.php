@@ -1,17 +1,4 @@
-<?php
-$url_site = "http://".$_SERVER['HTTP_HOST'];
-
-if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
-{
-    $url_site = "http://192.168.0.175/unilend-local";
-}
-?>
-
-
-
-
-
-
+<?php $url_site = 'https://' . $_SERVER['HTTP_HOST']; ?>
 <!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="lt-ie9 lt-ie8 lt-ie7" lang="fr"> <![endif]-->
 <!--[if IE 7]>         <html class="lt-ie9 lt-ie8" lang="fr"> <![endif]-->
@@ -39,7 +26,6 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
 
         <!--[if IE]><script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 
-
         <!-- Google Tag Manager -->
     <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
                       height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -55,9 +41,7 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
             f.parentNode.insertBefore(j, f);
         })(window, document, 'script', 'dataLayer', 'GTM-MB66VL');</script>
     <!-- End Google Tag Manager -->
-
 </head>
-
 <body>
     <?php
     if (!empty($_GET["utm_source"]))
@@ -85,18 +69,10 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
     else
         $civilite = "";
 
-    //$source3 = str_replace('/','',$_SERVER['REQUEST_URI']);
-    $slug_origine = "2015";
+    $slug_origine = '2015';
+    $page         = (isset($_GET['page']) && $_GET['page'] == 'lexpress' ? $_GET['page'] : '');
 
-    //$url = 'http://unilend.demo2.equinoa.net'; 	// Demo
-    $url = $url_site;    // Prod
-
-
-    $page = (isset($_GET['page']) && $_GET['page'] == 'lexpress' ? $_GET['page'] : '');
-
-    if ($page == 'lexpress')
-    {
-
+    if ($page == 'lexpress') {
         $slug_origine = '2015_lexpress';
     }
     ?>
@@ -922,7 +898,7 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
 
                         <div>
                             <div>
-                                <img src="img/Giglam.jpeg" alt="Vision du Ciel" width="160" height="120">
+                                <img src="img/Giglam.jpeg" alt="Giglam" width="160" height="120">
                                 <p>Giglam Conseils</p>
                             </div>
                             <div>
@@ -1046,7 +1022,6 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
     <button id="scrollUp"></button>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-    <!-- // <script src="js/jquery-1.9.1.min.js"></script> -->
     <script type="text/javascript">window.jQuery || document.write('<script type="text/javascript" src="js/jquery-1.9.1.min.js"><\/script>')</script>
     <script src="js/jquery.c2selectbox.js" type="text/javascript"></script>
     <script src="js/jquery.nouislider.all.js"></script>
@@ -1222,7 +1197,6 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
 
                         var DATA = '&token=' + token + '&utm_source=' + utm_source + '&utm_source2=' + utm_source2 + '&slug_origine=' + slug_origine + '&date=' + date + '&email=' + email + '&nom=' + nom + '&prenom=' + prenom + '&civilite=' + civilite;
 
-                        //alert("<?= $url_site ?>/collect/prospect");
                         $.ajax({
                             type: "POST",
                             url: "<?= $url_site ?>/collect/prospect",
@@ -1259,15 +1233,11 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
                                             $('#form_inscription.etape2').css({bottom: "auto", top: "0"});
                                         }
 
-
                                         var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
-
                                         var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
-
 
                                         $("#tracking").html(tracking1 + tracking2);
 
-                                        /*$("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');*/
                                         $('#form_inscription > .form_content.etape2').fadeIn();
                                     });
                                 }
@@ -1312,14 +1282,11 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
                                                     $('#form_inscription.etape2').css({bottom: "auto", top: "0"});
                                                 }
 
-
                                                 var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
-
                                                 var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
 
                                                 $("#tracking").html(tracking1 + tracking2);
 
-                                                /* $("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');*/
                                                 $('#form_inscription > .form_content.etape2').fadeIn();
                                             });
                                         }
@@ -1594,11 +1561,9 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
                                     }
                                     else if (idSubmit == "voir_projets")
                                     {
-                                        // add kle tracking 19/02/15
                                         var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=13&uniqueid=' + uniqueid + '"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
 
                                         $("#tracking").html(tracking2);
-                                        //end tracking
 
                                         $(location).attr('href', '<?= $url_site ?>/projets-a-financer');
                                     }
@@ -1611,8 +1576,6 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
 
                                     $.each(parsedDate.reponse, function (index, value) {
                                         var intituleErreur = value.erreur;
-
-                                        // console.log(intituleErreur);
 
                                         if (intituleErreur == "Mot de passe") {
                                             $('#inscription_mdp').addClass('error');
@@ -1676,8 +1639,6 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
                 else {
                     return false;
                 }
-
-
             });
 
             function validateEmail(emailAddress) {
@@ -1709,6 +1670,5 @@ if ($_SERVER['HTTP_HOST'] == "192.168.0.175")
             }
         });
     </script>
-
 </body>
 </html>
