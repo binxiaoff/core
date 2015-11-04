@@ -48,13 +48,11 @@
     if(!empty($_GET["civilite"])) $civilite = $_GET["civilite"];
     else $civilite = "";
 
-    $slug_origine = "2015";
-    $url = 'https://www.unilend.fr';
-
-    $page = (isset($_GET['page']) && $_GET['page'] == 'lexpress' ? $_GET['page'] : '');
+    $slug_origine = 'Lp-2015-web';
+    $page         = (isset($_GET['page']) && $_GET['page'] == 'lexpress' ? $_GET['page'] : '');
 
     if ($page == 'lexpress') {
-        $slug_origine = '2015_lexpress';
+        $slug_origine = 'Lp-2015-web_lexpress';
     }
 
     ?>
@@ -77,16 +75,6 @@
                     <input type="text" id="inscription_nom" name="nom" placeholder="Nom*" maxlength="255" value="<?php echo $nom; ?>">
                     <input type="text" id="inscription_prenom" name="prenom" placeholder="Prénom*" maxlength="255" value="<?php echo $prenom; ?>">
                     <input type="email" id="inscription_email" name="email" placeholder="E-mail*" maxlength="255" value="<?php echo $email; ?>">
-                    <p class="source3">Comment nous avez-vous connu ?</p>
-                    <select id="inscription_utm_source3" name="utm_source3" class="custom-select">
-                        <option value="">Choisir</option>
-                        <option value="1">Conférence</option>
-                        <option value="2">Presse, radio, tv</option>
-                        <option value="3">Recherche Internet</option>
-                        <option value="4">Bouche-à-oreille</option>
-                        <option value="5">Autre, préciser : champ libre</option>
-                    </select>
-                    <input type="text" name="utm_source3_autre" id="inscription_utm_source3_autre" placeholder="Précisez..." maxlength="255">
                     <button type="submit" id="inscription_submit" name="valider">S'inscrire</button>
                     <p class="champs_obligatoires">* Champs obligatoires</p>
                 </div>
@@ -988,8 +976,6 @@
     <script src="js/global.js" type="text/javascript"></script>
     <script>
         $(function () {
-            $('#inscription_utm_source3_autre').hide();
-            // promo mentions
             $('.macaron').click(function () {
                 if (!$('.mentions').is(':visible')) $(".mentions").slideToggle( 300, function() {});
             });
@@ -1006,7 +992,7 @@
             $('input').keydown(function(){
                 $(this).removeClass('error');
             });
-            $('a[href^="#bloc_mentions"]').click(function(){ // console.log("test")
+            $('a[href^="#bloc_mentions"]').click(function(){
                 var id = $(this).attr("href");
                 var offset = $(id).offset().top
                 $('html, body').animate({scrollTop: offset}, 'slow');
@@ -1039,15 +1025,10 @@
             $('#form_inscription').submit(function(event) {
                 event.preventDefault();
 
-                $('html, body').animate({
-                    scrollTop: 0
-                }, 1000, 'swing');
-
                 var inscription_civilite = $('#inscription_civilite').val();
                 var inscription_nom = $.trim($('#inscription_nom').val());
                 var inscription_prenom = $.trim($('#inscription_prenom').val());
                 var inscription_email = $.trim($('#inscription_email').val());
-
                 var inscription_mdp = $.trim($('#inscription_mdp').val());
                 var inscription_mdp2 = $.trim($('#inscription_mdp2').val());
                 var inscription_question = $.trim($('#inscription_question').val());
@@ -1056,7 +1037,6 @@
                 var inscription_ville_fiscale = $.trim($('#inscription_ville_fiscale').val());
                 var inscription_cp_fiscale = $.trim($('#inscription_cp_fiscale').val());
                 var inscription_id_pays_fiscale = $('#inscription_id_pays_fiscale').val();
-                // var inscription_check_adresse = $('#inscription_check_adresse').val();
                 var inscription_adresse_correspondance = $.trim($('#inscription_adresse_correspondance').val());
                 var inscription_ville_correspondance = $.trim($('#inscription_ville_correspondance').val());
                 var inscription_cp_correspondance = $.trim($('#inscription_cp_correspondance').val());
@@ -1069,12 +1049,9 @@
                 var inscription_cgv = $('#inscription_cgv');
                 var utm_source = '<?php echo $source; ?>';
                 var utm_source2 = '<?php echo $source2; ?>';
-                var utm_source3 = $('#inscription_utm_source3').val();
-                var utm_source3_autre = '';
                 var slug_origine = '<?php echo $slug_origine; ?>';
 
-                if($('#form_inscription').hasClass('etape1')) {
-
+                if ($('#form_inscription').hasClass('etape1')) {
                     var erreur = 0;
 
                     if(!inscription_civilite) {
@@ -1097,10 +1074,11 @@
                         $('#inscription_email').addClass('error');
                         var erreur = 1;
                     }
-                    if(utm_source3 == 5) {
-                        utm_source3_autre = $('#inscription_utm_source3_autre').val();
-                    }
                     if (erreur == 1) {
+                        $('html, body').animate({
+                            scrollTop: 0
+                        }, 1000, 'swing');
+
                         if($('#form_header').hasClass('formlight')) {
                             if( $('#form_inscription').prop('scrollHeight') + $('.form_content').prop('scrollHeight') > $(window).height()) {
                                 $('.form_content.etape1').stop().animate({ scrollTop: $('.error:visible:first').position().top + 120}, 700, 'swing');
@@ -1111,7 +1089,6 @@
                         var key = 'unilend';
                         var hash = CryptoJS.MD5(key);
                         var time = $.now();
-
                         var token = $.base64.btoa(hash+'-'+time);
                         var localdate = new Date();
                         var mois = localdate.getMonth()+1;
@@ -1141,11 +1118,6 @@
                                 var parsedDate = jQuery.parseJSON(data);
 
                                 if(parsedDate.reponse == 'OK') {
-                                    if(utm_source3) {
-                                        var source3 = $('#inscription_utm_source3 option:selected').text();
-                                        set_source3(email, source3, utm_source3_autre);
-                                    }
-
                                     $('#form_inscription').removeClass('etape1');
                                     $('#form_inscription').addClass('etape2');
 
@@ -1234,11 +1206,8 @@
                     }
                 }
                 else if($('#form_inscription').hasClass('etape2')) {
-
                     var idSubmit = $("button[type=submit].clicked").attr("id");
-
                     var erreur = 0;
-
                     var localdate = new Date();
                     var annee = localdate.getFullYear();
                     var mois = localdate.getMonth()+1;
@@ -1397,7 +1366,6 @@
                         $('#inscription_cgv').parent().find('label').addClass('error');
                         var erreur = 1;
                     }
-                    // if(erreur == 1) { return false; }
                     if (erreur == 1) {
                         if($('#form_header').hasClass('formlight')) {
                             if( $('#form_inscription').prop('scrollHeight') + $('.form_content').prop('scrollHeight') > $(window).height()) {
@@ -1407,7 +1375,6 @@
                         return false;
                     }
                     else {
-
                         // AJAX
 
                         var key = 'unilend';
@@ -1461,11 +1428,9 @@
 
                                         $(location).attr('href', url);
                                     } else if(idSubmit == "voir_projets") {
-                                        // add kle tracking 19/02/15
                                         var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=13&uniqueid='+uniqueid+'"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
 
                                         $("#tracking").html(tracking2);
-                                        //end tracking
 
                                         $(location).attr('href', 'https://www.unilend.fr/projets-a-financer');
                                     }
@@ -1478,8 +1443,6 @@
 
                                     $.each( parsedDate.reponse, function( index, value ){
                                         var intituleErreur = value.erreur;
-
-                                        // console.log(intituleErreur);
 
                                         if(intituleErreur == "Mot de passe") {
                                             $('#inscription_mdp').addClass('error');
@@ -1536,15 +1499,12 @@
                                 }
                             }
                         });
-
                         return false;
                     }
                 }
                 else {
                     return false;
                 }
-
-
             });
 
             function validateEmail(emailAddress) {
@@ -1563,16 +1523,6 @@
                     return false;
                 } else
                     return true;
-            }
-
-            function set_source3(email, source3, utm_source3_autre) {
-                var DATA = '&email=' + email + '&source3=' + source3 + '&utm_source3_autre=' + utm_source3_autre;
-
-                $.ajax({
-                    type: "POST",
-                    url: "https://www.unilend.fr/Landing-Pages-Externes/2015/source3.php",
-                    data: DATA
-                });
             }
         });
     </script>
