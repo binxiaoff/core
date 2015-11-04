@@ -497,7 +497,7 @@ class pdfController extends bootstrap
         $this->projects->get($this->oLoans->id_project, 'id_project');
 
         $sNamePdfClient = 'CONTRAT-UNILEND-' . $this->projects->slug . '-' . $this->oLoans->id_loan;
-        $sFilePath      = $this->path . 'protected/pdf/contrat/contrat-' . $this->projects->slug . '-' . $this->oLoans->id_loan . '.pdf';
+        $sFilePath      = $this->path . 'protected/pdf/contrat/contrat-' . $this->params[0] . '-' . $this->oLoans->id_loan . '.pdf';
 
         if (false === file_exists($sFilePath)) {
             $this->GenerateContractHtml();
