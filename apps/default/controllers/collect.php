@@ -411,7 +411,7 @@ class collectController extends bootstrap
 				/** @var insee_pays $oInseePays */
 				$oInseePays = $this->loadData('insee_pays');
 
-				if ($oPays->get($id_pays_naissance) && $oInseePays->get($oPays->iso)) {
+				if ($oPays->get($id_pays_naissance) && $oInseePays->getByCountryIso(trim($oPays->iso))) {
 					$insee_birth = $oInseePays->COG;
 				} else {
 					$form_ok = false;

@@ -344,7 +344,7 @@ class profileController extends bootstrap
                 /** @var insee_pays $oInseePays */
                 $oInseePays = $this->loadData('insee_pays');
 
-                if ($oPays->get($_POST['pays3']) && $oInseePays->get($oPays->iso)) {
+                if ($oPays->get($_POST['pays3']) && $oInseePays->getByCountryIso(trim($oPays->iso))) {
                     $sCodeInsee = $oInseePays->COG;
                 } else {
                     $this->form_ok = false;

@@ -797,7 +797,7 @@ class statsController extends bootstrap
                         }
                         $this->pays->get($id_pays, 'id_pays');
 
-                        $this->insee_pays->getByCountryName(trim($this->pays->fr));
+                        $this->insee_pays->getByCountryIso(trim($this->pays->iso));
                         $cp = $this->insee_pays->COG;
 
                         $retenuesource = number_format($this->retenuesource * 100, 2, ',', ' ') . '%';
