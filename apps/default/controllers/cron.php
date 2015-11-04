@@ -75,16 +75,16 @@ class cronController extends bootstrap
 
             $this->L_offres_acceptees_no_dated = $this->indexage_vos_operations->select('libelle_operation = "Offre acceptée" AND date_operation = "0000-00-00 00:00:00"', '', 0, 500);
 
+            $this->oLogger->addRecord(ULogger::INFO, 'Affected rows count: ' . count($this->L_offres_acceptees_no_dated), array('ID' => $this->iStartTime));
+
             if (count($this->L_offres_acceptees_no_dated) > 0) {
                 foreach ($this->L_offres_acceptees_no_dated as $offre) {
                     $this->loans->get($offre['bdc'], 'id_loan');
 
-                    $solde                                = $this->transactions->getSoldeDateLimite_fulldate($offre['id_client'], $this->loans->updated);
                     $this->indexage_vos_operations_boucle = $this->loadData('indexage_vos_operations');
-
                     $this->indexage_vos_operations_boucle->get($offre['id'], 'id');
                     $this->indexage_vos_operations_boucle->date_operation = $this->loans->updated;
-                    $this->indexage_vos_operations_boucle->solde          = $solde * 100;
+                    $this->indexage_vos_operations_boucle->solde          = $this->transactions->getSoldeDateLimite_fulldate($offre['id_client'], $this->loans->updated) * 100;
                     $this->indexage_vos_operations_boucle->update();
                 }
             }
@@ -5121,30 +5121,27 @@ class cronController extends bootstrap
     public function _checkEmailBidKO()
     {
         if (true === $this->startCron('checkEmailBidKO', 1)) {
-
             // On fait notre cron toutes les  5 minutes et toutes les minutes entre 15h30 et 16h00
-            $les5    = array(00, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55);
+            $les5    = array(0, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55);
             $minutes = date('i');
+            $dateDeb = mktime(15, 30, 0, date('m'), date('d'), date('Y'));
+            $dateFin = mktime(16, 00, 0, date('m'), date('d'), date('Y'));
 
-            $dateDeb = mktime(15, 30, 0, date("m"), date("d"), date("Y"));
-            $dateFin = mktime(16, 00, 0, date("m"), date("d"), date("Y"));
-            //cron 5 min et toutes les minutes de 15h30 à 16h00
             if (in_array($minutes, $les5) || time() >= $dateDeb && time() <= $dateFin) {
-                $this->projects                = $this->loadData('projects');
-                $this->projects_status         = $this->loadData('projects_status');
-                $this->emprunteur              = $this->loadData('clients');
-                $this->companies               = $this->loadData('companies');
-                $this->bids                    = $this->loadData('bids');
-                $this->lenders_accounts        = $this->loadData('lenders_accounts');
-                $this->preteur                 = $this->loadData('clients');
-                $this->notifications           = $this->loadData('notifications');
-                $this->wallets_lines           = $this->loadData('wallets_lines');
-                $this->bids_logs               = $this->loadData('bids_logs');
-                $this->current_projects_status = $this->loadData('projects_status');
-
-                $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications'); // add gestion alertes
-                $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif'); // add gestion alertes
-                $this->transactions                  = $this->loadData('transactions'); // add gestion alertes
+                $this->projects                      = $this->loadData('projects');
+                $this->projects_status               = $this->loadData('projects_status');
+                $this->emprunteur                    = $this->loadData('clients');
+                $this->companies                     = $this->loadData('companies');
+                $this->bids                          = $this->loadData('bids');
+                $this->lenders_accounts              = $this->loadData('lenders_accounts');
+                $this->preteur                       = $this->loadData('clients');
+                $this->notifications                 = $this->loadData('notifications');
+                $this->wallets_lines                 = $this->loadData('wallets_lines');
+                $this->bids_logs                     = $this->loadData('bids_logs');
+                $this->current_projects_status       = $this->loadData('projects_status');
+                $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+                $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+                $this->transactions                  = $this->loadData('transactions');
 
                 $this->settings->get('Facebook', 'type');
                 $lien_fb = $this->settings->value;
@@ -5155,8 +5152,9 @@ class cronController extends bootstrap
                 $this->settings->get('Heure fin periode funding', 'type');
                 $this->heureFinFunding = $this->settings->value;
 
-                // On recup les bid ko qui n'ont pas de mail envoyé
-                $lBidsKO = $this->bids->select('status = 2 AND status_email_bid_ko = 0');
+                $iEmailsSent  = 0;
+                $iBidsUpdated = 0;
+                $lBidsKO      = $this->bids->select('status = 2 AND status_email_bid_ko = 0');
 
                 foreach ($lBidsKO as $e) {
                     // On check si on a pas de changement en cours de route
@@ -5164,13 +5162,14 @@ class cronController extends bootstrap
                     $this->current_projects_status->getLastStatut($e['id_project']);
 
                     // si pas de mail est que le projet est statut "enfunding", "fundé", "rembourssement"
-                    if ($this->bids->status_email_bid_ko == '0' && in_array($this->current_projects_status->status, array(
-                            50, 60, 80
-                        ))
+                    if (
+                        $this->bids->status_email_bid_ko == '0'
+                        && in_array($this->current_projects_status->status, array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT))
                     ) {
-
                         $this->lenders_accounts->get($e['id_lender_account'], 'id_lender_account');
                         $this->preteur->get($this->lenders_accounts->id_client_owner, 'id_client');
+
+                        ++$iBidsUpdated;
 
                         if ($this->clients_gestion_notifications->getNotif($this->preteur->id_client, 3, 'immediatement') == true) {
                             $this->transactions->get($e['id_bid'], 'id_bid_remb');
@@ -5192,7 +5191,6 @@ class cronController extends bootstrap
                                 $heure_retrait = $this->heureFinFunding;
                             }
 
-                            // On recup le temps restant
                             $inter = $this->dates->intervalDates(date('Y-m-d H:i:s'), $this->projects->date_retrait . ' ' . $heure_retrait . ':00');
                             if ($inter['mois'] > 0) {
                                 $tempsRest = $inter['mois'] . ' mois';
@@ -5209,8 +5207,6 @@ class cronController extends bootstrap
                                 $tempsRest = $inter['secondes'] . ' secondes';
                             }
 
-                            //*** ENVOI DU MAIL BID KO ***//
-                            // Motif virement
                             $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($this->preteur->prenom))), 0, 1);
                             $nom       = $this->ficelle->stripAccents(utf8_decode(trim($this->preteur->nom)));
                             $id_client = str_pad($this->preteur->id_client, 6, 0, STR_PAD_LEFT);
@@ -5256,6 +5252,8 @@ class cronController extends bootstrap
                             $this->email->setHTMLBody(stripslashes($texteMail));
 
                             if ($this->preteur->status == 1) {
+                                ++$iEmailsSent;
+
                                 if ($this->Config['env'] == 'prod') {
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->preteur->email, $tabFiler);
                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
@@ -5271,6 +5269,9 @@ class cronController extends bootstrap
                     }
                 }
             }
+
+            $this->oLogger->addRecord(ULogger::INFO, 'Emails sent: ' . $iEmailsSent, array('ID' => $this->iStartTime));
+            $this->oLogger->addRecord(ULogger::INFO, 'Bids updated: ' . $iBidsUpdated, array('ID' => $this->iStartTime));
 
             $this->stopCron();
         }
