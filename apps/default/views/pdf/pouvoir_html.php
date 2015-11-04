@@ -57,7 +57,7 @@
 								R.C.S.
 							</div>
 							<div class="col-small">
-								<?=$this->companies->siren?>
+								<?=$this->companies->rcs?>
 							</div>
 						</li>
 					</ul>

@@ -24,7 +24,7 @@ $handler = new \ErrorHandler(
 );
 
 try {
-    if (1 !== preg_match('#images/dyn/([^/]+)/([0-9]+)/(.+\.(jpg|jpeg|png))#i', $_SERVER['REQUEST_URI'], $aMatches)) {
+    if (1 !== preg_match('#images/dyn/([^/]+)/([0-9]+)/(.+\.(jpg|jpeg|png))$#i', parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), $aMatches)) {
         throw new ResizableImageException('URL does not match pattern');
     }
 

@@ -1752,7 +1752,7 @@ class dossiersController extends bootstrap
                     $credit_bail = $result[45][1];
                     // Location avec option d'achat
                     $location_avec_option_achat = $result[46][1];
-                    // Location financi?re
+                    // Location financière
                     $location_financiere = $result[47][1];
                     // Location longue duree
                     $location_longue_duree = $result[48][1];

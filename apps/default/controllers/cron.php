@@ -69,23 +69,22 @@ class cronController extends bootstrap
     public function _minute()
     {
         if (true === $this->startCron('correctionOffreAccepteAucuneDate', 5)) {
-
             $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
             $this->loans                   = $this->loadData('loans');
             $this->transactions            = $this->loadData('transactions');
 
             $this->L_offres_acceptees_no_dated = $this->indexage_vos_operations->select('libelle_operation = "Offre acceptée" AND date_operation = "0000-00-00 00:00:00"', '', 0, 500);
 
+            $this->oLogger->addRecord(ULogger::INFO, 'Affected rows count: ' . count($this->L_offres_acceptees_no_dated), array('ID' => $this->iStartTime));
+
             if (count($this->L_offres_acceptees_no_dated) > 0) {
                 foreach ($this->L_offres_acceptees_no_dated as $offre) {
                     $this->loans->get($offre['bdc'], 'id_loan');
 
-                    $solde                                = $this->transactions->getSoldeDateLimite_fulldate($offre['id_client'], $this->loans->updated);
                     $this->indexage_vos_operations_boucle = $this->loadData('indexage_vos_operations');
-
                     $this->indexage_vos_operations_boucle->get($offre['id'], 'id');
                     $this->indexage_vos_operations_boucle->date_operation = $this->loans->updated;
-                    $this->indexage_vos_operations_boucle->solde          = $solde * 100;
+                    $this->indexage_vos_operations_boucle->solde          = $this->transactions->getSoldeDateLimite_fulldate($offre['id_client'], $this->loans->updated) * 100;
                     $this->indexage_vos_operations_boucle->update();
                 }
             }
@@ -877,22 +876,16 @@ class cronController extends bootstrap
                 $donneesEcheances = $tabl[1];
                 $lEcheanciers     = $tabl[2];
 
-                $nbjoursMois = 0;
                 // on crée les echeances de chaques preteurs
                 foreach ($lEcheanciers as $k => $e) {
-                    // on prend le nombre de jours dans le mois au lieu du mois
-                    $nbjourstemp = mktime(0, 0, 0, date("m") + $k, 1, date("Y"));
-                    $nbjoursMois += date('t', $nbjourstemp);
-
                     // Date d'echeance preteur
-                    $dateEcheance = $this->dates->dateAddMoisJours($this->projects->date_fin, 0, $nb_jours + $nbjoursMois);
+                    $dateEcheance = $this->dates->dateAddMoisJoursV3($this->projects->date_fin,$k);
                     $dateEcheance = date('Y-m-d H:i', $dateEcheance) . ':00';
 
                     // Date d'echeance emprunteur
-                    $dateEcheance_emprunteur = $this->dates->dateAddMoisJours($this->projects->date_fin, 0, $nbjoursMois);
+                    $dateEcheance_emprunteur = $this->dates->dateAddMoisJoursV3($this->projects->date_fin,$k);
                     // on retire 6 jours ouvrés
                     $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur, 6);
-
                     $dateEcheance_emprunteur = date('Y-m-d H:i', $dateEcheance_emprunteur) . ':00';
 
                     // particulier
@@ -1012,13 +1005,9 @@ class cronController extends bootstrap
 
         $lEcheanciers = $echeanciers->getSumRembEmpruntByMonths($projects->id_project);
 
-        $nbjoursMois = 0;
         foreach ($lEcheanciers as $k => $e) {
-            $nbjourstemp = mktime(0, 0, 0, date("m") + $k, 1, date("Y"));
-            $nbjoursMois += date('t', $nbjourstemp);
-
             // Date d'echeance emprunteur
-            $dateEcheance_emprunteur = $this->dates->dateAddMoisJours($projects->date_fin, 0, $nbjoursMois);
+            $dateEcheance_emprunteur = $this->dates->dateAddMoisJoursV3($projects->date_fin, $k);
             // on retire 6 jours ouvrés
             $dateEcheance_emprunteur = $jo->display_jours_ouvres($dateEcheance_emprunteur, 6);
 
@@ -4509,7 +4498,6 @@ class cronController extends bootstrap
         ini_set('max_execution_time', 300); //300 seconds = 5 minutes
 
         if (true === $this->startCron('declarationContratPret', 5)) {
-
             $loans    = $this->loadData('loans');
             $projects = $this->loadData('projects');
 
@@ -4527,22 +4515,15 @@ class cronController extends bootstrap
                 $lLoans = $loans->select('status = "0" AND fichier_declarationContratPret = "" AND id_project IN(' . $lesProjets . ')', 'id_loan ASC', 0, 10);
                 if (count($lLoans) > 0) {
                     foreach ($lLoans as $l) {
-                        $annee = substr($l['added'], 0, 4);
                         $projects->get($l['id_project'], 'id_project');
-                        // Dossier année
-                        $pathAnnee = $this->path . 'protected/declarationContratPret/' . $annee . '/';
-                        // chemin où l'on enregistre
-                        $path = $this->path . 'protected/declarationContratPret/' . $annee . '/' . $projects->slug . '/';
-                        // Nom du fichier
-                        $nom = 'Unilend_declarationContratPret_' . $l['id_loan'] . '.pdf';
 
-                        $oCommandPdf = new Command('pdf', 'declarationContratPret_html', array(
-                            $l['id_loan'], $path
-                        ), $this->language);
+                        $path = $this->path . 'protected/declarationContratPret/' . substr($l['added'], 0, 4) . '/' . $projects->slug . '/';
+                        $nom  = 'Unilend_declarationContratPret_' . $l['id_loan'] . '.pdf';
+
+                        $oCommandPdf = new Command('pdf', 'declarationContratPret_html', array($l['id_loan'], $path), $this->language);
                         $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
                         $oPdf->_declarationContratPret_html($l['id_loan'], $path);
 
-                        // On met a jour le loan pour savoir qu'on la deja enregistré
                         $loans->get($l['id_loan'], 'id_loan');
                         $loans->fichier_declarationContratPret = $nom;
                         $loans->update();
@@ -5021,30 +5002,27 @@ class cronController extends bootstrap
     public function _checkEmailBidKO()
     {
         if (true === $this->startCron('checkEmailBidKO', 1)) {
-
             // On fait notre cron toutes les  5 minutes et toutes les minutes entre 15h30 et 16h00
-            $les5    = array(00, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55);
+            $les5    = array(0, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55);
             $minutes = date('i');
+            $dateDeb = mktime(15, 30, 0, date('m'), date('d'), date('Y'));
+            $dateFin = mktime(16, 00, 0, date('m'), date('d'), date('Y'));
 
-            $dateDeb = mktime(15, 30, 0, date("m"), date("d"), date("Y"));
-            $dateFin = mktime(16, 00, 0, date("m"), date("d"), date("Y"));
-            //cron 5 min et toutes les minutes de 15h30 à 16h00
             if (in_array($minutes, $les5) || time() >= $dateDeb && time() <= $dateFin) {
-                $this->projects                = $this->loadData('projects');
-                $this->projects_status         = $this->loadData('projects_status');
-                $this->emprunteur              = $this->loadData('clients');
-                $this->companies               = $this->loadData('companies');
-                $this->bids                    = $this->loadData('bids');
-                $this->lenders_accounts        = $this->loadData('lenders_accounts');
-                $this->preteur                 = $this->loadData('clients');
-                $this->notifications           = $this->loadData('notifications');
-                $this->wallets_lines           = $this->loadData('wallets_lines');
-                $this->bids_logs               = $this->loadData('bids_logs');
-                $this->current_projects_status = $this->loadData('projects_status');
-
-                $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications'); // add gestion alertes
-                $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif'); // add gestion alertes
-                $this->transactions                  = $this->loadData('transactions'); // add gestion alertes
+                $this->projects                      = $this->loadData('projects');
+                $this->projects_status               = $this->loadData('projects_status');
+                $this->emprunteur                    = $this->loadData('clients');
+                $this->companies                     = $this->loadData('companies');
+                $this->bids                          = $this->loadData('bids');
+                $this->lenders_accounts              = $this->loadData('lenders_accounts');
+                $this->preteur                       = $this->loadData('clients');
+                $this->notifications                 = $this->loadData('notifications');
+                $this->wallets_lines                 = $this->loadData('wallets_lines');
+                $this->bids_logs                     = $this->loadData('bids_logs');
+                $this->current_projects_status       = $this->loadData('projects_status');
+                $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+                $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+                $this->transactions                  = $this->loadData('transactions');
 
                 $this->settings->get('Facebook', 'type');
                 $lien_fb = $this->settings->value;
@@ -5055,8 +5033,9 @@ class cronController extends bootstrap
                 $this->settings->get('Heure fin periode funding', 'type');
                 $this->heureFinFunding = $this->settings->value;
 
-                // On recup les bid ko qui n'ont pas de mail envoyé
-                $lBidsKO = $this->bids->select('status = 2 AND status_email_bid_ko = 0');
+                $iEmailsSent  = 0;
+                $iBidsUpdated = 0;
+                $lBidsKO      = $this->bids->select('status = 2 AND status_email_bid_ko = 0');
 
                 foreach ($lBidsKO as $e) {
                     // On check si on a pas de changement en cours de route
@@ -5064,13 +5043,14 @@ class cronController extends bootstrap
                     $this->current_projects_status->getLastStatut($e['id_project']);
 
                     // si pas de mail est que le projet est statut "enfunding", "fundé", "rembourssement"
-                    if ($this->bids->status_email_bid_ko == '0' && in_array($this->current_projects_status->status, array(
-                            50, 60, 80
-                        ))
+                    if (
+                        $this->bids->status_email_bid_ko == '0'
+                        && in_array($this->current_projects_status->status, array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT))
                     ) {
-
                         $this->lenders_accounts->get($e['id_lender_account'], 'id_lender_account');
                         $this->preteur->get($this->lenders_accounts->id_client_owner, 'id_client');
+
+                        ++$iBidsUpdated;
 
                         if ($this->clients_gestion_notifications->getNotif($this->preteur->id_client, 3, 'immediatement') == true) {
                             $this->transactions->get($e['id_bid'], 'id_bid_remb');
@@ -5092,7 +5072,6 @@ class cronController extends bootstrap
                                 $heure_retrait = $this->heureFinFunding;
                             }
 
-                            // On recup le temps restant
                             $inter = $this->dates->intervalDates(date('Y-m-d H:i:s'), $this->projects->date_retrait . ' ' . $heure_retrait . ':00');
                             if ($inter['mois'] > 0) {
                                 $tempsRest = $inter['mois'] . ' mois';
@@ -5109,8 +5088,6 @@ class cronController extends bootstrap
                                 $tempsRest = $inter['secondes'] . ' secondes';
                             }
 
-                            //*** ENVOI DU MAIL BID KO ***//
-                            // Motif virement
                             $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($this->preteur->prenom))), 0, 1);
                             $nom       = $this->ficelle->stripAccents(utf8_decode(trim($this->preteur->nom)));
                             $id_client = str_pad($this->preteur->id_client, 6, 0, STR_PAD_LEFT);
@@ -5156,6 +5133,8 @@ class cronController extends bootstrap
                             $this->email->setHTMLBody(stripslashes($texteMail));
 
                             if ($this->preteur->status == 1) {
+                                ++$iEmailsSent;
+
                                 if ($this->Config['env'] == 'prod') {
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->preteur->email, $tabFiler);
                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
@@ -5171,6 +5150,9 @@ class cronController extends bootstrap
                     }
                 }
             }
+
+            $this->oLogger->addRecord(ULogger::INFO, 'Emails sent: ' . $iEmailsSent, array('ID' => $this->iStartTime));
+            $this->oLogger->addRecord(ULogger::INFO, 'Bids updated: ' . $iBidsUpdated, array('ID' => $this->iStartTime));
 
             $this->stopCron();
         }
@@ -5280,69 +5262,6 @@ class cronController extends bootstrap
 
             $this->stopCron();
         }
-    }
-
-    // cron journalier (00h00  0 0 * * *) new => 0 * * * * (toutes les heures)
-    public function _checkControles()
-    {
-        if (true === $this->startCron('checkControles', 5)) {
-
-            $settings = $this->loadData('settings');
-
-            $settings->get('Controle cron checkBids', 'type');
-            $ctrlCheckBids   = $settings->value;
-            $updateCheckBids = $settings->updated;
-
-            $settings->get('Controle cron checkEmailBidKO', 'type');
-            $ctrlCheckEmailBidKO   = $settings->value;
-            $updateCheckEmailBidKO = $settings->updated;
-
-            $settings->get('Controle cron check_projet_en_funding', 'type');
-            $ctrlCheck_projet_en_funding   = $settings->value;
-            $updateCheck_projet_en_funding = $settings->updated;
-
-            $settings->get('Controle statut remboursement', 'type');
-            $ctrlRemb = $settings->value;
-
-            $settings->get('Controle remboursements', 'type');
-            $ctrlRembPreteurs = $settings->value;
-
-            if ($ctrlCheckBids == 0 || $ctrlCheckEmailBidKO == 0 || $ctrlCheck_projet_en_funding == 0 || $ctrlRemb == 0) {
-                $todayMoins1h = mktime(date("H") - 1, date("i"), date("s"), date("m"), date("d"), date("Y"));
-                // Si la valeur est a zero et que la derniere mise a jour date de plus d'une heure
-                if ($ctrlCheckBids == 0 && strtotime($updateCheckBids) < $todayMoins1h) {
-                    $this->oLogger->addRecord(ULogger::ERROR,
-                        'Cron : ' . __METHOD__ . ' Controle cron checkBids value 0 in settings at date : ' . date('Y-m-d H:i:s'),
-                        array($this->Config['env']));
-                }
-                // Si la valeur est a zero et que la derniere mise a jour date de plus d'une heure
-                if ($ctrlCheckEmailBidKO == 0 && strtotime($updateCheckEmailBidKO) < $todayMoins1h) {
-                    $this->oLogger->addRecord(ULogger::ERROR,
-                        'Cron : ' . __METHOD__ . ' Controle cron checkEmailBidKO value 0 in settings at date : ' . date('Y-m-d H:i:s'),
-                        array($this->Config['env']));
-                }
-                // si la valeur est a zero
-                if ($ctrlCheck_projet_en_funding == 0 && strtotime($updateCheck_projet_en_funding) < $todayMoins1h) {
-                    $this->oLogger->addRecord(ULogger::ERROR,
-                        'Cron : ' . __METHOD__ . ' Controle cron check_projet_en_fundings value 0 in settings at date : ' . date('Y-m-d H:i:s'),
-                        array($this->Config['env']));
-                }
-                if ($ctrlRemb == 0) {
-                    $this->oLogger->addRecord(ULogger::ERROR,
-                        'Cron : ' . __METHOD__ . ' Controle cron remboursement value 0 in settings at date : ' . date('Y-m-d H:i:s'),
-                        array($this->Config['env']));
-                }
-                if ($ctrlRembPreteurs == 0) {
-                    $this->oLogger->addRecord(ULogger::ERROR,
-                        'Cron : ' . __METHOD__ . ' Controle cron statut remboursements des prêteurs value 0 in settings at date : ' . date('Y-m-d H:i:s'),
-                        array($this->Config['env']));
-                }
-            } else {
-                echo 'OK';
-            }
-            $this->stopCron();
-        }
-        die;
     }
 
     // relance une completude a j+8 (add le 22/07/2014)
@@ -5539,31 +5458,22 @@ class cronController extends bootstrap
     public function _genere_factures()
     {
         if (true === $this->startCron('genereFacture', 5)) {
-
             $projects    = $this->loadData('projects');
             $factures    = $this->loadData('factures');
             $companies   = $this->loadData('companies');
             $emprunteurs = $this->loadData('clients');
 
-            // FACTURE ER
-            $listeRemb = $factures->selectEcheancesRembAndNoFacture();
-            if ($listeRemb != false) {
-                foreach ($listeRemb as $r) {
-                    $oCommandPdf = new Command('pdf', 'facture_ER', array(
-                        $r['hash'], $r['id_project'], $r['ordre'], $path
-                    ), $this->language);
-                    $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                    $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre']);
-                }
+            foreach ($factures->selectEcheancesRembAndNoFacture() as $r) {
+                $oCommandPdf = new Command('pdf', 'facture_ER', array($r['hash'], $r['id_project'], $r['ordre']), $this->language);
+                $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
+                $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre']);
             }
 
-            // FACTURE EF
-            $lProjetsEnremb = $projects->selectProjectsByStatus(80);
-            foreach ($lProjetsEnremb as $projet) {
-                // Les projets n'ayant pas encore de facture EF
-                if ($factures->get($projet['id_project'], 'type_commission = 1 AND id_project') == false) {
+            foreach ($projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT) as $projet) {
+                if (false === $factures->get($projet['id_project'], 'type_commission = 1 AND id_project')) {
                     $companies->get($projet['id_company'], 'id_company');
                     $emprunteurs->get($companies->id_client_owner, 'id_client');
+
                     $oCommandPdf = new Command('pdf', 'facture_EF', array($emprunteurs->hash, $r['id_project']), $this->language);
                     $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
                     $oPdf->_facture_EF($emprunteurs->hash, $r['id_project']);
@@ -5579,7 +5489,6 @@ class cronController extends bootstrap
     public function _check_alim_cb()
     {
         if (true === $this->startCron('checkAlimCb', 5)) {
-
             $this->autoFireHeader = false;
             $this->autoFireHead   = false;
             $this->autoFireView   = false;
@@ -5770,7 +5679,7 @@ class cronController extends bootstrap
             $dateFinOffreAcceptee   = mktime(21, 0, 0, date('m'), date('d'), date('Y'));
 
             if (time() >= $dateDebutNewProject && time() < $dateFinNewProject) {
-            $id_notif = 1;
+                $id_notif = 1;
 
                 //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
                 $lPreteurs = $clients->selectPreteursByStatusSlim(60);
@@ -6187,6 +6096,9 @@ class cronController extends bootstrap
         $this->projects                      = $this->loadData('projects');
         $this->companies                     = $this->loadData('companies');
 
+        $oLogger = new ULogger('notifications', $this->logPath, 'notifications.log');
+        $oLogger->addRecord(ULogger::DEBUG, 'Project ID: ' . $id_project);
+
         $this->settings->get('Facebook', 'type');
         $lien_fb = $this->settings->value;
 
@@ -6197,6 +6109,8 @@ class cronController extends bootstrap
         $this->companies->get($this->projects->id_company, 'id_company');
 
         $lPreteurs = $this->clients->selectPreteursByStatus(60);
+
+        $oLogger->addRecord(ULogger::DEBUG, 'Lenders count: ' . count($lPreteurs));
 
         foreach ($lPreteurs as $preteur) {
             $this->notifications->type            = 8; // nouveau projet
@@ -6212,7 +6126,12 @@ class cronController extends bootstrap
             $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
 
             if ($this->clients_gestion_notifications->getNotif($preteur['id_client'], 1, 'immediatement') == true) {
-                $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
+                $bReturn = $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
+
+                if (false === $bReturn) {
+                    $oLogger->addRecord(ULogger::ALERT, 'Unable to get mail notification: ' . $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif);
+                }
+
                 $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                 $this->clients_gestion_mails_notif->update();
 
@@ -6241,15 +6160,16 @@ class cronController extends bootstrap
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
                 if ($preteur['status'] == 1) {
+                    $oLogger->addRecord(ULogger::DEBUG, 'Email sent to: ' . $preteur['email']);
+
                     if ($this->Config['env'] == 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteur['email'], $tabFiler);
-                        // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                     } else {
                         $this->email->addRecipient(trim($preteur['email']));
@@ -7889,34 +7809,44 @@ class cronController extends bootstrap
     public function _stabilisation_mails()
     {
         if ($this->startCron('stabilisationMail', 10)) {
-            $debut            = time();
-            $nbJOursEnMOins   = 30;
-            $limite           = 2000;
-            $dateMoinsNbJours = date('Y-m-d', mktime(0, 0, 0, date('m'), date('d') - $nbJOursEnMOins, date('Y')));
+            $iStartTime       = time();
+            $iRetentionDays   = 30;
+            $iLimit           = 2000;
+            $sMinimumDate     = date('Y-m-d', mktime(0, 0, 0, date('m'), date('d') - $iRetentionDays, date('Y')));
 
-            $this->oLogger->addRecord(ULogger::INFO, 'Current date with an offset of ' . $nbJOursEnMOins . ' days: ' . $dateMoinsNbJours, array('ID' => $debut));
+            $this->oLogger->addRecord(ULogger::INFO, 'Current date with an offset of ' . $iRetentionDays . ' days: ' . $sMinimumDate, array('ID' => $iStartTime));
 
             $this->bdd->query("
                 INSERT IGNORE INTO mails_filer_backup (`id_filermails`, `id_textemail`, `desabo`, `email_nmp`, `from`, `to`, `subject`, `content`, `headers`, `added`, `updated`)
-                SELECT m1.* FROM mails_filer m1 WHERE LEFT(m1.added, 10) <= '" . $dateMoinsNbJours . "' ORDER BY m1.added ASC LIMIT " . $limite
+                SELECT m1.* FROM mails_filer m1 WHERE LEFT(m1.added, 10) <= '" . $sMinimumDate . "' ORDER BY m1.added ASC LIMIT " . $iLimit
             );
 
-            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` backuped lines: ' . mysql_affected_rows(), array('ID' => $debut));
+            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` backuped lines: ' . mysql_affected_rows(), array('ID' => $iStartTime));
 
-            $this->bdd->query('DELETE FROM `mails_filer` WHERE LEFT(added, 10) <= "' . $dateMoinsNbJours . '" ORDER BY added ASC LIMIT ' . $limite);
+            $this->bdd->query('DELETE FROM `mails_filer` WHERE LEFT(added, 10) <= "' . $sMinimumDate . '" ORDER BY added ASC LIMIT ' . $iLimit);
 
-            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` deleted lines: ' . mysql_affected_rows(), array('ID' => $debut));
+            $iDeletedRows = mysql_affected_rows();
+            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` deleted lines: ' . $iDeletedRows, array('ID' => $iStartTime));
+
+            if ($iDeletedRows < $iLimit) {
+                $this->bdd->query('OPTIMIZE TABLE `mails_filer`');
+            }
 
             $this->bdd->query("
                 INSERT IGNORE INTO nmp_backup (`id_nmp`, `serialize_content`, `date`, `mailto`, `reponse`, `erreur`, `status`, `date_sent`, `added`, `updated`)
-                SELECT n1.* FROM nmp n1  WHERE LEFT(n1.added, 10) <= '" . $dateMoinsNbJours . "' AND mailto NOT LIKE '%unilend.fr' ORDER BY n1.added ASC LIMIT " . $limite
+                SELECT n1.* FROM nmp n1  WHERE LEFT(n1.added, 10) <= '" . $sMinimumDate . "' AND mailto NOT LIKE '%unilend.fr' ORDER BY n1.added ASC LIMIT " . $iLimit
             );
 
-            $this->oLogger->addRecord(ULogger::INFO, '`nmp` backuped lines: ' . mysql_affected_rows(), array('ID' => $debut));
+            $this->oLogger->addRecord(ULogger::INFO, '`nmp` backuped lines: ' . mysql_affected_rows(), array('ID' => $iStartTime));
 
-            $this->bdd->query('DELETE FROM `nmp` WHERE LEFT(added, 10) <= "' . $dateMoinsNbJours . '" ORDER BY added ASC LIMIT ' . $limite);
+            $this->bdd->query('DELETE FROM `nmp` WHERE LEFT(added, 10) <= "' . $sMinimumDate . '" ORDER BY added ASC LIMIT ' . $iLimit);
 
-            $this->oLogger->addRecord(ULogger::INFO, '`nmp` deleted lines: ' . mysql_affected_rows(), array('ID' => $debut));
+            $iDeletedRows = mysql_affected_rows();
+            $this->oLogger->addRecord(ULogger::INFO, '`nmp` deleted lines: ' . $iDeletedRows, array('ID' => $iStartTime));
+
+            if ($iDeletedRows < $iLimit) {
+                $this->bdd->query('OPTIMIZE TABLE `nmp`');
+            }
 
             $this->stopCron();
         }

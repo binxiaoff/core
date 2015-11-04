@@ -33,11 +33,6 @@
         border: 1px solid #c84747;
         color: #c84747;
     }
-
-    .btn {
-        height: 50px !important;
-        padding-top: 3px !important;
-    }
 </style>
 
 <div class="account-data">

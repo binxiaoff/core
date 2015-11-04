@@ -86,22 +86,6 @@ $(function(){
 
     $("#slider_projet > div > div").swipe(swipeOptions);
 
-
-    /**** select duree ****/
-
-    $('#dc_slider-step').noUiSlider({
-        start: [ 60 ],
-        connect: "lower",
-        step: 12,
-        range: {
-            'min': [  24 ],
-            'max': [ 60 ]
-        },
-        format: wNumb({
-            decimals: 0
-        })
-    });
-
     /**** calcul interets ****/
 
     $("#simuler").click(function() {
@@ -128,7 +112,7 @@ $(function(){
             $("#erreur_simulation").html('Le montant maximum de prêt est de 1 000 000€');
             return false;
         }
-        
+
         var taux = $("#pret_taux").val();
         var duree = $("#dc_slider-step").val();
 
@@ -215,7 +199,7 @@ $(function(){
         $('html, body').animate({
             scrollTop: 0 /*- $('nav').height() * 0.5*/
         }, 1000, 'swing');
-    }); 
+    });
 });
 
 function swipeStatus(event, phase, direction, distance) {

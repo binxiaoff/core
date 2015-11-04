@@ -495,27 +495,6 @@ class echeanciers extends echeanciers_crud
     // mise a jour des statuts emprunteur pour les remb d'un projet
     // id_project : projet
     // $ordre : periode de remb
-    function updateStatusEmprunteur_old($id_project, $ordre, $annuler = '')
-    {
-        $sql = 'SELECT * FROM echeanciers WHERE id_project = ' . $id_project . ' AND ordre = ' . $ordre;
-        $req = $this->bdd->query($sql);
-        $res = array();
-        while ($rec = $this->bdd->fetch_array($req)) {
-            $this->get($rec['id_echeancier'], 'id_echeancier');
-            if ($annuler != '') {
-                $this->status_emprunteur             = 0;
-                $this->date_echeance_emprunteur_reel = '0000-00-00 00:00:00';
-            } else {
-                $this->status_emprunteur             = 1;
-                $this->date_echeance_emprunteur_reel = date('Y-m-d H:i:s');
-            }
-            $this->update();
-        }
-    }
-
-    // mise a jour des statuts emprunteur pour les remb d'un projet
-    // id_project : projet
-    // $ordre : periode de remb
     function updateStatusEmprunteur($id_project, $ordre, $annuler = '')
     {
         //$sql = 'SELECT * FROM echeanciers WHERE id_project = '.$id_project.' AND ordre = '.$ordre;

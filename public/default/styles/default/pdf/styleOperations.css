@@ -1,6 +1,5 @@
 .iconplusmoins{color:white;font-size:18px;cursor:default;vertical-align: middle;}
 
-
 .vos_operations{font-size:13px;width:960px;margin:auto;}
 .vos_operations td{padding:5px;}
 .vos_operations tr.content_transact td{padding: 0px;}
@@ -37,8 +36,8 @@ table.vos_operations th#order_projects{text-align:left;}
     padding: 5px;
     position: absolute;
     text-align: center;
-    width: 100px;}
-
+    width: 100px;
+}
 
 .pdfHeader,.pdfFooter{width:960px;margin:auto;}
 .pdfHeader .logo { padding: 0 0 70px 0; float: none; background:url(images/logo.png) no-repeat 0 0; white-space:nowrap; overflow:hidden; }
@@ -48,14 +47,7 @@ table.vos_operations th#order_projects{text-align:left;}
 
 .th-wrap{color:white;}
 
-
-
-
-.vos_operations .th-wrap {
-    text-align: center;
-    /*width: 100px;*/
-    font-size: 12px;
-}
+.vos_operations .th-wrap {text-align: center; font-size: 12px;}
 
 .soustable tr td{padding-top: 5px !important; padding-bottom: 5px !important;}
 

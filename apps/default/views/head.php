@@ -3,30 +3,35 @@
 <!--[if IE 7]>         <html class="no-js lt-ie10 lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html class="no-js lt-ie10 lt-ie9"> <![endif]-->
 <!--[if IE 9]>         <html class="no-js lt-ie10"> <![endif]-->
-<!--[if gt IE 9]><!--> <html class="no-js" xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?= $this->language ?>" lang="<?= $this->language ?>"> <!--<![endif]-->
+<!--[if gt IE 9]><!--> <html class="no-js<?= empty($this->error_login) ? '' : 'show-login' ?>" xmlns="http://www.w3.org/1999/xhtml" xml:lang="<?= $this->language ?>" lang="<?= $this->language ?>"> <!--<![endif]-->
     <head>
-        <?php
-        if ($this->google_webmaster_tools != '')
-        {
-            ?>
+        <?php if ($this->google_webmaster_tools != '') { ?>
             <meta name="google-site-verification" content="<?= $this->google_webmaster_tools ?>" />
-            <?php
-        }
-        ?>
+        <?php } ?>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-            <title><?= (isset($this->meta_title)) ? $this->meta_title : 'Unilend' ?><?= ($this->baseline_title != '' ? ' - ' . $this->baseline_title : '') ?></title>
-            <meta name="description" content="<?= (isset($this->meta_description)) ? $this->meta_description : '' ?>" />
-            <meta name="keywords" content="<?= (isset($this->meta_keywords)) ? $this->meta_keywords : '' ?>" />
-            <!--[if IE]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
-            <?= ($this->tree->id_tree != '' && $this->tree->indexation == 0 ? '<meta name="robots" content="noindex,nofollow" />' : '') ?>
-            <link rel="shortcut icon" href="<?= $this->surl ?>/styles/default/images/favicon.ico" type="image/x-icon" />
-            <script type="text/javascript">
-                var add_surl = '<?= $this->surl ?>';
-                var add_url = '<?= $this->lurl ?>';
-            </script>
-            <?php $this->callCss(); ?>
-            <?php $this->callJs(); ?>
+        <title><?= (isset($this->meta_title)) ? $this->meta_title : 'Unilend' ?><?= ($this->baseline_title != '' ? ' - ' . $this->baseline_title : '') ?></title>
+        <meta name="description" content="<?= (isset($this->meta_description)) ? $this->meta_description : '' ?>" />
+        <meta name="keywords" content="<?= (isset($this->meta_keywords)) ? $this->meta_keywords : '' ?>" />
+        <!--[if IE]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+        <?= ($this->tree->id_tree != '' && $this->tree->indexation == 0 ? '<meta name="robots" content="noindex,nofollow" />' : '') ?>
+        <link rel="shortcut icon" href="<?= $this->surl ?>/styles/default/images/favicon.ico" type="image/x-icon" />
+        <script>
+            var add_surl = '<?= $this->surl ?>';
+            var add_url = '<?= $this->lurl ?>';
+        </script>
+        <?php $this->callCss(); ?>
+        <?php $this->callJs(); ?>
+        <meta name="viewport" id="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0" />
+        <script>
+            if (screen.width > 767) {
+                var mvp = document.getElementById('viewport');
+                mvp.setAttribute('content', 'width=1024');
+            }
+        </script>
+        <link rel="stylesheet" href="<?= $this->surl ?>/styles/default/responsive/fonts.css" type="text/css" media="all" />
+        <link rel="stylesheet" href="<?= $this->surl ?>/styles/default/responsive/responsive.css" type="text/css" media="all" />
+        <script type="text/javascript" src="<?= $this->surl ?>/scripts/default/responsive/responsive.js"></script>
     </head>
     <body class="has-fixed-nav">
         <?
@@ -76,16 +81,16 @@
             <!-- Google Tag Manager -->
             <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <script>(function (w, d, s, l, i) {
-                            w[l] = w[l] || [];
-                            w[l].push({'gtm.start':
-                                        new Date().getTime(), event: 'gtm.js'});
-                            var f = d.getElementsByTagName(s)[0],
-                                    j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
-                            j.async = true;
-                            j.src =
-                                    '//www.googletagmanager.com/gtm.js?id=' + i + dl;
-                            f.parentNode.insertBefore(j, f);
-                        })(window, document, 'script', 'dataLayer', 'GTM-MB66VL');</script>
+                    w[l] = w[l] || [];
+                    w[l].push({'gtm.start':
+                                new Date().getTime(), event: 'gtm.js'});
+                    var f = d.getElementsByTagName(s)[0],
+                            j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
+                    j.async = true;
+                    j.src =
+                            '//www.googletagmanager.com/gtm.js?id=' + i + dl;
+                    f.parentNode.insertBefore(j, f);
+                })(window, document, 'script', 'dataLayer', 'GTM-MB66VL');</script>
             <!-- End Google Tag Manager -->
 
             <div id="fb-root"></div>
@@ -100,7 +105,7 @@
                 }(document, 'script', 'facebook-jssdk'));</script>
 
             <?php
-// Bouton pour les traductions
+            // Bouton pour les traductions
             if (isset($_SESSION['user']['id_user']) && $_SESSION['user']['id_user'] != '' && $_SERVER['REMOTE_ADDR'] == '93.26.42.99') {
                 // Si les modifications sont actives on desactive les liens
                 if ($_SESSION['modification'] == 1) {

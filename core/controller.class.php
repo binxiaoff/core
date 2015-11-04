@@ -58,7 +58,9 @@ class Controller
         setlocale(LC_TIME, 'fr_FR.utf8');
         setlocale(LC_TIME, 'fr_FR');
 
-        $this->initUnilendAutoload();
+        require_once __DIR__ . '/../Autoloader.php';
+        Autoloader::register();
+
         $this->oCache = Cache::getInstance();
 
         //Variables de session pour la fenetre de debug
@@ -66,7 +68,6 @@ class Controller
         unset($_SESSION['debug']);
         unset($_SESSION['msg']);
 
-        // Construction
         $this->Command      = $command;
         $this->Config       = $config;
         $this->App          = $app;
@@ -763,12 +764,6 @@ class Controller
         if ($this->enableCache) {
             $this->cacheCurrentPage = true;
         }
-    }
-
-    public function initUnilendAutoload()
-    {
-        require_once __DIR__ . '/../Autoloader.php';
-        Autoloader::register();
     }
 
     // Initialisation du cache

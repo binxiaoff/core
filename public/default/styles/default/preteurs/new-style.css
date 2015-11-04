@@ -125,17 +125,17 @@
 .account-page-personal .account-data form .row .c2-sb-text { text-align: left; }
 .account-page-personal .account-data form .row .uploader .field { text-align: left; }
 
-.form-page .account-data form .form-foot .btn { min-width: 325px; height: 53px; padding-top: 7px; margin: 40px 0 0 0; }
+.form-page .account-data form .form-foot .btn { min-width: 325px; margin: 40px 0 0 0; }
 .form-page .account-data form .row em { width: 100%; float: left; font-size: 14px;line-height:14px; color: #b10366; margin-top: 0px; }
 
-.account-data form .row input.field ~ input.field, 
-.account-data form .row input.field ~ .c2-sb-wrap, 
-.account-data form .row input.field ~ .pass-field-holder, 
-.account-data form .row .c2-sb-wrap ~ .field, 
-.account-data form .row .c2-sb-wrap ~ .c2-sb-wrap, 
-.account-data form .row .c2-sb-wrap ~ .pass-field-holder, 
-.account-data form .row .pass-field-holder ~ .field, 
-.account-data form .row .pass-field-holder ~ .c2-sb-wrap, 
+.account-data form .row input.field ~ input.field,
+.account-data form .row input.field ~ .c2-sb-wrap,
+.account-data form .row input.field ~ .pass-field-holder,
+.account-data form .row .c2-sb-wrap ~ .field,
+.account-data form .row .c2-sb-wrap ~ .c2-sb-wrap,
+.account-data form .row .c2-sb-wrap ~ .pass-field-holder,
+.account-data form .row .pass-field-holder ~ .field,
+.account-data form .row .pass-field-holder ~ .c2-sb-wrap,
 .account-data form .row .pass-field-holder ~ .pass-field-holder { margin-left: 40px; }
 
 .form-page .account-data form .row-triple-fields .field,
@@ -183,7 +183,7 @@ em.error_fichier { color: #b10366;display: block;font-size: 14px;display: none; 
 
 /* ------- add ----------- */
 
-.register-form {/* width: 890px;*/ } 
+.register-form {/* width: 890px;*/ }
 .tooltip { background:#f4f4f4 !important; color:#808080; max-width:205px; box-shadow:0 0 3px rgba(0,0,0,0.4); border-radius:4px; }
 .inline-text-alt { width: 207px; padding: 7px 0 0 0 !important; }
 .inline-text-alt ~ .inline-text-alt { width: /*119px*/ 135px; padding-left: 38px !important; }
@@ -194,9 +194,9 @@ form .row .pass-field-holder ~ .pass-field-holder { margin-left: 38px !important
 .form-page form .row .pass-field-holder { width: /*425px*/ 461px !important; }
 /*.field-mega { width: 850px !important; }*/
 .form-page .field-small { width: /*202px*/ 242px !important; }
-.form-page form .row-triple-fields .field ~ .c2-sb-wrap, 
+.form-page form .row-triple-fields .field ~ .c2-sb-wrap,
 .form-page form .row-triple-fields .c2-sb-wrap  { width: /*250px*/ 274px !important; margin: 0 0 0 75px; }
-.form-page form .row-triple-fields .field, 
+.form-page form .row-triple-fields .field,
 .form-page form .row-triple-fields .field ~ .field { margin: 0 0 0 /*75px*/ 50px !important; }
 .form-page form .row-triple-fields .ui-helper-hidden-accessible:first-child + .field { margin: 0 !important; }
 
@@ -206,12 +206,12 @@ form .row .pass-field-holder ~ .pass-field-holder { margin-left: 38px !important
 .row-triple-fields-alt .field,
 .row-triple-fields-alt .c2-sb-wrap { width: 242px !important; }
 
-.form-page form .row-triple-fields-alt .field, 
+.form-page form .row-triple-fields-alt .field,
 .form-page form .row-triple-fields-alt .field ~ .field,
-.form-page form .row-triple-fields-alt .field ~ .c2-sb-wrap, 
+.form-page form .row-triple-fields-alt .field ~ .c2-sb-wrap,
 .form-page form .row-triple-fields-alt .c2-sb-wrap { margin-left: 0px !important; }
 
-.form-page form .row-triple-fields-alt .field ~ .c2-sb-wrap, 
+.form-page form .row-triple-fields-alt .field ~ .c2-sb-wrap,
 .form-page form .row-triple-fields-alt .c2-sb-wrap,
 .row-alt .inline-text-alt ~ .inline-text-alt ~ .c2-sb-wrap { width: 274px !important; margin-left: 26px; }
 

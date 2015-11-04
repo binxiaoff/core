@@ -14,37 +14,30 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
 }
 
 ?>
-
 <div class="account-data">
     <h2><?=$this->lng['profile']['titre-1']?></h2>
 
-    <?
-    if(isset($_SESSION['reponse_profile_perso']) && $_SESSION['reponse_profile_perso'] != ''){
-        ?><div class="reponseProfile"><?=$_SESSION['reponse_profile_perso']?></div><?
-        unset($_SESSION['reponse_profile_perso']);
-    }
-    if(isset($_SESSION['reponse_email']) && $_SESSION['reponse_email'] != ''){
-        ?><div class="reponseProfile" style="color:#c84747;"><?=$_SESSION['reponse_email']?></div><?
-        unset($_SESSION['reponse_email']);
-    }
-    ?>
+    <?php if (isset($_SESSION['reponse_profile_perso']) && $_SESSION['reponse_profile_perso'] != '') { ?>
+        <div class="reponseProfile"><?= $_SESSION['reponse_profile_perso'] ?></div>
+        <?php unset($_SESSION['reponse_profile_perso']); ?>
+    <?php } ?>
+    <?php if (isset($_SESSION['reponse_email']) && $_SESSION['reponse_email'] != '') { ?>
+        <div class="reponseProfile" style="color:#c84747;"><?= $_SESSION['reponse_email'] ?></div>
+        <?php unset($_SESSION['reponse_email']); ?>
+    <?php } ?>
 
     <p><?=$this->lng['profile']['contenu-partie-1']?></p>
-
     <form action="<?=$this->lurl?>/profile/particulier/3" method="post" name="form_particulier_perso" id="form_particulier_perso" enctype="multipart/form-data">
         <div class="row" id="radio_sex">
             <div class="form-choose fixed">
                 <span class="title"><?=$this->lng['etape1']['civilite']?></span>
-
                 <div class="radio-holder validationRadio1">
                     <label for="female"><?=$this->lng['etape1']['madame']?></label>
-
                     <input <?=($this->clients->civilite=='Mme'?'checked="checked"':'')?> type="radio" class="custom-input" name="sex" id="female"  value="Mme" checked="checked">
                 </div><!-- /.radio-holder -->
 
                 <div class="radio-holder validationRadio2">
                     <label for="male"><?=$this->lng['etape1']['monsieur']?></label>
-
                     <input <?=($this->clients->civilite=='M.'?'checked="checked"':'')?> type="radio" class="custom-input" name="sex" id="male"  value="M.">
                 </div><!-- /.radio-holder -->
             </div><!-- /.form-choose -->
@@ -52,13 +45,11 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
 
         <div class="row">
             <input type="text" name="nom-famille" id="nom-famille" title="<?=$this->lng['etape1']['nom-de-famille']?>" value="<?=($this->clients->nom!=''?$this->clients->nom:$this->lng['etape1']['nom-de-famille'])?>" class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}" >
-
             <input type="text" name="nom-dusage" id="nom-dusage" title="<?=$this->lng['etape1']['nom-dusage']?>" value="<?=($this->clients->nom_usage!=''?$this->clients->nom_usage:$this->lng['etape1']['nom-dusage'])?>" class="field field-large " data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
         </div><!-- /.row -->
 
         <div class="row">
             <input type="text" name="prenom" id="prenom" title="<?=$this->lng['etape1']['prenom']?>" value="<?=($this->clients->prenom!=''?$this->clients->prenom:$this->lng['etape1']['prenom'])?>" class="field field-large required" data-validators="Presence">
-
             <em class="change_identite"><?=$this->lng['profile']['les-informations-relatives-a-votre-identite-ont-ete-modifiees']?></em>
         </div><!-- /.row -->
 
@@ -67,21 +58,16 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                 <input type="text" name="email" id="email" title="<?=$this->lng['etape1']['email']?>" value="<?=($this->clients->email!=''?$this->clients->email:$this->lng['etape1']['email'])?>" class="field field-large required" data-validators="Presence&amp;Email&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}"  onkeyup="checkConf(this.value,'conf_email')" >
                 <em><?=$this->lng['etape1']['info-email']?></em>
             </span>
-            
+
             <span class="pass-field-holder">
                 <input type="text" name="conf_email" id="conf_email" title="<?=$this->lng['etape1']['confirmation-email']?>" value="<?=($this->clients->email!=''?$this->clients->email:$this->lng['etape1']['confirmation-email'])?>" class="field field-large required" data-validators="Confirmation,{ match: 'email' }&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}" >
             </span>
         </div><!-- /.row -->
 
-        <!--  -->
-
         <div class="row row-alt">
             <span class="inline-text inline-text-alt"><?=$this->lng['etape1']['telephone']?> :</span>
-
             <input type="text" name="phone" id="phone" value="<?=($this->clients->telephone!=''?$this->clients->telephone:$this->lng['etape1']['telephone'])?>" title="<?=$this->lng['etape1']['telephone']?>" class="field field-small required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9,maximum: 14}">
-
             <span class="inline-text inline-text-alt" style="width:121px;"><?=$this->lng['etape1']['nationalite']?> :</span>
-
             <select name="nationalite" id="nationalite" class="custom-select <?=$required?> field-small">
                 <option><?=$this->lng['etape1']['nationalite']?></option>
                 <option><?=$this->lng['etape1']['nationalite']?></option>
@@ -91,8 +77,8 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                 }
                 ?>
             </select>
-
         </div><!-- /.row -->
+
         <div class="row etranger" <?=($this->etranger > 0?'':'style="display:none;"')?>>
             <div class="cb-holder">
                 <label style="margin-left:524px;" class="check_etranger" for="check_etranger"><?=$this->lng['etape1']['checkbox-etranger']?></label>
@@ -169,14 +155,14 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                 <input id="text_document_fiscal_1" type="text" class="field" readonly value="<?=($this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"] !=''?$this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>">
 
                 <div class="file-holder">
-					<span class="btn btn-small">
-						+
-						<span class="file-upload">
-							<input type="file" class="file-field" name="document_fiscal">
-						</span>
+                    <span class="btn btn-small">
+                        +
+                        <span class="file-upload">
+                            <input type="file" class="file-field" name="document_fiscal">
+                        </span>
 
-						<small><?=$this->lng['profile']['telecharger-un-autre-document-fiscal']?></small>
-					</span>
+                        <small><?=$this->lng['profile']['telecharger-un-autre-document-fiscal']?></small>
+                    </span>
                 </div>
             </div><!-- /.uploader -->
         </div>
@@ -192,20 +178,18 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                 <input id="text_document_fiscal_2" type="text" class="field" readonly value="<?=($this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"]!=''?$this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>">
 
                 <div class="file-holder">
-					<span class="btn btn-small">
-						+
-						<span class="file-upload">
-							<input type="file" class="file-field" name="document_fiscal">
-						</span>
+                    <span class="btn btn-small">
+                        +
+                        <span class="file-upload">
+                            <input type="file" class="file-field" name="document_fiscal">
+                        </span>
 
-						<small><?=$this->lng['profile']['telecharger-un-autre-document-fiscal']?></small>
-					</span>
+                        <small><?=$this->lng['profile']['telecharger-un-autre-document-fiscal']?></small>
+                    </span>
                 </div>
             </div><!-- /.uploader -->
         </div>
 
-
-        <!--  -->
         <div class="row row-upload identite">
             <div class="row"> <!--row CNI -->
                 <label class="inline-text">
@@ -235,7 +219,6 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                     </div>
                 </div><!-- /.uploader -->
             </div><!--row CNI -->
-
 
             <div class="row"><!--row CNI Verso-->
                 <label class="inline-text">
@@ -414,20 +397,12 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
             </div><!-- /.row -->
         </div><!-- /.add-address -->
 
+        <span class="form-caption"><?=$this->lng['etape1']['champs-obligatoires']?></span>
 
-
-
-<span class="form-caption"><?=$this->lng['etape1']['champs-obligatoires']?></span>
-
-<div class="form-foot row row-cols centered">
-    <input type="hidden" name="send_form_particulier_perso">
-    <button class="btn" type="button" onClick='$( "#form_particulier_perso" ).submit();'><?=$this->lng['etape1']['valider']?> <i class="icon-arrow-next"></i></button>
-</div><!-- /.form-foot foot-cols -->
-
-
-
-
-
+        <div class="form-foot row row-cols centered">
+            <input type="hidden" name="send_form_particulier_perso">
+            <button class="btn" type="button" onclick='$( "#form_particulier_perso" ).submit();'><?=$this->lng['etape1']['valider']?> <i class="icon-arrow-next"></i></button>
+        </div><!-- /.form-foot foot-cols -->
 
 <script type="text/javascript">
 
@@ -543,7 +518,6 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                 }
             });
         });
-////////////////////////////////////////////////////
 
         // particulier etranger
         $("#pays1,#nationalite").change(function() {
@@ -625,7 +599,6 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
             //fin check cp //
         }
 
-
         //resident etranger
         var pays1 = $('#pays1').val();
         var nationalite = $('#nationalite').val();
@@ -653,5 +626,4 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
 
         if(form_ok == false){event.preventDefault(); }
     });
-
 </script>

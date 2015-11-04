@@ -1,8 +1,8 @@
 <?php
 //if($_SERVER['REMOTE_ADDR']=='93.26.42.99' or $_SERVER["HTTP_X_FORWARDED_FOR"] == "93.26.42.99")
 //{
-	header('Location: https://www.unilend.fr/Landing-Pages-Externes'.$_SERVER['REQUEST_URI']);
-	die;
+    header('Location: https://www.unilend.fr/Landing-Pages-Externes'.$_SERVER['REQUEST_URI']);
+    die;
 //}
 ?>
 
@@ -14,26 +14,26 @@
 <!--[if gt IE 8]><!--> <html lang="fr"> <!--<![endif]-->
 <head>
     <title>Unilend : les particuliers prêtent aux entreprises françaises</title>
-	<meta charset="utf-8">
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-	<meta name="Author" content="dynamic creative - Agence créative pas NET, mais WEB énormément" />
-	<meta name="description" content="Sur Unilend, tout le monde peut prêter aux entreprises françaises et recevoir des intérêts." />
-	<meta name="keywords" content="Financement entreprise, prêt à des entreprises, investissement direct, peer-to-peer lending, crowdfunding" />
+    <meta name="Author" content="dynamic creative - Agence créative pas NET, mais WEB énormément" />
+    <meta name="description" content="Sur Unilend, tout le monde peut prêter aux entreprises françaises et recevoir des intérêts." />
+    <meta name="keywords" content="Financement entreprise, prêt à des entreprises, investissement direct, peer-to-peer lending, crowdfunding" />
     <meta name="viewport" content="initial-scale = 1.0,maximum-scale = 1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes">
 
-	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link href="css/font.css" type="text/css" rel="stylesheet" media="all">
-  	<link href="css/base.css" type="text/css" rel="stylesheet" media="all">
-	<link href="css/global.css" type="text/css" rel="stylesheet" media="all">
+      <link href="css/base.css" type="text/css" rel="stylesheet" media="all">
+    <link href="css/global.css" type="text/css" rel="stylesheet" media="all">
     <link href="css/responsive.css" type="text/css" rel="stylesheet" media="all">
     <link href="css/jquery.c2selectbox.css" type="text/css" rel="stylesheet" media="all" />
     <link href="css/bootstrap.css" type="text/css" rel="stylesheet" media="all" />
     <link rel="stylesheet" href="css/jquery.nouislider.css" />
 
-	<!--[if IE]><script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
-    
+    <!--[if IE]><script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
     <!-- Google Tag Manager -->
     <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -43,8 +43,8 @@
     '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-MB66VL');</script>
     <!-- End Google Tag Manager -->
-    
-    
+
+
 </head>
 
 <body>
@@ -62,21 +62,21 @@
     else $email = "";
     if(!empty($_GET["civilite"])) $civilite = $_GET["civilite"];
     else $civilite = "";
-	
-	//$source3 = str_replace('/','',$_SERVER['REQUEST_URI']);
-	$slug_origine = "Lp-2015-web";
-	
-	
-	//$url = 'http://unilend.demo2.equinoa.net'; 	// Demo
-	$url = 'https://www.unilend.fr'; 			// Prod
+
+    //$source3 = str_replace('/','',$_SERVER['REQUEST_URI']);
+    $slug_origine = "Lp-2015-web";
+
+
+    //$url = 'http://unilend.demo2.equinoa.net';     // Demo
+    $url = 'https://www.unilend.fr';             // Prod
 
     ?>
     <div id="form">
         <section class="wrapper">
             <form action="#" method="post" id="form_inscription" class="etape1" novalidate>
-				<div class="form_promo border10">
-					<a href="#bloc_mentions" class="macaron"><span>20 €</span> <b>OFFERTS</b> pour prêter !</a>
-				</div>
+                <div class="form_promo border10">
+                    <a href="#bloc_mentions" class="macaron"><span>20 €</span> <b>OFFERTS</b> pour prêter !</a>
+                </div>
                 <div id="form_header">
                     <h1>Inscrivez-vous</h1>
                     <h2>Et découvrez Unilend</h2>
@@ -762,40 +762,40 @@
         </section>
     </div>
     <!--<div class="macaron">
-    	<div class="wrapper">
-    		<a href="#bloc_mentions"><img src="img/macaron"/></a>
-    	</div>
+        <div class="wrapper">
+            <a href="#bloc_mentions"><img src="img/macaron"/></a>
+        </div>
     </div>-->
     <div id="home" class="wrapper100">
         <section class="wrapper">
-        	<div class="logo disp_0">
-        		<div class="disp_1">
-        			<a href="#" id="logo"><!--<img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60">--></a>
-        		</div>
-        		<div class="disp_2 t_right">
-        			<div class="">
-        				<!--<img src="img/partner.png"/>-->
-        			</div>
-        		</div>
-        	</div>
-            
+            <div class="logo disp_0">
+                <div class="disp_1">
+                    <a href="#" id="logo"><!--<img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60">--></a>
+                </div>
+                <div class="disp_2 t_right">
+                    <div class="">
+                        <!--<img src="img/partner.png"/>-->
+                    </div>
+                </div>
+            </div>
+
             <h1>Prêtez directement aux entreprises</h1>
-			<h2>Recevez chaque mois vos intérêts</h2>
-			<div class="w_1 bloc_mac">
-				<div class="center">
-					<a href="#bloc_mentions" class="macaron"><img src="img/macaron.png"/></a>
-				</div>
-				<!--<div class="disp_4">
-					<h2 class="titre_1">Recevez chaque mois vos intérêts</h2>
-				</div>-->
-			</div>
-            
+            <h2>Recevez chaque mois vos intérêts</h2>
+            <div class="w_1 bloc_mac">
+                <div class="center">
+                    <a href="#bloc_mentions" class="macaron"><img src="img/macaron.png"/></a>
+                </div>
+                <!--<div class="disp_4">
+                    <h2 class="titre_1">Recevez chaque mois vos intérêts</h2>
+                </div>-->
+            </div>
+
             <ul>
                 <li>
                     <h3><span>1</span> Choisissez</h3>
                     <p>
                         Sélectionnez les entreprises auxquelles vous souhaitez prêter.<br/>
-                        Leur capacité de remboursement a été soigneusement étudiée. 
+                        Leur capacité de remboursement a été soigneusement étudiée.
                     </p>
                 </li>
                 <li>
@@ -813,9 +813,9 @@
                     </p>
                 </li>
             </ul>
-			<div class="conditions" id="bloc_mentions">Conditions de l'offre</div>
+            <div class="conditions" id="bloc_mentions">Conditions de l'offre</div>
             <div class="mentions">
-            	Offre valable jusqu’au 31/03/2015 réservée aux personnes physiques, capables, majeures.
+                Offre valable jusqu’au 30/11/2015 réservée aux personnes physiques, capables, majeures.
 
 L’offre est réservée aux nouveaux inscrits dont l’inscription est validée par Unilend. Seules les personnes physiques de nationalité française, ou possédant une nationalité d’un pays de l’Espace Economique Européen, et disposant d’un compte bancaire en euros en France pourront bénéficier de l’offre.
 
@@ -872,11 +872,11 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                 <div>
                     <button id="slide_prec"></button>
                     <div>
-                        
+
                         <div>
                             <div>
-                                <img src="img/vision.jpg" alt="Vision du Ciel" width="160" height="120">
-                                <p>Vision du Ciel</p>
+                                <img src="img/Giglam.jpeg" alt="Giglam" width="160" height="120">
+                                <p>Giglam Conseils</p>
                             </div>
                             <div>
                                 <img src="img/hmbc.png" alt="HMBC" width="160" height="120">
@@ -899,7 +899,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                 <p>SNRI</p>
                             </div>
                         </div>
-                        
+
                     </div>
                     <button id="slide_suiv"></button>
                 </div>
@@ -996,14 +996,15 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                     <p>Durée du prêt</p>
                     <div id="dc_slider-step"></div>
                     <ul>
-			<li>
-				<p>12</p><p>mois</p>
-			</li>
                         <li>
                             <p>12</p>
                             <p>mois</p>
                         </li>
-						<li>
+                        <li>
+                            <p>12</p>
+                            <p>mois</p>
+                        </li>
+                        <li>
                             <p>24</p>
                             <p>mois</p>
                         </li>
@@ -1214,10 +1215,10 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
             <p>
                 Le service de paiement <span>Unilend</span> est distribué par la Société française pour le financement des PME - SFF PME SAS, agent prestataire de services de paiement mandaté par la SFPMEI et déclaré auprès de l'Autorité de contrôle prudentiel et de résolution (ACPR).
             </p>
-			<br/>
-			<p class="cadre_1">
-			<strong>Prêter présente un risque de non-remboursement : répartissez bien vos prêts et ne prêtez que de l'argent dont vous n'avez pas besoin immédiatement.</strong>
-			</p>
+            <br/>
+            <p class="cadre_1">
+            <strong>Prêter présente un risque de non-remboursement : répartissez bien vos prêts et ne prêtez que de l'argent dont vous n'avez pas besoin immédiatement.</strong>
+            </p>
             <h2>Nos partenaires</h2>
             <div>
                 <ul class="bloc_inline">
@@ -1232,7 +1233,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
         </section>
     </div><!-- qui_sommes_nous -->
 
-    <button id="scrollUp"></button>  
+    <button id="scrollUp"></button>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <!-- // <script src="js/jquery-1.9.1.min.js"></script> -->
@@ -1247,28 +1248,27 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
     <script src="js/global.js" type="text/javascript"></script>
     <script>
         $(function () {
-			// promo mentions
-			$('.macaron').click(function () { 
-				if (!$('.mentions').is(':visible')) $(".mentions").slideToggle( 300, function() {});
-	        });
-			$('.conditions').click(function () {
-				$(".mentions").slideToggle( 300, function() {
-				//
-				});
-			});
-			$('.mentions').click(function () {
-				$(".mentions").slideToggle( 300, function() {
-				//
-				});
-			});
-			//
-			$('a[href^="#bloc_mentions"]').click(function(){ // console.log("test")
-				var id = $(this).attr("href");
-				var offset = $(id).offset().top
-				$('html, body').animate({scrollTop: offset}, 'slow');
-				//return false; 
-			});
-			//
+            // promo mentions
+            $('.macaron').click(function () {
+                if (!$('.mentions').is(':visible')) $(".mentions").slideToggle( 300, function() {});
+            });
+            $('.conditions').click(function () {
+                $(".mentions").slideToggle( 300, function() {
+                //
+                });
+            });
+            $('.mentions').click(function () {
+                $(".mentions").slideToggle( 300, function() {
+                //
+                });
+            });
+            //
+            $('a[href^="#bloc_mentions"]').click(function(){
+                var id = $(this).attr("href");
+                var offset = $(id).offset().top
+                $('html, body').animate({scrollTop: offset}, 'slow');
+            });
+            //
             $('input').keydown(function(){
                 $(this).removeClass('error');
             });
@@ -1308,7 +1308,6 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                 var inscription_nom = $.trim($('#inscription_nom').val());
                 var inscription_prenom = $.trim($('#inscription_prenom').val());
                 var inscription_email = $.trim($('#inscription_email').val());
-
                 var inscription_mdp = $.trim($('#inscription_mdp').val());
                 var inscription_mdp2 = $.trim($('#inscription_mdp2').val());
                 var inscription_question = $.trim($('#inscription_question').val());
@@ -1317,7 +1316,6 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                 var inscription_ville_fiscale = $.trim($('#inscription_ville_fiscale').val());
                 var inscription_cp_fiscale = $.trim($('#inscription_cp_fiscale').val());
                 var inscription_id_pays_fiscale = $('#inscription_id_pays_fiscale').val();
-                // var inscription_check_adresse = $('#inscription_check_adresse').val();
                 var inscription_adresse_correspondance = $.trim($('#inscription_adresse_correspondance').val());
                 var inscription_ville_correspondance = $.trim($('#inscription_ville_correspondance').val());
                 var inscription_cp_correspondance = $.trim($('#inscription_cp_correspondance').val());
@@ -1330,7 +1328,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                 var inscription_cgv = $('#inscription_cgv');
                 var utm_source = '<?php echo $source; ?>';
                 var utm_source2 = '<?php echo $source2; ?>';
-				var slug_origine = '<?php echo $slug_origine; ?>';
+                var slug_origine = '<?php echo $slug_origine; ?>';
 
                 if($('#form_inscription').hasClass('etape1')) {
 
@@ -1356,14 +1354,14 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                         $('#inscription_email').addClass('error');
                         var erreur = 1;
                     }
-                    if (erreur == 1) { 
+                    if (erreur == 1) {
                         if($('#form_header').hasClass('formlight')) {
                             if( $('#form_inscription').prop('scrollHeight') + $('.form_content').prop('scrollHeight') > $(window).height()) {
                                 $('.form_content.etape1').stop().animate({ scrollTop: $('.error:visible:first').position().top + 120}, 700, 'swing');
                                 // $('.form_content.etape1').stop().animate({ scrollTop: $('.form_content.etape1').offset().top - 108 }, 700, 'swing');
                             }
                         }
-                        return false; 
+                        return false;
                     }
                     else {
 
@@ -1385,7 +1383,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                         if(heure<10) { heure = '0'+heure; }
                         if(minutes<10) { minutes = '0'+minutes; }
                         if(secondes<10) { secondes = '0'+secondes; }
-                                            
+
                         var date = localdate.getFullYear() + '-' + mois + '-' + jour + ' ' + heure + ':' + minutes + ':' + secondes;
                         email = inscription_email;
                         nom = inscription_nom;
@@ -1416,7 +1414,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                     });
 
                                     $('#form_inscription > .form_content.etape1').fadeOut('fast', function() {
-                                        if ($( window ).width() >= 960) { 
+                                        if ($( window ).width() >= 960) {
                                             $('#form').css({position:'relative'});
                                             $('#form > .wrapper').addClass('etape2');
                                         }
@@ -1425,14 +1423,14 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                             $('#form > .wrapper').addClass('etape2');
                                             $('#form_inscription.etape2').css({bottom:"auto",top:"0"});
                                         }
-										
-										var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
-										
-										var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
 
-										$("#tracking").html(tracking1+tracking2);
-										
-										
+                                        var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
+
+                                        var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
+
+                                        $("#tracking").html(tracking1+tracking2);
+
+
                                        /* $("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');*/
                                         $('#form_inscription > .form_content.etape2').fadeIn();
                                     });
@@ -1468,7 +1466,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                             });
 
                                             $('#form_inscription > .form_content.etape1').fadeOut('fast', function() {
-                                                if ($( window ).width() >= 960) { 
+                                                if ($( window ).width() >= 960) {
                                                     $('#form').css({position:'relative'});
                                                     $('#form > .wrapper').addClass('etape2');
                                                 }
@@ -1477,16 +1475,16 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                                     $('#form > .wrapper').addClass('etape2');
                                                     $('#form_inscription.etape2').css({bottom:"auto",top:"0"});
                                                 }
-                                                
-												var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
-										
-												var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
-												
-												var tracking3 = '<iframe src="https://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track='+parsedDate.uniqueid+'" [^] width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>';
-										
-												$("#tracking").html(tracking1+tracking2+tracking3);
-												
-												/*$("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');*/
+
+                                                var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
+
+                                                var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
+
+                                                var tracking3 = '<iframe src="https://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track='+parsedDate.uniqueid+'" [^] width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>';
+
+                                                $("#tracking").html(tracking1+tracking2+tracking3);
+
+                                                /*$("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');*/
                                                 $('#form_inscription > .form_content.etape2').fadeIn();
                                             });
                                         }
@@ -1662,13 +1660,13 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                         var erreur = 1;
                     }
                     // if(erreur == 1) { return false; }
-                    if (erreur == 1) { 
+                    if (erreur == 1) {
                         if($('#form_header').hasClass('formlight')) {
                             if( $('#form_inscription').prop('scrollHeight') + $('.form_content').prop('scrollHeight') > $(window).height()) {
                                 $('html, body').stop().animate({ scrollTop: $('.error:visible:first').offset().top - 20}, 700, 'swing');
                             }
                         }
-                        return false; 
+                        return false;
                     }
                     else {
 
@@ -1678,7 +1676,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                         var hash = CryptoJS.MD5(key);
                         var time = $.now();
                         var token = $.base64.btoa(hash+'-'+time);
-                                            
+
                         var date = annee + '-' + mois + '-' + jour + ' ' + heure + ':' + minutes + ':' + secondes;
                         email = inscription_email;
                         nom = inscription_nom;
@@ -1712,8 +1710,6 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                             success: function(data){
                                 var parsedDate = jQuery.parseJSON(data);
 
-                                // console.log(parsedDate);
-
                                 if(parsedDate.reponse == 'OK') {
                                     var url = parsedDate.URL;
 
@@ -1728,8 +1724,6 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
 
                                     $.each( parsedDate.reponse, function( index, value ){
                                         var intituleErreur = value.erreur;
-
-                                        // console.log(intituleErreur);
 
                                         if(intituleErreur == "Mot de passe") {
                                             $('#inscription_mdp').addClass('error');
@@ -1817,5 +1811,5 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
         });
     </script>
 
-	</body>
+    </body>
 </html>

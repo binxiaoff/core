@@ -179,7 +179,7 @@
         var error = false;
 
         $('input[type=radio]').on('change click', function() {
-           $(this).parent('.radio-holder').css('color', validColor).css('font-weight', '');
+            $(this).parent('.radio-holder').css('color', validColor).css('font-weight', '');
         });
 
         $('#cgv').on('change click', function() {
