@@ -854,7 +854,7 @@
                     <div>
                         <div>
                             <div>
-                                <img src="img/Giglam.jpeg" alt="Vision du Ciel" width="160" height="120">
+                                <img src="img/Giglam.jpeg" alt="Giglam" width="160" height="120">
                                 <p>Giglam Conseils</p>
                             </div>
                             <div>

@@ -875,8 +875,8 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
 
                         <div>
                             <div>
-                                <img src="img/vision.jpg" alt="Vision du Ciel" width="160" height="120">
-                                <p>Vision du Ciel</p>
+                                <img src="img/Giglam.jpeg" alt="Giglam" width="160" height="120">
+                                <p>Giglam Conseils</p>
                             </div>
                             <div>
                                 <img src="img/hmbc.png" alt="HMBC" width="160" height="120">

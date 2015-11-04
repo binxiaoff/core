@@ -34,7 +34,7 @@
     <link rel="stylesheet" href="css/jquery.nouislider.css" />
 
 	<!--[if IE]><script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
-    
+
     <!-- Google Tag Manager -->
     <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -44,8 +44,8 @@
     '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-MB66VL');</script>
     <!-- End Google Tag Manager -->
-    
-    
+
+
 </head>
 
 <body>
@@ -63,10 +63,10 @@
     else $email = "";
     if(!empty($_GET["civilite"])) $civilite = $_GET["civilite"];
     else $civilite = "";
-	
+
 	//$source3 = str_replace('/','',$_SERVER['REQUEST_URI']);
 	$slug_origine = "2015";
-	
+
 	//$url = 'http://unilend.demo2.equinoa.net'; 	// Demo
 	$url = 'https://www.unilend.fr'; 			// Prod
 
@@ -777,7 +777,7 @@
         			<a href="#" id="logo"><!--<img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60">--></a>
         		</div>
         	</div>
-            
+
             <h1>Prêtez directement aux entreprises</h1>
 			<h2>Recevez chaque mois vos intérêts</h2>
 			<div class="w_1 bloc_mac">
@@ -785,13 +785,13 @@
 					<a href="#bloc_mentions" class="macaron"><img src="img/macaron.png"/></a>
 				</div>
 			</div>
-            
+
             <ul>
                 <li>
                     <h3><span>1</span> Choisissez</h3>
                     <p>
                         Sélectionnez les entreprises auxquelles vous souhaitez prêter.<br/>
-                        Leur capacité de remboursement a été soigneusement étudiée. 
+                        Leur capacité de remboursement a été soigneusement étudiée.
                     </p>
                 </li>
                 <li>
@@ -864,11 +864,11 @@
                 <div>
                     <button id="slide_prec"></button>
                     <div>
-                        
+
                         <div>
                             <div>
-                                <img src="img/vision.jpg" alt="Vision du Ciel" width="160" height="120">
-                                <p>Vision du Ciel</p>
+                                <img src="img/Giglam.jpeg" alt="Giglam" width="160" height="120">
+                                <p>Giglam Conseils</p>
                             </div>
                             <div>
                                 <img src="img/hmbc.png" alt="HMBC" width="160" height="120">
@@ -891,7 +891,7 @@
                                 <p>SNRI</p>
                             </div>
                         </div>
-                        
+
                     </div>
                     <button id="slide_suiv"></button>
                 </div>
@@ -1054,7 +1054,7 @@
             <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60"></a>
             <h1>La presse parle <span>d'Unilend</span></h1>
             <img id="presse_logos" src="img/presse.jpg" alt="BFM Business - Le Monde - Capital - Le Point - Le Nouvel Observateur - L'Express - Oiuest France - 01net. - Le Figaro Economie" width="354" height="199">
-            
+
             <div class="clear"></div>
             <div class="presse_liste">
                 <section>
@@ -1135,7 +1135,7 @@
         </section>
     </div><!-- qui_sommes_nous -->
 
-    <button id="scrollUp"></button>  
+    <button id="scrollUp"></button>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <!-- // <script src="js/jquery-1.9.1.min.js"></script> -->
@@ -1152,7 +1152,7 @@
         $(function () {
             $('#inscription_utm_source3_autre').hide();
 			// promo mentions
-			$('.macaron').click(function () { 
+			$('.macaron').click(function () {
 				if (!$('.mentions').is(':visible')) $(".mentions").slideToggle( 300, function() {});
 	        });
 			$('.conditions').click(function () {
@@ -1173,7 +1173,7 @@
 				var id = $(this).attr("href");
 				var offset = $(id).offset().top
 				$('html, body').animate({scrollTop: offset}, 'slow');
-				//return false; 
+				//return false;
 			});
 			//
             $('#inscription_date_naissance').keydown(function(){
@@ -1265,13 +1265,13 @@
                     if(utm_source3 == 5) {
                         utm_source3_autre = $('#inscription_utm_source3_autre').val();
                     }
-                    if (erreur == 1) { 
+                    if (erreur == 1) {
                         if($('#form_header').hasClass('formlight')) {
                             if( $('#form_inscription').prop('scrollHeight') + $('.form_content').prop('scrollHeight') > $(window).height()) {
                                 $('.form_content.etape1').stop().animate({ scrollTop: $('.error:visible:first').position().top + 120}, 700, 'swing');
                             }
                         }
-                        return false; 
+                        return false;
                     }
                     else {
 
@@ -1293,7 +1293,7 @@
                         if(heure<10) { heure = '0'+heure; }
                         if(minutes<10) { minutes = '0'+minutes; }
                         if(secondes<10) { secondes = '0'+secondes; }
-                                            
+
                         var date = localdate.getFullYear() + '-' + mois + '-' + jour + ' ' + heure + ':' + minutes + ':' + secondes;
                         email = inscription_email;
                         nom = inscription_nom;
@@ -1310,7 +1310,7 @@
                                 var parsedDate = jQuery.parseJSON(data);
 
                                 if(parsedDate.reponse == 'OK') {
-                                    if(utm_source3) { 
+                                    if(utm_source3) {
                                         var source3 = $('#inscription_utm_source3 option:selected').text();
                                         set_source3(email, source3, utm_source3_autre);
                                     }
@@ -1328,7 +1328,7 @@
                                     });
 
                                     $('#form_inscription > .form_content.etape1').fadeOut('fast', function() {
-                                        if ($( window ).width() >= 960) { 
+                                        if ($( window ).width() >= 960) {
                                             $('#form').css({position:'relative'});
                                             $('#form > .wrapper').addClass('etape2');
                                         }
@@ -1337,15 +1337,15 @@
                                             $('#form > .wrapper').addClass('etape2');
                                             $('#form_inscription.etape2').css({bottom:"auto",top:"0"});
                                         }
-										
-										
+
+
 										var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
-										
+
 										var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
-										
+
 
 										$("#tracking").html(tracking1+tracking2);
-										
+
                                         /*$("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');*/
                                         $('#form_inscription > .form_content.etape2').fadeIn();
                                     });
@@ -1381,7 +1381,7 @@
                                             });
 
                                             $('#form_inscription > .form_content.etape1').fadeOut('fast', function() {
-                                                if ($( window ).width() >= 960) { 
+                                                if ($( window ).width() >= 960) {
                                                     $('#form').css({position:'relative'});
                                                     $('#form > .wrapper').addClass('etape2');
                                                 }
@@ -1390,14 +1390,14 @@
                                                     $('#form > .wrapper').addClass('etape2');
                                                     $('#form_inscription.etape2').css({bottom:"auto",top:"0"});
                                                 }
-												
-												
+
+
 												var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
-										
+
 												var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
-										
+
 												$("#tracking").html(tracking1+tracking2);
-												
+
                                                /* $("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');*/
                                                 $('#form_inscription > .form_content.etape2').fadeIn();
                                             });
@@ -1574,13 +1574,13 @@
                         var erreur = 1;
                     }
                     // if(erreur == 1) { return false; }
-                    if (erreur == 1) { 
+                    if (erreur == 1) {
                         if($('#form_header').hasClass('formlight')) {
                             if( $('#form_inscription').prop('scrollHeight') + $('.form_content').prop('scrollHeight') > $(window).height()) {
                                 $('html, body').stop().animate({ scrollTop: $('.error:visible:first').offset().top - 20}, 700, 'swing');
                             }
                         }
-                        return false; 
+                        return false;
                     }
                     else {
 
@@ -1590,7 +1590,7 @@
                         var hash = CryptoJS.MD5(key);
                         var time = $.now();
                         var token = $.base64.btoa(hash+'-'+time);
-                                            
+
                         var date = annee + '-' + mois + '-' + jour + ' ' + heure + ':' + minutes + ':' + secondes;
                         email = inscription_email;
                         nom = inscription_nom;
@@ -1629,27 +1629,27 @@
                                 if(parsedDate.reponse == 'OK') {
                                     var url = parsedDate.URL;
 									var uniqueid = parsedDate.uniqueid;
-									
-									
-                                    if(idSubmit == "inscription_submit2") 
-									{ 
+
+
+                                    if(idSubmit == "inscription_submit2")
+									{
 										// add kle tracking 19/02/15
-										var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=14&uniqueid='+uniqueid+'"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';									
-																
-										$("#tracking").html(tracking2);	
+										var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=14&uniqueid='+uniqueid+'"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
+
+										$("#tracking").html(tracking2);
 										//end tracking
-									
-										$(location).attr('href', url); 
+
+										$(location).attr('href', url);
 									}
-                                    else if(idSubmit == "voir_projets") 
-									{ 
+                                    else if(idSubmit == "voir_projets")
+									{
 										// add kle tracking 19/02/15
-										var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=13&uniqueid='+uniqueid+'"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';									
-																
-										$("#tracking").html(tracking2);	
-										//end tracking									
-									
-										$(location).attr('href', 'https://www.unilend.fr/projets-a-financer'); 
+										var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=13&uniqueid='+uniqueid+'"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
+
+										$("#tracking").html(tracking2);
+										//end tracking
+
+										$(location).attr('href', 'https://www.unilend.fr/projets-a-financer');
 									}
                                 }
                                 else {
