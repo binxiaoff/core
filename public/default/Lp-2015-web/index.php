@@ -1263,11 +1263,10 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                 });
             });
             //
-            $('a[href^="#bloc_mentions"]').click(function(){ // console.log("test")
+            $('a[href^="#bloc_mentions"]').click(function(){
                 var id = $(this).attr("href");
                 var offset = $(id).offset().top
                 $('html, body').animate({scrollTop: offset}, 'slow');
-                //return false;
             });
             //
             $('input').keydown(function(){
@@ -1309,7 +1308,6 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                 var inscription_nom = $.trim($('#inscription_nom').val());
                 var inscription_prenom = $.trim($('#inscription_prenom').val());
                 var inscription_email = $.trim($('#inscription_email').val());
-
                 var inscription_mdp = $.trim($('#inscription_mdp').val());
                 var inscription_mdp2 = $.trim($('#inscription_mdp2').val());
                 var inscription_question = $.trim($('#inscription_question').val());
@@ -1318,7 +1316,6 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                 var inscription_ville_fiscale = $.trim($('#inscription_ville_fiscale').val());
                 var inscription_cp_fiscale = $.trim($('#inscription_cp_fiscale').val());
                 var inscription_id_pays_fiscale = $('#inscription_id_pays_fiscale').val();
-                // var inscription_check_adresse = $('#inscription_check_adresse').val();
                 var inscription_adresse_correspondance = $.trim($('#inscription_adresse_correspondance').val());
                 var inscription_ville_correspondance = $.trim($('#inscription_ville_correspondance').val());
                 var inscription_cp_correspondance = $.trim($('#inscription_cp_correspondance').val());
@@ -1713,8 +1710,6 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                             success: function(data){
                                 var parsedDate = jQuery.parseJSON(data);
 
-                                // console.log(parsedDate);
-
                                 if(parsedDate.reponse == 'OK') {
                                     var url = parsedDate.URL;
 
@@ -1729,8 +1724,6 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
 
                                     $.each( parsedDate.reponse, function( index, value ){
                                         var intituleErreur = value.erreur;
-
-                                        // console.log(intituleErreur);
 
                                         if(intituleErreur == "Mot de passe") {
                                             $('#inscription_mdp').addClass('error');
