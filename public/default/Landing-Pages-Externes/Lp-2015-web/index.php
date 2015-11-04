@@ -1367,6 +1367,10 @@
                         var erreur = 1;
                     }
                     if (erreur == 1) {
+                        $('html, body').animate({
+                            scrollTop: 0
+                        }, 1000, 'swing');
+
                         if($('#form_header').hasClass('formlight')) {
                             if( $('#form_inscription').prop('scrollHeight') + $('.form_content').prop('scrollHeight') > $(window).height()) {
                                 $('html, body').stop().animate({ scrollTop: $('.error:visible:first').offset().top - 20}, 700, 'swing');
