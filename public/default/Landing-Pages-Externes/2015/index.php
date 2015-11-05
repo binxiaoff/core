@@ -140,8 +140,9 @@
                     <input type="text" id="inscription_reponse" name="reponse" placeholder="Choisissez une réponse" maxlength="255">
                     <input type="text" id="inscription_adresse_fiscale" name="adresse_fiscale" placeholder="Adresse*" maxlength="255">
                     <input type="text" id="inscription_cp_fiscale" name="cp_fiscale" placeholder="Code postal*" maxlength="5"
-                           data-autocomplete="post_code" onblur="controleCp($('#inscription_cp_fiscale'), $('#inscription_id_pays_fiscale'))" />
-                    <input type="text" id="inscription_ville_fiscale" name="ville_fiscale" placeholder="Ville*" maxlength="255" data-autocomplete="city" >
+                           data-autocomplete="post_code" onblur="controleCp($(this), $('#inscription_id_pays_fiscale'))" />
+                    <input type="text" id="inscription_ville_fiscale" name="ville_fiscale" placeholder="Ville*" maxlength="255"
+                           data-autocomplete="city" onblur="controleCity($(this), $('#inscription_id_pays_fiscale'))">
                     <select id="inscription_id_pays_fiscale" name="id_pays_fiscale" class="custom-select">
                         <option value="">Pays*</option>
                         <option value="1">France </option>
@@ -346,8 +347,9 @@
                     <div id="inscription_correspondance">
                         <input type="text" id="inscription_adresse_correspondance" name="adresse" placeholder="Adresse" maxlength="255">
                         <input type="text" id="inscription_cp_correspondance" name="cp" placeholder="Code postal" maxlength="5"
-                               data-autocomplete="post_code" onblur="controleCp($('#inscription_cp_correspondance'), $('#inscription_id_pays_correspondance'))">
-                        <input type="text" id="inscription_ville_correspondance" name="ville" placeholder="Ville" maxlength="255" data-autocomplete="city">
+                               data-autocomplete="post_code" onblur="controleCp($(this), $('#inscription_id_pays_correspondance'))">
+                        <input type="text" id="inscription_ville_correspondance" name="ville" placeholder="Ville" maxlength="255"
+                               data-autocomplete="city" onblur="controleCity($(this), $('#inscription_id_pays_correspondance'))">
                         <select id="inscription_id_pays_correspondance" name="id_pays" class="custom-select">
                             <option value="">Pays</option>
                             <option value="1">France </option>
@@ -590,7 +592,7 @@
                     <input type="text" id="inscription_date_naissance" name="date_naissance" placeholder="Date de naissance (jj/mm/aaaa)*" maxlength="10">
                     <p id="errorAge"></p>
                     <input type="text" id="inscription_commune_naissance" name="commune_naissance" placeholder="Commune de naissance*" maxlength="255"
-                           data-autocomplete="birth_city" onblur="controleCity($('#inscription_commune_naissance'), $('#inscription_id_pays_naissance'))"/>
+                           data-autocomplete="birth_city" onblur="controleCity($(this), $('#inscription_id_pays_naissance'))"/>
                     <input type="hidden" name="insee_birth" class="insee_birth" id="insee_birth">
                     <select id="inscription_id_pays_naissance" name="id_pays_naissance" class="custom-select">
                         <option value="">Pays de naissance*</option>
@@ -1357,12 +1359,14 @@
                     if (!inscription_ville_fiscale) {
                         $('#inscription_ville_fiscale').addClass('error');
                         erreur = 1;
+                    } else if (controleCity($('#inscription_ville_fiscale'), $('#inscription_id_pays_fiscale'), false) == false) {
+                        $('#inscription_ville_fiscale').addClass('error');
+                        erreur = 1;
                     }
                     if (!inscription_cp_fiscale) {
                         $('#inscription_cp_fiscale').addClass('error');
                         erreur = 1;
-                    }
-                    if (!$.isNumeric(inscription_cp_fiscale)) {
+                    } else if (controleCp($('#inscription_cp_fiscale'), $('#inscription_id_pays_fiscale'), false) == false) {
                         $('#inscription_cp_fiscale').addClass('error');
                         erreur = 1;
                     }
@@ -1383,12 +1387,14 @@
                         if (!inscription_ville_correspondance) {
                             $('#inscription_ville_correspondance').addClass('error');
                             erreur = 1;
+                        } else if (controleCity($('#inscription_ville_correspondance'), $('#inscription_id_pays_correspondance'), false) == false) {
+                            $('#inscription_ville_correspondance').addClass('error');
+                            erreur = 1;
                         }
                         if (!inscription_cp_correspondance) {
                             $('#inscription_cp_correspondance').addClass('error');
                             erreur = 1;
-                        }
-                        if (!$.isNumeric(inscription_cp_correspondance)) {
+                        } else if (controleCp($('#inscription_cp_correspondance'), $('#inscription_id_pays_correspondance'), false) == false) {
                             $('#inscription_cp_correspondance').addClass('error');
                             erreur = 1;
                         }
@@ -1482,6 +1488,10 @@
                         erreur = 1;
                     }
                     if (!inscription_commune_naissance) {
+                        $('#inscription_commune_naissance').addClass('error');
+                        erreur = 1;
+                    }
+                    if ("1" == inscription_id_pays_naissance && !insee_birth) {
                         $('#inscription_commune_naissance').addClass('error');
                         erreur = 1;
                     }
@@ -1677,7 +1687,7 @@
                         minLength: 3,
                         search: function( event, ui ) {
                             if ($(this).data('autocomplete') == 'birth_city') {
-                                $(this).siblings(".insee_birth").val('');
+                                $("#insee_birth").val('');
                             }
                         },
                         select: function( event, ui ) {
@@ -1694,11 +1704,15 @@
                                         break;
                                     case 'city' :
                                         $(this).val(match[1]);
-                                        $(this).siblings("[data-autocomplete='post_code']").val( match[2]);
+                                        $(this).siblings("[data-autocomplete='post_code']")
+                                            .val( match[2])
+                                            .removeClass('error');
                                         break;
                                     case 'post_code' :
                                         $(this).val( match[2]);
-                                        $(this).siblings("[data-autocomplete='city']").val(match[1]);
+                                        $(this).siblings("[data-autocomplete='city']")
+                                            .val(match[1])
+                                            .removeClass('error');
                                         break;
                                 }
                             }
@@ -1713,7 +1727,7 @@
             async = typeof async !== 'undefined' ? async : true;
             var result = false;
             $.ajax({
-                url: '/ajax/checkCp/' + elmCp.val() + '/' + elmCountry.val(),
+                url: '<?= $url_site ?>/ajax/checkCp/' + elmCp.val() + '/' + elmCountry.val(),
                 method: 'GET',
                 async: async
             }).done(function(data){
@@ -1734,7 +1748,7 @@
             async = typeof async !== 'undefined' ? async : true;
             var result = false;
             $.ajax({
-                url: '/ajax/checkCity/' + elmCity.val() + '/' + elmCountry.val(),
+                url: '<?= $url_site ?>/ajax/checkCity/' + elmCity.val() + '/' + elmCountry.val(),
                 method: 'GET',
                 async: async
             }).done(function(data){

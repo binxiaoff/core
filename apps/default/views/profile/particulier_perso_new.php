@@ -253,9 +253,9 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
 
             <div class="row row-triple-fields">
 
-                <input type="text" id="postal" name="postal" class="field field-small required" data-autocomplete="post_code" onblur="controleCp($('#postal'), $('#pays1'))"
+                <input type="text" id="postal" name="postal" class="field field-small required" data-autocomplete="post_code" onblur="controleCp($(this), $('#pays1'))"
                        placeholder="<?=$this->lng['etape1']['code-postal']?>" title="<?=$this->lng['etape1']['code-postal']?>" value="<?=($this->clients_adresses->cp_fiscal!=0?$this->clients_adresses->cp_fiscal:'')?>"/>
-                <input type="text" id="ville_inscription" name="ville_inscription" class="field field-small required" data-autocomplete="city" data-validators="Presence"
+                <input type="text" id="ville_inscription" name="ville_inscription" class="field field-small required" data-autocomplete="city" onblur="controleCity($(this), $('#pays1'))"
                        placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=($this->clients_adresses->ville_fiscal!=''?$this->clients_adresses->ville_fiscal:'')?>"/>
 
                 <?php //Ajout CM 06/08/14 ?>
@@ -382,9 +382,9 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
             </div><!-- /.row -->
 
             <div class="row row-triple-fields">
-                <input type="text" id="postal2" name="postal2" class="field field-small required" data-autocomplete="post_code" onblur="controleCp($('#postal2'), $('#pays2'))"
+                <input type="text" id="postal2" name="postal2" class="field field-small required" data-autocomplete="post_code" onblur="controleCp($(this), $('#pays2'))"
                        placeholder="<?=$this->lng['etape1']['code-postal']?>" value="<?=($this->clients_adresses->cp!=0?$this->clients_adresses->cp:'')?>" title="<?=$this->lng['etape1']['code-postal']?>" />
-                <input type="text" id="ville2" name="ville2" class="field field-small required" data-validators="Presence"  data-autocomplete="city"
+                <input type="text" id="ville2" name="ville2" class="field field-small required" data-autocomplete="city" onblur="controleCity($(this), $('#pays2'))"
                        placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=($this->clients_adresses->ville!=''?$this->clients_adresses->ville:'')?>" />
                 <?php //Ajout CM 06/08/14 ?>
                 <select name="pays2" id="pays2" class="custom-select <?=$required?> field-small">
@@ -566,10 +566,16 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
         if (controleCp($('#postal'), $('#pays1'), false) == false) {
             form_ok = false
         }
+        if (controleCity($('#ville_inscription'), $('#pays1'), false) == false) {
+            form_ok = false
+        }
 
         if ($('#mon-addresse').is(':checked') == false) {
             // controle cp
             if (controleCp($('#postal2'), $('#pays2'), false) == false) {
+                form_ok = false
+            }
+            if (controleCity($('#ville2'), $('#pays2'), false) == false) {
                 form_ok = false
             }
         }

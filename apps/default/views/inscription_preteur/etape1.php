@@ -158,9 +158,17 @@
             radio = false
         }
 
+        if (controleCity($('#ville_inscription'), $('#pays1'), false) == false) {
+            radio = false
+        }
+
         if ($('#mon-addresse').is(':checked') == false) {
             // controle cp
             if (controleCp($('#postal2'), $('#pays2'), false) == false) {
+                radio = false
+            }
+
+            if (controleCity($('#ville2'), $('#pays2'), false) == false) {
                 radio = false
             }
         }
@@ -231,9 +239,17 @@
             radio = false
         }
 
+        if (controleCity($('#ville_inscriptionE'), $('#pays1E'), false) == false) {
+            radio = false
+        }
+
         if ($('#mon-addresse').is(':checked') == false) {
             // controle cp
             if (controleCp($('#postal2E'), $('#pays2E'), false) == false) {
+                radio = false
+            }
+
+            if (controleCity($('#ville2E'), $('#pays2E'), false) == false) {
                 radio = false
             }
         }

@@ -21,9 +21,9 @@
             <input type="text" id="adresse_inscriptionE" name="adresse_inscriptionE" title="<?= $this->lng['etape1']['adresse'] ?>" value="<?= ($this->companies->adresse1 != '' ? $this->companies->adresse1 : $this->lng['etape1']['adresse']) ?>" class="field field-mega required" data-validators="Presence">
         </div>
         <div class="row row-triple-fields">
-            <input type="text" name="postalE" id="postalE" class="field field-small required" data-autocomplete="post_code" onblur="controleCp($('#postalE'), $('#pays1E'))"
+            <input type="text" name="postalE" id="postalE" class="field field-small required" data-autocomplete="post_code" onblur="controleCp($(this), $('#pays1E'))"
                    placeholder="<?=$this->lng['etape1']['code-postal']?>" title="<?= $this->lng['etape1']['code-postal'] ?>" value="<?= ($this->companies->zip != 0 ? $this->companies->zip : '') ?>" />
-            <input type="text" id="ville_inscriptionE" name="ville_inscriptionE" class="field field-small required" data-validators="Presence" data-autocomplete="city"
+            <input type="text" id="ville_inscriptionE" name="ville_inscriptionE" class="field field-small required" data-autocomplete="city" onblur="controleCity($(this), $('#pays1E'))"
                    placeholder="<?=$this->lng['etape1']['ville']?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->companies->city != '' ? $this->companies->city : '') ?>" />
             <select name="pays1E" id="pays1E" class="custom-select required field-small">
                 <option value=""><?= $this->lng['etape1']['pays'] ?></option>
@@ -46,9 +46,9 @@
                 <input type="text" id="address2E" name="adress2E" title="<?= $this->lng['etape1']['adresse'] ?>" value="<?= ($this->clients_adresses->adresse1 != '' ? $this->clients_adresses->adresse1 : $this->lng['etape1']['adresse']) ?>" class="field field-mega required" data-validators="Presence">
             </div>
             <div class="row row-triple-fields">
-                <input type="text" id="postal2E" name="postal2E" class="field field-small required" data-autocomplete="post_code" onblur="controleCp($('#postal2E'), $('#pays2E'))"
+                <input type="text" id="postal2E" name="postal2E" class="field field-small required" data-autocomplete="post_code" onblur="controleCp($(this), $('#pays2E'))"
                        placeholder="<?=$this->lng['etape1']['code-postal']?>" value="<?= ($this->clients_adresses->cp != 0 ? $this->clients_adresses->cp : '') ?>" title="<?= $this->lng['etape1']['code-postal'] ?>" />
-                <input type="text" id="ville2E" name="ville2E" class="field field-small required" data-validators="Presence" data-autocomplete="city"
+                <input type="text" id="ville2E" name="ville2E" class="field field-small required" data-autocomplete="city" onblur="controleCity($(this), $('#pays2E'))"
                        placeholder="<?=$this->lng['etape1']['ville']?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->clients_adresses->ville != '' ? $this->clients_adresses->ville : '') ?>" />
                 <select name="pays2E" id="pays2E" class="custom-select required field-small">
                     <option value=""><?= $this->lng['etape1']['pays'] ?></option>
