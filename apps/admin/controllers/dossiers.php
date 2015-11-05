@@ -824,9 +824,9 @@ class dossiersController extends bootstrap
                                         'surl'              => $this->surl,
                                         'url'               => $this->furl,
                                         'prenom_p'          => $this->clients->prenom,
-                                        'valeur_bid'        => number_format($p['amount'] / 100, 2, ',', ' '),
+                                        'valeur_bid'        => $this->ficelle->formatNumber($p['amount'] / 100),
                                         'nom_entreprise'    => $this->companies->name,
-                                        'montant_rembourse' => number_format($rembNet, 2, ',', ' '),
+                                        'montant_rembourse' => $this->ficelle->formatNumber($rembNet),
                                         'cab_recouvrement'  => $this->cab,
                                         'motif_virement'    => $motif,
                                         'lien_fb'           => $lien_fb,
@@ -1322,8 +1322,8 @@ class dossiersController extends bootstrap
                                             $url          = $this->furl;
                                             $prenom       = $preteur->prenom;
                                             $projet       = $this->projects->title;
-                                            $montant_pret = number_format($l['amount'] / 100, 2, ',', ' ');
-                                            $taux         = number_format($l['rate'], 2, ',', ' ');
+                                            $montant_pret = $this->ficelle->formatNumber($l['amount'] / 100);
+                                            $taux         = $this->ficelle->formatNumber($l['rate']);
                                             $entreprise   = $laCompanie->name;
                                             $date         = $this->dates->formatDate($l['added'], 'd/m/Y');
                                             $heure        = $this->dates->formatDate($l['added'], 'H');
@@ -1342,7 +1342,7 @@ class dossiersController extends bootstrap
                                                 'taux_bid'       => $taux,
                                                 'nom_entreprise' => $entreprise,
                                                 'nbre_echeance'  => $duree,
-                                                'mensualite_p'   => number_format($lecheancier['montant'] / 100, 2, ',', ' '),
+                                                'mensualite_p'   => $this->ficelle->formatNumber($lecheancier['montant'] / 100),
                                                 'date_debut'     => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
                                                 'compte-p'       => $this->furl,
                                                 'projet-p'       => $this->furl . '/projects/detail/' . $this->projects->slug,
@@ -1415,7 +1415,7 @@ class dossiersController extends bootstrap
                                     'url'             => $this->furl,
                                     'prenom'          => $lemprunteur->prenom,
                                     'entreprise'      => $laCompanie->name,
-                                    'pret'            => number_format($leProject->amount, 2, ',', ' '),
+                                    'pret'            => $this->ficelle->formatNumber($leProject->amount),
                                     'projet-title'    => $leProject->title,
                                     'compte-p'        => $this->furl,
                                     'projet-p'        => $this->furl . '/projects/detail/' . $leProject->slug,
@@ -2649,7 +2649,7 @@ class dossiersController extends bootstrap
                                                     'url'              => $this->furl,
                                                     'prenom_p'         => $this->clients->prenom,
                                                     'cab_recouvrement' => $this->cab,
-                                                    'mensualite_p'     => number_format($rembNet, 2, ',', ' '),
+                                                    'mensualite_p'     => $this->ficelle->formatNumber($rembNet),
                                                     'nom_entreprise'   => $this->companies->name,
                                                     'solde_p'          => $this->transactions->getSolde($this->clients->id_client),
                                                     'link_echeancier'  => $this->furl,
@@ -2704,14 +2704,14 @@ class dossiersController extends bootstrap
                                                 } else {
                                                     $euros = ' euro';
                                                 }
-                                                $rembNetEmail = number_format($rembNet, 2, ',', ' ') . $euros;
+                                                $rembNetEmail = $this->ficelle->formatNumber($rembNet) . $euros;
 
                                                 if ($this->transactions->getSolde($this->clients->id_client) >= 2) {
                                                     $euros = ' euros';
                                                 } else {
                                                     $euros = ' euro';
                                                 }
-                                                $solde   = number_format($this->transactions->getSolde($this->clients->id_client), 2, ',', ' ') . $euros;
+                                                $solde   = $this->ficelle->formatNumber($this->transactions->getSolde($this->clients->id_client)) . $euros;
                                                 $timeAdd = strtotime($dateDernierStatut);
                                                 $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
@@ -2785,14 +2785,14 @@ class dossiersController extends bootstrap
                                                     } else {
                                                         $euros = ' euro';
                                                     }
-                                                    $rembNetEmail = number_format($rembNet, 2, ',', ' ') . $euros;
+                                                    $rembNetEmail = $this->ficelle->formatNumber($rembNet) . $euros;
 
                                                     if ($this->transactions->getSolde($this->clients->id_client) >= 2) {
                                                         $euros = ' euros';
                                                     } else {
                                                         $euros = ' euro';
                                                     }
-                                                    $solde   = number_format($this->transactions->getSolde($this->clients->id_client), 2, ',', ' ') . $euros;
+                                                    $solde   = $this->ficelle->formatNumber($this->transactions->getSolde($this->clients->id_client)) . $euros;
                                                     $timeAdd = strtotime($dateDernierStatut);
                                                     $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
@@ -2914,7 +2914,7 @@ class dossiersController extends bootstrap
                                     'surl'            => $this->surl,
                                     'url'             => $this->furl,
                                     'prenom'          => $emprunteur->prenom,
-                                    'pret'            => number_format($projects->amount, 2, ',', ' '),
+                                    'pret'            => $this->ficelle->formatNumber($projects->amount),
                                     'entreprise'      => stripslashes(trim($companies->name)),
                                     'projet-title'    => $projects->title,
                                     'compte-p'        => $this->furl,
@@ -3151,7 +3151,7 @@ class dossiersController extends bootstrap
                             $euros = ' euro';
                         }
 
-                        $rembNetEmail = number_format($reste_a_payer_pour_preteur, 2, ',', ' ') . $euros;
+                        $rembNetEmail = $this->ficelle->formatNumber($reste_a_payer_pour_preteur) . $euros;
 
                         // Solde preteur
                         $getsolde = $this->transactions->getSolde($this->clients->id_client);
@@ -3160,7 +3160,7 @@ class dossiersController extends bootstrap
                         } else {
                             $euros = ' euro';
                         }
-                        $solde = number_format($getsolde, 2, ',', ' ') . $euros;
+                        $solde = $this->ficelle->formatNumber($getsolde) . $euros;
 
                         // FB
                         $this->settings->get('Facebook', 'type');
@@ -3179,9 +3179,9 @@ class dossiersController extends bootstrap
                             'prenom_p'             => $this->clients->prenom,
                             'nomproject'           => $this->projects->title,
                             'nom_entreprise'       => $this->companies->name,
-                            'taux_bid'             => number_format($loans->rate, 2, ',', ' '),
+                            'taux_bid'             => $this->ficelle->formatNumber($loans->rate),
                             'nbecheancesrestantes' => $sum_ech_restant,
-                            'interetsdejaverses'   => number_format($sum_interet, 2, ',', ' '),
+                            'interetsdejaverses'   => $this->ficelle->formatNumber($sum_interet),
                             'crdpreteur'           => $rembNetEmail,
                             'Datera'               => date('d/m/Y'),
                             'solde_p'              => $solde,

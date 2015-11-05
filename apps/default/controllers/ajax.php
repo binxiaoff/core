@@ -1022,8 +1022,8 @@ class ajaxController extends bootstrap
                         'surl'            => $this->surl,
                         'url'             => $this->lurl,
                         'prenom_p'        => $this->clients->prenom,
-                        'fonds_retrait'   => number_format($montant, 2, ',', ' '),
-                        'solde_p'         => number_format($this->solde - $montant, 2, ',', ' '),
+                        'fonds_retrait'   => $this->ficelle->formatNumber($montant),
+                        'solde_p'         => $this->ficelle->formatNumber($this->solde - $montant),
                         'link_mandat'     => $this->surl . '/images/default/mandat.jpg',
                         'motif_virement'  => $motif,
                         'projets'         => $this->lurl . '/' . $pageProjets,
@@ -1077,13 +1077,13 @@ class ajaxController extends bootstrap
                 $email           = $this->clients->email;
                 $dateinscription = date('d/m/Y', strtotime($this->clients->added));
                 if ($transac->montant != false) {
-                    $montantInscription = number_format($transac->montant / 100, 2, ',', ' ');
+                    $montantInscription = $this->ficelle->formatNumber($transac->montant / 100);
                 } else {
-                    $montantInscription = number_format(0, 2, ',', ' ');
+                    $montantInscription = $this->ficelle->formatNumber(0);
                 }
-                $montantPreteDepuisInscription = number_format($soldePrets, 2, ',', ' ');
-                $montantRetirePlateforme       = number_format($montant, 2, ',', ' ');
-                $solde                         = number_format($transac->getSolde($this->clients->id_client), 2, ',', ' ');
+                $montantPreteDepuisInscription = $this->ficelle->formatNumber($soldePrets);
+                $montantRetirePlateforme       = $this->ficelle->formatNumber($montant);
+                $solde                         = $this->ficelle->formatNumber($transac->getSolde($this->clients->id_client));
 
                 // Attribution des données aux variables
                 $sujetMail = $this->mails_text->subject;
@@ -1120,7 +1120,7 @@ class ajaxController extends bootstrap
 
         if (isset($_POST['id_client']) && $this->clients->id_client == $_POST['id_client']) {
             $solde = $this->transactions->getSolde($this->clients->id_client);
-            echo $solde = number_format($solde, 2, ',', ' ');
+            echo $solde = $this->ficelle->formatNumber($solde);
         } else {
             echo 'nok';
         }
@@ -1196,7 +1196,7 @@ class ajaxController extends bootstrap
             $donneesEcheances = $tabl[1];
             $lEcheanciers     = $tabl[2];
 
-            echo number_format($lEcheanciers[1]['echeance'], 2, ',', ' ');
+            echo $this->ficelle->formatNumber($lEcheanciers[1]['echeance']);
         }
     }
 

@@ -886,7 +886,7 @@ class devboxController extends bootstrap
                 $euros = ' euro';
             }
 
-            $rembNetEmail = number_format($reste_a_payer_pour_preteur, 2, ',', ' ') . $euros;
+            $rembNetEmail = $this->ficelle->formatNumber($reste_a_payer_pour_preteur) . $euros;
 
             // Solde preteur
             $getsolde = $this->transactions->getSolde($this->clients->id_client);
@@ -895,7 +895,7 @@ class devboxController extends bootstrap
             } else {
                 $euros = ' euro';
             }
-            $solde = number_format($getsolde, 2, ',', ' ') . $euros;
+            $solde = $this->ficelle->formatNumber($getsolde) . $euros;
 
             // FB
             $this->settings->get('Facebook', 'type');
@@ -918,9 +918,9 @@ class devboxController extends bootstrap
                 'prenom_p'             => $this->clients->prenom,
                 'nomproject'           => $this->projects->title,
                 'nom_entreprise'       => $this->companies->name,
-                'taux_bid'             => number_format($loans->rate, 2, ',', ' '),
+                'taux_bid'             => $this->ficelle->formatNumber($loans->rate),
                 'nbecheancesrestantes' => $sum_ech_restant,
-                'interetsdejaverses'   => number_format($sum_interet, 2, ',', ' '),
+                'interetsdejaverses'   => $this->ficelle->formatNumber($sum_interet),
                 'crdpreteur'           => $rembNetEmail,
                 'Datera'               => date('d/m/Y'),
                 'solde_p'              => $solde,
@@ -1079,7 +1079,7 @@ class devboxController extends bootstrap
                 $euros = ' euro';
             }
 
-            $rembNetEmail = number_format($reste_a_payer_pour_preteur, 2, ',', ' ') . $euros;
+            $rembNetEmail = $this->ficelle->formatNumber($reste_a_payer_pour_preteur) . $euros;
 
             // Solde preteur
             $getsolde = $this->transactions->getSolde($this->clients->id_client);
@@ -1088,7 +1088,7 @@ class devboxController extends bootstrap
             } else {
                 $euros = ' euro';
             }
-            $solde = number_format($getsolde, 2, ',', ' ') . $euros;
+            $solde = $this->ficelle->formatNumber($getsolde) . $euros;
 
             // FB
             $this->settings->get('Facebook', 'type');
@@ -1111,11 +1111,11 @@ class devboxController extends bootstrap
                 'prenom_p'             => $this->clients->prenom,
                 'nomproject'           => $this->projects->title,
                 'nom_entreprise'       => $this->companies->name,
-                'taux_bid'             => number_format($loans->rate, 2, ',', ' '),
+                'taux_bid'             => $this->ficelle->formatNumber($loans->rate),
                 'nbecheancesrestantes' => $sum_ech_restant,
-                'interetsdejaverses'   => number_format($sum_interet, 2, ',', ' '),
+                'interetsdejaverses'   => $this->ficelle->formatNumber($sum_interet),
                 'crdpreteur'           => $rembNetEmail,
-                'Datera'               => date('d/m/Y'),
+                'Datera'               => date('d/m/Y'), // @todo intl
                 'solde_p'              => $solde,
                 'motif_virement'       => $motif,
                 'lien_fb'              => $lien_fb,

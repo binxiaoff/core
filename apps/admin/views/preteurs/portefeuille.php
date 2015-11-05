@@ -114,8 +114,8 @@
                         <tr class="<?=($i%2 == 1?'':'odd')?>">
                             <td><h5><?=$l['name']?></h5></td>
                             <td><?=$l['risk']?></td>
-                            <td><?=number_format($l['amount'], 2, ',', ' ')?> €</td>
-                            <td><?=number_format($l['rate'], 2, ',', ' ')?> %</td>
+                            <td><?=$this->ficelle->formatNumber($l['amount'])?> €</td>
+                            <td><?=$this->ficelle->formatNumber($l['rate'])?> %</td>
                              <?php
                         if($l['project_status'] == projects_status::REMBOURSEMENT_ANTICIPE){
                             ?>
@@ -126,7 +126,7 @@
                             <td><?=$this->dates->formatDate($l['debut'],'d/m/Y')?></td>
                             <td><?=$this->dates->formatDate($l['next_echeance'],'d/m/Y')?></td>
                             <td><?=$this->dates->formatDate($l['fin'],'d/m/Y')?></td>
-                            <td><?=number_format($l['mensuel'], 2, ',', ' ')?> €/mois</td>
+                            <td><?=$this->ficelle->formatNumber($l['mensuel'])?> €/mois</td>
                         <?}
                         ?>
                            <td>
@@ -153,8 +153,8 @@
                         <tr class="<?=($i%2 == 1?'':'odd')?>">
                             <td><h5><?=$l['name']?></h5></td>
                             <td><?=$l['risk']?></td>
-                            <td><?=number_format($l['amount'], 2, ',', ' ')?> €</td>
-                            <td><?=number_format($l['rate'], 2, ',', ' ')?> %</td>
+                            <td><?=$this->ficelle->formatNumber($l['amount'])?> €</td>
+                            <td><?=$this->ficelle->formatNumber($l['rate'])?> %</td>
                             <?php
                         if($l['project_status'] == projects_status::REMBOURSEMENT_ANTICIPE){
                             ?>
@@ -165,7 +165,7 @@
                             <td><?=$this->dates->formatDate($l['debut'],'d/m/Y')?></td>
                             <td><?=$this->dates->formatDate($l['next_echeance'],'d/m/Y')?></td>
                             <td><?=$this->dates->formatDate($l['fin'],'d/m/Y')?></td>
-                            <td><?=number_format($l['mensuel'], 2, ',', ' ')?> €/mois</td>
+                            <td><?=$this->ficelle->formatNumber($l['mensuel'])?> €/mois</td>
                         <?}
                         ?>
                             <td>
@@ -187,11 +187,11 @@
                                                 <td style="text-align: right; background-color: #e3e4e5; color: black;">Détail loan</td>
                                                 <td style="text-align: right; background-color: #e3e4e5; color: black;"></td>
                                                 <td style="background-color: #e3e4e5; color: black;"><?=number_format($loan['amount']/100, 0, ',', ' ')?> €</td>
-                                                <td style="background-color: #e3e4e5; color: black;"><?=number_format($loan['rate'], 2, ',', ' ')?>%</td>
+                                                <td style="background-color: #e3e4e5; color: black;"><?=$this->ficelle->formatNumber($loan['rate'])?>%</td>
                                                 <td style="text-align: right; background-color: #e3e4e5; color: black;"></td>
                                                 <td style="text-align: right; background-color: #e3e4e5; color: black;"></td>
                                                 <td style="text-align: right; background-color: #e3e4e5; color: black;"></td>
-                                                <td style="background-color: #e3e4e5; color: black;"><?=number_format(($SumAremb[0]['montant']/100)-$fiscal, 2, ',', ' ')?> €/mois</td>
+                                                <td style="background-color: #e3e4e5; color: black;"><?=$this->ficelle->formatNumber(($SumAremb[0]['montant']/100)-$fiscal)?> €/mois</td>
                                                 <td>
                                                     <?
                                                     if($this->projects_status->status >=80)

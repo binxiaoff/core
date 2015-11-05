@@ -139,7 +139,7 @@
 								<?
 								for($i=0;$i<10;$i++)
 								{
-									?><td style="border: 1px solid #231f20;"><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':number_format(($this->lEcheances[$i]['interets']/100), 2, ',', ' '))?></span></td><?
+									?><td style="border: 1px solid #231f20;"><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':$this->ficelle->formatNumber(($this->lEcheances[$i]['interets']/100)))?></span></td><?
 								}
 								?>
 
@@ -149,7 +149,7 @@
 								<?
 								for($i=0;$i<10;$i++)
 								{
-									?><td style="border: 1px solid #231f20;"><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':number_format(($this->lEcheances[$i]['capital']/100), 2, ',', ' '))?></span></td><?
+									?><td style="border: 1px solid #231f20;"><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':$this->ficelle->formatNumber(($this->lEcheances[$i]['capital']/100)))?></span></td><?
 								}
 								?>
 							</tr>
@@ -172,7 +172,7 @@
 								<?
 								for($i=10;$i<20;$i++)
 								{
-									?><td style="border: 1px solid #231f20;"><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':number_format(($this->lEcheances[$i]['interets']/100), 2, ',', ' '))?></span></td><?
+									?><td style="border: 1px solid #231f20;"><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':$this->ficelle->formatNumber(($this->lEcheances[$i]['interets']/100)))?></span></td><?
 								}
 								?>
 							</tr>
@@ -181,7 +181,7 @@
 								<?
 								for($i=10;$i<=20;$i++)
 								{
-									?><td style="border: 1px solid #231f20;"><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':number_format(($this->lEcheances[$i]['capital']/100), 2, ',', ' '))?></span></td><?
+									?><td style="border: 1px solid #231f20;"><span class="editable"><?=($this->lEcheances[$i]==false?'&nbsp;':$this->ficelle->formatNumber(($this->lEcheances[$i]['capital']/100)))?></span></td><?
 								}
 								?>
 							</tr>

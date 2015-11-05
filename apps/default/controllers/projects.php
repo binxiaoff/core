@@ -382,7 +382,7 @@ class projectsController extends bootstrap
                             'url' => $this->lurl,
                             'prenom_p' => $this->clients->prenom,
                             'nom_entreprise' => $this->companies->name,
-                            'valeur_bid' => number_format($montant_p, 2, ',', ' '),
+                            'valeur_bid' => $this->ficelle->formatNumber($montant_p),
                             'taux_bid' => number_format($tx_p, 1, ',', ' '),
                             'date_bid' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
                             'heure_bid' => date('H:i:s', strtotime($this->bids->added)),

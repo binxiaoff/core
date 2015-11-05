@@ -1,7 +1,7 @@
 <div class="graphic-box">
     <header>
         <h2><?=$this->lng['preteur-synthese']['situation-de-votre-compte-unilend']?></h2>
-        <p><?=$this->lng['preteur-synthese']['solde-de-mon-compte']?> :<strong> <?=number_format($this->solde,2,',',' ')?> €</strong></p>
+        <p><?=$this->lng['preteur-synthese']['solde-de-mon-compte']?> :<strong> <?=$this->ficelle->formatNumber($this->solde)?> €</strong></p>
     </header>
     <div class="body">
         <style>
@@ -19,15 +19,15 @@
             else $fondsdispo = $this->lng['preteur-synthese']['de-fond-disponible'];
 			?>
 
-			<span id="leSolde"><b><?=number_format($this->solde,2,',',' ')?> € <br /><?=$fondsdispo?></b></span>
+			<span id="leSolde"><b><?=$this->ficelle->formatNumber($this->solde)?> € <br /><?=$fondsdispo?></b></span>
 			<span id="leSoldePourcent"><?=number_format($this->soldePourcent,1,'.','')?></span>
 
-			<span id="sumBidsEncours"><b><?=number_format($this->sumBidsEncours,2,',',' ')?> € <br /><?=$this->lng['preteur-synthese']['de-fond-bloques']?></b></span>
+			<span id="sumBidsEncours"><b><?=$this->ficelle->formatNumber($this->sumBidsEncours)?> € <br /><?=$this->lng['preteur-synthese']['de-fond-bloques']?></b></span>
 			<span id="sumBidsEncoursPourcent"><?=number_format($this->sumBidsEncoursPourcent,1,'.','')?></span>
 
-			<?php /*?><span id="sumPrets"><b><?=number_format($this->sumPrets,2,',',' ')?> € <br /><?=$this->lng['preteur-synthese']['pretes-a']?> <?=$this->nbLoan?> <?=$this->lng['preteur-synthese']['entreprise']?><?=($this->nbLoan>1?'s':'')?> <br /><?=$this->lng['preteur-synthese']['dont']?> <?=number_format($this->sumRembMontant,2,',','')?> <?=$this->lng['preteur-synthese']['de-recouvrement']?></b></span><?php */?>
+			<?php /*?><span id="sumPrets"><b><?=$this->ficelle->formatNumber($this->sumPrets)?> € <br /><?=$this->lng['preteur-synthese']['pretes-a']?> <?=$this->nbLoan?> <?=$this->lng['preteur-synthese']['entreprise']?><?=($this->nbLoan>1?'s':'')?> <br /><?=$this->lng['preteur-synthese']['dont']?> <?=number_format($this->sumRembMontant,2,',','')?> <?=$this->lng['preteur-synthese']['de-recouvrement']?></b></span><?php */?>
 
-			<span id="sumPrets"><b><?=number_format($this->sumRestanteARemb,2,',',' ')?> € <br /><?=$this->lng['preteur-synthese']['pretes-a']?> <?=$this->nbLoan?> <?=$this->lng['preteur-synthese']['entreprise']?><?=($this->nbLoan>1?'s':'')?><br />et restant à rembourser
+			<span id="sumPrets"><b><?=$this->ficelle->formatNumber($this->sumRestanteARemb)?> € <br /><?=$this->lng['preteur-synthese']['pretes-a']?> <?=$this->nbLoan?> <?=$this->lng['preteur-synthese']['entreprise']?><?=($this->nbLoan>1?'s':'')?><br />et restant à rembourser
 			<?
 
 			if($this->sumRestanteARemb>0){
@@ -154,11 +154,11 @@
                             <?
                             if($CountEnchere>0)
                             {
-                                ?><li><i class="icon-graph-gray"></i><?=number_format($avgRate, 2, ',', ' ')?> %</li><?
+                                ?><li><i class="icon-graph-gray"></i><?=$this->ficelle->formatNumber($avgRate)?> %</li><?
                             }
                             else
                             {
-                                ?><li><i class="icon-graph-gray"></i><?=($f['target_rate']=='-'?'-':number_format($f['target_rate'], 2, ',',' ').' %')?></li><?
+                                ?><li><i class="icon-graph-gray"></i><?=($f['target_rate']=='-'?'-':$this->ficelle->formatNumber($f['target_rate']).' %')?></li><?
                             }
                             ?>
 
@@ -287,7 +287,7 @@
                             }
                             else
                             {
-                                ?><li><i class="icon-graph-gray"></i><?=($f['target_rate']=='-'?'-':number_format($f['target_rate'], 2, ',',' ').' %')?></li><?
+                                ?><li><i class="icon-graph-gray"></i><?=($f['target_rate']=='-'?'-':$this->ficelle->formatNumber($f['target_rate']).' %')?></li><?
                             }
                             ?>
 

@@ -128,32 +128,32 @@
         <table class="form" style="width:340px;">
             <tr>
                 <th>Sommes disponibles :</th>
-                <td><?=number_format($this->solde, 2, ',', ' ')?> €</td>
+                <td><?=$this->ficelle->formatNumber($this->solde)?> €</td>
             </tr>
 
             <tr>
                 <th>Montant prêté :</th>
-                <td><?=number_format($this->sumPrets, 2, ',', ' ')?> €</td>
+                <td><?=$this->ficelle->formatNumber($this->sumPrets)?> €</td>
             </tr>
 
             <tr>
                 <th>Fonds retirés :</th>
-                <td><?=number_format($this->soldeRetrait, 2, ',', ' ')?> €</td>
+                <td><?=$this->ficelle->formatNumber($this->soldeRetrait)?> €</td>
             </tr>
 
             <tr>
                 <th>Remboursement prochain mois :</th>
-                <td><?=number_format($this->nextRemb, 2, ',', ' ')?> €</td>
+                <td><?=$this->ficelle->formatNumber($this->nextRemb)?> €</td>
             </tr>
 
             <tr>
                 <th>Enchères moyennes :</th>
-                <td><?=number_format($this->avgPreteur, 2, ',', ' ')?> €</td>
+                <td><?=$this->ficelle->formatNumber($this->avgPreteur)?> €</td>
             </tr>
 
             <tr>
                 <th>Montant des intérêts :</th>
-                <td><?=number_format($this->sumRembInte, 2, ',', ' ')?> €</td>
+                <td><?=$this->ficelle->formatNumber($this->sumRembInte)?> €</td>
             </tr>
 
             <tr>
@@ -171,11 +171,11 @@
         <table class="form" style="width:265px;">
             <tr>
                 <th>Total des sommes déposées :</th>
-                <td><?=number_format($this->SumDepot, 2, ',', ' ')?> €</td>
+                <td><?=$this->ficelle->formatNumber($this->SumDepot)?> €</td>
             </tr>
             <tr>
                 <th>Montant encheres en cours :</th>
-                <td><?=number_format($this->sumBidsEncours, 2, ',', ' ')?> €</td>
+                <td><?=$this->ficelle->formatNumber($this->sumBidsEncours)?> €</td>
             </tr>
             <tr>
                 <th>Nombre d'encheres en cours :</th>
@@ -187,15 +187,15 @@
             </tr>
             <tr>
                 <th>Montant du 1er versement :</th>
-                <td><?=number_format($this->SumInscription, 2, ',', ' ')?> €</td>
+                <td><?=$this->ficelle->formatNumber($this->SumInscription)?> €</td>
             </tr>
             <tr>
                 <th>Taux moyen :</th>
-                <td><?=number_format($this->txMoyen, 2, ',', ' ')?> %</td>
+                <td><?=$this->ficelle->formatNumber($this->txMoyen)?> %</td>
             </tr>
             <tr>
                 <th>Remboursement total :</th>
-                <td><?=number_format($this->sumRembMontant, 2, ',', ' ')?> €</td>
+                <td><?=$this->ficelle->formatNumber($this->sumRembMontant)?> €</td>
             </tr>
         </table>
     </div>
@@ -289,7 +289,7 @@
                     <tr<?=($i%2 == 1?'':' class="odd"')?>>
                         <td><?= $this->lesStatuts[$t['type_transaction']] . ($t['type_transaction'] == 5 || $t['type_transaction'] == 23 ? ' - ' . $this->companies->name : '') ?></td>
                         <td><?=$this->dates->formatDate($t['date_transaction'],'d-m-Y')?></td>
-                        <td><?=number_format($t['montant']/100, 2, ',', ' ')?> €</td>
+                        <td><?=$this->ficelle->formatNumber($t['montant']/100)?> €</td>
                     </tr>
                     <?
                     $i++;

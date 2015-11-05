@@ -80,7 +80,7 @@
 					// remboursement et plus
 					else
 					{
-						?><td><?=number_format($montant_mensuel, 2, ',', ' ')?>€/mois</td><?
+						?><td><?=$this->ficelle->formatNumber($montant_mensuel)?>€/mois</td><?
 					}
 					?>
                     <td><a href="#" class="tooltip-anchor icon-pdf" data-original-title="" title=""></a></td>

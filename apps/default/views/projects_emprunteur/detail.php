@@ -162,7 +162,7 @@ else
 													</th>
 													<th width="214">
 														<span id="triAmount"><?=$this->lng['preteur-projets']['montant']?> <i class="icon-arrows"></i></span>
-														<small><?=$this->lng['preteur-projets']['montant-moyen']?> : <?=number_format($this->avgAmount/100, 2, ',', ' ')?> €</small>
+														<small><?=$this->lng['preteur-projets']['montant-moyen']?> : <?=$this->ficelle->formatNumber($this->avgAmount/100)?> €</small>
 													</th>
 													<th width="101"><span id="triStatuts"><?=$this->lng['preteur-projets']['statuts']?> <i class="icon-arrows"></i></span></th>
 												</tr>

@@ -1946,7 +1946,7 @@ class preteursController extends bootstrap
                         'url'             => $this->furl,
                         'prenom_p'        => $this->clients->prenom,
                         'projets'         => $this->furl . '/projets-a-financer',
-                        'offre_bienvenue' => number_format(($offres_bienvenues->montant / 100), 2, ',', ' '),
+                        'offre_bienvenue' => $this->ficelle->formatNumber($offres_bienvenues->montant / 100),
                         'lien_fb'         => $lien_fb,
                         'lien_tw'         => $lien_tw);
                     // Construction du tableau avec les balises EMV
@@ -2078,10 +2078,11 @@ class preteursController extends bootstrap
                         'url'             => $this->furl,
                         'prenom_p'        => $this->clients->prenom,
                         'projets'         => $this->furl . '/projets-a-financer',
-                        'offre_bienvenue' => number_format(($offres_bienvenues->montant / 100), 2, ',', ' '),
+                        'offre_bienvenue' => $this->ficelle->formatNumber($offres_bienvenues->montant / 100),
                         'lien_fb'         => $lien_fb,
-                        'lien_tw'         => $lien_tw);
-                    // Construction du tableau avec les balises EMV
+                        'lien_tw'         => $lien_tw
+                    );
+
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
                     // Attribution des données aux variables

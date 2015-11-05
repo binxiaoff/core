@@ -12,14 +12,14 @@
 				$_SESSION['qs'] = date('d');
 			}
 			?>
-        
+
 			<div class="shell">
 				<div class="section-c dashboard clearfix">
 					<div class="page-title clearfix">
 						<h1 class="left"><?=$this->lng['preteur-synthese']['votre-tableau-de-bord']?></h1>
 						<strong class="right">au <?=$this->dates->formatDateComplete(date('Y-m-d H:i:s'))?> à <?=date('H\hi')?></strong>
 					</div>
-                    
+
                     <!--------------------------------------------------->
                     <?
 					// cgv
@@ -27,37 +27,37 @@
 						$this->accept_ok = true; // temporaire
 					}*/
 					//if(in_array($this->clients->id_client,array(1,12)))
-					
+
 					// LE TEMPS QU'ON AIT LA POPUP CGV ON MASQUE CE BLOC
-					
+
 					if($this->accept_ok == false){
 						?>
 						<div class="notification-primary">
 							<div class="notification-head">
 								<h3 class="notification-title"><?=$this->bloc_cgv['titre-242']?></h3><!-- /.notification-title -->
 							</div><!-- /.notification-head -->
-							
+
 							<div class="notification-body">
                                 <?
 								// mise a jour cgv
-								if($this->update_accept == true) 
+								if($this->update_accept == true)
 									echo $this->bloc_cgv['content-2'];
-								else 
+								else
 									echo $this->bloc_cgv['content-1'];
 								?>
 								<div class="form-terms">
 									<form action="" method="post">
 										<div class="checkbox">
 											<input type="checkbox" name="terms" id="terms" />
-											
+
                                             <label for="terms"><a target="_blank" href="<?=$this->lurl.'/cgv_preteurs/nosign'?>"><?=$this->bloc_cgv['checkbox-cgv']?></a></label>
-											<?php /*?><label for="terms"><a target="_blank" href="<?=$this->lurl.'/'.$this->tree->getSlug($this->lienConditionsGenerales,$this->language)?>"><?=$this->bloc_cgv['checkbox-cgv']?></a></label><?php */?>      
+											<?php /*?><label for="terms"><a target="_blank" href="<?=$this->lurl.'/'.$this->tree->getSlug($this->lienConditionsGenerales,$this->language)?>"><?=$this->bloc_cgv['checkbox-cgv']?></a></label><?php */?>
 										</div><!-- /.checkbox -->
-	
+
 										<div class="form-actions">
 											<button type="button" id="cta_cgv" class="btn form-btn">
 												<?=$this->bloc_cgv['cta-valider']?>
-	
+
 												<i class="ico-arrow"></i>
 											</button>
 										</div><!-- /.form-actions -->
@@ -80,7 +80,7 @@
 					}
 					?>
                     <!------------------------------------------------------>
-                    
+
                     <?
 					if($this->nblFavP>0 && !isset($_SESSION['lFavP']))
 					{
@@ -101,8 +101,8 @@
 										$_SESSION['lFavP'] = true;
 										?>
 										<li>
-										<?=($f['datediff']>0?'Plus que '.$f['datediff'].' jours':'Dernier jour')?> 
-										
+										<?=($f['datediff']>0?'Plus que '.$f['datediff'].' jours':'Dernier jour')?>
+
 										<?=$this->lng['preteur-synthese']['pour-faire-une-offre-de-pret-sur-le-projet']?> <a href="<?=$this->lurl?>/projects/detail/<?=$this->projects->slug?>"><?=$f['title']?></a>.
 										</li>
 										<?
@@ -122,15 +122,15 @@
                                     {
 										$this->bids->get($r['id_bid'],'id_bid');
 										$this->projects->get($r['id_project'],'id_project');
-										
+
 										if($this->bids->amount != $r['amount'])
 										{
 											$montant = ($this->bids->amount - $r['amount']);
-											?><li><?=$this->lng['preteur-synthese']['attentions-votre-offre-de-pret-a']?><b> <?=number_format($this->bids->rate,2,',',' ')?></b><?=$this->lng['preteur-synthese']['pour-un-montant-de']?><b> <?=number_format($this->bids->amount/100,2,',',' ')?></b><?=$this->lng['preteur-synthese']['sur-le-projet']?> <a href="<?=$this->lurl?>/projects/detail/<?=$this->projects->slug?>"><?=$this->projects->title?></a><?=$this->lng['preteur-synthese']['a-ete-decoupe']?> <b><?=number_format($r['amount']/100,2,',',' ')?></b><?=$this->lng['preteur-synthese']['vous-ont-ete-rendu']?></li><?
+											?><li><?=$this->lng['preteur-synthese']['attentions-votre-offre-de-pret-a']?><b> <?=$this->ficelle->formatNumber($this->bids->rate,2,',',' ')?></b><?=$this->lng['preteur-synthese']['pour-un-montant-de']?><b> <?=number_format($this->bids->amount/100,2,',',' ')?></b><?=$this->lng['preteur-synthese']['sur-le-projet']?> <a href="<?=$this->lurl?>/projects/detail/<?=$this->projects->slug?>"><?=$this->projects->title?></a><?=$this->lng['preteur-synthese']['a-ete-decoupe']?> <b><?=number_format($r['amount']/100)?></b><?=$this->lng['preteur-synthese']['vous-ont-ete-rendu']?></li><?
 										}
 										else
 										{
-                                        ?><li><?=$this->lng['preteur-synthese']['attentions-votre-offre-de-pret-a']?><b> <?=number_format($this->bids->rate,2,',',' ')?></b><?=$this->lng['preteur-synthese']['pour-un-montant-de']?><b> <?=number_format($r['amount']/100,2,',',' ')?></b><?=$this->lng['preteur-synthese']['sur-le-projet']?> <a href="<?=$this->lurl?>/projects/detail/<?=$this->projects->slug?>"><?=$this->projects->title?></a><?=$this->lng['preteur-synthese']['nest-plus-recevable']?></li><?
+                                        ?><li><?=$this->lng['preteur-synthese']['attentions-votre-offre-de-pret-a']?><b> <?=$this->ficelle->formatNumber($this->bids->rate,2,',',' ')?></b><?=$this->lng['preteur-synthese']['pour-un-montant-de']?><b> <?=number_format($r['amount']/100)?></b><?=$this->lng['preteur-synthese']['sur-le-projet']?> <a href="<?=$this->lurl?>/projects/detail/<?=$this->projects->slug?>"><?=$this->projects->title?></a><?=$this->lng['preteur-synthese']['nest-plus-recevable']?></li><?
 										}
                                     }
                                     ?>
@@ -147,8 +147,8 @@
                                     foreach($this->lRembB as $r)
                                     {
 										$this->projects->get($r['id_project'],'id_project');
-										
-										?><li><?=$this->lng['preteur-synthese']['vous-venez-de-recevoir-un-remboursement-de']?> <b><?=number_format($r['amount']/100,2,',',' ')?></b><?=$this->lng['preteur-synthese']['pour-le-projet']?> <a href="<?=$this->lurl?>/projects/detail/<?=$this->projects->slug?>"><?=$this->projects->title?></a></li><?
+
+										?><li><?=$this->lng['preteur-synthese']['vous-venez-de-recevoir-un-remboursement-de']?> <b><?=$this->ficelle->formatNumber($r['amount']/100)?></b><?=$this->lng['preteur-synthese']['pour-le-projet']?> <a href="<?=$this->lurl?>/projects/detail/<?=$this->projects->slug?>"><?=$this->projects->title?></a></li><?
 									}
 									?>
                             	</ul>
@@ -171,11 +171,11 @@
 						<?=$this->fireView('../blocs/synthese-preteur-bloc-droit')?>
 					</div>
 
-					
+
 				</div>
 			</div>
 		</div>
-		
+
 <!--#include virtual="ssi-footer.shtml"  -->
 <script type="text/javascript">
 $('.chart-slider').carouFredSel({

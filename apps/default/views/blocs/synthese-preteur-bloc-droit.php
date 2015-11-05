@@ -1,7 +1,7 @@
 <div class="graphic-box le-bar-chart">
     <header>
         <h2><?= $this->lng['preteur-synthese']['synthese-de-vos-mouvement'] ?></h2>
-        <p><?= $this->lng['preteur-synthese']['montant-depose'] ?> : <strong><?= number_format($this->SumDepot, 2, ',', ' ') ?> €</strong></p>
+        <p><?= $this->lng['preteur-synthese']['montant-depose'] ?> : <strong><?= $this->ficelle->formatNumber($this->SumDepot) ?> €</strong></p>
     </header>
     <div class="body">
         <span id="titlePrete"><?= $this->lng['preteur-synthese']['argent-prete'] ?></span>
@@ -387,9 +387,9 @@
                             <li><i class="icon-target"></i><?= $this->lng['preteur-synthese']['couvert-a'] ?> <?= number_format($pourcentage, $decimalesPourcentage, ',', ' ') ?> %</li>
                             <?php
                             if ($CountEnchere > 0) {
-                                ?><li><i class="icon-graph-gray"></i><?= number_format($avgRate, 2, ',', ' ') ?> %</li><?php
+                                ?><li><i class="icon-graph-gray"></i><?= $this->ficelle->formatNumber($avgRate) ?> %</li><?php
                             } else {
-                                ?><li><i class="icon-graph-gray"></i><?= ($f['target_rate'] == '-' ? '-' : number_format($f['target_rate'], 2, ',', ' ') . ' %') ?></li><?php
+                                ?><li><i class="icon-graph-gray"></i><?= ($f['target_rate'] == '-' ? '-' : $this->ficelle->formatNumber($f['target_rate']) . ' %') ?></li><?php
                             }
                             ?>
                         </ul>

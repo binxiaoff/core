@@ -241,7 +241,7 @@
                     <tr>
                         <th><label for="montant">Montant du prêt* :</label></th>
                         <td>
-                            <input style="background-color:#AAACAC;" type="text" name="montant" id="montant" class="input_moy" value="<?= number_format($this->projects->amount, 2, ',', ' ') ?>"/> €
+                            <input style="background-color:#AAACAC;" type="text" name="montant" id="montant" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->amount) ?>"/> €
                         </td>
                     </tr>
                     <tr>
@@ -880,7 +880,7 @@
                     <tr>
                         <th><label for="montant_etape1">Montant :</label></th>
                         <td>
-                            <input type="text" name="montant_etape1" id="montant_etape1" class="input_moy" value="<?= number_format($this->projects->amount, 2, ',', ' ') ?>"/> €
+                            <input type="text" name="montant_etape1" id="montant_etape1" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->amount) ?>"/> €
                         </td>
 
                         <th><label for="duree_etape1">Durée du prêt :</label></th>
@@ -931,7 +931,7 @@
                     <tr>
                         <th><label for="capital_social_etape2">Capital social :</label></th>
                         <td>
-                            <input type="text" name="capital_social_etape2" id="capital_social_etape2" class="input_large" value="<?= number_format($this->companies->capital, 2, ',', ' ') ?>"/>
+                            <input type="text" name="capital_social_etape2" id="capital_social_etape2" class="input_large" value="<?= $this->ficelle->formatNumber($this->companies->capital) ?>"/>
                         </td>
                         <th><label for="creation_date_etape2">Date de création (jj/mm/aaaa):</label></th>
                         <td><input readonly="readonly" type="text" name="creation_date_etape2" id="creation_date_etape2" class="input_dp" value="<?= $this->dates->formatDate($this->companies->date_creation, 'd/m/Y') ?>"/></td>
@@ -1107,7 +1107,7 @@
                 <table class="form" style="width: 100%;">
                     <tr>
                         <th><label for="montant_etape3">Montant :</label></th>
-                        <td><input type="text" name="montant_etape3" id="montant_etape3" class="input_large" value="<?= number_format($this->projects->amount, 2, ',', ' ') ?>"/> €</td>
+                        <td><input type="text" name="montant_etape3" id="montant_etape3" class="input_large" value="<?= $this->ficelle->formatNumber($this->projects->amount) ?>"/> €</td>
 
                         <th><label for="duree_etape3">Durée du prêt :</label></th>
                         <td>
@@ -1246,7 +1246,7 @@
                                 for ($i = 0; $i < 5; $i++) {
                                     ?>
                                 <td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
-                                    <input name="ca_<?= $i ?>" id="ca_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['ca'] != false ? number_format($this->lbilans[$i]['ca'], 2, ',', ' ') : ''); ?>"/>
+                                    <input name="ca_<?= $i ?>" id="ca_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['ca'] != false ? $this->ficelle->formatNumber($this->lbilans[$i]['ca']) : ''); ?>"/>
                                     <input type="hidden" id="ca_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
                                     </td><?php
                                 }
@@ -1258,7 +1258,7 @@
                                 for ($i = 0; $i < 5; $i++) {
                                     ?>
                                 <td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
-                                    <input name="resultat_brute_exploitation_<?= $i ?>" id="resultat_brute_exploitation_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['resultat_brute_exploitation'] != false ? number_format($this->lbilans[$i]['resultat_brute_exploitation'], 2, ',', ' ') : ''); ?>"/>
+                                    <input name="resultat_brute_exploitation_<?= $i ?>" id="resultat_brute_exploitation_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['resultat_brute_exploitation'] != false ? $this->ficelle->formatNumber($this->lbilans[$i]['resultat_brute_exploitation']) : ''); ?>"/>
                                     <input type="hidden" id="resultat_brute_exploitation_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
                                     </td><?php
                                 }
@@ -1270,7 +1270,7 @@
                                 for ($i = 0; $i < 5; $i++) {
                                     ?>
                                 <td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
-                                    <input name="resultat_exploitation_<?= $i ?>" id="resultat_exploitation_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['resultat_exploitation'] != false ? number_format($this->lbilans[$i]['resultat_exploitation'], 2, ',', ' ') : ''); ?>"/>
+                                    <input name="resultat_exploitation_<?= $i ?>" id="resultat_exploitation_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['resultat_exploitation'] != false ? $this->ficelle->formatNumber($this->lbilans[$i]['resultat_exploitation']) : ''); ?>"/>
                                     <input type="hidden" id="resultat_exploitation_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
                                     </td><?php
                                 }
@@ -1282,7 +1282,7 @@
                                 for ($i = 0; $i < 5; $i++) {
                                     ?>
                                     <td <?= ($i < 3 ? 'class="grisfonceBG"' : '') ?>>
-                                        <input name="investissements_<?= $i ?>" id="investissements_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['investissements'] != false ? number_format($this->lbilans[$i]['investissements'], 2, ',', ' ') : ''); ?>"/>
+                                        <input name="investissements_<?= $i ?>" id="investissements_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['investissements'] != false ? $this->ficelle->formatNumber($this->lbilans[$i]['investissements']) : ''); ?>"/>
                                         <input type="hidden" id="investissements_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
                                     </td>
                                     <?php

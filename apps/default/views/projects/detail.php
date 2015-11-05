@@ -187,7 +187,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                     <th width="214">
                                         <span id="triAmount"><?= $this->lng['preteur-projets']['montant'] ?>
                                             <i class="icon-arrows"></i></span>
-                                        <small><?= $this->lng['preteur-projets']['montant-moyen'] ?> : <?= number_format($this->avgAmount / 100, 2, ',', ' ') ?> €</small>
+                                        <small><?= $this->lng['preteur-projets']['montant-moyen'] ?> : <?= $this->ficelle->formatNumber($this->avgAmount / 100) ?> €</small>
                                     </th>
                                     <th width="101">
                                         <span id="triStatuts"><?= $this->lng['preteur-projets']['statuts'] ?>
@@ -612,8 +612,8 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                 </p>
 
                                 <p>
-                                    <strong class="pinky-span"><?= number_format($this->sumRemb, 2, ',', ' ') ?> €</strong> <?= $this->lng['preteur-projets']['vous-ont-ete-rembourses-il-vous-reste'] ?>
-                                    <strong class="pinky-span"><?= number_format($this->sumRestanteARemb, 2, ',', ' ') ?> €</strong> <?= $this->lng['preteur-projets']['a-percevoir-sur-une-periode-de'] ?>
+                                    <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb) ?> €</strong> <?= $this->lng['preteur-projets']['vous-ont-ete-rembourses-il-vous-reste'] ?>
+                                    <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRestanteARemb) ?> €</strong> <?= $this->lng['preteur-projets']['a-percevoir-sur-une-periode-de'] ?>
                                     <strong class="pinky-span"><?= $this->nbPeriod ?> <?= $this->lng['preteur-projets']['mois'] ?></strong>
                                 </p>
                             </div>
@@ -1008,8 +1008,8 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                         <strong class="pinky-span"><?= number_format($this->bidsvalid['solde'], 0, ',', ' ') ?> €</strong>
                                     </p>
                                     <p>
-                                        <strong class="pinky-span"><?= number_format($this->sumRemb, 2, ',', ' ') ?> €</strong> <?= $this->lng['preteur-projets']['vous-ont-ete-rembourses-il-vous-reste'] ?>
-                                        <strong class="pinky-span"><?= number_format($this->sumRestanteARemb, 2, ',', ' ') ?> €</strong> <?= $this->lng['preteur-projets']['a-percevoir-sur-une-periode-de'] ?>
+                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb) ?> €</strong> <?= $this->lng['preteur-projets']['vous-ont-ete-rembourses-il-vous-reste'] ?>
+                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRestanteARemb) ?> €</strong> <?= $this->lng['preteur-projets']['a-percevoir-sur-une-periode-de'] ?>
                                         <strong class="pinky-span"><?= $this->nbPeriod ?> <?= $this->lng['preteur-projets']['mois'] ?></strong>
                                     </p>
                                 </div>

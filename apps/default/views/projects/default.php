@@ -4,7 +4,7 @@
         <div class="section-c section-c-desktop">
             <h2><?= $this->lng['preteur-projets']['decouvrez-les'] ?> <?= $this->nbProjects ?> <?= $this->lng['preteur-projets']['projets-en-cours'] ?></h2>
             <p><?= $this->lng['preteur-projets']['contenu'] ?></p>
-            <p><?= $this->lng['preteur-projets']['vous-avez-actuellement'] ?> <strong class="green-span"><?= number_format($this->solde, 2, ',', ' ') ?> €</strong> <?= $this->lng['preteur-projets']['de-disponible-sur-votre-compte-unilend'] ?>.</p>
+            <p><?= $this->lng['preteur-projets']['vous-avez-actuellement'] ?> <strong class="green-span"><?= $this->ficelle->formatNumber($this->solde) ?> €</strong> <?= $this->lng['preteur-projets']['de-disponible-sur-votre-compte-unilend'] ?>.</p>
             <form action="" method="post" id="form_tri" name="form_tri">
                 <div class="row clearfix">
                     <select name="temps" id="temps" class="custom-select field-almost-small">

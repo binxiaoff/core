@@ -211,7 +211,6 @@ class ajaxController extends bootstrap
     public function _ajoutProduitComp()
     {
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Chargement des datas
             $this->produits_crosseling = $this->loadData('produits_crosseling');
             $this->produits_elements   = $this->loadData('produits_elements');
             $this->produits            = $this->loadData('produits', array('url' => $this->url, 'surl' => $this->surl, 'produits_elements' => $this->produits_elements, 'upload' => $this->upload, 'spath' => $this->spath));
@@ -234,7 +233,6 @@ class ajaxController extends bootstrap
     public function _moveProduitComp()
     {
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Chargement des datas
             $this->produits_crosseling = $this->loadData('produits_crosseling');
             $this->produits_elements   = $this->loadData('produits_elements');
             $this->produits            = $this->loadData('produits', array('url' => $this->url, 'surl' => $this->surl, 'produits_elements' => $this->produits_elements, 'upload' => $this->upload, 'spath' => $this->spath));
@@ -258,7 +256,6 @@ class ajaxController extends bootstrap
     public function _deleteProduitComp()
     {
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Chargement des datas
             $this->produits_crosseling = $this->loadData('produits_crosseling');
             $this->produits_elements   = $this->loadData('produits_elements');
             $this->produits            = $this->loadData('produits', array('url' => $this->url, 'surl' => $this->surl, 'produits_elements' => $this->produits_elements, 'upload' => $this->upload, 'spath' => $this->spath));
@@ -281,7 +278,6 @@ class ajaxController extends bootstrap
     public function _deleteImageFicheProduit()
     {
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Chargement des datas
             $this->produits_images   = $this->loadData('produits_images');
             $this->produits_elements = $this->loadData('produits_elements');
             $this->produits          = $this->loadData('produits', array('url' => $this->url, 'surl' => $this->surl, 'produits_elements' => $this->produits_elements, 'upload' => $this->upload, 'spath' => $this->spath));
@@ -310,7 +306,6 @@ class ajaxController extends bootstrap
     public function _moveImageToFirstOne()
     {
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Chargement des datas
             $this->produits_images   = $this->loadData('produits_images');
             $this->produits_elements = $this->loadData('produits_elements');
             $this->produits          = $this->loadData('produits', array('url' => $this->url, 'surl' => $this->surl, 'produits_elements' => $this->produits_elements, 'upload' => $this->upload, 'spath' => $this->spath));
@@ -336,7 +331,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->current_projects_status = $this->loadData('projects_status');
 
@@ -350,7 +344,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->current_projects_status = $this->loadData('projects_status');
 
@@ -364,7 +357,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
@@ -627,7 +619,6 @@ class ajaxController extends bootstrap
                 if ($this->Config['env'] == 'prod') // nmp
                 {
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                    // Injection du mail NMP dans la queue
                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                 } else // non nmp
                 {
@@ -666,7 +657,6 @@ class ajaxController extends bootstrap
         $this->autoFireView = true;
 
         if (isset($_POST['content_memo']) && isset($_POST['id']) && isset($_POST['type'])) {
-            // Chargement des datas
             $this->projects_comments = $this->loadData('projects_comments');
 
             if ($_POST['type'] == 'edit') {
@@ -691,7 +681,6 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_project_comment']) && isset($_POST['id_project'])) {
-            // Chargement des datas
             $this->projects_comments = $this->loadData('projects_comments');
 
             // on supprime le memo
@@ -708,7 +697,6 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_project']) && isset($_POST['etape'])) {
-            // Chargement des datas
             $this->projects         = $this->loadData('projects');
             $this->companies        = $this->loadData('companies');
             $this->clients          = $this->loadData('clients');
@@ -836,7 +824,6 @@ class ajaxController extends bootstrap
                 $this->clients_adresses->update();
 
             } elseif ($_POST['etape'] == 3) {
-                // Chargement des datas
                 $this->projects = $this->loadData('projects');
 
                 // On recup le projet
@@ -852,7 +839,6 @@ class ajaxController extends bootstrap
 
                 $this->projects->update();
             } elseif ($_POST['etape'] == 4) {
-                // Chargement des datas
                 $this->projects          = $this->loadData('projects');
                 $this->companies_bilans  = $this->loadData('companies_bilans');
                 $this->companies_details = $this->loadData('companies_details');
@@ -958,7 +944,6 @@ class ajaxController extends bootstrap
             } elseif ($_POST['etape'] == 5) {
 
             } elseif ($_POST['etape'] == 6) {
-                // Chargement des datas
                 $this->projects = $this->loadData('projects');
 
                 // On recup le projet
@@ -979,7 +964,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement des datas
         $this->projects         = $this->loadData('projects');
         $this->companies        = $this->loadData('companies');
         $this->clients          = $this->loadData('clients');
@@ -1054,7 +1038,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->companies               = $this->loadData('companies');
         $this->clients                 = $this->loadData('clients');
@@ -1121,7 +1104,6 @@ class ajaxController extends bootstrap
             if ($this->Config['env'] == 'prod') // nmp
             {
                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                // Injection du mail NMP dans la queue
                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
             } else // non nmp
             {
@@ -1195,7 +1177,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement des datas
         $clients = $this->loadData('clients');
 
         if (isset($_POST['id_client']) && $clients->get($_POST['id_client'], 'id_client')) {
@@ -1243,7 +1224,6 @@ class ajaxController extends bootstrap
             if ($this->Config['env'] == 'prod') // nmp
             {
                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
-                // Injection du mail NMP dans la queue
                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
             } else // non nmp
             {
@@ -1327,7 +1307,6 @@ class ajaxController extends bootstrap
             if ($this->Config['env'] == 'prod') // nmp
             {
                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                // Injection du mail NMP dans la queue
                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
             } else // non nmp
             {
@@ -1655,8 +1634,8 @@ class ajaxController extends bootstrap
                     'surl'            => $this->surl,
                     'url'             => $this->furl,
                     'prenom_p'        => utf8_decode($clients->prenom),
-                    'fonds_depot'     => number_format($receptions->montant / 100, 2, ',', ' '),
-                    'solde_p'         => number_format($solde, 2, ',', ' '),
+                    'fonds_depot'     => $this->ficelle->formatNumber($receptions->montant / 100),
+                    'solde_p'         => $this->ficelle->formatNumber($solde),
                     'motif_virement'  => $motif,
                     'projets'         => $this->furl . '/projets-a-financer',
                     'gestion_alertes' => $this->furl . '/profile',
@@ -1667,7 +1646,7 @@ class ajaxController extends bootstrap
                 // Construction du tableau avec les balises EMV
                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                // Attribution des donnÃ©es aux variables
+                // Attribution des données aux variables
                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
@@ -1681,7 +1660,6 @@ class ajaxController extends bootstrap
                 if ($this->Config['env'] == 'prod') // nmp
                 {
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteurs->email, $tabFiler);
-                    // Injection du mail NMP dans la queue
                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                 } else // non nmp
                 {
@@ -1953,7 +1931,7 @@ class ajaxController extends bootstrap
             $bank_unilend->create();
 
             // mise a jour de receptions
-            $receptions->status_bo = 3; // rejetÃ©
+            $receptions->status_bo = 3; // rejeté
             $receptions->remb      = 0;
             $receptions->update();
 
@@ -1964,9 +1942,9 @@ class ajaxController extends bootstrap
             $newsum = $sumRemb;
             foreach ($eche as $e) {
                 $ordre = $e['ordre'];
-                // on rÃ©cup le montant que l'emprunteur doit rembourser
+                // on récup le montant que l'emprunteur doit rembourser
                 $montantDuMois = $echeanciers->getMontantRembEmprunteur($e['montant'] / 100, $e['commission'] / 100, $e['tva'] / 100);
-                // On verifie si le montant a remb est inferieur ou Ã©gale a la somme rÃ©cupÃ©rÃ©
+                // On verifie si le montant a remb est inferieur ou égale a la somme récupéré
                 if ($montantDuMois <= $newsum) {
                     // On met a jour les echeances du mois
                     $echeanciers->updateStatusEmprunteur($projects->id_project, $ordre, 'annuler');
@@ -1982,7 +1960,7 @@ class ajaxController extends bootstrap
                     if ($projects_remb->counter('id_project = "' . $projects->id_project . '" AND ordre = "' . $ordre . '" AND status = 0') > 0) {
 
                         $projects_remb->get($ordre, 'status = 0 AND id_project = "' . $projects->id_project . '" AND ordre');
-                        $projects_remb->status = 2; // rejetÃ©
+                        $projects_remb->status = 2; // rejeté
                         $projects_remb->update();
                     }
 
@@ -2085,103 +2063,40 @@ class ajaxController extends bootstrap
             $this->year = date('Y');
         }
 
-        // Recuperation du chiffre d'affaire sur les mois de l'année
-        $lCaParMois = $this->transactions->recupCAByMonthForAYear($this->year);
-
-        // Recuperation des virements emprunteurs
-        $lVirementsParMois = $this->transactions->recupVirmentEmprByMonthForAYear($this->year);
-
-        // Recuperation des remb emprunteurs
-        $lRembParMois = $this->transactions->recupRembEmprByMonthForAYear($this->year);
-
-
-        // Les CA pour les typrd Partenaires
-        /*foreach($this->lTypes as $part)
-        {
-            $lCaParMoisPart[$part['id_type']] = $this->transactions->recupCAByMonthForAYearType($this->year,$part['id_type']);
-        }*/
-
+        $lCaParMois          = $this->transactions->recupCAByMonthForAYear($this->year);
+        $lVirementsParMois   = $this->transactions->recupVirmentEmprByMonthForAYear($this->year);
+        $lRembParMois        = $this->transactions->recupRembEmprByMonthForAYear($this->year);
         $this->caParmoisPart = $this->transactions->recupMonthlyPartnershipTurnoverByYear($this->year);
 
-
         for ($i = 1; $i <= 12; $i++) {
-            $i                   = ($i < 10 ? '0' . $i : $i);
-            $this->caParmois[$i] = number_format(($lCaParMois[$i] != '' ? $lCaParMois[$i] : 0), 2, '.', '');
-
+            $i                          = ($i < 10 ? '0' . $i : $i);
+            $this->caParmois[$i]        = number_format(($lCaParMois[$i] != '' ? $lCaParMois[$i] : 0), 2, '.', '');
             $this->VirementsParmois[$i] = number_format(str_replace('-', '', ($lVirementsParMois[$i] != '' ? $lVirementsParMois[$i] : 0)), 2, '.', '');
-
-            $this->RembEmprParMois[$i] = number_format(($lRembParMois[$i] != '' ? $lRembParMois[$i] : 0), 2, '.', '');
-
-
-            /*
-            foreach($this->lTypes as $part)
-            {
-                $this->caParmoisPart[$part['id_type']][$i] = number_format(($lCaParMoisPart[$part['id_type']][$i] != ''?$lCaParMoisPart[$part['id_type']][$i]:0),2,'.','');
-            }
-            */
+            $this->RembEmprParMois[$i]  = number_format(($lRembParMois[$i] != '' ? $lRembParMois[$i] : 0), 2, '.', '');
         }
 
-
-        $this->month = date('m');
-        //$this->year = date('Y');
-
-        //////////////////
-
-        // nb preteurs connect
-        $this->nbPreteurLogin = $this->clients_history->getNb($this->month, $this->year, 'type = 1 AND status = 1', 1);
-
-
-        /*
-        // nb emprunteur connect
-        $this->nbEmprunteurLogin = $this->clients_history->getNb($this->month,$this->year,'type > 1 AND status = 1',1);
-
-        // nb depot dossier
-        $this->nbDepotDossier = $this->clients_history->getNb($this->month,$this->year,'type > 1 AND status = 3');
-
-        // nb inscription emprunteur
-        $this->nbInscriptionEmprunteur = $this->clients_history->getNb($this->month,$this->year,'type > 1 AND status = 2',1);
-
-
-        */
-        // nb inscription preteur
+        $this->month                = date('m');
+        $this->nbPreteurLogin       = $this->clients_history->getNb($this->month, $this->year, 'type = 1 AND status = 1', 1);
         $this->nbInscriptionPreteur = $this->clients_history->getNb($this->month, $this->year, 'type = 1 AND status = 2', 1);
+        $this->nbFondsDeposes       = $this->caParmois[$this->month];
+        $this->nbFondsPretes        = $this->bids->sumBidsMonth($this->month, $this->year);
+        $this->TotalCapitalRestant  = $this->echeanciers->getTotalSumRembByMonth($this->month, $this->year);
 
-
-        // fonds deposés
-        $this->nbFondsDeposes = $this->caParmois[$this->month];
-
-        // Fonds pretes
-        $this->nbFondsPretes = $this->bids->sumBidsMonth($this->month, $this->year);
-
-        // Total capital restant du mois
-        $this->TotalCapitalRestant = $this->echeanciers->getTotalSumRembByMonth($this->month, $this->year);
-
-
-        /////////////////
-
-        // Tous les projets du mois
         $nbProjects = $this->projects->counter('MONTH(added) = ' . $this->month . ' AND YEAR(added) = ' . $this->year);
-
-        $lProjects = $this->projects->select('MONTH(added) = ' . $this->month . ' AND YEAR(added) = ' . $this->year);
+        $lProjects  = $this->projects->select('MONTH(added) = ' . $this->month . ' AND YEAR(added) = ' . $this->year);
 
         // On recupere les projets valides
         $nbProjetValid = 0;
         foreach ($lProjects as $p) {
             $this->projects_status->getLastStatutByMonth($p['id_project'], $this->month, $this->year);
-            if ($this->projects_status->status > 30) // a partir de a funder
-            {
+            if ($this->projects_status->status >= \projects_status::A_FUNDER) {
                 $nbProjetValid += 1;
             }
-
         }
 
-        // ratio Projets
-        $this->ratioProjects = @($nbProjetValid / $nbProjects) * 100;
-
-        // moyenne des depots de fonds preteur
+        $this->ratioProjects      = @($nbProjetValid / $nbProjects) * 100;
         $this->moyenneDepotsFonds = $this->transactions->avgDepotPreteurByMonth($this->month, $this->year);
 
-        // total retrait argent
         $TotalRetrait = $this->transactions->sumByMonth(8, $this->month, $this->year);
         $TotalRetrait = str_replace('-', '', $TotalRetrait);
 
@@ -2215,15 +2130,12 @@ class ajaxController extends bootstrap
         } else {
             $this->tauxAttrition = 0;
         }
-
-        /////////////////////
     }
 
     public function _check_status_dossierV2()
     {
         $this->autoFireView = false;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->projects_notes          = $this->loadData('projects_notes');
         $this->projects_status         = $this->loadData('projects_status');
@@ -2478,13 +2390,10 @@ class ajaxController extends bootstrap
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] == 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
@@ -2497,18 +2406,15 @@ class ajaxController extends bootstrap
             } else {
                 echo 'nok';
             }
-
         } else {
             echo 'nok';
         }
     }
 
-
     public function _valid_rejete_etape6()
     {
         $this->autoFireView = false;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
@@ -2517,8 +2423,6 @@ class ajaxController extends bootstrap
         $this->clients                 = $this->loadData('clients');
         $this->clients_history         = $this->loadData('clients_history');
 
-
-        // on check si on a les posts
         if (isset($_POST['status']) && isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $form_ok = true;
             if ($_POST['status'] == 1) {
@@ -2570,33 +2474,24 @@ class ajaxController extends bootstrap
                     $update = false;
                 }
 
-                $this->projects_notes->structure   = number_format($_POST['structure'], 1, '.', '');
-                $this->projects_notes->rentabilite = number_format($_POST['rentabilite'], 1, '.', '');
-                $this->projects_notes->tresorerie  = number_format($_POST['tresorerie'], 1, '.', '');
-
-                $this->projects_notes->individuel = number_format($_POST['individuel'], 1, '.', '');
-                $this->projects_notes->global     = number_format($_POST['global'], 1, '.', '');
-
+                $this->projects_notes->structure                       = number_format($_POST['structure'], 1, '.', '');
+                $this->projects_notes->rentabilite                     = number_format($_POST['rentabilite'], 1, '.', '');
+                $this->projects_notes->tresorerie                      = number_format($_POST['tresorerie'], 1, '.', '');
+                $this->projects_notes->individuel                      = number_format($_POST['individuel'], 1, '.', '');
+                $this->projects_notes->global                          = number_format($_POST['global'], 1, '.', '');
                 $this->projects_notes->performance_fianciere           = number_format($_POST['performance_fianciere'], 1, '.', '');
                 $this->projects_notes->marche_opere                    = number_format($_POST['marche_opere'], 1, '.', '');
                 $this->projects_notes->qualite_moyen_infos_financieres = number_format($_POST['qualite_moyen_infos_financieres'], 1, '.', '');
                 $this->projects_notes->notation_externe                = number_format($_POST['notation_externe'], 1, '.', '');
+                $this->projects_notes->note                            = round(($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1), 1);
+                $this->projects_notes->avis                            = $_POST['avis'];
 
-
-                $moyenne1 = (($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1));
-
-
-                $this->projects_notes->note = round($moyenne1, 1);
-                $this->projects_notes->avis = $_POST['avis'];
-
-                // on enregistre
                 if ($update == true) {
                     $this->projects_notes->update();
                 } else {
                     $this->projects_notes->id_project = $this->projects->id_project;
                     $this->projects_notes->create();
                 }
-
 
                 // validé (comité)
                 if ($_POST['status'] == 1) {
@@ -2613,12 +2508,9 @@ class ajaxController extends bootstrap
 
                     $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
 
-
-                    // FB
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
 
-                    // Twitter
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
@@ -2646,13 +2538,10 @@ class ajaxController extends bootstrap
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] == 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
@@ -2661,7 +2550,6 @@ class ajaxController extends bootstrap
                     $this->clients->status = 0;
                     $this->clients->update();
                 }
-
 
                 //on recup le statut courant
                 $this->current_projects_status = $this->loadData('projects_status');
@@ -2824,7 +2712,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->projects_notes          = $this->loadData('projects_notes');
         $this->projects_status         = $this->loadData('projects_status');
@@ -2892,39 +2779,25 @@ class ajaxController extends bootstrap
                     $update = false;
                 }
 
-                $this->projects_notes->structure   = number_format($_POST['structure'], 1, '.', '');
-                $this->projects_notes->rentabilite = number_format($_POST['rentabilite'], 1, '.', '');
-                $this->projects_notes->tresorerie  = number_format($_POST['tresorerie'], 1, '.', '');
-
-                $this->projects_notes->individuel = number_format($_POST['individuel'], 1, '.', '');
-                $this->projects_notes->global     = number_format($_POST['global'], 1, '.', '');
-
+                $this->projects_notes->structure                       = number_format($_POST['structure'], 1, '.', '');
+                $this->projects_notes->rentabilite                     = number_format($_POST['rentabilite'], 1, '.', '');
+                $this->projects_notes->tresorerie                      = number_format($_POST['tresorerie'], 1, '.', '');
+                $this->projects_notes->individuel                      = number_format($_POST['individuel'], 1, '.', '');
+                $this->projects_notes->global                          = number_format($_POST['global'], 1, '.', '');
                 $this->projects_notes->performance_fianciere           = number_format($_POST['performance_fianciere'], 1, '.', '');
                 $this->projects_notes->marche_opere                    = number_format($_POST['marche_opere'], 1, '.', '');
                 $this->projects_notes->qualite_moyen_infos_financieres = number_format($_POST['qualite_moyen_infos_financieres'], 1, '.', '');
                 $this->projects_notes->notation_externe                = number_format($_POST['notation_externe'], 1, '.', '');
+                $this->projects_notes->note                            = round(($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1), 1);
+                $this->projects_notes->avis_comite                     = $_POST['avis_comite'];
 
-
-                $moyenne1 = (($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1));
-
-
-                $this->projects_notes->note = round($moyenne1, 1);
-
-
-                /*$note = round($moyenne1,0);
-                $lNotes = array(
-                '10' => 'A',
-                '9' => 'B',
-                '8' => 'C',
-                '7' => 'D',
-                '6' => 'E',
-                '5' => 'F',
-                '4' => 'G',
-                '3' => 'H',
-                '2' => 'I',
-                '1' => 'J');
-
-                $this->projects->risk = $lNotes[$note];*/
+                // on enregistre
+                if ($update == true) {
+                    $this->projects_notes->update();
+                } else {
+                    $this->projects_notes->id_project = $this->projects->id_project;
+                    $this->projects_notes->create();
+                }
 
                 // etoiles
                 // A = 5
@@ -2938,38 +2811,23 @@ class ajaxController extends bootstrap
                 // I = 1
                 // J = 0
 
-
-                if ($moyenne1 >= 0 && $moyenne1 < 2) {
+                if ($this->projects_notes->note >= 0 && $this->projects_notes->note < 2) {
                     $lettre = 'I';
-                } // H 1.5
-                elseif ($moyenne1 >= 2 && $moyenne1 < 4) {
+                } elseif ($this->projects_notes->note >= 2 && $this->projects_notes->note < 4) {
                     $lettre = 'G';
-                } // F 2.5
-                elseif ($moyenne1 >= 4 && $moyenne1 < 5.5) {
+                } elseif ($this->projects_notes->note >= 4 && $this->projects_notes->note < 5.5) {
                     $lettre = 'E';
-                } elseif ($moyenne1 >= 5.5 && $moyenne1 < 6.5) {
+                } elseif ($this->projects_notes->note >= 5.5 && $this->projects_notes->note < 6.5) {
                     $lettre = 'D';
-                } elseif ($moyenne1 >= 6.5 && $moyenne1 < 7.5) {
+                } elseif ($this->projects_notes->note >= 6.5 && $this->projects_notes->note < 7.5) {
                     $lettre = 'C';
-                } elseif ($moyenne1 >= 7.5 && $moyenne1 < 8.5) {
+                } elseif ($this->projects_notes->note >= 7.5 && $this->projects_notes->note < 8.5) {
                     $lettre = 'B';
-                } elseif ($moyenne1 >= 8.5 && $moyenne1 <= 10) {
+                } elseif ($this->projects_notes->note >= 8.5 && $this->projects_notes->note <= 10) {
                     $lettre = 'A';
                 }
 
                 $this->projects->risk = $lettre;
-
-                //$this->projects->note = number_format($this->projects->note, 1, '.', '');
-                $this->projects_notes->avis_comite = $_POST['avis_comite'];
-
-                // on enregistre
-                if ($update == true) {
-                    $this->projects_notes->update();
-                } else {
-                    $this->projects_notes->id_project = $this->projects->id_project;
-                    $this->projects_notes->create();
-                }
-
                 $this->projects->update();
 
                 $btn_etape6 = '';
@@ -2997,8 +2855,6 @@ class ajaxController extends bootstrap
                         </select>
                         </td>
                     ';
-
-
                 } // rejetéC
                 elseif ($_POST['status'] == 2) {
                     // on maj le statut
@@ -3010,12 +2866,9 @@ class ajaxController extends bootstrap
 
                     $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
 
-
-                    // FB
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
 
-                    // Twitter
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
@@ -3043,14 +2896,10 @@ class ajaxController extends bootstrap
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] == 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-
-                        // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }

@@ -389,9 +389,9 @@ class cronController extends bootstrap
                         'url'                    => $url,
                         'prenom_e'               => $e->prenom,
                         'nom_e'                  => $companie->name,
-                        'mensualite'             => number_format($mensualite, 2, ',', ' '),
+                        'mensualite'             => $this->ficelle->formatNumber($mensualite),
                         'montant'                => number_format($project->amount, 0, ',', ' '),
-                        'taux_moyen'             => number_format($taux_moyen, 2, ',', ' '),
+                        'taux_moyen'             => $this->ficelle->formatNumber($taux_moyen),
                         'link_compte_emprunteur' => $this->lurl . '/projects/detail/' . $project->id_project,
                         'link_mandat'            => $link_mandat,
                         'link_pouvoir'           => $link_pouvoir,
@@ -496,8 +496,8 @@ class cronController extends bootstrap
                         $url = $this->lurl;
                         $prenom = $preteur->prenom;
                         $projet = $this->projects->title;
-                        $montant_pret = number_format($l['amount'] / 100, 2, ',', ' ');
-                        $taux = number_format($l['rate'], 2, ',', ' ');
+                        $montant_pret = $this->ficelle->formatNumber($l['amount'] / 100);
+                        $taux = $this->ficelle->formatNumber($l['rate']);
                         $entreprise = $companies->name;
                         $date = $this->dates->formatDate($l['added'], 'd/m/Y');
                         $heure = $this->dates->formatDate($l['added'], 'H');
@@ -510,11 +510,11 @@ class cronController extends bootstrap
                             'surl'           => $this->surl,
                             'url'            => $this->lurl,
                             'prenom_p'       => $preteur->prenom,
-                            'valeur_bid'     => number_format($l['amount'] / 100, 2, ',', ' '),
-                            'taux_bid'       => number_format($l['rate'], 2, ',', ' '),
+                            'valeur_bid'     => $this->ficelle->formatNumber($l['amount'] / 100),
+                            'taux_bid'       => $this->ficelle->formatNumber($l['rate']),
                             'nom_entreprise' => $companies->name,
                             'nbre_echeance'  => $this->projects->period,
-                            'mensualite_p'   => number_format($lecheancier['montant'] / 100, 2, ',', ' '),
+                            'mensualite_p'   => $this->ficelle->formatNumber($lecheancier['montant'] / 100),
                             'date_debut'     => date('d', $timeAdd) . ' ' . strtolower($month) . ' ' . date('Y', $timeAdd),
                             'compte-p'       => $this->lurl,
                             'projet-p'       => $this->lurl . '/projects/detail/' . $this->projects->slug,
@@ -681,8 +681,8 @@ class cronController extends bootstrap
                             'prenom_p'              => $this->clients->prenom,
                             'entreprise'            => $this->companies->name,
                             'projet'                => $this->projects->title,
-                            'montant'               => number_format($e['amount'] / 100, 2, ',', ' '),
-                            'proposition_pret'      => number_format(($e['amount'] / 100), 2, ',', ' '),
+                            'montant'               => $this->ficelle->formatNumber($e['amount'] / 100),
+                            'proposition_pret'      => $this->ficelle->formatNumber(($e['amount'] / 100)),
                             'date_proposition_pret' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
                             'taux_proposition_pret' => $e['rate'],
                             'compte-p'              => '/projets-a-financer',
@@ -1149,9 +1149,9 @@ class cronController extends bootstrap
                                 'surl'              => $this->surl,
                                 'url'               => $this->furl,
                                 'prenom_p'          => $preteur->prenom,
-                                'valeur_bid'        => number_format($l['amount'] / 100, 2, ',', ' '),
+                                'valeur_bid'        => $this->ficelle->formatNumber($l['amount'] / 100),
                                 'nom_entreprise'    => $companies->name,
-                                'montant_rembourse' => number_format($rembNet, 2, ',', ' '),
+                                'montant_rembourse' => $this->ficelle->formatNumber($rembNet),
                                 'cab_recouvrement'  => $ca_recou,
                                 'motif_virement'    => $motif,
                                 'lien_fb'           => $lien_fb,
@@ -2797,8 +2797,8 @@ class cronController extends bootstrap
                                                     'surl'            => $this->surl,
                                                     'url'             => $this->lurl,
                                                     'prenom_p'        => utf8_decode($clients->prenom),
-                                                    'fonds_depot'     => number_format($receptions->montant / 100, 2, ',', ' '),
-                                                    'solde_p'         => number_format($solde, 2, ',', ' '),
+                                                    'fonds_depot'     => $this->ficelle->formatNumber($receptions->montant / 100),
+                                                    'solde_p'         => $this->ficelle->formatNumber($solde),
                                                     'motif_virement'  => $returnMotif,
                                                     'projets'         => $this->lurl . '/projets-a-financer',
                                                     'gestion_alertes' => $this->lurl . '/profile',
@@ -3134,12 +3134,12 @@ class cronController extends bootstrap
 			</tr>
 			<tr>
 				<td colspan="18">Début du mois</td>
-                <td class="right">' . number_format($soldeDeLaVeille, 2, ',', ' ') . '</td>
-                <td class="right">' . number_format($soldeReel, 2, ',', ' ') . '</td>
-                <td class="right">' . number_format($oldecart, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($soldePromotion_old, 2, ',', ' ') . '</td>
-                <td class="right">' . number_format($soldeSFFPME_old, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($soldeAdminFiscal_old, 2, ',', ' ') . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($soldeDeLaVeille) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($soldeReel) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($oldecart) . '</td>
+				<td class="right">' . $this->ficelle->formatNumber($soldePromotion_old) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($soldeSFFPME_old) . '</td>
+				<td class="right">' . $this->ficelle->formatNumber($soldeAdminFiscal_old) . '</td>
 				<td colspan="10">&nbsp;</td>
 			</tr>';
 
@@ -3353,42 +3353,42 @@ class cronController extends bootstrap
                     $tableau .= '
 				<tr>
 					<td class="dates">' . (strlen($key) < 2 ? '0' : '') . $key . '/' . $lemoisLannee2 . '</td>
-                    <td class="right">' . number_format($alimCB[$date]['montant'], 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($alimVirement[$date]['montant'], 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($alimPrelevement[$date]['montant'], 2, ',', ' ') . '</td>
-					<td class="right">' . number_format($unilend_bienvenue[$date]['montant'], 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($leRembEmprunteur, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format(str_replace('-', '', $virementEmprunteur[$date]['montant']), 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($virementEmprunteur[$date]['montant_unilend'], 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($commission, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($prelevements_obligatoires, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($retenues_source, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($csg, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($prelevements_sociaux, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($contributions_additionnelles, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($prelevements_solidarite, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($crds, 2, ',', ' ') . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($alimCB[$date]['montant']) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($alimVirement[$date]['montant']) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($alimPrelevement[$date]['montant']) . '</td>
+					<td class="right">' . $this->ficelle->formatNumber($unilend_bienvenue[$date]['montant']) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($leRembEmprunteur) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber(str_replace('-', '', $virementEmprunteur[$date]['montant'])) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($virementEmprunteur[$date]['montant_unilend']) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($commission) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($prelevements_obligatoires) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($retenues_source) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($csg) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($prelevements_sociaux) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($contributions_additionnelles) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($prelevements_solidarite) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($crds) . '</td>
 
-                    <td class="right">' . number_format(str_replace('-', '', $retraitPreteur[$date]['montant']), 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($sommeMouvements, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($soldeTheorique, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($leSoldeReel, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format(round($ecartSoldes, 2), 2, ',', ' ') . '</td>
-					<td class="right">' . number_format($soldePromotion, 2, ',', ' ') . '</td>
-					<td class="right">' . number_format($soldeSFFPME, 2, ',', ' ') . '</td>
-					<td class="right">' . number_format($soldeAdminFiscal, 2, ',', ' ') . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber(str_replace('-', '', $retraitPreteur[$date]['montant'])) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($sommeMouvements) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($soldeTheorique) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($leSoldeReel) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber(round($ecartSoldes, 2)) . '</td>
+					<td class="right">' . $this->ficelle->formatNumber($soldePromotion) . '</td>
+					<td class="right">' . $this->ficelle->formatNumber($soldeSFFPME) . '</td>
+					<td class="right">' . $this->ficelle->formatNumber($soldeAdminFiscal) . '</td>
 
-					<td class="right">' . number_format($offrePromo, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($octroi_pret, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($capitalPreteur, 2, ',', ' ') . '</td>
-                   	<td class="right">' . number_format($interetNetPreteur, 2, ',', ' ') . '</td>
-					<td class="right">' . number_format($affectationEchEmpr, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($ecartMouvInternes, 2, ',', ' ') . '</td>
+					<td class="right">' . $this->ficelle->formatNumber($offrePromo) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($octroi_pret) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($capitalPreteur) . '</td>
+                   	<td class="right">' . $this->ficelle->formatNumber($interetNetPreteur) . '</td>
+					<td class="right">' . $this->ficelle->formatNumber($affectationEchEmpr) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($ecartMouvInternes) . '</td>
 
-                    <td class="right">' . number_format($virementsOK, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($virementsAttente, 2, ',', ' ') . '</td>
-					<td class="right">' . number_format($adminFiscalVir, 2, ',', ' ') . '</td>
-                    <td class="right">' . number_format($sommePrelev, 2, ',', ' ') . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($virementsOK) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($virementsAttente) . '</td>
+					<td class="right">' . $this->ficelle->formatNumber($adminFiscalVir) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($sommePrelev) . '</td>
 				</tr>';
                 } else {
                     $tableau .= '
@@ -3437,41 +3437,41 @@ class cronController extends bootstrap
 			</tr>
             <tr>
 				<th>Total mois</th>
-                <th class="right">' . number_format($totalAlimCB, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalAlimVirement, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalAlimPrelevement, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalVirementUnilend_bienvenue, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalRembEmprunteur, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalVirementEmprunteur, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalVirementCommissionUnilendEmprunteur, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalCommission, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalPrelevements_obligatoires, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalRetenues_source, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalCsg, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalPrelevements_sociaux, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalContributions_additionnelles, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalPrelevements_solidarite, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalCrds, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format(str_replace('-', '', $totalRetraitPreteur), 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalSommeMouvements, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalNewsoldeDeLaVeille, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalNewSoldeReel, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format(round($totalEcartSoldes, 2), 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalSoldePromotion, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalSoldeSFFPME, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalSoldeAdminFiscal, 2, ',', ' ') . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalAlimCB) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalAlimVirement) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalAlimPrelevement) . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($totalVirementUnilend_bienvenue) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalRembEmprunteur) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalVirementEmprunteur) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalVirementCommissionUnilendEmprunteur) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalCommission) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalPrelevements_obligatoires) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalRetenues_source) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalCsg) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalPrelevements_sociaux) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalContributions_additionnelles) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalPrelevements_solidarite) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalCrds) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber(str_replace('-', '', $totalRetraitPreteur)) . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($totalSommeMouvements) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalNewsoldeDeLaVeille) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalNewSoldeReel) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber(round($totalEcartSoldes, 2)) . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($totalSoldePromotion) . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($totalSoldeSFFPME) . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($totalSoldeAdminFiscal) . '</th>
 
-				<th class="right">' . number_format($totalOffrePromo, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalOctroi_pret, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalCapitalPreteur, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalInteretNetPreteur, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalAffectationEchEmpr, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalEcartMouvInternes, 2, ',', ' ') . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($totalOffrePromo) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalOctroi_pret) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalCapitalPreteur) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalInteretNetPreteur) . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($totalAffectationEchEmpr) . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($totalEcartMouvInternes) . '</th>
 
-                <th class="right">' . number_format($totalVirementsOK, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totalVirementsAttente, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalAdminFiscalVir, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($totaladdsommePrelev, 2, ',', ' ') . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalVirementsOK) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalVirementsAttente) . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($totalAdminFiscalVir) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totaladdsommePrelev) . '</th>
 			</tr>
 		</table>';
 
@@ -3661,12 +3661,12 @@ class cronController extends bootstrap
 			</tr>
 			<tr>
 				<td colspan="18">Début d\'année</td>
-                <td class="right">' . number_format($soldeDeLaVeille, 2, ',', ' ') . '</td>
-                <td class="right">' . number_format($soldeReel, 2, ',', ' ') . '</td>
-                <td class="right">' . number_format($oldecart, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($soldePromotion_old, 2, ',', ' ') . '</td>
-                <td class="right">' . number_format($soldeSFFPME_old, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($soldeAdminFiscal_old, 2, ',', ' ') . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($soldeDeLaVeille) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($soldeReel) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($oldecart) . '</td>
+				<td class="right">' . $this->ficelle->formatNumber($soldePromotion_old) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($soldeSFFPME_old) . '</td>
+				<td class="right">' . $this->ficelle->formatNumber($soldeAdminFiscal_old) . '</td>
 
 				<td colspan="10">&nbsp;</td>
 			</tr>';
@@ -3786,42 +3786,42 @@ class cronController extends bootstrap
 
                 if ($lemois != false) {
                     $tableau .= '
-						<td class="right">' . number_format($lemois['totalAlimCB'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalAlimVirement'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalAlimPrelevement'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalVirementUnilend_bienvenue'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalRembEmprunteur'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalVirementEmprunteur'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalVirementCommissionUnilendEmprunteur'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalCommission'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalPrelevements_obligatoires'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalRetenues_source'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalCsg'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalPrelevements_sociaux'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalContributions_additionnelles'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalPrelevements_solidarite'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalCrds'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format(str_replace('-', '', $lemois['totalRetraitPreteur']), 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalSommeMouvements'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalNewsoldeDeLaVeille'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalNewSoldeReel'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalEcartSoldes'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalSoldePromotion'], 2, ',', ' ') . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalAlimCB']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalAlimVirement']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalAlimPrelevement']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalVirementUnilend_bienvenue']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalRembEmprunteur']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalVirementEmprunteur']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalVirementCommissionUnilendEmprunteur']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalCommission']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalPrelevements_obligatoires']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalRetenues_source']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalCsg']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalPrelevements_sociaux']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalContributions_additionnelles']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalPrelevements_solidarite']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalCrds']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber(str_replace('-', '', $lemois['totalRetraitPreteur'])) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalSommeMouvements']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalNewsoldeDeLaVeille']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalNewSoldeReel']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalEcartSoldes']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalSoldePromotion']) . '</td>
 
-						<td class="right">' . number_format($lemois['totalSoldeSFFPME'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalSoldeAdminFiscal'], 2, ',', ' ') . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalSoldeSFFPME']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalSoldeAdminFiscal']) . '</td>
 
-						<td class="right">' . number_format($lemois['totalOffrePromo'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalOctroi_pret'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalCapitalPreteur'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalInteretNetPreteur'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalAffectationEchEmpr'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalEcartMouvInternes'], 2, ',', ' ') . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalOffrePromo']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalOctroi_pret']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalCapitalPreteur']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalInteretNetPreteur']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalAffectationEchEmpr']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalEcartMouvInternes']) . '</td>
 
-						<td class="right">' . number_format($lemois['totalVirementsOK'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalVirementsAttente'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalAdminFiscalVir'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totaladdsommePrelev'], 2, ',', ' ') . '</td>';
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalVirementsOK']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalVirementsAttente']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totalAdminFiscalVir']) . '</td>
+						<td class="right">' . $this->ficelle->formatNumber($lemois['totaladdsommePrelev']) . '</td>';
                 } else {
                     $tableau .= '
 						<td>&nbsp;</td>
@@ -3867,41 +3867,41 @@ class cronController extends bootstrap
             <tr>
 				<th>Total année</th>
 
-				<th class="right">' . number_format($sommetotalAlimCB, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalAlimVirement, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalAlimPrelevement, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($sommetotalVirementUnilend_bienvenue, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalRembEmprunteur, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalVirementEmprunteur, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalVirementCommissionUnilendEmprunteur, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalCommission, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalPrelevements_obligatoires, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalRetenues_source, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalCsg, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalPrelevements_sociaux, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalContributions_additionnelles, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalPrelevements_solidarite, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalCrds, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format(str_replace('-', '', $sommetotalRetraitPreteur), 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalSommeMouvements, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalNewsoldeDeLaVeille, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalNewSoldeReel, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalEcartSoldes, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($sommetotalSoldePromotion, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($sommetotalSoldeSFFPME, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($sommetotalSoldeAdminFiscal, 2, ',', ' ') . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($sommetotalAlimCB) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalAlimVirement) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalAlimPrelevement) . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($sommetotalVirementUnilend_bienvenue) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalRembEmprunteur) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalVirementEmprunteur) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalVirementCommissionUnilendEmprunteur) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalCommission) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalPrelevements_obligatoires) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalRetenues_source) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalCsg) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalPrelevements_sociaux) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalContributions_additionnelles) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalPrelevements_solidarite) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalCrds) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber(str_replace('-', '', $sommetotalRetraitPreteur)) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalSommeMouvements) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalNewsoldeDeLaVeille) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalNewSoldeReel) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalEcartSoldes) . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($sommetotalSoldePromotion) . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($sommetotalSoldeSFFPME) . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($sommetotalSoldeAdminFiscal) . '</th>
 
-				<th class="right">' . number_format($sommetotalOffrePromo, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalOctroi_pret, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalCapitalPreteur, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalInteretNetPreteur, 2, ',', ' ') . '</th>
-				 <th class="right">' . number_format($sommetotalAffectationEchEmpr, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalEcartMouvInternes, 2, ',', ' ') . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($sommetotalOffrePromo) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalOctroi_pret) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalCapitalPreteur) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalInteretNetPreteur) . '</th>
+				 <th class="right">' . $this->ficelle->formatNumber($sommetotalAffectationEchEmpr) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalEcartMouvInternes) . '</th>
 
-                <th class="right">' . number_format($sommetotalVirementsOK, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotalVirementsAttente, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($sommetotalAdminFiscalVir, 2, ',', ' ') . '</th>
-                <th class="right">' . number_format($sommetotaladdsommePrelev, 2, ',', ' ') . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalVirementsOK) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalVirementsAttente) . '</th>
+				<th class="right">' . $this->ficelle->formatNumber($sommetotalAdminFiscalVir) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotaladdsommePrelev) . '</th>
 
             </tr>
 
@@ -4275,21 +4275,21 @@ class cronController extends bootstrap
             </tr>
 			<tr>
 				<th style="background-color:#E6F4DA;">Soumis au prélèvement</th>
-				<td class="right">' . number_format($PhysiqueNoExoInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($lesPrelevSurPhysiqueNoExo, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($prelevements_obligatoires, 2, ',', ' ') . '%</td>
+				<td class="right">' . $this->ficelle->formatNumber($PhysiqueNoExoInte) . '</td>
+				<td class="right">' . $this->ficelle->formatNumber($lesPrelevSurPhysiqueNoExo) . '</td>
+				<td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($prelevements_obligatoires) . '%</td>
 			</tr>
 			<tr>
 				<th style="background-color:#E6F4DA;">Dispensé</th>
-				<td class="right">' . number_format($PhysiqueExoInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($lesPrelevSurPhysiqueExo, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format(0, 2, ',', ' ') . '%</td>
+				<td class="right">' . $this->ficelle->formatNumber($PhysiqueExoInte) . '</td>
+				<td class="right">' . $this->ficelle->formatNumber($lesPrelevSurPhysiqueExo) . '</td>
+				<td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber(0) . '%</td>
 			</tr>
 			<tr>
 				<th style="background-color:#E6F4DA;">Total</th>
-				<td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($lesPrelevSurPhysique, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($prelevements_obligatoires, 2, ',', ' ') . '%</td>
+				<td class="right">' . $this->ficelle->formatNumber($PhysiqueInte) . '</td>
+				<td class="right">' . $this->ficelle->formatNumber($lesPrelevSurPhysique) . '</td>
+				<td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($prelevements_obligatoires) . '%</td>
 			</tr>
 
 			<tr>
@@ -4297,9 +4297,9 @@ class cronController extends bootstrap
             </tr>
 			<tr>
 				<th style="background-color:#E6F4DA;">Retenue à la source</th>
-				<td class="right">' . number_format($InteRetenuSoucre, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($prelevementRetenuSoucre, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($tauxRetenuSoucre, 2, ',', ' ') . '%</td>
+				<td class="right">' . $this->ficelle->formatNumber($InteRetenuSoucre) . '</td>
+				<td class="right">' . $this->ficelle->formatNumber($prelevementRetenuSoucre) . '</td>
+				<td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($tauxRetenuSoucre) . '%</td>
 			</tr>
 
 			<tr>
@@ -4307,33 +4307,33 @@ class cronController extends bootstrap
             </tr>
 			<tr>
 				<th style="background-color:#E6F4DA;">CSG</th>
-				<td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($csg, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($txcsg, 2, ',', ' ') . '%</td>
+				<td class="right">' . $this->ficelle->formatNumber($PhysiqueInte) . '</td>
+				<td class="right">' . $this->ficelle->formatNumber($csg) . '</td>
+				<td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($txcsg) . '%</td>
 			</tr>
 			<tr>
 				<th style="background-color:#E6F4DA;">Prélèvement social</th>
-				<td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($prelevements_sociaux, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($txprelevements_sociaux, 2, ',', ' ') . '%</td>
+				<td class="right">' . $this->ficelle->formatNumber($PhysiqueInte) . '</td>
+				<td class="right">' . $this->ficelle->formatNumber($prelevements_sociaux) . '</td>
+				<td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($txprelevements_sociaux) . '%</td>
 			</tr>
 			<tr>
 				<th style="background-color:#E6F4DA;">Contribution additionnelle</th>
-				<td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($contributions_additionnelles, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($txcontributions_additionnelles, 2, ',', ' ') . '%</td>
+				<td class="right">' . $this->ficelle->formatNumber($PhysiqueInte) . '</td>
+				<td class="right">' . $this->ficelle->formatNumber($contributions_additionnelles) . '</td>
+				<td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($txcontributions_additionnelles) . '%</td>
 			</tr>
 			<tr>
 				<th style="background-color:#E6F4DA;">Prélèvement de solidarité</th>
-				<td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($prelevements_solidarite, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($txprelevements_solidarite, 2, ',', ' ') . '%</td>
+				<td class="right">' . $this->ficelle->formatNumber($PhysiqueInte) . '</td>
+				<td class="right">' . $this->ficelle->formatNumber($prelevements_solidarite) . '</td>
+				<td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($txprelevements_solidarite) . '%</td>
 			</tr>
 			<tr>
 				<th style="background-color:#E6F4DA;">CRDS</th>
-				<td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($crds, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($txcrds, 2, ',', ' ') . '%</td>
+				<td class="right">' . $this->ficelle->formatNumber($PhysiqueInte) . '</td>
+				<td class="right">' . $this->ficelle->formatNumber($crds) . '</td>
+				<td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($txcrds) . '%</td>
 			</tr>
         </table>
 		';
@@ -4906,7 +4906,7 @@ class cronController extends bootstrap
                                     $montantBas += ($b['amount'] / 100);
                                 }
                                 $taux_moyen = ($montantHaut / $montantBas);
-                                $taux_moyen = number_format($taux_moyen, 2, ',', ' ');
+                                $taux_moyen = $this->ficelle->formatNumber($taux_moyen);
 
                                 $varMail = array(
                                     'surl'                   => $this->surl,
@@ -5108,8 +5108,8 @@ class cronController extends bootstrap
                                 'surl'           => $this->surl,
                                 'url'            => $this->lurl,
                                 'prenom_p'       => $this->preteur->prenom,
-                                'valeur_bid'     => number_format($e['amount'] / 100, 2, ',', ' '),
-                                'taux_bid'       => number_format($e['rate'], 2, ',', ' '),
+                                'valeur_bid'     => $this->ficelle->formatNumber($e['amount'] / 100),
+                                'taux_bid'       => $this->ficelle->formatNumber($e['rate']),
                                 'nom_entreprise' => $this->companies->name,
                                 'projet-p'       => $this->lurl . '/projects/detail/' . $this->projects->slug,
                                 'date_bid'       => date('d', $timedate_bid) . ' ' . $month . ' ' . date('Y', $timedate_bid),
@@ -6406,7 +6406,7 @@ class cronController extends bootstrap
 								<tr style="color:#b20066;">
 									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->bids->amount / 100), 0, ',', ' ') . ' &euro;</td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->bids->rate, 2, ',', ' ') . ' %</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->bids->rate) . ' %</td>
 								</tr>
 								<tr>
 									<td style="height:25px;border-top:1px solid #727272;color: #727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
@@ -6419,7 +6419,7 @@ class cronController extends bootstrap
 								<tr style="color:#b20066;">
 									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->bids->amount / 100), 0, ',', ' ') . ' &euro;</td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->bids->rate, 2, ',', ' ') . ' %</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->bids->rate) . ' %</td>
 								</tr>';
                             }
                             $i++;
@@ -6565,7 +6565,7 @@ class cronController extends bootstrap
 							<tr style="color:#b20066;">
 								<td  style="height:25px; font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
 								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->notifications->amount / 100), 0, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->bids->rate, 2, ',', ' ') . ' %</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->bids->rate) . ' %</td>
 							</tr>
 							<tr>
 								<td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
@@ -6578,7 +6578,7 @@ class cronController extends bootstrap
 							<tr style="color:#b20066;">
 								<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
 								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->notifications->amount / 100), 0, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->bids->rate, 2, ',', ' ') . ' %</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->bids->rate) . ' %</td>
 							</tr>';
                         }
                         $i++;
@@ -6732,7 +6732,7 @@ class cronController extends bootstrap
 								<tr style="color:#b20066;">
 									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->loans->amount / 100), 0, ',', ' ') . ' €</td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->loans->rate, 2, ',', ' ') . ' %</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
 								</tr>
 								<tr>
 									<td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
@@ -6745,7 +6745,7 @@ class cronController extends bootstrap
 								<tr style="color:#b20066;">
 									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->loans->amount / 100), 0, ',', ' ') . ' €</td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->loans->rate, 2, ',', ' ') . ' %</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
 								</tr>';
                             }
                             $i++;
@@ -6940,9 +6940,9 @@ class cronController extends bootstrap
                             $sumInt = $this->echeanciers->getSumRembByloan_remb_ra($this->transactions->id_loan_remb, 'interets');
 
                             $contenu_remboursement_anticipe = "
-                            Important : le remboursement de <span style='color: #b20066;'>" . number_format(($this->echeanciers->capital / 100), 2, ',', ' ') . "&euro;</span> correspond au remboursement total du capital restant dû de votre prêt à <span style='color: #b20066;'>" . $this->companies->name . "</span>. Comme le prévoient les règles d'Unilend, <span style='color: #b20066;'>" . $this->companies->name . "</span> a choisi de rembourser son emprunt par anticipation sans frais.
+                            Important : le remboursement de <span style='color: #b20066;'>" . $this->ficelle->formatNumber(($this->echeanciers->capital / 100)) . "&euro;</span> correspond au remboursement total du capital restant dû de votre prêt à <span style='color: #b20066;'>" . $this->companies->name . "</span>. Comme le prévoient les règles d'Unilend, <span style='color: #b20066;'>" . $this->companies->name . "</span> a choisi de rembourser son emprunt par anticipation sans frais.
                             <br /><br />
-                            Depuis l’origine, il vous a versé <span style='color: #b20066;'>" . number_format($sumInt, 2, ',', ' ') . "€</span> d’intérêts soit un taux d’intérêt annualisé moyen de <span style='color: #b20066;'>" . number_format($AvgLoans, 2, ',', ' ') . "%.</span><br><br> ";
+                            Depuis l’origine, il vous a versé <span style='color: #b20066;'>" . $this->ficelle->formatNumber($sumInt, 2, ',', ' ') . "€</span> d’intérêts soit un taux d’intérêt annualisé moyen de <span style='color: #b20066;'>" . number_format($AvgLoans) . "%.</span><br><br> ";
 
                         } else {
                             $this->echeanciers->get($this->transactions->id_echeancier, 'id_echeancier');
@@ -6958,24 +6958,24 @@ class cronController extends bootstrap
                             $liste_remb .= '
 							<tr style="color:#b20066;">
 								<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->echeanciers->capital / 100), 2, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->echeanciers->interets / 100), 2, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format((($this->echeanciers->interets / 100) - $totalFiscal), 2, ',', ' ') . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->echeanciers->capital / 100)) . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->echeanciers->interets / 100)) . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber((($this->echeanciers->interets / 100) - $totalFiscal)) . ' &euro;</td>
 							</tr>
 							<tr>
 								<td style="height:25px;font-family:Arial;font-size:14px;border-top:1px solid #727272;color:#727272;">Total</td>
-								<td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . number_format($totalcapital, 2, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . number_format($totalinterets, 2, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . number_format($totalinteretsNet, 2, ',', ' ') . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($totalcapital) . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($totalinterets) . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($totalinteretsNet) . ' &euro;</td>
 							</tr>
 							';
                         } else {
                             $liste_remb .= '
 							<tr style="color:#b20066;">
 								<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->echeanciers->capital / 100), 2, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->echeanciers->interets / 100), 2, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format((($this->echeanciers->interets / 100) - $totalFiscal), 2, ',', ' ') . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->echeanciers->capital / 100)) . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->echeanciers->interets / 100)) . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber((($this->echeanciers->interets / 100) - $totalFiscal)) . ' &euro;</td>
 							</tr>';
                         }
                         $i++;
@@ -7030,7 +7030,7 @@ class cronController extends bootstrap
                         'liste_offres'           => $liste_remb,
                         'motif_virement'         => $motif,
                         'gestion_alertes'        => $this->lurl . '/profile',
-                        'montant_dispo'          => number_format($getsolde, 2, ',', ' '),
+                        'montant_dispo'          => $this->ficelle->formatNumber($getsolde),
                         'remboursement_anticipe' => $contenu_remboursement_anticipe,
                         'contenu'                => $lecontenu,
                         'sujet'                  => $sujet,
@@ -7313,7 +7313,7 @@ class cronController extends bootstrap
                         } else {
                             $euros = ' euro';
                         }
-                        $rembNetEmail = number_format($rembNet, 2, ',', ' ') . $euros;
+                        $rembNetEmail = $this->ficelle->formatNumber($rembNet) . $euros;
 
                         $getsolde = $transactions->getSolde($clients->id_client);
                         if ($getsolde > 1) {
@@ -7321,7 +7321,7 @@ class cronController extends bootstrap
                         } else {
                             $euros = ' euro';
                         }
-                        $solde = number_format($getsolde, 2, ',', ' ') . $euros;
+                        $solde = $this->ficelle->formatNumber($getsolde) . $euros;
 
                         $this->settings->get('Facebook', 'type');
                         $lien_fb = $this->settings->value;
@@ -7538,7 +7538,7 @@ class cronController extends bootstrap
                                 'surl'            => $this->surl,
                                 'url'             => $this->furl,
                                 'prenom'          => $emprunteur->prenom,
-                                'pret'            => number_format($projects->amount, 2, ',', ' '),
+                                'pret'            => $this->ficelle->formatNumber($projects->amount),
                                 'entreprise'      => stripslashes(trim($companies->name)),
                                 'projet-title'    => $projects->title,
                                 'compte-p'        => $this->furl,
@@ -8010,12 +8010,12 @@ class cronController extends bootstrap
                                 'prenom_p'             => $this->clients->prenom,
                                 'nomproject'           => $this->projects->title,
                                 'nom_entreprise'       => $this->companies->name,
-                                'taux_bid'             => number_format($loans->rate, 2, ',', ' '),
+                                'taux_bid'             => $this->ficelle->formatNumber($loans->rate),
                                 'nbecheancesrestantes' => $sum_ech_restant,
-                                'interetsdejaverses'   => number_format($this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status_ra = 0 AND status = 1 AND id_lender =' . $preteur['id_lender'], 'interets'), 2, ',', ' '),
-                                'crdpreteur'           => number_format($reste_a_payer_pour_preteur, 2, ',', ' ') . (($reste_a_payer_pour_preteur >= 2) ? ' euros' : ' euro'),
+                                'interetsdejaverses'   => $this->ficelle->formatNumber($this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status_ra = 0 AND status = 1 AND id_lender =' . $preteur['id_lender'], 'interets')),
+                                'crdpreteur'           => $this->ficelle->formatNumber($reste_a_payer_pour_preteur) . (($reste_a_payer_pour_preteur >= 2) ? ' euros' : ' euro'),
                                 'Datera'               => date('d/m/Y'),
-                                'solde_p'              => number_format($getsolde, 2, ',', ' ') . (($getsolde >= 2) ? ' euros' : ' euro'),
+                                'solde_p'              => $this->ficelle->formatNumber($getsolde) . (($getsolde >= 2) ? ' euros' : ' euro'),
                                 'motif_virement'       => $motif,
                                 'lien_fb'              => $lien_fb,
                                 'lien_tw'              => $lien_tw
