@@ -65,7 +65,7 @@
     <div>
         <h2>Portefeuille</h2>
 
-        <h3>TRI du portefeuille : <?=$this->TRI?></h3>
+        <h3>TRI du portefeuille : <?=$this->TRI?> % </h3>
 
         <h3>Nombre de projets à probleme dans le portefeuille :  <?=$this->problProjects?></h3>
         <h3>Nombre de projets total dans le portefeuille : <?=$this->totalProjects?></h3>
@@ -131,7 +131,7 @@
                         ?>
                            <td>
                                <?
-                               if($this->projects_status->status >=80)
+                               if($this->projects_status->status >=projects_status::REMBOURSEMENT)
                                {
                                ?>
                                <a href="<?=$this->lurl.'/preteurs/contratPdf/'.$this->clients->hash.'/'.$l['id_loan_if_one_loan']?>">Contrat PDF</a><br>

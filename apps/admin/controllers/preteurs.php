@@ -4,7 +4,7 @@ class preteursController extends bootstrap
 {
     var $Command;
 
-    function preteursController($command, $config, $app)
+    public function preteursController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
@@ -46,7 +46,7 @@ class preteursController extends bootstrap
 
     }
 
-    function _default()
+    public function _default()
     {
         // On remonte la page dans l'arborescence
         if (isset($this->params[0]) && $this->params[0] == 'up') {
@@ -77,7 +77,7 @@ class preteursController extends bootstrap
         }
     }
 
-    function _gestion()
+    public function _gestion()
     {
 //On appelle la fonction de chargement des données
         $this->loadGestionData();
@@ -197,7 +197,7 @@ class preteursController extends bootstrap
         $this->x = $this->clients->counter('status_inscription_preteur = 1  AND status_pre_emp IN(1,3)');
     }
 
-    function _search()
+    public function _search()
     {
         // On affiche les Head, header et footer originaux plus le debug
         $this->autoFireHeader = true;
@@ -209,7 +209,7 @@ class preteursController extends bootstrap
         $_SESSION['request_url'] = $this->url;
     }
 
-    function _search_non_inscripts()
+    public function _search_non_inscripts()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -221,7 +221,7 @@ class preteursController extends bootstrap
         $_SESSION['request_url'] = $this->url;
     }
 
-    function _edit()
+    public function _edit()
     {
         //On appelle la fonction de chargement des données
         $this->loadGestionData();
@@ -325,7 +325,7 @@ class preteursController extends bootstrap
 
     }
 
-    function _edit_preteur()
+    public function _edit_preteur()
     {
         //On appelle la fonction de chargement des données
         $this->loadGestionData();
@@ -1245,7 +1245,7 @@ class preteursController extends bootstrap
 
     }
 
-    function _liste_preteurs_non_inscrits()
+    public function _liste_preteurs_non_inscrits()
     {
         //On appelle la fonction de chargement des donnÃ©es
         $this->loadGestionData();
@@ -1347,7 +1347,7 @@ class preteursController extends bootstrap
     }
 
     // Activation des comptes prêteurs
-    function _activation()
+    public function _activation()
     {
         //On appelle la fonction de chargement des donnÃ©es
         $this->loadGestionData();
@@ -1683,7 +1683,7 @@ class preteursController extends bootstrap
 
     }
 
-    function _completude()
+    public function _completude()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -1695,7 +1695,7 @@ class preteursController extends bootstrap
         $_SESSION['request_url'] = $this->url;
     }
 
-    function _completude_preview()
+    public function _completude_preview()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -1717,7 +1717,7 @@ class preteursController extends bootstrap
 
     }
 
-    function _completude_preview_iframe()
+    public function _completude_preview_iframe()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -1777,7 +1777,7 @@ class preteursController extends bootstrap
         die;
     }
 
-    function _offres_de_bienvenue()
+    public function _offres_de_bienvenue()
     {
         $offres_bienvenues         = $this->loadData('offres_bienvenues');
         $offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
@@ -1874,7 +1874,7 @@ class preteursController extends bootstrap
 
     }
 
-    function _letest()
+    public function _letest()
     {
 
         die;
@@ -1882,7 +1882,7 @@ class preteursController extends bootstrap
         die;
     }
 
-    function _script_rattrapage_offre_bienvenue()
+    public function _script_rattrapage_offre_bienvenue()
     {
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
@@ -1927,7 +1927,7 @@ class preteursController extends bootstrap
     }
 
     // OFFRE DE BIENVENUE
-    function create_offre_bienvenue_sans_date_de_fin($id_client)
+    public function create_offre_bienvenue_sans_date_de_fin($id_client)
     {
 
         $this->clients = $this->loadData('clients');
@@ -2064,7 +2064,7 @@ class preteursController extends bootstrap
     }
 
     // OFFRE DE BIENVENUE
-    function create_offre_bienvenue($id_client)
+    public function create_offre_bienvenue($id_client)
     {
 
         $this->clients = $this->loadData('clients');
@@ -2354,7 +2354,7 @@ class preteursController extends bootstrap
         //PORTFOLIO DETAILS
 
         //TRI
-        $this->TRI = $this->calculTRI();
+        $this->TRI = $this->lenders_accounts->calculTRI($this->projects_status);
 
         //amount of projects online since his registration
         $statusOk                = array(projects_status::A_FUNDER, projects_status::EN_FUNDING, projects_status::REMBOURSEMENT, projects_status::PRET_REFUSE);
@@ -2362,7 +2362,7 @@ class preteursController extends bootstrap
 
 
         //Number of problematic projects in his wallet
-        $statusKo            = array(projects_status::PROBLEME, projects_status::RECOUVREMENT);
+        $statusKo            = array(projects_status::PROBLEME, projects_status::RECOUVREMENT, projects_status::PROBLEME_J_PLUS_X);
         $this->problProjects = $this->projects->countProjectsByStatusAndLender($this->lenders_accounts->id_lender_account, $statusKo);
 
         //Total number of projects in his wallet
@@ -2370,13 +2370,6 @@ class preteursController extends bootstrap
 
     }
 
-    private function calculTRI()
-    {
-        $valuesTRI = $this->lenders_accounts->getValuesforTRI($this->lenders_accounts->id_lender_account);
-
-        $oFinancial = new \PHPExcel_Calculation_Financial();
-        return round($oFinancial->XIRR(array_values($valuesTRI), array_keys($valuesTRI)) * 100, 2);
-    }
 
     public function _contratPdf()
     {

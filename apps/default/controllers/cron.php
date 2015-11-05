@@ -8239,4 +8239,43 @@ class cronController extends bootstrap
         $oLogger->addRecord(ULogger::INFO, 'Send to dataloader type ' . $sType . ' in ' . round($iTimeEndDataloader, 2),
             array(__FILE__ . ' on line ' . __LINE__));
     }
+
+
+    /**
+     * Function to calculate the TRI for each lender on a regular basis
+     * Given the amount of lenders and the time and resources needed for calculation
+     * it does one iteration par day on 400 account
+     */
+    public function _calculateTriForAllLenders()
+    {
+        $this->startCron('Controle cron LendersStats', 30);
+        set_time_limit (2000);
+
+        $oLenders_accounts = $this->loadData('lenders_accounts');
+        $oLenders_account_stats = $this->loadData('lenders_account_stats');
+        $oProjectStatus = $this->loadData('projects_status');
+
+        $oDateTime = new DateTime('NOW');
+        $iTimeStart = microtime(true);
+
+        $aLenders_accounts = $oLenders_accounts->selectLendersForTRI(1000);
+
+        foreach($aLenders_accounts as $aLender){
+
+            $sXIRR = $oLenders_accounts->calculTRI($oProjectStatus, $aLender['id_lender_account']);
+            $oLenders_account_stats->id_lender = $aLender['id_lender_account'];
+            $oLenders_account_stats->tri_date = $oDateTime->format('Y-m-d H:i:s');
+            $oLenders_account_stats->tri_value = $sXIRR;
+
+            $oLenders_account_stats->create();
+
+            if (false === empty($sXIRR)) {
+                $this->oLogger->addRecord(ULogger::INFO, 'Temps calcul TRI : ' . round(microtime(true) - $iTimeStart, 2));
+            }
+
+        } // end foreach lenders accounts
+
+        $this->stopCron();
+    }
+
 }
