@@ -200,7 +200,7 @@ class lenders_accounts extends lenders_accounts_crud
         return $result;
     }
 
-    public function getLendersToMatchCP($iLimit = '', $iOffset = '')
+    public function getLendersToMatchCity($iLimit = '', $iOffset = '')
     {
         $iOffset = $this->bdd->escape_string($iOffset);
         $iLimit  = $this->bdd->escape_string($iLimit);
@@ -215,10 +215,45 @@ class lenders_accounts extends lenders_accounts_crud
             $sLimit = 'LIMIT ' . $iLimit;
         }
 
-        $sql = 'SELECT ca.*
+        $sql = 'SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, ca.cp_fiscal, ca.ville_fiscal
                 FROM clients_adresses ca
+                INNER JOIN clients c ON ca.id_client = c.id_client
                 INNER JOIN lenders_accounts la ON la.id_client_owner = ca.id_client
-                WHERE NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp)' . ' ' . $sLimit. ' '. $sOffset;
+                WHERE c.status = 1
+                AND (
+                  NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp_fiscal)
+                  OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1
+                ) ' . $sLimit. ' '. $sOffset;
+
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
+
+    public function getLendersToMatchBirthCity($iLimit = '', $iOffset = '')
+    {
+        $iOffset = $this->bdd->escape_string($iOffset);
+        $iLimit  = $this->bdd->escape_string($iLimit);
+
+        $sOffset = '';
+        if ('' !== $iOffset) {
+            $sOffset = 'OFFSET ' . $iOffset;
+        }
+
+        $sLimit = '';
+        if ('' !== $iLimit) {
+            $sLimit = 'LIMIT ' . $iLimit;
+        }
+
+        $sql = 'SELECT c.id_client, c.prenom, c.nom, c.ville_naissance
+                FROM clients c
+                INNER JOIN lenders_accounts la ON la.id_client_owner = c.id_client
+                WHERE c.status = 1
+                AND c.insee_birth = ""
+                ' . $sLimit. ' '. $sOffset;
 
         $resultat = $this->bdd->query($sql);
         $result   = array();

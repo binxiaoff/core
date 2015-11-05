@@ -262,7 +262,7 @@ function initAutocompleteCity(elmCity, elmCode)
 
 			search: function( event, ui ) {
 				if ($(this).data('autocomplete') == 'birth_city'){
-					$("#insee_birth").val('');
+					elmCode.val('');
 				}
 			},
 
