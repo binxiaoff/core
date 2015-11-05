@@ -1,6 +1,6 @@
 <div class="main">
     <div class="shell">
-        <p class="introduction"><?php printf($this->lng['etape2']['contenu'], $this->projects->amount, $this->iAverageFundingDuration); ?></p>
+        <p class="introduction"><?php printf($this->lng['etape2']['contenu'], $this->ficelle->formatNumber($this->projects->amount), $this->iAverageFundingDuration); ?></p>
         <div class="register-form">
             <form action="<?= $_SERVER['REQUEST_URI'] ?>" method="post" id="form_depot_dossier" name="form_depot_dossier" enctype="multipart/form-data">
                 <div class="row">
@@ -137,7 +137,7 @@
                 <div class="row">
                     <table>
                         <tr>
-                            <td style="vertical-align:middle;"><label for="duree"><?php printf($this->lng['etape2']['choisir-duree-de-remboursement'], $this->projects->amount); ?> &nbsp;</label></td>
+                            <td style="vertical-align:middle;"><label for="duree"><?php printf($this->lng['etape2']['choisir-duree-de-remboursement'], $this->ficelle->formatNumber($this->projects->amount)); ?> &nbsp;</label></td>
                             <td>
                                 <select name="duree" id="duree" class="field field-small required custom-select">
                                     <option value="0"><?= $this->lng['etape1']['duree'] ?></option>

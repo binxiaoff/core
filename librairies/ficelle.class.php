@@ -453,6 +453,6 @@ class ficelle
      */
     public function formatNumber($fNumber)
     {
-        return $this->ficelle->formatNumber($fNumber);
+        return number_format($fNumber, 2, ',', ' ');
     }
 }
