@@ -448,11 +448,15 @@ class ficelle
     /**
      * Format numbers to make them readable
      * @todo intl
-     * @param $fNumber
+     * @param float $fNumber
+     * @param integer $iDecimals
      * @return string
      */
-    public function formatNumber($fNumber)
+    public function formatNumber($fNumber, $iDecimals = null)
     {
-        return number_format($fNumber, 2, ',', ' ');
+        if (is_null($iDecimals)) {
+            $iDecimals = 2;
+        }
+        return number_format($fNumber, $iDecimals, ',', ' ');
     }
 }
