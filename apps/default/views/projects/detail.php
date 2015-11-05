@@ -139,7 +139,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                 <li>
                                     <span class="i-holder"><i class="icon-graph tooltip-anchor" data-placement="right" data-original-title="<?= $this->lng['preteur-projets']['info-taux-moyen'] ?>"></i></span>
                                     <?php if ($this->CountEnchere > 0) { ?>
-                                        <span><?= number_format(($this->projects_status->status == 60 || $this->projects_status->status >= 80) ? $this->AvgLoans : $this->avgRate, 1, ',', ' ') . ' %' ?></span>
+                                        <span><?= $this->ficelle->formatNumber(($this->projects_status->status == 60 || $this->projects_status->status >= 80) ? $this->AvgLoans : $this->avgRate, 1) . ' %' ?></span>
                                     <?php } else { ?>
                                         <span><?= $this->projects->target_rate . ($this->projects->target_rate == '-' ? '' : ' %') ?></span>
                                     <?php } ?>
@@ -182,7 +182,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                     <th width="180">
                                         <span id="triTx"><?= $this->lng['preteur-projets']['taux-dinteret'] ?>
                                             <i class="icon-arrows"></i></span>
-                                        <small><?= $this->lng['preteur-projets']['taux-moyen'] ?> : <?= number_format($this->avgRate, 1, ',', ' ') ?> %</small>
+                                        <small><?= $this->lng['preteur-projets']['taux-moyen'] ?> : <?= $this->ficelle->formatNumber($this->avgRate, 1) ?> %</small>
                                     </th>
                                     <th width="214">
                                         <span id="triAmount"><?= $this->lng['preteur-projets']['montant'] ?>
@@ -206,8 +206,8 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                 ?>
                                 <tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
                                     <td><?= ($vous == true ? '<span class="enchereVous">' . $this->lng['preteur-projets']['vous'] . ' : &nbsp;&nbsp;&nbsp;' . $e['ordre'] . '</span>' : $e['ordre']) ?></td>
-                                    <td><?= number_format($e['rate'], 1, ',', ' ') ?> %</td>
-                                    <td><?= number_format($e['amount'] / 100, 0, ',', ' ') ?> €</td>
+                                    <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
+                                    <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
                                     <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
                                 </tr><?
                                 }
@@ -221,8 +221,8 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                 ?>
                                 <tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
                                     <td><?= ($vous == true ? '<span class="enchereVous">' . $this->lng['preteur-projets']['vous'] . ' : &nbsp;&nbsp;&nbsp;' . $e['ordre'] . '</span>' : $e['ordre']) ?></td>
-                                    <td><?= number_format($e['rate'], 1, ',', ' ') ?> %</td>
-                                    <td><?= number_format($e['amount'] / 100, 0, ',', ' ') ?> €</td>
+                                    <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
+                                    <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
                                     <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
                                 </tr><?
                                 }
@@ -379,7 +379,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                         for ($i = 1;
                                         $i <= 3;
                                         $i++) {
-                                        echo '<td class="sameSize" style="text-align:right;">' . number_format($this->lBilans[$this->anneeToday[$i]]['ca'], 0, ',', ' ') . ' €</td>';
+                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['ca'], 0) . ' €</td>';
                                         }
                                         ?>
                                     </tr>
@@ -389,7 +389,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                         for ($i = 1;
                                         $i <= 3;
                                         $i++) {
-                                        echo '<td class="sameSize" style="text-align:right;">' . number_format($this->lBilans[$this->anneeToday[$i]]['resultat_brute_exploitation'], 0, ',', ' ') . ' €</td>';
+                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['resultat_brute_exploitation'], 0) . ' €</td>';
                                         }
                                         ?>
                                     </tr>
@@ -399,7 +399,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                         for ($i = 1;
                                         $i <= 3;
                                         $i++) {
-                                        echo '<td class="sameSize" style="text-align:right;">' . number_format($this->lBilans[$this->anneeToday[$i]]['resultat_exploitation'], 0, ',', ' ') . ' €</td>';
+                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['resultat_exploitation'], 0) . ' €</td>';
                                         }
                                         ?>
                                     </tr>
@@ -409,7 +409,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                         for ($i = 1;
                                         $i <= 3;
                                         $i++) {
-                                        echo '<td class="sameSize" style="text-align:right;">' . number_format($this->lBilans[$this->anneeToday[$i]]['investissements'], 0, ',', ' ') . ' €</td>';
+                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['investissements'], 0) . ' €</td>';
                                         }
                                         ?>
                                     </tr>
@@ -433,7 +433,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['immobilisations_corporelles'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_corporelles'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -443,7 +443,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['immobilisations_incorporelles'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_incorporelles'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -453,7 +453,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['immobilisations_financieres'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_financieres'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -463,7 +463,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['stocks'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['stocks'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -473,7 +473,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['creances_clients'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['creances_clients'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -483,7 +483,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['disponibilites'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['disponibilites'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -493,7 +493,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['valeurs_mobilieres_de_placement'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['valeurs_mobilieres_de_placement'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -504,7 +504,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 1;
                                                     $i <= 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->totalAnneeActif[$i], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->totalAnneeActif[$i], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -523,7 +523,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['capitaux_propres'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['capitaux_propres'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -533,7 +533,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['provisions_pour_risques_et_charges'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['provisions_pour_risques_et_charges'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -543,7 +543,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['amortissement_sur_immo'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['amortissement_sur_immo'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -553,7 +553,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['dettes_financieres'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['dettes_financieres'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -563,7 +563,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['dettes_fournisseurs'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['dettes_fournisseurs'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -573,7 +573,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['autres_dettes'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['autres_dettes'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -583,7 +583,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 1;
                                                     $i <= 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->totalAnneePassif[$i], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->totalAnneePassif[$i], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -608,7 +608,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                         <div class="tab">
                             <div class="article">
                                 <p><?= $this->lng['preteur-projets']['vous-avez-prete'] ?>
-                                    <strong class="pinky-span"><?= number_format($this->bidsvalid['solde'], 0, ',', ' ') ?> €</strong>
+                                    <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->bidsvalid['solde'], 0) ?> €</strong>
                                 </p>
 
                                 <p>
@@ -653,7 +653,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
             <div class="single-project-stats">
                 <h2>
                     <i class="ico-pig"></i>
-                    <?= number_format($this->projects->amount, 0, ',', ' ') ?> €
+                    <?= $this->ficelle->formatNumber($this->projects->amount, 0) ?> €
                 </h2>
                 <ul>
                     <li>
@@ -669,7 +669,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                     <li>
                         <i class="ico-chart"></i>
                         <?php if ($this->CountEnchere > 0) { ?>
-                            <span><?= number_format(($this->projects_status->status == 60 || $this->projects_status->status >= 80) ? $this->AvgLoans : $this->avgRate, 1, ',', ' ') . ' %' ?></span>
+                            <span><?= $this->ficelle->formatNumber(($this->projects_status->status == 60 || $this->projects_status->status >= 80) ? $this->AvgLoans : $this->avgRate, 1) . ' %' ?></span>
                         <?php } else { ?>
                             <span><?= $this->projects->target_rate . ($this->projects->target_rate == '-' ? '' : ' %') ?></span>
                         <?php } ?>
@@ -782,7 +782,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                         for ($i = 1;
                                         $i <= 3;
                                         $i++) {
-                                        echo '<td class="sameSize" style="text-align:right;">' . number_format($this->lBilans[$this->anneeToday[$i]]['ca'], 0, ',', ' ') . ' €</td>';
+                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['ca'], 0) . ' €</td>';
                                         }
                                         ?>
                                     </tr>
@@ -792,7 +792,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                         for ($i = 1;
                                         $i <= 3;
                                         $i++) {
-                                        echo '<td class="sameSize" style="text-align:right;">' . number_format($this->lBilans[$this->anneeToday[$i]]['resultat_brute_exploitation'], 0, ',', ' ') . ' €</td>';
+                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['resultat_brute_exploitation'], 0) . ' €</td>';
                                         }
                                         ?>
                                     </tr>
@@ -802,7 +802,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                         for ($i = 1;
                                         $i <= 3;
                                         $i++) {
-                                        echo '<td class="sameSize" style="text-align:right;">' . number_format($this->lBilans[$this->anneeToday[$i]]['resultat_exploitation'], 0, ',', ' ') . ' €</td>';
+                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['resultat_exploitation'], 0) . ' €</td>';
                                         }
                                         ?>
                                     </tr>
@@ -812,7 +812,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                         for ($i = 1;
                                         $i <= 3;
                                         $i++) {
-                                        echo '<td class="sameSize" style="text-align:right;">' . number_format($this->lBilans[$this->anneeToday[$i]]['investissements'], 0, ',', ' ') . ' €</td>';
+                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['investissements'], 0) . ' €</td>';
                                         }
                                         ?>
                                     </tr>
@@ -831,7 +831,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['immobilisations_corporelles'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_corporelles'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -841,7 +841,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['immobilisations_incorporelles'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_incorporelles'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -851,7 +851,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['immobilisations_financieres'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_financieres'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -861,7 +861,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['stocks'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['stocks'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -871,7 +871,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['creances_clients'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['creances_clients'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -881,7 +881,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['disponibilites'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['disponibilites'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -891,7 +891,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['valeurs_mobilieres_de_placement'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['valeurs_mobilieres_de_placement'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -902,7 +902,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 1;
                                                     $i <= 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->totalAnneeActif[$i], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->totalAnneeActif[$i], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -921,7 +921,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['capitaux_propres'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['capitaux_propres'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -931,7 +931,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['provisions_pour_risques_et_charges'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['provisions_pour_risques_et_charges'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -941,7 +941,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['amortissement_sur_immo'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['amortissement_sur_immo'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -951,7 +951,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['dettes_financieres'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['dettes_financieres'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -961,7 +961,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['dettes_fournisseurs'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['dettes_fournisseurs'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -971,7 +971,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 0;
                                                     $i < 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->listAP[$i]['autres_dettes'], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['autres_dettes'], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -981,7 +981,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                                                     for ($i = 1;
                                                     $i <= 3;
                                                     $i++) {
-                                                    echo '<td class="sameSize" style="text-align:right;">' . number_format($this->totalAnneePassif[$i], 0, ',', ' ') . ' €</td>';
+                                                    echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->totalAnneePassif[$i], 0) . ' €</td>';
                                                     }
                                                     ?>
                                                 </tr>
@@ -1005,7 +1005,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                             <div class="tab">
                                 <div class="article">
                                     <p><?= $this->lng['preteur-projets']['vous-avez-prete'] ?>
-                                        <strong class="pinky-span"><?= number_format($this->bidsvalid['solde'], 0, ',', ' ') ?> €</strong>
+                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->bidsvalid['solde'], 0) ?> €</strong>
                                     </p>
                                     <p>
                                         <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb) ?> €</strong> <?= $this->lng['preteur-projets']['vous-ont-ete-rembourses-il-vous-reste'] ?>

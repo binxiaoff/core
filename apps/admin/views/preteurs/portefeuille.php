@@ -186,7 +186,7 @@
                                             <tr style="background-color: #e3e4e5; color: black;">
                                                 <td style="text-align: right; background-color: #e3e4e5; color: black;">Détail loan</td>
                                                 <td style="text-align: right; background-color: #e3e4e5; color: black;"></td>
-                                                <td style="background-color: #e3e4e5; color: black;"><?=number_format($loan['amount']/100, 0, ',', ' ')?> €</td>
+                                                <td style="background-color: #e3e4e5; color: black;"><?=$this->ficelle->formatNumber($loan['amount']/100, 0)?> €</td>
                                                 <td style="background-color: #e3e4e5; color: black;"><?=$this->ficelle->formatNumber($loan['rate'])?>%</td>
                                                 <td style="text-align: right; background-color: #e3e4e5; color: black;"></td>
                                                 <td style="text-align: right; background-color: #e3e4e5; color: black;"></td>

@@ -63,7 +63,7 @@
                     </td>
                     <td><?=$this->dates->formatDate($pf['added'],'d-m-Y');?></td>
                     <td><?=$this->companies->risk?></td>
-                    <td><?=number_format($pf['amount'], 0, ',', ' ')?>€</td>
+                    <td><?=$this->ficelle->formatNumber($pf['amount'], 0)?>€</td>
                     <td><?=$this->dates->formatDate($date_fin,'d-m-Y');?></td>
                     <?
 

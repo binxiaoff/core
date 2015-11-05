@@ -3,7 +3,7 @@
         <th width="125"><span id="triNum">N°<i class="icon-arrows"></i></span></th>
         <th width="180">
             <span id="triTx"><?=$this->lng['preteur-projets']['taux-dinteret']?> <i class="icon-arrows"></i></span>
-            <small><?=$this->lng['preteur-projets']['taux-moyen']?> : <?=number_format($this->avgRate, 1, ',', ' ')?> %</small>
+            <small><?=$this->lng['preteur-projets']['taux-moyen']?> : <?=$this->ficelle->formatNumber($this->avgRate, 1)?> %</small>
         </th>
         <th width="214">
             <span id="triAmount"><?=$this->lng['preteur-projets']['montant']?> <i class="icon-arrows"></i></span>
@@ -20,8 +20,8 @@
 
 		?><tr <?=($vous==true?' class="enchereVousColor"':'')?>>
 			<td><?=($vous==true?'<span class="enchereVous">'.$this->lng['preteur-projets']['vous'].' : &nbsp;&nbsp;&nbsp;'.$e['ordre'].'</span>':$e['ordre'])?></td>
-			<td><?=number_format($e['rate'], 1, ',', ' ')?> %</td>
-			<td><?=number_format($e['amount']/100, 0, ',', ' ')?> €</td>
+			<td><?=$this->ficelle->formatNumber($e['rate'], 1)?> %</td>
+			<td><?=$this->ficelle->formatNumber($e['amount']/100, 0)?> €</td>
 			<td class="<?=($e['status']==1?'green-span':($e['status']==2?'red-span':''))?>"><?=$this->status[$e['status']]?></td>
 		</tr><?
     }

@@ -158,7 +158,7 @@
                             </td>
                             <td style="white-space:nowrap;">
                                 <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>">
-                                    <?= number_format($pf['amount'], 0, ',', ' ') ?>€
+                                    <?= $this->ficelle->formatNumber($pf['amount'], 0) ?>€
                                 </a>
                             </td>
                             <td style="white-space:nowrap;">
@@ -171,7 +171,7 @@
                                 <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>">
                                     <?
                                     if ($CountEnchere > 0) {
-                                        ?><?= number_format($avgRate, 1, ',', ' ') ?>%<?
+                                        ?><?= $this->ficelle->formatNumber($avgRate, 1) ?>%<?
                                     } else {
                                         ?><?= ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %')) ?><?
                                     }
@@ -297,13 +297,13 @@
                         <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>">
 
                         <div class="project-mobile-image-caption">
-                            <p><?= number_format($pf['amount'], 0, ',', ' ') ?>€ |
+                            <p><?= $this->ficelle->formatNumber($pf['amount'], 0) ?>€ |
                                 <span class="cadreEtoiles" style="margin-right: 12px; top: 8px;display: inline-block;">
                                     <span style="display: inline-block;" class="etoile <?= $this->lNotes[$pf['risk']] ?>"></span>
                                 </span> |
                                 <?
                                 if ($CountEnchere > 0) {
-                                    ?><?= number_format($avgRate, 1, ',', ' ') ?>%<?
+                                    ?><?= $this->ficelle->formatNumber($avgRate, 1) ?>%<?
                                 } else {
                                     ?><?= ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %')) ?><?
                                 }

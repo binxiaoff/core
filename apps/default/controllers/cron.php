@@ -390,7 +390,7 @@ class cronController extends bootstrap
                         'prenom_e'               => $e->prenom,
                         'nom_e'                  => $companie->name,
                         'mensualite'             => $this->ficelle->formatNumber($mensualite),
-                        'montant'                => number_format($project->amount, 0, ',', ' '),
+                        'montant'                => $this->ficelle->formatNumber($project->amount, 0),
                         'taux_moyen'             => $this->ficelle->formatNumber($taux_moyen),
                         'link_compte_emprunteur' => $this->lurl . '/projects/detail/' . $project->id_project,
                         'link_mandat'            => $link_mandat,
@@ -6147,7 +6147,7 @@ class cronController extends bootstrap
                     'prenom_p'        => $preteur['prenom'],
                     'nom_entreprise'  => $this->companies->name,
                     'projet-p'        => $this->furl . '/projects/detail/' . $this->projects->slug,
-                    'montant'         => number_format($this->projects->amount, 0, ',', ' '),
+                    'montant'         => $this->ficelle->formatNumber($this->projects->amount, 0),
                     'duree'           => $this->projects->period,
                     'motif_virement'  => $motif,
                     'gestion_alertes' => $this->lurl . '/profile',
@@ -6246,7 +6246,7 @@ class cronController extends bootstrap
                         $liste_projets .= '
 								<tr style="color:#b20066;">
 									<td  style="font-family:Arial;font-size:14px;height: 25px;"><a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->projects->amount, 0, ',', ' ') . ' &euro;</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->projects->amount, 0) . ' &euro;</td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->projects->period . ' mois</td>
 								</tr>';
                     }
@@ -6405,12 +6405,12 @@ class cronController extends bootstrap
                                 $liste_offres .= '
 								<tr style="color:#b20066;">
 									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->bids->amount / 100), 0, ',', ' ') . ' &euro;</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->bids->amount / 100), 0) . ' &euro;</td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->bids->rate) . ' %</td>
 								</tr>
 								<tr>
 									<td style="height:25px;border-top:1px solid #727272;color: #727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
-									<td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . number_format($total, 0, ',', ' ') . ' &euro;</td>
+									<td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($total, 0) . ' &euro;</td>
 									<td style="border-top:1px solid #727272;color: #727272;font-family:Arial;font-size:14px;"></td>
 								</tr>
 								';
@@ -6418,7 +6418,7 @@ class cronController extends bootstrap
                                 $liste_offres .= '
 								<tr style="color:#b20066;">
 									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->bids->amount / 100), 0, ',', ' ') . ' &euro;</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->bids->amount / 100), 0) . ' &euro;</td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->bids->rate) . ' %</td>
 								</tr>';
                             }
@@ -6564,12 +6564,12 @@ class cronController extends bootstrap
                             $liste_offres .= '
 							<tr style="color:#b20066;">
 								<td  style="height:25px; font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->notifications->amount / 100), 0, ',', ' ') . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->notifications->amount / 100), 0) . ' &euro;</td>
 								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->bids->rate) . ' %</td>
 							</tr>
 							<tr>
 								<td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
-								<td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . number_format($total, 0, ',', ' ') . ' &euro;</td>
+								<td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($total, 0) . ' &euro;</td>
 								<td style="border-top:1px solid #727272;"></td>
 							</tr>
 							';
@@ -6577,7 +6577,7 @@ class cronController extends bootstrap
                             $liste_offres .= '
 							<tr style="color:#b20066;">
 								<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->notifications->amount / 100), 0, ',', ' ') . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->notifications->amount / 100), 0) . ' &euro;</td>
 								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->bids->rate) . ' %</td>
 							</tr>';
                         }
@@ -6731,12 +6731,12 @@ class cronController extends bootstrap
                                 $liste_offres .= '
 								<tr style="color:#b20066;">
 									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->loans->amount / 100), 0, ',', ' ') . ' €</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' €</td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
 								</tr>
 								<tr>
 									<td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
-									<td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . number_format($total, 0, ',', ' ') . ' €</td>
+									<td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($total, 0) . ' €</td>
 									<td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
 								</tr>
 								';
@@ -6744,7 +6744,7 @@ class cronController extends bootstrap
                                 $liste_offres .= '
 								<tr style="color:#b20066;">
 									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->loans->amount / 100), 0, ',', ' ') . ' €</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' €</td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
 								</tr>';
                             }

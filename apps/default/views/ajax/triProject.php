@@ -143,7 +143,7 @@ foreach($this->lProjetsFunding as $pf)
         </td>
 		<td style="white-space:nowrap;">
 			<a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>">
-				<?=number_format($pf['amount'], 0, ',', ' ')?>€
+				<?=$this->ficelle->formatNumber($pf['amount'], 0)?>€
             </a>
         </td>
 		<td style="white-space:nowrap;">
@@ -157,7 +157,7 @@ foreach($this->lProjetsFunding as $pf)
 				<?
                 if($CountEnchere>0)
                 {
-                    ?><?=number_format($avgRate, 1, ',', ' ')?>%<?
+                    ?><?=$this->ficelle->formatNumber($avgRate, 1)?>%<?
                 }
                 else
                 {

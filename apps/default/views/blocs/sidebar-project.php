@@ -17,9 +17,9 @@ if (! $this->clients->checkAccess()) {
                         </p>
 
                         <p><?= $this->lng['preteur-projets']['vous-lui-avez-prete'] ?>
-                            <strong class="pinky-span"><?= number_format($this->bidsvalid['solde'], 0, ',', ' ') ?> €</strong>
+                            <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->bidsvalid['solde'], 0) ?> €</strong>
                             <br/><?= $this->lng['preteur-projets']['au-taux-moyen-de'] ?>
-                            <strong class="pinky-span"><?= number_format($this->AvgLoansPreteur, 1, ',', ' ') ?> %</strong>
+                            <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->AvgLoansPreteur, 1) ?> %</strong>
                         </p>
                     </div>
                 </div>
@@ -37,9 +37,9 @@ if (! $this->clients->checkAccess()) {
                 <div class="widget-body">
                     <div class="article">
                         <p><?= $this->lng['preteur-projets']['ce-projet-est-integralement-finance-par'] ?>
-                            <strong class="pinky-span"> <?= number_format($this->NbPreteurs, 0, ',', ' ') ?> <?= $this->lng['preteur-projets']['preteur'] ?><?= ($this->NbPreteurs > 1 ? 's' : '') ?></strong>
+                            <strong class="pinky-span"> <?= $this->ficelle->formatNumber($this->NbPreteurs, 0) ?> <?= $this->lng['preteur-projets']['preteur'] ?><?= ($this->NbPreteurs > 1 ? 's' : '') ?></strong>
                             <br/><?= $this->lng['preteur-projets']['au-taux-de'] ?>
-                            <strong class="pinky-span"> <?= number_format($this->AvgLoans, 1, ',', ' ') ?> %</strong>
+                            <strong class="pinky-span"> <?= $this->ficelle->formatNumber($this->AvgLoans, 1) ?> %</strong>
                             <br/><?= $this->lng['preteur-projets']['en'] ?> <?= ($this->interDebutFin['day'] > 0 ? $this->interDebutFin['day'] . ' jours ' : '') ?><?= ($this->interDebutFin['hour'] > 0 ? $this->interDebutFin['hour'] . ' heures ' : '') ?> <?= $this->lng['preteur-projets']['et'] ?> <?= $this->interDebutFin['minute'] ?> <?= $this->lng['preteur-projets']['minutes'] ?>
                         </p>
 
@@ -90,7 +90,7 @@ if (! $this->clients->checkAccess()) {
             <aside class="widget widget-price">
                 <div class="widget-top">
                     <i class="icon-pig"></i>
-                    <?= number_format($this->projects->amount, 0, ',', ' ') ?> €
+                    <?= $this->ficelle->formatNumber($this->projects->amount, 0) ?> €
                 </div>
                 <div class="widget-body">
                     <?php /*?><div class="widget-cat progress-cat clearfix">
@@ -123,7 +123,7 @@ if (! $this->clients->checkAccess()) {
                             <?php
                             if ($this->soldeBid >= $this->projects->amount) {
                                 ?>
-                                <p style="font-size:14px;"><?= $this->lng['preteur-projets']['vous-pouvez-encore-preter-en-proposant-une-offre-de-pret-inferieure-a'] ?> <?= number_format($this->txLenderMax, 1, ',', ' ') ?>%</p>
+                                <p style="font-size:14px;"><?= $this->lng['preteur-projets']['vous-pouvez-encore-preter-en-proposant-une-offre-de-pret-inferieure-a'] ?> <?= $this->ficelle->formatNumber($this->txLenderMax, 1) ?>%</p>
                                 <?php
                             } else {
                                 ?>
@@ -309,7 +309,7 @@ else {
             <aside class="widget widget-price">
                 <div class="widget-top">
                     <i class="icon-pig"></i>
-                    <?= number_format($this->projects->amount, 0, ',', ' ') ?> €
+                    <?= $this->ficelle->formatNumber($this->projects->amount, 0) ?> €
                 </div>
                 <div class="widget-body">
                     <div class="widget-cat progress-cat clearfix">
@@ -354,9 +354,9 @@ else {
                         </p>
 
                         <p><?= $this->lng['preteur-projets']['vous-lui-avez-prete'] ?>
-                            <strong class="pinky-span"><?= number_format($this->bidsvalid['solde'], 0, ',', ' ') ?> €</strong>
+                            <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->bidsvalid['solde'], 0) ?> €</strong>
                             <br/><?= $this->lng['preteur-projets']['au-taux-moyen-de'] ?>
-                            <strong class="pinky-span"><?= number_format($this->AvgLoansPreteur, 1, ',', ' ') ?> %</strong>
+                            <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->AvgLoansPreteur, 1) ?> %</strong>
                         </p>
                     </div>
                 </div>
@@ -374,16 +374,16 @@ else {
                 <div class="widget-body">
                     <div class="article">
                         <p><?= $this->lng['preteur-projets']['ce-projet-est-integralement-finance-par'] ?>
-                            <strong class="pinky-span"> <?= number_format($this->NbPreteurs, 0, ',', ' ') ?> <?= $this->lng['preteur-projets']['preteur'] ?><?= ($this->NbPreteurs > 1 ? 's' : '') ?></strong>
+                            <strong class="pinky-span"> <?= $this->ficelle->formatNumber($this->NbPreteurs, 0) ?> <?= $this->lng['preteur-projets']['preteur'] ?><?= ($this->NbPreteurs > 1 ? 's' : '') ?></strong>
                             <br/><?= $this->lng['preteur-projets']['au-taux-de'] ?>
-                            <strong class="pinky-span"> <?= number_format($this->AvgLoans, 1, ',', ' ') ?> %</strong>
+                            <strong class="pinky-span"> <?= $this->ficelle->formatNumber($this->AvgLoans, 1) ?> %</strong>
                             <br/><?= $this->lng['preteur-projets']['en'] ?> <?= ($this->interDebutFin['day'] > 0 ? $this->interDebutFin['day'] . ' jours ' : '') ?><?= ($this->interDebutFin['hour'] > 0 ? $this->interDebutFin['hour'] . ' heures ' : '') ?> <?= $this->lng['preteur-projets']['et'] ?> <?= $this->interDebutFin['minute'] ?> <?= $this->lng['preteur-projets']['minutes'] ?>
                         </p>
 
                         <p><?= $this->lng['preteur-projets']['vous-lui-avez-prete'] ?>
-                            <strong class="pinky-span"><?= number_format($this->bidsvalid['solde'], 0, ',', ' ') ?> €</strong>
+                            <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->bidsvalid['solde'], 0) ?> €</strong>
                             <br/><?= $this->lng['preteur-projets']['au-taux-moyen-de'] ?>
-                            <strong class="pinky-span"><?= number_format($this->AvgLoansPreteur, 1, ',', ' ') ?> %</strong>
+                            <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->AvgLoansPreteur, 1) ?> %</strong>
                         </p>
 
                         <p><?= $this->lng['preteur-projets']['merci-a-tous'] ?></p>
@@ -436,7 +436,7 @@ else {
                 <aside class="widget widget-price">
                     <div class="widget-top">
                         <i class="icon-pig"></i>
-                        <?= number_format($this->projects->amount, 0, ',', ' ') ?> €
+                        <?= $this->ficelle->formatNumber($this->projects->amount, 0) ?> €
                     </div>
                     <div class="widget-body">
                         <div class="article">
@@ -454,7 +454,7 @@ else {
                 <aside class="widget widget-price">
                     <div class="widget-top">
                         <i class="icon-pig"></i>
-                        <?= number_format($this->projects->amount, 0, ',', ' ') ?> €
+                        <?= $this->ficelle->formatNumber($this->projects->amount, 0) ?> €
                     </div>
                     <div class="widget-body">
                         <form action="" method="post">
@@ -468,7 +468,7 @@ else {
                                     <?php
                                     if ($this->soldeBid >= $this->projects->amount) {
                                         ?>
-                                        <p style="font-size:14px;"><?= $this->lng['preteur-projets']['vous-pouvez-encore-preter-en-proposant-une-offre-de-pret-inferieure-a'] ?> <?= number_format($this->txLenderMax, 1, ',', ' ') ?>%</p>
+                                        <p style="font-size:14px;"><?= $this->lng['preteur-projets']['vous-pouvez-encore-preter-en-proposant-une-offre-de-pret-inferieure-a'] ?> <?= $this->ficelle->formatNumber($this->txLenderMax, 1) ?>%</p>
                                         <?php
                                     } else {
                                         ?>
@@ -508,7 +508,7 @@ else {
                                         <i class="icon-plus"></i></h4>
 
                                     <p style="font-size:14px;"><?= $this->lng['preteur-projets']['vous-avez'] ?> :
-                                        <br/><?= $this->bidsEncours['nbEncours'] ?> <?= $this->lng['preteur-projets']['offres-en-cours-pour'] ?> <?= number_format($this->bidsEncours['solde'], 0, ',', ' ') ?> €
+                                        <br/><?= $this->bidsEncours['nbEncours'] ?> <?= $this->lng['preteur-projets']['offres-en-cours-pour'] ?> <?= $this->ficelle->formatNumber($this->bidsEncours['solde'], 0) ?> €
                                     </p>
 
                                     <div id="lOffres">
@@ -516,7 +516,7 @@ else {
                                             <?php
                                             foreach ($this->lBids as $b) {
                                                 ?>
-                                                <li>Offre de <?= number_format($b['amount'] / 100, 0, ',', ' ') ?> € au taux de <?= number_format($b['rate'], 1, ',', ' ') ?>%</li>
+                                                <li>Offre de <?= $this->ficelle->formatNumber($b['amount'] / 100, 0, ',', ' ') ?> € au taux de <?= number_format($b['rate'], 1) ?>%</li>
                                                 <?php
                                             }
                                             ?>

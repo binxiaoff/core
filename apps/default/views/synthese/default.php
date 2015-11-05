@@ -126,7 +126,7 @@
 										if($this->bids->amount != $r['amount'])
 										{
 											$montant = ($this->bids->amount - $r['amount']);
-											?><li><?=$this->lng['preteur-synthese']['attentions-votre-offre-de-pret-a']?><b> <?=$this->ficelle->formatNumber($this->bids->rate,2,',',' ')?></b><?=$this->lng['preteur-synthese']['pour-un-montant-de']?><b> <?=number_format($this->bids->amount/100,2,',',' ')?></b><?=$this->lng['preteur-synthese']['sur-le-projet']?> <a href="<?=$this->lurl?>/projects/detail/<?=$this->projects->slug?>"><?=$this->projects->title?></a><?=$this->lng['preteur-synthese']['a-ete-decoupe']?> <b><?=number_format($r['amount']/100)?></b><?=$this->lng['preteur-synthese']['vous-ont-ete-rendu']?></li><?
+											?><li><?=$this->lng['preteur-synthese']['attentions-votre-offre-de-pret-a']?><b> <?=$this->ficelle->formatNumber($this->bids->rate,2,',',' ')?></b><?=$this->lng['preteur-synthese']['pour-un-montant-de']?><b> <?=$this->ficelle->formatNumber($this->bids->amount/100, 2)?></b><?=$this->lng['preteur-synthese']['sur-le-projet']?> <a href="<?=$this->lurl?>/projects/detail/<?=$this->projects->slug?>"><?=$this->projects->title?></a><?=$this->lng['preteur-synthese']['a-ete-decoupe']?> <b><?=number_format($r['amount']/100)?></b><?=$this->lng['preteur-synthese']['vous-ont-ete-rendu']?></li><?
 										}
 										else
 										{

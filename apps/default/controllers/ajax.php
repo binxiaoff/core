@@ -286,7 +286,7 @@ class ajaxController extends bootstrap
                 </td>
                 <td style='white-space:nowrap;'>
                     <a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'>
-                        " . number_format($pf['amount'], 0, ',', ' ') . "€
+                        " . $this->ficelle->formatNumber($pf['amount'], 0) . "€
                     </a>
                 </td>
                 <td style='white-space:nowrap;'>
@@ -297,9 +297,9 @@ class ajaxController extends bootstrap
 
             $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'>";
             if ($CountEnchere > 0) {
-                $affichage .= number_format($avgRate, 1, ',', ' ') . "%";
+                $affichage .= $this->ficelle->formatNumber($avgRate, 1) . "%";
             } else {
-                $affichage .= ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' ')) . "%";
+                $affichage .= ($pf['target_rate'] == '-' ? $pf['target_rate'] : $this->ficelle->formatNumber($pf['target_rate'], 1)) . "%";
             }
             $affichage .= "</a></td>";
 

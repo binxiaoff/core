@@ -1091,7 +1091,7 @@ class dossiersController extends bootstrap
                                     'surl'              => $this->surl,
                                     'url'               => $this->furl,
                                     'prenom_p'          => $clients->prenom,
-                                    'valeur_bid'        => number_format($l['amount'] / 100, 0, ',', ' '),
+                                    'valeur_bid'        => $this->ficelle->formatNumber($l['amount'] / 100, 0),
                                     'nom_entreprise'    => $companies->name,
                                     'nb_preteurMoinsUn' => ($nb_loans - 1),
                                     'motif_virement'    => $motif,

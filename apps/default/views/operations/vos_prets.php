@@ -356,7 +356,7 @@
                                             <td class="col1"></td>
                                             <td class="col2"></td>
                                             <td class="col3"
-                                                style="white-space: nowrap;"><?= number_format($loan['amount'] / 100, 0, ',', ' ') ?>
+                                                style="white-space: nowrap;"><?= $this->ficelle->formatNumber($loan['amount'] / 100, 0) ?>
                                                 €
                                             </td>
                                             <td class="col4"
@@ -460,7 +460,7 @@
                                                 <td class="col1"></td>
                                                 <td class="col2"></td>
                                                 <td class="col3"
-                                                    style="white-space: nowrap;"><?= number_format($loan['amount'] / 100, 0, ',', ' ') ?>
+                                                    style="white-space: nowrap;"><?= $this->ficelle->formatNumber($loan['amount'] / 100, 0) ?>
                                                     €
                                                 </td>
                                                 <td class="col4"

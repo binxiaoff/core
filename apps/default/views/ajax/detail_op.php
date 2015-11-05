@@ -195,7 +195,7 @@ if ($this->lSumLoans != false)
                                 <tr>
                                     <td class="col1"></td>
                                     <td class="col2"></td>
-                                    <td class="col3" style="white-space: nowrap;"><?= number_format($loan['amount'] / 100, 0, ',', ' ') ?> €</td>
+                                    <td class="col3" style="white-space: nowrap;"><?= $this->ficelle->formatNumber($loan['amount'] / 100, 0) ?> €</td>
                                     <td class="col4" style="white-space: nowrap;"><?= $this->ficelle->formatNumber($loan['rate']) ?>%</td>
                                     <td class="col5"></td>
                                     <td class="col6" style="white-space: nowrap;"><?= $this->ficelle->formatNumber(($SumAremb[0]['montant'] / 100) - $fiscal) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
@@ -297,7 +297,7 @@ if ($this->lSumLoans != false)
                                     <tr>
                                         <td class="col1"></td>
                                         <td class="col2"></td>
-                                        <td class="col3" style="white-space: nowrap;"><?= number_format($loan['amount'] / 100, 0, ',', ' ') ?> €</td>
+                                        <td class="col3" style="white-space: nowrap;"><?= $this->ficelle->formatNumber($loan['amount'] / 100, 0) ?> €</td>
                                         <td class="col4" style="white-space: nowrap;"><?= $this->ficelle->formatNumber($loan['rate']) ?>%</td>
                                         <td class="col5"></td>
                                         <td class="col6" style="white-space: nowrap;"><?= $this->ficelle->formatNumber(($SumAremb[0]['montant'] / 100) - $fiscal) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>

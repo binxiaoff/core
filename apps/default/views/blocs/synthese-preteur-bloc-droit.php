@@ -382,7 +382,7 @@
                     ?>
                     <div class="info">
                         <ul class="list">
-                            <li><i class="icon-pig-gray"></i><?= number_format($f['amount'], 0, ',', ' ') ?> €</li>
+                            <li><i class="icon-pig-gray"></i><?= $this->ficelle->formatNumber($f['amount'], 0) ?> €</li>
                             <li><i class="icon-clock-gray"></i><?= ($reste == '' ? '' : $reste) ?><span id="valFav<?= $f['id_project'] ?>"><?= $dateRest ?></span></li>
                             <li><i class="icon-target"></i><?= $this->lng['preteur-synthese']['couvert-a'] ?> <?= number_format($pourcentage, $decimalesPourcentage, ',', ' ') ?> %</li>
                             <?php

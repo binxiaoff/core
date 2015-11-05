@@ -97,9 +97,9 @@
                     <td><?= $p['id_project'] ?></td>
                     <td><?= $this->companies->name ?></td>
                     <td><?= $this->ficelle->formatNumber($p['amount']) ?> €</td>
-                    <td><?= number_format($soldeBid, 1, ',', ' ') ?> €</td>
-                    <td><?= number_format($pourcentage, 1, ',', ' ') ?> %</td>
-                    <td><?= number_format($tauxMoyen, 1, ',', ' ') ?> %</td>
+                    <td><?= $this->ficelle->formatNumber($soldeBid, 1) ?> €</td>
+                    <td><?= $this->ficelle->formatNumber($pourcentage, 1) ?> %</td>
+                    <td><?= $this->ficelle->formatNumber($tauxMoyen, 1) ?> %</td>
                     <td align="center">
                         <a target="_blank" href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
                             <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>

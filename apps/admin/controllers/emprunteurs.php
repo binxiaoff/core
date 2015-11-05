@@ -415,7 +415,7 @@ class emprunteursController extends bootstrap
                                     'prenom_e'               => $e->prenom,
                                     'nom_e'                  => $companie->name,
                                     'mensualite'             => $this->ficelle->formatNumber($mensualite),
-                                    'montant'                => number_format($project->amount, 0, ',', ' '),
+                                    'montant'                => $this->ficelle->formatNumber($project->amount, 0),
                                     'taux_moyen'             => $this->ficelle->formatNumber($taux_moyen),
                                     'link_compte_emprunteur' => $this->lurl . '/projects/detail/' . $project->id_project,
                                     'link_mandat'            => $link_mandat,

@@ -180,11 +180,11 @@
                                 </div><!-- /.description -->
                             </td>
                             <td><div class="cadreEtoiles"><div class="etoile <?= $this->lNotes[$pf['risk']] ?>"></div></div></td>
-                            <td style="white-space:nowrap;"><?= number_format($pf['amount'], 0, ',', ' ') ?>&euro;</td>
+                            <td style="white-space:nowrap;"><?= $this->ficelle->formatNumber($pf['amount'], 0) ?>&euro;</td>
                             <td style="white-space:nowrap;"><?= $pf['period'] ?> mois</td>
                             <?php
                             if ($CountEnchere > 0) {
-                                ?><td><?= number_format($avgRate, 1, ',', ' ') ?>%</td><?php
+                                ?><td><?= $this->ficelle->formatNumber($avgRate, 1) ?>%</td><?php
                             } else {
                                 ?><td><?= ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %')) ?></td><?php
                             }
@@ -306,13 +306,13 @@
                         //gestion affichage du pourcentage
                         $pourcent_affichage = "";
                         if ($CountEnchere > 0) {
-                            $pourcent_affichage = number_format($avgRate, 1, ',', ' ') . '%';
+                            $pourcent_affichage = $this->ficelle->formatNumber($avgRate, 1) . '%';
                         } else {
                             $pourcent_affichage = ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %'));
                         }
                         ?>
                         <div class="project-mobile-image-caption">
-                            <?= number_format($pf['amount'], 0, ',', ' ') ?>&euro; | <div class="cadreEtoiles" style="display: inline-block; top:7px;left: -1px;"><div class="etoile <?= $this->lNotes[$pf['risk']] ?>"></div></div> | <?= $pourcent_affichage ?> | <?= $pf['period'] ?> mois
+                            <?= $this->ficelle->formatNumber($pf['amount'], 0) ?>&euro; | <div class="cadreEtoiles" style="display: inline-block; top:7px;left: -1px;"><div class="etoile <?= $this->lNotes[$pf['risk']] ?>"></div></div> | <?= $pourcent_affichage ?> | <?= $pf['period'] ?> mois
                         </div>
                     </div>
                     <div class="project-mobile-content">

@@ -439,7 +439,7 @@ class rootController extends bootstrap
 
                 // ensemblee des fonds recupérés
                 $compteurFonds = $this->transactions->sum('type_transaction = 9', 'montant_unilend-montant');
-                $compteurFonds = number_format(($compteurFonds / 100), 0, ',', ' ');
+                $compteurFonds = $this->ficelle->formatNumber(($compteurFonds / 100), 0);
                 $tabCompteur   = str_split($compteurFonds);
 
                 $this->compteur = '';

@@ -60,8 +60,8 @@
 							<tr>
 								<td style="border: 1px solid #231f20;" class="tc"><span class="date"><?=date('d/m/Y',strtotime($this->oLoans->added))?></span></td>
 								<td style="border: 1px solid #231f20;" class="tc"><?=($this->projects->period/12)?></td>
-								<td style="border: 1px solid #231f20;" class="tc"><small><?=number_format($this->oLoans->rate, 1, ',', ' ')?></small></td>
-								<td style="border: 1px solid #231f20;" class="tc"><?=number_format(($this->oLoans->amount/100), 0, ',', ' ')?></td>
+								<td style="border: 1px solid #231f20;" class="tc"><small><?=$this->ficelle->formatNumber($this->oLoans->rate, 1)?></small></td>
+								<td style="border: 1px solid #231f20;" class="tc"><?=$this->ficelle->formatNumber(($this->oLoans->amount/100), 0)?></td>
 								<td style="border: 1px solid #231f20;" class="large nopadding">
 									<table cellspacing="0" cellpadding="0" class="title">
 										<tr>

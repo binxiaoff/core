@@ -77,7 +77,7 @@
 
         </div>
         <div class="case3">
-        	Bon de caisse à ordre, émis le  <?=date('d/m/Y',strtotime($this->oLoans->added))?>, échéance au <?=$this->lastEcheance?>, d’un montant de <?=$this->ficelle->formatNumber(($this->oLoans->amount/100))?>€ assorti d’un taux d’intérêt annuel de <?=number_format($this->oLoans->rate, 1, ',', ' ')?>%, amortissable mensuellement.
+        	Bon de caisse à ordre, émis le  <?=date('d/m/Y',strtotime($this->oLoans->added))?>, échéance au <?=$this->lastEcheance?>, d’un montant de <?=$this->ficelle->formatNumber(($this->oLoans->amount/100))?>€ assorti d’un taux d’intérêt annuel de <?=$this->ficelle->formatNumber($this->oLoans->rate, 1)?>%, amortissable mensuellement.
         </div>
 
         <div class="case4">
