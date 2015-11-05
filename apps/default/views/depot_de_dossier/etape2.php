@@ -44,7 +44,7 @@
                 <div class="row">
                     <input type="email" name="email" id="email"
                            placeholder="<?= $this->lng['etape2']['email'] ?>"
-                           value="<?= $this->aForm['email'] ?>"
+                           value="<?= empty($this->aForm['email']) && false === empty($this->sStep1Email) ? $this->sStep1Email : $this->aForm['email'] ?>"
                            class="field required"
                            data-validators="Presence&amp;Email">
                     <input type="text" name="mobile" id="mobile"
@@ -175,9 +175,7 @@
     var validColor = '#727272',
         errorColor = '#C84747';
 
-    $('#form_depot_dossier').submit(function(event) {
-        var error = false;
-
+    $(function() {
         $('input[type=radio]').on('change click', function() {
             $(this).parent('.radio-holder').css('color', validColor).css('font-weight', '');
         });
@@ -186,30 +184,47 @@
             $('.cgv').css('color', validColor).css('font-weight', '');
         });
 
-        if ($('input[type=radio][name=civilite]:checked').length == 0) {
-            $('input[type=radio][name=civilite]').parent('.radio-holder').css('color', errorColor).css('font-weight', 'bold');
-            error = true;
-        }
-        if ($('input[type=radio][name=gerant]:checked').length == 0) {
-            $('input[type=radio][name=gerant]').parent('.radio-holder').css('color', errorColor);
-            error = true;
-        }
-        if ($('input[type=radio][name=gerant]:checked').val() == 'non' && $('input[type=radio][name=civilite_prescripteur]:checked').length == 0) {
-            $('input[type=radio][name=civilite_prescripteur]').parent('.radio-holder').css('color', errorColor);
-            error = true;
-        }
-        if ($('input[type=radio][name=gerant]:checked').val() == 'oui' && $('#cgv').is(':checked') == false) {
-            $('.cgv').css('color', errorColor).css('font-weight', 'bold');
-            error = true;
-        }
-        if ($('input[type=radio][name=bilans]').length && $('input[type=radio][name=bilans]:checked').length == 0) {
-            $('input[type=radio][name=bilans]').parent('.radio-holder').css('color', errorColor);
-            error = true;
-        }
+        <?php if (empty($this->aForm['email']) && false === empty($this->sStep1Email)) { ?>
+        $('input[type=radio][name=gerant]').on('click change', function() {
+            if ($(this).val() == 'oui') {
+                $('#email').val('<?= $this->sStep1Email ?>');
+                $('#email_prescripteur').val('');
+            } else {
+                $('#email').val('');
+                $('#email_prescripteur').val('<?= $this->sStep1Email ?>');
+            }
+            $('#email,#email_prescripteur').removeClass('LV_valid_field LV_invalid_field')
+        });
+        <?php } ?>
 
-        if (error) {
-            event.preventDefault();
-        }
+        $('#form_depot_dossier').submit(function(event) {
+            var error = false;
+
+            if ($('input[type=radio][name=civilite]:checked').length == 0) {
+                $('input[type=radio][name=civilite]').parent('.radio-holder').css('color', errorColor).css('font-weight', 'bold');
+                error = true;
+            }
+            if ($('input[type=radio][name=gerant]:checked').length == 0) {
+                $('input[type=radio][name=gerant]').parent('.radio-holder').css('color', errorColor);
+                error = true;
+            }
+            if ($('input[type=radio][name=gerant]:checked').val() == 'non' && $('input[type=radio][name=civilite_prescripteur]:checked').length == 0) {
+                $('input[type=radio][name=civilite_prescripteur]').parent('.radio-holder').css('color', errorColor);
+                error = true;
+            }
+            if ($('input[type=radio][name=gerant]:checked').val() == 'oui' && $('#cgv').is(':checked') == false) {
+                $('.cgv').css('color', errorColor).css('font-weight', 'bold');
+                error = true;
+            }
+            if ($('input[type=radio][name=bilans]').length && $('input[type=radio][name=bilans]:checked').length == 0) {
+                $('input[type=radio][name=bilans]').parent('.radio-holder').css('color', errorColor);
+                error = true;
+            }
+
+            if (error) {
+                event.preventDefault();
+            }
+        });
     });
 </script>
 

@@ -83,7 +83,8 @@ class depot_de_dossierController extends bootstrap
 
         $iAmount = $_SESSION['forms']['depot-de-dossier']['values']['montant'];
         $iSIREN  = $_SESSION['forms']['depot-de-dossier']['values']['siren'];
-        $sEmail  = isset($_SESSION['forms']['depot-de-dossier']['values']['email']) && $this->ficelle->isEmail($_SESSION['forms']['depot-de-dossier']['values']['email']) ? $_SESSION['forms']['depot-de-dossier']['values']['email'] : null;
+
+        $_SESSION['forms']['depot-de-dossier']['email'] = isset($_SESSION['forms']['depot-de-dossier']['values']['email']) && $this->ficelle->isEmail($_SESSION['forms']['depot-de-dossier']['values']['email']) ? $_SESSION['forms']['depot-de-dossier']['values']['email'] : '';
 
         unset($_SESSION['forms']['depot-de-dossier']['values']);
 
@@ -96,14 +97,6 @@ class depot_de_dossierController extends bootstrap
         $this->clients->source         = $_SESSION['utm_source'];
         $this->clients->source2        = $_SESSION['utm_source2'];
         $this->clients->status_pre_emp = 2;
-
-        if (false === is_null($sEmail)) {
-            if (false === $this->clients->existEmail($sEmail)) {
-                $sEmail .= '-' . time();
-            }
-            $this->clients->email = $sEmail;
-        }
-
         $this->clients->create();
 
         $this->clients_adresses->id_client = $this->clients->id_client;
@@ -332,8 +325,9 @@ class depot_de_dossierController extends bootstrap
 
         $aForm = isset($_SESSION['forms']['depot-de-dossier-2']['values']) ? $_SESSION['forms']['depot-de-dossier-2']['values'] : array();
 
-        $this->aErrors = isset($_SESSION['forms']['depot-de-dossier-2']['errors']) ? $_SESSION['forms']['depot-de-dossier-2']['errors'] : array();
-        $this->aForm   = array(
+        $this->sStep1Email = isset($_SESSION['forms']['depot-de-dossier']['email']) ? $_SESSION['forms']['depot-de-dossier']['email'] : null;
+        $this->aErrors     = isset($_SESSION['forms']['depot-de-dossier-2']['errors']) ? $_SESSION['forms']['depot-de-dossier-2']['errors'] : array();
+        $this->aForm       = array(
             'raison_sociale'        => isset($aForm['raison_sociale']) ? $aForm['raison_sociale'] : $this->companies->name,
             'civilite'              => isset($aForm['civilite']) ? $aForm['civilite'] : $this->clients->civilite,
             'prenom'                => isset($aForm['prenom']) ? $aForm['prenom'] : $this->clients->prenom,
