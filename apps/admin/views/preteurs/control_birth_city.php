@@ -14,7 +14,7 @@
 <div id="contenu">
     <ul class="breadcrumbs">
         <li><a href="<?=$this->lurl?>/emprunteurs" title="Emprunteurs">Prêteurs</a> -</li>
-        <li>Matching villes fiscals Prêteurs</li>
+        <li>Matching villes de naissance Prêteurs</li>
     </ul>
     <h1>Liste des Prêteurs à matcher</h1>
 <?php

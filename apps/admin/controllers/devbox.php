@@ -898,10 +898,6 @@ class devboxController extends bootstrap
 	public function _import_file_cp()
 	{
 		$this->autoFireView   = false;
-		$this->autoFireHeader = false;
-		$this->autoFireHead   = false;
-		$this->autoFireFooter = false;
-		$this->autoFireDebug  = false;
 
 		//Encode: UTF-8, new line : LF
 		//Source: https://www.data.gouv.fr/fr/datasets/base-officielle-des-codes-postaux/
@@ -913,16 +909,7 @@ class devboxController extends bootstrap
 		$oVille = $this->loadData('villes');
 
 		while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
-			/*
-			$oVille->ville           = $aRow[1];
-			$oVille->insee           = $aRow[0];
-			$oVille->cp              = $aRow[2];
-			$oVille->active          = 1;
-			$oVille->num_departement = substr($aRow[0], 0, 2) !== '97' ? substr($aRow[0], 0, 2) : substr($aRow[0], 0, 3);
-			$oVille->create();
-			$oVille->unsetData();
-			*/
-			$departement = substr($aRow[0], 0, 2) !== '97' ? substr($aRow[0], 0, 2) : substr($aRow[0], 0, 3);
+			$departement = (int) substr($aRow[0], 0, 2) !== '97' ? substr($aRow[0], 0, 2) : substr($aRow[0], 0, 3); // don't need 0 prefix
 			$sql = 'INSERT INTO villes (ville, insee, cp, num_departement, active, added, updated)
                     VALUES("'.$aRow[1].'", "'.$aRow[0].'", "'.$aRow[2].'", "'.$departement.'", 1, NOW(),NOW())';
 			$oVille->bdd->query($sql);
@@ -935,10 +922,6 @@ class devboxController extends bootstrap
 	public function _import_file_insee()
 	{
 		$this->autoFireView   = false;
-		$this->autoFireHeader = false;
-		$this->autoFireHead   = false;
-		$this->autoFireFooter = false;
-		$this->autoFireDebug  = false;
 
 		//Encode: UTF-8, new line : LF
 		//Source: http://www.insee.fr/fr/methodes/nomenclatures/cog/telechargement.asp?annee=2015
@@ -955,14 +938,6 @@ class devboxController extends bootstrap
 				if ($oVille->exist($sInsee, 'insee')) {
 					$oVille->bdd->query('UPDATE `villes` SET active = 0 WHERE insee = "' . $sInsee.'"');
 				} else {
-					/*
-					$oVille->ville           = $aRow[13];
-					$oVille->insee           = $sInsee;
-					$oVille->cp              = '';
-					$oVille->num_departement = str_pad($aRow[5], 2, 0, STR_PAD_LEFT);
-					$oVille->active          = 0;
-					$oVille->create();
-					*/
 					$departement = str_pad($aRow[5], 2, 0, STR_PAD_LEFT);
 					$sql = 'INSERT INTO `villes`(`ville`,`insee`,`cp`,`num_departement`,`active`,`added`,`updated`)
 							VALUES("'.$aRow[13].'","'.$sInsee.'","","'.$departement.'", 0,NOW(),NOW())';
@@ -979,13 +954,9 @@ class devboxController extends bootstrap
 	public function _import_pays_insee()
 	{
 		$this->autoFireView   = false;
-		$this->autoFireHeader = false;
-		$this->autoFireHead   = false;
-		$this->autoFireFooter = false;
-		$this->autoFireDebug  = false;
 
 		//Encode: UTF-8, new line : LF
-		//Source: https://www.data.gouv.fr/fr/datasets/base-officielle-des-codes-postaux/
+		//Source: http://www.insee.fr/fr/methodes/nomenclatures/cog/telechargement.asp?annee=2015
 		if (($rHandle = fopen($this->path . '/protected/import/' . 'country.txt', "r")) === false) {
 			return;
 		}

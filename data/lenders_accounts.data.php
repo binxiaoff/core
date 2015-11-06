@@ -220,6 +220,7 @@ class lenders_accounts extends lenders_accounts_crud
                 INNER JOIN clients c ON ca.id_client = c.id_client
                 INNER JOIN lenders_accounts la ON la.id_client_owner = ca.id_client
                 WHERE c.status = 1
+                AND ca.id_pays_fiscal = 1
                 AND (
                   NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp_fiscal)
                   OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1
@@ -252,6 +253,7 @@ class lenders_accounts extends lenders_accounts_crud
                 FROM clients c
                 INNER JOIN lenders_accounts la ON la.id_client_owner = c.id_client
                 WHERE c.status = 1
+                AND id_pays_naissance = 1
                 AND c.insee_birth = ""
                 ' . $sLimit. ' '. $sOffset;
 
