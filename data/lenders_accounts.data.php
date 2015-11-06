@@ -233,17 +233,36 @@ class lenders_accounts extends lenders_accounts_crud
     public function selectLendersForTRI($iLimit)
     {
 
-        $sSql = 'SELECT la.id_lender_account, la.added,
-	                  (SELECT las.tri_date
-	                  FROM lenders_account_stats
-	                  ORDER BY las.tri_date DESC
-	                  LIMIT 1) as tri_date
-	            FROM lenders_accounts la
-	            LEFT JOIN lenders_account_stats las ON la.id_lender_account = las.id_lender
-	            LEFT JOIN clients c ON la.id_client_owner = c.id_client
-                WHERE c.status = 1
-                ORDER BY las.tri_date ASC,
-	                    la.added DESC
+        $sSql = 'SELECT
+                    la.id_lender_account,
+                    la.added,
+                    (
+                        SELECT
+                            las.tri_date
+                        FROM
+                            lenders_account_stats
+                        ORDER BY
+                            las.tri_date DESC
+                        LIMIT
+                            1
+                    ) as tri_date
+                FROM
+                    lenders_accounts la
+                    LEFT JOIN lenders_account_stats las ON la.id_lender_account = las.id_lender
+                    LEFT JOIN clients c ON la.id_client_owner = c.id_client
+                WHERE
+                    c.status = 1
+                    AND EXISTS(
+                        SELECT
+                            NULL
+                        FROM
+                            bids b
+                        WHERE
+                            b.id_lender_account = la.id_lender_account
+                    )
+                ORDER BY
+                    las.tri_date ASC,
+                    la.added DESC
                 LIMIT ' . $iLimit . ';';
 
         $result   = $this->bdd->query($sSql);
@@ -251,7 +270,6 @@ class lenders_accounts extends lenders_accounts_crud
         while ($record = $this->bdd->fetch_array($result)) {
             $aLenders[] = $record;
         }
-
         return $aLenders;
     }
 }

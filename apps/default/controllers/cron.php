@@ -8269,9 +8269,7 @@ class cronController extends bootstrap
 
             $oLenders_account_stats->create();
 
-            if (false === empty($sXIRR)) {
-                $this->oLogger->addRecord(ULogger::INFO, 'Temps calcul TRI : ' . round(microtime(true) - $iTimeStart, 2));
-            }
+            $this->oLogger->addRecord(ULogger::INFO, 'Temps calcul TRI : ' . round(microtime(true) - $iTimeStart, 2));
 
         } // end foreach lenders accounts
 
