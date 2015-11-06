@@ -1,5 +1,7 @@
 <?php
 
+$this->bIsConnected = $this->clients->checkAccess();
+
 if ($this->ficelle->is_mobile() == true) {
     ?>
     <style type="text/css">
@@ -24,7 +26,7 @@ if ($heure_sans_minute == '00h00') {
     $heure_sans_minute = $HfinFunding[0] . 'h00';
 }
 
-if ($this->projects_status->status != 50 || $this->page_attente == true) {
+if ($this->projects_status->status != 50 || $this->page_attente) {
     $this->dateRest = $this->lng['preteur-projets']['termine'];
 } else {
     $this->heureFinFunding = $tab_heure_sans_minute[0] . ':' . $tab_heure_sans_minute[1];
@@ -84,7 +86,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                 <div class="project-c">
                     <div class="top clearfix">
 
-                        <a <?= (! $this->clients->checkAccess() ? 'style="visibility:hidden;"' : '') ?> class="fav-btn right <?= $this->favori ?>" id="fav" onclick="favori(<?= $this->projects->id_project ?>, 'fav',<?= $this->clients->id_client ?>, 'detail');"><?= ($this->favori == 'active' ? $this->lng['preteur-projets']['retirer-de-mes-favoris'] : $this->lng['preteur-projets']['ajouter-a-mes-favoris']) ?>
+                        <a <?= ($this->bIsConnected ? '' : 'style="visibility:hidden;"') ?> class="fav-btn right <?= $this->favori ?>" id="fav" onclick="favori(<?= $this->projects->id_project ?>, 'fav',<?= $this->clients->id_client ?>, 'detail');"><?= ($this->favori == 'active' ? $this->lng['preteur-projets']['retirer-de-mes-favoris'] : $this->lng['preteur-projets']['ajouter-a-mes-favoris']) ?>
                             <i></i></a>
 
                         <p class="left multi-line">
@@ -307,7 +309,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                             </article>
                         </div>
                         <div class="tab">
-                        <?php if (!$this->clients->checkAccess()) { ?>
+                        <?php if (false === $this->bIsConnected) { ?>
                             <div>
                                 <?= $this->lng['preteur-projets']['contenu-comptes-financiers'] ?>
                             </div>
@@ -548,61 +550,13 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                 <strong class="red-span"><span id="valM"><?= $this->dateRest ?></span></strong>
             <?php } ?>
             <?= $this->lng['preteur-projets']['le'] ?> <?= strtolower($this->date_retrait) ?> <?= $this->lng['preteur-projets']['a'] ?> <?= $heure_sans_minute ?><?php /* ?><?=$this->heure_retrait?>h<?php */ ?></p>
-            <div class="single-project-stats">
-                <h2>
-                    <i class="ico-pig"></i>
-                    <?= number_format($this->projects->amount, 0, ',', ' ') ?> €
-                </h2>
-                <ul>
-                    <li>
-                        <i class="ico-calendar"></i>
-                        <?= ($this->projects->period == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $this->projects->period . ' ' . $this->lng['preteur-projets']['mois']) ?>
-                    </li>
-                    <li>
-                        <i class="ico-gauge" style="height:14px; top:-5px;"></i>
-                        <div class="cadreEtoiles" style="display:inherit; top:3px;">
-                            <div class="etoile <?= $this->lNotes[$this->projects->risk] ?>"></div>
-                        </div>
-                    </li>
-                    <li>
-                        <i class="ico-chart"></i>
-                        <?php if ($this->CountEnchere > 0) { ?>
-                            <span><?= number_format(($this->projects_status->status == 60 || $this->projects_status->status >= 80) ? $this->AvgLoans : $this->avgRate, 1, ',', ' ') . ' %' ?></span>
-                        <?php } else { ?>
-                            <span><?= $this->projects->target_rate . ($this->projects->target_rate == '-' ? '' : ' %') ?></span>
-                        <?php } ?>
-                    </li>
-                </ul>
-            </div>
-            <div class="single-project-price">
-                <ul>
-                    <li>
-                        <strong><?= number_format($this->payer, $this->decimales, ',', ' ') ?> €</strong>
-                        <?= $this->lng['preteur-projets']['de-pretes'] ?>
-                    </li>
-                    <li>
-                            <span class="price">
-                                <strong><?= number_format($this->resteApayer, $this->decimales, ',', ' ') ?> €</strong>
-                                <?= $this->lng['preteur-projets']['restent-a-preter'] ?>
-                            </span>
-                    </li>
-                </ul>
-                <div class="single-project-progress-bar">
-                    <span style="width: <?= number_format($this->pourcentage, $this->decimalesPourcentage, '.', '') ?>%"><small><?= number_format($this->pourcentage, $this->decimalesPourcentage, '.', '') ?>%</small></span>
-                </div>
-            </div>
+            <?php $this->fireView('../blocs/project-mobile-header'); ?>
             <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $this->projects->photo_projet ?>" alt="<?= $this->projects->photo_projet ?>">
-            <?php
-            if ($this->clients->checkAccess()) {
-                if ($this->preter_by_mobile_ok) {
-                ?>
+            <?php if ($this->bIsConnected && false === $this->page_attente && $this->clients_status->status == 60) { ?>
                 <div class="single-project-actions">
                     <a href="<?= $this->lurl . '/thickbox/pop_up_offer_mobile/' . $this->projects->id_project ?>" class="btn popup-link"><?= $this->lng['preteur-projets']['preter'] ?></a>
                 </div>
-                <?php
-                }
-            } else {
-            ?>
+            <?php } elseif (false === $this->bIsConnected) { ?>
             <div class="single-project-actions">
                 <a target="_parent" class="btn login-toggle" id="seconnecter" style="width:210px; display:block;margin:auto; float: none;"><?= $this->lng['preteur-projets']['se-connecter'] ?></a>
                 <a href="<?= $this->lurl . '/' . $this->tree->getSlug(127, $this->language) ?>" target="_parent" class="btn sinscrire_cta" id="sinscrire" style=""><?= $this->lng['preteur-projets']['sinscrire'] ?></a>
@@ -642,7 +596,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                 <div class="article-entry" style="display: none;">
                     <p>
                         <div class="tab">
-                        <?php if (!$this->clients->checkAccess()) { ?>
+                        <?php if (false === $this->bIsConnected) { ?>
                             <div>
                                 <?= $this->lng['preteur-projets']['contenu-comptes-financiers'] ?>
                             </div>
