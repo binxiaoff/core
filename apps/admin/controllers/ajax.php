@@ -3194,12 +3194,33 @@ class ajaxController extends bootstrap
         echo json_encode($aCities);
     }
 
-    public function _patchClient()
+    public function _patchClientAdresse()
     {
         $this->autoFireView = false;
         $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
         /** @var clients_adresses $oClientAdresse */
+        $oClientAdresse = $this->loadData('clients_adresses');
+
+        $sResult = 'nok';
+
+        if(isset($this->params[0]) && $oClientAdresse->get($this->params[0])) {
+            foreach ($_POST as $item => $value) {
+                $oClientAdresse->$item = $value;
+            }
+            $oClientAdresse->update();
+            $sResult = 'ok';
+        }
+
+        echo $sResult;
+    }
+
+    public function _patchClient()
+    {
+        $this->autoFireView = false;
+        $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+        /** @var clients $oClient */
         $oClient = $this->loadData('clients');
 
         $sResult = 'nok';
