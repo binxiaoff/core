@@ -21,6 +21,7 @@
                 <entry key="process.outputError" value="/srv/sites/unilend/log/errorLenders.csv"/>
                 <entry key="dataAccess.name" value="/srv/sites/unilend/dataloader/extract/preteurs.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
+                <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
             </map>
         </property>
@@ -46,6 +47,7 @@
                 <entry key="process.outputError" value="/srv/sites/unilend/log/errorCompanies.csv"/>
                 <entry key="dataAccess.name" value="/srv/sites/unilend/dataloader/extract/companies.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
+                <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
             </map>
         </property>
@@ -71,6 +73,7 @@
                 <entry key="process.outputError" value="/srv/sites/unilend/log/errorBorrowers.csv"/>
                 <entry key="dataAccess.name" value="/srv/sites/unilend/dataloader/extract/emprunteurs.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
+                <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
             </map>
         </property>
@@ -96,6 +99,7 @@
                 <entry key="process.outputError" value="/srv/sites/unilend/log/errorProjects.csv"/>
                 <entry key="dataAccess.name" value="/srv/sites/unilend/dataloader/extract/projects.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
+                <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
             </map>
         </property>
