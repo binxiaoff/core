@@ -37,27 +37,6 @@ class lenders_accounts extends lenders_accounts_crud
         parent::lenders_accounts($bdd, $params);
     }
 
-    public function get($id, $field = 'id_lender_account')
-    {
-        return parent::get($id, $field);
-    }
-
-    public function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    public function delete($id, $field = 'id_lender_account')
-    {
-        parent::delete($id, $field);
-    }
-
-    public function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
@@ -96,7 +75,7 @@ class lenders_accounts extends lenders_accounts_crud
     }
 
      /**
-     * @param object $oProjectStatus projects_status necessary for use of constants
+     * @param projects_status $oProjectStatus necessary for use of constants
      * @param int|null $iLendersAccountId unique identifier of the lender
      * @return array with dates and values of loans and dues
      * @throws Exception when there is no id_lender_account
@@ -117,7 +96,7 @@ class lenders_accounts extends lenders_accounts_crud
                 FROM loans l
                 INNER JOIN projects_status_history psh ON l.id_project = psh.id_project
                 INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                WHERE ps.status = ' . projects_status::REMBOURSEMENT . '
+                WHERE ps.status = ' . $oProjectStatus::REMBOURSEMENT . '
                 AND l.id_lender = ' . $iLendersAccountId . '
                 GROUP BY l.id_project,l.id_loan';
 
@@ -148,7 +127,7 @@ class lenders_accounts extends lenders_accounts_crud
 
         $aStatusKo = array(projects_status::PROBLEME, projects_status::RECOUVREMENT, projects_status::PROBLEME_J_PLUS_X);
         while ($record = $this->bdd->fetch_array($result)) {
-            if (in_array($record["project_status"], $aStatusKo) && 0 === $record["echeance_status"]) {
+            if (in_array($record["project_status"], $aStatusKo) && 0 == $record["echeance_status"]) {
                 $record["montant"] = 0;
             }
 
@@ -162,7 +141,7 @@ class lenders_accounts extends lenders_accounts_crud
     }
 
     /**
-     * @param object $oProjectStatus  needed for getValuesForIRR function
+     * @param projects_status $oProjectStatus needed for getValuesForIRR function
      * @param int|null $iLendersAccountId unique identifier of the lender for who the IRR should be calculated
      * @return float with IRR value
      * @throws Exception when there is no id_lender_account,
@@ -182,8 +161,8 @@ class lenders_accounts extends lenders_accounts_crud
         try {
             $aValuesIRR = $this->getValuesForIRR($oProjectStatus, $iLendersAccountId);
         } catch (Exception $e){
-            $this->oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
-            $this->oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
+            $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
+            $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
         }
 
         foreach ($aValuesIRR as $aValues) {
