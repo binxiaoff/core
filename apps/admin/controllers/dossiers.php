@@ -3572,10 +3572,7 @@ class dossiersController extends bootstrap
 
     public function _send_cgv_ajax()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $oClients    = $this->loadData('clients');
         $oProjects   = $this->loadData('projects');
@@ -3631,15 +3628,14 @@ class dossiersController extends bootstrap
             $sCgvLink                = $this->surl . $oProjectCgv->getUrlPath();
         }
 
-
         // Recuperation du pdf du tree
-        $elements = $this->tree_elements->select('id_tree = "' . $oProjectCgv->id_tree . '" AND id_element = '.elements::TYPE_PDF_CGU.' AND id_langue = "' . $this->language . '"');
+        $elements = $this->tree_elements->select('id_tree = "' . $oProjectCgv->id_tree . '" AND id_element = ' . \elements::TYPE_PDF_CGU . ' AND id_langue = "' . $this->language . '"');
 
         if (false === isset($elements[0]['value']) || '' == $elements[0]['value']) {
             $this->result = 'element id invalid';
             return;
         }
-        $sPdfPath = $this->path . 'public/default/var/fichiers/'.$elements[0]['value'];
+        $sPdfPath = $this->path . 'public/default/var/fichiers/' . $elements[0]['value'];
 
         if (false === file_exists($sPdfPath)) {
             $this->result = 'file not found';
@@ -3653,73 +3649,62 @@ class dossiersController extends bootstrap
             copy($sPdfPath, $this->path . project_cgv::BASE_PATH . $oProjectCgv->name);
         }
 
-        // Recuperation du modele de mail
         $oEmailText = $this->loadData('mails_text');
         $oEmailText->get('signature-universign-de-cgv', 'lang = "' . $this->language . '" AND type');
 
-        // Motif virement
         $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($oClients->prenom))), 0, 1);
         $nom       = $this->ficelle->stripAccents(utf8_decode(trim($oClients->nom)));
         $id_client = str_pad($oClients->id_client, 6, 0, STR_PAD_LEFT);
         $sMotif    = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
 
-        // FB
         $this->settings->get('Facebook', 'type');
         $lien_fb = $this->settings->value;
 
-        // Twitter
         $this->settings->get('Twitter', 'type');
         $lien_tw = $this->settings->value;
 
-        // Variables du mailing
         $varMail = array(
-            'surl'                  => $this->surl,
-            'url'                   => $this->furl,
-            'prenom_p'              => $oClients->prenom,
-            'motif_virement'        => $sMotif,
-            'lien_cgv_universign'   => $sCgvLink,
-            'lien_tw'               => $lien_tw,
-            'lien_fb'               => $lien_fb,
+            'surl'                => $this->surl,
+            'url'                 => $this->furl,
+            'prenom_p'            => $oClients->prenom,
+            'motif_virement'      => $sMotif,
+            'lien_cgv_universign' => $sCgvLink,
+            'lien_tw'             => $lien_tw,
+            'lien_fb'             => $lien_fb,
         );
 
-        // Construction du tableau avec les balises EMV
         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-        // Attribution des données aux variables
         $sujetMail = strtr($oEmailText->subject, $tabVars);
         $texteMail = strtr($oEmailText->content, $tabVars);
         $exp_name  = strtr($oEmailText->exp_name, $tabVars);
 
-        // Envoi du mail
         $oEmail = $this->loadLib('email');
         $oEmail->setFrom($oEmailText->exp_email, $exp_name);
-        $oEmail->setSubject('=?UTF-8?B?'.base64_encode(html_entity_decode($sujetMail)).'?=');
+        $oEmail->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)).'?=');
         $oEmail->setHTMLBody(stripslashes($texteMail));
 
         if (empty($oClients->email)) {
             $this->result = 'Erreur : L\'adresse mail du client est vide';
             return;
         }
-        if ($this->Config['env'] == 'prod') {
+
+        if ($this->Config['env'] === 'prod') {
             Mailer::sendNMP($oEmail, $this->mails_filer, $oEmailText->id_textemail, $oClients->email, $tabFiler);
-            // Injection du mail NMP dans la queue
             $this->tnmp->sendMailNMP($tabFiler, $varMail, $oEmailText->nmp_secure, $oEmailText->id_nmp, $oEmailText->nmp_unique, $oEmailText->mode);
         } else {
             $oEmail->addRecipient(trim($oClients->email));
-            if(! Mailer::send($oEmail, $this->mails_filer, $oEmailText->id_textemail)) {
-                $this->result = 'Erreur : L\'envoi du mail a été échoué';
+            if (! Mailer::send($oEmail, $this->mails_filer, $oEmailText->id_textemail)) {
+                $this->result = 'Erreur : L\'envoi du mail a échoué';
                 return;
             }
         }
-        $this->result = 'Envoi des CGV a été fait avec succès !';
+        $this->result = 'CGV envoyées avec succès';
     }
 
     public function _completude_preview()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         /** @var projects $oProjects */
         $oProjects = $this->loadData('projects');
@@ -3761,11 +3746,7 @@ class dossiersController extends bootstrap
 
     public function _completude_preview_iframe()
     {
-        // On masque les Head, header et footer originaux plus le debug
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         /** @var projects $oProjects */
         $oProjects = $this->loadData('projects');
@@ -3800,11 +3781,8 @@ class dossiersController extends bootstrap
 
     public function _send_completude()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireView   = false;
+        $this->hideDecoration();
+        $this->autoFireView = false;
 
         $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
