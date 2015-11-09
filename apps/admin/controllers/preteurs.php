@@ -2354,6 +2354,7 @@ class preteursController extends bootstrap
         } catch (Exception $e){
             $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
             $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
+            $this->IRR = 'non calculable';
         }
 
 
