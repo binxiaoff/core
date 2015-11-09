@@ -141,7 +141,7 @@
                             <td style="vertical-align:middle;"><label for="duree"><?php printf($this->lng['etape2']['choisir-duree-de-remboursement'], $this->ficelle->formatNumber($this->projects->amount, 0)); ?> &nbsp;</label></td>
                             <td>
                                 <select name="duree" id="duree" class="field field-small required custom-select">
-                                    <option value="0"><?= $this->lng['etape1']['duree'] ?></option>
+                                    <option value="0"><?= $this->lng['etape2']['duree'] ?></option>
                                     <?php foreach ($this->dureePossible as $duree): ?>
                                         <option value="<?= $duree ?>"<?= $duree == $this->aForm['duree'] ? ' selected' : '' ?>><?= $duree ?> mois</option>
                                     <?php endforeach ?>

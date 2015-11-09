@@ -1126,51 +1126,6 @@ class ajaxController extends bootstrap
         }
     }
 
-    public function _dernier_bilan()
-    {
-        $this->autoFireView = false;
-
-        //Recuperation des element de traductions
-        $this->lng['etape4'] = $this->ln->selectFront('depot-de-dossier-etape-4', $this->language, $this->App);
-
-
-        if (isset($_POST['annee']) && isset($_POST['mois'])) {
-            $retourne = '
-
-            <select name="mois" id="mois" class="field-mini custom-select">
-                <option value="0">' . $this->lng['etape4']['mois'] . '</option>';
-
-            foreach ($this->dates->tableauMois['fr'] as $k => $mois) {
-                if ($k > 0) {
-                    if (strlen($k) < 2) {
-                        $numMois = '0' . $k;
-                    } else {
-                        $numMois = $k;
-                    }
-
-                    if (date('Y') == $_POST['annee']) {
-                        if ($numMois <= date('m')) {
-                            $retourne .= '<option ' . ($_POST['mois'] == $numMois ? 'selected' : '') . ' value="' . $numMois . '">' . $mois . '</option>';
-                        }
-                    } else {
-                        $retourne .= '<option ' . ($_POST['mois'] == $numMois ? 'selected' : '') . ' value="' . $numMois . '">' . $mois . '</option>';
-                    }
-
-                }
-            }
-
-            $retourne .= '</select>
-
-             <script>
-             $(".custom-select").c2Selectbox();
-             </script>
-
-             ';
-
-            echo $retourne;
-        }
-    }
-
     // mensualité preteur
     public function _load_mensual()
     {

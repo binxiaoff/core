@@ -596,7 +596,8 @@ class projects extends projects_crud
             INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
             INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
             WHERE ps.status = ' . \projects_status::COMPLETUDE_ETAPE_3 . '
-                AND DATE_SUB(NOW(), INTERVAL 1 HOUR) > p.added'
+                AND DATE_SUB(NOW(), INTERVAL 1 HOUR) > p.added
+                AND process_fast = 1'
         );
 
         if ($this->bdd->num_rows($rResult) > 0) {

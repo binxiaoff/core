@@ -43,7 +43,6 @@ class depot_de_dossierController extends bootstrap
 
         $this->lng['depot-de-dossier-header'] = $this->ln->selectFront('depot-de-dossier-header', $this->language, $this->App);
         $this->lng['depot-de-dossier']        = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
-        $this->lng['etape1']                  = $this->ln->selectFront('depot-de-dossier-etape-1', $this->language, $this->App);
         $this->lng['etape2']                  = $this->ln->selectFront('depot-de-dossier-etape-2', $this->language, $this->App);
         $this->lng['etape3']                  = $this->ln->selectFront('depot-de-dossier-etape-3', $this->language, $this->App);
     }
@@ -899,10 +898,13 @@ class depot_de_dossierController extends bootstrap
                 break;
             case \projects_status::NOTE_EXTERNE_FAIBLE:
                 switch ($this->projects->retour_altares) {
+                    case Altares::RESPONSE_CODE_PROCEDURE:
+                        $this->sMessage = $this->lng['depot-de-dossier-fin']['procedure-en-cours'];
+                        break;
                     case Altares::RESPONSE_CODE_INACTIVE:
                     case Altares::RESPONSE_CODE_UNKNOWN_SIREN:
-                        $this->sMessage = $this->lng['depot-de-dossier-fin']['no-siren'];
-                        break;
+                    $this->sMessage = $this->lng['depot-de-dossier-fin']['no-siren'];
+                    break;
                     case Altares::RESPONSE_CODE_NOT_REGISTERED:
                         $this->sMessage = $this->lng['depot-de-dossier-fin']['no-rcs'];
                         break;
