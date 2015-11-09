@@ -1,10 +1,13 @@
 <?php
 
+use Unilend\librairies\ULogger;
+
+
 class preteursController extends bootstrap
 {
     var $Command;
 
-    public function preteursController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
@@ -1874,14 +1877,6 @@ class preteursController extends bootstrap
 
     }
 
-    public function _letest()
-    {
-
-        die;
-        //$this->create_offre_bienvenue(id_client);
-        die;
-    }
-
     public function _script_rattrapage_offre_bienvenue()
     {
         $this->autoFireHeader = false;
@@ -2353,8 +2348,14 @@ class preteursController extends bootstrap
 
         //PORTFOLIO DETAILS
 
-        //TRI
-        $this->TRI = $this->lenders_accounts->calculTRI($this->projects_status);
+        //IRR
+        try {
+            $this->IRR = $this->lenders_accounts->calculateIRR($this->projects_status);
+        } catch (Exception $e){
+            $this->oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
+            $this->oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
+        }
+
 
         //amount of projects online since his registration
         $statusOk                = array(projects_status::A_FUNDER, projects_status::EN_FUNDING, projects_status::REMBOURSEMENT, projects_status::PRET_REFUSE);
