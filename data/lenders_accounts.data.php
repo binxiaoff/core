@@ -167,18 +167,17 @@ class lenders_accounts extends lenders_accounts_crud
 
     }
 
-    public function getInfosben($iLimit = '', $iOffset = '')
+    public function getInfosben($oProjectsStatus, $iLimit = null, $iOffset = null)
     {
-        $iOffset = $this->bdd->escape_string($iOffset);
-        $iLimit  = $this->bdd->escape_string($iLimit);
-
         $sOffset = '';
-        if ('' !== $iOffset) {
+        if (null !== $iOffset) {
+            $iOffset = $this->bdd->escape_string($iOffset);
             $sOffset = 'OFFSET ' . $iOffset;
         }
 
         $sLimit = '';
-        if ('' !== $iLimit) {
+        if (null !== $iLimit) {
+            $iLimit  = $this->bdd->escape_string($iLimit);
             $sLimit = 'LIMIT ' . $iLimit;
         }
 
@@ -190,7 +189,7 @@ class lenders_accounts extends lenders_accounts_crud
                 INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
                 INNER JOIN projects_status_history psh USING (id_project_status_history)
                 INNER JOIN projects_status ps USING (id_project_status)
-                WHERE ps.status > 80'. ' ' . $sLimit. ' '. $sOffset;
+                WHERE ps.status > '. projects_status::REMBOURSEMENT . ' ' . $sLimit. ' '. $sOffset;
 
         $resultat = $this->bdd->query($sql);
         $result   = array();

@@ -248,7 +248,7 @@ function controleCp(elmCp, elmCountry, async)
 	async = typeof async !== 'undefined' ? async : true;
 	var result = false;
 	$.ajax({
-		url: add_url + '/ajax/checkCp/' + elmCp.val() + '/' + elmCountry.val(),
+		url: add_url + '/ajax/checkPostCode/' + elmCp.val() + '/' + elmCountry.val(),
 		method: 'GET',
 		async: async
 	}).done(function(data){

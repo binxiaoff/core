@@ -43,7 +43,7 @@
                     <td><?=$aLender['prenom']?></td>
                     <td align="center">
                         <a href="#" class="edit_lender" data-adresseId="<?=$aLender['id_adresse']?>">
-                            <img src="<?=$this->surl?>/images/admin/edit.png" alt="Modifier <?=$c['nom'].' '.$c['prenom']?>" />
+                            <img src="<?=$this->surl?>/images/admin/edit.png" alt="Modifier <?=$aLender['nom'].' '.$aLender['prenom']?>" />
                         </a>
                     </td>
                 </tr>
@@ -58,35 +58,33 @@
                     <td><a href="#" class="close_edit btn_link" data-adresseId="<?=$aLender['id_adresse']?>">Fermer</a></td>
                 </tr>
 <?php
-            endforeach;
+        endforeach;
 ?>
             </tbody>
         </table>
 <?php
-            if ($this->nb_lignes != '') :
+        if ($this->nb_lignes != '') :
 ?>
-            <table>
-                <tr>
-                    <td id="pager">
-                        <img src="<?=$this->surl?>/images/admin/first.png" alt="Première" class="first"/>
-                        <img src="<?=$this->surl?>/images/admin/prev.png" alt="Précédente" class="prev"/>
-                        <input type="text" class="pagedisplay" />
-                        <img src="<?=$this->surl?>/images/admin/next.png" alt="Suivante" class="next"/>
-                        <img src="<?=$this->surl?>/images/admin/last.png" alt="Dernière" class="last"/>
-                        <select class="pagesize">
-                            <option value="<?=$this->nb_lignes?>" selected="selected"><?=$this->nb_lignes?></option>
-                        </select>
-                    </td>
-                </tr>
-            </table>
-<?php
-            endif;
-        else:
-        if(isset($_POST['form_search_emprunteur'])) :
-?>
-            <p>Il n'y a aucun prêteur à matcher.</p>
+        <table>
+            <tr>
+                <td id="pager">
+                    <img src="<?=$this->surl?>/images/admin/first.png" alt="Première" class="first"/>
+                    <img src="<?=$this->surl?>/images/admin/prev.png" alt="Précédente" class="prev"/>
+                    <input type="text" class="pagedisplay" />
+                    <img src="<?=$this->surl?>/images/admin/next.png" alt="Suivante" class="next"/>
+                    <img src="<?=$this->surl?>/images/admin/last.png" alt="Dernière" class="last"/>
+                    <select class="pagesize">
+                        <option value="<?=$this->nb_lignes?>" selected="selected"><?=$this->nb_lignes?></option>
+                    </select>
+                </td>
+            </tr>
+        </table>
 <?php
         endif;
+    elseif(isset($_POST['form_search_emprunteur'])) :
+?>
+        <p>Il n'y a aucun prêteur à matcher.</p>
+<?php
     endif;
 ?>
 </div>
@@ -112,7 +110,7 @@
         var cp = $('#cp_'+adresseId).val();
         var city = $('#city_'+adresseId).val();
         $.post(
-            '<?=$this->lurl?>/ajax/patchClientAdresse/' + adresseId,
+            '<?=$this->lurl?>/ajax/patchClientAddress/' + adresseId,
             {cp_fiscal: cp, ville_fiscal: city}
         ).done(function(data){
             if (data == 'ok') {

@@ -1588,7 +1588,7 @@
             async = typeof async !== 'undefined' ? async : true;
             var result = false;
             $.ajax({
-                url: '<?= $url_site ?>/ajax/checkCp/' + elmCp.val() + '/' + elmCountry.val(),
+                url: '<?= $url_site ?>/ajax/checkPostCode/' + elmCp.val() + '/' + elmCountry.val(),
                 method: 'GET',
                 async: async
             }).done(function(data){

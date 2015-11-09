@@ -34,14 +34,14 @@
 <?php
         foreach ($this->aLenders as $i => $aLender) :
 ?>
-                <tr<?=($i%2 == 1?'':' class="odd"')?> id="row_"<?=$aLender['id_client']?>>
+                <tr<?=($i % 2 == 1 ? '' : ' class="odd"')?> id="row_"<?=$aLender['id_client']?>>
                     <td><?=$aLender['id_client']?></td>
                     <td id="td_city_<?=$aLender['id_client']?>"><?=$aLender['ville_naissance']?></td>
                     <td><?=$aLender['nom']?></td>
                     <td><?=$aLender['prenom']?></td>
                     <td align="center">
                         <a href="#" class="edit_lender" data-clientId="<?=$aLender['id_client']?>">
-                            <img src="<?=$this->surl?>/images/admin/edit.png" alt="Modifier <?=$c['nom'].' '.$c['prenom']?>" />
+                            <img src="<?=$this->surl?>/images/admin/edit.png" alt="Modifier <?=$aLender['nom'].' '.$aLender['prenom']?>" />
                         </a>
                     </td>
                 </tr>
@@ -55,12 +55,12 @@
                     <td><a href="#" class="close_edit btn_link" data-clientId="<?=$aLender['id_client']?>">Fermer</a></td>
                 </tr>
 <?php
-            endforeach;
+        endforeach;
 ?>
             </tbody>
         </table>
 <?php
-            if ($this->nb_lignes != '') :
+        if ($this->nb_lignes != '') :
 ?>
             <table>
                 <tr>
@@ -77,13 +77,11 @@
                 </tr>
             </table>
 <?php
-            endif;
-        else:
-        if(isset($_POST['form_search_emprunteur'])) :
-?>
-            <p>Il n'y a aucun prêteur à matcher.</p>
-<?php
         endif;
+    elseif(isset($_POST['form_search_emprunteur'])) :
+?>
+        <p>Il n'y a aucun prêteur à matcher.</p>
+<?php
     endif;
 ?>
 </div>

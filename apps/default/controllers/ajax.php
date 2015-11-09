@@ -40,7 +40,7 @@ class ajaxController extends bootstrap
         $_SESSION['inscription_etape2']['preciser']          = $_POST['preciser'];
     }
 
-    public function _checkCp()
+    public function _checkPostCode()
     {
         $this->autoFireView = false;
         $response = 'nok';

@@ -38,20 +38,9 @@ class insee_pays extends insee_pays_crud
         return parent::get($id, $field);
     }
 
-    public function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
     public function delete($id, $field = 'id_insee_pays')
     {
         parent::delete($id, $field);
-    }
-
-    public function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')

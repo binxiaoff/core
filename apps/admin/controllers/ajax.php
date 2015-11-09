@@ -3194,21 +3194,21 @@ class ajaxController extends bootstrap
         echo json_encode($aCities);
     }
 
-    public function _patchClientAdresse()
+    public function _patchClientAddress()
     {
         $this->autoFireView = false;
         $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-        /** @var clients_adresses $oClientAdresse */
-        $oClientAdresse = $this->loadData('clients_adresses');
+        /** @var clients_adresses $oClientAddress */
+        $oClientAddress = $this->loadData('clients_adresses');
 
         $sResult = 'nok';
 
-        if(isset($this->params[0]) && $oClientAdresse->get($this->params[0])) {
+        if (isset($this->params[0]) && $oClientAddress->get($this->params[0])) {
             foreach ($_POST as $item => $value) {
-                $oClientAdresse->$item = $value;
+                $oClientAddress->$item = $value;
             }
-            $oClientAdresse->update();
+            $oClientAddress->update();
             $sResult = 'ok';
         }
 
@@ -3225,7 +3225,7 @@ class ajaxController extends bootstrap
 
         $sResult = 'nok';
 
-        if(isset($this->params[0]) && $oClient->get($this->params[0])) {
+        if (isset($this->params[0]) && $oClient->get($this->params[0])) {
             foreach ($_POST as $item => $value) {
                 $oClient->$item = $value;
             }
