@@ -897,7 +897,11 @@ class devboxController extends bootstrap
 
     public function _import_file_cp()
     {
-        $this->autoFireView = false;
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
 
         //Encode: UTF-8, new line : LF
         //Source: https://www.data.gouv.fr/fr/datasets/base-officielle-des-codes-postaux/
@@ -909,8 +913,9 @@ class devboxController extends bootstrap
         $oVille = $this->loadData('villes');
 
         while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
-            $departement = substr($aRow[0], 0, 2) !== '97' ? substr($aRow[0], 0, 2) : substr($aRow[0], 0, 3);
-            $sql         = 'INSERT INTO villes (ville, insee, cp, num_departement, active, added, updated)
+            $departement    = substr($aRow[0], 0, 2) !== '97' ? substr($aRow[0], 0, 2) : substr($aRow[0], 0, 3);
+
+            $sql = 'INSERT INTO villes (ville, insee, cp, num_departement, active, added, updated)
                     VALUES("' . $aRow[1] . '", "' . $aRow[0] . '", "' . $aRow[2] . '", "' . $departement . '", 1, NOW(), NOW())';
             $oVille->bdd->query($sql);
             unset($aRow);
@@ -921,7 +926,11 @@ class devboxController extends bootstrap
 
     public function _import_file_insee()
     {
-        $this->autoFireView = false;
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
 
         //Encode: UTF-8, new line : LF
         //Source: http://www.insee.fr/fr/methodes/nomenclatures/cog/telechargement.asp?annee=2015
@@ -932,6 +941,7 @@ class devboxController extends bootstrap
         /** @var villes $oVille */
         $oVille = $this->loadData('villes');
 
+        $i = 0;
         while (($aRow = fgetcsv($rHandle, 0, "\t")) !== false) {
             $sInsee = $oVille->generateCodeInsee($aRow[5], $aRow[6]);
             if ($aRow[0] === '3') {
@@ -947,6 +957,8 @@ class devboxController extends bootstrap
                 $oVille->bdd->query('UPDATE `villes` SET ville = "' . $aRow[13] . '" WHERE insee = "' . $sInsee . '"');
             }
             unset($aRow);
+            $i++;
+            echo 'done: ' . $i . '/39806';
         }
 
         fclose($rHandle);
@@ -954,7 +966,11 @@ class devboxController extends bootstrap
 
     public function _import_pays_insee()
     {
-        $this->autoFireView = false;
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
 
         //Encode: UTF-8, new line : LF
         //Source: http://www.insee.fr/fr/methodes/nomenclatures/cog/telechargement.asp?annee=2015

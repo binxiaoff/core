@@ -376,14 +376,14 @@ function initAutocompleteCity()
 								$(this).siblings("[data-autocomplete='post_code']")
                                     .val( match[2])
                                     .removeClass('LV_invalid_field')
-                                    .addClass('LV_invalid_field');
+                                    .addClass('LV_valid_field');
 								break;
 							case 'post_code' :
 								$(this).val( match[2]);
 								$(this).siblings("[data-autocomplete='city']")
                                     .val(match[1])
                                     .removeClass('LV_invalid_field')
-                                    .addClass('LV_invalid_field');
+                                    .addClass('LV_valid_field');
 								break;
 						}
 					}

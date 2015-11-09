@@ -41,27 +41,29 @@
                         <div style="height:30px;" class="error_login_mobile">
                             <?php
                             // on lance le captcha
-                            if ($_SESSION['login']['nb_tentatives_precedentes'] > 5 && ! isset($_POST['project_detail'])) {
-                                ?>
-                                <input type="text" name="captcha" class="field field-mini input_captcha_login" id="captcha" value="captcha" title="captcha">
-                                <div class="content_captcha_login">
-                                    <img class="captcha_login" src="<?= $this->surl ?>/images/default/securitecode.php" alt="captcha"/>
-                                </div>
-                                <img class="reload_captcha_login" src="<?= $this->surl ?>/images/default/icon-reload.gif" alt="Reload captcha"/>
-                                <script type="text/javascript">
-                                    $(".reload_captcha_login").click(function () {
-                                        $.post(add_url + "/ajax/captcha_login").done(function (data) {
-                                            $('.content_captcha_login').html(data);
+                            if (isset($_SESSION['login']['nb_tentatives_precedentes'])) {
+                                if ($_SESSION['login']['nb_tentatives_precedentes'] > 5 && ! isset($_POST['project_detail'])) {
+                                    ?>
+                                    <input type="text" name="captcha" class="field field-mini input_captcha_login" id="captcha" value="captcha" title="captcha">
+                                    <div class="content_captcha_login">
+                                        <img class="captcha_login" src="<?= $this->surl ?>/images/default/securitecode.php" alt="captcha"/>
+                                    </div>
+                                    <img class="reload_captcha_login" src="<?= $this->surl ?>/images/default/icon-reload.gif" alt="Reload captcha"/>
+                                    <script type="text/javascript">
+                                        $(".reload_captcha_login").click(function () {
+                                            $.post(add_url + "/ajax/captcha_login").done(function (data) {
+                                                $('.content_captcha_login').html(data);
+                                            });
                                         });
-                                    });
-                                </script>
-                                <?php
-                            } // on lance le message d'attente
-                            elseif ($_SESSION['login']['nb_tentatives_precedentes'] > 1 && ! isset($_POST['project_detail'])) {
-                                echo '<p class="error_login error_wait" style="display:block;">' . $this->lng['header']['vous-devez-attendre'] . ' ' . $_SESSION['login']['duree_waiting'] . ' ' . $this->lng['header']['secondes-avant-de-pourvoir-vous-connecter'] . '</p>';
-                            } // message d'erreur
-                            elseif ($_SESSION['login']['nb_tentatives_precedentes'] <= 1 && ! isset($_POST['project_detail'])) {
-                                echo '<p class="error_login">' . $this->error_login . '</p>';
+                                    </script>
+                                    <?php
+                                } // on lance le message d'attente
+                                elseif ($_SESSION['login']['nb_tentatives_precedentes'] > 1 && ! isset($_POST['project_detail'])) {
+                                    echo '<p class="error_login error_wait" style="display:block;">' . $this->lng['header']['vous-devez-attendre'] . ' ' . $_SESSION['login']['duree_waiting'] . ' ' . $this->lng['header']['secondes-avant-de-pourvoir-vous-connecter'] . '</p>';
+                                } // message d'erreur
+                                elseif ($_SESSION['login']['nb_tentatives_precedentes'] <= 1 && ! isset($_POST['project_detail'])) {
+                                    echo '<p class="error_login">' . $this->error_login . '</p>';
+                                }
                             }
                             ?>
                         </div>
@@ -72,17 +74,17 @@
                         </span>
 
                         <div style="width:48px;display:inline-block;">
-                            <div class="btn_login" <?= ($_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5 ? 'style="display:none;"' : '') ?>>
+                            <div class="btn_login" <?= (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5 ? 'style="display:none;"' : '') ?>>
                                 <button type="submit" name="connect" class="btn btn-mini btn-warning"><?= $this->lng['header']['ok'] ?></button>
                             </div>
-                            <div class="error_wait" <?= ($_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5 ? 'style="display:block;"' : '') ?>>
+                            <div class="error_wait" <?= (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5 ? 'style="display:block;"' : '') ?>>
                                 <img src="<?= $this->surl ?>/styles/default/images/loading.gif" alt="loading...">
                             </div>
                         </div>
                     </form>
                     <?php
                     // On desactive la validation par la touche enter
-                    if ($_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5) {
+                    if (isset($_SESSION['login']['nb_tentatives_precedentes']) &&  $_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5) {
                         ?>
                         <script type="text/javascript">
                             $("input").keypress(function (event) {
