@@ -8135,7 +8135,7 @@ class cronController extends bootstrap
                                     $aReplacements['liste_pieces']            = $this->projects_status_history->content;
                                     $aReplacements['raison_sociale']          = $this->companies->name;
                                     $aReplacements['prenom']                  = $this->clients->prenom;
-                                    $aReplacements['montant']                 = $this->projects->amount;
+                                    $aReplacements['montant']                 = $this->ficelle->formatNumber($this->projects->amount, 0);
                                     $aReplacements['delai_demande']           = $iDaysInterval;
                                     $aReplacements['lien_reprise_dossier']    = $this->furl . '/depot_de_dossier/reprise/' . $this->projects->hash;
                                     $aReplacements['lien_stop_relance']       = $this->furl . '/depot_de_dossier/emails/' . $this->projects->hash;
