@@ -129,7 +129,7 @@
                             }
 
                             ?>
-                            <a <?= ($this->tree->id_tree == $n['id_tree'] || $this->tree->id_parent == $n['id_tree'] || $this->navigateurActive == $n['id_tree'] ? 'class="active"' : '') ?> href="<?= $this->lurl . '/' . $n['slug'] ?>"><?= $n['title'] ?></a>
+                            <a <?= ($this->tree->id_tree == $n['id_tree'] || $this->tree->id_parent == $n['id_tree'] || (isset($this->navigateurActive) && $this->navigateurActive == $n['id_tree']) ? 'class="active"' : '') ?> href="<?= $this->lurl . '/' . $n['slug'] ?>"><?= $n['title'] ?></a>
                             </li><?php
                         }
                         ?>

@@ -173,7 +173,7 @@ class projects extends projects_crud
     {
         $sWhereClause = ' WHERE ps.status IN ('.$status.') ';
         if ('' !== trim($where)) {
-            $sWhereClause .= ' AND ' . $where . ' ';
+            $sWhereClause .= ' ' . $where . ' ';
         }
 
         //if($order == '') $order = 'lestatut ASC,IF(lestatut = 2, p.date_retrait ,(select sum(amount*rate) FROM bids b where b.id_project = p.id_project)/(select sum(amount) FROM bids b where b.id_project = p.id_project)) DESC';
