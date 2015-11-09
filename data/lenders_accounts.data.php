@@ -26,10 +26,13 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\librairies\ULogger;
+
+
 class lenders_accounts extends lenders_accounts_crud
 {
 
-    public function lenders_accounts($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::lenders_accounts($bdd, $params);
     }
@@ -92,59 +95,60 @@ class lenders_accounts extends lenders_accounts_crud
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    /**
-     * @param $oProjectStatus object needed for constants
-     * @param null $iLender int unique identifier of lender whose values are needed
-     * @return array with dates and values of loans and returns
+     /**
+     * @param object $oProjectStatus projects_status necessary for use of constants
+     * @param int|null $iLendersAccountId unique identifier of the lender
+     * @return array with dates and values of loans and dues
+     * @throws Exception when there is no id_lender_account
      */
-    private function getValuesforTRI($oProjectStatus, $iLender = null)
+    private function getValuesForIRR($oProjectStatus, $iLendersAccountId = null)
     {
-        if ($iLender === null) {
+        if ($iLendersAccountId === null) {
             if ($this->id_lender_account != null) {
-                $iLender = $this->id_lender_account;
+                $iLendersAccountId = $this->id_lender_account;
             } else {
-                return false;
+                throw new Exception('No id_lender_account');
             }
         }
 
-        $aValuesTRI = array();
+        $aValuesIRR = array();
         //get loans values as negativ , dates and project status
-        $sSql = 'SELECT (l.amount *-1) as loan, psh.added as date
+        $sql = 'SELECT -l.amount AS loan, psh.added AS date
                 FROM loans l
-                INNER JOIN projects_status_history psh USING(id_project)
-                INNER JOIN projects_status ps using(id_project_status)
-                where ps.status = ' . projects_status::REMBOURSEMENT . '
-                AND l.id_lender = ' . $iLender . '
+                INNER JOIN projects_status_history psh ON l.id_project = psh.id_project
+                INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                WHERE ps.status = ' . projects_status::REMBOURSEMENT . '
+                AND l.id_lender = ' . $iLendersAccountId . '
                 GROUP BY l.id_project,l.id_loan';
 
-        $result = $this->bdd->query($sSql);
+        $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($result)) {
-            $aValuesTRI[] = array($record["date"] => $record["loan"]);
+            $aValuesIRR[] = array($record["date"] => $record["loan"]);
 
         }
         //get echeancier values
-        $sSql = 'SELECT
-						e.montant as montant,
-						e.date_echeance_reel as date_echeance_reel,
-						e.date_echeance as date_echeance,
-						e.status as echeance_status,
-							(
-							SELECT ps.status
-							FROM projects_status ps
-									LEFT JOIN projects_status_history psh ON (
-									ps.id_project_status = psh.id_project_status)
-									WHERE psh.id_project = p.id_project
-									ORDER BY psh.added DESC LIMIT 1) as project_status
-						FROM echeanciers e
-							LEFT JOIN projects p ON e.id_project = p.id_project
-							INNER JOIN loans l ON e.id_loan = l.id_loan
-						WHERE e.id_lender = ' . $iLender . ';';
+        $sql = 'SELECT
+                        e.montant AS montant,
+                        e.date_echeance_reel AS date_echeance_reel,
+                        e.date_echeance AS date_echeance,
+                        e.status AS echeance_status,
+                            (
+                            SELECT ps.status
+                            FROM projects_status ps
+                                    LEFT JOIN projects_status_history psh ON (
+                                    ps.id_project_status = psh.id_project_status)
+                                    WHERE psh.id_project = p.id_project
+                                    ORDER BY psh.added DESC LIMIT 1) AS project_status
+                        FROM echeanciers e
+                            LEFT JOIN projects p ON e.id_project = p.id_project
+                            INNER JOIN loans l ON e.id_loan = l.id_loan
+                        WHERE e.id_lender = ' . $iLendersAccountId;
 
-        $result = $this->bdd->query($sSql);
+        $result = $this->bdd->query($sql);
 
         $aStatusKo = array(projects_status::PROBLEME, projects_status::RECOUVREMENT, projects_status::PROBLEME_J_PLUS_X);
         while ($record = $this->bdd->fetch_array($result)) {
-            if (in_array($record["project_status"], $aStatusKo) && 0 === (int)$record["echeance_status"]) {
+            if (in_array($record["project_status"], $aStatusKo) && 0 === $record["echeance_status"]) {
                 $record["montant"] = 0;
             }
 
@@ -152,120 +156,97 @@ class lenders_accounts extends lenders_accounts_crud
                 $record["date_echeance_reel"] = $record["date_echeance"];
             }
 
-            if (array_key_exists($record["date_echeance_reel"], $aValuesTRI)) {
-                $aValuesTRI[] += array($record["date_echeance_reel"] => $record["montant"]);
-            } else {
-                $aValuesTRI[] = array($record["date_echeance_reel"] => $record["montant"]);
-            }
+            $aValuesIRR[] = array($record["date_echeance_reel"] => $record["montant"]);
         }
-
-        return $aValuesTRI;
+        return $aValuesIRR;
     }
 
     /**
-     * Function that calculates the Internal Rate of Return for a lender portfolio
-     * @param $oProjectStatus Object projects_status, needed for getValuesforTRI function
-     * @param null $iLender int unique id of the lender for which the TRI should be calculated
-     * @return bool|int|string with value as %
+     * @param object $oProjectStatus  needed for getValuesForIRR function
+     * @param int|null $iLendersAccountId unique identifier of the lender for who the IRR should be calculated
+     * @return float with IRR value
+     * @throws Exception when there is no id_lender_account,
+     * when not values are available to be used in the calculation,
+     * when the result is not in the accepted range
      */
-    public function calculTRI($oProjectStatus, $iLender = null)
+    public function calculateIRR($oProjectStatus, $iLendersAccountId = null)
     {
-        if ($iLender === null) {
+        if ($iLendersAccountId === null) {
             if ($this->id_lender_account != null) {
-                $iLender = $this->id_lender_account;
+                $iLendersAccountId = $this->id_lender_account;
             } else {
-                return false;
+                throw new Exception('No id_lender_account');
             }
         }
 
-        $aValuesTRI = $this->getValuesforTRI($oProjectStatus, $iLender);
-
-        if (empty($aValuesTRI)) {
-            return 0;
+        try {
+            $aValuesIRR = $this->getValuesForIRR($oProjectStatus, $iLendersAccountId);
+        } catch (Exception $e){
+            $this->oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
+            $this->oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
         }
 
-        foreach ($aValuesTRI as $aValues) {
-
+        foreach ($aValuesIRR as $aValues) {
             foreach ($aValues as $date => $value) {
                 $aDates[] = $date;
                 $aSums[]  = $value;
             }
         }
+
         $oFinancial = new \PHPExcel_Calculation_Financial();
         $fXIRR      = round($oFinancial->XIRR($aSums, $aDates) * 100, 2);
 
-        if ($fXIRR >= -100 && $fXIRR <= 100) {
-            $sXIRR = (string)$fXIRR;
-
-        } else {
-            $sXIRR = 'non calculable';
+        if ($fXIRR >= -100 && $fXIRR <= 100 === false) {
+            throw new Exception('IRR not in range for '.$iLendersAccountId. ' IRR : '. $fXIRR);
         }
-        return $sXIRR;
+        return $fXIRR;
     }
 
     /**
-     * @param $iLender unique id of the lender whose attachements are needed
-     * @return array with all attachements
+     * @param int $iLendersAccountId unique identifier of the lender account
+     * @return array of attachments
      */
-    public function getAttachments($iLender)
+    public function getAttachments($iLendersAccountId)
     {
 
         $sql = 'SELECT a.id, a.id_type, a.id_owner, a.type_owner, a.path, a.added, a.updated, a.archived
-				FROM attachment a
-				WHERE a.id_owner = ' . $iLender . '
-					AND a.type_owner = "lenders_accounts";';
+                FROM attachment a
+                WHERE a.id_owner = ' . $iLendersAccountId . '
+                AND a.type_owner = "lenders_accounts";';
 
-        $result      = $this->bdd->query($sql);
-        $attachments = array();
+        $result       = $this->bdd->query($sql);
+        $aAttachments = array();
         while ($record = $this->bdd->fetch_array($result)) {
-
-            $attachments[$record["id_type"]] = $record;
+            $aAttachments[$record["id_type"]] = $record;
         }
-        return $attachments;
+        return $aAttachments;
 
     }
 
     /**
-     * Function to select lenders for TRI cron
-     * @param $iLimit number of accounts that need to be selected
+     * @param int $iLimit number of lender accounts to be selected
      * @return array with lenders
      */
-    public function selectLendersForTRI($iLimit)
+    public function selectLendersForIRR($iLimit)
     {
-
-        $sSql = 'SELECT
-                    la.id_lender_account,
+        $sql = 'SELECT
+                    b.id_lender_account,
                     la.added,
-                    (
-                        SELECT
-                            las.tri_date
-                        FROM
-                            lenders_account_stats
-                        ORDER BY
-                            las.tri_date DESC
-                        LIMIT
-                            1
-                    ) as tri_date
+                    MAX(las.tri_date) AS last_tri_date
                 FROM
                     lenders_accounts la
-                    LEFT JOIN lenders_account_stats las ON la.id_lender_account = las.id_lender
-                    LEFT JOIN clients c ON la.id_client_owner = c.id_client
+                    INNER JOIN clients c ON la.id_client_owner = c.id_client
+                    INNER JOIN bids b ON b.id_lender_account = la.id_lender_account
+                    LEFT JOIN lenders_account_stats las ON la.id_lender_account = las.id_lender_account
                 WHERE
                     c.status = 1
-                    AND EXISTS(
-                        SELECT
-                            NULL
-                        FROM
-                            bids b
-                        WHERE
-                            b.id_lender_account = la.id_lender_account
-                    )
+                GROUP BY
+                    b.id_lender_account
                 ORDER BY
-                    las.tri_date ASC,
+                    last_tri_date ASC,
                     la.added DESC
-                LIMIT ' . $iLimit . ';';
-
-        $result   = $this->bdd->query($sSql);
+                LIMIT ' . $iLimit;
+        $result   = $this->bdd->query($sql);
         $aLenders = array();
         while ($record = $this->bdd->fetch_array($result)) {
             $aLenders[] = $record;
