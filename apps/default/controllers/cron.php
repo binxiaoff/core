@@ -1272,44 +1272,44 @@ class cronController extends bootstrap
             $date_execution = date('Y-m-d');
 
             $xml = '<?xml version="1.0" encoding="UTF-8"?>
-	<Document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03">
-		<CstmrCdtTrfInitn>
-			<GrpHdr>
-				<MsgId>' . $id_message . '</MsgId>
-				<CreDtTm>' . $date_creation . '</CreDtTm>
-				<NbOfTxs>' . $nbVirements . '</NbOfTxs>
-				<CtrlSum>' . $Totalmontants . '</CtrlSum>
-				<InitgPty>
-					<Nm>' . $compte . '</Nm>
-				</InitgPty>
-			</GrpHdr>
-			<PmtInf>
-				<PmtInfId>' . $titulaire . '/' . $dateColle . '/' . $id_compteur . '</PmtInfId>
-				<PmtMtd>TRF</PmtMtd>
-				<NbOfTxs>' . $nbVirements . '</NbOfTxs>
-				<CtrlSum>' . $Totalmontants . '</CtrlSum>
-				<PmtTpInf>
-					<SvcLvl>
-						<Cd>SEPA</Cd>
-					</SvcLvl>
-				</PmtTpInf>
-				<ReqdExctnDt>' . $date_execution . '</ReqdExctnDt>
-				<Dbtr>
-					<Nm>SFPMEI</Nm>
-					<PstlAdr>
-						<Ctry>FR</Ctry>
-					</PstlAdr>
-				</Dbtr>
-				<DbtrAcct>
-					<Id>
-						<IBAN>' . str_replace(' ', '', $iban) . '</IBAN>
-					</Id>
-				</DbtrAcct>
-				<DbtrAgt>
-					<FinInstnId>
-						<BIC>' . str_replace(' ', '', $bic) . '</BIC>
-					</FinInstnId>
-				</DbtrAgt>';
+    <Document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03">
+        <CstmrCdtTrfInitn>
+            <GrpHdr>
+                <MsgId>' . $id_message . '</MsgId>
+                <CreDtTm>' . $date_creation . '</CreDtTm>
+                <NbOfTxs>' . $nbVirements . '</NbOfTxs>
+                <CtrlSum>' . $Totalmontants . '</CtrlSum>
+                <InitgPty>
+                    <Nm>' . $compte . '</Nm>
+                </InitgPty>
+            </GrpHdr>
+            <PmtInf>
+                <PmtInfId>' . $titulaire . '/' . $dateColle . '/' . $id_compteur . '</PmtInfId>
+                <PmtMtd>TRF</PmtMtd>
+                <NbOfTxs>' . $nbVirements . '</NbOfTxs>
+                <CtrlSum>' . $Totalmontants . '</CtrlSum>
+                <PmtTpInf>
+                    <SvcLvl>
+                        <Cd>SEPA</Cd>
+                    </SvcLvl>
+                </PmtTpInf>
+                <ReqdExctnDt>' . $date_execution . '</ReqdExctnDt>
+                <Dbtr>
+                    <Nm>SFPMEI</Nm>
+                    <PstlAdr>
+                        <Ctry>FR</Ctry>
+                    </PstlAdr>
+                </Dbtr>
+                <DbtrAcct>
+                    <Id>
+                        <IBAN>' . str_replace(' ', '', $iban) . '</IBAN>
+                    </Id>
+                </DbtrAcct>
+                <DbtrAgt>
+                    <FinInstnId>
+                        <BIC>' . str_replace(' ', '', $bic) . '</BIC>
+                    </FinInstnId>
+                </DbtrAgt>';
 
             foreach ($lVirementsEnCours as $v) {
                 $this->clients->get($v['id_client'], 'id_client');
@@ -1351,38 +1351,38 @@ class cronController extends bootstrap
                 $montant = round($v['montant'] / 100, 2);
 
                 $xml .= '
-				<CdtTrfTxInf>
-					<PmtId>
-						<EndToEndId>' . $id_lot . '</EndToEndId>
-					</PmtId>
-					<Amt>
-						<InstdAmt Ccy="EUR">' . $montant . '</InstdAmt>
-					</Amt>
-					<CdtrAgt>
-						<FinInstnId>
-							<BIC>' . str_replace(' ', '', $bicDestinataire) . '</BIC>
-						</FinInstnId>
-					 </CdtrAgt>
-					 <Cdtr>
-						 <Nm>' . ($v['type'] == 4 ? $retraitTitu : $destinataire) . '</Nm>
-						 <PstlAdr>
-							 <Ctry>FR</Ctry>
-						 </PstlAdr>
-					 </Cdtr>
-					 <CdtrAcct>
-						 <Id>
-							 <IBAN>' . str_replace(' ', '', $ibanDestinataire) . '</IBAN>
-						 </Id>
-					 </CdtrAcct>
-					 <RmtInf>
-						 <Ustrd>' . str_replace(' ', '', $v['motif']) . '</Ustrd>
-					 </RmtInf>
-				</CdtTrfTxInf>';
+                <CdtTrfTxInf>
+                    <PmtId>
+                        <EndToEndId>' . $id_lot . '</EndToEndId>
+                    </PmtId>
+                    <Amt>
+                        <InstdAmt Ccy="EUR">' . $montant . '</InstdAmt>
+                    </Amt>
+                    <CdtrAgt>
+                        <FinInstnId>
+                            <BIC>' . str_replace(' ', '', $bicDestinataire) . '</BIC>
+                        </FinInstnId>
+                     </CdtrAgt>
+                     <Cdtr>
+                         <Nm>' . ($v['type'] == 4 ? $retraitTitu : $destinataire) . '</Nm>
+                         <PstlAdr>
+                             <Ctry>FR</Ctry>
+                         </PstlAdr>
+                     </Cdtr>
+                     <CdtrAcct>
+                         <Id>
+                             <IBAN>' . str_replace(' ', '', $ibanDestinataire) . '</IBAN>
+                         </Id>
+                     </CdtrAcct>
+                     <RmtInf>
+                         <Ustrd>' . str_replace(' ', '', $v['motif']) . '</Ustrd>
+                     </RmtInf>
+                </CdtTrfTxInf>';
             }
             $xml .= '
-			</PmtInf>
-		</CstmrCdtTrfInitn>
-	</Document>';
+            </PmtInf>
+        </CstmrCdtTrfInitn>
+    </Document>';
 
             echo $xml;
 
@@ -1547,17 +1547,17 @@ class cronController extends bootstrap
             $Totalmontants = $TotalmontantsPreteurPonctuel + $TotalmontantsPreteurRecu + $TotalmontantsEmprunteur;
 
             $xml = '<?xml version="1.0" encoding="UTF-8"?>
-	<Document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.02">
-		<CstmrDrctDbtInitn>
-			<GrpHdr>
-				<MsgId>' . $id_message . '</MsgId>
-				<CreDtTm>' . $date_creation . '</CreDtTm>
-				<NbOfTxs>' . $nbPrelevements . '</NbOfTxs>
-				<CtrlSum>' . $Totalmontants . '</CtrlSum>
-				<InitgPty>
-					<Nm>' . $compte . '</Nm>
-				</InitgPty>
-			</GrpHdr>';
+    <Document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:iso:std:iso:20022:tech:xsd:pain.008.001.02">
+        <CstmrDrctDbtInitn>
+            <GrpHdr>
+                <MsgId>' . $id_message . '</MsgId>
+                <CreDtTm>' . $date_creation . '</CreDtTm>
+                <NbOfTxs>' . $nbPrelevements . '</NbOfTxs>
+                <CtrlSum>' . $Totalmontants . '</CtrlSum>
+                <InitgPty>
+                    <Nm>' . $compte . '</Nm>
+                </InitgPty>
+            </GrpHdr>';
 
             //////////////////////////////////////////
             /// lPrelevementsEnCoursPeteurPonctuel ///
@@ -1773,8 +1773,8 @@ class cronController extends bootstrap
             }
 
             $xml .= '
-		</CstmrDrctDbtInitn>
-	</Document>';
+        </CstmrDrctDbtInitn>
+    </Document>';
             echo $xml;
             $filename = 'Unilend_Prelevements_' . date('Ymd');
 
@@ -1814,84 +1814,84 @@ class cronController extends bootstrap
         $motif         = $table['motif'];
 
         $xml = '
-			<PmtInf>
-				<PmtInfId>' . $id_lot . '</PmtInfId>
-				<PmtMtd>DD</PmtMtd>
-				<NbOfTxs>1</NbOfTxs>
-				<CtrlSum>' . $montant . '</CtrlSum>
-				<PmtTpInf>
-					<SvcLvl>
-						<Cd>SEPA</Cd>
-					</SvcLvl>
-					<LclInstrm>
-						<Cd>CORE</Cd>
-					</LclInstrm>
-					<SeqTp>' . $val . '</SeqTp>
-				</PmtTpInf>
-				<ReqdColltnDt>' . $date_execution . '</ReqdColltnDt>
-				<Cdtr>
-					<Nm>SFPMEI</Nm>
-					<PstlAdr>
-						<Ctry>FR</Ctry>
-					</PstlAdr>
-				</Cdtr>
-				<CdtrAcct>
-					<Id>
-						<IBAN>' . $iban . '</IBAN>
-					</Id>
-					<Ccy>EUR</Ccy>
-				</CdtrAcct>
-				<CdtrAgt>
-					<FinInstnId>
-						<BIC>' . $bic . '</BIC>
-					</FinInstnId>
-				</CdtrAgt>
-				<ChrgBr>SLEV</ChrgBr>
-				<CdtrSchmeId>
-					<Id>
-						<PrvtId>
-							<Othr>
-								<Id>' . $ics . '</Id>
-								<SchmeNm>
-									<Prtry>SEPA</Prtry>
-							   </SchmeNm>
-						   </Othr>
-					   </PrvtId>
-					</Id>
-				</CdtrSchmeId>
-				<DrctDbtTxInf>
-					<PmtId>
-						<EndToEndId>' . $id_lot . '</EndToEndId>
-					</PmtId>
-					<InstdAmt Ccy="EUR">' . $montant . '</InstdAmt>
-					<DrctDbtTx>
-						<MndtRltdInf>
-							<MndtId>' . $refmandat . '</MndtId>
-							<DtOfSgntr>' . $date_mandat . '</DtOfSgntr>
-							<AmdmntInd>false</AmdmntInd>
-						</MndtRltdInf>
-					</DrctDbtTx>
-					<DbtrAgt>
-						<FinInstnId>
-							<BIC>' . $bicPreteur . '</BIC>
-						</FinInstnId>
-					 </DbtrAgt>
-					 <Dbtr>
-						 <Nm>' . $nomPreteur . ' ' . $prenomPreteur . '</Nm>
-						 <PstlAdr>
-							 <Ctry>FR</Ctry>
-						 </PstlAdr>
-					 </Dbtr>
-					 <DbtrAcct>
-						 <Id>
-							 <IBAN>' . $ibanPreteur . '</IBAN>
-						 </Id>
-					 </DbtrAcct>
-					 <RmtInf>
-						<Ustrd>' . $motif . '</Ustrd>
-					 </RmtInf>
-				</DrctDbtTxInf>
-			</PmtInf>';
+            <PmtInf>
+                <PmtInfId>' . $id_lot . '</PmtInfId>
+                <PmtMtd>DD</PmtMtd>
+                <NbOfTxs>1</NbOfTxs>
+                <CtrlSum>' . $montant . '</CtrlSum>
+                <PmtTpInf>
+                    <SvcLvl>
+                        <Cd>SEPA</Cd>
+                    </SvcLvl>
+                    <LclInstrm>
+                        <Cd>CORE</Cd>
+                    </LclInstrm>
+                    <SeqTp>' . $val . '</SeqTp>
+                </PmtTpInf>
+                <ReqdColltnDt>' . $date_execution . '</ReqdColltnDt>
+                <Cdtr>
+                    <Nm>SFPMEI</Nm>
+                    <PstlAdr>
+                        <Ctry>FR</Ctry>
+                    </PstlAdr>
+                </Cdtr>
+                <CdtrAcct>
+                    <Id>
+                        <IBAN>' . $iban . '</IBAN>
+                    </Id>
+                    <Ccy>EUR</Ccy>
+                </CdtrAcct>
+                <CdtrAgt>
+                    <FinInstnId>
+                        <BIC>' . $bic . '</BIC>
+                    </FinInstnId>
+                </CdtrAgt>
+                <ChrgBr>SLEV</ChrgBr>
+                <CdtrSchmeId>
+                    <Id>
+                        <PrvtId>
+                            <Othr>
+                                <Id>' . $ics . '</Id>
+                                <SchmeNm>
+                                    <Prtry>SEPA</Prtry>
+                               </SchmeNm>
+                           </Othr>
+                       </PrvtId>
+                    </Id>
+                </CdtrSchmeId>
+                <DrctDbtTxInf>
+                    <PmtId>
+                        <EndToEndId>' . $id_lot . '</EndToEndId>
+                    </PmtId>
+                    <InstdAmt Ccy="EUR">' . $montant . '</InstdAmt>
+                    <DrctDbtTx>
+                        <MndtRltdInf>
+                            <MndtId>' . $refmandat . '</MndtId>
+                            <DtOfSgntr>' . $date_mandat . '</DtOfSgntr>
+                            <AmdmntInd>false</AmdmntInd>
+                        </MndtRltdInf>
+                    </DrctDbtTx>
+                    <DbtrAgt>
+                        <FinInstnId>
+                            <BIC>' . $bicPreteur . '</BIC>
+                        </FinInstnId>
+                     </DbtrAgt>
+                     <Dbtr>
+                         <Nm>' . $nomPreteur . ' ' . $prenomPreteur . '</Nm>
+                         <PstlAdr>
+                             <Ctry>FR</Ctry>
+                         </PstlAdr>
+                     </Dbtr>
+                     <DbtrAcct>
+                         <Id>
+                             <IBAN>' . $ibanPreteur . '</IBAN>
+                         </Id>
+                     </DbtrAcct>
+                     <RmtInf>
+                        <Ustrd>' . $motif . '</Ustrd>
+                     </RmtInf>
+                </DrctDbtTxInf>
+            </PmtInf>';
 
         return $xml;
     }
@@ -3181,26 +3181,26 @@ class cronController extends bootstrap
             $totalSoldeAdminFiscal = $soldeAdminFiscal_old;
 
             $tableau = '
-		<style>
-			table th,table td{width:80px;height:20px;border:1px solid black;}
-			table td.dates{text-align:center;}
-			.right{text-align:right;}
-			.center{text-align:center;}
-			.boder-top{border-top:1px solid black;}
-			.boder-bottom{border-bottom:1px solid black;}
-			.boder-left{border-left:1px solid black;}
-			.boder-right{border-right:1px solid black;}
-		</style>
+        <style>
+            table th,table td{width:80px;height:20px;border:1px solid black;}
+            table td.dates{text-align:center;}
+            .right{text-align:right;}
+            .center{text-align:center;}
+            .boder-top{border-top:1px solid black;}
+            .boder-bottom{border-bottom:1px solid black;}
+            .boder-left{border-left:1px solid black;}
+            .boder-right{border-right:1px solid black;}
+        </style>
 
-		<table border="0" cellpadding="0" cellspacing="0" style=" background-color:#fff; font:11px/13px Arial, Helvetica, sans-serif; color:#000;width: 2500px;">
-			<tr>
-				<th colspan="34" style="height:35px;font:italic 18px Arial, Helvetica, sans-serif; text-align:center;">UNILEND</th>
-			</tr>
-			<tr>
-				<th rowspan="2">' . $laDate . '</th>
-				<th colspan="3">Chargements compte prêteurs</th>
-				<th>Chargements offres</th>
-				<th>Echeances<br />Emprunteur</th>
+        <table border="0" cellpadding="0" cellspacing="0" style=" background-color:#fff; font:11px/13px Arial, Helvetica, sans-serif; color:#000;width: 2500px;">
+            <tr>
+                <th colspan="34" style="height:35px;font:italic 18px Arial, Helvetica, sans-serif; text-align:center;">UNILEND</th>
+            </tr>
+            <tr>
+                <th rowspan="2">' . $laDate . '</th>
+                <th colspan="3">Chargements compte prêteurs</th>
+                <th>Chargements offres</th>
+                <th>Echeances<br />Emprunteur</th>
                 <th>Octroi prêt</th>
                 <th>Commissions<br />octroi prêt</th>
                 <th>Commissions<br />restant dû</th>
@@ -3212,14 +3212,14 @@ class cronController extends bootstrap
                 <th colspan="3">Virements</th>
                 <th>Prélèvements</th>
 
-			</tr>
-			<tr>
+            </tr>
+            <tr>
 
-				<td class="center">Carte<br>bancaire</td>
-				<td class="center">Virement</td>
-				<td class="center">Prélèvement</td>
-				<td class="center">Virement</td>
-				<td class="center">Prélèvement</td>
+                <td class="center">Carte<br>bancaire</td>
+                <td class="center">Virement</td>
+                <td class="center">Prélèvement</td>
+                <td class="center">Virement</td>
+                <td class="center">Prélèvement</td>
                 <td class="center">Virement</td>
                 <td class="center">Virement</td>
                 <td class="center">Virement</td>
@@ -3236,32 +3236,32 @@ class cronController extends bootstrap
                 <td class="center">Solde<br />théorique</td>
                 <td class="center">Solde<br />réel</td>
                 <td class="center">Ecart<br />global</td>
-				<td class="center">Solde<br />Promotions</td>
-				<td class="center">Solde<br />SFF PME</td>
-				<td class="center">Solde Admin.<br>Fiscale</td>
+                <td class="center">Solde<br />Promotions</td>
+                <td class="center">Solde<br />SFF PME</td>
+                <td class="center">Solde Admin.<br>Fiscale</td>
 
-				<td class="center">Offre promo</td>
+                <td class="center">Offre promo</td>
                 <td class="center">Octroi prêt</td>
                 <td class="center">Retour prêteur<br />(Capital)</td>
                 <td class="center">Retour prêteur<br />(Intérêts nets)</td>
-				<td class="center">Affectation<br />Ech. Empr.</td>
+                <td class="center">Affectation<br />Ech. Empr.</td>
                 <td class="center">Ecart<br />fiscal</td>
 
                 <td class="center">Fichier<br />virements</td>
                 <td class="center">Dont<br />SFF PME</td>
-				<td class="center">Administration<br />Fiscale</td>
+                <td class="center">Administration<br />Fiscale</td>
                 <td class="center">Fichier<br />prélèvements</td>
-			</tr>
-			<tr>
-				<td colspan="18">Début du mois</td>
+            </tr>
+            <tr>
+                <td colspan="18">Début du mois</td>
                 <td class="right">' . number_format($soldeDeLaVeille, 2, ',', ' ') . '</td>
                 <td class="right">' . number_format($soldeReel, 2, ',', ' ') . '</td>
                 <td class="right">' . number_format($oldecart, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($soldePromotion_old, 2, ',', ' ') . '</td>
+                <td class="right">' . number_format($soldePromotion_old, 2, ',', ' ') . '</td>
                 <td class="right">' . number_format($soldeSFFPME_old, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($soldeAdminFiscal_old, 2, ',', ' ') . '</td>
-				<td colspan="10">&nbsp;</td>
-			</tr>';
+                <td class="right">' . number_format($soldeAdminFiscal_old, 2, ',', ' ') . '</td>
+                <td colspan="10">&nbsp;</td>
+            </tr>';
 
             foreach ($listDates as $key => $date) {
 
@@ -3471,12 +3471,12 @@ class cronController extends bootstrap
                     $totalAdminFiscalVir += $adminFiscalVir;
 
                     $tableau .= '
-				<tr>
-					<td class="dates">' . (strlen($key) < 2 ? '0' : '') . $key . '/' . $lemoisLannee2 . '</td>
+                <tr>
+                    <td class="dates">' . (strlen($key) < 2 ? '0' : '') . $key . '/' . $lemoisLannee2 . '</td>
                     <td class="right">' . number_format($alimCB[$date]['montant'], 2, ',', ' ') . '</td>
                     <td class="right">' . number_format($alimVirement[$date]['montant'], 2, ',', ' ') . '</td>
                     <td class="right">' . number_format($alimPrelevement[$date]['montant'], 2, ',', ' ') . '</td>
-					<td class="right">' . number_format($unilend_bienvenue[$date]['montant'], 2, ',', ' ') . '</td>
+                    <td class="right">' . number_format($unilend_bienvenue[$date]['montant'], 2, ',', ' ') . '</td>
                     <td class="right">' . number_format($leRembEmprunteur, 2, ',', ' ') . '</td>
                     <td class="right">' . number_format(str_replace('-', '', $virementEmprunteur[$date]['montant']), 2, ',', ' ') . '</td>
                     <td class="right">' . number_format($virementEmprunteur[$date]['montant_unilend'], 2, ',', ' ') . '</td>
@@ -3494,41 +3494,27 @@ class cronController extends bootstrap
                     <td class="right">' . number_format($soldeTheorique, 2, ',', ' ') . '</td>
                     <td class="right">' . number_format($leSoldeReel, 2, ',', ' ') . '</td>
                     <td class="right">' . number_format(round($ecartSoldes, 2), 2, ',', ' ') . '</td>
-					<td class="right">' . number_format($soldePromotion, 2, ',', ' ') . '</td>
-					<td class="right">' . number_format($soldeSFFPME, 2, ',', ' ') . '</td>
-					<td class="right">' . number_format($soldeAdminFiscal, 2, ',', ' ') . '</td>
+                    <td class="right">' . number_format($soldePromotion, 2, ',', ' ') . '</td>
+                    <td class="right">' . number_format($soldeSFFPME, 2, ',', ' ') . '</td>
+                    <td class="right">' . number_format($soldeAdminFiscal, 2, ',', ' ') . '</td>
 
-					<td class="right">' . number_format($offrePromo, 2, ',', ' ') . '</td>
+                    <td class="right">' . number_format($offrePromo, 2, ',', ' ') . '</td>
                     <td class="right">' . number_format($octroi_pret, 2, ',', ' ') . '</td>
                     <td class="right">' . number_format($capitalPreteur, 2, ',', ' ') . '</td>
-                   	<td class="right">' . number_format($interetNetPreteur, 2, ',', ' ') . '</td>
-					<td class="right">' . number_format($affectationEchEmpr, 2, ',', ' ') . '</td>
+                    <td class="right">' . number_format($interetNetPreteur, 2, ',', ' ') . '</td>
+                    <td class="right">' . number_format($affectationEchEmpr, 2, ',', ' ') . '</td>
                     <td class="right">' . number_format($ecartMouvInternes, 2, ',', ' ') . '</td>
 
                     <td class="right">' . number_format($virementsOK, 2, ',', ' ') . '</td>
                     <td class="right">' . number_format($virementsAttente, 2, ',', ' ') . '</td>
-					<td class="right">' . number_format($adminFiscalVir, 2, ',', ' ') . '</td>
+                    <td class="right">' . number_format($adminFiscalVir, 2, ',', ' ') . '</td>
                     <td class="right">' . number_format($sommePrelev, 2, ',', ' ') . '</td>
-				</tr>';
+                </tr>';
                 } else {
                     $tableau .= '
                 <tr>
                     <td class="dates">' . (strlen($key) < 2 ? '0' : '') . $key . '/' . $lemoisLannee2 . '</td>
                     <td>&nbsp;</td>
-					<td>&nbsp;</td>
-                    <td>&nbsp;</td>
-					<td>&nbsp;</td>
-					<td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-					<td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
@@ -3541,26 +3527,40 @@ class cronController extends bootstrap
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
-					<td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
-					<td>&nbsp;</td>
-					<td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
                 </tr>';
                 }
             }
 
             $tableau .= '
             <tr>
-				<td colspan="33">&nbsp;</td>
-			</tr>
+                <td colspan="33">&nbsp;</td>
+            </tr>
             <tr>
-				<th>Total mois</th>
+                <th>Total mois</th>
                 <th class="right">' . number_format($totalAlimCB, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($totalAlimVirement, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($totalAlimPrelevement, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalVirementUnilend_bienvenue, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($totalVirementUnilend_bienvenue, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($totalRembEmprunteur, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($totalVirementEmprunteur, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($totalVirementCommissionUnilendEmprunteur, 2, ',', ' ') . '</th>
@@ -3573,27 +3573,27 @@ class cronController extends bootstrap
                 <th class="right">' . number_format($totalPrelevements_solidarite, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($totalCrds, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format(str_replace('-', '', $totalRetraitPreteur), 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalSommeMouvements, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($totalSommeMouvements, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($totalNewsoldeDeLaVeille, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($totalNewSoldeReel, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format(round($totalEcartSoldes, 2), 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalSoldePromotion, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalSoldeSFFPME, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalSoldeAdminFiscal, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($totalSoldePromotion, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($totalSoldeSFFPME, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($totalSoldeAdminFiscal, 2, ',', ' ') . '</th>
 
-				<th class="right">' . number_format($totalOffrePromo, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($totalOffrePromo, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($totalOctroi_pret, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($totalCapitalPreteur, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($totalInteretNetPreteur, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalAffectationEchEmpr, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalEcartMouvInternes, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($totalAffectationEchEmpr, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($totalEcartMouvInternes, 2, ',', ' ') . '</th>
 
                 <th class="right">' . number_format($totalVirementsOK, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($totalVirementsAttente, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($totalAdminFiscalVir, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($totalAdminFiscalVir, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($totaladdsommePrelev, 2, ',', ' ') . '</th>
-			</tr>
-		</table>';
+            </tr>
+        </table>';
 
             $table[1]['name'] = 'totalAlimCB';
             $table[1]['val']  = $totalAlimCB;
@@ -3715,19 +3715,19 @@ class cronController extends bootstrap
             $oldecart = $soldeDeLaVeille - $soldeReel;
 
             $tableau .= '
-		<table border="0" cellpadding="0" cellspacing="0" style=" background-color:#fff; font:11px/13px Arial, Helvetica, sans-serif; color:#000;width: 2500px;">
+        <table border="0" cellpadding="0" cellspacing="0" style=" background-color:#fff; font:11px/13px Arial, Helvetica, sans-serif; color:#000;width: 2500px;">
 
             <tr>
-				<th colspan="34" style="font:italic 18px Arial, Helvetica, sans-serif; text-align:center;">&nbsp;</th>
-			</tr>
+                <th colspan="34" style="font:italic 18px Arial, Helvetica, sans-serif; text-align:center;">&nbsp;</th>
+            </tr>
             <tr>
-				<th colspan="34" style="height:35px;font:italic 18px Arial, Helvetica, sans-serif; text-align:center;">UNILEND</th>
-			</tr>
-			<tr>
-				<th rowspan="2">' . $lannee . '</th>
-				<th colspan="3">Chargements compte prêteurs</th>
-				<th>Chargements offres</th>
-				<th>Echeances<br />Emprunteur</th>
+                <th colspan="34" style="height:35px;font:italic 18px Arial, Helvetica, sans-serif; text-align:center;">UNILEND</th>
+            </tr>
+            <tr>
+                <th rowspan="2">' . $lannee . '</th>
+                <th colspan="3">Chargements compte prêteurs</th>
+                <th>Chargements offres</th>
+                <th>Echeances<br />Emprunteur</th>
                 <th>Octroi prêt</th>
                 <th>Commissions<br />octroi prêt</th>
                 <th>Commissions<br />restant dû</th>
@@ -3739,14 +3739,14 @@ class cronController extends bootstrap
                 <th colspan="3">Virements</th>
                 <th>Prélèvements</th>
 
-			</tr>
-			<tr>
+            </tr>
+            <tr>
 
-				<td class="center">Carte<br />bancaire</td>
-				<td class="center">Virement</td>
-				<td class="center">Prélèvement</td>
-				<td class="center">Virement</td>
-				<td class="center">Prélèvement</td>
+                <td class="center">Carte<br />bancaire</td>
+                <td class="center">Virement</td>
+                <td class="center">Prélèvement</td>
+                <td class="center">Virement</td>
+                <td class="center">Prélèvement</td>
                 <td class="center">Virement</td>
                 <td class="center">Virement</td>
                 <td class="center">Virement</td>
@@ -3763,33 +3763,33 @@ class cronController extends bootstrap
                 <td class="center">Solde<br />théorique</td>
                 <td class="center">Solde<br />réel</td>
                 <td class="center">Ecart<br />global</td>
-				<td class="center">Solde<br />Promotions</td>
-				<td class="center">Solde<br />SFF PME</td>
-				<td class="center">Solde Admin.<br>Fiscale</td>
+                <td class="center">Solde<br />Promotions</td>
+                <td class="center">Solde<br />SFF PME</td>
+                <td class="center">Solde Admin.<br>Fiscale</td>
 
-				<td class="center">Offre promo</td>
+                <td class="center">Offre promo</td>
                 <td class="center">Octroi prêt</td>
                 <td class="center">Retour prêteur<br />(Capital)</td>
                 <td class="center">Retour prêteur<br />(Intérêts nets)</td>
-				<td class="center">Affectation<br />Ech. Empr.</td>
+                <td class="center">Affectation<br />Ech. Empr.</td>
                 <td class="center">Ecart<br />fiscal</td>
 
                 <td class="center">Fichier<br />virements</td>
                 <td class="center">Dont<br />SFF PME</td>
-				<td class="center">Administration<br />Fiscale</td>
+                <td class="center">Administration<br />Fiscale</td>
                 <td class="center">Fichier<br />prélèvements</td>
-			</tr>
-			<tr>
-				<td colspan="18">Début d\'année</td>
+            </tr>
+            <tr>
+                <td colspan="18">Début d\'année</td>
                 <td class="right">' . number_format($soldeDeLaVeille, 2, ',', ' ') . '</td>
                 <td class="right">' . number_format($soldeReel, 2, ',', ' ') . '</td>
                 <td class="right">' . number_format($oldecart, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($soldePromotion_old, 2, ',', ' ') . '</td>
+                <td class="right">' . number_format($soldePromotion_old, 2, ',', ' ') . '</td>
                 <td class="right">' . number_format($soldeSFFPME_old, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($soldeAdminFiscal_old, 2, ',', ' ') . '</td>
+                <td class="right">' . number_format($soldeAdminFiscal_old, 2, ',', ' ') . '</td>
 
-				<td colspan="10">&nbsp;</td>
-			</tr>';
+                <td colspan="10">&nbsp;</td>
+            </tr>';
 
             $sommetotalAlimCB                              = 0;
             $sommetotalAlimVirement                        = 0;
@@ -3902,82 +3902,82 @@ class cronController extends bootstrap
 
                 $tableau .= '
                 <tr>
-                	<th>' . $this->dates->tableauMois['fr'][$i] . '</th>';
+                    <th>' . $this->dates->tableauMois['fr'][$i] . '</th>';
 
                 if ($lemois != false) {
                     $tableau .= '
-						<td class="right">' . number_format($lemois['totalAlimCB'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalAlimVirement'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalAlimPrelevement'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalVirementUnilend_bienvenue'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalRembEmprunteur'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalVirementEmprunteur'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalVirementCommissionUnilendEmprunteur'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalCommission'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalPrelevements_obligatoires'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalRetenues_source'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalCsg'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalPrelevements_sociaux'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalContributions_additionnelles'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalPrelevements_solidarite'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalCrds'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format(str_replace('-', '', $lemois['totalRetraitPreteur']), 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalSommeMouvements'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalNewsoldeDeLaVeille'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalNewSoldeReel'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalEcartSoldes'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalSoldePromotion'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalAlimCB'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalAlimVirement'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalAlimPrelevement'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalVirementUnilend_bienvenue'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalRembEmprunteur'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalVirementEmprunteur'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalVirementCommissionUnilendEmprunteur'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalCommission'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalPrelevements_obligatoires'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalRetenues_source'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalCsg'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalPrelevements_sociaux'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalContributions_additionnelles'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalPrelevements_solidarite'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalCrds'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format(str_replace('-', '', $lemois['totalRetraitPreteur']), 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalSommeMouvements'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalNewsoldeDeLaVeille'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalNewSoldeReel'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalEcartSoldes'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalSoldePromotion'], 2, ',', ' ') . '</td>
 
-						<td class="right">' . number_format($lemois['totalSoldeSFFPME'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalSoldeAdminFiscal'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalSoldeSFFPME'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalSoldeAdminFiscal'], 2, ',', ' ') . '</td>
 
-						<td class="right">' . number_format($lemois['totalOffrePromo'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalOctroi_pret'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalCapitalPreteur'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalInteretNetPreteur'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalAffectationEchEmpr'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalEcartMouvInternes'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalOffrePromo'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalOctroi_pret'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalCapitalPreteur'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalInteretNetPreteur'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalAffectationEchEmpr'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalEcartMouvInternes'], 2, ',', ' ') . '</td>
 
-						<td class="right">' . number_format($lemois['totalVirementsOK'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalVirementsAttente'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totalAdminFiscalVir'], 2, ',', ' ') . '</td>
-						<td class="right">' . number_format($lemois['totaladdsommePrelev'], 2, ',', ' ') . '</td>';
+                        <td class="right">' . number_format($lemois['totalVirementsOK'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalVirementsAttente'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totalAdminFiscalVir'], 2, ',', ' ') . '</td>
+                        <td class="right">' . number_format($lemois['totaladdsommePrelev'], 2, ',', ' ') . '</td>';
                 } else {
                     $tableau .= '
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						';
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        ';
                 }
 
                 $tableau .= '</tr>';
@@ -3985,12 +3985,12 @@ class cronController extends bootstrap
 
             $tableau .= '
             <tr>
-				<th>Total année</th>
+                <th>Total année</th>
 
-				<th class="right">' . number_format($sommetotalAlimCB, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($sommetotalAlimCB, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($sommetotalAlimVirement, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($sommetotalAlimPrelevement, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($sommetotalVirementUnilend_bienvenue, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($sommetotalVirementUnilend_bienvenue, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($sommetotalRembEmprunteur, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($sommetotalVirementEmprunteur, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($sommetotalVirementCommissionUnilendEmprunteur, 2, ',', ' ') . '</th>
@@ -4007,25 +4007,25 @@ class cronController extends bootstrap
                 <th class="right">' . number_format($sommetotalNewsoldeDeLaVeille, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($sommetotalNewSoldeReel, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($sommetotalEcartSoldes, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($sommetotalSoldePromotion, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($sommetotalSoldeSFFPME, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($sommetotalSoldeAdminFiscal, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($sommetotalSoldePromotion, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($sommetotalSoldeSFFPME, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($sommetotalSoldeAdminFiscal, 2, ',', ' ') . '</th>
 
-				<th class="right">' . number_format($sommetotalOffrePromo, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($sommetotalOffrePromo, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($sommetotalOctroi_pret, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($sommetotalCapitalPreteur, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($sommetotalInteretNetPreteur, 2, ',', ' ') . '</th>
-				 <th class="right">' . number_format($sommetotalAffectationEchEmpr, 2, ',', ' ') . '</th>
+                 <th class="right">' . number_format($sommetotalAffectationEchEmpr, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($sommetotalEcartMouvInternes, 2, ',', ' ') . '</th>
 
                 <th class="right">' . number_format($sommetotalVirementsOK, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($sommetotalVirementsAttente, 2, ',', ' ') . '</th>
-				<th class="right">' . number_format($sommetotalAdminFiscalVir, 2, ',', ' ') . '</th>
+                <th class="right">' . number_format($sommetotalAdminFiscalVir, 2, ',', ' ') . '</th>
                 <th class="right">' . number_format($sommetotaladdsommePrelev, 2, ',', ' ') . '</th>
 
             </tr>
 
-		</table>';
+        </table>';
 
             if ($this->Config['env'] == 'prod') {
                 echo utf8_decode($tableau);
@@ -4171,56 +4171,56 @@ class cronController extends bootstrap
             $csv = "id_client;id_lender_account;type;iso_pays;exonere;debut_exoneration;fin_exoneration;id_project;id_loan;ordre;montant;capital;interets;prelevements_obligatoires;retenues_source;csg;prelevements_sociaux;contributions_additionnelles;prelevements_solidarite;crds;date_echeance;date_echeance_reel;status_remb_preteur;date_echeance_emprunteur;date_echeance_emprunteur_reel;\n";
 
             $sql = '
-		SELECT
-			c.id_client,
-		   la.id_lender_account,
-		   c.type,
-		   (IFNULL
-		   		(
-				   (IFNULL	(
-								(
-									SELECT p.iso
-									FROM lenders_imposition_history lih
-										JOIN pays_v2 p ON p.id_pays = lih.id_pays
-									WHERE lih.added <= e.date_echeance_reel
-									AND lih.id_lender = e.id_lender
-									ORDER BY lih.added DESC
-									LIMIT 1
-								)
+        SELECT
+            c.id_client,
+           la.id_lender_account,
+           c.type,
+           (IFNULL
+                (
+                   (IFNULL	(
+                                (
+                                    SELECT p.iso
+                                    FROM lenders_imposition_history lih
+                                        JOIN pays_v2 p ON p.id_pays = lih.id_pays
+                                    WHERE lih.added <= e.date_echeance_reel
+                                    AND lih.id_lender = e.id_lender
+                                    ORDER BY lih.added DESC
+                                    LIMIT 1
+                                )
 
-								,p.iso
-							)
-					), "FR"
-				)
-			)as iso_pays,
-		   la.exonere,
-		   la.debut_exoneration,
-		   la.fin_exoneration,
-		   e.id_project,
-		   e.id_loan,
-		   e.ordre,
-		   e.montant,
-		   e.capital,
-		   e.interets,
-		   e.prelevements_obligatoires,
-		   e.retenues_source,
-		   e.csg,
-		   e.prelevements_sociaux,
-		   e.contributions_additionnelles,
-		   e.prelevements_solidarite,
-		   e.crds,
-		   e.date_echeance,
-		   e.date_echeance_reel,
-		   e.status,
-		   e.date_echeance_emprunteur,
-		   e.date_echeance_emprunteur_reel
-		FROM echeanciers e
-		LEFT JOIN lenders_accounts la  ON la.id_lender_account = e.id_lender
-		LEFT JOIN clients c ON c.id_client = la.id_client_owner
-		LEFT JOIN clients_adresses ca ON ca.id_client = c.id_client
+                                ,p.iso
+                            )
+                    ), "FR"
+                )
+            )as iso_pays,
+           la.exonere,
+           la.debut_exoneration,
+           la.fin_exoneration,
+           e.id_project,
+           e.id_loan,
+           e.ordre,
+           e.montant,
+           e.capital,
+           e.interets,
+           e.prelevements_obligatoires,
+           e.retenues_source,
+           e.csg,
+           e.prelevements_sociaux,
+           e.contributions_additionnelles,
+           e.prelevements_solidarite,
+           e.crds,
+           e.date_echeance,
+           e.date_echeance_reel,
+           e.status,
+           e.date_echeance_emprunteur,
+           e.date_echeance_emprunteur_reel
+        FROM echeanciers e
+        LEFT JOIN lenders_accounts la  ON la.id_lender_account = e.id_lender
+        LEFT JOIN clients c ON c.id_client = la.id_client_owner
+        LEFT JOIN clients_adresses ca ON ca.id_client = c.id_client
 
-		LEFT JOIN pays_v2 p ON p.id_pays = ca.id_pays_fiscal
-		WHERE LEFT(e.date_echeance_reel,7) = "' . $dateMoins1Mois . '"
+        LEFT JOIN pays_v2 p ON p.id_pays = ca.id_pays_fiscal
+        WHERE LEFT(e.date_echeance_reel,7) = "' . $dateMoins1Mois . '"
                 AND e.status = 1
                 AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
                 ORDER BY e.date_echeance ASC';
@@ -4362,101 +4362,101 @@ class cronController extends bootstrap
 
             $table = '
 
-		<style>
-			table th,table td{width:80px;height:20px;border:1px solid black;}
-			table td.dates{text-align:center;}
-			.right{text-align:right;}
-			.center{text-align:center;}
-			.boder-top{border-top:1px solid black;}
-			.boder-bottom{border-bottom:1px solid black;}
-			.boder-left{border-left:1px solid black;}
-			.boder-right{border-right:1px solid black;}
-		</style>
+        <style>
+            table th,table td{width:80px;height:20px;border:1px solid black;}
+            table td.dates{text-align:center;}
+            .right{text-align:right;}
+            .center{text-align:center;}
+            .boder-top{border-top:1px solid black;}
+            .boder-bottom{border-bottom:1px solid black;}
+            .boder-left{border-left:1px solid black;}
+            .boder-right{border-right:1px solid black;}
+        </style>
 
         <table border="1" cellpadding="0" cellspacing="0" style=" background-color:#fff; font:11px/13px Arial, Helvetica, sans-serif; color:#000;width: 650px;">
-        	<tr>
-            	<th colspan="4">UNILEND</th>
+            <tr>
+                <th colspan="4">UNILEND</th>
             </tr>
             <tr>
-            	<th style="background-color:#C9DAF2;">Période :</th>
+                <th style="background-color:#C9DAF2;">Période :</th>
                 <th style="background-color:#C9DAF2;">' . $dateDebut . '</th>
                 <th style="background-color:#C9DAF2;">au</th>
                 <th style="background-color:#C9DAF2;">' . $dateFin . '</th>
             </tr>
 
-			<tr>
-            	<th style="background-color:#ECAEAE;" colspan="4">Prélèvements obligatoires</th>
+            <tr>
+                <th style="background-color:#ECAEAE;" colspan="4">Prélèvements obligatoires</th>
             </tr>
-			<tr>
-            	<th>&nbsp;</th>
+            <tr>
+                <th>&nbsp;</th>
                 <th style="background-color:#F4F3DA;">Base (Intérêts bruts)</th>
                 <th style="background-color:#F4F3DA;">Montant prélèvements</th>
                 <th style="background-color:#F4F3DA;">Taux</th>
             </tr>
-			<tr>
-				<th style="background-color:#E6F4DA;">Soumis au prélèvement</th>
-				<td class="right">' . number_format($PhysiqueNoExoInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($lesPrelevSurPhysiqueNoExo, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($prelevements_obligatoires, 2, ',', ' ') . '%</td>
-			</tr>
-			<tr>
-				<th style="background-color:#E6F4DA;">Dispensé</th>
-				<td class="right">' . number_format($PhysiqueExoInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($lesPrelevSurPhysiqueExo, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format(0, 2, ',', ' ') . '%</td>
-			</tr>
-			<tr>
-				<th style="background-color:#E6F4DA;">Total</th>
-				<td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($lesPrelevSurPhysique, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($prelevements_obligatoires, 2, ',', ' ') . '%</td>
-			</tr>
-
-			<tr>
-            	<th style="background-color:#ECAEAE;" colspan="4">Retenue à la source</th>
+            <tr>
+                <th style="background-color:#E6F4DA;">Soumis au prélèvement</th>
+                <td class="right">' . number_format($PhysiqueNoExoInte, 2, ',', ' ') . '</td>
+                <td class="right">' . number_format($lesPrelevSurPhysiqueNoExo, 2, ',', ' ') . '</td>
+                <td style="background-color:#DDDAF4;" class="right">' . number_format($prelevements_obligatoires, 2, ',', ' ') . '%</td>
             </tr>
-			<tr>
-				<th style="background-color:#E6F4DA;">Retenue à la source</th>
-				<td class="right">' . number_format($InteRetenuSoucre, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($prelevementRetenuSoucre, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($tauxRetenuSoucre, 2, ',', ' ') . '%</td>
-			</tr>
-
-			<tr>
-            	<th style="background-color:#ECAEAE;" colspan="4">Prélèvements sociaux</th>
+            <tr>
+                <th style="background-color:#E6F4DA;">Dispensé</th>
+                <td class="right">' . number_format($PhysiqueExoInte, 2, ',', ' ') . '</td>
+                <td class="right">' . number_format($lesPrelevSurPhysiqueExo, 2, ',', ' ') . '</td>
+                <td style="background-color:#DDDAF4;" class="right">' . number_format(0, 2, ',', ' ') . '%</td>
             </tr>
-			<tr>
-				<th style="background-color:#E6F4DA;">CSG</th>
-				<td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($csg, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($txcsg, 2, ',', ' ') . '%</td>
-			</tr>
-			<tr>
-				<th style="background-color:#E6F4DA;">Prélèvement social</th>
-				<td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($prelevements_sociaux, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($txprelevements_sociaux, 2, ',', ' ') . '%</td>
-			</tr>
-			<tr>
-				<th style="background-color:#E6F4DA;">Contribution additionnelle</th>
-				<td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($contributions_additionnelles, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($txcontributions_additionnelles, 2, ',', ' ') . '%</td>
-			</tr>
-			<tr>
-				<th style="background-color:#E6F4DA;">Prélèvement de solidarité</th>
-				<td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($prelevements_solidarite, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($txprelevements_solidarite, 2, ',', ' ') . '%</td>
-			</tr>
-			<tr>
-				<th style="background-color:#E6F4DA;">CRDS</th>
-				<td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
-				<td class="right">' . number_format($crds, 2, ',', ' ') . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . number_format($txcrds, 2, ',', ' ') . '%</td>
-			</tr>
+            <tr>
+                <th style="background-color:#E6F4DA;">Total</th>
+                <td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
+                <td class="right">' . number_format($lesPrelevSurPhysique, 2, ',', ' ') . '</td>
+                <td style="background-color:#DDDAF4;" class="right">' . number_format($prelevements_obligatoires, 2, ',', ' ') . '%</td>
+            </tr>
+
+            <tr>
+                <th style="background-color:#ECAEAE;" colspan="4">Retenue à la source</th>
+            </tr>
+            <tr>
+                <th style="background-color:#E6F4DA;">Retenue à la source</th>
+                <td class="right">' . number_format($InteRetenuSoucre, 2, ',', ' ') . '</td>
+                <td class="right">' . number_format($prelevementRetenuSoucre, 2, ',', ' ') . '</td>
+                <td style="background-color:#DDDAF4;" class="right">' . number_format($tauxRetenuSoucre, 2, ',', ' ') . '%</td>
+            </tr>
+
+            <tr>
+                <th style="background-color:#ECAEAE;" colspan="4">Prélèvements sociaux</th>
+            </tr>
+            <tr>
+                <th style="background-color:#E6F4DA;">CSG</th>
+                <td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
+                <td class="right">' . number_format($csg, 2, ',', ' ') . '</td>
+                <td style="background-color:#DDDAF4;" class="right">' . number_format($txcsg, 2, ',', ' ') . '%</td>
+            </tr>
+            <tr>
+                <th style="background-color:#E6F4DA;">Prélèvement social</th>
+                <td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
+                <td class="right">' . number_format($prelevements_sociaux, 2, ',', ' ') . '</td>
+                <td style="background-color:#DDDAF4;" class="right">' . number_format($txprelevements_sociaux, 2, ',', ' ') . '%</td>
+            </tr>
+            <tr>
+                <th style="background-color:#E6F4DA;">Contribution additionnelle</th>
+                <td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
+                <td class="right">' . number_format($contributions_additionnelles, 2, ',', ' ') . '</td>
+                <td style="background-color:#DDDAF4;" class="right">' . number_format($txcontributions_additionnelles, 2, ',', ' ') . '%</td>
+            </tr>
+            <tr>
+                <th style="background-color:#E6F4DA;">Prélèvement de solidarité</th>
+                <td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
+                <td class="right">' . number_format($prelevements_solidarite, 2, ',', ' ') . '</td>
+                <td style="background-color:#DDDAF4;" class="right">' . number_format($txprelevements_solidarite, 2, ',', ' ') . '%</td>
+            </tr>
+            <tr>
+                <th style="background-color:#E6F4DA;">CRDS</th>
+                <td class="right">' . number_format($PhysiqueInte, 2, ',', ' ') . '</td>
+                <td class="right">' . number_format($crds, 2, ',', ' ') . '</td>
+                <td style="background-color:#DDDAF4;" class="right">' . number_format($txcrds, 2, ',', ' ') . '%</td>
+            </tr>
         </table>
-		';
+        ';
 
             echo utf8_decode($table);
 
@@ -4581,20 +4581,20 @@ class cronController extends bootstrap
                     $subject = '[Alerte] Mail Sans destinataire';
 
                     $message = '
-				<html>
-				<head>
-				  <title>[Alerte] Mail Sans destinataire</title>
-				</head>
-				<body>
-					<p>Un mail a ete envoye sans destinataire</p>
-					<table>
-						<tr>
-							<th>id_nmp : </th><td>' . $m['id_nmp'] . '</td>
-						</tr>
-					</table>
-				</body>
-				</html>
-				';
+                <html>
+                <head>
+                  <title>[Alerte] Mail Sans destinataire</title>
+                </head>
+                <body>
+                    <p>Un mail a ete envoye sans destinataire</p>
+                    <table>
+                        <tr>
+                            <th>id_nmp : </th><td>' . $m['id_nmp'] . '</td>
+                        </tr>
+                    </table>
+                </body>
+                </html>
+                ';
 
                     $headers = 'MIME-Version: 1.0' . "\r\n";
                     $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
@@ -4824,15 +4824,15 @@ class cronController extends bootstrap
         $to      = 'unilend@equinoa.fr';
         $subject = '[UNILEND DEMO] La BDD a ete mise à jour';
         $message = '
-		<html>
-		<head>
-		  <title>[UNILEND DEMO] La BDD a ete mise à jour</title>
-		</head>
-		<body>
-		  <p>[UNILEND DEMO] La BDD a ete mise à jour</p>
-		</body>
-		</html>
-		';
+        <html>
+        <head>
+          <title>[UNILEND DEMO] La BDD a ete mise à jour</title>
+        </head>
+        <body>
+          <p>[UNILEND DEMO] La BDD a ete mise à jour</p>
+        </body>
+        </html>
+        ';
 
         $headers = 'MIME-Version: 1.0' . "\r\n";
         $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
@@ -5357,16 +5357,16 @@ class cronController extends bootstrap
                         $to      = 'unilend@equinoa.fr';
                         $subject = '[ALERTE] Une incoherence est présente dans le projet ' . $p['id_project'];
                         $message = '
-					<html>
-					<head>
-					  <title>[ALERTE] Une incoherence est présente dans le projet ' . $p['id_project'] . '</title>
-					</head>
-					<body>
-						<p>[ALERTE] Une incoherence est présente dans le projet ' . $p['id_project'] . '</p>
-						<p>' . $contenu . '</p>
-					</body>
-					</html>
-					';
+                    <html>
+                    <head>
+                      <title>[ALERTE] Une incoherence est présente dans le projet ' . $p['id_project'] . '</title>
+                    </head>
+                    <body>
+                        <p>[ALERTE] Une incoherence est présente dans le projet ' . $p['id_project'] . '</p>
+                        <p>' . $contenu . '</p>
+                    </body>
+                    </html>
+                    ';
                         $headers = 'MIME-Version: 1.0' . "\r\n";
                         $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
                         $headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
@@ -5700,27 +5700,27 @@ class cronController extends bootstrap
                             $to      = 'd.courtier@relance.fr';
                             $subject = '[Alerte] BACK PAYLINE Transaction approved';
                             $message = '
-						<html>
-						<head>
-						  <title>[Alerte] BACK PAYLINE Transaction approved</title>
-						</head>
-						<body>
-						  <h3>[Alerte] BACK PAYLINE Transaction approved</h3>
-						  <p>Un payement payline accepet&eacute; n\'a pas &eacute;t&eacute; mis &agrave; jour dans la BDD Unilend.</p>
-						  <table>
-							<tr>
-							  <th>Id client : </th><td>' . $this->transactions->id_client . '</td>
-							</tr>
-							<tr>
-							  <th>montant : </th><td>' . ($this->transactions->montant / 100) . '</td>
-							</tr>
-							<tr>
-							  <th>serialize donnees payline : </th><td>' . serialize($response) . '</td>
-							</tr>
-						  </table>
-						</body>
-						</html>
-						';
+                        <html>
+                        <head>
+                          <title>[Alerte] BACK PAYLINE Transaction approved</title>
+                        </head>
+                        <body>
+                          <h3>[Alerte] BACK PAYLINE Transaction approved</h3>
+                          <p>Un payement payline accepet&eacute; n\'a pas &eacute;t&eacute; mis &agrave; jour dans la BDD Unilend.</p>
+                          <table>
+                            <tr>
+                              <th>Id client : </th><td>' . $this->transactions->id_client . '</td>
+                            </tr>
+                            <tr>
+                              <th>montant : </th><td>' . ($this->transactions->montant / 100) . '</td>
+                            </tr>
+                            <tr>
+                              <th>serialize donnees payline : </th><td>' . serialize($response) . '</td>
+                            </tr>
+                          </table>
+                        </body>
+                        </html>
+                        ';
 
                             $headers = 'MIME-Version: 1.0' . "\r\n";
                             $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
@@ -5750,16 +5750,16 @@ class cronController extends bootstrap
         foreach ($liste as $l) {
             $projects->get($l['id_project'], 'id_project');
             $liste_remb .= '
-				<tr>
-					<td>' . $l['id_project'] . '</td>
-					<td>' . $projects->title_bo . '</td>
-					<td>' . $l['ordre'] . '</td>
-					<td>' . $l['date_echeance'] . '</td>
+                <tr>
+                    <td>' . $l['id_project'] . '</td>
+                    <td>' . $projects->title_bo . '</td>
+                    <td>' . $l['ordre'] . '</td>
+                    <td>' . $l['date_echeance'] . '</td>
 
-					<td>' . $l['date_echeance_emprunteur'] . '</td>
-					<td>' . $l['date_echeance_emprunteur_reel'] . '</td>
-					<td>' . ((int)$l['status_emprunteur'] === 1 ? 'Oui' : 'Non') . '</td>
-				</tr>';
+                    <td>' . $l['date_echeance_emprunteur'] . '</td>
+                    <td>' . $l['date_echeance_emprunteur_reel'] . '</td>
+                    <td>' . ((int)$l['status_emprunteur'] === 1 ? 'Oui' : 'Non') . '</td>
+                </tr>';
         }
 
         $this->settings->get('Adresse notification check remb preteurs', 'type');
@@ -6371,11 +6371,11 @@ class cronController extends bootstrap
                         $this->clients_gestion_mails_notif->update();
 
                         $liste_projets .= '
-								<tr style="color:#b20066;">
-									<td  style="font-family:Arial;font-size:14px;height: 25px;"><a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->projects->amount, 0, ',', ' ') . ' &euro;</td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->projects->period . ' mois</td>
-								</tr>';
+                                <tr style="color:#b20066;">
+                                    <td  style="font-family:Arial;font-size:14px;height: 25px;"><a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->projects->amount, 0, ',', ' ') . ' &euro;</td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $this->projects->period . ' mois</td>
+                                </tr>';
                     }
                     if ($goMail == true) {// (BT 18180 04/08/2015)
                         if ($type == 'quotidienne') {
@@ -6530,24 +6530,24 @@ class cronController extends bootstrap
 
                             if ($i == $nb_arrayoffres) {
                                 $liste_offres .= '
-								<tr style="color:#b20066;">
-									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->bids->amount / 100), 0, ',', ' ') . ' &euro;</td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->bids->rate, 2, ',', ' ') . ' %</td>
-								</tr>
-								<tr>
-									<td style="height:25px;border-top:1px solid #727272;color: #727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
-									<td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . number_format($total, 0, ',', ' ') . ' &euro;</td>
-									<td style="border-top:1px solid #727272;color: #727272;font-family:Arial;font-size:14px;"></td>
-								</tr>
-								';
+                                <tr style="color:#b20066;">
+                                    <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->bids->amount / 100), 0, ',', ' ') . ' &euro;</td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->bids->rate, 2, ',', ' ') . ' %</td>
+                                </tr>
+                                <tr>
+                                    <td style="height:25px;border-top:1px solid #727272;color: #727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
+                                    <td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . number_format($total, 0, ',', ' ') . ' &euro;</td>
+                                    <td style="border-top:1px solid #727272;color: #727272;font-family:Arial;font-size:14px;"></td>
+                                </tr>
+                                ';
                             } else {
                                 $liste_offres .= '
-								<tr style="color:#b20066;">
-									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->bids->amount / 100), 0, ',', ' ') . ' &euro;</td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->bids->rate, 2, ',', ' ') . ' %</td>
-								</tr>';
+                                <tr style="color:#b20066;">
+                                    <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->bids->amount / 100), 0, ',', ' ') . ' &euro;</td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->bids->rate, 2, ',', ' ') . ' %</td>
+                                </tr>';
                             }
                             $i++;
                         }
@@ -6689,24 +6689,24 @@ class cronController extends bootstrap
 
                         if ($i == $nb_arrayoffres) {
                             $liste_offres .= '
-							<tr style="color:#b20066;">
-								<td  style="height:25px; font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->notifications->amount / 100), 0, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->bids->rate, 2, ',', ' ') . ' %</td>
-							</tr>
-							<tr>
-								<td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
-								<td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . number_format($total, 0, ',', ' ') . ' &euro;</td>
-								<td style="border-top:1px solid #727272;"></td>
-							</tr>
-							';
+                            <tr style="color:#b20066;">
+                                <td  style="height:25px; font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
+                                <td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->notifications->amount / 100), 0, ',', ' ') . ' &euro;</td>
+                                <td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->bids->rate, 2, ',', ' ') . ' %</td>
+                            </tr>
+                            <tr>
+                                <td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
+                                <td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . number_format($total, 0, ',', ' ') . ' &euro;</td>
+                                <td style="border-top:1px solid #727272;"></td>
+                            </tr>
+                            ';
                         } else {
                             $liste_offres .= '
-							<tr style="color:#b20066;">
-								<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->notifications->amount / 100), 0, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->bids->rate, 2, ',', ' ') . ' %</td>
-							</tr>';
+                            <tr style="color:#b20066;">
+                                <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
+                                <td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->notifications->amount / 100), 0, ',', ' ') . ' &euro;</td>
+                                <td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->bids->rate, 2, ',', ' ') . ' %</td>
+                            </tr>';
                         }
                         $i++;
                     }
@@ -6856,24 +6856,24 @@ class cronController extends bootstrap
 
                             if ($i == $nb_arrayoffres) {
                                 $liste_offres .= '
-								<tr style="color:#b20066;">
-									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->loans->amount / 100), 0, ',', ' ') . ' €</td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->loans->rate, 2, ',', ' ') . ' %</td>
-								</tr>
-								<tr>
-									<td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
-									<td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . number_format($total, 0, ',', ' ') . ' €</td>
-									<td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
-								</tr>
-								';
+                                <tr style="color:#b20066;">
+                                    <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->loans->amount / 100), 0, ',', ' ') . ' €</td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->loans->rate, 2, ',', ' ') . ' %</td>
+                                </tr>
+                                <tr>
+                                    <td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
+                                    <td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . number_format($total, 0, ',', ' ') . ' €</td>
+                                    <td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
+                                </tr>
+                                ';
                             } else {
                                 $liste_offres .= '
-								<tr style="color:#b20066;">
-									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->loans->amount / 100), 0, ',', ' ') . ' €</td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->loans->rate, 2, ',', ' ') . ' %</td>
-								</tr>';
+                                <tr style="color:#b20066;">
+                                    <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->loans->amount / 100), 0, ',', ' ') . ' €</td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . number_format($this->loans->rate, 2, ',', ' ') . ' %</td>
+                                </tr>';
                             }
                             $i++;
                         }
@@ -7083,27 +7083,27 @@ class cronController extends bootstrap
 
                         if ($i == $nb_arrayRemb) {
                             $liste_remb .= '
-							<tr style="color:#b20066;">
-								<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->echeanciers->capital / 100), 2, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->echeanciers->interets / 100), 2, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format((($this->echeanciers->interets / 100) - $totalFiscal), 2, ',', ' ') . ' &euro;</td>
-							</tr>
-							<tr>
-								<td style="height:25px;font-family:Arial;font-size:14px;border-top:1px solid #727272;color:#727272;">Total</td>
-								<td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . number_format($totalcapital, 2, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . number_format($totalinterets, 2, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . number_format($totalinteretsNet, 2, ',', ' ') . ' &euro;</td>
-							</tr>
-							';
+                            <tr style="color:#b20066;">
+                                <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
+                                <td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->echeanciers->capital / 100), 2, ',', ' ') . ' &euro;</td>
+                                <td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->echeanciers->interets / 100), 2, ',', ' ') . ' &euro;</td>
+                                <td align="right" style="font-family:Arial;font-size:14px;">' . number_format((($this->echeanciers->interets / 100) - $totalFiscal), 2, ',', ' ') . ' &euro;</td>
+                            </tr>
+                            <tr>
+                                <td style="height:25px;font-family:Arial;font-size:14px;border-top:1px solid #727272;color:#727272;">Total</td>
+                                <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . number_format($totalcapital, 2, ',', ' ') . ' &euro;</td>
+                                <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . number_format($totalinterets, 2, ',', ' ') . ' &euro;</td>
+                                <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . number_format($totalinteretsNet, 2, ',', ' ') . ' &euro;</td>
+                            </tr>
+                            ';
                         } else {
                             $liste_remb .= '
-							<tr style="color:#b20066;">
-								<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->echeanciers->capital / 100), 2, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->echeanciers->interets / 100), 2, ',', ' ') . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . number_format((($this->echeanciers->interets / 100) - $totalFiscal), 2, ',', ' ') . ' &euro;</td>
-							</tr>';
+                            <tr style="color:#b20066;">
+                                <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
+                                <td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->echeanciers->capital / 100), 2, ',', ' ') . ' &euro;</td>
+                                <td align="right" style="font-family:Arial;font-size:14px;">' . number_format(($this->echeanciers->interets / 100), 2, ',', ' ') . ' &euro;</td>
+                                <td align="right" style="font-family:Arial;font-size:14px;">' . number_format((($this->echeanciers->interets / 100) - $totalFiscal), 2, ',', ' ') . ' &euro;</td>
+                            </tr>';
                         }
                         $i++;
                     }
@@ -7739,14 +7739,14 @@ class cronController extends bootstrap
             foreach ($lRemb_emprunteur as $remb) {
                 $projects->get($remb['id_project'], 'id_project');
                 $table .= '
-				<tr>
-					<td align="center">' . $remb['id_project'] . ' - ' . utf8_decode($projects->title_bo) . '</td>
-					<td align="center">' . number_format($remb['montant_emprunteur'], 2, ',', '') . '&euro;</td>
-					<td align="center">' . date('Y-m-d', strtotime($remb['date_echeance_emprunteur'])) . '</td>
-					<td align="center">' . date('Y-m-d', strtotime($remb['date_echeance'])) . '</td>
-					<td align="center">' . $remb['ordre'] . '</td>
-					<td align="center"><a href="' . $this->aurl . '/dossiers/detail_remb/' . $remb['id_project'] . '">lien projet</a></td>
-				</tr>';
+                <tr>
+                    <td align="center">' . $remb['id_project'] . ' - ' . utf8_decode($projects->title_bo) . '</td>
+                    <td align="center">' . number_format($remb['montant_emprunteur'], 2, ',', '') . '&euro;</td>
+                    <td align="center">' . date('Y-m-d', strtotime($remb['date_echeance_emprunteur'])) . '</td>
+                    <td align="center">' . date('Y-m-d', strtotime($remb['date_echeance'])) . '</td>
+                    <td align="center">' . $remb['ordre'] . '</td>
+                    <td align="center"><a href="' . $this->aurl . '/dossiers/detail_remb/' . $remb['id_project'] . '">lien projet</a></td>
+                </tr>';
             }
 
             $this->settings->get('Adresse notification prelevement emprunteur', 'type');
@@ -7848,11 +7848,11 @@ class cronController extends bootstrap
                 if ($client_a_indexer) {
                     if ($this->clients->get($clt['id_client'], 'id_client')) {
                         $this->lTrans = $this->transactions->selectTransactionsOp($array_type_transactions, 't.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20)
-							AND t.status = 1
-							AND t.etat = 1
-							AND t.display = 0
-							AND t.id_client = ' . $this->clients->id_client . '
-							AND LEFT(t.date_transaction,10) >= "2013-01-01"', 'id_transaction DESC');
+                            AND t.status = 1
+                            AND t.etat = 1
+                            AND t.display = 0
+                            AND t.id_client = ' . $this->clients->id_client . '
+                            AND LEFT(t.date_transaction,10) >= "2013-01-01"', 'id_transaction DESC');
 
                         $sql = 'DELETE FROM `indexage_vos_operations` WHERE id_client =' . $this->clients->id_client;
                         $this->bdd->query($sql);
@@ -8242,38 +8242,40 @@ class cronController extends bootstrap
 
 
     /**
-     * Function to calculate the TRI for each lender on a regular basis
+     * Function to calculate the IRR (Internal Rate of Return) for each lender on a regular basis
      * Given the amount of lenders and the time and resources needed for calculation
-     * it does one iteration par day on 400 account
+     * it does one iteration par day on 800 accounts
      */
-    public function _calculateTriForAllLenders()
+    public function _calculateIRRForAllLenders()
     {
-        $this->startCron('Controle cron LendersStats', 30);
-        set_time_limit (2000);
+        if (true === $this->startCron('LendersStats', 30)){
+            set_time_limit (2000);
+            $iAmountOfLenderAccounts = 800;
+            $oDateTime = new DateTime('NOW');
+            $fTimeStart = microtime(true);
 
-        $oLenders_accounts = $this->loadData('lenders_accounts');
-        $oLenders_account_stats = $this->loadData('lenders_account_stats');
-        $oProjectStatus = $this->loadData('projects_status');
+            $oLendersAccounts = $this->loadData('lenders_accounts');
+            $oLendersAccountStats = $this->loadData('lenders_account_stats');
+            $oProjectStatus = $this->loadData('projects_status');
+            $aLendersAccounts = $oLendersAccounts->selectLendersForIRR($iAmountOfLenderAccounts);
 
-        $oDateTime = new DateTime('NOW');
-        $iTimeStart = microtime(true);
+            foreach ($aLendersAccounts as $aLender){
+                try {
+                    $fXIRR = $oLendersAccounts->calculateIRR($oProjectStatus, $aLender['id_lender_account']);
+                    $oLendersAccountStats->id_lender_account = $aLender['id_lender_account'];
+                    $oLendersAccountStats->tri_date = $oDateTime->format('Y-m-d H:i:s');
+                    $oLendersAccountStats->tri_value = $fXIRR;
+                    $oLendersAccountStats->create();
 
-        $aLenders_accounts = $oLenders_accounts->selectLendersForTRI(1000);
+                } catch (Exception $e){
+                    $this->oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
+                    $this->oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). $e->getTraceAsString());
+                }
 
-        foreach($aLenders_accounts as $aLender){
-
-            $sXIRR = $oLenders_accounts->calculTRI($oProjectStatus, $aLender['id_lender_account']);
-            $oLenders_account_stats->id_lender = $aLender['id_lender_account'];
-            $oLenders_account_stats->tri_date = $oDateTime->format('Y-m-d H:i:s');
-            $oLenders_account_stats->tri_value = $sXIRR;
-
-            $oLenders_account_stats->create();
-
-            $this->oLogger->addRecord(ULogger::INFO, 'Temps calcul TRI : ' . round(microtime(true) - $iTimeStart, 2));
-
-        } // end foreach lenders accounts
-
-        $this->stopCron();
+                $this->oLogger->addRecord(ULogger::INFO, 'Temps calcul TRI : ' . round(microtime(true) - $fTimeStart, 2));
+            }
+            $this->stopCron();
+        }
     }
 
 }
