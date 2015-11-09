@@ -8164,9 +8164,9 @@ class cronController extends bootstrap
                                  * When project is pending documents, abort status is not automatic and must be set manually in BO
                                  */
                                 if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::EN_ATTENTE_PIECES) {
-                                    $this->projects_status_history->addStatus(-1, \projects_status::ABANDON, $iProjectId, $iReminderIndex);
+                                    $this->projects_status_history->addStatus(-1, \projects_status::ABANDON, $iProjectId, $iReminderIndex, $this->projects_status_history->content);
                                 } else {
-                                    $this->projects_status_history->addStatus(-1, $iStatus, $iProjectId, $iReminderIndex);
+                                    $this->projects_status_history->addStatus(-1, $iStatus, $iProjectId, $iReminderIndex, $this->projects_status_history->content);
                                 }
                             }
                         }
