@@ -76,10 +76,6 @@ class depot_de_dossierController extends bootstrap
 
         $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
-        $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-etape-1'];
-        $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-1'];
-        $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-etape-1'];
-
         $iAmount = $_SESSION['forms']['depot-de-dossier']['values']['montant'];
         $iSIREN  = $_SESSION['forms']['depot-de-dossier']['values']['siren'];
 

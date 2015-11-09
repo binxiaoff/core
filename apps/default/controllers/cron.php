@@ -8083,7 +8083,7 @@ class cronController extends bootstrap
             $this->settings->get('Téléphone emprunteur', 'type');
             $sBorrowerPhoneNumber = $this->settings->value;
 
-            $aRelacements = array(
+            $aReplacements = array(
                 'adresse_emprunteur'   => $sBorrowerEmail,
                 'telephone_emprunteur' => $sBorrowerPhoneNumber,
                 'furl'                 => $this->furl,
@@ -8132,19 +8132,19 @@ class cronController extends bootstrap
                                         }
                                     }
 
-                                    $aRelacements['liste_pieces']            = $this->projects_status_history->content;
-                                    $aRelacements['raison_sociale']          = $this->companies->name;
-                                    $aRelacements['prenom']                  = $this->clients->prenom;
-                                    $aRelacements['montant']                 = $this->projects->amount;
-                                    $aRelacements['delai_demande']           = $iDaysInterval;
-                                    $aRelacements['lien_reprise_dossier']    = $this->furl . '/depot_de_dossier/reprise/' . $this->projects->hash;
-                                    $aRelacements['lien_stop_relance']       = $this->furl . '/depot_de_dossier/emails/' . $this->projects->hash;
-                                    $aRelacements['date_demande']            = strftime('%d %B %Y', $oSubmissionDate->getTimestamp());
-                                    $aRelacements['pourcentage_financement'] = $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100);
-                                    $aRelacements['sujet']                   = $this->mails_text->subject;
+                                    $aReplacements['liste_pieces']            = $this->projects_status_history->content;
+                                    $aReplacements['raison_sociale']          = $this->companies->name;
+                                    $aReplacements['prenom']                  = $this->clients->prenom;
+                                    $aReplacements['montant']                 = $this->projects->amount;
+                                    $aReplacements['delai_demande']           = $iDaysInterval;
+                                    $aReplacements['lien_reprise_dossier']    = $this->furl . '/depot_de_dossier/reprise/' . $this->projects->hash;
+                                    $aReplacements['lien_stop_relance']       = $this->furl . '/depot_de_dossier/emails/' . $this->projects->hash;
+                                    $aReplacements['date_demande']            = strftime('%d %B %Y', $oSubmissionDate->getTimestamp());
+                                    $aReplacements['pourcentage_financement'] = $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100);
+                                    $aReplacements['sujet']                   = utf8_decode($this->mails_text->subject);
 
                                     $sRecipientEmail  = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($this->clients->email));
-                                    $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aRelacements);
+                                    $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
 
                                     $this->email = $this->loadLib('email');
                                     $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
@@ -8153,7 +8153,7 @@ class cronController extends bootstrap
 
                                     if ($this->Config['env'] === 'prod') {
                                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipientEmail, $aNMPFilters);
-                                        $this->tnmp->sendMailNMP($aNMPFilters, $aRelacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                        $this->tnmp->sendMailNMP($aNMPFilters, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                                     } else {
                                         $this->email->addRecipient($sRecipientEmail);
                                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
