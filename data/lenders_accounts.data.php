@@ -175,7 +175,7 @@ class lenders_accounts extends lenders_accounts_crud
         $oFinancial = new \PHPExcel_Calculation_Financial();
         $fXIRR      = round($oFinancial->XIRR($aSums, $aDates) * 100, 2);
 
-        if ($fXIRR >= -100 && $fXIRR <= 100 === false) {
+        if (abs($fXIRR) <= 100 === false) {
             throw new Exception('IRR not in range for '.$iLendersAccountId. ' IRR : '. $fXIRR);
         }
         return $fXIRR;
