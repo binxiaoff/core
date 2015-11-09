@@ -329,10 +329,8 @@ class dossiersController extends bootstrap
             $this->aAttachments     = $this->projects->getAttachments();
 
             $this->completude_wording = array();
-            foreach ($this->aAttachmentTypes as $aAttachment) {
-                if (1 !== preg_match('/^autre/i', $aAttachment['label'])) {
-                    $this->completude_wording[] = $aAttachment['label'];
-                }
+            foreach ($this->attachment_type->getAllTypesForProjects($this->language, false) as $aAttachment) {
+                $this->completude_wording[] = $aAttachment['label'];
             }
 
             $this->aEmails = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'added DESC');

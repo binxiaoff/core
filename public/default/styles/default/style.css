@@ -60,6 +60,7 @@ a:hover img { transition: color 300ms, background-color 300ms, opacity 300ms; -w
 
 .introduction {font-size:18px;}
 .introduction > span {color:#b10366; font-weight: bold;}
+.introduction + ul {padding-left:60px; margin-top:5px;}
 
 .unstyled-list { list-style:none outside none; padding:0; color:#a1a5a7; }
 .unstyled-list li { padding-bottom:14px; }

@@ -119,7 +119,7 @@ class attachment_type extends attachment_type_crud
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function getAllTypesForProjects($sLanguage = 'fr')
+    public function getAllTypesForProjects($sLanguage, $bIncludeOthers = true)
     {
         $aTypes = array(
             self::RELEVE_BANCAIRE_MOIS_N,
@@ -157,13 +157,19 @@ class attachment_type extends attachment_type_crud
         $oTextes = new \textes($this->bdd);
         $aTranslations = $oTextes->selectFront('projet', $sLanguage);
 
-        return array_map(
+        $aTypes = array_map(
             function($aType) use ($aTranslations) {
                 $aType['label'] = $aTranslations['document-type-' . $aType['id']];
                 return $aType;
             },
             $this->getAllTypes($aTypes)
         );
+
+        if (false === $bIncludeOthers) {
+            $aTypes = array_slice($aTypes, 0, count($aTypes) - 4);
+        }
+
+        return $aTypes;
     }
 
     public function getAllTypesForLender()
@@ -193,13 +199,15 @@ class attachment_type extends attachment_type_crud
 
     private function getAllTypes($aTypes)
     {
-        $sql = 'SELECT * FROM attachment_type ORDER BY FIELD(id, ' . implode(', ', $aTypes) . ')';
-        $resultat = $this->bdd->query($sql);
         $result   = array();
+        $resultat = $this->bdd->query('
+            SELECT *
+            FROM attachment_type
+            WHERE id IN(' . implode(', ', $aTypes) . ')
+            ORDER BY FIELD(id, ' . implode(', ', $aTypes) . ')');
+
         while ($record = $this->bdd->fetch_assoc($resultat)) {
-            if (in_array($record['id'], $aTypes)) {
-                $result[] = $record;
-            }
+            $result[] = $record;
         }
         return $result;
     }

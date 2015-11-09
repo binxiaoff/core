@@ -548,11 +548,14 @@ class depot_de_dossierController extends bootstrap
             if (false === isset($_POST['ca']) || $_POST['ca'] == '') {
                 $_SESSION['forms']['depot-de-dossier-3']['errors']['ca'] = true;
             }
-            if (empty($_FILES['liasse_fiscal']['name']) || false === $this->uploadAttachment('liasse_fiscal', attachment_type::DERNIERE_LIASSE_FISCAL)) {
+            if (empty($_FILES['liasse_fiscal']['name'])) {
                 $_SESSION['forms']['depot-de-dossier-3']['errors']['liasse_fiscale'] = true;
             }
-            if (false === empty($_FILES['autre']) && false === $this->uploadAttachment('autre', attachment_type::AUTRE1)) {
-                $_SESSION['forms']['depot-de-dossier-3']['errors']['autre'] = true;
+            if (false === $this->uploadAttachment('liasse_fiscal', attachment_type::DERNIERE_LIASSE_FISCAL)) {
+                $_SESSION['forms']['depot-de-dossier-3']['errors']['liasse_fiscale'] = $this->upload->getErrorType();
+            }
+            if (false === empty($_FILES['autre']['name']) && false === $this->uploadAttachment('autre', attachment_type::AUTRE1)) {
+                $_SESSION['forms']['depot-de-dossier-3']['errors']['autre'] = $this->upload->getErrorType();
             }
             if (false === empty($_SESSION['forms']['depot-de-dossier-3']['errors']))  {
                 $this->redirect(self::PAGE_NAME_STEP_3);
@@ -830,7 +833,7 @@ class depot_de_dossierController extends bootstrap
         $this->lng['espace-emprunteur'] = $this->ln->selectFront('depot-de-dossier-espace-emprunteur', $this->language, $this->App);
 
         $this->sAttachmentList  = '';
-        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects($this->language);
+        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects($this->language, false);
 
         $this->projects_last_status_history = $this->loadData('projects_last_status_history');
         $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
@@ -857,7 +860,7 @@ class depot_de_dossierController extends bootstrap
             }
 
             if (true === $this->error_fichier) {
-                $_SESSION['forms']['depot-de-dossier-fichiers']['errors']['files'] = true;
+                $_SESSION['forms']['depot-de-dossier-fichiers']['errors']['files'] = $this->upload->getErrorType();
                 $this->redirect(self::PAGE_NAME_FILES);
             }
 

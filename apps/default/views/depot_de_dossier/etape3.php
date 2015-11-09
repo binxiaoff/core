@@ -1,9 +1,9 @@
 <div class="main">
     <div class="shell">
-        <p class="introduction"><?php printf($this->lng['etape3']['contenu'], $this->iMinimumMonthlyPayment, $this->iMaximumMonthlyPayment) ?></p>
+        <p class="introduction"><?php printf($this->lng['etape3']['contenu'], $this->ficelle->formatNumber($this->iMinimumMonthlyPayment, 0), $this->ficelle->formatNumber($this->iMaximumMonthlyPayment, 0)) ?></p>
         <p><?= $this->lng['etape3']['introduction-sub'] ?></p>
         <div class="register-form">
-            <form action="<?= $_SERVER['REQUEST_URI'] ?>" method="post" enctype="multipart/form-data">
+            <form id="documents-form" action="<?= $_SERVER['REQUEST_URI'] ?>" method="post" enctype="multipart/form-data">
                 <table class="form-table">
                     <tr>
                         <th colspan="2" style="text-align: left;">
@@ -62,7 +62,7 @@
                         <td class="uploader">
                             <input id="liasse_fiscal" type="text"
                                    placeholder="<?= $this->lng['etape3']['aucun-fichier-selectionne'] ?>"
-                                   class="field required<?= isset($this->aErrors['liasse_fiscale']) && true === $this->aErrors['liasse_fiscale'] ? ' LV_invalid_field' : '' ?>"
+                                   class="field required<?= isset($this->aErrors['liasse_fiscale']) ? ' LV_invalid_field' : '' ?>"
                                    readonly="readonly">
                             <div class="file-holder">
                                 <span class="btn btn-small" style="float: left; margin-left: 5px;">
@@ -72,6 +72,9 @@
                                     </span>
                                 </span>
                             </div>
+                            <?php if (isset($this->aErrors['liasse_fiscale']) && is_string($this->aErrors['liasse_fiscale'])) { ?>
+                                <div class="error"><?= $this->aErrors['liasse_fiscale'] ?></div>
+                            <?php } ?>
                         </td>
                     </tr>
                     <tr>
@@ -89,6 +92,9 @@
                                      <span class="file-upload"><input type="file" class="file-field" name="autre"></span>
                                 </span>
                             </div>
+                            <?php if (isset($this->aErrors['autre']) && is_string($this->aErrors['autre'])) { ?>
+                                <div class="error"><?= $this->aErrors['autre'] ?></div>
+                            <?php } ?>
                         </td>
                     </tr>
                 </table>
@@ -110,17 +116,19 @@
 </div>
 
 <style>
+    .form-table td {vertical-align: top;}
     .form-table .euro-sign {left: auto; right: 30px;}
     .register-form .btn {line-height: 38px;}
     .row-btn {margin-top: 35px;}
     .row-btn .btn {height: 70px; line-height: 1.2em;}
+    .uploader .error {clear: both; color: #c84747; font-size: 12px; padding-top: 7px;}
 </style>
 
 <script>
     $(function() {
         $('.field.euro-field').each(function() {
             lisibilite_nombre(this.value, this.id);
-        })
+        });
     });
 
     $(document).on('change', 'input.file-field', function () {
@@ -129,7 +137,14 @@
 
         if (val.length != 0 || val != '') {
             val = val.replace(/\\/g, '/').replace(/.*\//, '');
-            $self.closest('.uploader').find('input.field').val(val).removeClass('LV_invalid_field').addClass('LV_valid_field').addClass('file-uploaded');
+            $self.closest('.uploader').find('input.field').val(val).removeClass('LV_invalid_field').addClass('LV_valid_field').addClass('file-uploaded').parent().find('.error').remove();
+        }
+    });
+
+    $('#documents-form').on('submit', function(e) {
+        if ($('#liasse_fiscal').val().length == 0) {
+            $('#liasse_fiscal').addClass('LV_invalid_field');
+            e.preventDefault();
         }
     });
 </script>
