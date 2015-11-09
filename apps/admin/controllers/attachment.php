@@ -31,7 +31,7 @@ class attachmentController extends bootstrap
         $sFileName      = $this->params[3];
 
         if (false === is_numeric($iAttachmentId)) {
-            header('location:' . $this->lurl);
+            header('Location: ' . $this->lurl);
         }
 
         /** @var attachment $oAttachment */
@@ -44,20 +44,18 @@ class attachmentController extends bootstrap
         $oAttachment->get($iAttachmentId);
 
         if (!$oAttachment->id || urldecode($sFileName) !== $oAttachment->path) {
-            header('location:' . $this->lurl);
+            header('Location: ' . $this->lurl);
         }
 
-        $sAttachmentPath = $oAttachmentHelper->getFullPath($oAttachment->type_owner, $oAttachment->id_type);
+        $sAttachmentPath = $oAttachmentHelper->getFullPath($oAttachment->type_owner, $oAttachment->id_type) . $sFileName;
 
         if (file_exists($sAttachmentPath)) {
-            $url = ($sAttachmentPath);
-
             header('Content-Description: File Transfer');
             header('Content-Type: application/octet-stream');
-            header('Content-Disposition: attachment; filename="' . basename($url) . '";');
-            @readfile($url);
+            header('Content-Disposition: attachment; filename="' . basename($sAttachmentPath) . '";');
+            @readfile($sAttachmentPath);
         } else {
-            header('location:' . $this->lurl);
+            header('Location: ' . $this->lurl);
         }
     }
 }

@@ -169,65 +169,65 @@ class attachment_helper
     {
         switch ($iDocumentType) {
             case attachment_type::RELEVE_BANCAIRE_MOIS_N:
-                return 'releve_bancaire_mois_n/';
+                return 'releve_bancaire_mois_n';
             case attachment_type::RELEVE_BANCAIRE_MOIS_N_1:
-                return 'releve_bancaire_mois_n_1/';
+                return 'releve_bancaire_mois_n_1';
             case attachment_type::RELEVE_BANCAIRE_MOIS_N_2:
-                return 'releve_bancaire_mois_n_2/';
+                return 'releve_bancaire_mois_n_2';
             case attachment_type::PRESENTATION_ENTRERPISE:
-                return 'presentation_entreprise/';
+                return 'presentation_entreprise';
             case attachment_type::ETAT_ENDETTEMENT:
-                return 'etat_endettement/';
+                return 'etat_endettement';
             case attachment_type::DERNIERE_LIASSE_FISCAL:
-                return 'liasse_fiscale/';
+                return 'liasse_fiscale';
             case attachment_type::LIASSE_FISCAL_N_1:
-                return 'liasse_fiscale_n_1/';
+                return 'liasse_fiscale_n_1';
             case attachment_type::LIASSE_FISCAL_N_2:
-                return 'liasse_fiscale_n_2/';
+                return 'liasse_fiscale_n_2';
             case attachment_type::RAPPORT_CAC:
-                return 'annexes_rapport_special_commissaire_compte/';
+                return 'annexes_rapport_special_commissaire_compte';
             case attachment_type::PREVISIONNEL:
-                return 'previsionnel/';
+                return 'previsionnel';
             case attachment_type::CNI_PASSPORTE_DIRIGEANT:
-                return 'cni_passeport/';
+                return 'cni_passeport';
             case attachment_type::CNI_PASSPORTE_VERSO:
-                return 'cni_passeport_verso/';
+                return 'cni_passeport_verso';
             case attachment_type::RIB:
-                return 'rib/';
+                return 'rib';
             case attachment_type::KBIS:
-                return 'extrait_kbis/';
+                return 'extrait_kbis';
             case attachment_type::AUTRE1:
-                return 'autre/';
+                return 'autre';
             case attachment_type::AUTRE2:
-                return 'autre2/';
+                return 'autre2';
             case attachment_type::AUTRE3:
-                return 'autre3/';
+                return 'autre3';
             case attachment_type::AUTRE4:
-                return 'autre4/';
+                return 'autre4';
             case attachment_type::BALANCE_CLIENT:
-                return 'balance_client/';
+                return 'balance_client';
             case attachment_type::BALANCE_FOURNISSEUR:
-                return 'balance_fournisseur/';
+                return 'balance_fournisseur';
             case attachment_type::ETAT_PRIVILEGES_NANTISSEMENTS:
-                return 'etat_privileges_nantissements/';
+                return 'etat_privileges_nantissements';
             case attachment_type::CGV:
-                return 'cgv/';
+                return 'cgv';
             case attachment_type::CNI_BENEFICIAIRE_EFFECTIF_1:
-                return 'cni_beneficiaire_efectif_1/';
+                return 'cni_beneficiaire_efectif_1';
             case attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1:
-                return 'cni_beneficiaire_efectif_verso_1/';
+                return 'cni_beneficiaire_efectif_verso_1';
             case attachment_type::CNI_BENEFICIAIRE_EFFECTIF_2:
-                return 'cni_beneficiaire_efectif_2/';
+                return 'cni_beneficiaire_efectif_2';
             case attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2:
-                return 'cni_beneficiaire_efectif_verso_2/';
+                return 'cni_beneficiaire_efectif_verso_2';
             case attachment_type::CNI_BENEFICIAIRE_EFFECTIF_3:
-                return 'cni_beneficiaire_efectif_3/';
+                return 'cni_beneficiaire_efectif_3';
             case attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3:
-                return 'cni_beneficiaire_efectif_verso_3/';
+                return 'cni_beneficiaire_efectif_verso_3';
             case attachment_type::SITUATION_COMPTABLE_INTERMEDIAIRE:
-                return 'situation_comptable_intermediaire/';
+                return 'situation_comptable_intermediaire';
             case attachment_type::DERNIERS_COMPTES_CONSOLIDES:
-                return 'derniers_comptes_consolides_groupe/';
+                return 'derniers_comptes_consolides_groupe';
             default:
                 return '';
         }
