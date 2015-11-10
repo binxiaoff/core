@@ -1070,10 +1070,8 @@ class depot_de_dossierController extends bootstrap
                 break;
             case \projects_status::A_TRAITER:
             case \projects_status::EN_ATTENTE_PIECES:
-                if (1 == $this->projects->process_fast && false === in_array($sPage, array(self::PAGE_NAME_END, self::PAGE_NAME_FILES))) {
+                if (false === in_array($sPage, array(self::PAGE_NAME_END, self::PAGE_NAME_FILES))) {
                     $this->redirect(self::PAGE_NAME_FILES);
-                } elseif (0 == $this->projects->process_fast && $sPage !== self::PAGE_NAME_END) {
-                    $this->redirect(self::PAGE_NAME_END);
                 }
                 break;
             case \projects_status::ABANDON:
