@@ -621,7 +621,7 @@ class depot_de_dossierController extends bootstrap
                     'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
                     'lien_fb'              => $sFacebookURL,
                     'lien_tw'              => $sTwitterURL,
-                    'sujet'                => $this->mails_text->subject,
+                    'sujet'                => utf8_decode($this->mails_text->subject),
                     'surl'                 => $this->surl,
                     'url'                  => $this->url,
                 );
