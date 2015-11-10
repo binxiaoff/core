@@ -3592,7 +3592,13 @@ class dossiersController extends bootstrap
             return;
         }
 
-        if ($oProjectCgv->get($oProjects->id_project,'id_project')) {
+        // @todo intl - for the moment, we use language but real value must be a country code
+        if (false === $this->ficelle->isMobilePhoneNumber($oClients->telephone, $this->language)) {
+            $this->result = 'Le numéro de téléphone du dirigeant n\'est pas un numéro de portable';
+            return;
+        }
+
+        if ($oProjectCgv->get($oProjects->id_project, 'id_project')) {
             if (empty($oProjectCgv->id_tree)) {
                 $this->settings->get('Lien conditions generales depot dossier', 'type');
                 $iTreeId = $this->settings->value;
@@ -3662,7 +3668,6 @@ class dossiersController extends bootstrap
             'surl'                => $this->surl,
             'url'                 => $this->furl,
             'prenom_p'            => $oClients->prenom,
-            'lien_stop_relance'   => $this->furl . '/depot_de_dossier/emails/' . $oProjects->hash,
             'lien_cgv_universign' => $sCgvLink,
             'lien_tw'             => $lien_tw,
             'lien_fb'             => $lien_fb,
