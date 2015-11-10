@@ -2350,7 +2350,7 @@ class preteursController extends bootstrap
 
         //IRR
         try {
-            $this->IRR = $this->lenders_accounts->calculateIRR($this->projects_status);
+            $this->IRR = $this->lenders_accounts->calculateIRR($this->lenders_accounts->id_lender_account);
         } catch (Exception $e){
             $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
             $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());

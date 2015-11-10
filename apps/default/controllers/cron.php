@@ -8256,12 +8256,11 @@ class cronController extends bootstrap
             $oLoggerIRR              = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
             $oLendersAccounts        = $this->loadData('lenders_accounts');
             $oLendersAccountStats    = $this->loadData('lenders_account_stats');
-            $oProjectStatus          = $this->loadData('projects_status');
             $aLendersAccounts        = $oLendersAccounts->selectLendersForIRR($iAmountOfLenderAccounts);
 
             foreach ($aLendersAccounts as $aLender) {
                 try {
-                    $fXIRR                                   = $oLendersAccounts->calculateIRR($oProjectStatus, $aLender['id_lender_account']);
+                    $fXIRR                                   = $oLendersAccounts->calculateIRR($aLender['id_lender_account']);
                     $oLendersAccountStats->id_lender_account = $aLender['id_lender_account'];
                     $oLendersAccountStats->tri_date          = $oDateTime->format('Y-m-d H:i:s');
                     $oLendersAccountStats->tri_value         = $fXIRR;

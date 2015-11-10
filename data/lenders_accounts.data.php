@@ -75,12 +75,11 @@ class lenders_accounts extends lenders_accounts_crud
     }
 
      /**
-     * @param projects_status $oProjectStatus necessary for use of constants
      * @param int|null $iLendersAccountId unique identifier of the lender
      * @return array with dates and values of loans and dues
      * @throws Exception when there is no id_lender_account
      */
-    private function getValuesForIRR($oProjectStatus, $iLendersAccountId = null)
+    private function getValuesForIRR($iLendersAccountId = null)
     {
         if ($iLendersAccountId === null) {
             if ($this->id_lender_account != null) {
@@ -96,7 +95,7 @@ class lenders_accounts extends lenders_accounts_crud
                 FROM loans l
                 INNER JOIN projects_status_history psh ON l.id_project = psh.id_project
                 INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                WHERE ps.status = ' . $oProjectStatus::REMBOURSEMENT . '
+                WHERE ps.status = ' . projects_status::REMBOURSEMENT . '
                 AND l.id_lender = ' . $iLendersAccountId . '
                 GROUP BY l.id_project,l.id_loan';
 
@@ -141,14 +140,13 @@ class lenders_accounts extends lenders_accounts_crud
     }
 
     /**
-     * @param projects_status $oProjectStatus needed for getValuesForIRR function
      * @param int|null $iLendersAccountId unique identifier of the lender for who the IRR should be calculated
      * @return float with IRR value
      * @throws Exception when there is no id_lender_account,
      * when not values are available to be used in the calculation,
      * when the result is not in the accepted range
      */
-    public function calculateIRR($oProjectStatus, $iLendersAccountId = null)
+    public function calculateIRR($iLendersAccountId = null)
     {
         if ($iLendersAccountId === null) {
             if ($this->id_lender_account != null) {
@@ -159,7 +157,7 @@ class lenders_accounts extends lenders_accounts_crud
         }
 
         try {
-            $aValuesIRR = $this->getValuesForIRR($oProjectStatus, $iLendersAccountId);
+            $aValuesIRR = $this->getValuesForIRR($iLendersAccountId);
         } catch (Exception $e){
             $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
             $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
@@ -175,7 +173,7 @@ class lenders_accounts extends lenders_accounts_crud
         $oFinancial = new \PHPExcel_Calculation_Financial();
         $fXIRR      = round($oFinancial->XIRR($aSums, $aDates) * 100, 2);
 
-        if (abs($fXIRR) <= 100 === false) {
+        if (abs($fXIRR) > 100) {
             throw new Exception('IRR not in range for '.$iLendersAccountId. ' IRR : '. $fXIRR);
         }
         return $fXIRR;
