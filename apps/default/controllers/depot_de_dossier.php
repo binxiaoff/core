@@ -690,14 +690,7 @@ class depot_de_dossierController extends bootstrap
             'nom'                    => isset($aForm['nom']) ? $aForm['nom'] : $this->clients->nom,
             'fonction'               => isset($aForm['fonction']) ? $aForm['fonction'] : $this->clients->fonction,
             'email'                  => isset($aForm['email']) ? $aForm['email'] : $this->removeEmailSuffix($this->clients->email),
-            'telephone'              => isset($aForm['telephone']) ? $aForm['telephone'] : $this->clients->telephone,
-            'civilite_prescripteur'  => isset($aForm['civilite_prescripteur']) ? $aForm['civilite_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->civilite),
-            'prenom_prescripteur'    => isset($aForm['prenom_prescripteur']) ? $aForm['prenom_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->prenom),
-            'nom_prescripteur'       => isset($aForm['nom_prescripteur']) ? $aForm['nom_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->nom),
-            'fonction_prescripteur'  => isset($aForm['fonction_prescripteur']) ? $aForm['fonction_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->fonction),
-            'email_prescripteur'     => isset($aForm['email_prescripteur']) ? $aForm['email_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->removeEmailSuffix($this->clients_prescripteur->email)),
-            'telephone_prescripteur' => isset($aForm['telephone_prescripteur']) ? $aForm['telephone_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->telephone),
-            'gerant'                 => isset($aForm['gerant']) ? $aForm['gerant'] : (empty($this->clients_prescripteur->id_client) ? 'oui' : 'non')
+            'telephone'              => isset($aForm['telephone']) ? $aForm['telephone'] : $this->clients->telephone
         );
 
         unset($_SESSION['forms']['depot-de-dossier-prospect']);
@@ -732,29 +725,6 @@ class depot_de_dossierController extends bootstrap
         if (empty($_POST['telephone'])) {
             $_SESSION['forms']['depot-de-dossier-prospect']['errors']['telephone'] = true;
         }
-        if (empty($_POST['gerant'])) {
-            $_SESSION['forms']['depot-de-dossier-prospect']['errors']['gerant'] = true;
-        }
-        if ('non' === $_POST['gerant']) {
-            if (empty($_POST['civilite_prescripteur'])) {
-                $_SESSION['forms']['depot-de-dossier-prospect']['errors']['civilite_prescripteur'] = true;
-            }
-            if (empty($_POST['prenom_prescripteur'])) {
-                $_SESSION['forms']['depot-de-dossier-prospect']['errors']['prenom_prescripteur'] = true;
-            }
-            if (empty($_POST['nom_prescripteur'])) {
-                $_SESSION['forms']['depot-de-dossier-prospect']['errors']['nom_prescripteur'] = true;
-            }
-            if (empty($_POST['fonction_prescripteur'])) {
-                $_SESSION['forms']['depot-de-dossier-prospect']['errors']['fonction_prescripteur'] = true;
-            }
-            if (empty($_POST['email_prescripteur']) || false === $this->ficelle->isEmail($_POST['email_prescripteur'])) {
-                $_SESSION['forms']['depot-de-dossier-prospect']['errors']['email_prescripteur'] = true;
-            }
-            if (empty($_POST['telephone_prescripteur'])) {
-                $_SESSION['forms']['depot-de-dossier-prospect']['errors']['telephone_prescripteur'] = true;
-            }
-        }
         if (false === empty($_SESSION['forms']['depot-de-dossier-prospect']['errors'])) {
             $this->redirect(self::PAGE_NAME_PROSPECT);
         }
@@ -778,39 +748,6 @@ class depot_de_dossierController extends bootstrap
         $this->companies->name          = $_POST['raison_sociale'];
         $this->companies->email_facture = $_POST['email'];
         $this->companies->update();
-
-        $this->companies_details->update();
-
-        if ('non' === $_POST['gerant']) {
-            if (true === $this->clients_prescripteur->existEmail($_POST['email_prescripteur'])) { // Email does not exist in DB
-                $this->clients_prescripteur->email = $_POST['email_prescripteur'];
-            } elseif ($this->removeEmailSuffix($this->clients_prescripteur->email) !== $_POST['email_prescripteur']) { // Email exists but is different from previous one
-                $this->clients_prescripteur->email = $_POST['email_prescripteur'] . '-' . time();
-            }
-
-            $this->clients_prescripteur->civilite  = $_POST['civilite_prescripteur'];
-            $this->clients_prescripteur->prenom    = $_POST['prenom_prescripteur'];
-            $this->clients_prescripteur->nom       = $_POST['nom_prescripteur'];
-            $this->clients_prescripteur->fonction  = $_POST['fonction_prescripteur'];
-            $this->clients_prescripteur->telephone = $_POST['telephone_prescripteur'];
-            $this->clients_prescripteur->slug      = $this->bdd->generateSlug($this->clients_prescripteur->prenom . '-' . $this->clients_prescripteur->nom);
-
-            if (empty($this->clients_prescripteur->id_client)) {
-                $this->clients_prescripteur->create();
-
-                $this->prescripteurs->id_client = $this->clients_prescripteur->id_client;
-                $this->prescripteurs->create();
-
-                $this->projects->id_prescripteur = $this->prescripteurs->id_prescripteur;
-            } else {
-                $this->clients_prescripteur->update();
-                $this->prescripteurs->update();
-            }
-        } else {
-            $this->projects->id_prescripteur = 0;
-        }
-
-        $this->projects->update();
 
         $this->redirect(self::PAGE_NAME_END);
     }
@@ -880,6 +817,9 @@ class depot_de_dossierController extends bootstrap
             case \projects_status::ABANDON:
                 $this->sMessage = $this->lng['depot-de-dossier-fin']['abandon'];
                 break;
+            CASE \projects_status::PAS_3_BILANS:
+                $this->sMessage = $this->lng['depot-de-dossier-fin']['pas-3-bilans'];
+                break;
             case \projects_status::REVUE_ANALYSTE:
             case \projects_status::COMITE:
             case \projects_status::PREP_FUNDING:
@@ -911,9 +851,7 @@ class depot_de_dossierController extends bootstrap
                         $this->sMessage = $this->lng['depot-de-dossier-fin']['rex-nega'];
                         break;
                     case Altares::RESPONSE_CODE_ELIGIBLE:
-                        if ($this->projects_status->status == \projects_status::PAS_3_BILANS) {
-                            $this->sMessage = $this->lng['depot-de-dossier-fin']['pas-3-bilans'];
-                        } elseif (
+                        if (
                             $this->projects->fonds_propres_declara_client < 0
                             || $this->projects->resultat_exploitation_declara_client < 0
                             || $this->projects->ca_declara_client <= \projects::MINIMUM_REVENUE
