@@ -3652,11 +3652,6 @@ class dossiersController extends bootstrap
         $oEmailText = $this->loadData('mails_text');
         $oEmailText->get('signature-universign-de-cgv', 'lang = "' . $this->language . '" AND type');
 
-        $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($oClients->prenom))), 0, 1);
-        $nom       = $this->ficelle->stripAccents(utf8_decode(trim($oClients->nom)));
-        $id_client = str_pad($oClients->id_client, 6, 0, STR_PAD_LEFT);
-        $sMotif    = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-
         $this->settings->get('Facebook', 'type');
         $lien_fb = $this->settings->value;
 
@@ -3667,7 +3662,7 @@ class dossiersController extends bootstrap
             'surl'                => $this->surl,
             'url'                 => $this->furl,
             'prenom_p'            => $oClients->prenom,
-            'motif_virement'      => $sMotif,
+            'lien_stop_relance'   => $this->furl . '/depot_de_dossier/emails/' . $oProjects->hash,
             'lien_cgv_universign' => $sCgvLink,
             'lien_tw'             => $lien_tw,
             'lien_fb'             => $lien_fb,
@@ -3675,13 +3670,13 @@ class dossiersController extends bootstrap
 
         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-        $sujetMail = strtr($oEmailText->subject, $tabVars);
-        $texteMail = strtr($oEmailText->content, $tabVars);
-        $exp_name  = strtr($oEmailText->exp_name, $tabVars);
+        $sujetMail = strtr(utf8_decode($oEmailText->subject), $tabVars);
+        $texteMail = strtr(utf8_decode($oEmailText->content), $tabVars);
+        $exp_name  = strtr(utf8_decode($oEmailText->exp_name), $tabVars);
 
         $oEmail = $this->loadLib('email');
         $oEmail->setFrom($oEmailText->exp_email, $exp_name);
-        $oEmail->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)).'?=');
+        $oEmail->setSubject(stripslashes($sujetMail));
         $oEmail->setHTMLBody(stripslashes($texteMail));
 
         if (empty($oClients->email)) {
