@@ -459,4 +459,19 @@ class ficelle
         }
         return number_format($fNumber, $iDecimals, ',', ' ');
     }
+
+    /**
+     * Check whether given mobile phone number is a mobile phone for given country or not
+     * @todo intl
+     * @param string $sPhoneNumber
+     * @param string $sCountry
+     * @return bool
+     */
+    public function isMobilePhoneNumber($sPhoneNumber, $sCountry)
+    {
+        if ('fr' === $sCountry && 1 === preg_match('/(\+33|0033|0)[6-7][0-9]{8}/', str_replace(array(' ', '.', ','), '', $sPhoneNumber))) {
+            return true;
+        }
+        return false;
+    }
 }
