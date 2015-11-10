@@ -83,6 +83,12 @@ class depot_de_dossierController extends bootstrap
         // Initialisation variable
         $this->preteurCreateEmprunteur = false;
 
+        $this->settings->get('Durée des prêts autorisées','type');
+        $this->dureePossible = explode(',',$this->settings->value);
+        if (empty($this->settings->value)) {
+            $this->dureePossible = array(24,36,48,60);
+        }
+
         // Si on a une session active
         if (isset($_SESSION['client']))
         {
@@ -125,7 +131,7 @@ class depot_de_dossierController extends bootstrap
             {
                 $this->form_ok = false;
             }
-            // Si pas numerique 
+            // Si pas numerique
             elseif (!is_numeric($montant))
             {
                 $this->form_ok = false;
@@ -185,8 +191,8 @@ class depot_de_dossierController extends bootstrap
                     header('location:' . $this->lurl . '/depot_de_dossier/etape1');
                     die;
                 }
-                
-                
+
+
                 // 1 : activé 2 : activé mais prend pas en compte le resultat 3 : desactivé (DC)
                 $this->settings->get('Altares debrayage', 'type');
                 $AltaresDebrayage = $this->settings->value;
@@ -292,7 +298,7 @@ class depot_de_dossierController extends bootstrap
                     // Fin companie //
                     // dernier bilan (companies_details) //
                     $dateDernierBilanString = substr($identite->dateDernierBilan, 0, 10);
-                    $dateDernierBilan = explode('-', $dateDernierBilanSting);
+                    $dateDernierBilan = explode('-', $dateDernierBilanString);
                     $this->companies_details->date_dernier_bilan = $dateDernierBilanString;
                     $this->companies_details->date_dernier_bilan_mois = $dateDernierBilan[1];
                     $this->companies_details->date_dernier_bilan_annee = $dateDernierBilan[0];
@@ -351,21 +357,25 @@ class depot_de_dossierController extends bootstrap
                     $syntheseFinanciereList = array();
                     $derniersBilans = array();
                     $i = 0;
-                    foreach ($result->myInfo->bilans as $b)
+
+                    if(count($result->myInfo->bilans)> 0)
                     {
-                        $annee = substr($b->bilan->dateClotureN, 0, 4);
-                        $posteActifList[$annee] = $b->bilanRetraiteInfo->posteActifList;
-                        $postePassifList[$annee] = $b->bilanRetraiteInfo->postePassifList;
-                        $syntheseFinanciereInfo[$annee] = $b->syntheseFinanciereInfo;
-                        $syntheseFinanciereList[$annee] = $b->syntheseFinanciereInfo->syntheseFinanciereList;
+                        foreach ($result->myInfo->bilans as $b)
+                        {
+                            $annee = substr($b->bilan->dateClotureN, 0, 4);
+                            $posteActifList[$annee] = $b->bilanRetraiteInfo->posteActifList;
+                            $postePassifList[$annee] = $b->bilanRetraiteInfo->postePassifList;
+                            $syntheseFinanciereInfo[$annee] = $b->syntheseFinanciereInfo;
+                            $syntheseFinanciereList[$annee] = $b->syntheseFinanciereInfo->syntheseFinanciereList;
 
-                        $soldeIntermediaireGestionInfo[$annee] = $b->soldeIntermediaireGestionInfo->SIGList;
-                        $investissement[$annee] = $b->bilan->posteList[0]->valeur;
+                            $soldeIntermediaireGestionInfo[$annee] = $b->soldeIntermediaireGestionInfo->SIGList;
+                            $investissement[$annee] = $b->bilan->posteList[0]->valeur;
 
-                        // date des derniers bilans
-                        $derniersBilans[$i] = $annee;
+                            // date des derniers bilans
+                            $derniersBilans[$i] = $annee;
 
-                        $i++;
+                            $i++;
+                        }
                     }
 
                     $ldate = $lesdates;
@@ -558,7 +568,7 @@ class depot_de_dossierController extends bootstrap
                     // ajout du statut dans l'historique : statut 5 (Note externe faible)
                     $this->projects_status_history->addStatus(-2, 5, $this->projects->id_project);
 
-                    
+
                     //on envoi un MAIL ALERTE
                     // subject
                     $subject = '[Alerte] Webservice Altares sans reponse';
@@ -589,11 +599,11 @@ class depot_de_dossierController extends bootstrap
                                     <td colspan="2">Projet touch&eacute; :</td>
                                 </tr>
                             </table>
-                            
+
                             <br />
                             Id Projet : '.$this->projects->id_project.'<br />
                             Nom : '.$this->projects->title.'
-                                
+
                         </body>
                         </html>
                         ';
@@ -608,11 +618,6 @@ class depot_de_dossierController extends bootstrap
                     //$headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
                     $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
 
-                    // multiple recipients
-                    //$to  = 'aidan@example.com' . ', '; // note the comma
-                    //$to .= 'wez@example.com';
-                    $to = 'k1@david.equinoa.net';
-
 
                     // Recupération du destinataire
                     $this->settings->get('Adresse alerte altares erreur', 'type');
@@ -622,13 +627,13 @@ class depot_de_dossierController extends bootstrap
                     mail($to, $subject, $message, $headers);
 
                     // FIN ENVOI MAIL ALERTE
-                    
-                    
-                    
-                    
+
+
+
+
                     header('location:' . $this->lurl . '/depot_de_dossier/etape1/nok');      /// <---- a remettre
                     die;                    /// <---- a remettre
-                    
+
                     // // filtre altares -  cour-circuit
                     // on autorise le passage en etape 2 temporairement
                     //header('location:'.$this->lurl.'/depot_de_dossier/etape2/'.$this->clients->hash); 	/// <---- a retirer
@@ -723,7 +728,7 @@ class depot_de_dossierController extends bootstrap
 
                 // dans tous les cas tant qu'on a pas le syteme preteur/emprunteur on redirige si on est connecté (a supprimer lors de la mise en place du systeme)
                 //header('location:'.$this->lurl.'/depot_de_dossier/etape1');
-                //die;	
+                //die;
             }
             // Si c'est un emprunteur
             elseif ($this->clients->status_pre_emp == 2 || $this->clients->status_pre_emp == 3)
@@ -893,7 +898,8 @@ class depot_de_dossierController extends bootstrap
                         $this->companies_details->fichier_derniere_liasse_fiscale = $this->upload->getName();
                     }
                 }
-                if ($this->companies_details->fichier_derniere_liasse_fiscale == '')
+
+                if ($this->companies_details->fichier_derniere_liasse_fiscale == '' && $_POST['is_responsive']!= "true")
                 {
                     $form_ok = false;
                 }
@@ -1005,7 +1011,7 @@ class depot_de_dossierController extends bootstrap
                     {
                         if (isset($_SESSION['client']) && $this->email_temp == $_POST['email'])
                         {
-                            
+
                         }
                         else
                         {
@@ -1039,7 +1045,7 @@ class depot_de_dossierController extends bootstrap
 
                         if (isset($_SESSION['client']) && $this->email_temp == $_POST['email_representative'])
                         {
-                            
+
                         }
                         else
                         {
@@ -1102,12 +1108,30 @@ class depot_de_dossierController extends bootstrap
                     // On fait une mise à jour
                     $this->clients->update();
                     $this->clients_adresses->update();
-                    $this->companies->update();
+                    $this->companies->id_compagny = $this->companies->update();
                     $this->companies_details->update();
                     $this->projects->update();
 
 
-                    // -- acceptation des cgu -- // 
+                    //Si on est en responsive on ajoute l'emprunteur dans la table prospect ([Masquage champs + nouvelle entrée dans la table prospect emprunteur]Aucune autre action, conversation avec DN 06-08-15)
+                    if($_POST['is_responsive']== "true")
+                    {
+                        $this->prospects_emprunteurs = $this->loadData('prospects_emprunteurs');
+                        $this->prospects_emprunteurs->prenom = $this->clients->prenom;
+                        $this->prospects_emprunteurs->nom = $this->clients->nom;
+                        $this->prospects_emprunteurs->email = $this->clients->email;
+                        $this->prospects_emprunteurs->source = $this->clients->source;
+                        $this->prospects_emprunteurs->id_compagny = $this->companies->id_compagny;
+                        $this->prospects_emprunteurs->id_project = $this->projects->id_project;
+                        $this->prospects_emprunteurs->id_client = $this->clients->id_client;
+                        $this->prospects_emprunteurs->create();
+
+                    }
+
+
+
+
+                    // -- acceptation des cgu -- //
                     if ($this->acceptations_legal_docs->get($this->lienConditionsGenerales, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc'))
                         $accepet_ok = true;
                     else
@@ -1118,7 +1142,7 @@ class depot_de_dossierController extends bootstrap
                         $this->acceptations_legal_docs->update();
                     else
                         $this->acceptations_legal_docs->create();
-                    // -- fin partie cgu -- // 
+                    // -- fin partie cgu -- //
                     // si good page confirmation
                     $this->projects_status_history->addStatus(-2, 10, $this->projects->id_project);
 
@@ -1247,7 +1271,7 @@ class depot_de_dossierController extends bootstrap
         else
         {
             // redirection etape 1
-            //....................	
+            //....................
         }
     }
 
@@ -1645,7 +1669,7 @@ class depot_de_dossierController extends bootstrap
                         }
 
 
-                        // dernier bilan 
+                        // dernier bilan
                         $dateDernierBilan = substr($identite->dateDernierBilan, 0, 10);
                         $dateDernierBilan = explode('-', $dateDernierBilan);
 
@@ -1688,7 +1712,7 @@ class depot_de_dossierController extends bootstrap
                 }
                 else
                 {
-                    mail('d.courtier@equinoa.com', 'unilend erreur', 'Erreur etape 4 depot dossier : ' . $result->exception->erreur);
+                    mail(implode(',',$this->Config['DebugMailIt']), 'unilend erreur', 'Erreur etape 4 depot dossier : ' . $result->exception->erreur);
                 }
             }
 
@@ -2023,7 +2047,7 @@ class depot_de_dossierController extends bootstrap
                         $this->companies_details->fichier_extrait_kbis = $this->upload->getName();
                     }
                 }
-                // fichier_rib 
+                // fichier_rib
                 if (isset($_FILES['fichier2']) && $_FILES['fichier2']['name'] != '')
                 {
                     $this->upload->setUploadDir($this->path, 'protected/companies/rib/');
@@ -2034,7 +2058,7 @@ class depot_de_dossierController extends bootstrap
                         $this->companies_details->fichier_rib = $this->upload->getName();
                     }
                 }
-                // fichier_delegation_pouvoir 
+                // fichier_delegation_pouvoir
                 if (isset($_FILES['fichier3']) && $_FILES['fichier3']['name'] != '')
                 {
                     $this->upload->setUploadDir($this->path, 'protected/companies/delegation_pouvoir/');
@@ -2045,7 +2069,7 @@ class depot_de_dossierController extends bootstrap
                         $this->companies_details->fichier_delegation_pouvoir = $this->upload->getName();
                     }
                 }
-                // fichier_logo_societe 
+                // fichier_logo_societe
                 if (isset($_FILES['fichier4']) && $_FILES['fichier4']['name'] != '')
                 {
                     $this->upload->setUploadDir($this->path, 'public/default/var/images/logos_companies/');
@@ -2056,7 +2080,7 @@ class depot_de_dossierController extends bootstrap
                         $this->companies_details->fichier_logo_societe = $this->upload->getName();
                     }
                 }
-                // fichier_photo_dirigeant 
+                // fichier_photo_dirigeant
                 if (isset($_FILES['fichier5']) && $_FILES['fichier5']['name'] != '')
                 {
                     $this->upload->setUploadDir($this->path, 'protected/companies/photo_dirigeant/');
@@ -2102,7 +2126,7 @@ class depot_de_dossierController extends bootstrap
                         $this->companies_details->fichier_derniers_comptes_approuves = $this->upload->getName();
                     }
                 }
-                // fichier_derniers_comptes_consolides_groupe 
+                // fichier_derniers_comptes_consolides_groupe
                 if (isset($_FILES['fichier9']) && $_FILES['fichier9']['name'] != '')
                 {
                     $this->upload->setUploadDir($this->path, 'protected/companies/derniers_comptes_consolides_groupe/');
@@ -2113,7 +2137,7 @@ class depot_de_dossierController extends bootstrap
                         $this->companies_details->fichier_derniers_comptes_consolides_groupe = $this->upload->getName();
                     }
                 }
-                // fichier_annexes_rapport_special_commissaire_compte 
+                // fichier_annexes_rapport_special_commissaire_compte
                 if (isset($_FILES['fichier10']) && $_FILES['fichier10']['name'] != '')
                 {
                     $this->upload->setUploadDir($this->path, 'protected/companies/annexes_rapport_special_commissaire_compte/');
@@ -2124,7 +2148,7 @@ class depot_de_dossierController extends bootstrap
                         $this->companies_details->fichier_annexes_rapport_special_commissaire_compte = $this->upload->getName();
                     }
                 }
-                // fichier_arret_comptable_recent 
+                // fichier_arret_comptable_recent
                 if (isset($_FILES['fichier11']) && $_FILES['fichier11']['name'] != '')
                 {
                     $this->upload->setUploadDir($this->path, 'protected/companies/arret_comptable_recent/');
@@ -2135,7 +2159,7 @@ class depot_de_dossierController extends bootstrap
                         $this->companies_details->fichier_arret_comptable_recent = $this->upload->getName();
                     }
                 }
-                // fichier_budget_exercice_en_cours_a_venir 
+                // fichier_budget_exercice_en_cours_a_venir
                 if (isset($_FILES['fichier12']) && $_FILES['fichier12']['name'] != '')
                 {
                     $this->upload->setUploadDir($this->path, 'protected/companies/budget_exercice_en_cours_a_venir/');
@@ -2146,7 +2170,7 @@ class depot_de_dossierController extends bootstrap
                         $this->companies_details->fichier_budget_exercice_en_cours_a_venir = $this->upload->getName();
                     }
                 }
-                // fichier_notation_banque_france 
+                // fichier_notation_banque_france
                 if (isset($_FILES['fichier13']) && $_FILES['fichier13']['name'] != '')
                 {
                     $this->upload->setUploadDir($this->path, 'protected/companies/notation_banque_france/');
@@ -2284,7 +2308,7 @@ class depot_de_dossierController extends bootstrap
                 $this->clients->status_depot_dossier = 5;
                 $this->clients->update();
 
-                // -- acceptation des cgu -- // 
+                // -- acceptation des cgu -- //
                 if ($this->acceptations_legal_docs->get($this->lienConditionsGenerales, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc'))
                     $accepet_ok = true;
                 else
@@ -2295,7 +2319,7 @@ class depot_de_dossierController extends bootstrap
                     $this->acceptations_legal_docs->update();
                 else
                     $this->acceptations_legal_docs->create();
-                // -- fin partie cgu -- // 
+                // -- fin partie cgu -- //
 
                 header('location:' . $this->lurl . '/' . $this->tree->getSlug(48, $this->language));
                 die;

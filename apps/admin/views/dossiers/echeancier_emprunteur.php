@@ -9,8 +9,7 @@
 
         $(".tablesorter").tablesorter();
 <?
-if ($this->nb_lignes != '')
-{
+if ($this->nb_lignes != '') {
     ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
     <?
@@ -19,8 +18,7 @@ if ($this->nb_lignes != '')
 
     });
 <?
-if (isset($_SESSION['freeow']))
-{
+if (isset($_SESSION['freeow'])) {
     ?>
         $(document).ready(function () {
             var title, message, opts, container;
@@ -55,29 +53,27 @@ if (isset($_SESSION['freeow']))
         <tr>
             <th style="width:140px;">Total Com : </th>
             <td><?= number_format($this->commission / 100, 2, ',', ' ') ?> €</td>
-        </tr><tr>    
+        </tr><tr>
             <th style="width:140px;">Commission / Mois : </th>
             <td><?= number_format($this->comParMois / 100, 2, ',', ' ') ?> €</td>
-        </tr><tr>    
+        </tr><tr>
             <th style="width:140px;">Commission TTC / Mois : </th>
             <td><?= number_format($this->comTtcParMois / 100, 2, ',', ' ') ?> €</td>
-        </tr><tr>    
+        </tr><tr>
             <th style="width:140px;">TVA : </th>
             <td><?= number_format($this->tva / 100, 2, ',', ' ') ?> €</td>
-        </tr><tr>   
+        </tr><tr>
             <th style="width:140px;">Total TVA : </th>
             <td><?= number_format($this->totalTva / 100, 2, ',', ' ') ?> €</td>
         </tr>
     </table>
     <br />
     <?
-    
-    if (count($this->lRemb) > 0)
-    {
+    if (count($this->lRemb) > 0) {
         ?>
         <table class="tablesorter">
             <thead>
-                <tr> 
+                <tr>
                     <th>Echeance</th>
                     <th>Interets</th>
                     <th>Capital</th>
@@ -86,8 +82,8 @@ if (isset($_SESSION['freeow']))
                     <th>TVA</th>
                     <th>Montant emprunteur (I+C+ComTTC)</th>
                     <th>Capital restant</th>
-                    <th>Date echeance Emprunteur</th>
                     <th>Date d'envoi du prélèvement</th>
+                    <th>Date echeance Emprunteur</th>
                     <?php /* ?><th>Statut</th><?php */ ?>
                 </tr>
             </thead>
@@ -95,24 +91,22 @@ if (isset($_SESSION['freeow']))
                 <?
                 $i = 1;
                 $capRestant = $this->capital;
-                foreach ($this->lRemb as $r)
-                {
+                foreach ($this->lRemb as $r) {
                     $montantEmprunteur = $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
 
                     $capRestant -= $r['capital'];
                     if ($capRestant < 0)
                         $capRestant = 0;
-                    
+
                     //on va récuperer la date d'envoi du prelevement, pour cela on doit lier la table echeancier_emp à prelevements, on utilisera la clé "Ordre + id_projet"
                     $date_envoi_prelevement = "";
-                    if($this->prelevements->get($r['id_project'], 'num_prelevement = '.$r['ordre'].' AND id_project'))
-                    {
+
+                    if ($this->prelevements->get($r['id_project'], 'num_prelevement = ' . $r['ordre'] . ' AND id_project')) {
+
                         $date_envoi_prelevement = $this->dates->formatDate($this->prelevements->date_execution_demande_prelevement, 'd/m/Y');
                     }
-                    
-                    
-                    
                     ?>
+
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
 
                         <td><?= $r['ordre'] ?></td>
@@ -123,17 +117,16 @@ if (isset($_SESSION['freeow']))
                         <td><?= number_format($r['tva'] / 100, 2, ',', ' ') ?></td>
                         <td><?= number_format($montantEmprunteur / 100, 2, ',', ' ') ?></td>
                         <td><?= number_format($capRestant / 100, 2, ',', ' ') ?></td>
-                        <td><?= $this->dates->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
                         <td><?= $date_envoi_prelevement ?></td>
-                        <?php /* ?><td><?=($r['status']==1?'Remboursé':'A venir')?></td><?php */ ?>
-                    </tr>   
-                    <?
-                    $i++;
-                }
-                // ajout de la ligne du RA
-                if ($this->montant_ra > 0)
-                {
-                    ?>
+                        <td><?= $this->dates->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
+        <?php /* ?><td><?=($r['status']==1?'Remboursé':'A venir')?></td><?php */ ?>
+                    </tr>
+                        <?
+                        $i++;
+                    }
+                    // ajout de la ligne du RA
+                    if ($this->montant_ra > 0) {
+                        ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
 
                         <td><?= $r['ordre'] + 1 ?></td>
@@ -145,17 +138,16 @@ if (isset($_SESSION['freeow']))
                         <td><?= number_format($this->montant_ra, 2, ',', ' ') ?></td>
                         <td>0</td>
                         <td><?= $this->dates->formatDate($this->date_ra, 'd/m/Y') ?></td>
-                        <?php /* ?><td><?=($r['status']==1?'Remboursé':'A venir')?></td><?php */ ?>
+        <?php /* ?><td><?=($r['status']==1?'Remboursé':'A venir')?></td><?php */ ?>
                     </tr>
-                    <?php
-                }
-                ?>
+                        <?php
+                    }
+                    ?>
             </tbody>
         </table>
-        <?
-        if ($this->nb_lignes != '')
-        {
-            ?>
+                <?
+                if ($this->nb_lignes != '') {
+                    ?>
             <table>
                 <tr>
                     <td id="pager">
@@ -170,11 +162,11 @@ if (isset($_SESSION['freeow']))
                     </td>
                 </tr>
             </table>
-            <?
-        }
-        ?>
+        <?
+    }
+    ?>
         <?
     }
     ?>
 </div>
-<?php unset($_SESSION['freeow']); ?>
+    <?php unset($_SESSION['freeow']); ?>

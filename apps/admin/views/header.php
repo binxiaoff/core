@@ -21,8 +21,8 @@
         <a href="<?=$this->lurl?>/users/edit_perso/<?=$_SESSION['user']['id_user']?>" class="thickbox">
             <?=$_SESSION['user']['firstname'].' '.$_SESSION['user']['name']?>
         </a>&nbsp;&nbsp;|&nbsp;&nbsp;
-    	
-		
+
+
 		<?=date('d/m/Y')?>&nbsp;&nbsp;|&nbsp;&nbsp;
         <a href="<?=$this->lurl?>/logout" title="Se deconnecter"><strong>Se deconnecter</strong></a><br /><br />
         <a href="<?=$this->urlfront?>" title="Retourner sur le site" target="_blank"><strong>Retourner sur le site</strong></a>
@@ -48,7 +48,7 @@
                     <li><a href="<?=$this->lurl?>/menus" title="Menus">Menus</a></li>
                     <li><a href="<?=$this->lurl?>/templates" title="Templates">Templates</a></li>
                     <li><a href="<?=$this->lurl?>/traductions" title="Traductions"<?=($this->menu_admin == 'traductions'?' class="active"':'')?>>Traductions</a></li>
-                    <li><a href="<?=$this->lurl?>/mails" title="Mails">Mails</a></li>                  
+                    <li><a href="<?=$this->lurl?>/mails" title="Mails">Mails</a></li>
                 </ul>
           	</li>
         <?
@@ -65,7 +65,7 @@
 					<li><a href="<?=$this->lurl?>/routages" title="Routage">Routage</a></li>
                     <li><a href="<?=$this->lurl?>/partenaires" title="Campagnes">Campagnes</a></li>
                     <li><a href="<?=$this->lurl?>/partenaires/types" title="Types de campagnes">Types de campagnes</a></li>
-                    <li><a href="<?=$this->lurl?>/partenaires/medias" title="Medias de campagnes">Medias de campagnes</a></li>         
+                    <li><a href="<?=$this->lurl?>/partenaires/medias" title="Medias de campagnes">Medias de campagnes</a></li>
                 </ul>
           	</li>
         <?
@@ -77,7 +77,7 @@
             	<a href="<?=$this->lurl?>/queries" title="Stats"<?=($this->menu_admin == 'stats'?' class="active"':'')?>>Stats</a>
                 <ul class="sous_menu">
                 	<li><a href="<?=$this->lurl?>/queries" title="Requêtes">Requêtes</a></li>
-                    <?			
+                    <?
                     if($this->google_analytics != '' && $this->google_mail != '' && $this->google_password != '')
                     {
                     ?>
@@ -86,7 +86,7 @@
                     }
                     ?>
                     <li><a href="<?=$this->lurl?>/stats/etape_inscription" title="Etape d'inscription">Etape d'inscription</a></li>
-                    
+
                     <li><a href="<?=$this->lurl?>/stats/requete_revenus_csv" title="Requete revenus">Requete revenus</a></li>
                     <li><a href="<?=$this->lurl?>/stats/requete_dossiers" title="Requete dossiers">Requete dossiers</a></li>
                     <li><a href="<?=$this->lurl?>/stats/requete_beneficiaires" title="Requete beneficiaires">Requete beneficiaires</a></li>
@@ -99,7 +99,7 @@
                 </ul>
           	</li>
         <?
-		}		
+		}
 		if(in_array('preteurs',$this->lZonesHeader) && $this->cms == 'iZicom')
 		{
 		?>
@@ -107,11 +107,10 @@
                 <ul class="sous_menu">
                     <li><a href="<?=$this->lurl?>/preteurs" title="Arbo preteurs">Arbo prêteurs</a></li>
                     <li><a href="<?=$this->lurl?>/preteurs/gestion" title="Gestion prêteurs">Gestion prêteurs</a></li>
+                    <li><a href="<?=$this->lurl?>/preteurs/search" title="Recherche prêteurs">Recherche prêteurs</a></li>
                     <li><a href="<?=$this->lurl?>/preteurs/liste_preteurs_non_inscrits" title="Liste des prêteurs non inscrits">Liste des prêteurs non inscrits</a></li>
-                    
                     <li><a href="<?=$this->lurl?>/preteurs/activation" title="Activation prêteurs">Activation prêteurs</a></li>
                     <li><a href="<?=$this->lurl?>/preteurs/offres_de_bienvenue" title="Gestion offre de bienvenue">Gestion offre de bienvenue</a></li>
-                    	
                 </ul>
             </li>
         <?
@@ -153,8 +152,8 @@
             </li>
         <?
 		}
-		
-        if($this->equinoa == true)
+
+        if(isset($this->equinoa) && $this->equinoa == true)
 		{
 		?>
         	<li class="last"><a href="#" title="equinoa"<?=($this->menu_admin == 'equinoa'?' class="active"':'')?>>equinoa</a>
@@ -165,7 +164,7 @@
                     <li><a href="<?=$this->lurl?>/fdp" title="Frais de port">Frais de port</a></li>
                     <li><a href="<?=$this->lurl?>/fdp/types" title="Types de FDP">Types de FDP</a></li>
                     <li><a href="<?=$this->lurl?>/brands" title="Gestion des marques">Gestion des marques</a></li>
-                    
+
                     <li><a href="<?=$this->lurl?>/produits/avis" title="Avis des produits">Avis des produits</a></li>
                     <li><a href="<?=$this->lurl?>/commandes" title="Commandes reçues">Commandes reçues</a></li>
                     <li><a href="<?=$this->lurl?>/commandes/boxSearch" class="searchBox">Rechercher commandes</a></li>

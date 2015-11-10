@@ -9,7 +9,7 @@
 		var add_url = '<?=$this->lurl?>';
 	</script>
 	<?=$this->callCss()?>
-    <?=$this->callJs()?>    
+    <?=$this->callJs()?>
 </head>
 <body class="loginBody">
 	<iframe src="<?=$this->urlfront?>/logAdminUser" frameborder="0" width="0" height="0"></iframe>
@@ -31,19 +31,19 @@
 		<?php
 		//echo $_SESSION['login_user']['nb_tentatives_precedentes'];
 		//gestion du temps d'attente en cas d'echec successifs
-		if($_SESSION['login_user']['nb_tentatives_precedentes'] > 1 && $_SESSION['login_user']['nb_tentatives_precedentes'] <= 5)
+		if(isset($_SESSION['login_user']) && ($_SESSION['login_user']['nb_tentatives_precedentes'] > 1 && $_SESSION['login_user']['nb_tentatives_precedentes'] <= 5))
 		{
 			?>
 			<script type="text/javascript">
 				 $(document).ready(function(){
-					
+
 					$('#bloc_action').hide();
 					$('#load_bloc').show();
-					
+
 					setTimeout(function() {
 						$('#load_bloc').hide();
 						$('#bloc_action').show();
-					}, <?=($_SESSION['login_user']['duree_waiting']*1000)?>);  
+					}, <?=($_SESSION['login_user']['duree_waiting']*1000)?>);
 				});
 			</script>
 			<?
@@ -62,29 +62,29 @@
 					{
 						?>
 						<h2 style="margin-bottom:20px;" class="notice_error"><?=$this->error_login?></h2>
-                        
+
 						<?php
 					}
-					
+
 					if(isset($this->displayCaptchaError) && $this->displayCaptchaError!= "")
 					{
 						?>
 						<h2 style="margin-bottom:20px;" class="notice_error"><?=$this->displayCaptchaError?></h2>
-                        
+
 						<?php
 					}
-					
-					
-					//retour nouveau pass					
+
+
+					//retour nouveau pass
 					if(isset($this->type_retour_new_pass)&& $this->retour_new_pass!= "")
 					{
 						?>
 						<h2 style="margin-bottom:20px; color:<?=($this->type_retour_new_pass == 0?'red':'green')?>;"><?=$this->retour_new_pass?></h2>
 						<?php
-					}					
+					}
 					?>
 
-                    
+
                     <table class="login">
                         <tr>
                             <td><label for="login">Adresse Email</label></td>
@@ -94,28 +94,28 @@
                             <td><label for="password">Mot de passe</label></td>
                             <td><input autocomplete="off" type="password" name="password" id="password" class="input_login" /></td>
                         </tr>
-                        
+
 						<?
-                        if($_SESSION['login_user']['nb_tentatives_precedentes'] > 5){
+                        if(isset($_SESSION['login_user']) && $_SESSION['login_user']['nb_tentatives_precedentes'] > 5){
                             ?>
                             <tr>
-                                <td>  
+                                <td>
 									<img onclick="reloadCaptcha();" class="reloadCaptcha" src="<?=$this->surl?>/images/default/Captcha-icon-reload.gif" alt="Reload captcha"/>
                                     <img id="phoca-captcha" src="<?=$this->url?>/captcha/<?=mktime()?>.jpg" alt="captcha" />
                                 </td>
                                 <td><input type="text" name="captcha" id="captcha" class="input_login" /></td>
                             </tr>
-                            <?	
+                            <?
                         }
                         ?>
-                                
+
 						<tr>
                             <td colspan="2" class="center">
                                 <?php
                                 // on lance le captcha
-                                
+
                                 // affichage d'une image de loading
-                                if($_SESSION['login_user']['nb_tentatives_precedentes'] > 1 && $_SESSION['login_user']['nb_tentatives_precedentes'] <= 5)
+                                if(isset($_SESSION['login_user']) && ($_SESSION['login_user']['nb_tentatives_precedentes'] > 1 && $_SESSION['login_user']['nb_tentatives_precedentes'] <= 5))
                                 {
                                     ?>
                                     <div id="load_bloc">
@@ -124,24 +124,24 @@
                                     </div>
                                     <?php
                                 }
-                                
+
                                 ?>
-                            
+
                                 <div id="bloc_action">
                                     <input type="submit" value="Se connecter" title="Se connecter" name="connect" id="connect" class="btn" />
                                 </div>
                                 <?
                                 // On desactive la validation par la touche enter
-                                if($_SESSION['login_user']['nb_tentatives_precedentes'] > 1 && $_SESSION['login_user']['nb_tentatives_precedentes'] <= 5){
+                                if(isset($_SESSION['login_user']) && ($_SESSION['login_user']['nb_tentatives_precedentes'] > 1 && $_SESSION['login_user']['nb_tentatives_precedentes'] <= 5)){
                                     ?>
                                     <script type="text/javascript">
                                         $("input").keypress(function(event) {
                                             if(event.keyCode == 13){ event.preventDefault(); }
                                         });
                                     </script>
-                                    <?	
+                                    <?
                                 }
-								elseif($_SESSION['login_user']['nb_tentatives_precedentes'] > 5){
+								elseif(isset($_SESSION['login_user']) && $_SESSION['login_user']['nb_tentatives_precedentes'] > 5){
 									?>
 									<script type="text/javascript">
 										function reloadCaptcha() {
@@ -152,16 +152,16 @@
 											}
 										}
 									</script>
-									<?	
+									<?
 								}
                                 ?>
                             </td>
                         </tr>
-                    </table>                    
+                    </table>
                 </fieldset>
             </form>
         </div>
         <div id="footer_login"><?=$this->cms?> 1.1 - <a href="http://www.equinoa.com" title="Agence Web Equinoa">Equinoa</a> &copy;<?=date('Y')?></div>
-   	</div>       
+   	</div>
 </body>
 </html>

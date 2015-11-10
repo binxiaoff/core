@@ -253,7 +253,7 @@ class transfertsController extends bootstrap {
                 $echeanciers_emprunteur->date_echeance_emprunteur_reel = date('Y-m-d H:i:s');
                 $echeanciers_emprunteur->update();
 
-                // et on retire du wallet unilend 
+                // et on retire du wallet unilend
                 $newsum = $newsum - $montantDuMois;
 
                 if ($projects_remb->counter('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" AND status IN(0,1)') <= 0) {
@@ -653,7 +653,7 @@ class transfertsController extends bootstrap {
                 } // end upload fichier csv
                 // fin traitement
                 unset($_SESSION['anti_double_action']);
-                
+
                 // Mise en session du message
                 $_SESSION['freeow']['title'] = 'Rembourser les preteurs';
                 $_SESSION['freeow']['message'] = 'le remboursement a bien ete fait !';

@@ -39,7 +39,7 @@
             <em class="error_iban"><?=$this->lng['etape2']['iban-erreur']?></em>
         </span>
     </div><!-- /.row -->
-    
+
     <p><?=$this->lng['etape2']['origine-des-fonds']?></p>
 
     <div class="row">
@@ -54,31 +54,31 @@
             <option <?=($this->lenders_accounts->origine_des_fonds == 1000000?'selected':'')?> value="1000000" ><?=$this->lng['etape2']['autre']?></option>
         </select>
     </div><!-- /.row -->
-    
+
     <div class="row" id="row_precision" <?=($this->lenders_accounts->origine_des_fonds == 1000000?'':'style="display:none;"')?>>
         <input type="text" id="preciser" name="preciser" title="<?=$this->lng['etape2']['autre-preciser']?>" value="<?=($this->lenders_accounts->precision!=''?$this->lenders_accounts->precision:$this->lng['etape2']['autre-preciser'])?>" class="field field-mega">
     </div><!-- /.row -->
-     
+
     <p><?=$this->lng['etape2']['documents-a-fournir']?></p>
     <em class="error_fichier" <?=($this->error_fichier==true?'style="display:block;"':'')?>><?=$this->lng['etape2']['erreur-fichier']?></em>
     <div class="row row-upload">
         <label class="inline-text">
             <i class="icon-help tooltip-anchor" data-placement="right" title="" data-original-title="<?=$this->lng['etape2']['info-extrait-kbis']?>"></i>
-             <?=$this->lng['etape2']['extrait-kbis']?> 
+             <?=$this->lng['etape2']['extrait-kbis']?>
         </label>
         <div class="uploader">
-            <input id="txt_kbis" type="text" class="field required <?=($this->error_extrait_kbis==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->lenders_accounts->fichier_extrait_kbis!= ''?$this->lenders_accounts->fichier_extrait_kbis:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
+            <input id="txt_kbis" type="text" class="field required <?=($this->error_extrait_kbis==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::KBIS]["path"]!= ''?$this->attachments[attachment_type::KBIS]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
             <div class="file-holder">
                 <span class="btn btn-small">
                     <?=$this->lng['etape2']['parcourir']?>
                     <span class="file-upload">
-                        <input type="file" class="file-field" name="kbis">
+                        <input type="file" class="file-field" name="extrait_kbis">
                     </span>
                 </span>
             </div>
         </div><!-- /.uploader -->
-    </div><!-- /.row -->    
-    
+    </div><!-- /.row -->
+
     <div class="row row-upload">
         <label class="inline-text">
             <i class="icon-help tooltip-anchor" data-placement="right" title="" data-original-title="<?=$this->lng['etape2']['info-delegation-de-pouvoir']?>"></i>
@@ -87,7 +87,7 @@
         </label>
 
         <div class="uploader">
-            <input id="txt_delegation_pouvoir" type="text" class="field required <?=($this->error_delegation_pouvoir==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->lenders_accounts->fichier_delegation_pouvoir!= ''?$this->lenders_accounts->fichier_delegation_pouvoir:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
+            <input id="txt_delegation_pouvoir" type="text" class="field required <?=($this->error_delegation_pouvoir==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::DELEGATION_POUVOIR]["path"]!= ''?$this->attachments[attachment_type::DELEGATION_POUVOIR]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
 
             <div class="file-holder">
                 <span class="btn btn-small">
@@ -108,7 +108,7 @@
         </label>
 
         <div class="uploader">
-            <input id="txt_rib" type="text" class="field required <?=($this->error_rib==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->lenders_accounts->fichier_rib!= ''?$this->lenders_accounts->fichier_rib:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
+            <input id="txt_rib" type="text" class="field required <?=($this->error_rib==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::RIB]["path"]!= ''?$this->attachments[attachment_type::RIB]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
 
             <div class="file-holder">
                 <span class="btn btn-small">
@@ -121,7 +121,7 @@
             </div>
         </div><!-- /.uploader -->
     </div><!-- /.row -->
-    
+
     <div class="row row-upload">
         <label class="inline-text">
             <i class="icon-help tooltip-anchor" data-placement="right" title="" data-original-title="<?=$this->lng['etape2']['info-cni-passeport-dirigeants']?>"></i>
@@ -129,20 +129,20 @@
         </label>
 
         <div class="uploader">
-            <input id="txt_ci_dirigeant" type="text" class="field required <?=($this->error_cni_dirigent==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->lenders_accounts->fichier_cni_passeport_dirigent!= ''?$this->lenders_accounts->fichier_cni_passeport_dirigent:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
+            <input id="txt_ci_dirigeant" type="text" class="field required <?=($this->error_cni_dirigent==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]!= ''?$this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
 
             <div class="file-holder">
                 <span class="btn btn-small">
                     <?=$this->lng['etape2']['parcourir']?>
 
                     <span class="file-upload">
-                        <input type="file" class="file-field" name="ci_dirigeant">
+                        <input type="file" class="file-field" name="cni_passeport_dirigeant">
                     </span>
                 </span>
             </div>
         </div><!-- /.uploader -->
     </div><!-- /.row -->
-    
+
     <div class="row row-upload">
         <label class="inline-text">
             <div class="row-upload file-uploaded">
@@ -153,13 +153,13 @@
                 </div><!-- /.uploader -->
             </div><!-- /.row -->
         </label>
-        <div class="uploader uploader-file" <?=($this->lenders_accounts->fichier_autre!= '' || $this->error_autre==true?'':'style="display:none;"')?> >
-            <input id="txt_autre" type="text" class="field required <?=($this->error_autre==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->lenders_accounts->fichier_autre!= ''?$this->lenders_accounts->fichier_autre:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
+        <div class="uploader uploader-file" <?=($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]!= '' || $this->error_autre==true?'':'style="display:none;"')?> >
+            <input id="txt_autre" type="text" class="field required <?=($this->error_autre==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]!= ''?$this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
             <div class="file-holder">
                 <span class="btn btn-small">
                     <?=$this->lng['etape2']['parcourir']?>
                     <span class="file-upload">
-                        <input type="file" class="file-field" name="autre">
+                        <input type="file" class="file-field" name="cni_passeport_verso">
                     </span>
                 </span>
             </div>
@@ -174,7 +174,7 @@
     <div class="form-foot row row-cols centered">
         <input type="hidden" name="send_form_inscription_preteur_societe_etape_2">
         <a class="btn btn-warning" href="<?=$this->lurl?>/inscription_preteur/etape1/<?=$this->clients->hash?>" ><i class="icon-arrow-prev"></i><?=$this->lng['etape2']['precedent']?> </a>
-        
+
         <button id="next_preteur" class="btn" type="submit" onClick="$('#form_inscription_preteur_societe_etape_2').submit();"><?=$this->lng['etape2']['suivant']?><i class="icon-arrow-next"></i></button>
 
     </div><!-- /.form-foot foot-cols -->

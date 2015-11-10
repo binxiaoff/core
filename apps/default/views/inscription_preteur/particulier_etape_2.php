@@ -67,12 +67,12 @@
              <?=$this->lng['etape2']['piece-didentite']?> 
         </label>
         <div class="uploader">
-            <input id="txt_ci" type="text" class="field required <?=($this->error_cni==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->lenders_accounts->fichier_cni_passeport!= ''?$this->lenders_accounts->fichier_cni_passeport:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
+            <input id="txt_ci" type="text" class="field required <?=($this->error_cni==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::CNI_PASSPORTE]["path"]!= ''?$this->attachments[attachment_type::CNI_PASSPORTE]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
             <div class="file-holder">
                 <span class="btn btn-small">
                     <?=$this->lng['etape2']['parcourir']?>
                     <span class="file-upload">
-                        <input type="file" class="file-field" name="ci">
+                        <input type="file" class="file-field" name="cni_passeport">
                     </span>
                 </span>
             </div>
@@ -90,12 +90,12 @@
             </div><!-- /.row -->
         </label>
         <div class="uploader uploader-file" <?=($this->lenders_accounts->fichier_autre!= '' || $this->error_autre==true ?'':'style="display:none;"')?> >
-            <input id="txt_autre" type="text" class="field required <?=($this->error_autre==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->lenders_accounts->fichier_autre!= ''?$this->lenders_accounts->fichier_autre:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
+            <input id="txt_autre" type="text" class="field required <?=($this->error_autre==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]!= ''?$this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
             <div class="file-holder">
                 <span class="btn btn-small">
                     <?=$this->lng['etape2']['parcourir']?>
                     <span class="file-upload">
-                        <input type="file" class="file-field" name="autre">
+                        <input type="file" class="file-field" name="cni_passeport_verso">
                     </span>
                 </span>
             </div>
@@ -113,13 +113,13 @@
         </label>
 
         <div class="uploader">
-            <input id="txt_justificatif_de_domicile" type="text" class="field required <?=($this->error_justificatif_domicile==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->lenders_accounts->fichier_justificatif_domicile!= ''?$this->lenders_accounts->fichier_justificatif_domicile:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
+            <input id="txt_justificatif_de_domicile" type="text" class="field required <?=($this->error_justificatif_domicile==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::JUSTIFICATIF_DOMICILE]["path"]!= ''?$this->attachments[attachment_type::JUSTIFICATIF_DOMICILE]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
 
             <div class="file-holder">
                 <span class="btn btn-small">
                     <?=$this->lng['etape2']['parcourir']?>
                     <span class="file-upload">
-                        <input type="file" class="file-field" name="justificatif_de_domicile">
+                        <input type="file" class="file-field" name="justificatif_domicile">
                     </span>
                 </span>
             </div>

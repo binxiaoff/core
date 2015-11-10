@@ -83,6 +83,16 @@
 	?>
     
     <h1>Informations prêteur : <?=$this->clients->prenom.' '.$this->clients->nom?></h1>
+
+    <div class="btnDroite">
+        <a
+            href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>"
+            class="btn_link">Consulter Prêteur</a>
+        <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>"
+           class="btn_link">Historique des emails</a>
+        <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->lenders_accounts->id_lender_account ?>"
+           class="btn_link">Portefeuille & Performances</a>
+    </div>
 	
      <?
 	if(isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != ''){
@@ -170,7 +180,7 @@
             <th><label for="nom-usage">Forme juridique :</label></th>
             <td>
             <input type="text" class="input_large" name="form-juridique" id="form-juridique" value="<?=$this->companies->forme?>">
-            
+
             <?php /*?><select name="form-juridique" id="form-juridique" class="select">
                 	<option value="">Choisir</option>
                 	<option <?=($this->companies->forme == 'EIRL'?'selected':'')?> value="EIRL">EIRL</option>
@@ -524,42 +534,76 @@
     <h2>Pièces jointes :</h2>
     <table class="form" style="width: auto;">
         <tr>
-        	<th><?=($this->lenders_accounts->cni_passeport==1?'CNI':'Passeport')?> :</th>
-            <td><a href="<?=$this->lurl?>/protected/cni_passeport_lender/<?=$this->lenders_accounts->fichier_cni_passeport?>"><?=$this->lenders_accounts->fichier_cni_passeport?></a></td>
-            <td><input type="file" name="fichier1"></td>
+            <th>Type de fichier</th>
+            <th>Nom <br> (cliquer pour télécharger)</th>
+            <th>Uploader un autre fichier</th>
         </tr>
         <tr>
-        	<th>Autre :</th>
-            <td><a href="<?=$this->lurl?>/protected/autre_lender/<?=$this->lenders_accounts->fichier_autre?>"><?=$this->lenders_accounts->fichier_autre?></a></td>
-            <td><input type="file" name="fichier7"></td>
+        	<th>CNI/Passeport</th>
+            <td>
+                <a href="<?=$this->lurl?>/protected/cni_passeport_lender/<?=$this->attachments[attachment_type::CNI_PASSPORTE]["path"]?>">
+                    <?=$this->attachments[attachment_type::CNI_PASSPORTE]["path"]; ?></a>
+            </td>
+            <td><input type="file" name="cni_passeport"></td>
         </tr>
         <tr>
-        	<th>cni/passeport dirigeant :</th>
-            <td><a href="<?=$this->lurl?>/protected/cni_passeport_dirigent_lender/<?=$this->lenders_accounts->fichier_cni_passeport_dirigent?>"><?=$this->lenders_accounts->fichier_cni_passeport_dirigent?></a></td>
-            <td><input type="file" name="fichier2"></td>
+            <th>CNI/Passeport verso</th>
+            <td>
+                <a href="<?=$this->lurl?>/protected/cni_passeport_verso_lender/<?=$this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]?>">
+                    <?=$this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]; ?></a>
+            </td>
+            <td><input type="file" name="cni_passeport_verso"></td>
         </tr>
         <tr>
-        	<th>Délégation de pouvoir :</th>
-            <td><a href="<?=$this->lurl?>/protected/delegation_pouvoir_lender/<?=$this->lenders_accounts->fichier_delegation_pouvoir?>"><?=$this->lenders_accounts->fichier_delegation_pouvoir?></a></td>
-            <td><input type="file" name="fichier3"></td>
+            <th>Justificatif de domicile</th>
+            <td>
+                <a href="<?=$this->lurl?>/protected/justificatif_domicile_lender/<?=$this->attachments[attachment_type::JUSTIFICATIF_DOMICILE]["path"]?>">
+                    <?=$this->attachments[attachment_type::JUSTIFICATIF_DOMICILE]["path"];?></a>
+            </td>
+            <td><input type="file" name="justificatif_domicile"></td>
         </tr>
         <tr>
-        	<th>Extrait kbis :</th>
-            <td><a href="<?=$this->lurl?>/protected/extrait_kbis_lender/<?=$this->lenders_accounts->fichier_extrait_kbis?>"><?=$this->lenders_accounts->fichier_extrait_kbis?></a></td>
-            <td><input type="file" name="fichier4"></td>
+            <th>RIB</th>
+            <td><a href="<?=$this->lurl?>/protected/rib_lender/<?=$this->attachments[attachment_type::RIB]["path"]?>">
+                    <?=$this->attachments[attachment_type::RIB]["path"]?></a></td>
+            <td><input type="file" name="rib"></td>
         </tr>
         <tr>
-        	<th>Justificatif de domicile :</th>
-            <td><a href="<?=$this->lurl?>/protected/justificatif_domicile_lender/<?=$this->lenders_accounts->fichier_justificatif_domicile?>"><?=$this->lenders_accounts->fichier_justificatif_domicile?></a></td>
-            <td><input type="file" name="fichier5"></td>
+            <th>Attestation d'hébergement par un tiers</th>
+            <td>
+                <a href="<?=$this->lurl?>/protected/attestation_hebergement_tiers_lender/<?=$this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]["path"]?>">
+                    <?=$this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]["path"];?></a>
+            </td>
+            <td><input type="file" name="attestation_hebergement_tiers"></td>
         </tr>
         <tr>
-        	<th>RIB :</th>
-            <td><a href="<?=$this->lurl?>/protected/rib_lender/<?=$this->lenders_accounts->fichier_rib?>"><?=$this->lenders_accounts->fichier_rib?></a></td>
-            <td><input type="file" name="fichier6"></td>
+            <th>CNI ou passport du tiers hébergeant</th>
+            <td>
+                <a href="<?=$this->lurl?>/protected/cni_passport_tiers_hebergeant_lender/<?=$this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]["path"]?>">
+                    <?=$this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]["path"];?></a></td>
+            <td><input type="file" name="cni_passport_tiers_hebergeant"></td>
         </tr>
         <tr>
-        	<th>Mandat :</th>
+        	<th>CNI/Passeport dirigeant</th>
+            <td><a href="<?=$this->lurl?>/protected/cni_passeport_dirigent_lender/<?=$this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]?>">
+                    <?=$this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]?></a></td>
+            <td><input type="file" name="cni_passeport_dirigeant"></td>
+        </tr>
+        <tr>
+        	<th>Délégation de pouvoir</th>
+            <td><a href="<?=$this->lurl?>/protected/delegation_pouvoir_lender/<?=$this->attachments[attachment_type::DELEGATION_POUVOIR]["path"]?>">
+                    <?=$this->attachments[attachment_type::DELEGATION_POUVOIR]["path"]?></a></td>
+            <td><input type="file" name="delegation_pouvoir"></td>
+        </tr>
+        <tr>
+        	<th>Extrait kbis</th>
+            <td><a href="<?=$this->lurl?>/protected/extrait_kbis_lender/<?=$this->attachments[attachment_type::KBIS]["path"]?>">
+                    <?=$this->attachments[attachment_type::KBIS]["path"]?></a></td>
+            <td><input type="file" name="extrait_kbis"></td>
+        </tr>
+
+        <tr>
+        	<th>Mandat</th>
             <td>
             <?
 			if($this->clients_mandats->get($this->clients->id_client,'id_client'))
@@ -571,10 +615,45 @@
             <td><input type="file" name="mandat"></td>
         </tr>
         <tr>
-        	<th>Document fiscal :</th>
-            <td><a href="<?=$this->lurl?>/protected/document_fiscal_preteur/<?=$this->lenders_accounts->fichier_document_fiscal?>"><?=$this->lenders_accounts->fichier_document_fiscal?></a></td>
-
+        	<th>Document fiscal</th>
+            <td><a href="<?=$this->lurl?>/protected/document_fiscal_preteur/<?=$this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"]?>">
+                    <?=$this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"]?></a></td>
             <td><input type="file" name="document_fiscal"></td>
+        </tr>
+        <tr>
+            <th>Autre 1</th>
+            <td><a href="<?=$this->lurl?>/protected/autre_lender/<?=$this->attachments[attachment_type::AUTRE1]["path"]?>"><?=$this->attachments[attachment_type::AUTRE1]["path"]?></a></td>
+            <td><input type="file" name="autre1"></td>
+        </tr>
+        <tr>
+            <th>Autre 2</th>
+            <td><a href="<?=$this->lurl?>/protected/autre2_lender/<?=$this->attachments[attachment_type::AUTRE2]["path"]?>"><?=$this->attachments[attachment_type::AUTRE2]["path"]?></a></td>
+                <td><input type="file" name="autre2"></td>
+        </tr>
+        <tr>
+            <th>Autre 3</th>
+            <td><a href="<?=$this->lurl?>/protected/autre3_lender/<?=$this->attachments[attachment_type::AUTRE3]["path"]?>"><?=$this->attachments[attachment_type::AUTRE3]["path"]?></a></td>
+            <td><input type="file" name="autre3"></td>
+        </tr>
+        <tr>
+            <th>Dispense de prélèvement 2014</th>
+            <td><a href="<?=$this->lurl?>/protected/dispense_prelevement_2014_lender/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2014]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2014]["path"]?></a></td>
+            <td><input type="file" name="dispense_prelevement_2014"></td>
+        </tr>
+        <tr>
+            <th>Dispense de prélèvement 2015</th>
+            <td><a href="<?=$this->lurl?>/protected/dispense_prelevement_2015_lender/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2015]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2015]["path"]?></a></td>
+            <td><input type="file" name="dispense_prelevement_2015"></td>
+        </tr>
+        <tr>
+            <th>Dispense de prélèvement 2016</th>
+            <td><a href="<?=$this->lurl?>/protected/dispense_prelevement_2016_lender/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2016]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2016]["path"]?></a></td>
+            <td><input type="file" name="dispense_prelevement_2016"></td>
+        </tr>
+        <tr>
+            <th>Dispense de prélèvement 2017</th>
+            <td><a href="<?=$this->lurl?>/protected/dispense_prelevement_2017_lender/<?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2017]["path"]?>"><?=$this->attachments[attachment_type::DISPENSE_PRELEVEMENT_2017]["path"]?></a></td>
+            <td><input type="file" name="dispense_prelevement_2017"></td>
         </tr>
     </table>
     

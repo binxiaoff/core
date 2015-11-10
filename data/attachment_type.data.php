@@ -31,12 +31,23 @@ class attachment_type extends attachment_type_crud
 	const CNI_PASSPORTE = 1;
 	const JUSTIFICATIF_DOMICILE = 2;
 	const RIB = 3;
+	const ATTESTATION_HEBERGEMENT_TIERS = 4;
+	const CNI_PASSPORT_TIERS_HEBERGEANT = 5;
 	const JUSTIFICATIF_FISCAL = 6;
 	const CNI_PASSPORTE_DIRIGEANT = 7;
 	const KBIS = 8;
 	const DELEGATION_POUVOIR = 9;
 	const STATUTS = 10;
 	const CNI_PASSPORTE_VERSO = 11;
+	const AUTRE1 = 22;
+	const AUTRE2 = 23;
+	const AUTRE3 = 24;
+	const DISPENSE_PRELEVEMENT_2014 = 25;
+	const DISPENSE_PRELEVEMENT_2015 = 26;
+	const DISPENSE_PRELEVEMENT_2016 = 27;
+	const DISPENSE_PRELEVEMENT_2017 = 28;
+
+
 
 	function attachment_type($bdd,$params='')
     {
