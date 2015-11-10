@@ -323,23 +323,23 @@ class depot_de_dossierController extends bootstrap
         $this->sStep1Email = isset($_SESSION['forms']['depot-de-dossier']['email']) ? $_SESSION['forms']['depot-de-dossier']['email'] : null;
         $this->aErrors     = isset($_SESSION['forms']['depot-de-dossier-2']['errors']) ? $_SESSION['forms']['depot-de-dossier-2']['errors'] : array();
         $this->aForm       = array(
-            'raison_sociale'        => isset($aForm['raison_sociale']) ? $aForm['raison_sociale'] : $this->companies->name,
-            'civilite'              => isset($aForm['civilite']) ? $aForm['civilite'] : $this->clients->civilite,
-            'prenom'                => isset($aForm['prenom']) ? $aForm['prenom'] : $this->clients->prenom,
-            'nom'                   => isset($aForm['nom']) ? $aForm['nom'] : $this->clients->nom,
-            'fonction'              => isset($aForm['fonction']) ? $aForm['fonction'] : $this->clients->fonction,
-            'email'                 => isset($aForm['email']) ? $aForm['email'] : $this->removeEmailSuffix($this->clients->email),
-            'mobile'                => isset($aForm['mobile']) ? $aForm['mobile'] : $this->clients->mobile,
-            'civilite_prescripteur' => isset($aForm['civilite_prescripteur']) ? $aForm['civilite_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->civilite),
-            'prenom_prescripteur'   => isset($aForm['prenom_prescripteur']) ? $aForm['prenom_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->prenom),
-            'nom_prescripteur'      => isset($aForm['nom_prescripteur']) ? $aForm['nom_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->nom),
-            'fonction_prescripteur' => isset($aForm['fonction_prescripteur']) ? $aForm['fonction_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->fonction),
-            'email_prescripteur'    => isset($aForm['email_prescripteur']) ? $aForm['email_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->removeEmailSuffix($this->clients_prescripteur->email)),
-            'mobile_prescripteur'   => isset($aForm['mobile_prescripteur']) ? $aForm['mobile_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->mobile),
-            'gerant'                => isset($aForm['gerant']) ? $aForm['gerant'] : (empty($this->clients_prescripteur->id_client) ? 'oui' : 'non'),
-            'bilans'                => isset($aForm['bilans']) ? $aForm['bilans'] : '',
-            'commentaires'          => isset($aForm['commentaires']) ? $aForm['commentaires'] : $this->projects->comments,
-            'duree'                 => isset($aForm['duree']) ? $aForm['duree'] : $this->projects->period
+            'raison_sociale'         => isset($aForm['raison_sociale']) ? $aForm['raison_sociale'] : $this->companies->name,
+            'civilite'               => isset($aForm['civilite']) ? $aForm['civilite'] : $this->clients->civilite,
+            'prenom'                 => isset($aForm['prenom']) ? $aForm['prenom'] : $this->clients->prenom,
+            'nom'                    => isset($aForm['nom']) ? $aForm['nom'] : $this->clients->nom,
+            'fonction'               => isset($aForm['fonction']) ? $aForm['fonction'] : $this->clients->fonction,
+            'email'                  => isset($aForm['email']) ? $aForm['email'] : $this->removeEmailSuffix($this->clients->email),
+            'telephone'              => isset($aForm['telephone']) ? $aForm['telephone'] : $this->clients->telephone,
+            'civilite_prescripteur'  => isset($aForm['civilite_prescripteur']) ? $aForm['civilite_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->civilite),
+            'prenom_prescripteur'    => isset($aForm['prenom_prescripteur']) ? $aForm['prenom_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->prenom),
+            'nom_prescripteur'       => isset($aForm['nom_prescripteur']) ? $aForm['nom_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->nom),
+            'fonction_prescripteur'  => isset($aForm['fonction_prescripteur']) ? $aForm['fonction_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->fonction),
+            'email_prescripteur'     => isset($aForm['email_prescripteur']) ? $aForm['email_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->removeEmailSuffix($this->clients_prescripteur->email)),
+            'telephone_prescripteur' => isset($aForm['telephone_prescripteur']) ? $aForm['telephone_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->telephone),
+            'gerant'                 => isset($aForm['gerant']) ? $aForm['gerant'] : (empty($this->clients_prescripteur->id_client) ? 'oui' : 'non'),
+            'bilans'                 => isset($aForm['bilans']) ? $aForm['bilans'] : '',
+            'commentaires'           => isset($aForm['commentaires']) ? $aForm['commentaires'] : $this->projects->comments,
+            'duree'                  => isset($aForm['duree']) ? $aForm['duree'] : $this->projects->period
         );
 
         unset($_SESSION['forms']['depot-de-dossier-2']);
@@ -369,8 +369,8 @@ class depot_de_dossierController extends bootstrap
         if (empty($_POST['email']) || false === $this->ficelle->isEmail($_POST['email'])) {
             $_SESSION['forms']['depot-de-dossier-2']['errors']['email'] = true;
         }
-        if (empty($_POST['mobile'])) {
-            $_SESSION['forms']['depot-de-dossier-2']['errors']['mobile'] = true;
+        if (empty($_POST['telephone'])) {
+            $_SESSION['forms']['depot-de-dossier-2']['errors']['telephone'] = true;
         }
         if (empty($_POST['gerant'])) {
             $_SESSION['forms']['depot-de-dossier-2']['errors']['gerant'] = true;
@@ -397,8 +397,8 @@ class depot_de_dossierController extends bootstrap
             if (empty($_POST['email_prescripteur']) || false === $this->ficelle->isEmail($_POST['email_prescripteur'])) {
                 $_SESSION['forms']['depot-de-dossier-2']['errors']['email_prescripteur'] = true;
             }
-            if (empty($_POST['mobile_prescripteur'])) {
-                $_SESSION['forms']['depot-de-dossier-2']['errors']['mobile_prescripteur'] = true;
+            if (empty($_POST['telephone_prescripteur'])) {
+                $_SESSION['forms']['depot-de-dossier-2']['errors']['telephone_prescripteur'] = true;
             }
         } elseif ('oui' === $_POST['gerant'] && empty($_POST['cgv'])) {
             $_SESSION['forms']['depot-de-dossier-2']['errors']['cgv'] = true;
@@ -418,7 +418,7 @@ class depot_de_dossierController extends bootstrap
         $this->clients->prenom            = $_POST['prenom'];
         $this->clients->nom               = $_POST['nom'];
         $this->clients->fonction          = $_POST['fonction'];
-        $this->clients->mobile            = $_POST['mobile'];
+        $this->clients->telephone         = $_POST['telephone'];
         $this->clients->id_langue         = 'fr';
         $this->clients->slug              = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
         $this->clients->status_transition = 1; // Used in bootstrap and ajax depot de dossier
@@ -437,12 +437,12 @@ class depot_de_dossierController extends bootstrap
                 $this->clients_prescripteur->email = $_POST['email_prescripteur'] . '-' . time();
             }
 
-            $this->clients_prescripteur->civilite = $_POST['civilite_prescripteur'];
-            $this->clients_prescripteur->prenom   = $_POST['prenom_prescripteur'];
-            $this->clients_prescripteur->nom      = $_POST['nom_prescripteur'];
-            $this->clients_prescripteur->fonction = $_POST['fonction_prescripteur'];
-            $this->clients_prescripteur->mobile   = $_POST['mobile_prescripteur'];
-            $this->clients_prescripteur->slug     = $this->bdd->generateSlug($this->clients_prescripteur->prenom . '-' . $this->clients_prescripteur->nom);
+            $this->clients_prescripteur->civilite  = $_POST['civilite_prescripteur'];
+            $this->clients_prescripteur->prenom    = $_POST['prenom_prescripteur'];
+            $this->clients_prescripteur->nom       = $_POST['nom_prescripteur'];
+            $this->clients_prescripteur->fonction  = $_POST['fonction_prescripteur'];
+            $this->clients_prescripteur->telephone = $_POST['telephone_prescripteur'];
+            $this->clients_prescripteur->slug      = $this->bdd->generateSlug($this->clients_prescripteur->prenom . '-' . $this->clients_prescripteur->nom);
 
             if (empty($this->clients_prescripteur->id_client)) {
                 $this->clients_prescripteur->create();
@@ -451,7 +451,7 @@ class depot_de_dossierController extends bootstrap
                 $this->clients_adresses_prescripteur->civilite  = $_POST['civilite_prescripteur'];
                 $this->clients_adresses_prescripteur->prenom    = $_POST['prenom_prescripteur'];
                 $this->clients_adresses_prescripteur->nom       = $_POST['nom_prescripteur'];
-                $this->clients_adresses_prescripteur->telephone = $_POST['mobile_prescripteur'];
+                $this->clients_adresses_prescripteur->telephone = $_POST['telephone_prescripteur'];
                 $this->clients_adresses_prescripteur->create();
 
                 $this->companies_prescripteur->create();
@@ -684,20 +684,20 @@ class depot_de_dossierController extends bootstrap
 
         $this->aErrors = isset($_SESSION['forms']['depot-de-dossier-prospect']['errors']) ? $_SESSION['forms']['depot-de-dossier-prospect']['errors'] : array();
         $this->aForm   = array(
-            'raison_sociale'        => isset($aForm['raison_sociale']) ? $aForm['raison_sociale'] : $this->companies->name,
-            'civilite'              => isset($aForm['civilite']) ? $aForm['civilite'] : $this->clients->civilite,
-            'prenom'                => isset($aForm['prenom']) ? $aForm['prenom'] : $this->clients->prenom,
-            'nom'                   => isset($aForm['nom']) ? $aForm['nom'] : $this->clients->nom,
-            'fonction'              => isset($aForm['fonction']) ? $aForm['fonction'] : $this->clients->fonction,
-            'email'                 => isset($aForm['email']) ? $aForm['email'] : $this->removeEmailSuffix($this->clients->email),
-            'mobile'                => isset($aForm['mobile']) ? $aForm['mobile'] : $this->clients->mobile,
-            'civilite_prescripteur' => isset($aForm['civilite_prescripteur']) ? $aForm['civilite_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->civilite),
-            'prenom_prescripteur'   => isset($aForm['prenom_prescripteur']) ? $aForm['prenom_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->prenom),
-            'nom_prescripteur'      => isset($aForm['nom_prescripteur']) ? $aForm['nom_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->nom),
-            'fonction_prescripteur' => isset($aForm['fonction_prescripteur']) ? $aForm['fonction_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->fonction),
-            'email_prescripteur'    => isset($aForm['email_prescripteur']) ? $aForm['email_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->removeEmailSuffix($this->clients_prescripteur->email)),
-            'mobile_prescripteur'   => isset($aForm['mobile_prescripteur']) ? $aForm['mobile_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->mobile),
-            'gerant'                => isset($aForm['gerant']) ? $aForm['gerant'] : (empty($this->clients_prescripteur->id_client) ? 'oui' : 'non')
+            'raison_sociale'         => isset($aForm['raison_sociale']) ? $aForm['raison_sociale'] : $this->companies->name,
+            'civilite'               => isset($aForm['civilite']) ? $aForm['civilite'] : $this->clients->civilite,
+            'prenom'                 => isset($aForm['prenom']) ? $aForm['prenom'] : $this->clients->prenom,
+            'nom'                    => isset($aForm['nom']) ? $aForm['nom'] : $this->clients->nom,
+            'fonction'               => isset($aForm['fonction']) ? $aForm['fonction'] : $this->clients->fonction,
+            'email'                  => isset($aForm['email']) ? $aForm['email'] : $this->removeEmailSuffix($this->clients->email),
+            'telephone'              => isset($aForm['telephone']) ? $aForm['telephone'] : $this->clients->telephone,
+            'civilite_prescripteur'  => isset($aForm['civilite_prescripteur']) ? $aForm['civilite_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->civilite),
+            'prenom_prescripteur'    => isset($aForm['prenom_prescripteur']) ? $aForm['prenom_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->prenom),
+            'nom_prescripteur'       => isset($aForm['nom_prescripteur']) ? $aForm['nom_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->nom),
+            'fonction_prescripteur'  => isset($aForm['fonction_prescripteur']) ? $aForm['fonction_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->fonction),
+            'email_prescripteur'     => isset($aForm['email_prescripteur']) ? $aForm['email_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->removeEmailSuffix($this->clients_prescripteur->email)),
+            'telephone_prescripteur' => isset($aForm['telephone_prescripteur']) ? $aForm['telephone_prescripteur'] : (empty($this->clients_prescripteur->id_client) ? '' : $this->clients_prescripteur->telephone),
+            'gerant'                 => isset($aForm['gerant']) ? $aForm['gerant'] : (empty($this->clients_prescripteur->id_client) ? 'oui' : 'non')
         );
 
         unset($_SESSION['forms']['depot-de-dossier-prospect']);
@@ -729,8 +729,8 @@ class depot_de_dossierController extends bootstrap
         if (empty($_POST['email']) || false === $this->ficelle->isEmail($_POST['email'])) {
             $_SESSION['forms']['depot-de-dossier-prospect']['errors']['email'] = true;
         }
-        if (empty($_POST['mobile'])) {
-            $_SESSION['forms']['depot-de-dossier-prospect']['errors']['mobile'] = true;
+        if (empty($_POST['telephone'])) {
+            $_SESSION['forms']['depot-de-dossier-prospect']['errors']['telephone'] = true;
         }
         if (empty($_POST['gerant'])) {
             $_SESSION['forms']['depot-de-dossier-prospect']['errors']['gerant'] = true;
@@ -751,8 +751,8 @@ class depot_de_dossierController extends bootstrap
             if (empty($_POST['email_prescripteur']) || false === $this->ficelle->isEmail($_POST['email_prescripteur'])) {
                 $_SESSION['forms']['depot-de-dossier-prospect']['errors']['email_prescripteur'] = true;
             }
-            if (empty($_POST['mobile_prescripteur'])) {
-                $_SESSION['forms']['depot-de-dossier-prospect']['errors']['mobile_prescripteur'] = true;
+            if (empty($_POST['telephone_prescripteur'])) {
+                $_SESSION['forms']['depot-de-dossier-prospect']['errors']['telephone_prescripteur'] = true;
             }
         }
         if (false === empty($_SESSION['forms']['depot-de-dossier-prospect']['errors'])) {
@@ -769,7 +769,7 @@ class depot_de_dossierController extends bootstrap
         $this->clients->prenom            = $_POST['prenom'];
         $this->clients->nom               = $_POST['nom'];
         $this->clients->fonction          = $_POST['fonction'];
-        $this->clients->mobile            = $_POST['mobile'];
+        $this->clients->telephone         = $_POST['telephone'];
         $this->clients->id_langue         = 'fr';
         $this->clients->slug              = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
         $this->clients->status_transition = 1; // Used in bootstrap and ajax depot de dossier
@@ -788,12 +788,12 @@ class depot_de_dossierController extends bootstrap
                 $this->clients_prescripteur->email = $_POST['email_prescripteur'] . '-' . time();
             }
 
-            $this->clients_prescripteur->civilite = $_POST['civilite_prescripteur'];
-            $this->clients_prescripteur->prenom   = $_POST['prenom_prescripteur'];
-            $this->clients_prescripteur->nom      = $_POST['nom_prescripteur'];
-            $this->clients_prescripteur->fonction = $_POST['fonction_prescripteur'];
-            $this->clients_prescripteur->mobile   = $_POST['mobile_prescripteur'];
-            $this->clients_prescripteur->slug     = $this->bdd->generateSlug($this->clients_prescripteur->prenom . '-' . $this->clients_prescripteur->nom);
+            $this->clients_prescripteur->civilite  = $_POST['civilite_prescripteur'];
+            $this->clients_prescripteur->prenom    = $_POST['prenom_prescripteur'];
+            $this->clients_prescripteur->nom       = $_POST['nom_prescripteur'];
+            $this->clients_prescripteur->fonction  = $_POST['fonction_prescripteur'];
+            $this->clients_prescripteur->telephone = $_POST['telephone_prescripteur'];
+            $this->clients_prescripteur->slug      = $this->bdd->generateSlug($this->clients_prescripteur->prenom . '-' . $this->clients_prescripteur->nom);
 
             if (empty($this->clients_prescripteur->id_client)) {
                 $this->clients_prescripteur->create();

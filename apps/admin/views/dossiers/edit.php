@@ -804,19 +804,32 @@
         <div id="tab_email">
             <div style="float: right; min-width: 550px;">
                 <h2>Historique</h2>
-                <table class="tablesorter">
-                    <tbody>
-                    <?php foreach ($this->aEmails as $aEmail) { ?>
-                        <tr>
-                            <td>
-                                <?php $this->users->get($aEmail['id_user'], 'id_user'); ?>
-                                Envoyé le <?= date('d/m/Y H:i:s', strtotime($aEmail['added'])) ?> par <?= $this->users->name ?><br>
-                                <?= $aEmail['content'] ?>
-                            </td>
-                        </tr>
-                    <?php } ?>
-                    </tbody>
-                </table>
+                <?php if (false === empty($this->aEmails) || false === empty($this->project_cgv->id)) : ?>
+                    <table class="tablesorter">
+                        <tbody>
+                        <?php if (false === empty($this->project_cgv->id)) : ?>
+                            <tr>
+                                <td>
+                                    CGV envoyées le <?= date('d/m/Y à H:i:s', strtotime($this->project_cgv->added)) ?>
+                                    (<a href="<?= $this->furl . $this->project_cgv->getUrlPath() ?>" target="_blank">PDF</a>)
+                                    <?php if (in_array($this->project_cgv, array(project_cgv::STATUS_SIGN_UNIVERSIGN, project_cgv::STATUS_SIGN_FO))) : ?>
+                                        <br/><strong>signées</strong> le <?= date('d/m/Y à H:i:s', strtotime($this->project_cgv->updated))  ?>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                        <?php foreach ($this->aEmails as $aEmail) : ?>
+                            <tr>
+                                <td>
+                                    <?php $this->users->get($aEmail['id_user'], 'id_user'); ?>
+                                    Envoyé le <?= date('d/m/Y à H:i:s', strtotime($aEmail['added'])) ?> par <?= $this->users->name ?><br>
+                                    <?= $aEmail['content'] ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
             </div>
             <div id="edit_projects_tab_email">
                 <h2>Configuration d'envoi d'Email</h2>
@@ -1044,47 +1057,39 @@
                         <th></th>
                         <td></td>
                     </tr>
-                    <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="statut_dirigeant_etape2">
+                    <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
                         <th colspan="4" style="text-align:left;"><br/>Prescripteur :</th>
                     </tr>
-
-                    <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="identification_prescripteur">
+                    <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
                         <th>Civilité :</th>
-                        <td id="civilite_prescripteur"><?= $this->clients_prescripteurs->civilite ?></td>
-                        <th></th>
-                        <td></td>
+                        <td colspan="3" id="civilite_prescripteur"><?= $this->clients_prescripteurs->civilite ?></td>
                     </tr>
-                    <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="identification_prescripteur">
+                    <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
                         <th>Nom :</th>
                         <td id="nom_prescripteur"><?= $this->clients_prescripteurs->nom ?></td>
                         <th>Prénom :</th>
                         <td id="prenom_prescripteur"><?= $this->clients_prescripteurs->prenom ?></td>
                     </tr>
-                    <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="identification_prescripteur">
+                    <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
                         <th>Téléphone :</th>
                         <td id="telephone_prescripteur"><?= $this->clients_prescripteurs->telephone ?></td>
                         <th>Email :</th>
                         <td id="email_prescripteur"><?= $this->clients_prescripteurs->email ?></td>
                     </tr>
-                    <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="identification_prescripteur">
+                    <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
                         <th>Raison sociale :</th>
                         <td id="company_prescripteur"><?= $this->companies_prescripteurs->name ?></td>
                         <th>Siren :</th>
                         <td id="siren_prescripteur"><?= $this->companies_prescripteurs->siren ?></td>
                     </tr>
-
-                    <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="statut_dirigeant_etape2">
-                        <td>
+                    <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
+                        <td colspan="4">
                             <input class="input_large" name="search_prescripteur" id="search_prescripteur" placeholder="nom, prenom ou email du prescripteur" />
-                        </td>
-                        <td>
                             <a id="btn_search_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/search_ajax/" onclick="$(this).attr('href', '<?= $this->lurl ?>/prescripteurs/search_ajax/' + $('#search_prescripteur').val());">Rechercher un prescripteur existant</a>
                         </td>
-                        <th></th>
-                        <td></td>
                     </tr>
-                    <tr <?= $this->bHasPrescripteur ? '' : 'style="display:none;"' ?> class="statut_dirigeant_etape2">
-                        <td>
+                    <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
+                        <td colspan="4">
                             <a id="btn_add_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/add_client" target="_blank">Créer un prescripteur</a>
                         </td>
                     </tr>

@@ -62,6 +62,7 @@ class dossiersController extends bootstrap
     {
         $this->projects                        = $this->loadData('projects');
         $this->projects_notes                  = $this->loadData('projects_notes');
+        $this->project_cgv                     = $this->loadData('project_cgv');
         $this->companies                       = $this->loadData('companies');
         $this->companies_bilans                = $this->loadData('companies_bilans');
         $this->companies_details               = $this->loadData('companies_details');
@@ -100,6 +101,7 @@ class dossiersController extends bootstrap
                 sort($this->dureePossible);
             }
             $this->projects_notes->get($this->params[0], 'id_project');
+            $this->project_cgv->get($this->params[0], 'id_project');
 
             $this->settings->get('Liste deroulante secteurs', 'type');
             $this->lSecteurs = explode(';', $this->settings->value);

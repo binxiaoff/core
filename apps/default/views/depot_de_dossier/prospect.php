@@ -47,9 +47,9 @@
                            value="<?= $this->aForm['email'] ?>"
                            class="field required"
                            data-validators="Presence&amp;Email">
-                    <input type="text" name="mobile" id="mobile"
+                    <input type="text" name="telephone" id="telephone"
                            placeholder="<?= $this->lng['etape2']['telephone'] ?>"
-                           value="<?= $this->aForm['mobile'] ?>"
+                           value="<?= $this->aForm['telephone'] ?>"
                            class="field required"
                            data-validators="Presence&amp;Numericality&amp;Length,{minimum: 9, maximum: 14}">
                 </div>
@@ -106,9 +106,9 @@
                            value="<?= $this->aForm['email_prescripteur'] ?>"
                            class="field required"
                            data-validators="Presence&amp;Email">
-                    <input type="text" name="mobile_prescripteur" id="mobile_prescripteur"
+                    <input type="text" name="telephone_prescripteur" id="telephone_prescripteur"
                            placeholder="<?= $this->lng['etape2']['telephone'] ?>"
-                           value="<?= $this->aForm['mobile_prescripteur'] ?>"
+                           value="<?= $this->aForm['telephone_prescripteur'] ?>"
                            class="field required"
                            data-validators="Presence&amp;Numericality&amp;Length,{minimum: 9, maximum: 14}">
                 </div>
