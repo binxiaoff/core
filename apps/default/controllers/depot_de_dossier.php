@@ -881,6 +881,8 @@ class depot_de_dossierController extends bootstrap
                 $this->sMessage = $this->lng['depot-de-dossier-fin']['abandon'];
                 break;
             case \projects_status::REVUE_ANALYSTE:
+            case \projects_status::COMITE:
+            case \projects_status::PREP_FUNDING:
                 $this->bDisplayContact = true;
                 $this->sMessage        = $this->lng['depot-de-dossier-fin']['analyse'];
                 break;
