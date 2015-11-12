@@ -119,7 +119,7 @@ class projects_status_history extends projects_status_history_crud
 
                 $oEmail = new \email();
                 $oEmail->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
-                $oEmail->setSubject($oMailsText->subject);
+                $oEmail->setSubject(utf8_decode($oMailsText->subject));
                 $oEmail->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $oMailsText->content));
                 $oEmail->addRecipient('analystes@unilend.fr');
 
