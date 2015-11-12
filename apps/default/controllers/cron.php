@@ -8094,17 +8094,15 @@ class cronController extends bootstrap
 
             foreach ($aReminderIntervals as $sStatus => $aIntervals) {
                 if (1 === preg_match('/^status-([1-9][0-9]*)$/', $sStatus, $aMatches)) {
-                    $iStatus         = (int) $aMatches[1];
-                    $iLastIndex      = count($aIntervals);
-                    $sStartDateField = $iStatus === \projects_status::EN_ATTENTE_PIECES ? 'psh.added' : 'p.added';
+                    $iStatus                       = (int) $aMatches[1];
+                    $iLastIndex                    = count($aIntervals);
+                    $iPreviousReminderDaysInterval = 0;
+                    $iDaysSincePreviousReminder    = 0;
 
                     foreach ($aIntervals as $iReminderIndex => $iDaysInterval) {
-                        if ($iStatus === \projects_status::EN_ATTENTE_PIECES && $iReminderIndex === 0) {
-                            ++$iReminderIndex;
-                        }
-                        $aProjects = $this->projects->getReminders($iStatus, $iDaysInterval, ++$iReminderIndex, $sStartDateField);
+                        $iDaysSincePreviousReminder = $iDaysInterval - $iPreviousReminderDaysInterval;
 
-                        foreach ($aProjects as $iProjectId) {
+                        foreach ($this->projects->getReminders($iStatus, $iDaysSincePreviousReminder, $iReminderIndex - 1) as $iProjectId) {
                             if ($this->mails_text->get('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, 'lang = "' . $this->language . '" AND type')) {
                                 $this->projects->get($iProjectId, 'id_project');
                                 $this->companies->get($this->projects->id_company, 'id_company');
@@ -8141,7 +8139,7 @@ class cronController extends bootstrap
                                     $aReplacements['lien_stop_relance']       = $this->furl . '/depot_de_dossier/emails/' . $this->projects->hash;
                                     $aReplacements['date_demande']            = strftime('%d %B %Y', $oSubmissionDate->getTimestamp());
                                     $aReplacements['pourcentage_financement'] = $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100);
-                                    $aReplacements['sujet']                   = utf8_decode($this->mails_text->subject);
+                                    $aReplacements['sujet']                   = htmlentities($this->mails_text->subject, null, 'UTF-8');
 
                                     $sRecipientEmail  = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($this->clients->email));
                                     $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
@@ -8170,6 +8168,8 @@ class cronController extends bootstrap
                                 }
                             }
                         }
+
+                        $iPreviousReminderDaysInterval = $iDaysInterval;
                     }
                 }
             }

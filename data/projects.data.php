@@ -552,13 +552,12 @@ class projects extends projects_crud
 
     /**
      * Retrieve the list of project IDs that needs email reminder
-     * @param int    $iStatus         Project status
-     * @param int    $iDaysInterval   Interval in days since project creation (or update status)
-     * @param int    $iReminderIndex  Number of reminder (nth)
-     * @param string $sStartDateField Date to check for calculating interval
+     * @param int    $iStatus                Project status
+     * @param int    $iDaysInterval          Interval in days since previous reminder
+     * @param int    $iPreviousReminderIndex Previous reminder for counting days interval
      * @return array
      */
-    public function getReminders($iStatus, $iDaysInterval, $iReminderIndex, $sStartDateField = 'p.added')
+    public function getReminders($iStatus, $iDaysInterval, $iPreviousReminderIndex)
     {
         $aProjects = array();
         $rResult   = $this->bdd->query('
@@ -569,8 +568,8 @@ class projects extends projects_crud
             INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
             WHERE p.stop_relances = 0
                 AND ps.status = ' . $iStatus . '
-                AND DATE_SUB(CURDATE(), INTERVAL ' . $iDaysInterval . ' DAY) = DATE_FORMAT(' . $sStartDateField . ', "%Y-%m-%d")
-                AND psh.numero_relance = ' . ($iReminderIndex - 1)
+                AND DATE_SUB(CURDATE(), INTERVAL ' . $iDaysInterval . ' DAY) = DATE_FORMAT(psh.added, "%Y-%m-%d")
+                AND psh.numero_relance = ' . $iPreviousReminderIndex
         );
 
         if ($this->bdd->num_rows($rResult) > 0) {
