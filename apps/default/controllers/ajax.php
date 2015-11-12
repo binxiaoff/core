@@ -91,7 +91,7 @@ class ajaxController extends bootstrap
             echo 'ok';
             return;
         }
-
+        $this->params[1] = urldecode($this->params[1]);
         if (isset($this->params[0]) && '' != $this->params[0] && isset($this->params[1]) && '' != $this->params[1]) {
             /** @var villes $oVille */
             $oVille = $this->loadData('villes');

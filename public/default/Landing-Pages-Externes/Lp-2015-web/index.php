@@ -539,8 +539,7 @@
                     <div class="clear"></div>
                     <input type="text" id="inscription_date_naissance" name="date_naissance" placeholder="Date de naissance (jj/mm/aaaa)*" maxlength="10">
                     <p id="errorAge"></p>
-                    <input type="text" id="inscription_commune_naissance" name="commune_naissance" placeholder="Commune de naissance*" maxlength="255"
-                           data-autocomplete="birth_city" onblur="controleCity($(this), $('#inscription_id_pays_naissance'))"/>
+                    <input type="text" id="inscription_commune_naissance" name="commune_naissance" placeholder="Commune de naissance*" maxlength="255" data-autocomplete="birth_city"/>
                     <input type="hidden" name="insee_birth" class="insee_birth" id="insee_birth">
                     <select id="inscription_id_pays_naissance" name="id_pays_naissance" class="custom-select">
                         <option value="">Pays de naissance*</option>
@@ -1254,15 +1253,12 @@
                     if(!inscription_ville_fiscale) {
                         $('#inscription_ville_fiscale').addClass('error');
                         erreur = 1;
-                    } else if (controleCity($('#inscription_ville_fiscale'), $('#inscription_id_pays_fiscale'), false) == false) {
-                        $('#inscription_ville_fiscale').addClass('error');
-                        erreur = 1;
                     }
                     if(!inscription_cp_fiscale) {
                         $('#inscription_cp_fiscale').addClass('error');
                         erreur = 1;
-                    } else if (controleCp($('#inscription_cp_fiscale'), $('#inscription_id_pays_fiscale'), false) == false) {
-                        $('#inscription_cp_fiscale').addClass('error');
+                    }
+                    if (controlePostCodeCity($('#inscription_cp_fiscale'), $('#inscription_ville_fiscale'), $('#inscription_id_pays_fiscale'), false) == false) {
                         erreur = 1;
                     }
                     if(!inscription_id_pays_fiscale) {
@@ -1282,15 +1278,12 @@
                         if(!inscription_ville_correspondance) {
                             $('#inscription_ville_correspondance').addClass('error');
                             erreur = 1;
-                        } else if (controleCity($('#inscription_ville_correspondance'), $('#inscription_id_pays_correspondance'), false) == false) {
-                            $('#inscription_ville_correspondance').addClass('error');
-                            erreur = 1;
                         }
                         if(!inscription_cp_correspondance) {
                             $('#inscription_cp_correspondance').addClass('error');
                             erreur = 1;
-                        } else if (controleCp($('#inscription_cp_correspondance'), $('#inscription_id_pays_correspondance'), false) == false) {
-                            $('#inscription_cp_correspondance').addClass('error');
+                        }
+                        if (controlePostCodeCity($('#inscription_cp_correspondance'), $('#inscription_ville_correspondance'), $('#inscription_id_pays_correspondance'), false) == false) {
                             erreur = 1;
                         }
                         if(!inscription_id_pays_correspondance) {
@@ -1550,6 +1543,7 @@
                             if ($(this).data('autocomplete') == 'birth_city') {
                                 $("#insee_birth").val('');
                             }
+                            $(this).removeClass('error');
                         },
                         select: function( event, ui ) {
                             event.preventDefault();
@@ -1560,17 +1554,17 @@
                             if(match != null) {
                                 switch ($(this).data('autocomplete')) {
                                     case 'birth_city' :
-                                        $(this).val(match[1]);
+                                        $(this).val(match[1]).removeClass('error');
                                         $("#insee_birth").val(ui.item.value);
                                         break;
                                     case 'city' :
-                                        $(this).val(match[1]);
+                                        $(this).val(match[1]).removeClass('error');
                                         $(this).siblings("[data-autocomplete='post_code']")
                                             .val( match[2])
                                             .removeClass('error');
                                         break;
                                     case 'post_code' :
-                                        $(this).val( match[2]);
+                                        $(this).val( match[2]).removeClass('error');
                                         $(this).siblings("[data-autocomplete='city']")
                                             .val(match[1])
                                             .removeClass('error');
@@ -1617,6 +1611,29 @@
                     elmCity.removeClass('error');
                     result = true;
                 } else {
+                    elmCity.addClass('error');
+                    result = false;
+                }
+            });
+
+            return result;
+        }
+
+        function controlePostCodeCity(elmCp, elmCity, elmCountry, async)
+        {
+            async = typeof async !== 'undefined' ? async : true;
+            var result = false;
+            $.ajax({
+                url: '<?= $url_site ?>/ajax/checkPostCodeCity/' + elmCp.val() + '/' + elmCity.val() + '/' + elmCountry.val(),
+                method: 'GET',
+                async: async
+            }).done(function(data){
+                if (data == 'ok') {
+                    elmCp.removeClass('error');
+                    elmCity.removeClass('error');
+                    result = true;
+                } else {
+                    elmCp.addClass('error');
                     elmCity.addClass('error');
                     result = false;
                 }
