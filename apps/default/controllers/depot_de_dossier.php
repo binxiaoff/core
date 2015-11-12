@@ -89,6 +89,10 @@ class depot_de_dossierController extends bootstrap
             $this->dureePossible = array(24,36,48,60);
         }
 
+        if (isset($this->params[1])) {
+            $this->clients->get($this->params[1], 'hash');
+        }
+
         // Si on a une session active
         if (isset($_SESSION['client']))
         {
@@ -631,7 +635,7 @@ class depot_de_dossierController extends bootstrap
 
 
 
-                    header('location:' . $this->lurl . '/depot_de_dossier/etape1/nok');      /// <---- a remettre
+                    header('location:' . $this->lurl . '/depot_de_dossier/etape1/nok/' . $this->clients->hash);      /// <---- a remettre
                     die;                    /// <---- a remettre
 
                     // // filtre altares -  cour-circuit
@@ -641,9 +645,8 @@ class depot_de_dossierController extends bootstrap
                 }
 
                 // Si altarest est pas good ou comptable pas good
-                if ($altares == true || $comptable == true)
-                {
-                    header('location:' . $this->lurl . '/depot_de_dossier/etape1/nok');
+                if ($altares == true || $comptable == true) {
+                    header('location:' . $this->lurl . '/depot_de_dossier/etape1/nok/' . $this->clients->hash);
                     die;
                 }
 

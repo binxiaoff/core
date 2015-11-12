@@ -34,35 +34,40 @@
         <script type="text/javascript" src="<?= $this->surl ?>/scripts/default/responsive/responsive.js"></script>
     </head>
     <body class="has-fixed-nav">
-        <?
+        <?php
         if ($this->Config['env'] == 'prod') {
             // Etape 2 inscription preteur
             if ($this->page_preteur == 2) {
                 ?>
                 <iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track=<?= $this->clients->id_client ?>" width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>
                 <img src="https://ext.ligatus.com/conversion/?c=77615&a=10723" width="1" height="1" />
-                <?
+                <?php
             }
             // Etape 3 inscription preteur
             if ($this->page_preteur == 3) {
                 ?>
                 <iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=4&uniqueid=<?= $this->clients->id_client ?>"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>
-                <?
+                <?php
             }
             // tracking apres validation landing page
             if (isset($_SESSION['landing_page']) && $_SESSION['landing_page'] == true) {
                 // deplacé dans etape 2 preteur
                 unset($_SESSION['landing_page']);
             }
-            // depot dossier etape 2
-            if ($this->page == 2) {
-                ?>
+            // depot dossier non eligible
+            if ($this->page == 1 &&  isset($this->params[0]) && 'nok' === $this->params[0]) {
+            ?>
+                <iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track=<?= $this->clients->id_client ?>" width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>
+            <?php
+            } elseif ($this->page == 2) { // depot dossier etape 2
+            ?>
                 <img src="https://ext.ligatus.com/conversion/?c=74703&a=9617" width="1" height="1" />
-                <?
+                <iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track=<?= $this->clients->id_client ?>" width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>
+            <?php
                 } elseif ($this->tree->id_tree == 48) {// confirmation depot de dossier
-                    ?>
+            ?>
                 <img src="https://ms.ligatus.com/de/track/triggerext.php?cn=trcn74703" width="1" height="1">
-                <?
+            <?php
                 }
 
                 // projets-a-financer
