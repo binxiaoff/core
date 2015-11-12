@@ -56,12 +56,14 @@
             }
             // depot dossier non eligible
             if ($this->page == 1 &&  isset($this->params[0]) && 'nok' === $this->params[0]) {
-                ?>
+            ?>
                 <iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track=<?= $this->clients->id_client ?>" width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>
             <?php
-            } elseif ($this->page == 2) { // depot dossier etape 2
+            }
+            if ($this->page == 2) { // depot dossier etape 2
             ?>
                 <img src="https://ext.ligatus.com/conversion/?c=74703&a=9617" width="1" height="1" />
+                <iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track=<?= $this->clients->id_client ?>" width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>
             <?php
                 } elseif ($this->tree->id_tree == 48) {// confirmation depot de dossier
             ?>
