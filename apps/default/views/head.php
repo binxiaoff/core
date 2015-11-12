@@ -59,7 +59,8 @@
             ?>
                 <iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track=<?= $this->clients->id_client ?>" width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>
             <?php
-            } elseif ($this->page == 2) { // depot dossier etape 2
+            }
+            if ($this->page == 2) { // depot dossier etape 2
             ?>
                 <img src="https://ext.ligatus.com/conversion/?c=74703&a=9617" width="1" height="1" />
                 <iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track=<?= $this->clients->id_client ?>" width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>
@@ -76,10 +77,10 @@
                         $this->clients->get($_SESSION['LP_id_unique'], 'id_client');
                         unset($_SESSION['LP_id_unique']);
                     }
-                    ?>
+            ?>
                     <iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track=<?= $this->clients->id_client ?>" width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>
                     <iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=13&uniqueid=<?= $this->clients->id_client ?>"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>
-                    <?
+            <?php
                 }
             }
             ?>

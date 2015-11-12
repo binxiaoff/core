@@ -390,8 +390,7 @@ if (isset($_POST['spy_inscription_landing_page_depot_dossier']) || $reponse_get 
                 $this->projects_status_history->addStatus(-2, 6, $this->projects->id_project);
             }
 
-
-        } else { // fin altares
+        } else {// fin altares
             // clients //
             $this->clients->source               = $_SESSION['utm_source'];
             $this->clients->source2              = $_SESSION['utm_source2'];

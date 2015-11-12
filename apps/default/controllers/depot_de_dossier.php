@@ -632,9 +632,6 @@ class depot_de_dossierController extends bootstrap
 
                     // FIN ENVOI MAIL ALERTE
 
-
-
-
                     header('location:' . $this->lurl . '/depot_de_dossier/etape1/nok/' . $this->clients->hash);      /// <---- a remettre
                     die;                    /// <---- a remettre
 
