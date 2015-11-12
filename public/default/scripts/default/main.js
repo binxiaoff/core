@@ -355,6 +355,7 @@ function initAutocompleteCity()
                     if ($(this).data('autocomplete') == 'birth_city'){
                         $("#insee_birth").val('');
                     }
+                    $(this).removeClass('LV_valid_field');
                 },
 
                 select: function( event, ui ) {
@@ -368,18 +369,24 @@ function initAutocompleteCity()
 
                         switch ($(this).data('autocomplete')) {
                             case 'birth_city' :
-                                $(this).val(match[1]);
+                                $(this).val(match[1])
+                                    .removeClass('LV_invalid_field')
+                                    .addClass('LV_valid_field');
                                 $("#insee_birth").val(ui.item.value);
                                 break;
                             case 'city' :
-                                $(this).val(match[1]);
+                                $(this).val(match[1])
+                                    .removeClass('LV_invalid_field')
+                                    .addClass('LV_valid_field');
                                 $(this).siblings("[data-autocomplete='post_code']")
                                     .val( match[2])
                                     .removeClass('LV_invalid_field')
                                     .addClass('LV_valid_field');
                                 break;
                             case 'post_code' :
-                                $(this).val( match[2]);
+                                $(this).val( match[2])
+                                    .removeClass('LV_invalid_field')
+                                    .addClass('LV_valid_field');
                                 $(this).siblings("[data-autocomplete='city']")
                                     .val(match[1])
                                     .removeClass('LV_invalid_field')

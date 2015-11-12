@@ -220,9 +220,9 @@
             $("#jour_naissance").addClass("LV_valid_field");
         }
 
-        if (controleCity($('#naissance'), $('#pays3'), false) == false) {
-            $("#jour_naissance").removeClass("LV_valid_field");
-            $("#jour_naissance").addClass("LV_invalid_field");
+        if (('' == $('#insee_birth').val() && 1 == $('#pays3').val()) || controleCity($('#naissance'), $('#pays3'), false) == false) {
+            $("#naissance").removeClass("LV_valid_field");
+            $("#naissance").addClass("LV_invalid_field");
             radio = false;
         }
 

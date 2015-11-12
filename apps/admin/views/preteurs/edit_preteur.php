@@ -325,7 +325,7 @@
             <th><label for="com-naissance">Commune de naissance :</label></th>
             <td>
                 <input type="text" class="input_large" name="com-naissance" id="com-naissance" value="<?=$this->clients->ville_naissance?>" data-autocomplete="birth_city">
-                <input type="hidden" id="insee_birth" name="insee_birth">
+                <input type="hidden" id="insee_birth" name="insee_birth" value="<?=$this->clients->insee_birth?>">
             </td>
 		</tr>
         <tr class="particulier">
