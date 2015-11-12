@@ -563,19 +563,13 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
         }
 
         // controle cp
-        if (controleCp($('#postal'), $('#pays1'), false) == false) {
-            form_ok = false
-        }
-        if (controleCity($('#ville_inscription'), $('#pays1'), false) == false) {
+        if (controlePostCodeCity($('#postal'), $('#ville_inscription'), $('#pays1'), false) == false) {
             form_ok = false
         }
 
         if ($('#mon-addresse').is(':checked') == false) {
             // controle cp
-            if (controleCp($('#postal2'), $('#pays2'), false) == false) {
-                form_ok = false
-            }
-            if (controleCity($('#ville2'), $('#pays2'), false) == false) {
+            if (controlePostCodeCity($('#postal2'), $('#ville2'), $('#pays2'), false) == false) {
                 form_ok = false
             }
         }

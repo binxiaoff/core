@@ -82,6 +82,28 @@ class ajaxController extends bootstrap
         echo $response;
     }
 
+    public function _checkPostCodeCity()
+    {
+        $this->autoFireView = false;
+        $response = 'nok';
+
+        if (isset($this->params[2]) && 1 != $this->params[2]) {
+            echo 'ok';
+            return;
+        }
+
+        if (isset($this->params[0]) && '' != $this->params[0] && isset($this->params[1]) && '' != $this->params[1]) {
+            /** @var villes $oVille */
+            $oVille = $this->loadData('villes');
+
+            if ($oVille->get($this->params[0] . '" AND ville = "' . $this->params[1], 'cp')) {
+                $response = 'ok';
+            }
+            unset($oVille);
+        }
+        echo $response;
+    }
+
     public function _load_project()
     {
         $this->autoFireView = false;

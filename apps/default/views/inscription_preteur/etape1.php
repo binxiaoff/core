@@ -153,22 +153,14 @@
     $("#form_inscription_preteur_particulier_etape_1").submit(function (event) {
         var radio = true;
 
-        // controle cp
-        if (controleCp($('#postal'), $('#pays1'), false) == false) {
-            radio = false
-        }
-
-        if (controleCity($('#ville_inscription'), $('#pays1'), false) == false) {
+        // controle cp ville
+        if (controlePostCodeCity($('#postal'), $('#ville_inscription'), $('#pays1'), false) == false) {
             radio = false
         }
 
         if ($('#mon-addresse').is(':checked') == false) {
-            // controle cp
-            if (controleCp($('#postal2'), $('#pays2'), false) == false) {
-                radio = false
-            }
-
-            if (controleCity($('#ville2'), $('#pays2'), false) == false) {
+            // controle cp ville
+            if (controlePostCodeCity($('#postal2'), $('#ville2'), $('#pays2'), false) == false) {
                 radio = false
             }
         }
@@ -235,21 +227,13 @@
     $("#form_inscription_preteur_societe_etape_1").submit(function (event) {
         var radio = true;
         // controle cp
-        if (controleCp($('#postalE'), $('#pays1E'), false) == false) {
-            radio = false
-        }
-
-        if (controleCity($('#ville_inscriptionE'), $('#pays1E'), false) == false) {
+        if (controlePostCodeCity($('#postalE'), $('#ville_inscriptionE'), $('#pays1E'), false) == false) {
             radio = false
         }
 
         if ($('#mon-addresse').is(':checked') == false) {
             // controle cp
-            if (controleCp($('#postal2E'), $('#pays2E'), false) == false) {
-                radio = false
-            }
-
-            if (controleCity($('#ville2E'), $('#pays2E'), false) == false) {
+            if (controlePostCodeCity($('#postal2E'), $('#ville2E'), $('#pays2E'), false) == false) {
                 radio = false
             }
         }

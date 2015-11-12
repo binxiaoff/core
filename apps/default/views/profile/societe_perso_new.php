@@ -1,33 +1,33 @@
 <?php
-	//Ajout CM 06/08/14
-	$dateDepartControlPays = strtotime('2014-07-31 18:00:00');
+    //Ajout CM 06/08/14
+    $dateDepartControlPays = strtotime('2014-07-31 18:00:00');
 
-	// on ajoute une petite restriction de date pour rendre certains champs obligatoires
-	if(strtotime($this->companies->added) >= $dateDepartControlPays)
-	{
-		$required = 'required';
-	}
+    // on ajoute une petite restriction de date pour rendre certains champs obligatoires
+    if(strtotime($this->companies->added) >= $dateDepartControlPays)
+    {
+        $required = 'required';
+    }
 
-	echo "REQ: ".$required;
+    echo "REQ: ".$required;
 
 ?>
 
 <div class="account-data">
     <h2><?=$this->lng['profile']['titre-1']?></h2>
 
-	<?
-	if(isset($_SESSION['reponse_profile_perso']) && $_SESSION['reponse_profile_perso'] != ''){
-		?><div class="reponseProfile"><?=$_SESSION['reponse_profile_perso']?></div><?
-		unset($_SESSION['reponse_profile_perso']);
-	}
-	if(isset($_SESSION['reponse_email']) && $_SESSION['reponse_email'] != ''){
-		?><div class="reponseProfile" style="color:#c84747;"><?=$_SESSION['reponse_email']?></div><?
-		unset($_SESSION['reponse_email']);
-	}
-	?>
+    <?
+    if(isset($_SESSION['reponse_profile_perso']) && $_SESSION['reponse_profile_perso'] != ''){
+        ?><div class="reponseProfile"><?=$_SESSION['reponse_profile_perso']?></div><?
+        unset($_SESSION['reponse_profile_perso']);
+    }
+    if(isset($_SESSION['reponse_email']) && $_SESSION['reponse_email'] != ''){
+        ?><div class="reponseProfile" style="color:#c84747;"><?=$_SESSION['reponse_email']?></div><?
+        unset($_SESSION['reponse_email']);
+    }
+    ?>
 
     <form action="<?=$this->lurl?>/profile/societe/3" method="post" id="form_societe_perso" name="form_societe_perso" enctype="multipart/form-data">
-		<div class="part_societe1">
+        <div class="part_societe1">
             <div class="row">
 
                 <input type="text" name="raison_sociale_inscription" id="raison_sociale_inscription" value="<?=($this->companies->name!=''?$this->companies->name:$this->lng['etape1']['raison-sociale'])?>" title="<?=$this->lng['etape1']['raison-sociale']?>" class="field field-large required" data-validators="Presence">
@@ -218,7 +218,7 @@
                     <p><?=$this->lng['etape1']['contenu-dirigeant']?></p>
 
                 </div><!-- /.identification -->
-			</div>
+            </div>
 
             <em class="change_identite"><?=$this->lng['profile']['les-informations-relatives-a-votre-identite-ont-ete-modifiees']?></em>
         </div>
@@ -240,56 +240,49 @@
 
 <script type="text/javascript">
 $(document).ready(function () {
-	$('#conf_email').bind('paste', function (e) { e.preventDefault(); });
-	// confirmation email preteur societe
-	$('#conf_email_inscription').bind('paste', function (e) { e.preventDefault(); });
-	$('#email_inscription').bind('paste', function (e) { e.preventDefault(); });
+    $('#conf_email').bind('paste', function (e) { e.preventDefault(); });
+    // confirmation email preteur societe
+    $('#conf_email_inscription').bind('paste', function (e) { e.preventDefault(); });
+    $('#email_inscription').bind('paste', function (e) { e.preventDefault(); });
 
-	$('select#external-consultant').on('change', function() {
-		if ($('option:selected', this).val() == '3') {$('#autre_inscription').show();}
-		else {$('#autre_inscription').hide();}
-	});
+    $('select#external-consultant').on('change', function() {
+        if ($('option:selected', this).val() == '3') {$('#autre_inscription').show();}
+        else {$('#autre_inscription').hide();}
+    });
 
     initAutocompleteCity();
 });
 
 // Submit formulaire inscription preteur societe
 $( "#form_societe_perso" ).submit(function( event ) {
-	var radio = true;
+    var radio = true;
 
     // controle cp
-    if (controleCp($('#postalE'), $('#pays1E'), false) == false) {
-        radio = false
-    }
-    if (controleCity($('#ville_inscriptionE'), $('#pays1E'), false) == false) {
+    if (controlePostCodeCity($('#postalE'), $('#ville_inscriptionE'), $('#pays1E'), false) == false) {
         radio = false
     }
 
     if ($('#mon-addresse').is(':checked') == false) {
         // controle cp
-        if (controleCp($('#postal2E'), $('#pays2E'), false) == false) {
-            radio = false
-        }
-        if (controleCity($('#ville2E'), $('#pays2E'), false) == false) {
+        if (controlePostCodeCity($('#postal2E'), $('#ville2E'), $('#pays2E'), false) == false) {
             radio = false
         }
     }
 
+    // Civilite vos cordonnées
+    if($('input[type=radio][name=genre1]:checked').length){$('#radio_genre1').css('color','#727272');}
+    else{$('#radio_genre1').css('color','#C84747');radio = false;}
 
-	// Civilite vos cordonnées
-	if($('input[type=radio][name=genre1]:checked').length){$('#radio_genre1').css('color','#727272');}
-	else{$('#radio_genre1').css('color','#C84747');radio = false;}
+    // type d'utilisateur
+    var radio_enterprise = $('input[type=radio][name=enterprise]:checked').attr('value');
 
-	// type d'utilisateur
-	var radio_enterprise = $('input[type=radio][name=enterprise]:checked').attr('value');
+    if(radio_enterprise == 2 || radio_enterprise == 3 ){
+        if($('input[type=radio][name=genre2]:checked').length){$('#radio_genre2').css('color','#727272');}
+        else{$('#radio_genre2').css('color','#C84747');radio = false;}
+    }
+    else $('#radio_genre2').css('color','#727272');
 
-	if(radio_enterprise == 2 || radio_enterprise == 3 ){
-		if($('input[type=radio][name=genre2]:checked').length){$('#radio_genre2').css('color','#727272');}
-		else{$('#radio_genre2').css('color','#C84747');radio = false;}
-	}
-	else $('#radio_genre2').css('color','#727272');
-
-	if(radio == false){ event.preventDefault(); }
+    if(radio == false){ event.preventDefault(); }
 
 });
 
