@@ -49,7 +49,7 @@ class ajaxController extends bootstrap
             echo 'ok';
             return;
         }
-        if (isset($this->params[0])) {
+        if (isset($this->params[0]) && '' != $this->params[0]) {
             /** @var villes $oVille */
             $oVille = $this->loadData('villes');
 
@@ -70,7 +70,7 @@ class ajaxController extends bootstrap
             echo 'ok';
             return;
         }
-        if (isset($this->params[0])) {
+        if (isset($this->params[0]) && '' != $this->params[0]) {
             /** @var villes $oVille */
             $oVille = $this->loadData('villes');
 
