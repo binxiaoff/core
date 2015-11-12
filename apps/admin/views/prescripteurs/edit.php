@@ -1,23 +1,16 @@
 <script type="text/javascript">
-<?
-if (isset($_SESSION['freeow'])) {
-    ?>
-        $(document).ready(function () {
-            var title, message, opts, container;
-            title = "<?= $_SESSION['freeow']['title'] ?>";
-            message = "<?= $_SESSION['freeow']['message'] ?>";
-            opts = {};
-            opts.classes = ['smokey'];
-            $('#freeow-tr').freeow(title, message, opts);
-        });
-    <?
-    unset($_SESSION['freeow']);
-}
-?>
+<?php if (isset($_SESSION['freeow'])) { ?>
+    $(document).ready(function () {
+        var title, message, opts, container;
+        title = "<?= $_SESSION['freeow']['title'] ?>";
+        message = "<?= $_SESSION['freeow']['message'] ?>";
+        opts = {};
+        opts.classes = ['smokey'];
+        $('#freeow-tr').freeow(title, message, opts);
+    });
+    <?php unset($_SESSION['freeow']); ?>
+<?php } ?>
 </script>
-<style>
-    #infos_client{display:none;border:1 px solid #2F86B2; padding:15px;}
-</style>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <ul class="breadcrumbs">
@@ -25,23 +18,16 @@ if (isset($_SESSION['freeow'])) {
         <li><a href="<?= $this->lurl ?>/prescripteurs/gestion" title="Gestion prescripteurs">Gestion prescripteurs</a> -</li>
         <li>Detail prescripteur</li>
     </ul>
-
     <h1>Detail prescripteur : <?= $this->clients->nom . ' ' . $this->clients->prenom ?></h1>
-
-    <?
-    if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '') {
-        ?>
+    <?php if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '') { ?>
         <p style="color:#c84747;text-align:center;font-size:14px;font-weight:bold;"><?= $_SESSION['error_email_exist'] ?></p>
-        <?
-        unset($_SESSION['error_email_exist']);
-    }
-    ?>
-
+        <?php unset($_SESSION['error_email_exist']); ?>
+    <?php } ?>
     <form method="post" name="edit_prescripteur" id="edit_prescripteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/prescripteurs/edit/<?= $this->prescripteurs->id_prescripteur ?>" target="_parent">
         <table class="formColor" style="width: 775px;margin:auto;">
             <tr>
                 <th>Civilité :</th>
-                <td>
+                <td colspan="3">
                     <input <?= $this->clients->civilite == 'Mme' ? 'checked' : '' ?> type="radio" name="civilite" id="civilite_mme" value="Mme"/>
                     <label for="civilite_mme">Madame</label>
 
@@ -54,7 +40,6 @@ if (isset($_SESSION['freeow'])) {
             <tr>
                 <th><label for="nom">Nom :</label></th>
                 <td><input type="text" name="nom" id="nom" class="input_large" value="<?= $this->clients->nom ?>"/></td>
-
                 <th><label for="prenom">Prénom :</label></th>
                 <td><input type="text" name="prenom" id="prenom" class="input_large" value="<?= $this->clients->prenom ?>"/></td>
             </tr>
@@ -71,22 +56,19 @@ if (isset($_SESSION['freeow'])) {
             <tr>
                 <th><label for="cp">Code postal :</label></th>
                 <td><input type="text" name="cp" id="cp" class="input_large" value="<?= $this->clients_adresses->cp ?>"/></td>
-
                 <th><label for="ville">Ville :</label></th>
                 <td><input type="text" name="ville" id="ville" class="input_large" value="<?= $this->clients_adresses->ville ?>"/></td>
             </tr>
             <tr>
                 <th><label for="company_name">Raison sociale :</label></th>
                 <td><input type="text" name="company_name" id="company_name" class="input_large" value="<?= $this->companies->name ?>"/></td>
-
                 <th><label for="siren">Siren :</label></th>
                 <td><input type="text" name="siren" id="siren" class="input_large" value="<?= $this->companies->siren ?>"/></td>
             </tr>
             <tr>
                 <th><label for="iban">IBAN :</label></th>
                 <td><input type="text" name="iban" id="iban" class="input_large" value="<?= $this->companies->iban ?>"/></td>
-
-                <th><label for="ville">BIC :</label></th>
+                <th><label for="bic">BIC :</label></th>
                 <td><input type="text" name="bic" id="bic" class="input_large" value="<?= $this->companies->bic ?>"/></td>
             </tr>
             <tr>
@@ -97,4 +79,59 @@ if (isset($_SESSION['freeow'])) {
             </tr>
         </table>
     </form>
+</div>
+<div style="margin: 30px auto; padding: 10px 20px 20px; width: 1160px; background-color: #fff; text-align: left;">
+    <h1>Liste des dossiers<?= $this->iProjectsCount > 0 ? ' (' . $this->iProjectsCount . ' résultat' . ($this->iProjectsCount == 1 ? '' : 's') . ')' : '' ?></h1>
+    <?php if ($this->iProjectsCount > 0) { ?>
+        <table class="tablesorter">
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Siren</th>
+                <th>Raison sociale</th>
+                <th>Date demande</th>
+                <th>Date modification</th>
+                <th>Montant</th>
+                <th>Durée</th>
+                <th>Statut</th>
+                <th>Analyste</th>
+                <th>&nbsp;</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php
+            $i = 1;
+            foreach ($this->aProjects as $p) {
+                $this->users->get($p['id_analyste'], 'id_user');
+                ?>
+                <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> id="ledossier<?= $p['id_project'] ?>">
+                    <td><?= $p['id_project'] ?></td>
+                    <td><?= $p['siren'] ?></td>
+                    <td><?= $p['name'] ?> <?= ($p['statusProject'] == 1 ? '<i style="color:red">(Hors ligne)</i>' : '') ?></td>
+                    <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
+                    <td><?= $this->dates->formatDate($p['updated'], 'd/m/Y') ?></td>
+                    <td><?= $this->ficelle->formatNumber($p['amount']) ?> €</td>
+                    <td><?= ($p['period'] == 1000000 || $p['period'] == 0) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
+                    <td><?= $p['label'] ?></td>
+                    <td><?= $this->users->firstname ?> <?= $this->users->name ?></td>
+                    <td align="center">
+                        <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
+                            <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>
+                        </a>
+                        <script>
+                            $("#ledossier<?=$p['id_project']?>").click(function () {
+                                $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>');
+                            });
+                        </script>
+                    </td>
+                </tr>
+                <?php
+                $i++;
+            }
+            ?>
+            </tbody>
+        </table>
+    <?php } else { ?>
+        Aucun dossier
+    <?php } ?>
 </div>

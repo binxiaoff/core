@@ -46,6 +46,7 @@ class prescripteursController extends bootstrap
         $this->clients_adresses = $this->loadData('clients_adresses');
         $this->prescripteurs    = $this->loadData('prescripteurs');
         $this->companies        = $this->loadData('companies');
+        $this->projects         = $this->loadData('projects');
 
         if (
             ! isset($this->params[0])
@@ -57,6 +58,9 @@ class prescripteursController extends bootstrap
             header('Location:' . $this->lurl . '/prescripteurs/gestion/');
             return;
         }
+
+        $this->aProjects      = $this->projects->searchDossiers('', '', '', '', '', '', '', '', '', $this->params[0]);
+        $this->iProjectsCount = array_shift($this->aProjects);
 
         if (isset($_POST['form_edit_prescripteur'])) {
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
@@ -92,11 +96,7 @@ class prescripteursController extends bootstrap
 
     public function _add_client()
     {
-        // On masque les Head, header et footer originaux plus le debug
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         if (isset($_POST['send_add_prescripteur'])) {
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);

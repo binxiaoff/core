@@ -137,7 +137,7 @@ class projects extends projects_crud
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function searchDossiers($date1 = '', $date2 = '', $montant = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $start = '', $nb = '')
+    public function searchDossiers($date1 = '', $date2 = '', $montant = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $iAdvisorId = null, $start = '', $nb = '')
     {
         $where = '';
 
@@ -168,6 +168,9 @@ class projects extends projects_crud
         }
         if ($raison_sociale != '0' && $raison_sociale != '') {
             $where .= ' AND co.name LIKE "%' . $raison_sociale . '%"';
+        }
+        if (false === is_null($iAdvisorId)) {
+            $where .= ' AND p.id_prescripteur = ' . $iAdvisorId;
         }
 
         $sSqlCount = 'SELECT
