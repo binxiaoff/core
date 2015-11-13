@@ -178,13 +178,21 @@ class villes extends villes_crud
 
     public function getInseeCode($sPostCode, $City)
     {
-        $sql = 'SELECT * FROM `villes` WHERE cp = "' . $sPostCode . '" AND ville = "' . $City .'"';
+        $sql = 'SELECT * FROM `villes` WHERE cp = "' . $sPostCode . '"';
         $oQuery = $this->bdd->query($sql);
 
-        $aVille = $this->bdd->fetch_array($oQuery);
+        // If we found more then one city, we retry the query with the name.
+        if ($this->bdd->num_rows() > 1) {
+            $sql = 'SELECT * FROM `villes` WHERE cp = "' . $sPostCode . '" AND ville = "' . $City .'"';
+            $oQuery = $this->bdd->query($sql);
+        }
 
-        if (isset($aVille['insee']) && '' !== $aVille['insee']) {
-            return $aVille['insee'];
+        if ($this->bdd->num_rows() == 1) {
+            $aVille = $this->bdd->fetch_array($oQuery);
+
+            if (isset($aVille['insee']) && '' !== $aVille['insee']) {
+                return $aVille['insee'];
+            }
         }
 
         return false;
