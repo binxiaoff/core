@@ -35,6 +35,7 @@ class projects_status extends projects_status_crud
     const ABANDON                = 9;
     const A_TRAITER              = 10;
     const EN_ATTENTE_PIECES      = 20;
+    const ATTENTE_ANALYSTE       = 25;
     const REJETE                 = 30;
     const REVUE_ANALYSTE         = 31;
     const REJET_ANALYSTE         = 32;
@@ -140,6 +141,11 @@ class projects_status extends projects_status_crud
         return parent::get($id_project_statut, 'id_project_status');
     }
 
+    public function getNextStatus($iStatus)
+    {
+        return (int) $this->bdd->result($this->bdd->query('SELECT status FROM projects_status WHERE status > ' . $iStatus . ' ORDER BY status ASC LIMIT 1'));
+    }
+
     /**
      * @param                         $iProjectId
      * @param projects_status_history $oProjectStatusHistory
@@ -153,12 +159,11 @@ class projects_status extends projects_status_crud
         } else {
             switch ($this->status) {
                 case self::ABANDON:
-                    return $this->select('id_project_status = ' . $oProjectStatusHistory->getBeforeLastStatut($iProjectId) . ' OR status = ' . $this->status);
+                    return $this->select('id_project_status = ' . $oProjectStatusHistory->getBeforeLastStatus($iProjectId) . ' OR status = ' . $this->status);
                 case self::A_TRAITER:
-                    $sPossibleStatus = 'status BETWEEN ' . self::ABANDON . ' AND ' . self::EN_ATTENTE_PIECES;
-                    break;
                 case self::EN_ATTENTE_PIECES:
-                    $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . self::EN_ATTENTE_PIECES . ')';
+                case self::ATTENTE_ANALYSTE:
+                    $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . $this->status . ', ' . $this->getNextStatus($this->status) . ')';
                     break;
                 case self::PREP_FUNDING:
                     $sPossibleStatus = 'status IN (' . self::PREP_FUNDING . ',' . self::A_FUNDER . ')';

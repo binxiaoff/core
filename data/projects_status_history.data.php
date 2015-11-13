@@ -101,6 +101,7 @@ class projects_status_history extends projects_status_history_crud
                 /* @var array $config */
                 include __DIR__ . '/../config.php';
 
+                // @todo intl
                 $oMailsText = new \mails_text($this->bdd);
                 $oMailsText->get('notification-projet-a-traiter', 'lang = "fr" AND type');
 
@@ -128,7 +129,7 @@ class projects_status_history extends projects_status_history_crud
         }
     }
 
-    public function getBeforeLastStatut($iProjectId)
+    public function getBeforeLastStatus($iProjectId)
     {
         $result = $this->select('id_project=' . $iProjectId, 'added DESC', 1, 1);
 
