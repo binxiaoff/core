@@ -2428,7 +2428,7 @@ class preteursController extends bootstrap
 
         /** @var lenders_accounts $oLenders */
         $oLenders = $this->loadData('lenders_accounts');
-        $this->aLenders = $oLenders->getLendersToMatchCity(50);
+        $this->aLenders = $oLenders->getLendersToMatchCity(200);
     }
 
     public function _control_birth_city()
