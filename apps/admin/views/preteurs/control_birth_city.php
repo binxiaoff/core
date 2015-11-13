@@ -23,7 +23,7 @@
         <table class="tablesorter">
             <thead>
             <tr>
-                <th>ID</th>
+                <th>ID Client</th>
                 <th>Ville de Naissance</th>
                 <th>Nom</th>
                 <th>Prénom</th>

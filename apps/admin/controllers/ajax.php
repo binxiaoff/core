@@ -3194,22 +3194,37 @@ class ajaxController extends bootstrap
         echo json_encode($aCities);
     }
 
-    public function _patchClientAddress()
+    public function _updateClientFiscalAddress()
     {
         $this->autoFireView = false;
-        $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
-        /** @var clients_adresses $oClientAddress */
-        $oClientAddress = $this->loadData('clients_adresses');
+        $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
         $sResult = 'nok';
 
-        if (isset($this->params[0]) && $oClientAddress->get($this->params[0])) {
-            foreach ($_POST as $item => $value) {
-                $oClientAddress->$item = $value;
+        if (isset($this->params[0]) && isset($this->params[1])) {
+            if ('0' == $this->params[1]) {
+                /** @var clients_adresses $oClientAddress */
+                $oClientAddress = $this->loadData('clients_adresses');
+
+                if ($oClientAddress->get($this->params[0], 'id_client')) {
+
+                    $oClientAddress->cp_fiscal = $_POST['zip'];
+                    $oClientAddress->ville_fiscal = $_POST['city'];
+                    $oClientAddress->update();
+                    $sResult = 'ok';
+                }
+            } elseif ('1' == $this->params[1]) {
+                /** @var companies $oCompanies */
+                $oCompanies = $this->loadData('companies');
+                if ($oCompanies->get($this->params[0], 'id_client_owner')) {
+
+                    $oCompanies->zip = $_POST['zip'];
+                    $oCompanies->city = $_POST['city'];
+                    $oCompanies->update();
+                    $sResult = 'ok';
+                }
             }
-            $oClientAddress->update();
-            $sResult = 'ok';
         }
 
         echo $sResult;

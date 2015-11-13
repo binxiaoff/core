@@ -199,31 +199,38 @@ class lenders_accounts extends lenders_accounts_crud
         return $result;
     }
 
-    public function getLendersToMatchCity($iLimit = '', $iOffset = '')
+    public function getLendersToMatchCity($iLimit)
     {
-        $iOffset = $this->bdd->escape_string($iOffset);
         $iLimit  = $this->bdd->escape_string($iLimit);
 
-        $sOffset = '';
-        if ('' !== $iOffset) {
-            $sOffset = 'OFFSET ' . $iOffset;
-        }
-
-        $sLimit = '';
-        if ('' !== $iLimit) {
-            $sLimit = 'LIMIT ' . $iLimit;
-        }
-
-        $sql = 'SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, ca.cp_fiscal, ca.ville_fiscal
-                FROM clients_adresses ca
-                INNER JOIN clients c ON ca.id_client = c.id_client
-                INNER JOIN lenders_accounts la ON la.id_client_owner = ca.id_client
-                WHERE c.status = 1
-                AND ca.id_pays_fiscal = 1
-                AND (
-                  NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp_fiscal)
-                  OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1
-                ) ' . $sLimit. ' '. $sOffset;
+        $sql = 'SELECT * FROM (
+                  SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, ca.cp_fiscal AS zip, ca.ville_fiscal AS city, ca.cp, ca.ville, 0 AS is_company
+                  FROM clients_adresses ca
+                  INNER JOIN clients c ON ca.id_client = c.id_client
+                  INNER JOIN lenders_accounts la ON la.id_client_owner = ca.id_client
+                  WHERE c.status = 1
+                      AND (ca.id_pays_fiscal = 1 OR ca.id_pays_fiscal = 0)
+                      AND la.id_company_owner = 0
+                      AND (
+                        NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp_fiscal)
+                        OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1
+                      )
+                  LIMIT '. floor($iLimit / 2).'
+                ) perso
+                UNION
+                SELECT * FROM (
+                    SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, co.zip, co.city, ca.cp, ca.ville, 1 AS is_company
+                    FROM clients_adresses ca
+                      INNER JOIN clients c ON ca.id_client = c.id_client
+                      INNER JOIN lenders_accounts la ON la.id_client_owner = ca.id_client
+                      INNER JOIN companies co ON co.id_client_owner = ca.id_client
+                    WHERE c.status = 1
+                    AND (ca.id_pays_fiscal = 1 OR ca.id_pays_fiscal = 0)
+                    AND (
+                      NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = co.zip)
+                      OR (SELECT COUNT(*) FROM villes v WHERE v.cp = co.zip AND v.ville = co.city) <> 1
+                    )  LIMIT '. floor($iLimit / 2).'
+                ) company';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
