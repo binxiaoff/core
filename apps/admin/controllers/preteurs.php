@@ -2,55 +2,47 @@
 
 class preteursController extends bootstrap
 {
-    var $Command;
-
     /**
      * @var attachment_helper
      */
     private $attachmentHelper;
 
-    function preteursController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
-        // Inclusion controller pdf
         include $this->path . '/apps/default/controllers/pdf.php';
 
         $this->catchAll = true;
 
-        // Controle d'acces à la rubrique
         $this->users->checkAccess('preteurs');
 
-        // Activation du menu
         $this->menu_admin = 'preteurs';
     }
 
+    /**
+     * @todo we load to many things here in all cases. Avoid this
+     */
     public function loadGestionData()
     {
-
-        // deplace tout chargement de données communes dans une méthodes à part
         $this->clients                = $this->loadData('clients');
         $this->clients_adresses       = $this->loadData('clients_adresses');
         $this->clients_mandats        = $this->loadData('clients_mandats');
         $this->clients_status         = $this->loadData('clients_status');
         $this->clients_status_history = $this->loadData('clients_status_history');
-
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->transactions     = $this->loadData('transactions');
-        $this->loans            = $this->loadData('loans');
-        $this->bids             = $this->loadData('bids');
-        $this->companies        = $this->loadData('companies');
-
-        $this->projects      = $this->loadData('projects');
-        $this->wallets_lines = $this->loadData('wallets_lines');
-        $this->echeanciers   = $this->loadData('echeanciers');
-
-        $this->attachment      = $this->loadData('attachment');
-        $this->attachment_type = $this->loadData('attachment_type');
-
+        $this->lenders_accounts       = $this->loadData('lenders_accounts');
+        $this->transactions           = $this->loadData('transactions');
+        $this->loans                  = $this->loadData('loans');
+        $this->bids                   = $this->loadData('bids');
+        $this->companies              = $this->loadData('companies');
+        $this->projects               = $this->loadData('projects');
+        $this->wallets_lines          = $this->loadData('wallets_lines');
+        $this->echeanciers            = $this->loadData('echeanciers');
+        $this->attachment             = $this->loadData('attachment');
+        $this->attachment_type        = $this->loadData('attachment_type');
     }
 
-    function _default()
+    public function _default()
     {
         // On remonte la page dans l'arborescence
         if (isset($this->params[0]) && $this->params[0] == 'up') {
@@ -81,7 +73,7 @@ class preteursController extends bootstrap
         }
     }
 
-    function _gestion()
+    public function _gestion()
     {
 //On appelle la fonction de chargement des données
         $this->loadGestionData();
@@ -201,7 +193,7 @@ class preteursController extends bootstrap
         $this->x = $this->clients->counter('status_inscription_preteur = 1  AND status_pre_emp IN(1,3)');
     }
 
-    function _search()
+    public function _search()
     {
         // On affiche les Head, header et footer originaux plus le debug
         $this->autoFireHeader = true;
@@ -213,7 +205,7 @@ class preteursController extends bootstrap
         $_SESSION['request_url'] = $this->url;
     }
 
-    function _search_non_inscripts()
+    public function _search_non_inscripts()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -225,7 +217,7 @@ class preteursController extends bootstrap
         $_SESSION['request_url'] = $this->url;
     }
 
-    function _edit()
+    public function _edit()
     {
         //On appelle la fonction de chargement des données
         $this->loadGestionData();
@@ -330,7 +322,7 @@ class preteursController extends bootstrap
 
     }
 
-    function _edit_preteur()
+    public function _edit_preteur()
     {
         //On appelle la fonction de chargement des données
         $this->loadGestionData();
@@ -1142,7 +1134,7 @@ class preteursController extends bootstrap
 
     }
 
-    function _liste_preteurs_non_inscrits()
+    public function _liste_preteurs_non_inscrits()
     {
         //On appelle la fonction de chargement des donnÃ©es
         $this->loadGestionData();
@@ -1244,25 +1236,21 @@ class preteursController extends bootstrap
     }
 
     // Activation des comptes prêteurs
-    function _activation()
+    public function _activation()
     {
         //On appelle la fonction de chargement des donnÃ©es
         $this->loadGestionData();
 
         // Partie delete
         if (isset($this->params[0]) && $this->params[0] == 'delete') {
-            // client a delete
             if ($this->clients->get($this->params[1], 'id_client')) {
-
                 $backup_delete = false;
-                // on verif si y a des infos lender
-                if ($this->lenders_accounts->get($this->clients->id_client, 'id_client_owner')) ;
-                {
 
+                if ($this->lenders_accounts->get($this->clients->id_client, 'id_client_owner'))  {
                     // On verifie si on a deja une enchere d'effectué par ce compte
                     $nb = $this->bids->counter('id_lender_account = ' . $this->lenders_accounts->id_lender_account);
-                    if ($nb > 0) {
 
+                    if ($nb > 0) {
                         $backup_delete = true;
 
                         $backup_clients      = $this->loadData('backup_delete_clients');
@@ -1274,14 +1262,11 @@ class preteursController extends bootstrap
                         $backup_lenders      = $this->loadData('backup_delete_lenders_accounts');
                     }
                 }
-                // on verif dans companie
-                if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
 
-                    // on verif les autres table comapnie
+                if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
                     $companies_actif_passif = $this->loadData('companies_actif_passif');
                     $companies_bilans       = $this->loadData('companies_bilans');
                     $companies_details      = $this->loadData('companies_details');
-
 
                     $actif_passif = $companies_actif_passif->select('id_company = ' . $this->companies->id_company);
 
@@ -1309,8 +1294,6 @@ class preteursController extends bootstrap
                                 $backup_compa_act_pa->updated_backup                     = $a['updated'];
                                 $backup_compa_act_pa->create();
                             }
-
-                            // On supp
                             $companies_actif_passif->delete($backup_compa_act_pa->id_actif_passif, 'id_actif_passif');
                         }
                     }
@@ -1319,7 +1302,6 @@ class preteursController extends bootstrap
 
                     if (count($comp_b) > 0) {
                         foreach ($comp_b as $a) {
-
                             if ($backup_delete == true) {
                                 $backup_comp_b->id_actif_passif             = $a['id_actif_passif'];
                                 $backup_comp_b->id_company                  = $a['id_company'];
@@ -1333,11 +1315,8 @@ class preteursController extends bootstrap
                                 $backup_comp_b->create();
                             }
                         }
-
-                        // On supp
                         $companies_bilans->delete($this->companies->id_company, 'id_company');
                     }
-
 
                     if ($companies_details->get($this->companies->id_company, 'id_company')) {
                         if ($backup_delete == true) {
@@ -1390,12 +1369,10 @@ class preteursController extends bootstrap
                             $backup_comp_det->updated_backup                                     = $companies_details->updated;
                             $backup_comp_det->create();
                         }
-                        // On supp
                         $companies_details->delete($this->companies->id_company, 'id_company');
                     }
 
                     if ($backup_delete == true) {
-
                         $backup_companies->id_company                          = $this->companies->id_company;
                         $backup_companies->id_client_owner                     = $this->companies->id_client_owner;
                         $backup_companies->id_partenaire                       = $this->companies->id_partenaire;
@@ -1442,15 +1419,12 @@ class preteursController extends bootstrap
                         $backup_companies->create();
 
                     }
-                    // On supp
                     $this->companies->delete($this->clients->id_client, 'id_client_owner');
 
                 }
 
 
                 if ($backup_delete == true) {
-
-                    // Get attachment
                     $attachment = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
                     $backup_lenders->id_lender_account              = $this->lenders_accounts->id_lender_account;
@@ -1480,7 +1454,6 @@ class preteursController extends bootstrap
                     $backup_lenders->updated_backup                 = $this->lenders_accounts->updated;
                     $backup_lenders->create();
                 }
-                // On supp
                 $this->lenders_accounts->delete($this->clients->id_client, 'id_client_owner');
 
                 // ON verif si il est dans adresses
@@ -1515,14 +1488,11 @@ class preteursController extends bootstrap
                         $backup_clients_addr->updated_backup      = $this->clients_adresses->updated;
                         $backup_clients_addr->create();
                     }
-                    // On supp
                     $this->clients_adresses->delete($this->clients->id_client, 'id_client');
                 }
 
-                // Histo user //
                 $serialize = serialize(array('id_client' => $this->clients->id_client));
                 $this->users_history->histo(12, 'delete preteur activation', $_SESSION['user']['id_user'], $serialize);
-                ////////////////
 
                 if ($backup_delete == true) {
                     $backup_clients->id_client                  = $this->clients->id_client;
@@ -1551,7 +1521,6 @@ class preteursController extends bootstrap
                     $backup_clients->secrete_question           = $this->clients->secrete_question;
                     $backup_clients->secrete_reponse            = $this->clients->secrete_reponse;
                     $backup_clients->type                       = $this->clients->type;
-                    $backup_clients->status_depot_dossier       = $this->clients->status_depot_dossier;
                     $backup_clients->etape_inscription_preteur  = $this->clients->etape_inscription_preteur;
                     $backup_clients->status_inscription_preteur = $this->clients->status_inscription_preteur;
                     $backup_clients->status_pre_emp             = $this->clients->status_pre_emp;
@@ -1580,7 +1549,7 @@ class preteursController extends bootstrap
 
     }
 
-    function _completude()
+    public function _completude()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -1592,7 +1561,7 @@ class preteursController extends bootstrap
         $_SESSION['request_url'] = $this->url;
     }
 
-    function _completude_preview()
+    public function _completude_preview()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -1614,7 +1583,7 @@ class preteursController extends bootstrap
 
     }
 
-    function _completude_preview_iframe()
+    public function _completude_preview_iframe()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -1671,7 +1640,7 @@ class preteursController extends bootstrap
         die;
     }
 
-    function _offres_de_bienvenue()
+    public function _offres_de_bienvenue()
     {
         $offres_bienvenues         = $this->loadData('offres_bienvenues');
         $offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
@@ -1764,19 +1733,9 @@ class preteursController extends bootstrap
         $this->sumDispoPourOffres = ($sumVirementUnilendOffres - $sumOffresTransac);
 
         $this->sumDispoPourOffresSelonMax = (($this->montant_limit * 100) - $sumOffresTransac);
-
-
     }
 
-    function _letest()
-    {
-
-        die;
-        //$this->create_offre_bienvenue(id_client);
-        die;
-    }
-
-    function _script_rattrapage_offre_bienvenue()
+    public function _script_rattrapage_offre_bienvenue()
     {
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
@@ -1821,7 +1780,7 @@ class preteursController extends bootstrap
     }
 
     // OFFRE DE BIENVENUE
-    function create_offre_bienvenue_sans_date_de_fin($id_client)
+    public function create_offre_bienvenue_sans_date_de_fin($id_client)
     {
 
         $this->clients = $this->loadData('clients');
@@ -1952,7 +1911,7 @@ class preteursController extends bootstrap
     }
 
     // OFFRE DE BIENVENUE
-    function create_offre_bienvenue($id_client)
+    public function create_offre_bienvenue($id_client)
     {
 
         $this->clients = $this->loadData('clients');
@@ -2112,7 +2071,6 @@ class preteursController extends bootstrap
 
     public function _email_history()
     {
-
         $this->loadGestionData();
 
         // On recup les infos du client
@@ -2127,8 +2085,6 @@ class preteursController extends bootstrap
             $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
         }
 
-        /*		PARTIE PREFERENCES NOTIFICATION*/
-
         //Préférences Notifications
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
@@ -2138,11 +2094,6 @@ class preteursController extends bootstrap
 
         //Notifications par client
         $this->NotifC = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
-
-        /*		PARTIE HISTORIQUE*/
-//		à venir
-
-
     }
 
     public function _portefeuille()
@@ -2166,28 +2117,21 @@ class preteursController extends bootstrap
             $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
         }
 
-        // LOANS //
-        $this->lSumLoans = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, '', 'next_echeance ASC');
-
+        $this->lSumLoans               = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, '', 'next_echeance ASC');
         $this->arrayDeclarationCreance = array(1456, 1009, 1614, 3089, 10971, 970);
 
-        //PORTFOLIO DETAILS
+        // PORTFOLIO DETAILS
 
-        //TRI
+        // TRI
         $this->TRI = $this->calculTRI();
 
-        //amount of projects online since his registration
+        // amount of projects online since his registration
         $statusOk                = array(projects_status::A_FUNDER, projects_status::EN_FUNDING, projects_status::REMBOURSEMENT, projects_status::PRET_REFUSE);
         $this->projectsPublished = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, $statusOk);
 
-
-        //Number of problematic projects in his wallet
         $statusKo            = array(projects_status::PROBLEME, projects_status::RECOUVREMENT);
         $this->problProjects = $this->projects->countProjectsByStatusAndLender($this->lenders_accounts->id_lender_account, $statusKo);
-
-        //Total number of projects in his wallet
         $this->totalProjects = $this->loans->getNbPprojet($this->lenders_accounts->id_lender_account);
-
     }
 
     private function calculTRI()
@@ -2220,13 +2164,11 @@ class preteursController extends bootstrap
         $this->loadGestionData();
         $iloan = $this->params[1];
 
-
         $this->clients->get($this->params[0], 'hash');
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
         $this->lenders_accounts->get($this->client->id_client, 'id_client_owner');
         $this->loans->get($iloan, 'id_loan');
 
-        // Génération pdf
         $oCommandPdf             = new Command('pdf', 'declaration_de_creances', array($this->clients->hash, $iloan), $this->language);
         $oPdf                    = new pdfController($oCommandPdf, $this->Config, 'default');
         $oPdf->clients           = $this->clients;
@@ -2236,7 +2178,5 @@ class preteursController extends bootstrap
         $oPdf->params            = $this->params;
         $oPdf->companies         = $this->companies;
         $oPdf->_declaration_de_creances();
-
     }
-
 }

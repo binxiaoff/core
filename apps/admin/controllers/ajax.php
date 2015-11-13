@@ -1037,45 +1037,32 @@ class ajaxController extends bootstrap
         $this->projects_status_history = $this->loadData('projects_status_history');
 
         if (isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
-            // On recup l'entreprise
             $this->companies->get($this->projects->id_company, 'id_company');
-
-            // On recupe le client
             $this->clients->get($this->companies->id_client_owner, 'id_client');
 
-            // Creation du mot de passe client
-            $lemotdepasse            = $this->ficelle->generatePassword(8);
-            $this->clients->password = md5($lemotdepasse);
-
-
-            // ajout du statut dans l'historique : statut 10 (non lu)
             $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 10, $this->projects->id_project);
 
             //**********************************************//
             //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION ***//
             //**********************************************//
 
-            // Recuperation du modele de mail
             $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
 
-            $surl  = $this->surl;
-            $url   = $this->furl;
-            $login = $this->clients->email;
-            //$mdp = $lemotdepasse;
-
-            // FB
             $this->settings->get('Facebook', 'type');
             $lien_fb = $this->settings->value;
 
-            // Twitter
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
             $varMail = array(
-                'surl'    => $surl,
-                'url'     => $url,
-                'lien_fb' => $lien_fb,
-                'lien_tw' => $lien_tw
+                'prenom'               => $this->clients->prenom ,
+                'raison_sociale'       => $this->companies->name,
+                'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
+                'lien_fb'              => $lien_fb,
+                'lien_tw'              => $lien_tw,
+                'sujet'                => htmlentities($this->mails_text->subject, null, 'UTF-8'),
+                'surl'                 => $this->surl,
+                'url'                  => $this->url,
             );
 
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
@@ -1097,8 +1084,8 @@ class ajaxController extends bootstrap
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
 
-            $this->clients->status_depot_dossier = 5;
-            $this->clients->status               = 1;
+            $this->clients->password = md5($this->ficelle->generatePassword(8));
+            $this->clients->status   = 1;
             $this->clients->update();
 
             $this->users->get(1, 'default_analyst');
@@ -1119,19 +1106,12 @@ class ajaxController extends bootstrap
         $this->clients                = $this->loadData('clients');
 
         if (isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
-
-            // On recup l'entreprise
             $this->companies->get($this->projects->id_company, 'id_company');
-
-            // On recup le detail de l'entreprise
             $this->companies_details->get($this->projects->id_company, 'id_company');
-
-            // On recup le client
             $this->clients->get($this->companies->id_client_owner, 'id_client');
 
-            // Liste des actif passif
             $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '"');
-            // Si existe pas on créer les champs
+
             if ($this->lCompanies_actif_passif == false) {
                 for ($i = 1; $i <= 3; $i++) {
                     $this->companies_actif_passif->ordre      = $i;
@@ -1139,7 +1119,7 @@ class ajaxController extends bootstrap
                     $this->companies_actif_passif->create();
                 }
 
-                header('location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                 die;
             }
 
