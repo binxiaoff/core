@@ -490,6 +490,8 @@ class Email
     const PRIORITY_LOW = 4;
     const PRIORITY_LOWEST = 5;
 
+    const EMAIL_ADDRESS_ANALYSTS = 'analystes@unilend.fr';
+
     /**
      * Email du destinataire
      *
