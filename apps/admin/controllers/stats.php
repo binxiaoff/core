@@ -673,7 +673,7 @@ class statsController extends bootstrap
         // EQ-Retenue à la source
         $this->settings->get(63);
         $this->retenuesource = $this->settings->value;
-        $this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60');
+        $this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60', '(SELECT count(*) from loans where status = 0 AND id_lender = l.id_lender_account) > 1');
     }
 
     public function _requete_beneficiaires_csv()
@@ -694,167 +694,124 @@ class statsController extends bootstrap
         // EQ-Retenue à la source
         $this->settings->get(63);
         $this->retenuesource = $this->settings->value;
-        $this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60');
+        $this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60', '(SELECT count(*) from loans where status = 0 AND id_lender = l.id_lender_account) > 1');
 
         $aData = array();
         foreach ($this->lPre as $e) {
             $this->clients_adresses->get($e['id_client'], 'id_client');
             $this->lenders_accounts->get($e['id_client'], 'id_client_owner');
-
-            if ($this->loans->counter('status = 0 AND id_lender = ' . $this->lenders_accounts->id_lender_account) > 0) {
-                $entreprise = false;
-                if ($this->companies->get($e['id_client'], 'id_client_owner') && in_array($e['type'], array(2, 4))) {
-                    $entreprise = true;
-                    if ($this->companies->id_pays == 0) {
-                        $this->companies->id_pays = 1;
-                    }
-                    $this->pays->get($this->companies->id_pays, 'id_pays');
-                    $isoFiscal = $this->pays->iso;
-
-                    $ville_paysFiscal = $this->companies->city;
-
-                    $cp = substr($this->companies->zip, 0, 2);
-                    if ($cp[0] == 0) {
-                        $cp = substr($cp, 1);
-                    }
-
-                    // Code commune insee ville
-                    $laville = strtoupper(str_replace(' ', '-', trim($this->companies->city)));
-                    $this->insee->get($laville, 'DEP = ' . $cp . ' AND NCC');
-                    $dep              = str_pad($this->insee->DEP, 2, '0', STR_PAD_LEFT);
-                    $com              = str_pad($this->insee->COM, 3, '0', STR_PAD_LEFT);
-                    $codeCom          = $dep . $com;
-                    $codeComNaissance = '';
-                    $retenuesource    = '';
-                } else {
-                    $this->etranger = 0;
-
-                    // fr/resident etranger
-                    if ($e['id_nationalite'] <= 1 && $this->clients_adresses->id_pays_fiscal > 1) {
-                        $this->etranger = 1;
-                    } // no fr/resident etranger
-                    elseif ($e['id_nationalite'] > 1 && $this->clients_adresses->id_pays_fiscal > 1) {
-                        $this->etranger = 2;
-                    }
-
-                    // on veut adresse fiscal
-                    if ($this->clients_adresses->meme_adresse_fiscal == 1) {
-                        $adresse_fiscal = trim($this->clients_adresses->adresse1);
-                        $cp_fiscal      = trim($this->clients_adresses->cp);
-                        $ville_fiscal   = trim($this->clients_adresses->ville);
-                        $id_pays_fiscal = ($this->clients_adresses->id_pays == 0 ? 1 : $this->clients_adresses->id_pays);
-                    } else {
-                        $adresse_fiscal = trim($this->clients_adresses->adresse_fiscal);
-                        $cp_fiscal      = trim($this->clients_adresses->cp_fiscal);
-                        $ville_fiscal   = trim($this->clients_adresses->ville_fiscal);
-                        $id_pays_fiscal = ($this->clients_adresses->id_pays_fiscal == 0 ? 1 : $this->clients_adresses->id_pays_fiscal);
-                    }
-
-                    // date naissance
-                    $nais      = explode('-', $e['naissance']);
-                    $naissance = $nais[2] . '/' . $nais[1] . '/' . $nais[0];
-
-                    // Iso fiscal
-                    if ($this->clients_adresses->id_pays_fiscal == 0) {
-                        $this->clients_adresses->id_pays_fiscal = 1;
-                    }
-                    $this->pays->get($this->clients_adresses->id_pays_fiscal, 'id_pays');
-                    $isoFiscal = $this->pays->iso;
-
-                    if ($e['id_pays_naissance'] == 0) {
-                        $id_pays_naissance = 1;
-                    } else {
-                        $id_pays_naissance = $e['id_pays_naissance'];
-                    }
-                    $this->pays->get($id_pays_naissance, 'id_pays');
-                    $isoNaissance = $this->pays->iso;
-
-                    if ($this->etranger == 0) {
-                        $cp = substr($cp_fiscal, 0, 2);
-
-                        if ($cp[0] == 0) {
-                            $cp = trim(substr($cp, 1));
-                        }
-
-                        // Code commune insee ville
-                        $laville = strtoupper(str_replace(' ', '-', $ville_fiscal));
-                        $this->insee->get($laville, 'DEP = ' . $cp . ' AND NCC');
-                        $dep              = str_pad($this->insee->DEP, 2, '0', STR_PAD_LEFT);
-                        $com              = str_pad($this->insee->COM, 3, '0', STR_PAD_LEFT);
-                        $codeCom          = $dep . $com;
-                        $commune          = '';
-                        $cp               = $cp_fiscal;
-                        $retenuesource    = '';
-                        $ville_paysFiscal = $ville_fiscal;
-                    } else {
-                        $codeCom = $cp_fiscal;
-                        $commune = $ville_fiscal;
-
-                        if ($id_pays_fiscal == 0) {
-                            $id_pays = 1;
-                        } else {
-                            $id_pays = $id_pays_fiscal;
-                        }
-                        $this->pays->get($id_pays, 'id_pays');
-
-                        $this->insee_pays->getByCountryIso(trim($this->pays->iso));
-                        $cp = $this->insee_pays->COG;
-
-                        $retenuesource = number_format($this->retenuesource * 100, 2, ',', ' ') . '%';
-
-                        if ($id_pays_fiscal == 0) {
-                            $id_pays = 1;
-                        } else {
-                            $id_pays = $id_pays_fiscal;
-                        }
-                        $this->pays->get($id_pays, 'id_pays');
-                        $paysFiscal = $this->pays->fr;
-
-                        $ville_paysFiscal = $paysFiscal;
-                    }
-
-                    // si france
-                    if ($e['id_pays_naissance'] <= 1) {
-                        $laville = strtoupper(str_replace(' ', '-', trim($e['ville_naissance'])));
-                        if ($this->insee->get($laville, 'NCC') == false) {
-                            // On regarde si c'est un doublon
-                            if ($this->insee->counter('NCC = "' . $laville . '"') > 1) {
-                                $depNaiss         = '';
-                                $codeComNaissance = 'DOUBLON';
-                            } else {
-                                $depNaiss         = '00';
-                                $codeComNaissance = '00000';
-                            }
-                        } // si c'est bon au premier test
-                        else {
-
-                            $depNaiss         = str_pad($this->insee->DEP, 2, '0', STR_PAD_LEFT);
-                            $comNaiss         = str_pad($this->insee->COM, 3, '0', STR_PAD_LEFT);
-                            $codeComNaissance = $depNaiss . $comNaiss;
-                        }
-                    } else {
-                        if ($e['id_pays_naissance'] == 0) {
-                            $id_pays_naissance = 1;
-                        } else {
-                            $id_pays_naissance = $e['id_pays_naissance'];
-                        }
-                        $this->pays->get($id_pays_naissance, 'id_pays');
-                        $depNaiss         = '';
-                        $codeComNaissance = $this->pays->fr;
-                    }
-                } // fin particulier
-
-                $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($e['prenom']))), 0, 1);
-                $nom       = $this->ficelle->stripAccents(utf8_decode(trim($e['nom'])));
-                $id_client = $e['id_client'];
-                $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-                $motif     = substr($motif, 0, 10);
-
-                if ($entreprise == true) {
-                    $aData[] = array($motif, $this->companies->name, '', '', '', '', '', '', '', '', $this->companies->siret, $isoFiscal, '', str_replace(';', ',', $this->companies->adresse1), $codeCom, '', $this->companies->zip, $ville_paysFiscal, '', $isoFiscal, 'X', $retenuesource, 'N', $this->companies->phone, '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
-                } else {
-                    $aData[] = array($motif, $e['nom'], $e['civilite'], $e['nom'], $e['prenom'], $naissance, $depNaiss, $codeComNaissance, $e['ville_naissance'], '', '', $isoFiscal, '', str_replace(';', ',', $adresse_fiscal), $codeCom, $commune, $cp, $ville_paysFiscal, '', $isoNaissance, 'X', $retenuesource, 'N', $e['telephone'], '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
+            $entreprise = false;
+            if ($this->companies->get($e['id_client'], 'id_client_owner') && in_array($e['type'], array(2, 4))) {
+                $entreprise = true;
+                if ($this->companies->id_pays == 0) {
+                    $this->companies->id_pays = 1;
                 }
+                $this->pays->get($this->companies->id_pays, 'id_pays');
+                $isoFiscal = $this->pays->iso;
+
+                $ville_paysFiscal = $this->companies->city;
+
+                $cp = substr($this->companies->zip, 0, 2);
+                if ($cp[0] == 0) {
+                    $cp = substr($cp, 1);
+                }
+
+                // Code commune insee ville
+                $codeCom = $this->villes->getInseeCode($this->companies->zip, $this->companies->city);
+                $codeComNaissance = '';
+                $retenuesource    = '';
+            } else {
+                $this->etranger = 0;
+
+                // fr/resident etranger
+                if ($e['id_nationalite'] <= 1 && $this->clients_adresses->id_pays_fiscal > 1) {
+                    $this->etranger = 1;
+                } // no fr/resident etranger
+                elseif ($e['id_nationalite'] > 1 && $this->clients_adresses->id_pays_fiscal > 1) {
+                    $this->etranger = 2;
+                }
+
+                // on veut adresse fiscal
+                if ($this->clients_adresses->meme_adresse_fiscal == 1) {
+                    $adresse_fiscal = trim($this->clients_adresses->adresse1);
+                    $cp_fiscal      = trim($this->clients_adresses->cp);
+                    $ville_fiscal   = trim($this->clients_adresses->ville);
+                    $id_pays_fiscal = ($this->clients_adresses->id_pays == 0 ? 1 : $this->clients_adresses->id_pays);
+                } else {
+                    $adresse_fiscal = trim($this->clients_adresses->adresse_fiscal);
+                    $cp_fiscal      = trim($this->clients_adresses->cp_fiscal);
+                    $ville_fiscal   = trim($this->clients_adresses->ville_fiscal);
+                    $id_pays_fiscal = ($this->clients_adresses->id_pays_fiscal == 0 ? 1 : $this->clients_adresses->id_pays_fiscal);
+                }
+
+                // date naissance
+                $nais      = explode('-', $e['naissance']);
+                $naissance = $nais[2] . '/' . $nais[1] . '/' . $nais[0];
+
+                // Iso fiscal
+                if ($this->clients_adresses->id_pays_fiscal == 0) {
+                    $this->clients_adresses->id_pays_fiscal = 1;
+                }
+                $this->pays->get($this->clients_adresses->id_pays_fiscal, 'id_pays');
+                $isoFiscal = $this->pays->iso;
+
+                if ($e['id_pays_naissance'] == 0) {
+                    $id_pays_naissance = 1;
+                } else {
+                    $id_pays_naissance = $e['id_pays_naissance'];
+                }
+                $this->pays->get($id_pays_naissance, 'id_pays');
+                $isoNaissance = $this->pays->iso;
+
+                if ($this->etranger == 0) {
+                    // Code commune insee ville
+                    $codeCom = $this->villes->getInseeCode($cp_fiscal, $ville_fiscal);
+                    $commune = '';
+                    $cp      = $cp_fiscal;
+                    $retenuesource = '';
+                    $ville_paysFiscal = $ville_fiscal;
+                } else {
+                    $codeCom = $cp_fiscal;
+                    $commune = $ville_fiscal;
+
+                    if ($id_pays_fiscal == 0) {
+                        $id_pays = 1;
+                    } else {
+                        $id_pays = $id_pays_fiscal;
+                    }
+                    $this->pays->get($id_pays, 'id_pays');
+
+                    $this->insee_pays->getByCountryIso(trim($this->pays->iso));
+                    $cp = $this->insee_pays->COG;
+
+                    $retenuesource = number_format($this->retenuesource * 100, 2, ',', ' ') . '%';
+
+                    if ($id_pays_fiscal == 0) {
+                        $id_pays = 1;
+                    } else {
+                        $id_pays = $id_pays_fiscal;
+                    }
+                    $this->pays->get($id_pays, 'id_pays');
+                    $paysFiscal = $this->pays->fr;
+
+                    $ville_paysFiscal = $paysFiscal;
+                }
+
+                $this->clients->get($e['id_client'], 'id_client');
+                $codeComNaissance = $this->clients->insee_birth == '' ? '00000' : $this->clients->insee_birth;
+                $depNaiss = substr($codeComNaissance, 0, 2) !== '97' ? substr($codeComNaissance, 0, 2) : substr($codeComNaissance, 0, 3);
+            } // fin particulier
+
+            $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($e['prenom']))), 0, 1);
+            $nom       = $this->ficelle->stripAccents(utf8_decode(trim($e['nom'])));
+            $id_client = $e['id_client'];
+            $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+            $motif     = substr($motif, 0, 10);
+
+            if ($entreprise == true) {
+                $aData[] = array($motif, $this->companies->name, '', '', '', '', '', '', '', '', $this->companies->siret, $isoFiscal, '', str_replace(';', ',', $this->companies->adresse1), $codeCom, '', $this->companies->zip, $ville_paysFiscal, '', $isoFiscal, 'X', $retenuesource, 'N', $this->companies->phone, '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
+            } else {
+                $aData[] = array($motif, $e['nom'], $e['civilite'], $e['nom'], $e['prenom'], $naissance, $depNaiss, $codeComNaissance, $e['ville_naissance'], '', '', $isoFiscal, '', str_replace(';', ',', $adresse_fiscal), $codeCom, $commune, $cp, $ville_paysFiscal, '', $isoNaissance, 'X', $retenuesource, 'N', $e['telephone'], '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
             }
         }
 

@@ -175,4 +175,18 @@ class villes extends villes_crud
 
         return $sTerm;
     }
+
+    public function getInseeCode($sPostCode, $City)
+    {
+        $sql = 'SELECT * FROM `villes` WHERE cp = "' . $sPostCode . '" AND ville = "' . $City .'"';
+        $oQuery = $this->bdd->query($sql);
+
+        $aVille = $this->bdd->fetch_array($oQuery);
+
+        if (isset($aVille['insee']) && '' !== $aVille['insee']) {
+            return $aVille['insee'];
+        }
+
+        return false;
+    }
 }
