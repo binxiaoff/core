@@ -642,7 +642,6 @@ class depot_de_dossierController extends bootstrap
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
 
-                // Internal notification
                 $this->mails_text->get('notification-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
                 $this->settings->get('Adresse notification inscription emprunteur', 'type');
 
@@ -796,6 +795,8 @@ class depot_de_dossierController extends bootstrap
                 $this->redirect(self::PAGE_NAME_FILES);
             }
 
+            $this->sendCommercialEmail('notification-ajout-document-dossier');
+
             $this->redirect(self::PAGE_NAME_END, \projects_status::A_TRAITER);
         }
     }
@@ -902,10 +903,16 @@ class depot_de_dossierController extends bootstrap
         $this->projects->stop_relances = 1;
         $this->projects->update();
 
+        $this->sendCommercialEmail('notification-stop-relance-dossier');
+    }
+
+    private function sendCommercialEmail($sEmailType)
+    {
         if ($this->projects->id_commercial > 0) {
             $this->users = $this->loadData('users');
             $this->users->get($this->projects->id_commercial, 'id_user');
-            $this->mails_text->get('notification-stop-relance-dossier', 'lang = "' . $this->language . '" AND type');
+
+            $this->mails_text->get($sEmailType, 'lang = "' . $this->language . '" AND type');
 
             $aReplacements = array(
                 '[ID_PROJET]'      => $this->projects->id_project,
@@ -914,13 +921,13 @@ class depot_de_dossierController extends bootstrap
                 '[SURL]'           => $this->surl
             );
 
-            $this->email = $this->loadLib('email', array());
-            $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
-            $this->email->setSubject(stripslashes(utf8_decode(str_replace('[ID_PROJET]', $this->projects->id_project, $this->mails_text->subject))));
-            $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->mails_text->content));
-            $this->email->addRecipient(trim($this->users->email));
+            $oEmail = $this->loadLib('email');
+            $oEmail->setFrom($this->mails_text->exp_email, $this->mails_text->exp_name);
+            $oEmail->setSubject(stripslashes(utf8_decode(str_replace('[ID_PROJET]', $this->projects->id_project, $this->mails_text->subject))));
+            $oEmail->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->mails_text->content));
+            $oEmail->addRecipient(trim($this->users->email));
 
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
         }
     }
 

@@ -112,9 +112,9 @@ class projects_status_history extends projects_status_history_crud
 
                 $aReplacements = array(
                     '[ID_PROJET]'      => $iProjectId,
-                    '[LIEN_BO_PROJET]' => $config['static_url'][ENVIRONMENT] . '/dossiers/edit/' . $iProjectId,
+                    '[LIEN_BO_PROJET]' => $config['url'][ENVIRONMENT]['admin'] . '/dossiers/edit/' . $iProjectId,
                     '[RAISON_SOCIALE]' => utf8_decode($oCompanies->name),
-                    '[SURL]'           => $config['url'][ENVIRONMENT]['admin']
+                    '[SURL]'           => $config['static_url'][ENVIRONMENT]
                 );
 
                 $oEmail = new \email();
