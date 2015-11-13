@@ -626,7 +626,7 @@ class depot_de_dossierController extends bootstrap
                     'url'                  => $this->url,
                 );
 
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
                 $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
                 $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $this->tnmp->constructionVariablesServeur($aVariables))));
@@ -652,7 +652,7 @@ class depot_de_dossierController extends bootstrap
                     '[SURL]'           => $this->surl
                 );
 
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
                 $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
                 $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->mails_text->content));

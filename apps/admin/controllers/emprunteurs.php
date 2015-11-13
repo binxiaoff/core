@@ -399,7 +399,6 @@ class emprunteursController extends bootstrap
                                 $mensualite = $echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva;
                                 $mensualite = ($mensualite / 100);
 
-                                // Variables du mailing
                                 $surl         = $this->surl;
                                 $url          = $this->lurl;
                                 $projet       = $project->title;
@@ -408,7 +407,6 @@ class emprunteursController extends bootstrap
 
                                 $this->nextEcheance = $prelevements->select('status = 0 AND id_project = ' . $projects['id_project']);
 
-                                // Variables du mailing
                                 $varMail = array(
                                     'surl'                   => $surl,
                                     'url'                    => $url,

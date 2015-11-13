@@ -586,9 +586,8 @@ class ajaxController extends bootstrap
 
                 $timeDateretrait  = strtotime($this->projects->date_retrait);
                 $monthDateretrait = $this->dates->tableauMois['fr'][date('n', $timeDateretrait)];
-                $date_retrait     = date('d', $timeDateretrait) . ' ' . $month . ' ' . date('Y', $timeDateretrait);
+                $date_retrait     = date('d', $timeDateretrait) . ' ' . $monthDateretrait . ' ' . date('Y', $timeDateretrait);
 
-                // Variables du mailing
                 $varMail = array(
                     'surl'                             => $this->surl,
                     'url'                              => $this->furl,
@@ -602,26 +601,21 @@ class ajaxController extends bootstrap
                     'lien_tw'                          => $lien_tw
                 );
 
-                // Construction du tableau avec les balises EMV
                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                // Attribution des données aux variables
                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                // Envoi du mail
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                if ($this->Config['env'] == 'prod') // nmp
-                {
+                if ($this->Config['env'] === 'prod') {
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else // non nmp
-                {
+                } else {
                     $this->email->addRecipient(trim($this->clients->email));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
@@ -649,7 +643,6 @@ class ajaxController extends bootstrap
         } else {
             echo 'nok';
         }
-
     }
 
     public function _addMemo()
@@ -1065,7 +1058,6 @@ class ajaxController extends bootstrap
             // Recuperation du modele de mail
             $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
 
-            // Variables du mailing
             $surl  = $this->surl;
             $url   = $this->furl;
             $login = $this->clients->email;
@@ -1079,7 +1071,6 @@ class ajaxController extends bootstrap
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
-            // Variables du mailing
             $varMail = array(
                 'surl'    => $surl,
                 'url'     => $url,
@@ -1087,43 +1078,32 @@ class ajaxController extends bootstrap
                 'lien_tw' => $lien_tw
             );
 
-            // Construction du tableau avec les balises EMV
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-            // Attribution des données aux variables
             $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-            // Envoi du mail
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->setSubject(stripslashes($sujetMail));
             $this->email->setHTMLBody(stripslashes($texteMail));
 
-            if ($this->Config['env'] == 'prod') // nmp
-            {
+            if ($this->Config['env'] === 'prod') {
                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-            } else // non nmp
-            {
+            } else {
                 $this->email->addRecipient(trim($this->clients->email));
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
-            // fin mail
 
-
-            // Mise à jour du client
             $this->clients->status_depot_dossier = 5;
             $this->clients->status               = 1;
             $this->clients->update();
 
-            // On recupere l'analyste par defaut
             $this->users->get(1, 'default_analyst');
             $this->projects->id_analyste = $this->users->id_user;
             $this->projects->update();
-
-
         }
     }
 
@@ -1131,14 +1111,12 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement du data
         $this->projects               = $this->loadData('projects');
         $this->companies              = $this->loadData('companies');
         $this->companies_bilans       = $this->loadData('companies_bilans');
         $this->companies_details      = $this->loadData('companies_details');
         $this->companies_actif_passif = $this->loadData('companies_actif_passif');
         $this->clients                = $this->loadData('clients');
-
 
         if (isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
 
@@ -1165,11 +1143,8 @@ class ajaxController extends bootstrap
                 die;
             }
 
-            // liste des bilans
             $this->lbilans = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'date ASC');
-
         }
-
     }
 
     // email creation nouveau mot de passe (mis a jour le 09/07/2014)
@@ -1196,7 +1171,6 @@ class ajaxController extends bootstrap
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
-            // Variables du mailing
             $varMail = array(
                 'surl'          => $this->surl,
                 'url'           => $this->lurl,
@@ -1207,30 +1181,24 @@ class ajaxController extends bootstrap
                 'lien_tw'       => $lien_tw
             );
 
-            // Construction du tableau avec les balises EMV
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-            // Attribution des données aux variables
             $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-            // Envoi du mail
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->setSubject(stripslashes($sujetMail));
             $this->email->setHTMLBody(stripslashes($texteMail));
 
-            if ($this->Config['env'] == 'prod') // nmp
-            {
+            if ($this->Config['env'] === 'prod') {
                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-            } else // non nmp
-            {
+            } else {
                 $this->email->addRecipient(trim($clients->email));
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
-            // fin mail
 
             echo 'ok';
         } else {
@@ -1243,18 +1211,12 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement du data
         $this->clients = $this->loadData('clients');
 
         if (isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
             $pass = $this->ficelle->generatePassword(8);
 
             $this->clients->changePassword($this->clients->email, $pass);
-
-            // email //
-            //mail($this->clients->email,'nouveau mot de passe','votre nouveau mot de passe est : '.$pass);
-            // email //
-
 
             //************************************//
             //*** ENVOI DU MAIL GENERATION MDP ***//
@@ -1263,22 +1225,17 @@ class ajaxController extends bootstrap
             // Recuperation du modele de mail
             $this->mails_text->get('generation-mot-de-passe', 'lang = "' . $this->language . '" AND type');
 
-            // Variables du mailing
             $surl  = $this->surl;
             $url   = $this->furl;
             $login = $this->clients->email;
             $mdp   = $pass;
 
-            // FB
             $this->settings->get('Facebook', 'type');
             $lien_fb = $this->settings->value;
 
-            // Twitter
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
-
-            // Variables du mailing
             $varMail = array(
                 'surl'     => $surl,
                 'url'      => $url,
@@ -1289,33 +1246,24 @@ class ajaxController extends bootstrap
                 'lien_tw'  => $lien_tw
             );
 
-
-            // Construction du tableau avec les balises EMV
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-            // Attribution des données aux variables
             $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-            // Envoi du mail
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->setSubject(stripslashes($sujetMail));
             $this->email->setHTMLBody(stripslashes($texteMail));
 
-            if ($this->Config['env'] == 'prod') // nmp
-            {
+            if ($this->Config['env'] === 'prod') {
                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-            } else // non nmp
-            {
+            } else {
                 $this->email->addRecipient(trim($this->clients->email));
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
-            // fin mail
-
-
         }
     }
 
@@ -1323,7 +1271,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement du data
         $this->transactions      = $this->loadData('transactions');
         $this->partenaires_types = $this->loadData('partenaires_types');
         $this->clients_history   = $this->loadData('clients_history');
@@ -1378,7 +1325,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement du data
         $this->transactions      = $this->loadData('transactions');
         $this->partenaires_types = $this->loadData('partenaires_types');
         $this->clients_history   = $this->loadData('clients_history');
@@ -1465,7 +1411,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement du data
         $this->clients          = $this->loadData('clients');
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->transactions     = $this->loadData('transactions');
@@ -1486,7 +1431,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement du data
         $this->clients          = $this->loadData('clients');
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->transactions     = $this->loadData('transactions');
@@ -1510,7 +1454,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement du data
         $preteurs   = $this->loadData('clients');
         $receptions = $this->loadData('receptions');
 
@@ -1605,7 +1548,6 @@ class ajaxController extends bootstrap
                 // Recuperation du modele de mail
                 $this->mails_text->get('preteur-alimentation-manu', 'lang = "' . $this->language . '" AND type');
 
-                // Variables du mailing
                 $surl    = $this->surl;
                 $url     = $this->furl;
                 $email   = $preteurs->email;
@@ -1629,7 +1571,6 @@ class ajaxController extends bootstrap
                 // Solde du compte preteur
                 $solde = $transactions->getSolde($receptions->id_client);
 
-                // Variables du mailing
                 $varMail = array(
                     'surl'            => $this->surl,
                     'url'             => $this->furl,
@@ -1643,30 +1584,24 @@ class ajaxController extends bootstrap
                     'lien_tw'         => $lien_tw
                 );
 
-                // Construction du tableau avec les balises EMV
                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                // Attribution des données aux variables
                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                // Envoi du mail
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                if ($this->Config['env'] == 'prod') // nmp
-                {
+                if ($this->Config['env'] === 'prod') {
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteurs->email, $tabFiler);
                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else // non nmp
-                {
+                } else {
                     $this->email->addRecipient(trim($preteurs->email));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
-                // fin mail
             }
 
             echo $receptions->id_client;
@@ -1678,7 +1613,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement du data
         $projects               = $this->loadData('projects');
         $receptions             = $this->loadData('receptions');
         $companies              = $this->loadData('companies');
@@ -1784,7 +1718,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement du data
         $preteurs   = $this->loadData('clients');
         $receptions = $this->loadData('receptions');
 
@@ -1821,7 +1754,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement du data
         $projects               = $this->loadData('projects');
         $receptions             = $this->loadData('receptions');
         $transactions           = $this->loadData('transactions');
@@ -1890,7 +1822,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement du data
         $projects                = $this->loadData('projects');
         $companies               = $this->loadData('companies');
         $clients                 = $this->loadData('clients');
@@ -1982,7 +1913,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement du data
         $lender         = $this->loadData('lenders_accounts');
         $preteur        = $this->loadData('clients');
         $bids           = $this->loadData('bids');
@@ -2016,7 +1946,6 @@ class ajaxController extends bootstrap
 
         $this->autoFireView = true;
 
-        // Chargement du data
         $this->transactions = $this->loadData('transactions');
         $this->clients      = $this->loadData('clients');
         $this->echeanciers  = $this->loadData('echeanciers');
@@ -2044,7 +1973,6 @@ class ajaxController extends bootstrap
         // Chargement des fichiers JS
         $this->loadJs('admin/chart/highcharts');
 
-        // Chargement du data
         $this->transactions      = $this->loadData('transactions');
         $this->partenaires_types = $this->loadData('partenaires_types');
         $this->clients_history   = $this->loadData('clients_history');
@@ -2366,7 +2294,6 @@ class ajaxController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    // Variables du mailing
                     $varMail = array(
                         'surl'                   => $this->surl,
                         'url'                    => $this->furl,
@@ -2376,16 +2303,13 @@ class ajaxController extends bootstrap
                         'lien_tw'                => $lien_tw
                     );
 
-                    // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    // Attribution des données aux variables
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
@@ -2514,7 +2438,6 @@ class ajaxController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    // Variables du mailing
                     $varMail = array(
                         'surl'                   => $this->surl,
                         'url'                    => $this->furl,
@@ -2524,16 +2447,13 @@ class ajaxController extends bootstrap
                         'lien_tw'                => $lien_tw
                     );
 
-                    // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    // Attribution des données aux variables
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
@@ -2724,10 +2644,6 @@ class ajaxController extends bootstrap
         if (isset($_POST['status']) && isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $form_ok = true;
 
-            /*if(!isset($_POST['note']) || $_POST['note'] == 0 || $_POST['note'] > 10)
-            {
-                $form_ok = false;
-            }*/
             if ($_POST['status'] == 1) {
                 if (! isset($_POST['structure']) || $_POST['structure'] == 0 || $_POST['structure'] > 10) {
                     $form_ok = false;
@@ -2838,24 +2754,22 @@ class ajaxController extends bootstrap
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 35, $this->projects->id_project);
 
                     $content_risk = '
-                         <th><label for="risk">Niveau de risque* :</label></th>
+                        <th><label for="risk">Niveau de risque* :</label></th>
                         <td>
-                        <select name="risk" id="risk" class="select" style="width:160px;background-color:#AAACAC;">
-                            <option value="">Choisir</option>
-                            <option ' . ($this->projects->risk == 'A' ? 'selected' : '') . ' value="A">5 étoiles</option>
-                            <option ' . ($this->projects->risk == 'B' ? 'selected' : '') . ' value="B">4,5 étoiles</option>
-                            <option ' . ($this->projects->risk == 'C' ? 'selected' : '') . ' value="C">4 étoiles</option>
-                            <option ' . ($this->projects->risk == 'D' ? 'selected' : '') . ' value="D">3,5 étoiles</option>
-
-                            <option ' . ($this->projects->risk == 'E' ? 'selected' : '') . ' value="E">3 étoiles</option>
-                            <option ' . ($this->projects->risk == 'F' ? 'selected' : '') . ' value="F">2,5 étoiles</option>
-                            <option ' . ($this->projects->risk == 'G' ? 'selected' : '') . ' value="G">2 étoiles</option>
-                            <option ' . ($this->projects->risk == 'H' ? 'selected' : '') . ' value="H">1,5 étoiles</option>
-
-                        </select>
+                            <select name="risk" id="risk" class="select" style="width:160px;background-color:#AAACAC;">
+                                <option value="">Choisir</option>
+                                <option ' . ($this->projects->risk == 'A' ? 'selected' : '') . ' value="A">5 étoiles</option>
+                                <option ' . ($this->projects->risk == 'B' ? 'selected' : '') . ' value="B">4,5 étoiles</option>
+                                <option ' . ($this->projects->risk == 'C' ? 'selected' : '') . ' value="C">4 étoiles</option>
+                                <option ' . ($this->projects->risk == 'D' ? 'selected' : '') . ' value="D">3,5 étoiles</option>
+                                <option ' . ($this->projects->risk == 'E' ? 'selected' : '') . ' value="E">3 étoiles</option>
+                                <option ' . ($this->projects->risk == 'F' ? 'selected' : '') . ' value="F">2,5 étoiles</option>
+                                <option ' . ($this->projects->risk == 'G' ? 'selected' : '') . ' value="G">2 étoiles</option>
+                                <option ' . ($this->projects->risk == 'H' ? 'selected' : '') . ' value="H">1,5 étoiles</option>
+                            </select>
                         </td>
                     ';
-                } // rejetéC
+                } // rejeté
                 elseif ($_POST['status'] == 2) {
                     // on maj le statut
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 34, $this->projects->id_project);
@@ -2872,7 +2786,6 @@ class ajaxController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    // Variables du mailing
                     $varMail = array(
                         'surl'                   => $this->surl,
                         'url'                    => $this->furl,
@@ -2882,16 +2795,13 @@ class ajaxController extends bootstrap
                         'lien_tw'                => $lien_tw
                     );
 
-                    // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    // Attribution des données aux variables
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));

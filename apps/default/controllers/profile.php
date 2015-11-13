@@ -6,7 +6,7 @@ class profileController extends bootstrap
 	 * @var attachment_helper
 	 */
 	private $attachmentHelper;
-	
+
     public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
@@ -716,7 +716,6 @@ class profileController extends bootstrap
                     // Recuperation du modele de mail
                     $this->mails_text->get('notification-modification-preteurs', 'lang = "' . $this->language . '" AND type');
 
-                    // Variables du mailing
                     $surl         = $this->surl;
                     $url          = $this->lurl;
                     $id_preteur   = $this->clients->id_client;
@@ -728,7 +727,6 @@ class profileController extends bootstrap
                     $email        = $this->clients->email;
                     $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
 
-                    // Attribution des données aux variables
                     $sujetMail = htmlentities($this->mails_text->subject);
                     eval("\$sujetMail = \"$sujetMail\";");
 
@@ -742,14 +740,12 @@ class profileController extends bootstrap
                     $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                     $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->addRecipient(trim($destinataire));
                     $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
                     $this->email->setHTMLBody($texteMail);
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    // fin mail
 
 
                     /// mail nmp pour le preteur particulier ///
@@ -768,7 +764,6 @@ class profileController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    // Variables du mailing
                     $varMail = array(
                         'surl'    => $this->surl,
                         'url'     => $this->lurl,
@@ -777,32 +772,26 @@ class profileController extends bootstrap
                         'lien_tw' => $lien_tw
                     );
 
-                    // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    // Attribution des données aux variables
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] === 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
 
                         // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
-                    // fin mail
 
                 }
                 $_SESSION['reponse_profile_perso'] = $this->lng['profile']['titre-1'] . ' ' . $this->lng['profile']['sauvegardees'];
@@ -867,7 +856,6 @@ class profileController extends bootstrap
                 // Recuperation du modele de mail
                 $this->mails_text->get('generation-mot-de-passe', 'lang = "' . $this->language . '" AND type');
 
-                // Variables du mailing
                 $surl  = $this->surl;
                 $url   = $this->lurl;
                 $login = $this->clients->email;
@@ -881,7 +869,6 @@ class profileController extends bootstrap
                 $lien_tw = $this->settings->value;
 
 
-                // Variables du mailing
                 $varMail = array(
                     'surl'     => $surl,
                     'url'      => $url,
@@ -893,16 +880,13 @@ class profileController extends bootstrap
                 );
 
 
-                // Construction du tableau avec les balises EMV
                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                // Attribution des données aux variables
                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                // Envoi du mail
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
@@ -1657,7 +1641,6 @@ class profileController extends bootstrap
                     // Recuperation du modele de mail
                     $this->mails_text->get('notification-modification-preteurs', 'lang = "' . $this->language . '" AND type');
 
-                    // Variables du mailing
                     $surl         = $this->surl;
                     $url          = $this->lurl;
                     $id_preteur   = $this->clients->id_client;
@@ -1669,7 +1652,6 @@ class profileController extends bootstrap
                     $email        = $this->clients->email;
                     $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
 
-                    // Attribution des données aux variables
                     $sujetMail = htmlentities($this->mails_text->subject);
                     eval("\$sujetMail = \"$sujetMail\";");
                     $texteMail = $this->mails_text->content;
@@ -1681,14 +1663,12 @@ class profileController extends bootstrap
                     $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                     $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->addRecipient(trim($destinataire));
                     $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
                     $this->email->setHTMLBody($texteMail);
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    // fin mail
 
                     /// mail nmp pour le preteur morale ///
 
@@ -1707,7 +1687,6 @@ class profileController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    // Variables du mailing
                     $varMail = array(
                         'surl'    => $this->surl,
                         'url'     => $this->lurl,
@@ -1716,32 +1695,26 @@ class profileController extends bootstrap
                         'lien_tw' => $lien_tw
                     );
 
-                    // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    // Attribution des données aux variables
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] === 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
 
                         // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
-                    // fin mail
                     ////////////////////////////////
                 }
 
@@ -1811,7 +1784,6 @@ class profileController extends bootstrap
                 // Recuperation du modele de mail
                 $this->mails_text->get('generation-mot-de-passe', 'lang = "' . $this->language . '" AND type');
 
-                // Variables du mailing
                 $surl  = $this->surl;
                 $url   = $this->lurl;
                 $login = $this->clients->email;
@@ -1825,7 +1797,6 @@ class profileController extends bootstrap
                 $lien_tw = $this->settings->value;
 
 
-                // Variables du mailing
                 $varMail = array(
                     'surl'     => $surl,
                     'url'      => $url,
@@ -1837,16 +1808,13 @@ class profileController extends bootstrap
                 );
 
 
-                // Construction du tableau avec les balises EMV
                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                // Attribution des données aux variables
                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                // Envoi du mail
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
@@ -2117,7 +2085,6 @@ class profileController extends bootstrap
                     // Recuperation du modele de mail
                     $this->mails_text->get('notification-modification-preteurs', 'lang = "' . $this->language . '" AND type');
 
-                    // Variables du mailing
                     $surl         = $this->surl;
                     $url          = $this->lurl;
                     $id_preteur   = $this->clients->id_client;
@@ -2129,7 +2096,6 @@ class profileController extends bootstrap
                     $email        = $this->clients->email;
                     $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
 
-                    // Attribution des données aux variables
                     $sujetMail = htmlentities($this->mails_text->subject);
                     eval("\$sujetMail = \"$sujetMail\";");
 
@@ -2143,14 +2109,12 @@ class profileController extends bootstrap
                     $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                     $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->addRecipient(trim($destinataire));
                     $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
                     $this->email->setHTMLBody($texteMail);
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    // fin mail
 
                     /// mail nmp pour le preteur particulier ///
 
@@ -2169,7 +2133,6 @@ class profileController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    // Variables du mailing
                     $varMail = array(
                         'surl'    => $this->surl,
                         'url'     => $this->lurl,
@@ -2178,32 +2141,26 @@ class profileController extends bootstrap
                         'lien_tw' => $lien_tw
                     );
 
-                    // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    // Attribution des données aux variables
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] === 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
 
                         // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
-                    // fin mail
                     ////////////////////////////////
 
                     $_SESSION['reponse_upload'] = $this->lng['profile']['sauvegardees'];
@@ -2373,7 +2330,6 @@ class profileController extends bootstrap
                     // Recuperation du modele de mail
                     $this->mails_text->get('notification-modification-preteurs', 'lang = "' . $this->language . '" AND type');
 
-                    // Variables du mailing
                     $surl         = $this->surl;
                     $url          = $this->lurl;
                     $id_preteur   = $this->clients->id_client;
@@ -2385,7 +2341,6 @@ class profileController extends bootstrap
                     $email        = $this->clients->email;
                     $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
 
-                    // Attribution des données aux variables
                     $sujetMail = htmlentities($this->mails_text->subject);
                     eval("\$sujetMail = \"$sujetMail\";");
 
@@ -2399,14 +2354,12 @@ class profileController extends bootstrap
                     $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                     $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->addRecipient(trim($destinataire));
                     $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
                     $this->email->setHTMLBody($texteMail);
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    // fin mail
 
                     /// mail nmp pour le preteur morale ///
 
@@ -2425,7 +2378,6 @@ class profileController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    // Variables du mailing
                     $varMail = array(
                         'surl'    => $this->surl,
                         'url'     => $this->lurl,
@@ -2434,32 +2386,26 @@ class profileController extends bootstrap
                         'lien_tw' => $lien_tw
                     );
 
-                    // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    // Attribution des données aux variables
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] === 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
 
                         // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
-                    // fin mail
                     ////////////////////////////////
 
                     $_SESSION['reponse_upload'] = $this->lng['profile']['sauvegardees'];

@@ -22,7 +22,6 @@ class prescripteursController extends bootstrap
 
     public function _gestion()
     {
-        // Chargement du data
         /** @var clients $oClients */
         $oClients = $this->loadData('clients');
 

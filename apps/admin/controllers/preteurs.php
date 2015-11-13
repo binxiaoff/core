@@ -29,7 +29,6 @@ class preteursController extends bootstrap
     {
 
         // deplace tout chargement de données communes dans une méthodes à part
-        // Chargement du data
         $this->clients                = $this->loadData('clients');
         $this->clients_adresses       = $this->loadData('clients_adresses');
         $this->clients_mandats        = $this->loadData('clients_mandats');
@@ -446,7 +445,6 @@ class preteursController extends bootstrap
             // Recuperation du modele de mail
             $this->mails_text->get('completude', 'lang = "' . $this->language . '" AND type');
 
-            // Variables du mailing
             $surl = $this->surl;
             $url  = $this->lurl;
 
@@ -463,7 +461,6 @@ class preteursController extends bootstrap
 
             $month = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
 
-            // Variables du mailing
             $varMail = array(
                 'furl'          => $this->furl,
                 'surl'          => $surl,
@@ -474,27 +471,22 @@ class preteursController extends bootstrap
                 'lien_upload'   => $this->furl . '/profile/' . $lapage,
                 'lien_fb'       => $lien_fb,
                 'lien_tw'       => $lien_tw);
-            // Construction du tableau avec les balises EMV
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-            // Attribution des données aux variables
             $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-            // Envoi du mail
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->setSubject(stripslashes($sujetMail));
             $this->email->setHTMLBody(stripslashes($texteMail));
 
-            if ($this->Config['env'] == 'prod') // nmp
-            {
+            if ($this->Config['env'] === 'prod') {
                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                 // Injection du mail NMP dans la queue
                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-            } else // non nmp
-            {
+            } else {
                 $this->email->addRecipient(trim($this->clients->email));
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
@@ -781,7 +773,6 @@ class preteursController extends bootstrap
                     else
                         $this->mails_text->get('preteur-confirmation-activation', 'lang = "' . $this->language . '" AND type');
 
-                    // Variables du mailing
                     $surl = $this->surl;
                     $url  = $this->furl;
 
@@ -798,7 +789,6 @@ class preteursController extends bootstrap
 
                     $month = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
 
-                    // Variables du mailing
                     $varMail = array(
                         'surl'    => $surl,
                         'url'     => $url,
@@ -806,27 +796,22 @@ class preteursController extends bootstrap
                         'projets' => $this->furl . '/projets-a-financer',
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw);
-                    // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    // Attribution des données aux variables
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] === 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                         // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
@@ -1099,7 +1084,6 @@ class preteursController extends bootstrap
                     else
                         $this->mails_text->get('preteur-confirmation-activation', 'lang = "' . $this->language . '" AND type');
 
-                    // Variables du mailing
                     $surl = $this->surl;
                     $url  = $this->furl;
 
@@ -1116,7 +1100,6 @@ class preteursController extends bootstrap
 
                     $month = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
 
-                    // Variables du mailing
                     $varMail = array(
                         'surl'    => $surl,
                         'url'     => $url,
@@ -1124,27 +1107,22 @@ class preteursController extends bootstrap
                         'projets' => $this->furl . '/projets-a-financer',
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw);
-                    // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    // Attribution des données aux variables
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] === 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                         // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
@@ -1655,7 +1633,6 @@ class preteursController extends bootstrap
         // Recuperation du modele de mail
         $this->mails_text->get('completude', 'lang = "' . $this->language . '" AND type');
 
-        // Variables du mailing
         $surl = $this->surl;
         $url  = $this->lurl;
 
@@ -1677,7 +1654,6 @@ class preteursController extends bootstrap
         else $timeCreate = strtotime($this->clients->added);
         $month = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
 
-        // Variables du mailing
         $varMail = array(
             'furl'          => $this->furl,
             'surl'          => $surl,
@@ -1689,7 +1665,6 @@ class preteursController extends bootstrap
             'lien_fb'       => $lien_fb,
             'lien_tw'       => $lien_tw);
 
-        // Construction du tableau avec les balises EMV
         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
         echo $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
@@ -1940,7 +1915,6 @@ class preteursController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    // Variables du mailing
                     $varMail = array(
                         'surl'            => $this->surl,
                         'url'             => $this->furl,
@@ -1949,28 +1923,23 @@ class preteursController extends bootstrap
                         'offre_bienvenue' => $this->ficelle->formatNumber($offres_bienvenues->montant / 100),
                         'lien_fb'         => $lien_fb,
                         'lien_tw'         => $lien_tw);
-                    // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    // Attribution des données aux variables
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] === 'prod') {
                         print_r(" -> #4.1");
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                         // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
+                    } else {
                         print_r(" -> #4.2");
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
@@ -2072,7 +2041,6 @@ class preteursController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    // Variables du mailing
                     $varMail = array(
                         'surl'            => $this->surl,
                         'url'             => $this->furl,
@@ -2085,24 +2053,20 @@ class preteursController extends bootstrap
 
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    // Attribution des données aux variables
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] === 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                         // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }

@@ -911,7 +911,6 @@ class devboxController extends bootstrap
             $this->transactions->get($preteur['id_loan'], 'id_loan_remb');
 
 
-            // Variables du mailing
             $varMail = array(
                 'surl'                 => $this->surl,
                 'url'                  => $this->furl,
@@ -929,16 +928,13 @@ class devboxController extends bootstrap
                 'lien_tw'              => $lien_tw
             );
 
-            // Construction du tableau avec les balises EMV
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-            // Attribution des données aux variables
             $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-            // Envoi du mail
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->setSubject(stripslashes($sujetMail));
             $this->email->setHTMLBody(stripslashes($texteMail));
@@ -975,14 +971,11 @@ class devboxController extends bootstrap
                 // Pas de mail si le compte est desactivé
                 /*if ($this->clients->status == 1)
                 {
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] === 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                         // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    }
-                    else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         $this->email->addBCCRecipient('k1@david.equinoa.net');
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
@@ -1104,7 +1097,6 @@ class devboxController extends bootstrap
             $this->transactions->get($preteur['id_loan'], 'id_loan_remb');
 
 
-            // Variables du mailing
             $varMail = array(
                 'surl'                 => $this->surl,
                 'url'                  => $this->furl,
@@ -1122,17 +1114,14 @@ class devboxController extends bootstrap
                 'lien_tw'              => $lien_tw
             );
 
-            // Construction du tableau avec les balises EMV
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-            // Attribution des données aux variables
             $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-            // Envoi du mail
 
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->setSubject(stripslashes($sujetMail));
             $this->email->setHTMLBody(stripslashes($texteMail));
@@ -1168,13 +1157,11 @@ class devboxController extends bootstrap
 
                 // Pas de mail si le compte est desactivé
                 if ($this->clients->status == 1) {
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] === 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                         // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         $this->email->addBCCRecipient('k1@david.equinoa.net');
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);

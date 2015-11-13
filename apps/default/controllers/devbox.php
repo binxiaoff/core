@@ -143,7 +143,6 @@ class devboxController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    // Variables du mailing
                     $varMail = array(
                         'surl' => $this->surl,
                         'url' => $this->furl,
@@ -160,14 +159,11 @@ class devboxController extends bootstrap
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw);
 
-                    // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-                    // Attribution des données aux variables
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     if ($this->Config['env'] == 'prod')
                     {
@@ -177,16 +173,13 @@ class devboxController extends bootstrap
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] === 'prod') {
 
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($companies->email_facture), $tabFiler);
                         //Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim("k.levezier@equinoa.com"), $tabFiler);
                         // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    }
-                    else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($companies->email_facture));
                         //Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }

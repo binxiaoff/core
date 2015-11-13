@@ -819,7 +819,6 @@ class dossiersController extends bootstrap
                                     // Recuperation du modele de mail
                                     $this->mails_text->get('preteur-erreur-remboursement', 'lang = "' . $this->language . '" AND type');
 
-                                    // Variables du mailing
                                     $varMail = array(
                                         'surl'              => $this->surl,
                                         'url'               => $this->furl,
@@ -833,27 +832,22 @@ class dossiersController extends bootstrap
                                         'lien_tw'           => $lien_tw
                                     );
 
-                                    // Construction du tableau avec les balises EMV
                                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                                    // Attribution des données aux variables
                                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                                    // Envoi du mail
-                                    $this->email = $this->loadLib('email', array());
+                                    $this->email = $this->loadLib('email');
                                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                     $this->email->setSubject(stripslashes($sujetMail));
                                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                    if ($this->Config['env'] == 'prod') // nmp
-                                    {
+                                    if ($this->Config['env'] === 'prod') {
                                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                                         // Injection du mail NMP dans la queue
                                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                    } else // non nmp
-                                    {
+                                    } else {
                                         $this->email->addRecipient(trim($this->clients->email));
                                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                     }
@@ -894,7 +888,6 @@ class dossiersController extends bootstrap
                                     // Recuperation du modele de mail
                                     $this->mails_text->get('preteur-dossier-recouvrement', 'lang = "' . $this->language . '" AND type');
 
-                                    // Variables du mailing
                                     $varMail = array(
                                         'surl'             => $this->surl,
                                         'url'              => $this->furl,
@@ -907,10 +900,8 @@ class dossiersController extends bootstrap
                                         'lien_tw'          => $lien_tw
                                     );
 
-                                    // Construction du tableau avec les balises EMV
                                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                                    // Attribution des données aux variables
                                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
@@ -944,7 +935,6 @@ class dossiersController extends bootstrap
                                     // Recuperation du modele de mail
                                     $this->mails_text->get('preteur-dossier-recouvrement', 'lang = "' . $this->language . '" AND type');
 
-                                    // Variables du mailing
                                     $varMail = array(
                                         'surl'             => $this->surl,
                                         'url'              => $this->furl,
@@ -956,7 +946,6 @@ class dossiersController extends bootstrap
                                         'lien_tw'          => $lien_tw
                                     );
 
-                                    // Construction du tableau avec les balises EMV
                                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
                                 }
                             }
@@ -1086,7 +1075,6 @@ class dossiersController extends bootstrap
                                 // Recuperation du modele de mail
                                 $this->mails_text->get('preteur-pret-refuse', 'lang = "' . $this->language . '" AND type');
 
-                                // Variables du mailing
                                 $varMail = array(
                                     'surl'              => $this->surl,
                                     'url'               => $this->furl,
@@ -1099,27 +1087,22 @@ class dossiersController extends bootstrap
                                     'lien_tw'           => $lien_tw
                                 );
 
-                                // Construction du tableau avec les balises EMV
                                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                                // Attribution des données aux variables
                                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                                // Envoi du mail
-                                $this->email = $this->loadLib('email', array());
+                                $this->email = $this->loadLib('email');
                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                 $this->email->setSubject(stripslashes($sujetMail));
                                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                if ($this->Config['env'] == 'prod') // nmp
-                                {
+                                if ($this->Config['env'] === 'prod') {
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
                                     // Injection du mail NMP dans la queue
                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else // non nmp
-                                {
+                                } else {
                                     $this->email->addRecipient(trim($clients->email));
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 }
@@ -1153,7 +1136,6 @@ class dossiersController extends bootstrap
                                 $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 80, $this->projects->id_project);
 
                                 //*** virement emprunteur ***//
-                                // Chargement du data
                                 $this->transactions     = $this->loadData('transactions');
                                 $virements              = $this->loadData('virements');
                                 $prelevements           = $this->loadData('prelevements');
@@ -1317,7 +1299,6 @@ class dossiersController extends bootstrap
 
                                             $laCompanie->get($leProject->id_company, 'id_company');
 
-                                            // Variables du mailing
                                             $surl         = $this->surl;
                                             $url          = $this->furl;
                                             $prenom       = $preteur->prenom;
@@ -1333,7 +1314,6 @@ class dossiersController extends bootstrap
                                             $timeAdd = strtotime($lecheancier['date_echeance']);
                                             $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
-                                            // Variables du mailing
                                             $varMail = array(
                                                 'surl'           => $surl,
                                                 'url'            => $url,
@@ -1352,31 +1332,25 @@ class dossiersController extends bootstrap
                                                 'lien_tw'        => $lien_tw
                                             );
 
-                                            // Construction du tableau avec les balises EMV
                                             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                                            // Attribution des données aux variables
                                             $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                                             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                                             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                                            // Envoi du mail
-                                            $this->email = $this->loadLib('email', array());
+                                            $this->email = $this->loadLib('email');
                                             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                             $this->email->setSubject(stripslashes($sujetMail));
                                             $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                            if ($this->Config['env'] == 'prod') // nmp
-                                            {
+                                            if ($this->Config['env'] === 'prod') {
                                                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($preteur->email), $tabFiler);
                                                 // Injection du mail NMP dans la queue
                                                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                            } else // non nmp
-                                            {
+                                            } else {
                                                 $this->email->addRecipient(trim($preteur->email));
                                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                             }
-                                            // fin mail
                                         }
                                     }
                                 }
@@ -1409,7 +1383,6 @@ class dossiersController extends bootstrap
                                 $this->settings->get('Twitter', 'type');
                                 $lien_tw = $this->settings->value;
 
-                                // Variables du mailing
                                 $varMail = array(
                                     'surl'            => $this->surl,
                                     'url'             => $this->furl,
@@ -1427,16 +1400,13 @@ class dossiersController extends bootstrap
                                     'lien_tw'         => $lien_tw
                                 );
 
-                                // Construction du tableau avec les balises EMV
                                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                                // Attribution des données aux variables
                                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                                // Envoi du mail
-                                $this->email = $this->loadLib('email', array());
+                                $this->email = $this->loadLib('email');
                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                 if ($this->Config['env'] == 'prod') {
                                     $this->email->addBCCRecipient('nicolas.lesur@unilend.fr');
@@ -1518,7 +1488,6 @@ class dossiersController extends bootstrap
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
 
-        // Chargement du data
         $this->clients = $this->loadData('clients');
 
         if (isset($this->params[0]) && $this->params[0] != '') {
@@ -1917,7 +1886,6 @@ class dossiersController extends bootstrap
 
     public function _add()
     {
-        // Chargement du data
         $this->projects_status        = $this->loadData('projects_status');
         $this->projects               = $this->loadData('projects');
         $this->clients                = $this->loadData('clients');
@@ -2314,7 +2282,6 @@ class dossiersController extends bootstrap
 
     public function _funding()
     {
-        // Chargement du data
         $this->projects  = $this->loadData('projects');
         $this->companies = $this->loadData('companies');
         $this->bids      = $this->loadData('bids');
@@ -2325,7 +2292,6 @@ class dossiersController extends bootstrap
 
     public function _remboursements()
     {
-        // Chargement du data
         $this->projects               = $this->loadData('projects');
         $this->companies              = $this->loadData('companies');
         $this->clients                = $this->loadData('clients');
@@ -2347,7 +2313,6 @@ class dossiersController extends bootstrap
 
     public function _no_remb()
     {
-        // Chargement du data
         $this->projects               = $this->loadData('projects');
         $this->companies              = $this->loadData('companies');
         $this->clients                = $this->loadData('clients');
@@ -2371,7 +2336,6 @@ class dossiersController extends bootstrap
     {
         ini_set('memory_limit', '1024M');
         ini_set('max_execution_time', 600); //300 seconds = 5 minutes
-        // Chargement du data
         $this->projects                = $this->loadData('projects');
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
@@ -2643,7 +2607,6 @@ class dossiersController extends bootstrap
                                                 $this->mails_text->get('preteur-dossier-recouvre', 'lang = "' . $this->language . '" AND type');
                                                 $this->companies->get($this->projects->id_company, 'id_company');
 
-                                                // Variables du mailing
                                                 $varMail = array(
                                                     'surl'             => $this->surl,
                                                     'url'              => $this->furl,
@@ -2658,16 +2621,13 @@ class dossiersController extends bootstrap
                                                     'lien_tw'          => $lien_tw
                                                 );
 
-                                                // Construction du tableau avec les balises EMV
                                                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                                                // Attribution des données aux variables
                                                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                                                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                                                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                                                // Envoi du mail
-                                                $this->email = $this->loadLib('email', array());
+                                                $this->email = $this->loadLib('email');
                                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                                 $this->email->setSubject(stripslashes($sujetMail));
                                                 $this->email->setHTMLBody(stripslashes($texteMail));
@@ -2694,7 +2654,6 @@ class dossiersController extends bootstrap
 
                                                 $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
 
-                                                // Variables du mailing
                                                 $surl = $this->surl;
                                                 $url  = $this->furl;
 
@@ -2715,7 +2674,6 @@ class dossiersController extends bootstrap
                                                 $timeAdd = strtotime($dateDernierStatut);
                                                 $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
-                                                // Variables du mailing
                                                 $varMail = array(
                                                     'surl'                  => $surl,
                                                     'url'                   => $url,
@@ -2731,16 +2689,13 @@ class dossiersController extends bootstrap
                                                     'lien_tw'               => $lien_tw
                                                 );
 
-                                                // Construction du tableau avec les balises EMV
                                                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                                                // Attribution des données aux variables
                                                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                                                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                                                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                                                // Envoi du mail
-                                                $this->email = $this->loadLib('email', array());
+                                                $this->email = $this->loadLib('email');
                                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                                 $this->email->setSubject(stripslashes($sujetMail));
                                                 $this->email->setHTMLBody(stripslashes($texteMail));
@@ -2775,7 +2730,6 @@ class dossiersController extends bootstrap
 
                                                     $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
 
-                                                    // Variables du mailing
                                                     $surl = $this->surl;
                                                     $url  = $this->furl;
 
@@ -2796,7 +2750,6 @@ class dossiersController extends bootstrap
                                                     $timeAdd = strtotime($dateDernierStatut);
                                                     $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
-                                                    // Variables du mailing
                                                     $varMail = array(
                                                         'surl'                  => $surl,
                                                         'url'                   => $url,
@@ -2812,27 +2765,22 @@ class dossiersController extends bootstrap
                                                         'lien_tw'               => $lien_tw
                                                     );
 
-                                                    // Construction du tableau avec les balises EMV
                                                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                                                    // Attribution des données aux variables
                                                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                                                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                                                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                                                    // Envoi du mail
-                                                    $this->email = $this->loadLib('email', array());
+                                                    $this->email = $this->loadLib('email');
                                                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                                     $this->email->setSubject(stripslashes($sujetMail));
                                                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                                    if ($this->Config['env'] == 'prod') // nmp
-                                                    {
+                                                    if ($this->Config['env'] === 'prod') {
                                                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                                                         // Injection du mail NMP dans la queue
                                                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                                    } else // non nmp
-                                                    {
+                                                    } else {
                                                         $this->email->addRecipient(trim($this->clients->email));
                                                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                                     }
@@ -2909,7 +2857,6 @@ class dossiersController extends bootstrap
                                 // Recuperation du modele de mail
                                 $this->mails_text->get('facture-emprunteur-remboursement', 'lang = "' . $this->language . '" AND type');
 
-                                // Variables du mailing
                                 $varMail = array(
                                     'surl'            => $this->surl,
                                     'url'             => $this->furl,
@@ -2927,16 +2874,13 @@ class dossiersController extends bootstrap
                                     'lien_tw'         => $lien_tw
                                 );
 
-                                // Construction du tableau avec les balises EMV
                                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                                // Attribution des données aux variables
                                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                                // Envoi du mail
-                                $this->email = $this->loadLib('email', array());
+                                $this->email = $this->loadLib('email');
                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                 if ($this->Config['env'] == 'prod') {
                                     $this->email->addBCCRecipient('nicolas.lesur@unilend.fr');
@@ -2946,13 +2890,11 @@ class dossiersController extends bootstrap
                                 $this->email->setSubject(stripslashes($sujetMail));
                                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                if ($this->Config['env'] == 'prod') // nmp
-                                {
+                                if ($this->Config['env'] === 'prod') {
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($companies->email_facture), $tabFiler);
                                     // Injection du mail NMP dans la queue
                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else // non nmp
-                                {
+                                } else {
                                     $this->email->addRecipient(trim($companies->email_facture));
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 }
@@ -3172,7 +3114,6 @@ class dossiersController extends bootstrap
 
                         $loans->get($preteur['id_loan'], 'id_loan');
 
-                        // Variables du mailing
                         $varMail = array(
                             'surl'                 => $this->surl,
                             'url'                  => $this->furl,
@@ -3190,16 +3131,13 @@ class dossiersController extends bootstrap
                             'lien_tw'              => $lien_tw
                         );
 
-                        // Construction du tableau avec les balises EMV
                         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                        // Attribution des données aux variables
                         $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                         $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                         $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
+                        $this->email = $this->loadLib('email');
                         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                         $this->email->setSubject(stripslashes($sujetMail));
                         $this->email->setHTMLBody(stripslashes($texteMail));
@@ -3322,7 +3260,6 @@ class dossiersController extends bootstrap
 
     public function _detail_remb_preteur()
     {
-        // Chargement du data
         $this->clients          = $this->loadData('clients');
         $this->loans            = $this->loadData('loans');
         $this->echeanciers      = $this->loadData('echeanciers');
@@ -3364,7 +3301,6 @@ class dossiersController extends bootstrap
 
     public function _detail_echeance_preteur()
     {
-        // Chargement du data
         $this->clients                 = $this->loadData('clients');
         $this->loans                   = $this->loadData('loans');
         $this->echeanciers             = $this->loadData('echeanciers');
@@ -3392,7 +3328,6 @@ class dossiersController extends bootstrap
 
     public function _echeancier_emprunteur()
     {
-        // Chargement du data
         $this->clients                 = $this->loadData('clients');
         $this->echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
         $this->echeanciers             = $this->loadData('echeanciers');

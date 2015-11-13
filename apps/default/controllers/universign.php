@@ -184,8 +184,7 @@ class universignController extends bootstrap
                         $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                         $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
+                        $this->email = $this->loadLib('email');
                         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                         $this->email->addRecipient(trim($destinaire));
                         //$this->email->addRecipient(trim(implode(',', $this->Config['DebugMailIt'])));
@@ -194,7 +193,6 @@ class universignController extends bootstrap
                         $this->email->setHTMLBody(utf8_decode($texteMail));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                         $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir and Mandat Ok', array($projects_pouvoir->id_project));
-                        // fin mail
                     } else {
                         $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir Ok but Mandat not signed.', array($projects_pouvoir->id_project));
                     }

@@ -1409,7 +1409,7 @@ class rootController extends bootstrap
             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->setSubject(stripslashes($sujetMail));
             $this->email->setHTMLBody(stripslashes($texteMail));
@@ -1429,7 +1429,6 @@ class rootController extends bootstrap
             // Recuperation du modele de mail
             $this->mails_text->get('notification-demande-de-contact', 'lang = "' . $this->language . '" AND type');
 
-            // Variables du mailing
             $surl   = $this->surl;
             $url    = $this->lurl;
             $email  = $this->demande_contact->email;
@@ -1458,7 +1457,6 @@ class rootController extends bootstrap
             $infos .= '<li>Message : ' . utf8_decode($this->demande_contact->message) . '</li>';
             $infos .= '</ul>';
 
-            // Attribution des données aux variables
             $sujetMail = $this->mails_text->subject;
             eval("\$sujetMail = \"$sujetMail\";");
 
@@ -1471,7 +1469,7 @@ class rootController extends bootstrap
             $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
             $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->addRecipient(trim($destinataire));
             $this->email->setReplyTo(utf8_decode($this->demande_contact->email),

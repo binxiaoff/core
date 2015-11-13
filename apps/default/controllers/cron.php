@@ -406,7 +406,7 @@ class cronController extends bootstrap
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
 
                     $this->email->setSubject(stripslashes($sujetMail));
@@ -439,7 +439,6 @@ class cronController extends bootstrap
 
                     $this->mails_text->get('notification-projet-funde-a-100', 'lang = "' . $this->language . '" AND type');
 
-                    // Variables du mailing
                     $surl = $this->surl;
                     $url = $this->lurl;
                     $id_projet = $this->projects->id_project;
@@ -461,7 +460,7 @@ class cronController extends bootstrap
                     $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                     $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->addRecipient(trim($destinataire));
 
@@ -491,7 +490,6 @@ class cronController extends bootstrap
 
                         $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
 
-                        // Variables du mailing
                         $surl = $this->surl;
                         $url = $this->lurl;
                         $prenom = $preteur->prenom;
@@ -529,7 +527,7 @@ class cronController extends bootstrap
                         $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                         $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                        $this->email = $this->loadLib('email', array());
+                        $this->email = $this->loadLib('email');
                         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
 
                         $this->email->setSubject(stripslashes($sujetMail));
@@ -574,7 +572,7 @@ class cronController extends bootstrap
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
@@ -698,7 +696,7 @@ class cronController extends bootstrap
                         $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                         $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                        $this->email = $this->loadLib('email', array());
+                        $this->email = $this->loadLib('email');
                         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                         $this->email->setSubject(stripslashes($sujetMail));
                         $this->email->setHTMLBody(stripslashes($texteMail));
@@ -733,7 +731,6 @@ class cronController extends bootstrap
 
                 $this->mails_text->get('notification-projet-fini', 'lang = "' . $this->language . '" AND type');
 
-                // Variables du mailing
                 $surl = $this->surl;
                 $url = $this->lurl;
                 $id_projet = $this->projects->id_project;
@@ -755,7 +752,7 @@ class cronController extends bootstrap
                 $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                 $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->addRecipient(trim($destinataire));
 
@@ -1144,7 +1141,6 @@ class cronController extends bootstrap
                             // Recuperation du modele de mail
                             $this->mails_text->get('preteur-erreur-remboursement', 'lang = "' . $this->language . '" AND type');
 
-                            // Variables du mailing
                             $varMail = array(
                                 'surl'              => $this->surl,
                                 'url'               => $this->furl,
@@ -1166,7 +1162,6 @@ class cronController extends bootstrap
                             // Recuperation du modele de mail
                             $this->mails_text->get('preteur-dossier-recouvrement', 'lang = "' . $this->language . '" AND type');
 
-                            // Variables du mailing
                             $varMail = array(
                                 'surl'             => $this->surl,
                                 'url'              => $this->furl,
@@ -1958,7 +1953,6 @@ class cronController extends bootstrap
                 // Recuperation du modele de mail
                 $this->mails_text->get('preteur-relance-paiement-inscription', 'lang = "' . $this->language . '" AND type');
 
-                // Variables du mailing
                 $surl  = $this->surl;
                 $url   = $this->lurl;
                 $email = $this->clients->email;
@@ -1973,7 +1967,6 @@ class cronController extends bootstrap
 
                 //'compte-p' => $this->lurl.'/alimentation',
                 //'compte-p-virement' => $this->lurl.'/alimentation',
-                // Variables du mailing
                 $varMail = array(
                     'surl'              => $surl,
                     'url'               => $url,
@@ -1992,7 +1985,7 @@ class cronController extends bootstrap
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
@@ -2315,7 +2308,6 @@ class cronController extends bootstrap
                     // Recuperation du modele de mail
                     $this->mails_text->get('notification-aucun-virement', 'lang = "' . $this->language . '" AND type');
 
-                    // Variables du mailing
                     $surl = $this->surl;
                     $url  = $this->lurl;
 
@@ -2332,14 +2324,13 @@ class cronController extends bootstrap
                     $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                     $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->addRecipient(trim($destinataire));
 
                     $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
                     $this->email->setHTMLBody($texteMail);
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    // fin mail
                 }
             } else {
                 // lecture du fichier
@@ -2677,7 +2668,6 @@ class cronController extends bootstrap
                                             // Recuperation du modele de mail
                                             $this->mails_text->get('notification-nouveau-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
 
-                                            // Variables du mailing
                                             $surl = $this->surl;
                                             $url = $this->lurl;
                                             $id_projet = $this->projects->id_project;
@@ -2697,14 +2687,13 @@ class cronController extends bootstrap
                                             $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                                             $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                                            $this->email = $this->loadLib('email', array());
+                                            $this->email = $this->loadLib('email');
                                             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                             $this->email->addRecipient(trim($destinataire));
 
                                             $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
                                             $this->email->setHTMLBody($texteMail);
                                             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                            // fin mail
                                         } else {
                                             // reception
                                             $receptions->get($receptions->id_reception, 'id_reception');
@@ -2792,7 +2781,6 @@ class cronController extends bootstrap
                                                 // Solde du compte preteur
                                                 $solde = $transactions->getSolde($receptions->id_client);
 
-                                                // Variables du mailing
                                                 $varMail = array(
                                                     'surl'            => $this->surl,
                                                     'url'             => $this->lurl,
@@ -2812,7 +2800,7 @@ class cronController extends bootstrap
                                                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                                                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                                                $this->email = $this->loadLib('email', array());
+                                                $this->email = $this->loadLib('email');
                                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                                 $this->email->setSubject(stripslashes($sujetMail));
                                                 $this->email->setHTMLBody(stripslashes($texteMail));
@@ -2828,7 +2816,6 @@ class cronController extends bootstrap
                                                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                                     }
                                                 }
-                                                // fin mail
                                             }
                                         }//fin else $is_remboursement_anticipe
                                     } // fin check transaction
@@ -3946,7 +3933,6 @@ class cronController extends bootstrap
             // Recuperation du modele de mail
             $this->mails_text->get('notification-etat-quotidien', 'lang = "' . $this->language . '" AND type');
 
-            // Variables du mailing
             $surl = $this->surl;
             $url = $this->lurl;
 
@@ -3963,7 +3949,7 @@ class cronController extends bootstrap
             $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
             $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->attachFromString($tableau, $filename . '.xls');
             $this->email->addRecipient(trim($destinataire));
@@ -4359,7 +4345,6 @@ class cronController extends bootstrap
             // Recuperation du modele de mail
             $this->mails_text->get('notification-etat-fiscal', 'lang = "' . $this->language . '" AND type');
 
-            // Variables du mailing
             $surl = $this->surl;
             $url  = $this->lurl;
 
@@ -4376,7 +4361,7 @@ class cronController extends bootstrap
             $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
             $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->attachFromString($table, $filename . '.xls');
             //$this->email->attachFromString($csv,'echeances_'.date('Y-m-d').'.csv');
@@ -4394,7 +4379,6 @@ class cronController extends bootstrap
             $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
             $this->email->setHTMLBody($texteMail);
             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-            // fin mail
             /////////////////////////////////////////////////////
             // On retire de bank unilend la partie  pour letat //
             /////////////////////////////////////////////////////
@@ -4926,7 +4910,7 @@ class cronController extends bootstrap
                                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                                $this->email = $this->loadLib('email', array());
+                                $this->email = $this->loadLib('email');
                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                 $this->email->setSubject(stripslashes($sujetMail));
                                 $this->email->setHTMLBody(stripslashes($texteMail));
@@ -4950,7 +4934,6 @@ class cronController extends bootstrap
 
                                 $this->mails_text->get('notification-projet-funde-a-100', 'lang = "' . $this->language . '" AND type');
 
-                                // Variables du mailing
                                 $surl = $this->surl;
                                 $url = $this->lurl;
                                 $id_projet = $p['id_project'];
@@ -4971,7 +4954,7 @@ class cronController extends bootstrap
                                 $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                                 $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                                $this->email = $this->loadLib('email', array());
+                                $this->email = $this->loadLib('email');
                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                 $this->email->addRecipient(trim($destinataire));
 
@@ -5127,7 +5110,7 @@ class cronController extends bootstrap
                             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                            $this->email = $this->loadLib('email', array());
+                            $this->email = $this->loadLib('email');
                             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                             $this->email->setSubject(stripslashes($sujetMail));
                             $this->email->setHTMLBody(stripslashes($texteMail));
@@ -5313,7 +5296,7 @@ class cronController extends bootstrap
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
@@ -5377,7 +5360,7 @@ class cronController extends bootstrap
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
@@ -5638,7 +5621,7 @@ class cronController extends bootstrap
         $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
         $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-        $this->email = $this->loadLib('email', array());
+        $this->email = $this->loadLib('email');
         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
         $this->email->addRecipient(trim($destinataire));
         $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
@@ -6303,7 +6286,7 @@ class cronController extends bootstrap
                         $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                         $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                        $this->email = $this->loadLib('email', array());
+                        $this->email = $this->loadLib('email');
                         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                         $this->email->setSubject(stripslashes($sujetMail));
                         $this->email->setHTMLBody(stripslashes($texteMail));
@@ -6466,7 +6449,7 @@ class cronController extends bootstrap
                             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                            $this->email = $this->loadLib('email', array());
+                            $this->email = $this->loadLib('email');
                             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                             $this->email->setSubject(stripslashes($sujetMail));
                             $this->email->setHTMLBody(stripslashes($texteMail));
@@ -6628,7 +6611,7 @@ class cronController extends bootstrap
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
@@ -6813,7 +6796,7 @@ class cronController extends bootstrap
                             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                            $this->email = $this->loadLib('email', array());
+                            $this->email = $this->loadLib('email');
                             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                             $this->email->setSubject(stripslashes($sujetMail));
                             $this->email->setHTMLBody(stripslashes($texteMail));
@@ -7044,7 +7027,7 @@ class cronController extends bootstrap
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
@@ -7163,7 +7146,7 @@ class cronController extends bootstrap
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
 
                     $this->email->setSubject(stripslashes($sujetMail));
@@ -7234,7 +7217,7 @@ class cronController extends bootstrap
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
 
                     $this->email->setSubject(stripslashes($sujetMail));
@@ -7350,7 +7333,7 @@ class cronController extends bootstrap
                         $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                         $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                        $this->email = $this->loadLib('email', array());
+                        $this->email = $this->loadLib('email');
                         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                         $this->email->setSubject(stripslashes($sujetMail));
                         $this->email->setHTMLBody(stripslashes($texteMail));
@@ -7557,7 +7540,7 @@ class cronController extends bootstrap
                             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                            $this->email = $this->loadLib('email', array());
+                            $this->email = $this->loadLib('email');
                             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                             $this->email->setSubject(stripslashes($sujetMail));
                             $this->email->setHTMLBody(stripslashes($texteMail));
@@ -7625,7 +7608,6 @@ class cronController extends bootstrap
             $destinataire = $this->settings->value;
             $this->mails_text->get('notification-prelevement-emprunteur', 'lang = "' . $this->language . '" AND type');
 
-            // Variables du mailing
             $surl = $this->surl;
             $url = $this->lurl;
             $liste_remb = $table;
@@ -7642,7 +7624,7 @@ class cronController extends bootstrap
             $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
             $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->addRecipient(trim($destinataire));
             $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
@@ -8022,7 +8004,7 @@ class cronController extends bootstrap
                             );
                             $tabVars  = $this->tnmp->constructionVariablesServeur($varMail);
 
-                            $this->email = $this->loadLib('email', array());
+                            $this->email = $this->loadLib('email');
                             $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
                             $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
                             $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
