@@ -98,35 +98,48 @@ class projects_status_history extends projects_status_history_crud
     {
         switch ($iStatus) {
             case \projects_status::A_TRAITER:
-                /* @var array $config */
-                include __DIR__ . '/../config.php';
+                $oSettings = new \settings($this->bdd);
+                $oSettings->get('Adresse notification inscription emprunteur', 'type');
 
-                // @todo intl
-                $oMailsText = new \mails_text($this->bdd);
-                $oMailsText->get('notification-projet-a-traiter', 'lang = "fr" AND type');
-
-                $oProjects = new \projects($this->bdd);
-                $oProjects->get($iProjectId, 'id_project');
-
-                $oCompanies = new \companies($this->bdd);
-                $oCompanies->get($oProjects->id_company, 'id_company');
-
-                $aReplacements = array(
-                    '[ID_PROJET]'      => $iProjectId,
-                    '[LIEN_BO_PROJET]' => $config['url'][ENVIRONMENT]['admin'] . '/dossiers/edit/' . $iProjectId,
-                    '[RAISON_SOCIALE]' => utf8_decode($oCompanies->name),
-                    '[SURL]'           => $config['static_url'][ENVIRONMENT]
-                );
-
-                $oEmail = new \email();
-                $oEmail->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
-                $oEmail->setSubject(utf8_decode($oMailsText->subject));
-                $oEmail->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $oMailsText->content));
-                $oEmail->addRecipient(\email::EMAIL_ADDRESS_ANALYSTS);
-
-                Mailer::send($oEmail, new \mails_filer($this->bdd), $oMailsText->id_textemail);
+                $this->sendNotification('notification-depot-de-dossier', $iProjectId, trim($oSettings->value));
+                break;
+            case \projects_status::ATTENTE_ANALYSTE:
+                $this->sendNotification('notification-projet-a-traiter', $iProjectId, \email::EMAIL_ADDRESS_ANALYSTS);
                 break;
         }
+    }
+
+    private function sendNotification($sNotificationType, $iProjectId, $sRecipient)
+    {
+        /* @var array $config */
+        include __DIR__ . '/../config.php';
+
+        // @todo intl
+        $oMailsText = new \mails_text($this->bdd);
+        $oMailsText->get($sNotificationType, 'lang = "fr" AND type');
+
+        $oProjects = new \projects($this->bdd);
+        $oProjects->get($iProjectId, 'id_project');
+
+        $oCompanies = new \companies($this->bdd);
+        $oCompanies->get($oProjects->id_company, 'id_company');
+
+        $aReplacements = array(
+            '[SURL]'           => $config['static_url'][ENVIRONMENT],
+            '[ID_PROJET]'      => $iProjectId,
+            '[MONTANT]'        => $oProjects->amount,
+            '[RAISON_SOCIALE]' => utf8_decode($oCompanies->name),
+            '[LIEN_REPRISE]'   => $config['url'][ENVIRONMENT]['admin'] . '/depot_de_dossier/reprise/' . $oProjects->hash,
+            '[LIEN_BO_PROJET]' => $config['url'][ENVIRONMENT]['admin'] . '/dossiers/edit/' . $iProjectId
+        );
+
+        $oEmail = new \email();
+        $oEmail->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
+        $oEmail->setSubject(utf8_decode($oMailsText->subject));
+        $oEmail->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $oMailsText->content));
+        $oEmail->addRecipient($sRecipient);
+
+        Mailer::send($oEmail, new \mails_filer($this->bdd), $oMailsText->id_textemail);
     }
 
     public function getBeforeLastStatus($iProjectId)

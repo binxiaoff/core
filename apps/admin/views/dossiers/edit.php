@@ -398,19 +398,6 @@
                             <a id="link_search" class="btn_link thickbox" onclick="$(this).attr('href', '<?= $this->lurl ?>/dossiers/changeClient/' + $('#search').val());" href="<?= $this->lurl ?>/dossiers/changeClient/">Rechercher</a>
                         </td>
                     </tr>
-                    <?php if ($this->current_projects_status->status >= \projects_status::ATTENTE_ANALYSTE || false === empty($this->projects->id_analyste)) { ?>
-                    <tr>
-                        <th><label for="analyste">Analyste :</label></th>
-                        <td>
-                            <select name="analyste" id="analyste" class="select">
-                                <option value="0">Choisir</option>
-                                <?php foreach ($this->aAnalysts as $aAnalyst) { ?>
-                                    <option <?= ($this->projects->id_analyste == $aAnalyst['id_user'] ? 'selected' : '') ?> value="<?= $aAnalyst['id_user'] ?>"><?= $aAnalyst['firstname'] ?> <?= $aAnalyst['name'] ?></option>
-                                <?php } ?>
-                            </select>
-                        </td>
-                    </tr>
-                    <?php } ?>
                     <tr>
                         <th><label for="commercial">Commercial :</label></th>
                         <td>
@@ -422,7 +409,18 @@
                             </select>
                         </td>
                     </tr>
-                    <tr>
+                    <tr id="analysts-row"<?php if ($this->current_projects_status->status < \projects_status::ATTENTE_ANALYSTE && empty($this->projects->id_analyste)) { ?> style="display: none;"<?php } ?>>
+                        <th><label for="analyste">Analyste :</label></th>
+                        <td>
+                            <select name="analyste" id="analyste" class="select">
+                                <option value="0">Choisir</option>
+                                <?php foreach ($this->aAnalysts as $aAnalyst) { ?>
+                                    <option <?= ($this->projects->id_analyste == $aAnalyst['id_user'] ? 'selected' : '') ?> value="<?= $aAnalyst['id_user'] ?>"><?= $aAnalyst['firstname'] ?> <?= $aAnalyst['name'] ?></option>
+                                <?php } ?>
+                            </select>
+                        </td>
+                    </tr>
+                <tr>
                         <th><label for="status">Statut :</label></th>
                         <td id="current_statut">
                             <?php
@@ -471,9 +469,7 @@
                     <?php } ?>
                 </table>
                 <table class="form" style="width: 538px;">
-                    <?php
-                    if (in_array($this->current_projects_status->status, array(20, 31, 33, 35))) {
-                        ?>
+                    <?php if (in_array($this->current_projects_status->status, array(25, 31, 33, 35))) { ?>
                         <tr class="change_statut" <?= ($this->current_projects_status->status == 35 ? '' : 'style="display:none"') ?>>
                             <td colspan="2">
                                 <span id="msgProject" style="display:<?= $sDisplayMsgProject ?>;">Vous devez changer le statut du projet pour ajouter une date de publication et de retrait</span>
@@ -481,9 +477,8 @@
                                 <div class="block_cache change_statut"></div>
                             </td>
                         </tr>
-                        <?php
-                    }
-                    ?>
+                    <?php } ?>
+
                     <tr class="content_date_publicaion" <?= ($this->current_projects_status->status >= 35 ? '' : 'style="display:none"') ?>>
                         <th><label for="date_publication">Date de publication* :</label></th>
                         <td id="date_publication">
@@ -592,39 +587,27 @@
                             ?>
                         </td>
                     </tr>
-                    <?php
-                    if (isset($this->retour_dates_valides) && $this->retour_dates_valides != "") {
-                        ?>
+
+                    <?php if (isset($this->retour_dates_valides) && $this->retour_dates_valides != "") { ?>
                         <tr class="content_date_retrait">
                             <th></th>
                             <td style="color:red; font-weight:bold;"><?= $this->retour_dates_valides ?></td>
                         </tr>
-                        <?php
-                    }
-                    ?>
+                    <?php } ?>
+
                     <tr>
                         <td></td>
                         <td id="status_dossier">
-                            <?php
-                            if (in_array($this->current_projects_status->status, array(20))) {
-                                ?>
-                                <input  type="button" id="status_dosier_valider" class="btn" onClick="check_status_dossierV2(31,<?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
-                                <?php
-                            }
-                            if (in_array($this->current_projects_status->status, array(20))) {
-                                ?>
-                                <input type="button" id="status_dosier_rejeter" class="btn" onClick="check_status_dossierV2(30,<?= $this->projects->id_project ?>);" style="background:#CC0000;border-color:#CC0000;font-size:10px;" value="Rejeter dossier">
-                                <?php
-                            }
-                            ?>
+                        <?php if ($this->current_projects_status->status == \projects_status::EN_ATTENTE_PIECES) { ?>
+                            <input type="button" id="status_dosier_valider" class="btn" onclick="check_status_dossierV2(25, <?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
+                            <input type="button" id="status_dosier_rejeter" class="btn" onclick="check_status_dossierV2(30, <?= $this->projects->id_project ?>);" style="background:#CC0000;border-color:#CC0000;font-size:10px;" value="Rejeter dossier">
+                        <?php } ?>
                         </td>
                     </tr>
-                    <?php
-                    if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1) {
-                        ?>
+
+                    <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1) { ?>
                         <tr>
                             <th><label for="pouvoir">Pouvoir :</label></th>
-
                             <td>
                                 <div>
                                     <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>"><?= $this->projects_pouvoir->name ?></a>
@@ -639,29 +622,22 @@
                         <tr>
                             <th></th>
                             <td>
-                                <?php
-                                if ($this->projects_pouvoir->status_remb == '0' && $this->current_projects_status->status == 60) {
-                                    ?>
+                                <?php if ($this->projects_pouvoir->status_remb == '0' && $this->current_projects_status->status == 60) { ?>
                                     <select name="satut_pouvoir" id="satut_pouvoir" class="select">
                                         <option <?= ($this->projects_pouvoir->status_remb == '0' ? 'selected' : '') ?> value="0">En attente</option>
                                         <option <?= ($this->projects_pouvoir->status_remb == '1' ? 'selected' : '') ?> value="1">Validé</option>
                                     </select>
-                                    <?php
-                                }
-                                ?>
+                                <?php } ?>
                             </td>
                         </tr>
-                        <?php
-                    } elseif ($this->current_projects_status->status == 60) {// si projet fundé
-                        ?>
+                    <?php } elseif ($this->current_projects_status->status == \projects_status::FUNDE) { ?>
                         <tr>
                             <th><label for="upload_pouvoir">Pouvoir :</label></th>
                             <td><input type="file" name="upload_pouvoir" id="upload_pouvoir"/></td>
                         </tr>
-                        <?php
-                    }
-                    if ($this->current_projects_status->status == 60) {
-                        ?>
+                    <?php } ?>
+
+                    <?php if ($this->current_projects_status->status == \projects_status::FUNDE) { ?>
                         <tr>
                             <th>Prêt refusé :</th>
                             <td>
@@ -671,9 +647,7 @@
                                 </select>
                             </td>
                         </tr>
-                        <?php
-                    }
-                    ?>
+                    <?php } ?>
                 </table>
             </div>
             <style>
@@ -691,9 +665,10 @@
             <div style="display:none" class="recharge">
                 <script type="text/javascript">
                     $("#status").change(function () {
-                        if ($("#status").val() == 40) {
+                        var status = $("#status").val();
+                        if (status == <?= \projects_status::A_FUNDER ?>) {
                             $(".change_statut").hide();
-                        } else if ($("#status").val() != 80) {
+                        } else if (status != <?= \projects_status::REMBOURSEMENT ?>) {
                             $(".change_statut").show();
                         }
                     });

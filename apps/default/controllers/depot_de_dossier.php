@@ -605,7 +605,7 @@ class depot_de_dossierController extends bootstrap
                 $this->projects->process_fast = 1;
                 $this->projects->update();
 
-                $this->redirect(self::PAGE_NAME_FILES, \projects_status::EN_ATTENTE_PIECES);
+                $this->redirect(self::PAGE_NAME_FILES);
             } else {
                 $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
 
@@ -641,24 +641,6 @@ class depot_de_dossierController extends bootstrap
                     $this->email->addRecipient($sRecipient);
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
-
-                $this->mails_text->get('notification-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
-                $this->settings->get('Adresse notification inscription emprunteur', 'type');
-
-                $aReplacements = array(
-                    '[LIEN_REPRISE]'   => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
-                    '[MONTANT]'        => $this->projects->amount,
-                    '[RAISON_SOCIALE]' => utf8_decode($this->companies->name),
-                    '[SURL]'           => $this->surl
-                );
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
-                $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
-                $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->mails_text->content));
-                $this->email->addRecipient(trim($this->settings->value));
-
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
 
                 $this->clients->status = 1;
                 $this->clients->update();
@@ -797,7 +779,7 @@ class depot_de_dossierController extends bootstrap
 
             $this->sendCommercialEmail('notification-ajout-document-dossier');
 
-            $this->redirect(self::PAGE_NAME_END, \projects_status::A_TRAITER);
+            $this->redirect(self::PAGE_NAME_END);
         }
     }
 
@@ -1009,12 +991,15 @@ class depot_de_dossierController extends bootstrap
                 }
                 break;
             case \projects_status::COMPLETUDE_ETAPE_3:
-                if ($sPage !== self::PAGE_NAME_STEP_3) {
+                if ($this->projects->process_fast == 1 && $sPage !== self::PAGE_NAME_FILES) {
+                    $this->redirect(self::PAGE_NAME_FILES);
+                } elseif ($sPage !== self::PAGE_NAME_STEP_3) {
                     $this->redirect(self::PAGE_NAME_STEP_3);
                 }
                 break;
             case \projects_status::A_TRAITER:
             case \projects_status::EN_ATTENTE_PIECES:
+            case \projects_status::ATTENTE_ANALYSTE:
                 if (false === in_array($sPage, array(self::PAGE_NAME_END, self::PAGE_NAME_FILES))) {
                     $this->redirect(self::PAGE_NAME_FILES);
                 }

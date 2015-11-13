@@ -453,8 +453,6 @@ function valid_etape1(id_project) {
         etape: 1
     }
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
-        //alert(data);
-
         $("#siren").val($("#siren_etape1").val());
         $("#montant").val($("#montant_etape1").val())
         $('#duree option[value="' + $("#duree_etape1").val() + '"]').attr('selected', true);
@@ -579,8 +577,6 @@ function valid_etape2(id_project) {
         $("#telephone_prescripteur").html('');
     }
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
-        //alert(data);
-
         $("#title").val($("#raison_sociale_etape2").val());
         $("#prenom").val($("#prenom_etape2").val());
         $("#nom").val($("#nom_etape2").val());
@@ -621,8 +617,6 @@ function valid_etape3(id_project) {
         etape: 3
     }
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
-        //alert(data);
-
         $("#montant").val($("#montant_etape3").val());
         $("#montant_etape1").val($("#montant_etape3").val());
 
@@ -759,8 +753,6 @@ function valid_etape4(id_project) {
         etape: 4
     }
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
-        //alert(data);
-
         $("#valid_etape4").slideDown();
 
         setTimeout(function () {
@@ -796,8 +788,6 @@ function valid_etape6(id_project) {
         etape: 6
     }
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
-        //alert(data);
-
         $("#valid_etape6").slideDown();
 
         setTimeout(function () {
@@ -856,7 +846,6 @@ function loadDashYear(annee) {
         annee: annee
     }
     $.post(add_url + '/ajax/loadDashYear', val).done(function (data) {
-        //alert(data);
         if (data != 'nok') {
 
             $(".contentLoadYear").html(data);
@@ -866,7 +855,7 @@ function loadDashYear(annee) {
 }
 
 function check_status_dossierV2(status, id_project) {
-    if (status == 31) var message = 'passer en revue';
+    if (status == 25) var message = 'passer en revue';
     else if (status == 30) var message = 'rejeter';
 
     if (confirm('Etes vous sur de ' + message + ' le dossier ?') == true) {
@@ -875,14 +864,13 @@ function check_status_dossierV2(status, id_project) {
             id_project: id_project
         }).done(function (data) {
             if (data != 'nok') {
-                var obj = jQuery.parseJSON(data);
-                var liste = obj.liste;
-                var etape_6 = obj.etape_6;
+                var obj = jQuery.parseJSON(data),
+                    liste = obj.liste,
+                    etape_6 = obj.etape_6;
 
-
+                $('#analysts-row').show();
                 $('#current_statut').html(liste);
                 $('#status_dossier').remove();
-
                 $('#content_etape6').html(etape_6);
             }
             else if (data == 'nok') {

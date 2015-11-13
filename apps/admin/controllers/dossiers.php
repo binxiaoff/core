@@ -603,6 +603,22 @@ class dossiersController extends bootstrap
                         }
                     }
 
+                    if (
+                        $_POST['commercial'] > 0
+                        && $_POST['commercial'] != $this->projects->id_commercial
+                        && $this->current_projects_status < \projects_status::EN_ATTENTE_PIECES
+                    ) {
+                        $_POST['status'] = \projects_status::EN_ATTENTE_PIECES;
+                    }
+
+                    if (
+                        $_POST['analyste'] > 0
+                        && $_POST['analyste'] != $this->projects->id_analyste
+                        && $this->current_projects_status < \projects_status::REVUE_ANALYSTE
+                    ) {
+                        $_POST['status'] = \projects_status::REVUE_ANALYSTE;
+                    }
+
                     $this->projects->title          = $_POST['title'];
                     $this->projects->title_bo       = $_POST['title_bo'];
                     $this->projects->period         = $_POST['duree'];
@@ -615,13 +631,13 @@ class dossiersController extends bootstrap
                     $this->projects->display        = $_POST['display_project'];
 
                     // en prep funding
-                    if ($this->current_projects_status->status >= 35) {
+                    if ($this->current_projects_status->status >= \projects_status::PREP_FUNDING) {
                         $this->projects->risk = $_POST['risk'];
                     }
 
                     // --- Génération du slug --- //
                     // Génération du slug avec titre projet fo
-                    if ($this->current_projects_status->status <= 40) {
+                    if ($this->current_projects_status->status <= \projects_status::A_FUNDER) {
                         $leSlugProjet         = $this->ficelle->generateSlug($this->projects->title . '-' . $this->projects->id_project);
                         $this->projects->slug = $leSlugProjet;
                     }
@@ -629,7 +645,7 @@ class dossiersController extends bootstrap
                     $this->projects->update();
                     // --- Fin Génération du slug --- //
                     // en prep funding
-                    if ($this->current_projects_status->status >= 35) {
+                    if ($this->current_projects_status->status >= \projects_status::PREP_FUNDING) {
                         if (isset($_POST['date_publication']) && ! empty($_POST['date_publication'])) {
                             $this->projects->date_publication = $this->dates->formatDateFrToMysql($_POST['date_publication']);
                             // Récupération des heures/minutes/sec
@@ -646,8 +662,7 @@ class dossiersController extends bootstrap
                         $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
 
                         // Si statut a funder, en funding ou fundé
-                        if (in_array($_POST['status'], array(40, 50, 60))) {
-                            //mail('courtier.damien@gmail.com','alert change statut 1','statut : '.$_POST['status'].' projet : '.$this->projects->id_project );
+                        if (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
                             /////////////////////////////////////
                             // Partie check données manquantes //
                             /////////////////////////////////////
@@ -765,7 +780,7 @@ class dossiersController extends bootstrap
                         }
 
                         // si statut = default
-                        if ($_POST['status'] == '120') {
+                        if ($_POST['status'] == \projects_status::DEFAUT) {
                             // on envoie un mail aux preteurs
                             $lPreteurs = $this->loans->select('id_project = ' . $this->projects->id_project);
 
@@ -778,7 +793,7 @@ class dossiersController extends bootstrap
                             // Twitter
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
-                        } elseif ($_POST['status'] == '100') {
+                        } elseif ($_POST['status'] == \projects_status::PROBLEME) {
                             $lPreteurs = $this->loans->select('id_project = ' . $this->projects->id_project);
 
                             $this->companies->get($this->projects->id_company, 'id_company');
@@ -854,7 +869,7 @@ class dossiersController extends bootstrap
                                     // fin mail pour preteur //
                                 }
                             }
-                        } elseif ($_POST['status'] == '110') {
+                        } elseif ($_POST['status'] == \projects_status::RECOUVREMENT) {
                             // date du dernier probleme
                             $statusProbleme = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 9', 'added DESC');
                             $DateProbleme   = date('d/m/Y', strtotime($statusProbleme[0]['added']));
@@ -907,7 +922,7 @@ class dossiersController extends bootstrap
                                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
                                 }
                             }
-                        } elseif ($_POST['status'] == '90') {
+                        } elseif ($_POST['status'] == \projects_status::REMBOURSE) {
                             // date du dernier probleme
                             $statusProbleme = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 9', 'added DESC');
                             $DateProbleme   = date('d/m/Y', strtotime($statusProbleme[0]['added']));
@@ -952,7 +967,6 @@ class dossiersController extends bootstrap
                         }
                     }
 
-                    // Companies
                     $this->companies->siren           = $_POST['siren'];
                     $this->companies->siret           = $_POST['siret'];
                     $this->companies->name            = $_POST['societe'];
@@ -961,8 +975,6 @@ class dossiersController extends bootstrap
                     $this->companies->id_client_owner = $_POST['id_client'];
                     $this->companies->code_naf        = $_POST['code_naf'];
                     $this->companies->libelle_naf     = $_POST['libelle_naf'];
-                    //$this->companies->risk = $_POST['risk'];
-
                     $this->companies->tribunal_com = $_POST['tribunal_com'];
                     $this->companies->activite     = $_POST['activite'];
                     $this->companies->lieu_exploi  = $_POST['lieu_exploi'];
@@ -979,7 +991,6 @@ class dossiersController extends bootstrap
                         $this->clients_adresses->telephone = $_POST['phone'];
                     }
 
-                    // Clients
                     $this->clients->get($this->companies->id_client_owner, 'id_client');
                     $this->clients->prenom = $this->ficelle->majNom($_POST['prenom']);
                     $this->clients->nom    = $this->ficelle->majNom($_POST['nom']);
@@ -990,7 +1001,6 @@ class dossiersController extends bootstrap
                     $this->clients_adresses->update();
 
                     if (isset($_POST['pret_refuse']) && $_POST['pret_refuse'] == 1) {
-                        // Chargement des datas
                         $loans         = $this->loadData('loans');
                         $transactions  = $this->loadData('transactions');
                         $lenders       = $this->loadData('lenders_accounts');
@@ -1017,11 +1027,9 @@ class dossiersController extends bootstrap
                         $companies->get($this->projects->id_company, 'id_company');
 
                         foreach ($lesloans as $l) {
-
                             // On regarde si on a pas deja un remb pour ce bid
 
                             if ($transactions->get($l['id_loan'], 'id_loan_remb') == false) {
-
                                 // On recup le projet
                                 // On recup l'entreprise
 
