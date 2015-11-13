@@ -155,8 +155,10 @@ class projects_status extends projects_status_crud
                 case self::ABANDON:
                     return $this->select('id_project_status = ' . $oProjectStatusHistory->getBeforeLastStatut($iProjectId) . ' OR status = ' . $this->status);
                 case self::A_TRAITER:
-                case self::EN_ATTENTE_PIECES:
                     $sPossibleStatus = 'status BETWEEN ' . self::ABANDON . ' AND ' . self::EN_ATTENTE_PIECES;
+                    break;
+                case self::EN_ATTENTE_PIECES:
+                    $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . self::EN_ATTENTE_PIECES . ')';
                     break;
                 case self::PREP_FUNDING:
                     $sPossibleStatus = 'status IN (' . self::PREP_FUNDING . ',' . self::A_FUNDER . ')';
