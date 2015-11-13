@@ -398,7 +398,7 @@
                             <a id="link_search" class="btn_link thickbox" onclick="$(this).attr('href', '<?= $this->lurl ?>/dossiers/changeClient/' + $('#search').val());" href="<?= $this->lurl ?>/dossiers/changeClient/">Rechercher</a>
                         </td>
                     </tr>
-                    <?php if ($this->current_projects_status->status >= \projects_status::EN_ATTENTE_PIECES) { ?>
+                    <?php if ($this->current_projects_status->status >= \projects_status::ATTENTE_ANALYSTE || false === empty($this->projects->id_analyste)) { ?>
                     <tr>
                         <th><label for="analyste">Analyste :</label></th>
                         <td>
@@ -444,7 +444,7 @@
                                         $sDisplayMsgPeriodHs = 'block';
                                         $sDisplayMsgProject  = 'none';
                                     }
-                            ?>
+                                ?>
                                     <span id="displayPeriodHS" style="display:<?= $sDisplayPeriodHS ?>;">
                                         <?= $this->current_projects_status->label ?>
                                     </span>
