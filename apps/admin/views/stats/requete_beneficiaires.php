@@ -111,7 +111,7 @@
                     }
 
                     // on veut adresse fiscal
-                    if ($this->clients_adresses->meme_adresse_fiscal == 0) {
+                    if ($this->clients_adresses->meme_adresse_fiscal == 1) {
                         $adresse_fiscal = trim($this->clients_adresses->adresse1);
                         $cp_fiscal      = trim($this->clients_adresses->cp);
                         $ville_fiscal   = trim($this->clients_adresses->ville);

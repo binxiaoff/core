@@ -204,8 +204,12 @@ class inscription_preteurController extends bootstrap
             ////////////////////////////////////
             // On verifie meme adresse ou pas //
             ////////////////////////////////////
-            if($_POST['mon-addresse'] != false) $this->clients_adresses->meme_adresse_fiscal = 1; // la meme
-            else $this->clients_adresses->meme_adresse_fiscal = 0; // pas la meme
+            if($_POST['mon-addresse'] != false) {// la meme
+                $this->clients_adresses->meme_adresse_fiscal = 1;
+            }
+            else {// pas la meme
+                $this->clients_adresses->meme_adresse_fiscal = 0;
+            }
 
             // Mon adresse fiscale
             $this->clients_adresses->adresse_fiscal = $_POST['adresse_inscription'];
