@@ -7,7 +7,7 @@
                 <table class="form-table">
                     <tr>
                         <th colspan="2" style="text-align: left;">
-                            <?= $this->lng['etape3']['ligne-derniere-liasse-fiscal'] ?>
+                            <?= $this->lng['etape3']['ligne-derniere-liasse-fiscale'] ?>
                         </th>
                     </tr>
                     <tr>
@@ -57,7 +57,7 @@
                     </tr>
                     <tr>
                         <td>
-                            <label class="inline-text"><?= $this->lng['etape3']['liasse-fiscal'] ?></label>
+                            <label class="inline-text"><?= $this->lng['etape3']['liasse-fiscale'] ?></label>
                         </td>
                         <td class="uploader">
                             <input id="liasse_fiscal" type="text"
