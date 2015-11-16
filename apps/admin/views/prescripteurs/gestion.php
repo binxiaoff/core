@@ -45,7 +45,7 @@
     <?php if (isset($_POST['form_search_prescripteur'])) { ?>
         <h1>Résultats de la recherche d'un prescripteur <?= count($this->aPrescripteurs) > 0 ? '(' . count($this->aPrescripteurs) . ')' : '' ?></h1>
     <?php } elseif (isset($this->aPrescripteurs)) { ?>
-        <h1>Liste des <?=count($this->aPrescripteurs)?> derniers prescripteurs</h1>
+        <h1>Liste des <?= count($this->aPrescripteurs) ?> derniers prescripteurs</h1>
     <?php } ?>
     <div class="btnDroite"><a href="<?=$this->lurl?>/prescripteurs/add_client" class="btn_link thickbox">Ajouter un prescripteur</a></div>
     <div class="search-form-container">

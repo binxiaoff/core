@@ -29,13 +29,13 @@ class prescripteursController extends bootstrap
 
         if (isset($this->params[0]) && is_numeric($this->params[0])) {
             $this->aPrescripteurs = $oClients->searchPrescripteur($this->params[0]);
-        }
-
-        if (isset($_POST['form_search_prescripteur'])) {
+        } elseif (isset($_POST['form_search_prescripteur'])) {
             $this->aPrescripteurs = $oClients->searchPrescripteur('', $_POST['nom'], $_POST['prenom'], $_POST['email'], $_POST['company_name'], $_POST['siren']);
 
             $_SESSION['freeow']['title']   = 'Recherche d\'un prescripteur';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
+        } else {
+            $this->aPrescripteurs = $oClients->searchPrescripteur('', '', '', '', '', '', '', 10);
         }
     }
 
