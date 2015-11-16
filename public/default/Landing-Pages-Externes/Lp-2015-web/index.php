@@ -87,10 +87,8 @@
                     <input type="text" id="inscription_question" name="question" placeholder="Choisissez une question secrète" maxlength="255">
                     <input type="text" id="inscription_reponse" name="reponse" placeholder="Choisissez une réponse" maxlength="255">
                     <input type="text" id="inscription_adresse_fiscale" name="adresse_fiscale" placeholder="Adresse*" maxlength="255">
-                    <input type="text" id="inscription_cp_fiscale" name="cp_fiscale" placeholder="Code postal*" maxlength="5"
-                           data-autocomplete="post_code" onblur="controleCp($(this), $('#inscription_id_pays_fiscale'))" />
-                    <input type="text" id="inscription_ville_fiscale" name="ville_fiscale" placeholder="Ville*" maxlength="255"
-                           data-autocomplete="city" onblur="controleCity($(this), $('#inscription_id_pays_fiscale'))" >
+                    <input type="text" id="inscription_cp_fiscale" name="cp_fiscale" placeholder="Code postal*" maxlength="5" data-autocomplete="post_code">
+                    <input type="text" id="inscription_ville_fiscale" name="ville_fiscale" placeholder="Ville*" maxlength="255" data-autocomplete="city">
                     <select id="inscription_id_pays_fiscale" name="id_pays_fiscale" class="custom-select">
                         <option value="">Pays*</option>
                         <option value="1">France </option>
@@ -294,10 +292,8 @@
                     </div>
                     <div id="inscription_correspondance">
                         <input type="text" id="inscription_adresse_correspondance" name="adresse" placeholder="Adresse" maxlength="255">
-                        <input type="text" id="inscription_cp_correspondance" name="cp" placeholder="Code postal" maxlength="5"
-                               data-autocomplete="post_code" onblur="controleCp($(this), $('#inscription_id_pays_correspondance'))">
-                        <input type="text" id="inscription_ville_correspondance" name="ville" placeholder="Ville" maxlength="255"
-                               data-autocomplete="city" onblur="controleCity($(this), $('#inscription_id_pays_correspondance'))">
+                        <input type="text" id="inscription_cp_correspondance" name="cp" placeholder="Code postal" maxlength="5" data-autocomplete="post_code">
+                        <input type="text" id="inscription_ville_correspondance" name="ville" placeholder="Ville" maxlength="255" data-autocomplete="city">
                         <select id="inscription_id_pays_correspondance" name="id_pays" class="custom-select">
                             <option value="">Pays</option>
                             <option value="1">France </option>
@@ -1575,48 +1571,6 @@
                     });
                 }
             });
-        }
-
-        function controleCp(elmCp, elmCountry, async)
-        {
-            async = typeof async !== 'undefined' ? async : true;
-            var result = false;
-            $.ajax({
-                url: '<?= $url_site ?>/ajax/checkPostCode/' + elmCp.val() + '/' + elmCountry.val(),
-                method: 'GET',
-                async: async
-            }).done(function(data){
-                if (data == 'ok') {
-                    elmCp.removeClass('error');
-                    result = true;
-                } else {
-                    elmCp.addClass('error');
-                    result = false;
-                }
-            });
-
-            return result;
-        }
-
-        function controleCity(elmCity, elmCountry, async)
-        {
-            async = typeof async !== 'undefined' ? async : true;
-            var result = false;
-            $.ajax({
-                url: '<?= $url_site ?>/ajax/checkCity/' + elmCity.val() + '/' + elmCountry.val(),
-                method: 'GET',
-                async: async
-            }).done(function(data){
-                if (data == 'ok') {
-                    elmCity.removeClass('error');
-                    result = true;
-                } else {
-                    elmCity.addClass('error');
-                    result = false;
-                }
-            });
-
-            return result;
         }
 
         function controlePostCodeCity(elmCp, elmCity, elmCountry, async)

@@ -243,27 +243,6 @@ function acceptCookies()
     });
 }
 
-function controleCp(elmCp, elmCountry, async)
-{
-    async = typeof async !== 'undefined' ? async : true;
-    var result = false;
-    $.ajax({
-        url: add_url + '/ajax/checkPostCode/' + elmCp.val() + '/' + elmCountry.val(),
-        method: 'GET',
-        async: async
-    }).done(function(data){
-        if (data == 'ok') {
-            elmCp.addClass('LV_valid_field').removeClass('LV_invalid_field');
-            result = true;
-        } else {
-            elmCp.addClass('LV_invalid_field').removeClass('LV_valid_field');
-            result = false;
-        }
-    });
-
-    return result;
-}
-
 function controleCity(elmCity, elmCountry, async)
 {
     async = typeof async !== 'undefined' ? async : true;

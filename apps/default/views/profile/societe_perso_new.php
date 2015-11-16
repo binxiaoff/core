@@ -59,9 +59,9 @@
             </div><!-- /.row -->
 
             <div class="row row-triple-fields">
-                <input type="text" name="postalE" id="postalE" class="field field-small required" data-autocomplete="post_code" onblur="controleCp($(this), $('#pays1E'))"
+                <input type="text" name="postalE" id="postalE" class="field field-small required" data-autocomplete="post_code"
                        placeholder="<?=$this->lng['etape1']['code-postal']?>" title="<?= $this->lng['etape1']['code-postal'] ?>" value="<?= ($this->companies->zip != 0 ? $this->companies->zip : '') ?>" />
-                <input type="text" id="ville_inscriptionE" name="ville_inscriptionE" class="field field-small required" data-autocomplete="city" onblur="controleCity($(this), $('#pays1E'))"
+                <input type="text" id="ville_inscriptionE" name="ville_inscriptionE" class="field field-small required" data-autocomplete="city"
                        placeholder="<?=$this->lng['etape1']['ville']?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->companies->city != '' ? $this->companies->city : '') ?>" />
 
                 <?php //Ajout CM 06/08/14 ?>
@@ -94,9 +94,9 @@
                 </div><!-- /.row -->
 
                 <div class="row row-triple-fields">
-                    <input type="text" id="postal2E" name="postal2E" class="field field-small required" data-autocomplete="post_code" onblur="controleCp($('#postal2E'), $('#pays2E'))"
+                    <input type="text" id="postal2E" name="postal2E" class="field field-small required" data-autocomplete="post_code"
                            placeholder="<?=$this->lng['etape1']['code-postal']?>" value="<?= ($this->clients_adresses->cp != 0 ? $this->clients_adresses->cp : '') ?>" title="<?= $this->lng['etape1']['code-postal'] ?>" />
-                    <input type="text" id="ville2E" name="ville2E" class="field field-small required" data-autocomplete="city" onblur="controleCity($(this), $('#pays2E'))"
+                    <input type="text" id="ville2E" name="ville2E" class="field field-small required" data-autocomplete="city"
                            placeholder="<?=$this->lng['etape1']['ville']?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->clients_adresses->ville != '' ? $this->clients_adresses->ville : '') ?>" />
                     <?php //Ajout CM 06/08/14 ?>
                     <select name="pays2E" id="pays2E" class="custom-select <?=$required?> field-small">

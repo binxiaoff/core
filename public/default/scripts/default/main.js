@@ -355,7 +355,7 @@ function initAutocompleteCity()
                     if ($(this).data('autocomplete') == 'birth_city'){
                         $("#insee_birth").val('');
                     }
-                    $(this).removeClass('LV_valid_field');
+                    $(this).removeClass('LV_invalid_field');
                 },
 
                 select: function( event, ui ) {
