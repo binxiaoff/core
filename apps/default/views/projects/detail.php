@@ -690,7 +690,7 @@ if ($this->projects_status->status != 50 || $this->page_attente == true) {
                     </li>
                 </ul>
                 <div class="single-project-progress-bar">
-                    <span style="width: <?= number_format($this->pourcentage, $this->decimalesPourcentage, '.', '') ?>%"><small><?= number_format($this->pourcentage, $this->decimalesPourcentage, '.', '') ?>%</small></span>
+                    <span style="width: <?= number_format($this->pourcentage, $this->decimalesPourcentage, '.', '') ?>%"><small><?= number_format($this->pourcentage, $this->decimalesPourcentage, ',', '') ?>%</small></span>
                 </div>
             </div>
             <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $this->projects->photo_projet ?>" alt="<?= $this->projects->photo_projet ?>">
