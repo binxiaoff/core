@@ -820,6 +820,9 @@
                 <h2>Envoi des CGV</h2>
                 <a href="<?= $this->lurl ?>/dossiers/send_cgv_ajax/<?= $this->projects->id_project ?>" class="btn_link thickbox cboxElement">Envoyer</a>
             </div>
+
+            <?php if (in_array($this->current_projects_status->status, array(\projects_status::EN_ATTENTE_PIECES, \projects_status::ATTENTE_ANALYSTE, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING))) { ?>
+            <br />
             <br />
             <div id="send_completeness">
                 <h2>Complétude - Personnalisation du message</h2>
@@ -837,10 +840,8 @@
                     </table>
                 </div>
                 <br />
-
                 <h3 class="test">Listes : </h3>
                 <div class="content_li_wording"></div>
-
                 <fieldset style="width:100%;">
                     <table class="formColor" style="width:100%;">
                         <tr>
@@ -857,7 +858,7 @@
                     </table>
                 </fieldset>
             </div>
-
+            <?php } ?>
         </div>
         <br/>
 
