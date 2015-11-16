@@ -1201,6 +1201,14 @@ class dossiersController extends bootstrap
                                     $bank_unilend->montant        = $partUnliend * 100;
                                     $bank_unilend->create();
 
+                                    //Account Unilend - initial commission
+                                    $oAccountUnilend = $this->loadData('platform_account_unilend');
+                                    $oAccountUnilend->id_transaction = $this->transactions->id_transaction;
+                                    $oAccountUnilend->id_project     = $this->projects->id_project;
+                                    $oAccountUnilend->amount         = $partUnliend * 100;
+                                    $oAccountUnilend->type           = platform_account_unilend::TYPE_INITIAL_COMMISSION;
+                                    $oAccountUnilend->create();
+
                                     // Motif mandat emprunteur
                                     $motif = $this->ficelle->motif_mandat($this->clients->prenom, $this->clients->nom, $this->projects->id_project);
 
