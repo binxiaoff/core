@@ -3804,12 +3804,12 @@ class dossiersController extends bootstrap
         $sBorrowerPhoneNumber = $this->settings->value;
 
         return array(
-            'adresse_emprunteur'   => $sBorrowerEmail,
-            'telephone_emprunteur' => $sBorrowerPhoneNumber,
             'furl'                 => $this->furl,
             'surl'                 => $this->surl,
-            'prenom'               => $oClients->prenom,
-            'raison_sociale'       => $oCompanies->name,
+            'adresse_emprunteur'   => $sBorrowerEmail,
+            'telephone_emprunteur' => $sBorrowerPhoneNumber,
+            'prenom'               => utf8_decode($oClients->prenom),
+            'raison_sociale'       => utf8_decode($oCompanies->name),
             'lien_reprise_dossier' => $this->furl . '/depot_de_dossier/fichiers/' . $oProjects->hash,
             'liste_pieces'         => isset($_SESSION['project_submission_files_list'][$oProjects->id_project]) ? utf8_encode($_SESSION['project_submission_files_list'][$oProjects->id_project]) : '',
             'lien_fb'              => $lien_fb,
