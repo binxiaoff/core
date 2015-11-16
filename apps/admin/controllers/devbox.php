@@ -21,169 +21,80 @@ class devboxController extends bootstrap
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
 
-        $this->bdd->query("
-            INSERT INTO attachment_type (id, label) VALUES
-              (30, 'Relevé de compte bancaire du mois précédent'),
-              (31, 'Relevé de compte bancaire du mois N-1'),
-              (32, 'Relevé de compte bancaire du mois N-2'),
-              (33, 'Présentation de l''entreprise'),
-              (34, 'Etat d''endettement'),
-              (35, 'Liasse fiscale année N-1'),
-              (36, 'Liasse fiscale année N-2'),
-              (37, 'Rapport des CAC'),
-              (38, 'Prévisionnel'),
-              (39, 'Balance client'),
-              (40, 'Balance fournisseur'),
-              (41, 'Etat des privilèges et nantissements'),
-              (42, 'Autre 4'),
-              (43, 'CGV'),
-              (44, 'CNI du bénéficiaire effectif 1'),
-              (45, 'CNI du bénéficiaire effectif 1 verso'),
-              (46, 'CNI du bénéficiaire effectif 2'),
-              (47, 'CNI du bénéficiaire effectif 2 verso'),
-              (48, 'CNI du bénéficiaire effectif 3'),
-              (49, 'CNI du bénéficiaire effectif 3 verso'),
-              (50, 'Situation comptable intermédiaire'),
-              (51, 'Derniers comptes consolides groupe')
-              "
-        );
-
-        /**
-         * Nombre d'attachments à transférer des sociétés vers les
-         * Pour chacune des sociétés qui ont des attachments, boucler sur tous les projets et insérer le(s) attachment(s) de la société
-         * Le faire également pour les fichiers en eux même sur le disque
-         */
-        $this->bdd->query("
-            SELECT (COUNT(DISTINCT fichier_annexes_rapport_special_commissaire_compte)
-               + COUNT(DISTINCT fichier_arret_comptable_recent)
-               + COUNT(DISTINCT fichier_autre_1)
-               + COUNT(DISTINCT fichier_autre_2)
-               + COUNT(DISTINCT fichier_autre_3)
-               + COUNT(DISTINCT fichier_budget_exercice_en_cours_a_venir)
-               + COUNT(DISTINCT fichier_cni_passeport)
-               + COUNT(DISTINCT fichier_delegation_pouvoir)
-               + COUNT(DISTINCT fichier_dernier_bilan_certifie)
-               + COUNT(DISTINCT fichier_derniere_liasse_fiscale)
-               + COUNT(DISTINCT fichier_derniers_comptes_approuves)
-               + COUNT(DISTINCT fichier_derniers_comptes_consolides_groupe)
-               + COUNT(DISTINCT fichier_extrait_kbis)
-               + COUNT(DISTINCT fichier_logo_societe)
-               + COUNT(DISTINCT fichier_notation_banque_france)
-               + COUNT(DISTINCT fichier_rib)
-               + COUNT(DISTINCT fichier_photo_dirigeant)
-               - 17) AS cnt
-            FROM projects
-            INNER JOIN projects_last_status_history USING (id_project)
-            INNER JOIN projects_status_history USING (id_project_status_history)
-            INNER JOIN companies_details USING (id_company)
-            WHERE id_project_status NOT IN(21, 22)"
-        );
-
-        //Migration des donées
         $this->migrateCompanyAttachment();
 
-        // Modify the folders on the server
         $this->path;
-        if (false === is_dir($this->path.'protected/companies/autre')) {
-            mkdir($this->path.'protected/companies/autre');
+        if (false === is_dir($this->path . 'protected/companies/autre')) {
+            mkdir($this->path . 'protected/companies/autre');
         }
-        if (false === is_dir($this->path.'protected/companies/autre2')) {
-            mkdir($this->path.'protected/companies/autre2');
+        if (false === is_dir($this->path . 'protected/companies/autre2')) {
+            mkdir($this->path . 'protected/companies/autre2');
         }
-        if (false === is_dir($this->path.'protected/companies/autre3')) {
-            mkdir($this->path.'protected/companies/autre3');
+        if (false === is_dir($this->path . 'protected/companies/autre3')) {
+            mkdir($this->path . 'protected/companies/autre3');
         }
-        if (false === is_dir($this->path.'protected/companies/autre4')) {
-            mkdir($this->path.'protected/companies/autre4');
-        }
-
-        if (false === rename($this->path.'protected/companies/delegation_pouvoir', $this->path.'protected/companies/cgv')) {
-            echo 'Error: rename /protected/companies/delegation_pouvoir to /protected/companies/cgv'.PHP_EOL;
+        if (false === is_dir($this->path . 'protected/companies/autre4')) {
+            mkdir($this->path . 'protected/companies/autre4');
         }
 
-        $this->copyFolder($this->path.'public/default/var/images/logos_companies', $this->path.'protected/companies/autre');
-
-        if (false === rename($this->path.'protected/companies/photo_dirigeant', $this->path.'protected/companies/cni_passeport_verso')) {
-            echo 'Error: rename /protected/companies/photo_dirigeant to /protected/companies/cni_passeport_verso'.PHP_EOL;
+        if (false === rename($this->path . 'protected/companies/delegation_pouvoir', $this->path . 'protected/companies/cgv')) {
+            echo 'Error: rename /protected/companies/delegation_pouvoir to /protected/companies/cgv' . PHP_EOL;
         }
 
-        if (false === rename($this->path.'protected/companies/derniere_liasse_fiscale', $this->path.'protected/companies/liasse_fiscale')) {
-            echo 'Error: rename /protected/companies/derniere_liasse_fiscale to /protected/companies/liasse_fiscale'.PHP_EOL;
+        $this->copyFolder($this->path . 'public/default/var/images/logos_companies', $this->path . 'protected/companies/autre');
+
+        if (false === rename($this->path . 'protected/companies/photo_dirigeant', $this->path . 'protected/companies/cni_passeport_verso')) {
+            echo 'Error: rename /protected/companies/photo_dirigeant to /protected/companies/cni_passeport_verso' . PHP_EOL;
         }
 
-        if (false === rename($this->path.'protected/companies/derniers_comptes_approuves', $this->path.'protected/companies/liasse_fiscale_n_1')) {
-            echo 'Error: rename /protected/companies/derniers_comptes_approuves to /protected/companies/liasse_fiscale_n_1'.PHP_EOL;
+        if (false === rename($this->path . 'protected/companies/derniere_liasse_fiscale', $this->path . 'protected/companies/liasse_fiscale')) {
+            echo 'Error: rename /protected/companies/derniere_liasse_fiscale to /protected/companies/liasse_fiscale' . PHP_EOL;
         }
 
-        if (false === rename($this->path.'protected/companies/dernier_bilan_certifie', $this->path.'protected/companies/liasse_fiscale_n_2')) {
-            echo 'Error: rename /protected/companies/dernier_bilan_certifie to /protected/companies/liasse_fiscale_n_2'.PHP_EOL;
+        if (false === rename($this->path . 'protected/companies/derniers_comptes_approuves', $this->path . 'protected/companies/liasse_fiscale_n_1')) {
+            echo 'Error: rename /protected/companies/derniers_comptes_approuves to /protected/companies/liasse_fiscale_n_1' . PHP_EOL;
         }
 
-        if (false === rename($this->path.'protected/companies/arret_comptable_recent', $this->path.'protected/companies/situation_comptable_intermediaire')) {
-            echo 'Error: rename /protected/companies/arret_comptable_recent to /protected/companies/situation_comptable_intermediaire'.PHP_EOL;
+        if (false === rename($this->path . 'protected/companies/dernier_bilan_certifie', $this->path . 'protected/companies/liasse_fiscale_n_2')) {
+            echo 'Error: rename /protected/companies/dernier_bilan_certifie to /protected/companies/liasse_fiscale_n_2' . PHP_EOL;
         }
 
-        if (false === rename($this->path.'protected/companies/budget_exercice_en_cours_a_venir', $this->path.'protected/companies/previsionnel')) {
-            echo 'Error: rename /protected/companies/budget_exercice_en_cours_a_venir to /protected/companies/previsionnel'.PHP_EOL;
+        if (false === rename($this->path . 'protected/companies/arret_comptable_recent', $this->path . 'protected/companies/situation_comptable_intermediaire')) {
+            echo 'Error: rename /protected/companies/arret_comptable_recent to /protected/companies/situation_comptable_intermediaire' . PHP_EOL;
         }
 
-        $this->copyFolder($this->path.'protected/companies/autres', $this->path.'protected/companies/autre2');
-
-        $this->copyFolder($this->path.'protected/companies/autres', $this->path.'protected/companies/autre3');
-
-        $this->copyFolder($this->path.'protected/companies/autres', $this->path.'protected/companies/autre4');
-
-        //delete autres
-        if (false === $this->delTree($this->path.'protected/companies/autres')) {
-            echo 'Error: remove protected/companies/autres'.PHP_EOL;
+        if (false === rename($this->path . 'protected/companies/budget_exercice_en_cours_a_venir', $this->path . 'protected/companies/previsionnel')) {
+            echo 'Error: rename /protected/companies/budget_exercice_en_cours_a_venir to /protected/companies/previsionnel' . PHP_EOL;
         }
 
-        // move all files
-        $files = scandir($this->path.'protected/companies/notation_banque_france');
+        $this->copyFolder($this->path . 'protected/companies/autres', $this->path . 'protected/companies/autre2');
+        $this->copyFolder($this->path . 'protected/companies/autres', $this->path . 'protected/companies/autre3');
+        $this->copyFolder($this->path . 'protected/companies/autres', $this->path . 'protected/companies/autre4');
 
-        $source = $this->path.'protected/companies/notation_banque_france/';
-        $destination = $this->path.'protected/companies/autre2/';
+        if (false === $this->delTree($this->path . 'protected/companies/autres')) {
+            echo 'Error: remove protected/companies/autres' . PHP_EOL;
+        }
+
+        $files       = scandir($this->path . 'protected/companies/notation_banque_france');
+        $source      = $this->path . 'protected/companies/notation_banque_france/';
+        $destination = $this->path . 'protected/companies/autre2/';
 
         foreach ($files as $file) {
-            if (in_array($file, array(".",".."))) {
+            if (in_array($file, array(".", ".."))) {
                 continue;
             }
-            if (false === rename($source.$file, $destination.$file)) {
-                echo 'Error: rename '.$source.$file.' to '.$destination.$file.PHP_EOL;
+            if (false === rename($source . $file, $destination . $file)) {
+                echo 'Error: rename ' . $source . $file . ' to ' . $destination . $file . PHP_EOL;
             }
         }
 
-        //delete notation_banque_france
-        if (false === $this->delTree($this->path.'protected/companies/notation_banque_france')) {
-            echo 'Error: remove protected/companies/notation_banque_france'.PHP_EOL;
+        if (false === $this->delTree($this->path . 'protected/companies/notation_banque_france')) {
+            echo 'Error: remove protected/companies/notation_banque_france' . PHP_EOL;
         }
 
-        if (false === rename($this->path.'protected/companies', $this->path.'protected/projects')) {
-            echo 'Error: rename /protected/companies to /protected/projects'.PHP_EOL;
+        if (false === rename($this->path . 'protected/companies', $this->path . 'protected/projects')) {
+            echo 'Error: rename /protected/companies to /protected/projects' . PHP_EOL;
         }
-
-        // Une fois tous les attachments transférés, on supprime les anciennes colonnes
-        // Backuper la table companies_details avant
-        $this->bdd->query("
-            ALTER TABLE companies_details
-              DROP COLUMN fichier_extrait_kbis,
-              DROP COLUMN fichier_rib,
-              DROP COLUMN fichier_delegation_pouvoir,
-              DROP COLUMN fichier_logo_societe,
-              DROP COLUMN fichier_photo_dirigeant,
-              DROP COLUMN fichier_dernier_bilan_certifie,
-              DROP COLUMN fichier_cni_passeport,
-              DROP COLUMN fichier_derniere_liasse_fiscale,
-              DROP COLUMN fichier_derniers_comptes_approuves,
-              DROP COLUMN fichier_derniers_comptes_consolides_groupe,
-              DROP COLUMN fichier_annexes_rapport_special_commissaire_compte,
-              DROP COLUMN fichier_arret_comptable_recent,
-              DROP COLUMN fichier_budget_exercice_en_cours_a_venir,
-              DROP COLUMN fichier_notation_banque_france,
-              DROP COLUMN fichier_autre_1,
-              DROP COLUMN fichier_autre_2,
-              DROP COLUMN fichier_autre_3"
-        );
     }
 
     // Ressort un csv avec les process des usersw≤
@@ -191,7 +102,7 @@ class devboxController extends bootstrap
     {
         // récup de tous les clients crée depuis le 1 aout
         $this->clients = $this->loadData('clients');
-        $l_clients = $this->clients->select();
+        $l_clients     = $this->clients->select();
     }
 
     public function _listes_repartitions_old()
@@ -1310,28 +1221,26 @@ class devboxController extends bootstrap
 
     private function migrateCompanyAttachment()
     {
-        $oAttachment       = $this->loadData('attachment');
+        $oAttachment = $this->loadData('attachment');
         $this->loadData('attachment_type');
         $oCompaniesDetails = $this->loadData('companies_details');
         $oProject          = $this->loadData('projects');
         $iCompanyNbTotal   = $oCompaniesDetails->counter();
 
         $iTreated = 0;
-        $iStart = 0;
-        $iLimit = 100;
-        while(true)
-        {
+        $iStart   = 0;
+        $iLimit   = 100;
+        while (true) {
             $aCompanies = $oCompaniesDetails->select('', '', $iStart, $iLimit);
             if (empty($aCompanies)) {
                 break;
             }
             $iStart += $iLimit;
 
-            foreach($aCompanies as $aCompany)
-            {
+            foreach ($aCompanies as $aCompany) {
                 $iCompanyId = $aCompany['id_company'];
-                $ownerType = attachment::PROJECT;
-                $added = $aCompany['added'];
+                $ownerType  = attachment::PROJECT;
+                $added      = $aCompany['added'];
 
                 $aProjects = $oProject->select('id_company = ' . $iCompanyId);
 
@@ -1339,82 +1248,81 @@ class devboxController extends bootstrap
                     continue;
                 }
 
-                foreach ($aProjects as $aProject)
-                {
+                foreach ($aProjects as $aProject) {
                     $ownerId = $aProject['id_project'];
 
-                    if('' !== $aCompany['fichier_extrait_kbis']) {
+                    if ('' !== $aCompany['fichier_extrait_kbis']) {
                         $this->saveAttachment(attachment_type::KBIS, $aCompany['fichier_extrait_kbis'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_rib']) {
+                    if ('' !== $aCompany['fichier_rib']) {
                         $this->saveAttachment(attachment_type::RIB, $aCompany['fichier_rib'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_delegation_pouvoir']) {
+                    if ('' !== $aCompany['fichier_delegation_pouvoir']) {
                         $this->saveAttachment(attachment_type::CGV, $aCompany['fichier_delegation_pouvoir'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_logo_societe']) {
+                    if ('' !== $aCompany['fichier_logo_societe']) {
                         $this->saveAttachment(attachment_type::AUTRE1, $aCompany['fichier_logo_societe'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_photo_dirigeant']) {
+                    if ('' !== $aCompany['fichier_photo_dirigeant']) {
                         $this->saveAttachment(attachment_type::CNI_PASSPORTE_VERSO, $aCompany['fichier_photo_dirigeant'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_dernier_bilan_certifie']) {
+                    if ('' !== $aCompany['fichier_dernier_bilan_certifie']) {
                         $this->saveAttachment(attachment_type::LIASSE_FISCAL_N_2, $aCompany['fichier_dernier_bilan_certifie'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_cni_passeport']) {
+                    if ('' !== $aCompany['fichier_cni_passeport']) {
                         $this->saveAttachment(attachment_type::CNI_PASSPORTE_DIRIGEANT, $aCompany['fichier_cni_passeport'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_derniere_liasse_fiscale']) {
+                    if ('' !== $aCompany['fichier_derniere_liasse_fiscale']) {
                         $this->saveAttachment(attachment_type::DERNIERE_LIASSE_FISCAL, $aCompany['fichier_derniere_liasse_fiscale'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_derniers_comptes_approuves']) {
+                    if ('' !== $aCompany['fichier_derniers_comptes_approuves']) {
                         $this->saveAttachment(attachment_type::LIASSE_FISCAL_N_1, $aCompany['fichier_derniers_comptes_approuves'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_derniers_comptes_consolides_groupe']) {
+                    if ('' !== $aCompany['fichier_derniers_comptes_consolides_groupe']) {
                         $this->saveAttachment(attachment_type::DERNIERS_COMPTES_CONSOLIDES, $aCompany['fichier_derniers_comptes_consolides_groupe'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_annexes_rapport_special_commissaire_compte']) {
+                    if ('' !== $aCompany['fichier_annexes_rapport_special_commissaire_compte']) {
                         $this->saveAttachment(attachment_type::RAPPORT_CAC, $aCompany['fichier_annexes_rapport_special_commissaire_compte'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_arret_comptable_recent']) {
+                    if ('' !== $aCompany['fichier_arret_comptable_recent']) {
                         $this->saveAttachment(attachment_type::SITUATION_COMPTABLE_INTERMEDIAIRE, $aCompany['fichier_arret_comptable_recent'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_budget_exercice_en_cours_a_venir']) {
+                    if ('' !== $aCompany['fichier_budget_exercice_en_cours_a_venir']) {
                         $this->saveAttachment(attachment_type::PREVISIONNEL, $aCompany['fichier_budget_exercice_en_cours_a_venir'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_notation_banque_france']) {
+                    if ('' !== $aCompany['fichier_notation_banque_france']) {
                         $this->saveAttachment(attachment_type::AUTRE2, $aCompany['fichier_notation_banque_france'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_autre_1']) {
+                    if ('' !== $aCompany['fichier_autre_1']) {
                         $this->saveAttachment(attachment_type::AUTRE2, $aCompany['fichier_autre_1'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_autre_2']) {
+                    if ('' !== $aCompany['fichier_autre_2']) {
                         $this->saveAttachment(attachment_type::AUTRE3, $aCompany['fichier_autre_2'], $ownerId, $ownerType, $added, $oAttachment);
                     }
 
-                    if('' !== $aCompany['fichier_autre_3']) {
+                    if ('' !== $aCompany['fichier_autre_3']) {
                         $this->saveAttachment(attachment_type::AUTRE4, $aCompany['fichier_autre_3'], $ownerId, $ownerType, $added, $oAttachment);
                     }
                 }
 
-                $iTreated ++;
+                $iTreated++;
 
-                echo 'The attachments of company id : '. $iCompanyId .' has been migrated. Treated : '. $iTreated . '/' . $iCompanyNbTotal . PHP_EOL;
+                echo 'The attachments of company id : ' . $iCompanyId . ' has been migrated. Treated : ' . $iTreated . '/' . $iCompanyNbTotal . PHP_EOL;
             }
 
         }
@@ -1431,40 +1339,42 @@ class devboxController extends bootstrap
      */
     private function saveAttachment($attachmentType, $path, $ownerId, $ownerType, $added, $attachment)
     {
-        $attachment->id_type = $attachmentType;
-        $attachment->id_owner = $ownerId;
+        $attachment->id_type    = $attachmentType;
+        $attachment->id_owner   = $ownerId;
         $attachment->type_owner = $ownerType;
-        $attachment->path = $path;
-        $attachment->archived = null;
-        $attachment->added = $added;
+        $attachment->path       = $path;
+        $attachment->archived   = null;
+        $attachment->added      = $added;
 
         return $attachment->save();
     }
 
-    private function copyFolder($source, $destination) {
+    private function copyFolder($source, $destination)
+    {
 
         $files = scandir($source);
 
         if ('/' !== substr($source, -1)) {
-            $source = $source. '/';
+            $source = $source . '/';
         }
 
         if ('/' !== substr($destination, -1)) {
-            $destination = $destination. '/';
+            $destination = $destination . '/';
         }
 
         foreach ($files as $file) {
-            if (in_array($file, array(".",".."))) {
+            if (in_array($file, array(".", ".."))) {
                 continue;
             }
-            if (false === copy($source.$file, $destination.$file)) {
-                echo 'Error: copy '.$source.$file.' to '.$destination.$file.PHP_EOL;
+            if (false === copy($source . $file, $destination . $file)) {
+                echo 'Error: copy ' . $source . $file . ' to ' . $destination . $file . PHP_EOL;
             }
         }
     }
 
-    private function delTree($dir) {
-        $files = array_diff(scandir($dir), array('.','..'));
+    private function delTree($dir)
+    {
+        $files = array_diff(scandir($dir), array('.', '..'));
         foreach ($files as $file) {
             (is_dir("$dir/$file")) ? delTree("$dir/$file") : unlink("$dir/$file");
         }
