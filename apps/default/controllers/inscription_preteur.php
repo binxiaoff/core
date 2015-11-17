@@ -961,21 +961,21 @@ class inscription_preteurController extends bootstrap
                     $this->clients_adresses->update();
 
                     // Histo client //
-                    $pass = $_POST['pass'];
-                    $pass2 = $_POST['pass2'];
-                    $secret_response = $_POST['secret-response'];
-                    $_POST['pass'] = md5($pass);
-                    $_POST['pass2'] = md5($pass2);
-                    $_POST['secret-response'] = md5($secret_response);
+                    $pass = $_POST['passE'];
+                    $pass2 = $_POST['passE2'];
+                    $secret_response = $_POST['secret-responseE'];
+                    $_POST['passE'] = md5($pass);
+                    $_POST['passE2'] = md5($pass2);
+                    $_POST['secret-responseE'] = md5($secret_response);
 
                     // Histo client //
                     $serialize = serialize(array('id_client' => $this->clients->id_client,'post' => $_POST));
                     $this->clients_history_actions->histo(14,'edition inscription etape 1 entreprise',$this->clients->id_client,$serialize);
                     ////////////////
 
-                    $_POST['pass'] = $pass;
-                    $_POST['pass2'] = $pass2;
-                    $_POST['secret-response'] = $secret_response;
+                    $_POST['passE'] = $pass;
+                    $_POST['passE2'] = $pass2;
+                    $_POST['secret-responseE'] = $secret_response;
                 }
                 // create
                 else
@@ -987,21 +987,21 @@ class inscription_preteurController extends bootstrap
                     $this->clients->id_client = $this->clients->create();
 
                     // Histo client //
-                    $pass = $_POST['pass'];
-                    $pass2 = $_POST['pass2'];
-                    $secret_response = $_POST['secret-response'];
-                    $_POST['pass'] = md5($pass);
-                    $_POST['pass2'] = md5($pass2);
-                    $_POST['secret-response'] = md5($secret_response);
+                    $pass = $_POST['passE'];
+                    $pass2 = $_POST['passE2'];
+                    $secret_response = $_POST['secret-responseE'];
+                    $_POST['passE'] = md5($pass);
+                    $_POST['passE2'] = md5($pass2);
+                    $_POST['secret-responseE'] = md5($secret_response);
 
                     // Histo client //
                     $serialize = serialize(array('id_client' => $this->clients->id_client,'post' => $_POST));
                     $this->clients_history_actions->histo(16,'edition inscription etape 1 entreprise',$this->clients->id_client,$serialize);
                     ////////////////
 
-                    $_POST['pass'] = $pass;
-                    $_POST['pass2'] = $pass2;
-                    $_POST['secret-response'] = $secret_response;
+                    $_POST['passE'] = $pass;
+                    $_POST['passE2'] = $pass2;
+                    $_POST['secret-responseE'] = $secret_response;
 
                     // Ainsi que adresses clients
                     $this->clients_adresses->id_client = $this->clients->id_client;
