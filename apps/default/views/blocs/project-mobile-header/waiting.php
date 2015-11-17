@@ -1,7 +1,7 @@
 <div class="single-project-stats">
     <h2>
         <i class="ico-pig"></i>
-        <?= number_format($this->projects->amount, 0, ',', ' ') ?> €
+        <?= $this->ficelle->formatNumber($this->projects->amount, 0) ?> €
     </h2>
     <?php $this->fireView('../blocs/project-mobile-header/stats'); ?>
 </div>

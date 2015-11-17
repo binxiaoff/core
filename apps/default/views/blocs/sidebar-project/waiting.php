@@ -5,7 +5,7 @@
                 <aside class="widget widget-price">
                     <div class="widget-top">
                         <i class="icon-pig"></i>
-                        <?= number_format($this->projects->amount, 0, ',', ' ') ?> €
+                        <?= $this->ficelle->formatNumber($this->projects->amount, 0) ?> €
                     </div>
                     <div class="widget-body">
                         <div class="article">

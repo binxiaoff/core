@@ -2,7 +2,7 @@
 
 $aReplacements = array(
     '[NB_PRETEURS]' => $this->NbPreteurs . ' prêteurs',
-    '[TAUX]'        => number_format($this->AvgLoans, 1, ',', ' ') . '&nbsp;%',
+    '[TAUX]'        => $this->ficelle->formatNumber($this->AvgLoans, 1) . '&nbsp;%',
     '[JOURS]'       => $this->interDebutFin['day'] . ' jours',
     '[HEURES]'      => $this->interDebutFin['hour'] . ' heures',
     '[MINUTES]'     => $this->interDebutFin['minute'] . ' minutes'
@@ -23,10 +23,10 @@ foreach ($aReplacements as &$sReplacement) {
     </p>
     <p>
         <?= $this->lng['preteur-projets']['vous-lui-avez-prete'] ?>
-        <strong class="pinky-span"><?= number_format($this->bidsvalid['solde'], 0, ',', ' ') ?> €</strong>
+        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->bidsvalid['solde'], 0) ?> €</strong>
         <?php if ($this->bidsvalid['solde'] > 0) { ?>
             <br/><?= $this->lng['preteur-projets']['au-taux-moyen-de'] ?>
-            <strong class="pinky-span"><?= number_format($this->AvgLoansPreteur, 1, ',', ' ') ?> %</strong>
+            <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->AvgLoansPreteur, 1) ?> %</strong>
         <?php } ?>
     </p>
 </div>

@@ -5413,7 +5413,7 @@ class cronController extends bootstrap
                 $xml .= '<date_debut_collecte>' . $p['date_publication'] . '</date_debut_collecte>';
                 $xml .= '<date_fin_collecte>' . $p['date_retrait'] . '</date_fin_collecte>';
                 $xml .= '<montant_recherche>' . $p['amount'] . '</montant_recherche>';
-                $xml .= '<montant_collecte>' . number_format($monantRecolt, 0, ',', '') . '</montant_collecte>';
+                $xml .= '<montant_collecte>' . $this->ficelle->formatNumber($monantRecolt, 0) . '</montant_collecte>';
                 $xml .= '</projet>';
             }
             $xml .= '</partenaire>';
@@ -6911,9 +6911,9 @@ class cronController extends bootstrap
                             $sumInt = $this->echeanciers->getSumRembByloan_remb_ra($this->transactions->id_loan_remb, 'interets');
 
                             $contenu_remboursement_anticipe = "
-                            Important : le remboursement de <span style='color: #b20066;'>" . $this->ficelle->formatNumber(($this->echeanciers->capital / 100)) . "&euro;</span> correspond au remboursement total du capital restant dû de votre prêt à <span style='color: #b20066;'>" . $this->companies->name . "</span>. Comme le prévoient les règles d'Unilend, <span style='color: #b20066;'>" . $this->companies->name . "</span> a choisi de rembourser son emprunt par anticipation sans frais.
+                            Important : le remboursement de <span style='color: #b20066;'>" . $this->ficelle->formatNumber($this->echeanciers->capital / 100) . "&euro;</span> correspond au remboursement total du capital restant dû de votre prêt à <span style='color: #b20066;'>" . $this->companies->name . "</span>. Comme le prévoient les règles d'Unilend, <span style='color: #b20066;'>" . $this->companies->name . "</span> a choisi de rembourser son emprunt par anticipation sans frais.
                             <br /><br />
-                            Depuis l’origine, il vous a versé <span style='color: #b20066;'>" . $this->ficelle->formatNumber($sumInt, 2, ',', ' ') . "€</span> d’intérêts soit un taux d’intérêt annualisé moyen de <span style='color: #b20066;'>" . number_format($AvgLoans) . "%.</span><br><br> ";
+                            Depuis l’origine, il vous a versé <span style='color: #b20066;'>" . $this->ficelle->formatNumber($sumInt) . "€</span> d’intérêts soit un taux d’intérêt annualisé moyen de <span style='color: #b20066;'>" . number_format($AvgLoans) . "%.</span><br><br> ";
 
                         } else {
                             $this->echeanciers->get($this->transactions->id_echeancier, 'id_echeancier');
@@ -6929,9 +6929,9 @@ class cronController extends bootstrap
                             $liste_remb .= '
 							<tr style="color:#b20066;">
 								<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->echeanciers->capital / 100)) . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->echeanciers->interets / 100)) . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber((($this->echeanciers->interets / 100) - $totalFiscal)) . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->echeanciers->capital / 100) . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->echeanciers->interets / 100) . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->echeanciers->interets / 100 - $totalFiscal) . ' &euro;</td>
 							</tr>
 							<tr>
 								<td style="height:25px;font-family:Arial;font-size:14px;border-top:1px solid #727272;color:#727272;">Total</td>
@@ -6944,9 +6944,9 @@ class cronController extends bootstrap
                             $liste_remb .= '
 							<tr style="color:#b20066;">
 								<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->echeanciers->capital / 100)) . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->echeanciers->interets / 100)) . ' &euro;</td>
-								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber((($this->echeanciers->interets / 100) - $totalFiscal)) . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->echeanciers->capital / 100) . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->echeanciers->interets / 100) . ' &euro;</td>
+								<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->echeanciers->interets / 100 - $totalFiscal) . ' &euro;</td>
 							</tr>';
                         }
                         $i++;

@@ -5,7 +5,7 @@
         </div>
         <div class="widget-body">
             <div class="article">
-                <p><?= $this->lng['preteur-projets']['ce-projet-a-ete-finance-a'] ?><?= number_format($this->pourcentage, $this->decimalesPourcentage, ',', '') ?>%</p>
+                <p><?= $this->lng['preteur-projets']['ce-projet-a-ete-finance-a'] ?><?= $this->ficelle->formatNumber($this->pourcentage, $this->decimalesPourcentage) ?>%</p>
                 <p><?= $this->lng['preteur-projets']['merci-a-tous'] ?></p>
             </div>
         </div>

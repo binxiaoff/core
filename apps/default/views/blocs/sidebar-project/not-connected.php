@@ -2,21 +2,21 @@
     <aside class="widget widget-price">
         <div class="widget-top">
             <i class="icon-pig"></i>
-            <?= number_format($this->projects->amount, 0, ',', ' ') ?> €
+            <?= $this->ficelle->formatNumber($this->projects->amount, 0) ?> €
         </div>
         <div class="widget-body">
             <div class="widget-cat progress-cat clearfix">
                 <div class="prices clearfix">
                     <span class="price less">
-                        <strong><?= number_format($this->payer, $this->decimales, ',', ' ') ?> €</strong>
+                        <strong><?= $this->ficelle->formatNumber($this->payer, $this->decimales) ?> €</strong>
                         <?= $this->lng['preteur-projets']['de-pretes'] ?>
                     </span>
                     <i class="icon-arrow-gt"></i>
                     <?php if ($this->soldeBid >= $this->projects->amount) { ?>
-                        <p style="font-size:14px;"><?= $this->lng['preteur-projets']['vous-pouvez-encore-preter-en-proposant-une-offre-de-pret-inferieure-a'] ?> <?= number_format($this->txLenderMax, 1, ',', ' ') ?>%</p>
+                        <p style="font-size:14px;"><?= $this->lng['preteur-projets']['vous-pouvez-encore-preter-en-proposant-une-offre-de-pret-inferieure-a'] ?> <?= $this->ficelle->formatNumber($this->txLenderMax, 1) ?>%</p>
                     <?php } else { ?>
                         <span class="price">
-                            <strong><?= number_format($this->resteApayer, $this->decimales, ',', ' ') ?> €</strong>
+                            <strong><?= $this->ficelle->formatNumber($this->resteApayer, $this->decimales) ?> €</strong>
                             <?= $this->lng['preteur-projets']['restent-a-preter'] ?>
                         </span>
                     <?php } ?>

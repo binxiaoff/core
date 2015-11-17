@@ -606,12 +606,12 @@ else
                                     <div class="widget-cat progress-cat clearfix">
                                         <div class="prices clearfix">
                                             <span class="price less">
-                                                <strong><?=number_format($this->payer,$this->decimales, ',', ' ')?> €</strong>
+                                                <strong><?= $this->ficelle->formatNumber($this->payer, $this->decimales) ?> €</strong>
                                                 <?=$this->lng['preteur-projets']['de-pretes']?>
                                             </span>
                                             <i class="icon-arrow-gt"></i>
                                             <span class="price">
-                                                <strong><?=number_format($this->resteApayer,$this->decimales, ',', ' ')?> €</strong>
+                                                <strong><?= $this->ficelle->formatNumber($this->resteApayer, $this->decimales) ?> €</strong>
                                                 <?=$this->lng['preteur-projets']['restent-a-preter']?>
                                             </span>
                                         </div>
