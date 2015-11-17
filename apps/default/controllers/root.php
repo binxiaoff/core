@@ -61,7 +61,7 @@ class rootController extends bootstrap
                     die;
                 } else {
                     // source
-                    $this->ficelle->source($_GET['utm_source'], $this->lurl . '/inscription_preteur/etape1', $_GET['utm_source2']);
+                    $this->ficelle->source(isset($_GET['utm_source']) ? $_GET['utm_source'] : '', $this->lurl . '/inscription_preteur/etape1', isset($_GET['utm_source2']) ? $_GET['utm_source2'] : '');
 
                     header('Location:' . $this->lurl . '/inscription_preteur');
                     die;

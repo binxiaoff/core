@@ -294,3 +294,5 @@ table.lng label { cursor: pointer; font-weight: bold; }
 
 #phoca-captcha{float:left;}
 .reloadCaptcha{float:left;margin-right:5px;margin-top:4px;cursor:pointer;}
+.ui-autocomplete { background: #f4f4f4 none repeat scroll 0 0; color: #a1a5a7; border: 1px solid #dbdcdd; border-radius: 4px; z-index: 99999; max-height: 200px; overflow-x: hidden; overflow-y: scroll; max-width: 350px;}
+.ui-widget-content a { color: #a1a5a7; font-size: 14px; font-style: italic; line-height: 1.2; }

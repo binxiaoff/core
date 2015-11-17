@@ -27,7 +27,7 @@
             </span>
             <span class="pass-field-holder">
                 <?php //Ajout CM 06/08/14 ?>
-                <input type="text" name="conf_email" id="conf_email" title="<?=$this->lng['etape1']['confirmation-email']?>" value="<?=(($this->modif || $_SESSION['landing_client']['email']!='') && $this->clients->email!=''?$this->clients->email:$this->lng['etape1']['confirmation-email'])?>" class="field field-large required <?=($this->clients->email!=''?"LV_valid_field":"")?>" data-validators="Confirmation,{ match: 'email' }&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/ }" >
+                <input type="text" name="conf_email" id="conf_email" title="<?=$this->lng['etape1']['confirmation-email']?>" value="<?=(($this->modif || isset($_SESSION['landing_client']['email']) && $_SESSION['landing_client']['email']!='') && $this->clients->email!=''?$this->clients->email:$this->lng['etape1']['confirmation-email'])?>" class="field field-large required <?=($this->clients->email!=''?"LV_valid_field":"")?>" data-validators="Confirmation,{ match: 'email' }&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/ }" >
             </span>
         </div>
         <div class="row">
@@ -52,8 +52,10 @@
             <input type="text" id="adresse_inscription" name="adresse_inscription" title="<?=$this->lng['etape1']['adresse']?>" value="<?=($this->clients_adresses->adresse_fiscal!= ''?$this->clients_adresses->adresse_fiscal:$this->lng['etape1']['adresse'])?>" class="field field-mega required" data-validators="Presence">
         </div>
         <div class="row row-triple-fields">
-            <input type="text" id="ville_inscription" name="ville_inscription" title="<?=$this->lng['etape1']['ville']?>" value="<?=($this->clients_adresses->ville_fiscal!=''?$this->clients_adresses->ville_fiscal:$this->lng['etape1']['ville'])?>" class="field field-small required" data-validators="Presence"  data-autocomplete="cities" onBlur="autocompleteCp(this.value,'postal');">
-            <input type="text" name="postal" id="postal" data-autocomplete="postCodes" title="<?=$this->lng['etape1']['code-postal']?>" value="<?=($this->clients_adresses->cp_fiscal!=0?$this->clients_adresses->cp_fiscal:$this->lng['etape1']['code-postal'])?>"  class="field field-small required" onBlur="checkCp('ville_inscription',this.id);" onkeyup="checkCp('ville_inscription',this.id);" >
+            <input type="text" id="postal" name="postal" class="field field-small required" data-autocomplete="post_code"
+                   placeholder="<?=$this->lng['etape1']['code-postal']?>" title="<?=$this->lng['etape1']['code-postal']?>" value="<?=$this->clients_adresses->cp_fiscal?>"/>
+            <input type="text" id="ville_inscription" name="ville_inscription" class="field field-small required" data-autocomplete="city"
+                   placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=$this->clients_adresses->ville_fiscal?>"/>
             <select name="pays1" id="pays1" class="custom-select required field-small">
                 <option value=""><?=$this->lng['etape1']['pays']?></option>
                 <option value=""><?=$this->lng['etape1']['pays']?></option>
@@ -74,8 +76,10 @@
                 <input type="text" id="address2" name="adress2" title="<?=$this->lng['etape1']['adresse']?>" value="<?=($this->clients_adresses->adresse1!=''?$this->clients_adresses->adresse1:$this->lng['etape1']['adresse'])?>" class="field field-mega required" data-validators="Presence">
             </div>
             <div class="row row-triple-fields">
-                <input type="text" id="ville2" name="ville2" title="<?=$this->lng['etape1']['ville']?>" value="<?=($this->clients_adresses->ville!=''?$this->clients_adresses->ville:$this->lng['etape1']['ville'])?>" class="field field-small required" data-validators="Presence"  data-autocomplete="cities" onBlur="autocompleteCp(this.value,'postal2');">
-                <input type="text" id="postal2" name="postal2" data-autocomplete="postCodes" value="<?=($this->clients_adresses->cp!=0?$this->clients_adresses->cp:$this->lng['etape1']['code-postal'])?>" title="<?=$this->lng['etape1']['code-postal']?>" class="field field-small required" onBlur="checkCp('ville2',this.id);" onkeyup="checkCp('ville2',this.id);">
+                <input type="text" id="postal2" name="postal2" class="field field-small required" data-autocomplete="post_code"
+                       placeholder="<?=$this->lng['etape1']['code-postal']?>" value="<?=$this->clients_adresses->cp?>" title="<?=$this->lng['etape1']['code-postal']?>" />
+                <input type="text" id="ville2" name="ville2" class="field field-small required" data-autocomplete="city"
+                       placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=$this->clients_adresses->ville?>" />
                 <select name="pays2" id="pays2" class="custom-select required field-small">
                     <option value=""><?=$this->lng['etape1']['pays']?></option>
                     <option value=""><?=$this->lng['etape1']['pays']?></option>
@@ -138,7 +142,9 @@
         </div>
         <div class="row row-triple-fields row-triple-fields-alt">
             <span class="inline-text inline-text-alt inline-text-alt-small"><?=$this->lng['etape1']['commune-de-naissance']?> :</span>
-            <input type="text" name="naissance" title="<?=$this->lng['etape1']['commune-de-naissance']?>" value="<?=($this->clients->ville_naissance!=''?$this->clients->ville_naissance:$this->lng['etape1']['commune-de-naissance'])?>" id="naissance" class="field field-small required" data-validators="Presence" data-autocomplete="cities" >
+            <input type="text" name="naissance" id="naissance" class="field field-small required" data-autocomplete="birth_city"
+                   placeholder="<?=$this->lng['etape1']['commune-de-naissance']?>" value="<?=$this->clients->ville_naissance?>">
+            <input type="hidden" id="insee_birth" name="insee_birth" value="<?=$this->clients->insee_birth!=''?$this->clients->insee_birth:''?>"/>
             <span class="inline-text inline-text-alt inline-text-alt-small"><?=$this->lng['etape1']['pays-de-naissance']?> :</span>
             <select name="pays3" id="pays3" class="custom-select required field-small">
                 <option value=""><?=$this->lng['etape1']['pays-de-naissance']?></option>

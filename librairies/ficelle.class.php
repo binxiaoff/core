@@ -297,6 +297,11 @@ class ficelle
     {
         // On récupère la longueur du mot de passe
         $longueur = strlen($mdp);
+        $point = 0;
+        $point_min = 0;
+        $point_maj = 0;
+        $point_caracteres = 0;
+        $point_chiffre = 0;
 
         // On fait une boucle pour lire chaque lettre
         for ($i = 0; $i < $longueur; $i++) {

@@ -219,6 +219,12 @@ class projects extends projects_crud
 
     public function selectProjectsByStatus($status, $where = '', $order = '', $start = '', $nb = '')
     {
+        $sWhereClause = 'ps.status IN (' . $status . ')';
+
+        if ('' !== trim($where)) {
+            $sWhereClause .= ' ' . $where . ' ';
+        }
+
         if ($order == '') {
             $order = 'lestatut ASC, p.date_retrait DESC';
         }
@@ -231,11 +237,10 @@ class projects extends projects_crud
                 ELSE "2"
               END AS lestatut
             FROM projects p
-            LEFT JOIN projects_last_status_history USING (id_project)
-            LEFT JOIN projects_status_history USING (id_project_status_history)
-            LEFT JOIN projects_status USING (id_project_status)
-            WHERE projects_status.status IN (' . $status . ')' .
-            $where . '
+            INNER JOIN projects_last_status_history USING (id_project)
+            INNER JOIN projects_status_history USING (id_project_status_history)
+            INNER JOIN projects_status USING (id_project_status)
+            WHERE ' . $sWhereClause . '
             ORDER BY ' . $order .
             ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 

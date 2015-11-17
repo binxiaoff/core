@@ -324,6 +324,8 @@ class preteursController extends bootstrap
 
     public function _edit_preteur()
     {
+        $this->loadJs('default/jquery-ui-1.10.3.custom.min');
+
         //On appelle la fonction de chargement des données
         $this->loadGestionData();
 
@@ -551,6 +553,7 @@ class preteursController extends bootstrap
 
                 $this->clients->telephone       = str_replace(' ', '', $_POST['phone']);
                 $this->clients->ville_naissance = $_POST['com-naissance'];
+                $this->clients->insee_birth     = $_POST['insee_birth'];
 
                 // Naissance
                 $naissance                        = explode('/', $_POST['naissance']);
@@ -2178,5 +2181,23 @@ class preteursController extends bootstrap
         $oPdf->params            = $this->params;
         $oPdf->companies         = $this->companies;
         $oPdf->_declaration_de_creances();
+    }
+
+    public function _control_fiscal_city()
+    {
+        $this->loadJs('default/jquery-ui-1.10.3.custom.min');
+
+        /** @var lenders_accounts $oLenders */
+        $oLenders = $this->loadData('lenders_accounts');
+        $this->aLenders = $oLenders->getLendersToMatchCity(200);
+    }
+
+    public function _control_birth_city()
+    {
+        $this->loadJs('default/jquery-ui-1.10.3.custom.min');
+
+        /** @var lenders_accounts $oLenders */
+        $oLenders = $this->loadData('lenders_accounts');
+        $this->aLenders = $oLenders->getLendersToMatchBirthCity(200);
     }
 }
