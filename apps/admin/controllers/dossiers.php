@@ -2946,6 +2946,11 @@ class dossiersController extends bootstrap
                                     $_SESSION['freeow']['message'] = "Aucun remboursement n'a &eacute;t&eacute; effectu&eacute; aux preteurs !";
                                 }
                             }
+                            if (0 < $commission) {
+                                /** @var platform_account_unilend $oAccountUnilend */
+                                $oAccountUnilend = $this->loadData('platform_account_unilend');
+                                $oAccountUnilend->addEcheanceCommssion($RembEmpr['id_echeancier_emprunteur']);
+                            }
                             /* echo '---------------------<br>';
                               echo 'etat : '.$TotalEtat.'<br>';
                               echo 'total a remb : '.$rembNetTotal.'<br>';

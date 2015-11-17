@@ -7422,6 +7422,7 @@ class cronController extends bootstrap
             $projects_remb_log       = $this->loadData('projects_remb_log');
             $bank_unilend            = $this->loadData('bank_unilend');
             $projects_remb           = $this->loadData('projects_remb');
+            $oAccountUnilend = $this->loadData('platform_account_unilend');
 
             $settingsDebutRembAuto = $this->loadData('settings');
             $settingsDebutRembAuto->get('Heure de début de traitement des remboursements auto prêteurs', 'type');
@@ -7532,6 +7533,8 @@ class cronController extends bootstrap
                             $bank_unilend->id_echeance_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur;
                             $bank_unilend->status                 = 1;
                             $bank_unilend->create();
+
+                            $oAccountUnilend->addEcheanceCommssion($echeanciers_emprunteur->id_echeancier_emprunteur);
 
                             $this->mails_text->get('facture-emprunteur-remboursement', 'lang = "' . $this->language . '" AND type');
 
