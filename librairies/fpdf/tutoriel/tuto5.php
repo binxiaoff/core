@@ -44,8 +44,8 @@ function ImprovedTable($header,$data)
 	{
 		$this->Cell($w[0],6,$row[0],'LR');
 		$this->Cell($w[1],6,$row[1],'LR');
-		$this->Cell($w[2],6,$this->ficelle->formatNumber($row[2], 0),'LR',0,'R');
-		$this->Cell($w[3],6,$this->ficelle->formatNumber($row[3], 0),'LR',0,'R');
+		$this->Cell($w[2],6,number_format($row[2],0,',',' '),'LR',0,'R');
+		$this->Cell($w[3],6,number_format($row[3],0,',',' '),'LR',0,'R');
 		$this->Ln();
 	}
 	//Trait de terminaison
@@ -76,8 +76,8 @@ function FancyTable($header,$data)
 	{
 		$this->Cell($w[0],6,$row[0],'LR',0,'L',$fill);
 		$this->Cell($w[1],6,$row[1],'LR',0,'L',$fill);
-		$this->Cell($w[2],6,$this->ficelle->formatNumber($row[2], 0),'LR',0,'R',$fill);
-		$this->Cell($w[3],6,$this->ficelle->formatNumber($row[3], 0),'LR',0,'R',$fill);
+		$this->Cell($w[2],6,number_format($row[2],0,',',' '),'LR',0,'R',$fill);
+		$this->Cell($w[3],6,number_format($row[3],0,',',' '),'LR',0,'R',$fill);
 		$this->Ln();
 		$fill=!$fill;
 	}
