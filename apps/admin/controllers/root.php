@@ -45,14 +45,12 @@ class rootController extends bootstrap
                 // Recuperation du modele de mail
                 $this->mails_text->get('admin-nouveau-mot-de-passe', 'lang = "' . $this->language . '" AND type');
 
-                // Variables du mailing
                 $cms      = $this->cms;
                 $surl     = $this->surl;
                 $url      = $this->lurl;
                 $email    = trim($_POST['email']);
                 $password = $this->new_password;
 
-                // Attribution des données aux variables
                 $sujetMail = $this->mails_text->subject;
                 eval("\$sujetMail = \"$sujetMail\";");
 
@@ -66,8 +64,7 @@ class rootController extends bootstrap
                 $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                 $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                // Envoi du mail
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->addRecipient(trim($_POST['email']));
                 $this->email->addBCCRecipient('j.dehais@equinoa.fr');
@@ -182,7 +179,6 @@ class rootController extends bootstrap
         // Chargement des fichiers JS
         $this->loadJs('admin/chart/highcharts');
 
-        // Chargement du data
         $this->transactions      = $this->loadData('transactions');
         $this->partenaires_types = $this->loadData('partenaires_types');
         $this->clients_history   = $this->loadData('clients_history');
@@ -367,14 +363,12 @@ class rootController extends bootstrap
                                 // Recuperation du modele de mail
                                 $this->mails_text->get('admin-nouveau-mot-de-passe', 'lang = "' . $this->language . '" AND type');
 
-                                // Variables du mailing
                                 $cms      = $this->cms;
                                 $surl     = $this->surl;
                                 $url      = $this->lurl;
                                 $email    = trim($this->users->email);
                                 $password = $_POST['new_pass'];
 
-                                // Attribution des données aux variables
                                 $sujetMail = $this->mails_text->subject;
                                 eval("\$sujetMail = \"$sujetMail\";");
 
@@ -388,8 +382,7 @@ class rootController extends bootstrap
                                 $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                                 $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                                // Envoi du mail
-                                $this->email = $this->loadLib('email', array());
+                                $this->email = $this->loadLib('email');
                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                 $this->email->addRecipient(trim($this->users->email));
                                 // ajout du tracking

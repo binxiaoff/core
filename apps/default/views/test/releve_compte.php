@@ -51,29 +51,29 @@
 				<table width="100%" border="0" cellspacing="0" cellpadding="0">
 					<tr>
 						<th width="50%" >Argent disponible en début de période</th>
-						<th width="50%" ><?=number_format($this->argentDispoDebutPeriode, 2, ',', ' ')?> &euro;</th>
+						<th width="50%" ><?=$this->ficelle->formatNumber($this->argentDispoDebutPeriode)?> &euro;</th>
 					</tr>
-				
+
 					<tr>
 						<td>Apport d’argent</td>
-						<td><?=number_format($this->apportArgent, 2, ',', ' ')?>  &euro;</td>
+						<td><?=$this->ficelle->formatNumber($this->apportArgent)?>  &euro;</td>
 					</tr>
-				
+
 					<tr>
 						<td>Retrait d’argent</td>
-						<td><?=number_format($this->retraitArgent, 2, ',', ' ')?> &euro;</td>
+						<td><?=$this->ficelle->formatNumber($this->retraitArgent)?> &euro;</td>
 					</tr>
-				
+
 					<tr>
 						<td>&nbsp;</td>
 						<td>&nbsp;</td>
 					</tr>
-				
+
 					<tr>
 						<td>Argent bloqué/débloqué pour offre de prêt</td>
-						<td><?=number_format($this->argentBloque, 2, ',', ' ')?> &euro;</td>
+						<td><?=$this->ficelle->formatNumber($this->argentBloque)?> &euro;</td>
 					</tr>
-				
+
 					<tr>
 						<td>&nbsp;</td>
 						<td>&nbsp;</td>
@@ -81,26 +81,26 @@
 
 					<tr>
 						<td>Argent prêté</td>
-						<td><?=number_format($this->agentPrete, 2, ',', ' ')?> &euro;</td>
+						<td><?=$this->ficelle->formatNumber($this->agentPrete)?> &euro;</td>
 					</tr>
 
 					<tr>
 						<td>Argent remboursé</td>
-						<td><?=number_format($this->argentRemb, 2, ',', ' ')?> &euro;</td>
+						<td><?=$this->ficelle->formatNumber($this->argentRemb)?> &euro;</td>
 					</tr>
 
 					<tr>
 						<td>Intérêts bruts reçus</td>
-						<td><?=number_format($this->interets, 2, ',', ' ')?> &euro;</td>
+						<td><?=$this->ficelle->formatNumber($this->interets)?> &euro;</td>
 					</tr>
                     <tr>
 						<td>Retenues fiscales</td>
-						<td><?=number_format($this->retenuesFiscales, 2, ',', ' ')?> &euro;</td>
+						<td><?=$this->ficelle->formatNumber($this->retenuesFiscales)?> &euro;</td>
 					</tr>
 
 					<tr class="total">
 						<td>Argent disponible en fin de période</td>
-						<td><?=number_format($this->argentDispoFinPeriode, 2, ',', ' ')?> &euro;</td>
+						<td><?=$this->ficelle->formatNumber($this->argentDispoFinPeriode)?> &euro;</td>
 					</tr><!-- /.total -->
 				</table>
 			</div><!-- /.table-body -->
@@ -119,7 +119,7 @@
 							<th >Sortie</th>
 						</tr>
 						<?
-						
+
 						$this->typesTransac = array(1 => 'Inscription preteur',3 => 'Apport d\'argent – carte bancaire',4 => 'Apport d\'argent – virement bancaire',5 => 'Remboursement',8 => 'Retrait d\'argent – virement bancaire');
 						$entre = 0;
 						$sortie = 0;
@@ -128,18 +128,18 @@
 							?>
 							<tr>
 								<td><?=date('d/m',strtotime($t['date_transaction']))?></td>
-								
+
                                 <?
 								// enchere
 								if($t['type_transaction'] == 2)
 								{
-									
+
 									// blocage
 									if(strpos($t['montant'],'-') === false)
 									{
 										$this->bids->get($t['id_bid_remb'],'id_bid');
 										$this->projects->get($this->bids->id_project,'id_project');
-										
+
                                 		?><td>Déblocage pour offre non aboutie – <?=$this->projects->title?></td><?
 									}
 									// deblocage
@@ -148,14 +148,14 @@
 										$this->wallets_lines->get($t['id_transaction'],'id_transaction');
 										$this->bids->get($this->wallets_lines->id_wallet_line,'id_lender_wallet_line');
 										$this->projects->get($this->bids->id_project,'id_project');
-										
+
 										if($this->bids->status == 1)
 										{
-											?><td>Prêt – <?=$this->projects->title?></td><?	
+											?><td>Prêt – <?=$this->projects->title?></td><?
 										}
 										else
 										{
-											?><td>Blocage pour offre de prêt – <?=$this->projects->title?></td><?	
+											?><td>Blocage pour offre de prêt – <?=$this->projects->title?></td><?
 										}
 									}
 								}
@@ -170,13 +170,13 @@
 									?><td><?=$this->typesTransac[$t['type_transaction']]?></td><?
 								}
 								?>
-                                
+
                                 <?
 								if(strpos($t['montant'],'-') === false)
 								{
 									$entre += $t['montant'];
 									?>
-									<td><?=number_format($t['montant']/100, 2, ',', ' ')?> &euro;</td>
+									<td><?=$this->ficelle->formatNumber($t['montant']/100)?> &euro;</td>
 									<td>&nbsp;</td>
 									<?
 								}
@@ -185,21 +185,21 @@
 									$sortie += $t['montant'];
 									?>
 									<td>&nbsp;</td>
-                                    <td><?=number_format($t['montant']/100, 2, ',', ' ')?> &euro;</td>
+                                    <td><?=$this->ficelle->formatNumber($t['montant']/100)?> &euro;</td>
 									<?
 								}
 								?>
 							</tr>
 							<?
 						}
-                        ?>				
+                        ?>
 
 						<tr class="total">
 							<td>&nbsp;</td>
 							<td>Total</td>
-							<td><?=number_format($entre/100, 2, ',', ' ')?> &euro;</td>
-							<td><?=number_format($sortie/100, 2, ',', ' ')?> &euro;</td>
-						</tr>			
+							<td><?=$this->ficelle->formatNumber($entre/100)?> &euro;</td>
+							<td><?=$this->ficelle->formatNumber($sortie/100)?> &euro;</td>
+						</tr>
 					</table>
 				</div><!-- /.table-body -->
 			</div><!-- /.table-head -->
@@ -209,7 +209,7 @@
 	<div class="footer">
 		<div class="shell">
 			<p>UNILEND &bull; SOCIETE FRANÇAISE POUR LE FINANCEMENT DES PME – SFF PME &bull; SAS AU CAPITAL DE 300 000 &euro; &bull; www.unilend.fr</p>
-			
+
 			<p>86 AVENUE DE SAINT-OUEN &bull; 75018 PARIS &bull; 01 82 28 51 20 &bull; 790 766 034 R.C.S. PARIS &bull; APE 6619B &bull; TVA INTRACOMMUNAUTAIRE FR57790766034</p>
 		</div><!-- /.shell -->
 	</div><!-- /.footer -->

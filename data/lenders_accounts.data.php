@@ -8,6 +8,10 @@
 // associated documentation files (the "Software"), to deal in the Software without restriction,
 // including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
 // and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
+
+// associated documentation files (the "Software"), to deal in the Software without restriction,
+// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
 // subject to the following conditions:
 // The above copyright notice and this permission notice shall be included in all copies
 // or substantial portions of the Software.
@@ -29,71 +33,71 @@
 class lenders_accounts extends lenders_accounts_crud
 {
 
-    function lenders_accounts($bdd, $params = '')
-    {
-        parent::lenders_accounts($bdd, $params);
-    }
+	function lenders_accounts($bdd, $params = '')
+	{
+		parent::lenders_accounts($bdd, $params);
+	}
 
-    function get($id, $field = 'id_lender_account')
-    {
-        return parent::get($id, $field);
-    }
+	function get($id, $field = 'id_lender_account')
+	{
+		return parent::get($id, $field);
+	}
 
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
+	function update($cs = '')
+	{
+		parent::update($cs);
+	}
 
-    function delete($id, $field = 'id_lender_account')
-    {
-        parent::delete($id, $field);
-    }
+	function delete($id, $field = 'id_lender_account')
+	{
+		parent::delete($id, $field);
+	}
 
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
+	function create($cs = '')
+	{
+		$id = parent::create($cs);
+		return $id;
+	}
 
-    function select($where = '', $order = '', $start = '', $nb = '')
-    {
-        if ($where != '')
-            $where = ' WHERE ' . $where;
-        if ($order != '')
-            $order = ' ORDER BY ' . $order;
-        $sql = 'SELECT * FROM `lenders_accounts`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+	function select($where = '', $order = '', $start = '', $nb = '')
+	{
+		if ($where != '')
+			$where = ' WHERE ' . $where;
+		if ($order != '')
+			$order = ' ORDER BY ' . $order;
+		$sql = 'SELECT * FROM `lenders_accounts`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
+		$resultat = $this->bdd->query($sql);
+		$result   = array();
+		while ($record = $this->bdd->fetch_array($resultat)) {
+			$result[] = $record;
+		}
+		return $result;
+	}
 
-    function counter($where = '')
-    {
-        if ($where != '')
-            $where = ' WHERE ' . $where;
+	function counter($where = '')
+	{
+		if ($where != '')
+			$where = ' WHERE ' . $where;
 
-        $sql = 'SELECT count(*) FROM `lenders_accounts` ' . $where;
+		$sql = 'SELECT count(*) FROM `lenders_accounts` ' . $where;
 
-        $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
-    }
+		$result = $this->bdd->query($sql);
+		return (int)($this->bdd->result($result, 0, 0));
+	}
 
-    function exist($id, $field = 'id_lender_account')
-    {
-        $sql    = 'SELECT * FROM `lenders_accounts` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
-    }
+	function exist($id, $field = 'id_lender_account')
+	{
+		$sql    = 'SELECT * FROM `lenders_accounts` WHERE ' . $field . '="' . $id . '"';
+		$result = $this->bdd->query($sql);
+		return ($this->bdd->fetch_array($result, 0, 0) > 0);
+	}
 
-    public function getValuesforTRI($lender)
-    {
-        $aValuesTRI = array();
-        //get loans values as negativ , dates and project status
-        $sql = 'SELECT (l.amount *-1) as loan,
+	public function getValuesforTRI($lender)
+	{
+		$aValuesTRI = array();
+		//get loans values as negativ , dates and project status
+		$sql = 'SELECT (l.amount *-1) as loan,
 					( SELECT psh.added
 						FROM `projects_status_history` psh
 						WHERE psh.id_project_status = "8"
@@ -101,13 +105,13 @@ class lenders_accounts extends lenders_accounts_crud
 						ORDER BY psh.added ASC LIMIT 1 ) as date
 				  FROM loans l WHERE l.id_lender = ' . $lender . ';';
 
-        $result = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_array($result)) {
-            $aValuesTRI[$record["date"]] = $record["loan"];
-        }
+		$result = $this->bdd->query($sql);
+		while ($record = $this->bdd->fetch_array($result)) {
+			$aValuesTRI[$record["date"]] = $record["loan"];
+		}
 
-        //get echeancier values
-        $sql = 'SELECT
+		//get echeancier values
+		$sql = 'SELECT
 						e.montant as montant,
 						e.date_echeance_reel as date_echeance_reel,
 						e.date_echeance as date_echeance,
@@ -124,43 +128,43 @@ class lenders_accounts extends lenders_accounts_crud
 							INNER JOIN loans l ON e.id_loan = l.id_loan
 						WHERE e.id_lender = ' . $lender . ';';
 
-        $result = $this->bdd->query($sql);
+		$result = $this->bdd->query($sql);
 
-        $statusKo = array(projects_status::PROBLEME, projects_status::RECOUVREMENT);
-        while ($record = $this->bdd->fetch_array($result)) {
-            if (in_array($record["project_status"], $statusKo) && 0 === (int)$record["echeance_status"]) {
-                $record["montant"] = 0;
-            }
+		$statusKo = array(projects_status::PROBLEME, projects_status::RECOUVREMENT);
+		while ($record = $this->bdd->fetch_array($result)) {
+			if (in_array($record["project_status"], $statusKo) && 0 === (int)$record["echeance_status"]) {
+				$record["montant"] = 0;
+			}
 
-            if ($record["date_echeance_reel"] == "0000-00-00 00:00:00") {
-                $record["date_echeance_reel"] = $record["date_echeance"];
-            }
+			if ($record["date_echeance_reel"] == "0000-00-00 00:00:00") {
+				$record["date_echeance_reel"] = $record["date_echeance"];
+			}
 
-            if (array_key_exists($record["date_echeance_reel"], $aValuesTRI)) {
-                $aValuesTRI[$record["date_echeance_reel"]] += $record["montant"];
-            } else {
-                $aValuesTRI[$record["date_echeance_reel"]] = $record["montant"];
-            }
-        }
+			if (array_key_exists($record["date_echeance_reel"], $aValuesTRI)) {
+				$aValuesTRI[$record["date_echeance_reel"]] += $record["montant"];
+			} else {
+				$aValuesTRI[$record["date_echeance_reel"]] = $record["montant"];
+			}
+		}
 
-        return $aValuesTRI;
-    }
+		return $aValuesTRI;
+	}
 
-    public function getAttachments($lender)
-    {
+	public function getAttachments($lender)
+	{
 
-        $sql = 'SELECT a.id, a.id_type, a.id_owner, a.type_owner, a.path, a.added, a.updated, a.archived
+		$sql = 'SELECT a.id, a.id_type, a.id_owner, a.type_owner, a.path, a.added, a.updated, a.archived
 				FROM attachment a
 				WHERE a.id_owner = ' . $lender . '
 					AND a.type_owner = "lenders_accounts";';
 
-        $result      = $this->bdd->query($sql);
-        $attachments = array();
-        while ($record = $this->bdd->fetch_array($result)) {
+		$result      = $this->bdd->query($sql);
+		$attachments = array();
+		while ($record = $this->bdd->fetch_array($result)) {
 
-            $attachments[$record["id_type"]] = $record;
-        }
-        return $attachments;
+			$attachments[$record["id_type"]] = $record;
+		}
+		return $attachments;
 
-    }
+	}
 }

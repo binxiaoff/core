@@ -286,7 +286,7 @@ class ajaxController extends bootstrap
                 </td>
                 <td style='white-space:nowrap;'>
                     <a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'>
-                        " . number_format($pf['amount'], 0, ',', ' ') . "€
+                        " . $this->ficelle->formatNumber($pf['amount'], 0) . "€
                     </a>
                 </td>
                 <td style='white-space:nowrap;'>
@@ -297,9 +297,9 @@ class ajaxController extends bootstrap
 
             $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'>";
             if ($CountEnchere > 0) {
-                $affichage .= number_format($avgRate, 1, ',', ' ') . "%";
+                $affichage .= $this->ficelle->formatNumber($avgRate, 1) . "%";
             } else {
-                $affichage .= ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' ')) . "%";
+                $affichage .= ($pf['target_rate'] == '-' ? $pf['target_rate'] : $this->ficelle->formatNumber($pf['target_rate'], 1)) . "%";
             }
             $affichage .= "</a></td>";
 
@@ -738,13 +738,11 @@ class ajaxController extends bootstrap
 
                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                // Attribution des données aux variables
                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                // Envoi du mail
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
@@ -803,7 +801,7 @@ class ajaxController extends bootstrap
             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->setSubject(stripslashes($sujetMail));
             $this->email->setHTMLBody(stripslashes($texteMail));
@@ -1022,8 +1020,8 @@ class ajaxController extends bootstrap
                         'surl'            => $this->surl,
                         'url'             => $this->lurl,
                         'prenom_p'        => $this->clients->prenom,
-                        'fonds_retrait'   => number_format($montant, 2, ',', ' '),
-                        'solde_p'         => number_format($this->solde - $montant, 2, ',', ' '),
+                        'fonds_retrait'   => $this->ficelle->formatNumber($montant),
+                        'solde_p'         => $this->ficelle->formatNumber($this->solde - $montant),
                         'link_mandat'     => $this->surl . '/images/default/mandat.jpg',
                         'motif_virement'  => $motif,
                         'projets'         => $this->lurl . '/' . $pageProjets,
@@ -1038,7 +1036,7 @@ class ajaxController extends bootstrap
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
@@ -1077,15 +1075,14 @@ class ajaxController extends bootstrap
                 $email           = $this->clients->email;
                 $dateinscription = date('d/m/Y', strtotime($this->clients->added));
                 if ($transac->montant != false) {
-                    $montantInscription = number_format($transac->montant / 100, 2, ',', ' ');
+                    $montantInscription = $this->ficelle->formatNumber($transac->montant / 100);
                 } else {
-                    $montantInscription = number_format(0, 2, ',', ' ');
+                    $montantInscription = $this->ficelle->formatNumber(0);
                 }
-                $montantPreteDepuisInscription = number_format($soldePrets, 2, ',', ' ');
-                $montantRetirePlateforme       = number_format($montant, 2, ',', ' ');
-                $solde                         = number_format($transac->getSolde($this->clients->id_client), 2, ',', ' ');
+                $montantPreteDepuisInscription = $this->ficelle->formatNumber($soldePrets);
+                $montantRetirePlateforme       = $this->ficelle->formatNumber($montant);
+                $solde                         = $this->ficelle->formatNumber($transac->getSolde($this->clients->id_client));
 
-                // Attribution des données aux variables
                 $sujetMail = $this->mails_text->subject;
                 eval("\$sujetMail = \"$sujetMail\";");
 
@@ -1098,7 +1095,7 @@ class ajaxController extends bootstrap
                 $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                 $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->addRecipient(trim($destinataire));
                 $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
@@ -1120,54 +1117,9 @@ class ajaxController extends bootstrap
 
         if (isset($_POST['id_client']) && $this->clients->id_client == $_POST['id_client']) {
             $solde = $this->transactions->getSolde($this->clients->id_client);
-            echo $solde = number_format($solde, 2, ',', ' ');
+            echo $solde = $this->ficelle->formatNumber($solde);
         } else {
             echo 'nok';
-        }
-    }
-
-    public function _dernier_bilan()
-    {
-        $this->autoFireView = false;
-
-        //Recuperation des element de traductions
-        $this->lng['etape4'] = $this->ln->selectFront('depot-de-dossier-etape-4', $this->language, $this->App);
-
-
-        if (isset($_POST['annee']) && isset($_POST['mois'])) {
-            $retourne = '
-
-            <select name="mois" id="mois" class="field-mini custom-select">
-                <option value="0">' . $this->lng['etape4']['mois'] . '</option>';
-
-            foreach ($this->dates->tableauMois['fr'] as $k => $mois) {
-                if ($k > 0) {
-                    if (strlen($k) < 2) {
-                        $numMois = '0' . $k;
-                    } else {
-                        $numMois = $k;
-                    }
-
-                    if (date('Y') == $_POST['annee']) {
-                        if ($numMois <= date('m')) {
-                            $retourne .= '<option ' . ($_POST['mois'] == $numMois ? 'selected' : '') . ' value="' . $numMois . '">' . $mois . '</option>';
-                        }
-                    } else {
-                        $retourne .= '<option ' . ($_POST['mois'] == $numMois ? 'selected' : '') . ' value="' . $numMois . '">' . $mois . '</option>';
-                    }
-
-                }
-            }
-
-            $retourne .= '</select>
-
-             <script>
-             $(".custom-select").c2Selectbox();
-             </script>
-
-             ';
-
-            echo $retourne;
         }
     }
 
@@ -1196,7 +1148,7 @@ class ajaxController extends bootstrap
             $donneesEcheances = $tabl[1];
             $lEcheanciers     = $tabl[2];
 
-            echo number_format($lEcheanciers[1]['echeance'], 2, ',', ' ');
+            echo $this->ficelle->formatNumber($lEcheanciers[1]['echeance']);
         }
     }
 
@@ -1316,7 +1268,7 @@ class ajaxController extends bootstrap
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
@@ -1371,7 +1323,7 @@ class ajaxController extends bootstrap
                 $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                 $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->addRecipient(trim($destinataire));
                 $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');

@@ -211,7 +211,7 @@
 							$this->insee_pays->getByCountryName(trim($this->pays->fr));
 							$cp = $this->insee_pays->COG;
 
-							$retenuesource = number_format($this->retenuesource*100, 2, ',', ' ').'%';
+							$retenuesource = $this->ficelle->formatNumber($this->retenuesource*100).'%';
 
 
 							if($id_pays_fiscal == 0) $id_pays = 1;

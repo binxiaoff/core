@@ -408,15 +408,15 @@ class operationsController extends bootstrap
                             <td><?= $t['libelle_projet'] ?></td>
                             <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
                             <td<?= $couleur ?>><?= number_format($t['montant_operation'] / 100, 2, ',', '') ?></td>
-                            <td><?= number_format(($this->echeanciers->capital / 100), 2, ',', ' ') ?></td>
-                            <td><?= number_format(($this->echeanciers->interets / 100), 2, ',', ' ') ?></td>
-                            <td><?= number_format($this->echeanciers->prelevements_obligatoires, 2, ',', ' ') ?></td>
-                            <td><?= number_format($this->echeanciers->retenues_source, 2, ',', ' ') ?></td>
-                            <td><?= number_format($this->echeanciers->csg, 2, ',', ' ') ?></td>
-                            <td><?= number_format($this->echeanciers->prelevements_sociaux, 2, ',', ' ') ?></td>
-                            <td><?= number_format($this->echeanciers->contributions_additionnelles, 2, ',', ' ') ?></td>
-                            <td><?= number_format($this->echeanciers->prelevements_solidarite, 2, ',', ' ') ?></td>
-                            <td><?= number_format($this->echeanciers->crds, 2, ',', ' ') ?></td>
+                            <td><?= $this->ficelle->formatNumber(($this->echeanciers->capital / 100)) ?></td>
+                            <td><?= $this->ficelle->formatNumber(($this->echeanciers->interets / 100)) ?></td>
+                            <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_obligatoires) ?></td>
+                            <td><?= $this->ficelle->formatNumber($this->echeanciers->retenues_source) ?></td>
+                            <td><?= $this->ficelle->formatNumber($this->echeanciers->csg) ?></td>
+                            <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_sociaux) ?></td>
+                            <td><?= $this->ficelle->formatNumber($this->echeanciers->contributions_additionnelles) ?></td>
+                            <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_solidarite) ?></td>
+                            <td><?= $this->ficelle->formatNumber($this->echeanciers->crds) ?></td>
                             <td><?= number_format($solde / 100, 2, ',', '') ?></td>
                             <td></td>
                         </tr>
@@ -495,7 +495,7 @@ class operationsController extends bootstrap
                             <td><?= $bdc ?></td>
                             <td><?= $t['libelle_projet'] ?></td>
                             <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
-                            <td<?= (!$offre_accepte ? $couleur : '') ?>><?= number_format($t['montant_operation'] / 100, 2, ',', ' ') ?></td>
+                            <td<?= (!$offre_accepte ? $couleur : '') ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
                             <td></td>
                             <td></td>
                             <td></td>

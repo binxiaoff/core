@@ -211,7 +211,6 @@ class ajaxController extends bootstrap
     public function _ajoutProduitComp()
     {
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Chargement des datas
             $this->produits_crosseling = $this->loadData('produits_crosseling');
             $this->produits_elements   = $this->loadData('produits_elements');
             $this->produits            = $this->loadData('produits', array('url' => $this->url, 'surl' => $this->surl, 'produits_elements' => $this->produits_elements, 'upload' => $this->upload, 'spath' => $this->spath));
@@ -234,7 +233,6 @@ class ajaxController extends bootstrap
     public function _moveProduitComp()
     {
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Chargement des datas
             $this->produits_crosseling = $this->loadData('produits_crosseling');
             $this->produits_elements   = $this->loadData('produits_elements');
             $this->produits            = $this->loadData('produits', array('url' => $this->url, 'surl' => $this->surl, 'produits_elements' => $this->produits_elements, 'upload' => $this->upload, 'spath' => $this->spath));
@@ -258,7 +256,6 @@ class ajaxController extends bootstrap
     public function _deleteProduitComp()
     {
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Chargement des datas
             $this->produits_crosseling = $this->loadData('produits_crosseling');
             $this->produits_elements   = $this->loadData('produits_elements');
             $this->produits            = $this->loadData('produits', array('url' => $this->url, 'surl' => $this->surl, 'produits_elements' => $this->produits_elements, 'upload' => $this->upload, 'spath' => $this->spath));
@@ -281,7 +278,6 @@ class ajaxController extends bootstrap
     public function _deleteImageFicheProduit()
     {
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Chargement des datas
             $this->produits_images   = $this->loadData('produits_images');
             $this->produits_elements = $this->loadData('produits_elements');
             $this->produits          = $this->loadData('produits', array('url' => $this->url, 'surl' => $this->surl, 'produits_elements' => $this->produits_elements, 'upload' => $this->upload, 'spath' => $this->spath));
@@ -310,7 +306,6 @@ class ajaxController extends bootstrap
     public function _moveImageToFirstOne()
     {
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Chargement des datas
             $this->produits_images   = $this->loadData('produits_images');
             $this->produits_elements = $this->loadData('produits_elements');
             $this->produits          = $this->loadData('produits', array('url' => $this->url, 'surl' => $this->surl, 'produits_elements' => $this->produits_elements, 'upload' => $this->upload, 'spath' => $this->spath));
@@ -336,7 +331,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->current_projects_status = $this->loadData('projects_status');
 
@@ -350,7 +344,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->current_projects_status = $this->loadData('projects_status');
 
@@ -364,7 +357,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
@@ -594,9 +586,8 @@ class ajaxController extends bootstrap
 
                 $timeDateretrait  = strtotime($this->projects->date_retrait);
                 $monthDateretrait = $this->dates->tableauMois['fr'][date('n', $timeDateretrait)];
-                $date_retrait     = date('d', $timeDateretrait) . ' ' . $month . ' ' . date('Y', $timeDateretrait);
+                $date_retrait     = date('d', $timeDateretrait) . ' ' . $monthDateretrait . ' ' . date('Y', $timeDateretrait);
 
-                // Variables du mailing
                 $varMail = array(
                     'surl'                             => $this->surl,
                     'url'                              => $this->furl,
@@ -610,27 +601,21 @@ class ajaxController extends bootstrap
                     'lien_tw'                          => $lien_tw
                 );
 
-                // Construction du tableau avec les balises EMV
                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                // Attribution des données aux variables
                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                // Envoi du mail
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                if ($this->Config['env'] == 'prod') // nmp
-                {
+                if ($this->Config['env'] === 'prod') {
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                    // Injection du mail NMP dans la queue
                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else // non nmp
-                {
+                } else {
                     $this->email->addRecipient(trim($this->clients->email));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
@@ -658,7 +643,6 @@ class ajaxController extends bootstrap
         } else {
             echo 'nok';
         }
-
     }
 
     public function _addMemo()
@@ -666,7 +650,6 @@ class ajaxController extends bootstrap
         $this->autoFireView = true;
 
         if (isset($_POST['content_memo']) && isset($_POST['id']) && isset($_POST['type'])) {
-            // Chargement des datas
             $this->projects_comments = $this->loadData('projects_comments');
 
             if ($_POST['type'] == 'edit') {
@@ -691,7 +674,6 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_project_comment']) && isset($_POST['id_project'])) {
-            // Chargement des datas
             $this->projects_comments = $this->loadData('projects_comments');
 
             // on supprime le memo
@@ -708,7 +690,6 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_project']) && isset($_POST['etape'])) {
-            // Chargement des datas
             $this->projects         = $this->loadData('projects');
             $this->companies        = $this->loadData('companies');
             $this->clients          = $this->loadData('clients');
@@ -746,6 +727,11 @@ class ajaxController extends bootstrap
 
                 // on recup le client
                 $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
+
+                $iIdPrescripteur = 'true' === $_POST['has_prescripteur'] ? $_POST['id_prescripteur'] : 0;
+
+                $this->projects->id_prescripteur = $iIdPrescripteur;
+                $this->projects->update();
 
                 $this->companies->name    = $_POST['raison_sociale_etape2'];
                 $this->companies->forme   = $_POST['forme_juridique_etape2'];
@@ -831,7 +817,6 @@ class ajaxController extends bootstrap
                 $this->clients_adresses->update();
 
             } elseif ($_POST['etape'] == 3) {
-                // Chargement des datas
                 $this->projects = $this->loadData('projects');
 
                 // On recup le projet
@@ -847,7 +832,6 @@ class ajaxController extends bootstrap
 
                 $this->projects->update();
             } elseif ($_POST['etape'] == 4) {
-                // Chargement des datas
                 $this->projects          = $this->loadData('projects');
                 $this->companies_bilans  = $this->loadData('companies_bilans');
                 $this->companies_details = $this->loadData('companies_details');
@@ -873,6 +857,12 @@ class ajaxController extends bootstrap
 
                 // On recup le projet
                 $this->projects->get($_POST['id_project'], 'id_project');
+
+                $this->projects->ca_declara_client                    = $_POST['ca_declara_client'];
+                $this->projects->resultat_exploitation_declara_client = $_POST['resultat_exploitation_declara_client'];
+                $this->projects->fonds_propres_declara_client         = $_POST['fonds_propres_declara_client'];
+
+                $this->projects->update();
 
                 // On recup le detail de l'entreprise
                 $this->companies_details->get($this->projects->id_company, 'id_company');
@@ -947,7 +937,6 @@ class ajaxController extends bootstrap
             } elseif ($_POST['etape'] == 5) {
 
             } elseif ($_POST['etape'] == 6) {
-                // Chargement des datas
                 $this->projects = $this->loadData('projects');
 
                 // On recup le projet
@@ -968,7 +957,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement des datas
         $this->projects         = $this->loadData('projects');
         $this->companies        = $this->loadData('companies');
         $this->clients          = $this->loadData('clients');
@@ -1043,94 +1031,66 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->companies               = $this->loadData('companies');
         $this->clients                 = $this->loadData('clients');
         $this->projects_status_history = $this->loadData('projects_status_history');
 
         if (isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
-            // On recup l'entreprise
             $this->companies->get($this->projects->id_company, 'id_company');
-
-            // On recupe le client
             $this->clients->get($this->companies->id_client_owner, 'id_client');
 
-            // Creation du mot de passe client
-            $lemotdepasse            = $this->ficelle->generatePassword(8);
-            $this->clients->password = md5($lemotdepasse);
-
-
-            // ajout du statut dans l'historique : statut 10 (non lu)
             $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 10, $this->projects->id_project);
 
             //**********************************************//
             //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION ***//
             //**********************************************//
 
-            // Recuperation du modele de mail
             $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
 
-            // Variables du mailing
-            $surl  = $this->surl;
-            $url   = $this->furl;
-            $login = $this->clients->email;
-            //$mdp = $lemotdepasse;
-
-            // FB
             $this->settings->get('Facebook', 'type');
             $lien_fb = $this->settings->value;
 
-            // Twitter
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
-            // Variables du mailing
             $varMail = array(
-                'surl'    => $surl,
-                'url'     => $url,
-                'lien_fb' => $lien_fb,
-                'lien_tw' => $lien_tw
+                'prenom'               => $this->clients->prenom ,
+                'raison_sociale'       => $this->companies->name,
+                'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
+                'lien_fb'              => $lien_fb,
+                'lien_tw'              => $lien_tw,
+                'sujet'                => htmlentities($this->mails_text->subject, null, 'UTF-8'),
+                'surl'                 => $this->surl,
+                'url'                  => $this->url,
             );
 
-            // Construction du tableau avec les balises EMV
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-            // Attribution des données aux variables
             $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-            // Envoi du mail
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->setSubject(stripslashes($sujetMail));
             $this->email->setHTMLBody(stripslashes($texteMail));
 
-            if ($this->Config['env'] == 'prod') // nmp
-            {
+            if ($this->Config['env'] === 'prod') {
                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                // Injection du mail NMP dans la queue
                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-            } else // non nmp
-            {
+            } else {
                 $this->email->addRecipient(trim($this->clients->email));
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
-            // fin mail
 
-
-            // Mise à jour du client
-            $this->clients->status_depot_dossier = 5;
-            $this->clients->status               = 1;
+            $this->clients->password = md5($this->ficelle->generatePassword(8));
+            $this->clients->status   = 1;
             $this->clients->update();
 
-            // On recupere l'analyste par defaut
             $this->users->get(1, 'default_analyst');
             $this->projects->id_analyste = $this->users->id_user;
             $this->projects->update();
-
-
         }
     }
 
@@ -1138,7 +1098,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement du data
         $this->projects               = $this->loadData('projects');
         $this->companies              = $this->loadData('companies');
         $this->companies_bilans       = $this->loadData('companies_bilans');
@@ -1146,21 +1105,13 @@ class ajaxController extends bootstrap
         $this->companies_actif_passif = $this->loadData('companies_actif_passif');
         $this->clients                = $this->loadData('clients');
 
-
         if (isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
-
-            // On recup l'entreprise
             $this->companies->get($this->projects->id_company, 'id_company');
-
-            // On recup le detail de l'entreprise
             $this->companies_details->get($this->projects->id_company, 'id_company');
-
-            // On recup le client
             $this->clients->get($this->companies->id_client_owner, 'id_client');
 
-            // Liste des actif passif
             $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '"');
-            // Si existe pas on créer les champs
+
             if ($this->lCompanies_actif_passif == false) {
                 for ($i = 1; $i <= 3; $i++) {
                     $this->companies_actif_passif->ordre      = $i;
@@ -1168,15 +1119,12 @@ class ajaxController extends bootstrap
                     $this->companies_actif_passif->create();
                 }
 
-                header('location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                 die;
             }
 
-            // liste des bilans
             $this->lbilans = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'date ASC');
-
         }
-
     }
 
     // email creation nouveau mot de passe (mis a jour le 09/07/2014)
@@ -1184,7 +1132,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement des datas
         $clients = $this->loadData('clients');
 
         if (isset($_POST['id_client']) && $clients->get($_POST['id_client'], 'id_client')) {
@@ -1204,7 +1151,6 @@ class ajaxController extends bootstrap
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
-            // Variables du mailing
             $varMail = array(
                 'surl'          => $this->surl,
                 'url'           => $this->lurl,
@@ -1215,31 +1161,24 @@ class ajaxController extends bootstrap
                 'lien_tw'       => $lien_tw
             );
 
-            // Construction du tableau avec les balises EMV
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-            // Attribution des données aux variables
             $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-            // Envoi du mail
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->setSubject(stripslashes($sujetMail));
             $this->email->setHTMLBody(stripslashes($texteMail));
 
-            if ($this->Config['env'] == 'prod') // nmp
-            {
+            if ($this->Config['env'] === 'prod') {
                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
-                // Injection du mail NMP dans la queue
                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-            } else // non nmp
-            {
+            } else {
                 $this->email->addRecipient(trim($clients->email));
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
-            // fin mail
 
             echo 'ok';
         } else {
@@ -1252,18 +1191,12 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement du data
         $this->clients = $this->loadData('clients');
 
         if (isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
             $pass = $this->ficelle->generatePassword(8);
 
             $this->clients->changePassword($this->clients->email, $pass);
-
-            // email //
-            //mail($this->clients->email,'nouveau mot de passe','votre nouveau mot de passe est : '.$pass);
-            // email //
-
 
             //************************************//
             //*** ENVOI DU MAIL GENERATION MDP ***//
@@ -1272,22 +1205,17 @@ class ajaxController extends bootstrap
             // Recuperation du modele de mail
             $this->mails_text->get('generation-mot-de-passe', 'lang = "' . $this->language . '" AND type');
 
-            // Variables du mailing
             $surl  = $this->surl;
             $url   = $this->furl;
             $login = $this->clients->email;
             $mdp   = $pass;
 
-            // FB
             $this->settings->get('Facebook', 'type');
             $lien_fb = $this->settings->value;
 
-            // Twitter
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
-
-            // Variables du mailing
             $varMail = array(
                 'surl'     => $surl,
                 'url'      => $url,
@@ -1298,34 +1226,24 @@ class ajaxController extends bootstrap
                 'lien_tw'  => $lien_tw
             );
 
-
-            // Construction du tableau avec les balises EMV
             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-            // Attribution des données aux variables
             $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-            // Envoi du mail
-            $this->email = $this->loadLib('email', array());
+            $this->email = $this->loadLib('email');
             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
             $this->email->setSubject(stripslashes($sujetMail));
             $this->email->setHTMLBody(stripslashes($texteMail));
 
-            if ($this->Config['env'] == 'prod') // nmp
-            {
+            if ($this->Config['env'] === 'prod') {
                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                // Injection du mail NMP dans la queue
                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-            } else // non nmp
-            {
+            } else {
                 $this->email->addRecipient(trim($this->clients->email));
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
-            // fin mail
-
-
         }
     }
 
@@ -1333,7 +1251,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement du data
         $this->transactions      = $this->loadData('transactions');
         $this->partenaires_types = $this->loadData('partenaires_types');
         $this->clients_history   = $this->loadData('clients_history');
@@ -1388,7 +1305,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement du data
         $this->transactions      = $this->loadData('transactions');
         $this->partenaires_types = $this->loadData('partenaires_types');
         $this->clients_history   = $this->loadData('clients_history');
@@ -1475,7 +1391,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement du data
         $this->clients          = $this->loadData('clients');
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->transactions     = $this->loadData('transactions');
@@ -1496,7 +1411,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement du data
         $this->clients          = $this->loadData('clients');
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->transactions     = $this->loadData('transactions');
@@ -1520,7 +1434,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement du data
         $preteurs   = $this->loadData('clients');
         $receptions = $this->loadData('receptions');
 
@@ -1615,7 +1528,6 @@ class ajaxController extends bootstrap
                 // Recuperation du modele de mail
                 $this->mails_text->get('preteur-alimentation-manu', 'lang = "' . $this->language . '" AND type');
 
-                // Variables du mailing
                 $surl    = $this->surl;
                 $url     = $this->furl;
                 $email   = $preteurs->email;
@@ -1639,13 +1551,12 @@ class ajaxController extends bootstrap
                 // Solde du compte preteur
                 $solde = $transactions->getSolde($receptions->id_client);
 
-                // Variables du mailing
                 $varMail = array(
                     'surl'            => $this->surl,
                     'url'             => $this->furl,
                     'prenom_p'        => utf8_decode($clients->prenom),
-                    'fonds_depot'     => number_format($receptions->montant / 100, 2, ',', ' '),
-                    'solde_p'         => number_format($solde, 2, ',', ' '),
+                    'fonds_depot'     => $this->ficelle->formatNumber($receptions->montant / 100),
+                    'solde_p'         => $this->ficelle->formatNumber($solde),
                     'motif_virement'  => $motif,
                     'projets'         => $this->furl . '/projets-a-financer',
                     'gestion_alertes' => $this->furl . '/profile',
@@ -1653,31 +1564,24 @@ class ajaxController extends bootstrap
                     'lien_tw'         => $lien_tw
                 );
 
-                // Construction du tableau avec les balises EMV
                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                // Attribution des donnÃ©es aux variables
                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                // Envoi du mail
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                if ($this->Config['env'] == 'prod') // nmp
-                {
+                if ($this->Config['env'] === 'prod') {
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteurs->email, $tabFiler);
-                    // Injection du mail NMP dans la queue
                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else // non nmp
-                {
+                } else {
                     $this->email->addRecipient(trim($preteurs->email));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
-                // fin mail
             }
 
             echo $receptions->id_client;
@@ -1689,7 +1593,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement du data
         $projects               = $this->loadData('projects');
         $receptions             = $this->loadData('receptions');
         $companies              = $this->loadData('companies');
@@ -1795,7 +1698,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement du data
         $preteurs   = $this->loadData('clients');
         $receptions = $this->loadData('receptions');
 
@@ -1832,7 +1734,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement du data
         $projects               = $this->loadData('projects');
         $receptions             = $this->loadData('receptions');
         $transactions           = $this->loadData('transactions');
@@ -1901,7 +1802,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement du data
         $projects                = $this->loadData('projects');
         $companies               = $this->loadData('companies');
         $clients                 = $this->loadData('clients');
@@ -1942,7 +1842,7 @@ class ajaxController extends bootstrap
             $bank_unilend->create();
 
             // mise a jour de receptions
-            $receptions->status_bo = 3; // rejetÃ©
+            $receptions->status_bo = 3; // rejeté
             $receptions->remb      = 0;
             $receptions->update();
 
@@ -1953,9 +1853,9 @@ class ajaxController extends bootstrap
             $newsum = $sumRemb;
             foreach ($eche as $e) {
                 $ordre = $e['ordre'];
-                // on rÃ©cup le montant que l'emprunteur doit rembourser
+                // on récup le montant que l'emprunteur doit rembourser
                 $montantDuMois = $echeanciers->getMontantRembEmprunteur($e['montant'] / 100, $e['commission'] / 100, $e['tva'] / 100);
-                // On verifie si le montant a remb est inferieur ou Ã©gale a la somme rÃ©cupÃ©rÃ©
+                // On verifie si le montant a remb est inferieur ou égale a la somme récupéré
                 if ($montantDuMois <= $newsum) {
                     // On met a jour les echeances du mois
                     $echeanciers->updateStatusEmprunteur($projects->id_project, $ordre, 'annuler');
@@ -1971,7 +1871,7 @@ class ajaxController extends bootstrap
                     if ($projects_remb->counter('id_project = "' . $projects->id_project . '" AND ordre = "' . $ordre . '" AND status = 0') > 0) {
 
                         $projects_remb->get($ordre, 'status = 0 AND id_project = "' . $projects->id_project . '" AND ordre');
-                        $projects_remb->status = 2; // rejetÃ©
+                        $projects_remb->status = 2; // rejeté
                         $projects_remb->update();
                     }
 
@@ -1993,7 +1893,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        // Chargement du data
         $lender         = $this->loadData('lenders_accounts');
         $preteur        = $this->loadData('clients');
         $bids           = $this->loadData('bids');
@@ -2027,7 +1926,6 @@ class ajaxController extends bootstrap
 
         $this->autoFireView = true;
 
-        // Chargement du data
         $this->transactions = $this->loadData('transactions');
         $this->clients      = $this->loadData('clients');
         $this->echeanciers  = $this->loadData('echeanciers');
@@ -2055,7 +1953,6 @@ class ajaxController extends bootstrap
         // Chargement des fichiers JS
         $this->loadJs('admin/chart/highcharts');
 
-        // Chargement du data
         $this->transactions      = $this->loadData('transactions');
         $this->partenaires_types = $this->loadData('partenaires_types');
         $this->clients_history   = $this->loadData('clients_history');
@@ -2074,103 +1971,40 @@ class ajaxController extends bootstrap
             $this->year = date('Y');
         }
 
-        // Recuperation du chiffre d'affaire sur les mois de l'année
-        $lCaParMois = $this->transactions->recupCAByMonthForAYear($this->year);
-
-        // Recuperation des virements emprunteurs
-        $lVirementsParMois = $this->transactions->recupVirmentEmprByMonthForAYear($this->year);
-
-        // Recuperation des remb emprunteurs
-        $lRembParMois = $this->transactions->recupRembEmprByMonthForAYear($this->year);
-
-
-        // Les CA pour les typrd Partenaires
-        /*foreach($this->lTypes as $part)
-        {
-            $lCaParMoisPart[$part['id_type']] = $this->transactions->recupCAByMonthForAYearType($this->year,$part['id_type']);
-        }*/
-
+        $lCaParMois          = $this->transactions->recupCAByMonthForAYear($this->year);
+        $lVirementsParMois   = $this->transactions->recupVirmentEmprByMonthForAYear($this->year);
+        $lRembParMois        = $this->transactions->recupRembEmprByMonthForAYear($this->year);
         $this->caParmoisPart = $this->transactions->recupMonthlyPartnershipTurnoverByYear($this->year);
 
-
         for ($i = 1; $i <= 12; $i++) {
-            $i                   = ($i < 10 ? '0' . $i : $i);
-            $this->caParmois[$i] = number_format(($lCaParMois[$i] != '' ? $lCaParMois[$i] : 0), 2, '.', '');
-
+            $i                          = ($i < 10 ? '0' . $i : $i);
+            $this->caParmois[$i]        = number_format(($lCaParMois[$i] != '' ? $lCaParMois[$i] : 0), 2, '.', '');
             $this->VirementsParmois[$i] = number_format(str_replace('-', '', ($lVirementsParMois[$i] != '' ? $lVirementsParMois[$i] : 0)), 2, '.', '');
-
-            $this->RembEmprParMois[$i] = number_format(($lRembParMois[$i] != '' ? $lRembParMois[$i] : 0), 2, '.', '');
-
-
-            /*
-            foreach($this->lTypes as $part)
-            {
-                $this->caParmoisPart[$part['id_type']][$i] = number_format(($lCaParMoisPart[$part['id_type']][$i] != ''?$lCaParMoisPart[$part['id_type']][$i]:0),2,'.','');
-            }
-            */
+            $this->RembEmprParMois[$i]  = number_format(($lRembParMois[$i] != '' ? $lRembParMois[$i] : 0), 2, '.', '');
         }
 
-
-        $this->month = date('m');
-        //$this->year = date('Y');
-
-        //////////////////
-
-        // nb preteurs connect
-        $this->nbPreteurLogin = $this->clients_history->getNb($this->month, $this->year, 'type = 1 AND status = 1', 1);
-
-
-        /*
-        // nb emprunteur connect
-        $this->nbEmprunteurLogin = $this->clients_history->getNb($this->month,$this->year,'type > 1 AND status = 1',1);
-
-        // nb depot dossier
-        $this->nbDepotDossier = $this->clients_history->getNb($this->month,$this->year,'type > 1 AND status = 3');
-
-        // nb inscription emprunteur
-        $this->nbInscriptionEmprunteur = $this->clients_history->getNb($this->month,$this->year,'type > 1 AND status = 2',1);
-
-
-        */
-        // nb inscription preteur
+        $this->month                = date('m');
+        $this->nbPreteurLogin       = $this->clients_history->getNb($this->month, $this->year, 'type = 1 AND status = 1', 1);
         $this->nbInscriptionPreteur = $this->clients_history->getNb($this->month, $this->year, 'type = 1 AND status = 2', 1);
+        $this->nbFondsDeposes       = $this->caParmois[$this->month];
+        $this->nbFondsPretes        = $this->bids->sumBidsMonth($this->month, $this->year);
+        $this->TotalCapitalRestant  = $this->echeanciers->getTotalSumRembByMonth($this->month, $this->year);
 
-
-        // fonds deposés
-        $this->nbFondsDeposes = $this->caParmois[$this->month];
-
-        // Fonds pretes
-        $this->nbFondsPretes = $this->bids->sumBidsMonth($this->month, $this->year);
-
-        // Total capital restant du mois
-        $this->TotalCapitalRestant = $this->echeanciers->getTotalSumRembByMonth($this->month, $this->year);
-
-
-        /////////////////
-
-        // Tous les projets du mois
         $nbProjects = $this->projects->counter('MONTH(added) = ' . $this->month . ' AND YEAR(added) = ' . $this->year);
-
-        $lProjects = $this->projects->select('MONTH(added) = ' . $this->month . ' AND YEAR(added) = ' . $this->year);
+        $lProjects  = $this->projects->select('MONTH(added) = ' . $this->month . ' AND YEAR(added) = ' . $this->year);
 
         // On recupere les projets valides
         $nbProjetValid = 0;
         foreach ($lProjects as $p) {
             $this->projects_status->getLastStatutByMonth($p['id_project'], $this->month, $this->year);
-            if ($this->projects_status->status > 30) // a partir de a funder
-            {
+            if ($this->projects_status->status >= \projects_status::A_FUNDER) {
                 $nbProjetValid += 1;
             }
-
         }
 
-        // ratio Projets
-        $this->ratioProjects = @($nbProjetValid / $nbProjects) * 100;
-
-        // moyenne des depots de fonds preteur
+        $this->ratioProjects      = @($nbProjetValid / $nbProjects) * 100;
         $this->moyenneDepotsFonds = $this->transactions->avgDepotPreteurByMonth($this->month, $this->year);
 
-        // total retrait argent
         $TotalRetrait = $this->transactions->sumByMonth(8, $this->month, $this->year);
         $TotalRetrait = str_replace('-', '', $TotalRetrait);
 
@@ -2204,15 +2038,12 @@ class ajaxController extends bootstrap
         } else {
             $this->tauxAttrition = 0;
         }
-
-        /////////////////////
     }
 
     public function _check_status_dossierV2()
     {
         $this->autoFireView = false;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->projects_notes          = $this->loadData('projects_notes');
         $this->projects_status         = $this->loadData('projects_status');
@@ -2226,7 +2057,6 @@ class ajaxController extends bootstrap
             $form_ok = true;
 
             // on verifie que les infos sont good
-            //if($_POST['status'] == '30' && $_POST['status'] == '31')
             if ($this->projects->amount <= 0 || $this->projects->period <= 0) {
                 $form_ok = false;
             }
@@ -2238,7 +2068,6 @@ class ajaxController extends bootstrap
             }
 
             if ($form_ok == true) {
-
                 // on check si existe deja
                 if ($this->projects_notes->get($_POST['id_project'], 'id_project')) {
                     $update = true;
@@ -2256,13 +2085,7 @@ class ajaxController extends bootstrap
                 $this->current_projects_status = $this->loadData('projects_status');
                 $this->current_projects_status->getLastStatut($this->projects->id_project);
 
-                if ($this->current_projects_status->status == 20) {
-                    $this->lProjects_status = $this->projects_status->select(' status <= 20 ', ' status ASC ');
-                } elseif ($this->current_projects_status->status >= 80) {
-                    $this->lProjects_status = $this->projects_status->select(' status >= 80 ', ' status ASC ');
-                } else {
-                    $this->lProjects_status = array();
-                }
+                $this->lProjects_status = $this->current_projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
 
                 if (count($this->lProjects_status) > 0) {
                     $select = '<select name="status" id="status" class="select">';
@@ -2270,19 +2093,15 @@ class ajaxController extends bootstrap
                         $select .= '<option ' . ($this->current_projects_status->status == $s['status'] ? 'selected' : '') . ' value="' . $s['status'] . '">' . $s['label'] . '</option>';
                     }
                     $select .= '</select>';
-
                 } else {
                     $select = '<input type="hidden" name="status" id="status" value="' . $this->current_projects_status->status . '" />';
                     $select .= $this->current_projects_status->label;
-
                 }
 
-                if ($this->current_projects_status->status >= 31) {
+                if ($this->current_projects_status->status != \projects_status::REJETE) {
                     $moyenne1 = (($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1));
-
-                    $moyenne = round($moyenne1, 1);
-
-                    $etape_6 = '
+                    $moyenne  = round($moyenne1, 1);
+                    $etape_6  = '
                     <div id="title_etape6">Etape 6</div>
                     <div id="etape6">
                         <form method="post" name="dossier_etape6" id="dossier_etape6" action="" target="_parent">
@@ -2296,13 +2115,11 @@ class ajaxController extends bootstrap
                                     <td style="vertical-align:top;">
                                         <span id="marche_opere">' . $this->projects_notes->marche_opere . '</span> /10
                                     </td>
-
                                     <th><label for="qualite_moyen_infos_financieres">Qualité des moyens & infos financières</label></th>
                                     <td><input tabindex="6" id="qualite_moyen_infos_financieres" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->qualite_moyen_infos_financieres . '" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> /10</td>
                                     <th><label for="notation_externe">Notation externe</label></th>
                                     <td><input tabindex="7" id="notation_externe" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->notation_externe . '" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> /10</td>
                                 </tr>
-
                                 <tr>
                                     <td colspan="2" style="vertical-align:top;">
                                         <table>
@@ -2318,7 +2135,6 @@ class ajaxController extends bootstrap
                                                 <th><label for="tresorerie">Trésorerie</label></th>
                                                 <td><input tabindex="3" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->tresorerie . '" name="tresorerie" id="tresorerie" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
                                             </tr>
-
                                         </table>
                                     </td>
                                     <td colspan="2" style="vertical-align:top;">
@@ -2335,34 +2151,27 @@ class ajaxController extends bootstrap
                                     </td>
                                     <td colspan="4"></td>
                                 </tr>
-
                                 <tr class="lanote">
                                     <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote" onkeyup="nodizaines(this.value,this.id);">' . $moyenne . '/10</span></th>
-
                                 </tr>
-
                                 <tr>
                                     <td colspan="8" style="text-align:center;">
-
-                                    <label for="avis" style="text-align:left;display: block;">Avis :</label><br />
-                                    <textarea name="avis" tabindex="8" style="height:700px;" id="avis" class="textarea_large avis" />' . $this->projects_notes->avis . '</textarea>
-                                    <script type="text/javascript">var ckedAvis = CKEDITOR.replace(\'avis\',{ height: 700});</script>
+                                        <label for="avis" style="text-align:left;display: block;">Avis :</label><br />
+                                        <textarea name="avis" tabindex="8" style="height:700px;" id="avis" class="textarea_large avis" />' . $this->projects_notes->avis . '</textarea>
+                                        <script type="text/javascript">var ckedAvis = CKEDITOR.replace(\'avis\',{ height: 700});</script>
                                     </td>
                                 </tr>
-
                             </table>
-
                             <br /><br />
-                            <div id="valid_etape6">Données sauvegardées</div>
-                            <div class="btnDroite listBtn_etape6">';
+                            <div id="valid_etape6">Données sauvegardées</div>';
 
-                    if ($this->current_projects_status->status == 31) {
+                    if ($this->current_projects_status->status == \projects_status::REVUE_ANALYSTE) {
                         $etape_6 .= '
+                            <div class="btnDroite listBtn_etape6">
                                 <input type="button" onclick="valid_rejete_etape6(3,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6"  value="Sauvegarder">
                                 <input type="button" onclick="valid_rejete_etape6(1,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
                                 <input type="button" onclick="valid_rejete_etape6(2,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
-                                </div>';
-
+                            </div>';
                     }
 
                     $etape_6 .= '
@@ -2376,56 +2185,42 @@ class ajaxController extends bootstrap
 
                     $(".cal_moyen").keyup(function() {
                         // --- Chiffre et marché ---
-                        // Variables
                         var structure = parseFloat($("#structure").val().replace(",","."));
                         var rentabilite = parseFloat($("#rentabilite").val().replace(",","."));
                         var tresorerie = parseFloat($("#tresorerie").val().replace(",","."));
-
                         var global = parseFloat($("#global").val().replace(",","."));
                         var individuel = parseFloat($("#individuel").val().replace(",","."));
 
-                        // Arrondis
                         structure = (Math.round(structure*10)/10);
                         rentabilite = (Math.round(rentabilite*10)/10);
                         tresorerie = (Math.round(tresorerie*10)/10);
-
                         global = (Math.round(global*10)/10);
                         individuel = (Math.round(individuel*10)/10);
 
-                        // Calcules
                         var performance_fianciere = ((structure+rentabilite+tresorerie)/3)
                         performance_fianciere = (Math.round(performance_fianciere*10)/10);
 
-                        // Arrondis
                         var marche_opere = ((global+individuel)/2)
                         marche_opere = (Math.round(marche_opere*10)/10);
 
                         // --- Fin chiffre et marché ---
 
-                        // Variables
                         var qualite_moyen_infos_financieres = parseFloat($("#qualite_moyen_infos_financieres").val().replace(",","."));
                         var notation_externe = parseFloat($("#notation_externe").val().replace(",","."));
 
-                        // Arrondis
                         qualite_moyen_infos_financieres = (Math.round(qualite_moyen_infos_financieres*10)/10);
                         notation_externe = (Math.round(notation_externe*10)/10);
 
-                        // Calcules
                         var moyenne1 = (((performance_fianciere*0.4)+(marche_opere*0.3)+(qualite_moyen_infos_financieres*0.2)+(notation_externe*0.1)));
 
-                        // Arrondis
                         moyenne = (Math.round(moyenne1*10)/10);
 
-                        // Affichage
                         $("#marche_opere").html(marche_opere);
                         $("#performance_fianciere").html(performance_fianciere);
                         $(".moyenneNote").html(moyenne+"/10");
-
                     });
-                    </script>
-                    ';
-                } // rejete
-                else {
+                    </script>';
+                } else {
                     $etape_6 = '';
 
                     //////////////////////////////////////
@@ -2443,7 +2238,6 @@ class ajaxController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    // Variables du mailing
                     $varMail = array(
                         'surl'                   => $this->surl,
                         'url'                    => $this->furl,
@@ -2453,27 +2247,21 @@ class ajaxController extends bootstrap
                         'lien_tw'                => $lien_tw
                     );
 
-                    // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    // Attribution des données aux variables
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] == 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
@@ -2486,18 +2274,15 @@ class ajaxController extends bootstrap
             } else {
                 echo 'nok';
             }
-
         } else {
             echo 'nok';
         }
     }
 
-
     public function _valid_rejete_etape6()
     {
         $this->autoFireView = false;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
@@ -2506,8 +2291,6 @@ class ajaxController extends bootstrap
         $this->clients                 = $this->loadData('clients');
         $this->clients_history         = $this->loadData('clients_history');
 
-
-        // on check si on a les posts
         if (isset($_POST['status']) && isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $form_ok = true;
             if ($_POST['status'] == 1) {
@@ -2559,33 +2342,24 @@ class ajaxController extends bootstrap
                     $update = false;
                 }
 
-                $this->projects_notes->structure   = number_format($_POST['structure'], 1, '.', '');
-                $this->projects_notes->rentabilite = number_format($_POST['rentabilite'], 1, '.', '');
-                $this->projects_notes->tresorerie  = number_format($_POST['tresorerie'], 1, '.', '');
-
-                $this->projects_notes->individuel = number_format($_POST['individuel'], 1, '.', '');
-                $this->projects_notes->global     = number_format($_POST['global'], 1, '.', '');
-
+                $this->projects_notes->structure                       = number_format($_POST['structure'], 1, '.', '');
+                $this->projects_notes->rentabilite                     = number_format($_POST['rentabilite'], 1, '.', '');
+                $this->projects_notes->tresorerie                      = number_format($_POST['tresorerie'], 1, '.', '');
+                $this->projects_notes->individuel                      = number_format($_POST['individuel'], 1, '.', '');
+                $this->projects_notes->global                          = number_format($_POST['global'], 1, '.', '');
                 $this->projects_notes->performance_fianciere           = number_format($_POST['performance_fianciere'], 1, '.', '');
                 $this->projects_notes->marche_opere                    = number_format($_POST['marche_opere'], 1, '.', '');
                 $this->projects_notes->qualite_moyen_infos_financieres = number_format($_POST['qualite_moyen_infos_financieres'], 1, '.', '');
                 $this->projects_notes->notation_externe                = number_format($_POST['notation_externe'], 1, '.', '');
+                $this->projects_notes->note                            = round(($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1), 1);
+                $this->projects_notes->avis                            = $_POST['avis'];
 
-
-                $moyenne1 = (($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1));
-
-
-                $this->projects_notes->note = round($moyenne1, 1);
-                $this->projects_notes->avis = $_POST['avis'];
-
-                // on enregistre
                 if ($update == true) {
                     $this->projects_notes->update();
                 } else {
                     $this->projects_notes->id_project = $this->projects->id_project;
                     $this->projects_notes->create();
                 }
-
 
                 // validé (comité)
                 if ($_POST['status'] == 1) {
@@ -2602,16 +2376,12 @@ class ajaxController extends bootstrap
 
                     $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
 
-
-                    // FB
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
 
-                    // Twitter
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    // Variables du mailing
                     $varMail = array(
                         'surl'                   => $this->surl,
                         'url'                    => $this->furl,
@@ -2621,27 +2391,21 @@ class ajaxController extends bootstrap
                         'lien_tw'                => $lien_tw
                     );
 
-                    // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    // Attribution des données aux variables
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] == 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
@@ -2651,7 +2415,6 @@ class ajaxController extends bootstrap
                     $this->clients->update();
                 }
 
-
                 //on recup le statut courant
                 $this->current_projects_status = $this->loadData('projects_status');
                 $this->current_projects_status->getLastStatut($this->projects->id_project);
@@ -2660,8 +2423,7 @@ class ajaxController extends bootstrap
                 $select .= $this->current_projects_status->label;
 
                 // pas encore fait
-                if ($this->current_projects_status->status != 32) {
-
+                if ($this->current_projects_status->status != \projects_status::REJET_ANALYSTE) {
                     $etape_7 = '
                     <div id="title_etape7">Etape 7</div>
                     <div id="etape7">
@@ -2730,12 +2492,11 @@ class ajaxController extends bootstrap
                         <div class="btnDroite">
                             <input type="button" onclick="valid_rejete_etape7(3,' . $this->projects->id_project . ')" class="btn"  value="Sauvegarder">
                         ';
-                    if ($this->current_projects_status->status == 33) {
+                    if ($this->current_projects_status->status == \projects_status::COMITE) {
                         $etape_7 .= '
                             <input type="button" onclick="valid_rejete_etape7(1,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">
                             <input type="button" onclick="valid_rejete_etape7(2,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape7" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
                             <input type="button" onclick="valid_rejete_etape7(4,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape7" value="Plus d\'informations">';
-
                     }
 
                     $etape_7 .=
@@ -2813,7 +2574,6 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->projects_notes          = $this->loadData('projects_notes');
         $this->projects_status         = $this->loadData('projects_status');
@@ -2826,10 +2586,6 @@ class ajaxController extends bootstrap
         if (isset($_POST['status']) && isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $form_ok = true;
 
-            /*if(!isset($_POST['note']) || $_POST['note'] == 0 || $_POST['note'] > 10)
-            {
-                $form_ok = false;
-            }*/
             if ($_POST['status'] == 1) {
                 if (! isset($_POST['structure']) || $_POST['structure'] == 0 || $_POST['structure'] > 10) {
                     $form_ok = false;
@@ -2881,39 +2637,25 @@ class ajaxController extends bootstrap
                     $update = false;
                 }
 
-                $this->projects_notes->structure   = number_format($_POST['structure'], 1, '.', '');
-                $this->projects_notes->rentabilite = number_format($_POST['rentabilite'], 1, '.', '');
-                $this->projects_notes->tresorerie  = number_format($_POST['tresorerie'], 1, '.', '');
-
-                $this->projects_notes->individuel = number_format($_POST['individuel'], 1, '.', '');
-                $this->projects_notes->global     = number_format($_POST['global'], 1, '.', '');
-
+                $this->projects_notes->structure                       = number_format($_POST['structure'], 1, '.', '');
+                $this->projects_notes->rentabilite                     = number_format($_POST['rentabilite'], 1, '.', '');
+                $this->projects_notes->tresorerie                      = number_format($_POST['tresorerie'], 1, '.', '');
+                $this->projects_notes->individuel                      = number_format($_POST['individuel'], 1, '.', '');
+                $this->projects_notes->global                          = number_format($_POST['global'], 1, '.', '');
                 $this->projects_notes->performance_fianciere           = number_format($_POST['performance_fianciere'], 1, '.', '');
                 $this->projects_notes->marche_opere                    = number_format($_POST['marche_opere'], 1, '.', '');
                 $this->projects_notes->qualite_moyen_infos_financieres = number_format($_POST['qualite_moyen_infos_financieres'], 1, '.', '');
                 $this->projects_notes->notation_externe                = number_format($_POST['notation_externe'], 1, '.', '');
+                $this->projects_notes->note                            = round(($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1), 1);
+                $this->projects_notes->avis_comite                     = $_POST['avis_comite'];
 
-
-                $moyenne1 = (($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1));
-
-
-                $this->projects_notes->note = round($moyenne1, 1);
-
-
-                /*$note = round($moyenne1,0);
-                $lNotes = array(
-                '10' => 'A',
-                '9' => 'B',
-                '8' => 'C',
-                '7' => 'D',
-                '6' => 'E',
-                '5' => 'F',
-                '4' => 'G',
-                '3' => 'H',
-                '2' => 'I',
-                '1' => 'J');
-
-                $this->projects->risk = $lNotes[$note];*/
+                // on enregistre
+                if ($update == true) {
+                    $this->projects_notes->update();
+                } else {
+                    $this->projects_notes->id_project = $this->projects->id_project;
+                    $this->projects_notes->create();
+                }
 
                 // etoiles
                 // A = 5
@@ -2927,38 +2669,23 @@ class ajaxController extends bootstrap
                 // I = 1
                 // J = 0
 
-
-                if ($moyenne1 >= 0 && $moyenne1 < 2) {
+                if ($this->projects_notes->note >= 0 && $this->projects_notes->note < 2) {
                     $lettre = 'I';
-                } // H 1.5
-                elseif ($moyenne1 >= 2 && $moyenne1 < 4) {
+                } elseif ($this->projects_notes->note >= 2 && $this->projects_notes->note < 4) {
                     $lettre = 'G';
-                } // F 2.5
-                elseif ($moyenne1 >= 4 && $moyenne1 < 5.5) {
+                } elseif ($this->projects_notes->note >= 4 && $this->projects_notes->note < 5.5) {
                     $lettre = 'E';
-                } elseif ($moyenne1 >= 5.5 && $moyenne1 < 6.5) {
+                } elseif ($this->projects_notes->note >= 5.5 && $this->projects_notes->note < 6.5) {
                     $lettre = 'D';
-                } elseif ($moyenne1 >= 6.5 && $moyenne1 < 7.5) {
+                } elseif ($this->projects_notes->note >= 6.5 && $this->projects_notes->note < 7.5) {
                     $lettre = 'C';
-                } elseif ($moyenne1 >= 7.5 && $moyenne1 < 8.5) {
+                } elseif ($this->projects_notes->note >= 7.5 && $this->projects_notes->note < 8.5) {
                     $lettre = 'B';
-                } elseif ($moyenne1 >= 8.5 && $moyenne1 <= 10) {
+                } elseif ($this->projects_notes->note >= 8.5 && $this->projects_notes->note <= 10) {
                     $lettre = 'A';
                 }
 
                 $this->projects->risk = $lettre;
-
-                //$this->projects->note = number_format($this->projects->note, 1, '.', '');
-                $this->projects_notes->avis_comite = $_POST['avis_comite'];
-
-                // on enregistre
-                if ($update == true) {
-                    $this->projects_notes->update();
-                } else {
-                    $this->projects_notes->id_project = $this->projects->id_project;
-                    $this->projects_notes->create();
-                }
-
                 $this->projects->update();
 
                 $btn_etape6 = '';
@@ -2969,26 +2696,22 @@ class ajaxController extends bootstrap
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 35, $this->projects->id_project);
 
                     $content_risk = '
-                         <th><label for="risk">Niveau de risque* :</label></th>
+                        <th><label for="risk">Niveau de risque* :</label></th>
                         <td>
-                        <select name="risk" id="risk" class="select" style="width:160px;background-color:#AAACAC;">
-                            <option value="">Choisir</option>
-                            <option ' . ($this->projects->risk == 'A' ? 'selected' : '') . ' value="A">5 étoiles</option>
-                            <option ' . ($this->projects->risk == 'B' ? 'selected' : '') . ' value="B">4,5 étoiles</option>
-                            <option ' . ($this->projects->risk == 'C' ? 'selected' : '') . ' value="C">4 étoiles</option>
-                            <option ' . ($this->projects->risk == 'D' ? 'selected' : '') . ' value="D">3,5 étoiles</option>
-
-                            <option ' . ($this->projects->risk == 'E' ? 'selected' : '') . ' value="E">3 étoiles</option>
-                            <option ' . ($this->projects->risk == 'F' ? 'selected' : '') . ' value="F">2,5 étoiles</option>
-                            <option ' . ($this->projects->risk == 'G' ? 'selected' : '') . ' value="G">2 étoiles</option>
-                            <option ' . ($this->projects->risk == 'H' ? 'selected' : '') . ' value="H">1,5 étoiles</option>
-
-                        </select>
+                            <select name="risk" id="risk" class="select" style="width:160px;background-color:#AAACAC;">
+                                <option value="">Choisir</option>
+                                <option ' . ($this->projects->risk == 'A' ? 'selected' : '') . ' value="A">5 étoiles</option>
+                                <option ' . ($this->projects->risk == 'B' ? 'selected' : '') . ' value="B">4,5 étoiles</option>
+                                <option ' . ($this->projects->risk == 'C' ? 'selected' : '') . ' value="C">4 étoiles</option>
+                                <option ' . ($this->projects->risk == 'D' ? 'selected' : '') . ' value="D">3,5 étoiles</option>
+                                <option ' . ($this->projects->risk == 'E' ? 'selected' : '') . ' value="E">3 étoiles</option>
+                                <option ' . ($this->projects->risk == 'F' ? 'selected' : '') . ' value="F">2,5 étoiles</option>
+                                <option ' . ($this->projects->risk == 'G' ? 'selected' : '') . ' value="G">2 étoiles</option>
+                                <option ' . ($this->projects->risk == 'H' ? 'selected' : '') . ' value="H">1,5 étoiles</option>
+                            </select>
                         </td>
                     ';
-
-
-                } // rejetéC
+                } // rejeté
                 elseif ($_POST['status'] == 2) {
                     // on maj le statut
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 34, $this->projects->id_project);
@@ -2999,16 +2722,12 @@ class ajaxController extends bootstrap
 
                     $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
 
-
-                    // FB
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
 
-                    // Twitter
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    // Variables du mailing
                     $varMail = array(
                         'surl'                   => $this->surl,
                         'url'                    => $this->furl,
@@ -3018,28 +2737,21 @@ class ajaxController extends bootstrap
                         'lien_tw'                => $lien_tw
                     );
 
-                    // Construction du tableau avec les balises EMV
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    // Attribution des données aux variables
                     $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    // Envoi du mail
-                    $this->email = $this->loadLib('email', array());
+                    $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') // nmp
-                    {
+                    if ($this->Config['env'] == 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-
-                        // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else // non nmp
-                    {
+                    } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
@@ -3063,7 +2775,7 @@ class ajaxController extends bootstrap
                 $this->current_projects_status = $this->loadData('projects_status');
                 $this->current_projects_status->getLastStatut($this->projects->id_project);
 
-                if ($this->current_projects_status->status == 35) {
+                if ($this->current_projects_status->status == \projects_status::PREP_FUNDING) {
                     $this->lProjects_status = $this->projects_status->select(' status IN (35,40) ', ' status ASC ');
                 } else {
                     $this->lProjects_status = array();
@@ -3095,17 +2807,24 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_client']) && isset($_POST['content']) && isset($_POST['liste'])) {
-
-            $content = utf8_decode($_POST['liste']) . ($_POST['content'] != '' ? '<br>' : '') . nl2br(htmlentities(utf8_decode($_POST['content'])));
-
-            $_SESSION['content_email_completude'][$_POST['id_client']] = $content;
-            //$_SESSION['content_email_completude'][$_POST['id_client']]['liste_piece_manquante'] = $_POST['liste'];
+            $_SESSION['content_email_completude'][$_POST['id_client']] = utf8_decode($_POST['liste']) . ($_POST['content'] != '' ? '<br>' : '') . nl2br(htmlentities(utf8_decode($_POST['content'])));
             echo 'ok';
         } else {
             echo 'nok';
         }
     }
 
+    public function _session_project_completude()
+    {
+        $this->autoFireView = false;
+
+        if (isset($_POST['id_project']) && isset($_POST['content']) && isset($_POST['list'])) {
+            $_SESSION['project_submission_files_list'][$_POST['id_project']] = '<ul>' . utf8_decode($this->ficelle->speChar2HtmlEntities($_POST['list'])) . '</ul>' . nl2br(htmlentities(utf8_decode($_POST['content'])));
+            echo 'ok';
+        } else {
+            echo 'nok';
+        }
+    }
 
     public function _check_force_pass()
     {

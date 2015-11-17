@@ -304,6 +304,7 @@ abstract class Mailer
                 }
 
                 if (defined('ENVIRONMENT') && ENVIRONMENT !== 'prod') {
+                    // @todo once mailcatcher is installed on every dev/demo, email domain check may be deleted (not subject prefixing)
                     $aRecipients = explode(', ', $recipients);
 
                     foreach ($aRecipients as $iIndex => $sRecipient) {
@@ -488,6 +489,8 @@ class Email
     const PRIORITY_NORMAL = 3;
     const PRIORITY_LOW = 4;
     const PRIORITY_LOWEST = 5;
+
+    const EMAIL_ADDRESS_ANALYSTS = 'analystes@unilend.fr';
 
     /**
      * Email du destinataire

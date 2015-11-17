@@ -122,6 +122,7 @@
                 <ul class="sous_menu">
                     <li><a href="<?=$this->lurl?>/emprunteurs" title="Arbo emprunteurs">Arbo emprunteurs</a></li>
                     <li><a href="<?=$this->lurl?>/emprunteurs/gestion" title="Gestion emprunteurs">Gestion emprunteurs</a></li>
+                    <li><a href="<?=$this->lurl?>/prescripteurs/gestion" title="Gestion prescripteur">Gestion prescripteur</a></li>
                     <li><a href="<?=$this->lurl?>/dossiers" title="Gestion des dossiers">Gestion des dossiers</a></li>
                     <li><a href="<?=$this->lurl?>/dossiers/funding" title="Dossiers en funding">Dossiers en funding</a></li>
                     <li><a href="<?=$this->lurl?>/dossiers/remboursements" title="Remboursements">Remboursements</a></li>

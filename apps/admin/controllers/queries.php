@@ -177,35 +177,37 @@ class queriesController extends bootstrap
             array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
         );
 
-        $aHeaders       = array_keys($this->result[0]);
-        $sLastColLetter = PHPExcel_Cell::stringFromColumnIndex(count($aHeaders) - 1);
-        $oDocument      = new PHPExcel();
-        $oActiveSheet   = $oDocument->setActiveSheetIndex(0);
+        $oDocument    = new PHPExcel();
+        $oActiveSheet = $oDocument->setActiveSheetIndex(0);
 
-        $oActiveSheet->getStyle('A1:' . $sLastColLetter . '1')
-            ->applyFromArray(array(
-                'fill' => array(
-                    'type' => PHPExcel_Style_Fill::FILL_SOLID,
-                    'color' => array('rgb' => '2672A2')
-                ),
-                'font' => array(
-                    'bold' => true,
-                    'color' => array('rgb' => 'FFFFFF')
-                )
-            ))
-            ->getAlignment()
-            ->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
+        if (is_array($this->result) && count($this->result) > 0) {
+            $aHeaders       = array_keys($this->result[0]);
+            $sLastColLetter = PHPExcel_Cell::stringFromColumnIndex(count($aHeaders) - 1);
+            $oActiveSheet->getStyle('A1:' . $sLastColLetter . '1')
+                ->applyFromArray(array(
+                    'fill' => array(
+                        'type'  => PHPExcel_Style_Fill::FILL_SOLID,
+                        'color' => array('rgb' => '2672A2')
+                    ),
+                    'font' => array(
+                        'bold'  => true,
+                        'color' => array('rgb' => 'FFFFFF')
+                    )
+                ))
+                ->getAlignment()
+                ->setHorizontal(PHPExcel_Style_Alignment::HORIZONTAL_CENTER);
 
-        foreach ($aHeaders as $iIndex => $sColumnName) {
-            $oActiveSheet->setCellValueByColumnAndRow($iIndex, 1, $sColumnName)
-                ->getColumnDimension(PHPExcel_Cell::stringFromColumnIndex($iIndex))
-                ->setAutoSize(true);
-        }
+            foreach ($aHeaders as $iIndex => $sColumnName) {
+                $oActiveSheet->setCellValueByColumnAndRow($iIndex, 1, $sColumnName)
+                    ->getColumnDimension(PHPExcel_Cell::stringFromColumnIndex($iIndex))
+                    ->setAutoSize(true);
+            }
 
-        foreach ($this->result as $iRowIndex => $aRow) {
-            $iColIndex = 0;
-            foreach ($aRow as $sCellValue) {
-                $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $sCellValue);
+            foreach ($this->result as $iRowIndex => $aRow) {
+                $iColIndex = 0;
+                foreach ($aRow as $sCellValue) {
+                    $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $sCellValue);
+                }
             }
         }
 

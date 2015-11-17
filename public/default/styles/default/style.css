@@ -58,10 +58,14 @@ a:hover img { transition: color 300ms, background-color 300ms, opacity 300ms; -w
 
 .shell { margin:0 auto; width:960px; }
 
+.introduction {font-size:18px;}
+.introduction > span {color:#b10366; font-weight: bold;}
+.introduction + ul {padding-left:60px; margin-top:5px;}
+
 .unstyled-list { list-style:none outside none; padding:0; color:#a1a5a7; }
 .unstyled-list li { padding-bottom:14px; }
 
-.field { border:1px solid #dbdcdd; background:#f4f4f4; border-radius:3px; line-height:18px; height:18px; width:274px; padding:7px 24px 8px 12px; display:block; font-style:italic; color:#a1a5a7; }
+.field { border:1px solid #dbdcdd; background:#f4f4f4; border-radius:3px; line-height:18px; height:18px; width:271px; padding:7px 24px 8px 12px; display:block; font-style:italic; color:#a1a5a7; }
 textarea.field { height:148px; }
 
 .field-extra-tiny { width:52px; }

@@ -130,7 +130,7 @@
                     <td><?=$c['email']?></td>
                     <td><?=$c['name']?></td>
                     <td><?=($c['status']==0?'Refusé':'Validé')?></td>
-                    <td><?=number_format($this->clients->totalmontantEmprunt($c['id_client']),2,',',' ')?></td>
+                    <td><?=$this->ficelle->formatNumber($this->clients->totalmontantEmprunt($c['id_client']))?></td>
                     <td align="center">
                         <a href="<?=$this->lurl?>/emprunteurs/edit/<?=$c['id_client']?>">
                             <img src="<?=$this->surl?>/images/admin/edit.png" alt="Modifier <?=$c['nom'].' '.$c['prenom']?>" />

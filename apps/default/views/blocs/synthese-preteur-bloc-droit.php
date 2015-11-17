@@ -1,7 +1,7 @@
 <div class="graphic-box le-bar-chart">
     <header>
         <h2><?= $this->lng['preteur-synthese']['synthese-de-vos-mouvement'] ?></h2>
-        <p><?= $this->lng['preteur-synthese']['montant-depose'] ?> : <strong><?= number_format($this->SumDepot, 2, ',', ' ') ?> €</strong></p>
+        <p><?= $this->lng['preteur-synthese']['montant-depose'] ?> : <strong><?= $this->ficelle->formatNumber($this->SumDepot) ?> €</strong></p>
     </header>
     <div class="body">
         <span id="titlePrete"><?= $this->lng['preteur-synthese']['argent-prete'] ?></span>
@@ -336,7 +336,6 @@
                     case projects_status::PROBLEME:
                     case projects_status::RECOUVREMENT:
                     case projects_status::REMBOURSEMENT_ANTICIPE:
-                    case projects_status::PROBLEME_J_PLUS_X:
                         foreach ($this->loans->select('id_project = ' . $f['id_project']) as $b) {
                             $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                             $montantBas += ($b['amount'] / 100);
@@ -383,14 +382,14 @@
                     ?>
                     <div class="info">
                         <ul class="list">
-                            <li><i class="icon-pig-gray"></i><?= number_format($f['amount'], 0, ',', ' ') ?> €</li>
+                            <li><i class="icon-pig-gray"></i><?= $this->ficelle->formatNumber($f['amount'], 0) ?> €</li>
                             <li><i class="icon-clock-gray"></i><?= ($reste == '' ? '' : $reste) ?><span id="valFav<?= $f['id_project'] ?>"><?= $dateRest ?></span></li>
                             <li><i class="icon-target"></i><?= $this->lng['preteur-synthese']['couvert-a'] ?> <?= number_format($pourcentage, $decimalesPourcentage, ',', ' ') ?> %</li>
                             <?php
                             if ($CountEnchere > 0) {
-                                ?><li><i class="icon-graph-gray"></i><?= number_format($avgRate, 2, ',', ' ') ?> %</li><?php
+                                ?><li><i class="icon-graph-gray"></i><?= $this->ficelle->formatNumber($avgRate) ?> %</li><?php
                             } else {
-                                ?><li><i class="icon-graph-gray"></i><?= ($f['target_rate'] == '-' ? '-' : number_format($f['target_rate'], 2, ',', ' ') . ' %') ?></li><?php
+                                ?><li><i class="icon-graph-gray"></i><?= ($f['target_rate'] == '-' ? '-' : $this->ficelle->formatNumber($f['target_rate']) . ' %') ?></li><?php
                             }
                             ?>
                         </ul>

@@ -1,4 +1,3 @@
-<!--#include virtual="ssi-header.shtml"  -->
 <div class="banner">
     <div class="banner-content">
         <img class="ribbon person-left" src="<?= $this->surl ?>/styles/default/images/person-1.png" alt="" width="190" height="313">
@@ -47,7 +46,7 @@
                 <?= $this->lng['home']['pretez'] ?>
             </a>
         <?php } ?>
-        <a href="<?= $this->lurl . '/' . $this->tree->getSlug(128, $this->language) ?>" class="btn btn-mega">
+        <a href="<?= $this->lurl . '/' . $this->tree->getSlug(236, $this->language) ?>" class="btn btn-mega">
             <i class="icon-arrow-medium-next right"></i>
             <?= $this->lng['home']['empruntez'] ?>
         </a>
@@ -164,8 +163,8 @@
                                     ?>
                                     <script>
                                         var cible<?= $pf['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>');
-                                            var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
-                                            setTimeout('decompte(letime<?= $pf['id_project'] ?>,"val<?= $pf['id_project'] ?>")', 500);
+                                        var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
+                                        setTimeout('decompte(letime<?= $pf['id_project'] ?>,"val<?= $pf['id_project'] ?>")', 500);
                                     </script>
                                     <?php
                                 }
@@ -181,11 +180,11 @@
                                 </div><!-- /.description -->
                             </td>
                             <td><div class="cadreEtoiles"><div class="etoile <?= $this->lNotes[$pf['risk']] ?>"></div></div></td>
-                            <td style="white-space:nowrap;"><?= number_format($pf['amount'], 0, ',', ' ') ?>&euro;</td>
+                            <td style="white-space:nowrap;"><?= $this->ficelle->formatNumber($pf['amount'], 0) ?>&euro;</td>
                             <td style="white-space:nowrap;"><?= $pf['period'] ?> mois</td>
                             <?php
                             if ($CountEnchere > 0) {
-                                ?><td><?= number_format($avgRate, 1, ',', ' ') ?>%</td><?php
+                                ?><td><?= $this->ficelle->formatNumber($avgRate, 1) ?>%</td><?php
                             } else {
                                 ?><td><?= ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %')) ?></td><?php
                             }
@@ -275,8 +274,8 @@
                             ?>
                             <script>
                                 var cible<?= $pf['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>');
-                                    var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
-                                    setTimeout('decompte(letime<?= $pf['id_project'] ?>,"min_val<?= $pf['id_project'] ?>")', 500);
+                                var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
+                                setTimeout('decompte(letime<?= $pf['id_project'] ?>,"min_val<?= $pf['id_project'] ?>")', 500);
                             </script>
                             <?php
                         }
@@ -307,13 +306,13 @@
                         //gestion affichage du pourcentage
                         $pourcent_affichage = "";
                         if ($CountEnchere > 0) {
-                            $pourcent_affichage = number_format($avgRate, 1, ',', ' ') . '%';
+                            $pourcent_affichage = $this->ficelle->formatNumber($avgRate, 1) . '%';
                         } else {
                             $pourcent_affichage = ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %'));
                         }
                         ?>
                         <div class="project-mobile-image-caption">
-                            <?= number_format($pf['amount'], 0, ',', ' ') ?>&euro; | <div class="cadreEtoiles" style="display: inline-block; top:7px;left: -1px;"><div class="etoile <?= $this->lNotes[$pf['risk']] ?>"></div></div> | <?= $pourcent_affichage ?> | <?= $pf['period'] ?> mois
+                            <?= $this->ficelle->formatNumber($pf['amount'], 0) ?>&euro; | <div class="cadreEtoiles" style="display: inline-block; top:7px;left: -1px;"><div class="etoile <?= $this->lNotes[$pf['risk']] ?>"></div></div> | <?= $pourcent_affichage ?> | <?= $pf['period'] ?> mois
                         </div>
                     </div>
                     <div class="project-mobile-content">
@@ -361,8 +360,8 @@
 </script>
 
 <noscript>
-<img height="1" width="1" alt="" style="display:none"
-     src="https://www.facebook.com/offsite_event.php?id=6012822951950&value=0.00&currency=EUR" />
+    <img height="1" width="1" alt="" style="display:none"
+         src="https://www.facebook.com/offsite_event.php?id=6012822951950&value=0.00&currency=EUR" />
 </noscript>
 
 <script type="text/javascript">
@@ -381,8 +380,8 @@
 </script>
 
 <noscript>
-<img height="1" width="1" alt="" style="display:none"
-     src="https://www.facebook.com/offsite_event.php?id=6012822975550&value=0.00&currency=EUR" />
+    <img height="1" width="1" alt="" style="display:none"
+         src="https://www.facebook.com/offsite_event.php?id=6012822975550&value=0.00&currency=EUR" />
 </noscript>
 
 <script type="text/javascript">
@@ -394,7 +393,7 @@
 </script>
 <script type="text/javascript" src="//www.googleadservices.com/pagead/conversion.js"></script>
 <noscript>
-<div style="display:inline;">
-    <img height="1" width="1" style="border-style:none;" alt="" src="//googleads.g.doubleclick.net/pagead/viewthroughconversion/990740266/?value=0&amp;guid=ON&amp;script=0"/>
-</div>
+    <div style="display:inline;">
+        <img height="1" width="1" style="border-style:none;" alt="" src="//googleads.g.doubleclick.net/pagead/viewthroughconversion/990740266/?value=0&amp;guid=ON&amp;script=0"/>
+    </div>
 </noscript>
