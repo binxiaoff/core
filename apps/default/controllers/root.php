@@ -62,7 +62,7 @@ class rootController extends bootstrap
                     die;
                 } else {
                     // source
-                    $this->ficelle->source($_GET['utm_source'], $this->lurl . '/inscription_preteur/etape1', $_GET['utm_source2']);
+                    $this->ficelle->source(isset($_GET['utm_source']) ? $_GET['utm_source'] : '', $this->lurl . '/inscription_preteur/etape1', isset($_GET['utm_source2']) ? $_GET['utm_source2'] : '');
 
                     header('Location:' . $this->lurl . '/inscription_preteur');
                     die;
@@ -71,7 +71,7 @@ class rootController extends bootstrap
 
             // Redirection depot de dossier
             if ($this->tree->id_tree == 128) {
-                $this->ficelle->source($_GET['utm_source'], $this->lurl . '/financement-participatif-pme-empruntez-aupres-du-grand-public', $_GET['utm_source2']);
+                $this->ficelle->source(isset($_GET['utm_source']) ? $_GET['utm_source'] : '', $this->lurl . '/financement-participatif-pme-empruntez-aupres-du-grand-public', isset($_GET['utm_source2']) ? $_GET['utm_source2'] : '');
                 header('Location:' . $this->lurl . '/financement-participatif-pme-empruntez-aupres-du-grand-public');
                 die;
             }

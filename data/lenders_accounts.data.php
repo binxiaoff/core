@@ -57,10 +57,12 @@ class lenders_accounts extends lenders_accounts_crud
 
     function select($where = '', $order = '', $start = '', $nb = '')
     {
-        if ($where != '')
+        if ($where != '') {
             $where = ' WHERE ' . $where;
-        if ($order != '')
+        }
+        if ($order != '') {
             $order = ' ORDER BY ' . $order;
+        }
         $sql = 'SELECT * FROM `lenders_accounts`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
@@ -73,8 +75,9 @@ class lenders_accounts extends lenders_accounts_crud
 
     function counter($where = '')
     {
-        if ($where != '')
+        if ($where != '') {
             $where = ' WHERE ' . $where;
+        }
 
         $sql = 'SELECT count(*) FROM `lenders_accounts` ' . $where;
 
@@ -162,5 +165,109 @@ class lenders_accounts extends lenders_accounts_crud
         }
         return $attachments;
 
+    }
+
+    public function getInfosben($oProjectsStatus, $iLimit = null, $iOffset = null)
+    {
+        $sOffset = '';
+        if (null !== $iOffset) {
+            $iOffset = $this->bdd->escape_string($iOffset);
+            $sOffset = 'OFFSET ' . $iOffset;
+        }
+
+        $sLimit = '';
+        if (null !== $iLimit) {
+            $iLimit  = $this->bdd->escape_string($iLimit);
+            $sLimit = 'LIMIT ' . $iLimit;
+        }
+
+        $sql = 'SELECT DISTINCT (c.id_client), c.prenom, c.nom
+                FROM clients c
+                INNER JOIN lenders_accounts la ON la.id_client_owner = c.id_client
+                INNER JOIN loans l on l.id_lender = la.id_lender_account
+                INNER JOIN projects p ON p.id_project = l.id_project
+                INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
+                INNER JOIN projects_status_history psh USING (id_project_status_history)
+                INNER JOIN projects_status ps USING (id_project_status)
+                WHERE ps.status > '. projects_status::REMBOURSEMENT . ' ' . $sLimit. ' '. $sOffset;
+
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
+
+    public function getLendersToMatchCity($iLimit)
+    {
+        $iLimit  = $this->bdd->escape_string($iLimit);
+
+        $sql = 'SELECT * FROM (
+                  SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, ca.cp_fiscal AS zip, ca.ville_fiscal AS city, ca.cp, ca.ville, 0 AS is_company
+                  FROM clients_adresses ca
+                  INNER JOIN clients c ON ca.id_client = c.id_client
+                  INNER JOIN lenders_accounts la ON la.id_client_owner = ca.id_client
+                  WHERE c.status = 1
+                      AND (ca.id_pays_fiscal = 1 OR ca.id_pays_fiscal = 0)
+                      AND la.id_company_owner = 0
+                      AND (
+                        NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = ca.cp_fiscal)
+                        OR (SELECT COUNT(*) FROM villes v WHERE v.cp = ca.cp_fiscal AND v.ville = ca.ville_fiscal) <> 1
+                      )
+                  LIMIT '. floor($iLimit / 2).'
+                ) perso
+                UNION
+                SELECT * FROM (
+                    SELECT c.id_client, ca.id_adresse, c.prenom, c.nom, co.zip, co.city, ca.cp, ca.ville, 1 AS is_company
+                    FROM clients_adresses ca
+                      INNER JOIN clients c ON ca.id_client = c.id_client
+                      INNER JOIN lenders_accounts la ON la.id_client_owner = ca.id_client
+                      INNER JOIN companies co ON co.id_client_owner = ca.id_client
+                    WHERE c.status = 1
+                    AND (ca.id_pays_fiscal = 1 OR ca.id_pays_fiscal = 0)
+                    AND (
+                      NOT EXISTS (SELECT cp FROM villes v WHERE v.cp = co.zip)
+                      OR (SELECT COUNT(*) FROM villes v WHERE v.cp = co.zip AND v.ville = co.city) <> 1
+                    )  LIMIT '. floor($iLimit / 2).'
+                ) company';
+
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
+
+    public function getLendersToMatchBirthCity($iLimit = '', $iOffset = '')
+    {
+        $iOffset = $this->bdd->escape_string($iOffset);
+        $iLimit  = $this->bdd->escape_string($iLimit);
+
+        $sOffset = '';
+        if ('' !== $iOffset) {
+            $sOffset = 'OFFSET ' . $iOffset;
+        }
+
+        $sLimit = '';
+        if ('' !== $iLimit) {
+            $sLimit = 'LIMIT ' . $iLimit;
+        }
+
+        $sql = 'SELECT c.id_client, c.prenom, c.nom, c.ville_naissance
+                FROM clients c
+                INNER JOIN lenders_accounts la ON la.id_client_owner = c.id_client
+                WHERE c.status = 1
+                AND id_pays_naissance = 1
+                AND c.insee_birth = ""
+                ' . $sLimit. ' '. $sOffset;
+
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
     }
 }

@@ -171,30 +171,27 @@ class projects extends projects_crud
 
     function selectProjectsByStatus($status, $where = '', $order = '', $start = '', $nb = '')
     {
-        if ($where != '')
-            $where = ' WHERE 1 = 1 ' . $where . ' ';
+        $sWhereClause = ' WHERE ps.status IN ('.$status.') ';
+        if ('' !== trim($where)) {
+            $sWhereClause .= ' ' . $where . ' ';
+        }
 
         //if($order == '') $order = 'lestatut ASC,IF(lestatut = 2, p.date_retrait ,(select sum(amount*rate) FROM bids b where b.id_project = p.id_project)/(select sum(amount) FROM bids b where b.id_project = p.id_project)) DESC';
         if ($order == '')
             $order = 'lestatut ASC, p.date_retrait DESC';
 
-        $sql = 'SELECT
-				p.*,
-				(SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status,
-				CASE
-					WHEN  (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) = 50
-					THEN "1"
-					ELSE "2"
-					END as lestatut
-				FROM projects p
-				' . $where . '
-				HAVING status IN (' . $status . ')
-				ORDER BY '
-            . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-        //mail('d.courtier@equinoa.com','test unilend sql',$sql);
+
+
+        $sql = 'SELECT p.*, ps.status, CASE WHEN (ps.status) = 50 THEN "1" ELSE "2" END as lestatut
+                FROM projects p
+                INNER JOIN projects_last_status_history plsh USING (id_project)
+                INNER JOIN projects_status_history psh USING (id_project_status_history)
+                INNER JOIN projects_status ps USING (id_project_status)
+                ' . $sWhereClause . '
+                ORDER BY '. $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+
         $resultat = $this->bdd->query($sql);
-        $result = array();
-      
+        $result   = array();
         $positionStart = $start + $nb;
 
         while ($record = $this->bdd->fetch_array($resultat)) {

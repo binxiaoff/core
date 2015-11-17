@@ -645,7 +645,7 @@ class bootstrap extends Controller
 
         $this->tabOrdreProject = array(
             '',
-            'lestatut ASC, IF(lestatut = 2, p.date_retrait ,"") DESC, IF(lestatut = 1, p.date_retrait ,"") ASC,status DESC',
+            'lestatut ASC, IF(lestatut = 2, p.date_retrait ,"") DESC, IF(lestatut = 1, p.date_retrait ,"") ASC, ps.status DESC',
             'p.date_publication DESC'
         );
 

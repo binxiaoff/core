@@ -894,4 +894,100 @@ class devboxController extends bootstrap
         print_r($result);
         die;
     }
+
+    public function _import_file_cp()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        //Encode: UTF-8, new line : LF
+        //Source: https://www.data.gouv.fr/fr/datasets/base-officielle-des-codes-postaux/
+        if (($rHandle = fopen($this->path . '/protected/import/' . 'codes_postaux.csv', 'r')) === false) {
+            return;
+        }
+
+        /** @var villes $oVille */
+        $oVille = $this->loadData('villes');
+
+        while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
+            $departement    = substr($aRow[0], 0, 2) !== '97' ? substr($aRow[0], 0, 2) : substr($aRow[0], 0, 3);
+
+            $sql = 'INSERT INTO villes (ville, insee, cp, num_departement, active, added, updated)
+                    VALUES("' . $aRow[1] . '", "' . $aRow[0] . '", "' . $aRow[2] . '", "' . $departement . '", 1, NOW(), NOW())';
+            $oVille->bdd->query($sql);
+            unset($aRow);
+        }
+
+        fclose($rHandle);
+    }
+
+    public function _import_file_insee()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        //Encode: UTF-8, new line : LF
+        //Source: http://www.insee.fr/fr/methodes/nomenclatures/cog/telechargement.asp?annee=2015
+        if (($rHandle = fopen($this->path . '/protected/import/' . 'insee.txt', 'r')) === false) {
+            return;
+        }
+
+        /** @var villes $oVille */
+        $oVille = $this->loadData('villes');
+
+        $i = 0;
+        while (($aRow = fgetcsv($rHandle, 0, "\t")) !== false) {
+            $sInsee = $oVille->generateCodeInsee($aRow[5], $aRow[6]);
+            if ($aRow[0] === '3') {
+                if ($oVille->exist($sInsee, 'insee')) {
+                    $oVille->bdd->query('UPDATE `villes` SET active = 0, ville = "' . $aRow[13] . '" WHERE insee = "' . $sInsee . '"');
+                } else {
+                    $departement = str_pad($aRow[5], 2, 0, STR_PAD_LEFT);
+                    $sql = 'INSERT INTO `villes`(`ville`,`insee`,`cp`,`num_departement`,`active`,`added`,`updated`)
+							VALUES("' . $aRow[13] . '","' . $sInsee . '","","' . $departement . '", 0,NOW(),NOW())';
+                    $oVille->bdd->query($sql);
+                }
+            } else {
+                $oVille->bdd->query('UPDATE `villes` SET ville = "' . $aRow[13] . '" WHERE insee = "' . $sInsee . '"');
+            }
+            unset($aRow);
+            $i++;
+            echo 'done: ' . $i . '/39806';
+        }
+
+        fclose($rHandle);
+    }
+
+    public function _import_pays_insee()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        //Encode: UTF-8, new line : LF
+        //Source: http://www.insee.fr/fr/methodes/nomenclatures/cog/telechargement.asp?annee=2015
+        if (($rHandle = fopen($this->path . '/protected/import/' . 'country.txt', 'r')) === false) {
+            return;
+        }
+
+        /** @var villes $oVille */
+        $oPays = $this->loadData('insee_pays');
+
+        while (($aRow = fgetcsv($rHandle, 0, "\t")) !== false) {
+            $sql = 'INSERT INTO insee_pays (CODEISO2, COG, ACTUAL, CAPAY, CRPAY, ANI, LIBCOG, LIBENR, ANCNOM)
+                    VALUES("' . $aRow[8] . '","' . $aRow[0] . '","' . $aRow[1] . '","' . $aRow[2] . '","' . $aRow[3] . '","' . $aRow[4] . '","' . $aRow[5] . '","' . $aRow[6] . '","' . $aRow[7] . '")';
+            $oPays->bdd->query($sql);
+            unset($aRow);
+        }
+
+        fclose($rHandle);
+    }
 }

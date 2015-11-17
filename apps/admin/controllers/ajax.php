@@ -3172,4 +3172,104 @@ class ajaxController extends bootstrap
         }
         die;
     }
+
+    public function _get_cities()
+    {
+        $this->autoFireView = false;
+        $aCities = array();
+        if (isset($_GET['term']) && '' !== trim($_GET['term'])) {
+            $_GET  = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
+            $oVilles = $this->loadData('villes');
+
+            $bBirthPlace = false;
+            if (isset($this->params[0]) && 'birthplace' === $this->params[0]) {
+                $bBirthPlace = true;
+            }
+
+            if ($bBirthPlace) {
+                $aResults = $oVilles->lookupCities($_GET['term'], array('ville', 'cp'), true);
+            } else {
+                $aResults = $oVilles->lookupCities($_GET['term']);
+            }
+            if (false === empty($aResults)) {
+                if ($bBirthPlace) {
+                    foreach ($aResults as $aItem) {
+
+                        // unique insee code
+                        $aCities[$aItem['insee']] = array(
+                            'label' => $aItem['ville'] . ' (' . $aItem['num_departement'] . ')',
+                            'value' => $aItem['insee']
+                        );
+                    }
+                    $aCities = array_values($aCities);
+                } else {
+                    foreach ($aResults as $aItem) {
+                        $aCities[] = array(
+                            'label' => $aItem['ville'] . ' (' . $aItem['cp'] . ')',
+                            'value' => $aItem['insee']
+                        );
+                    }
+                }
+            }
+        }
+
+        echo json_encode($aCities);
+    }
+
+    public function _updateClientFiscalAddress()
+    {
+        $this->autoFireView = false;
+
+        $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+        $sResult = 'nok';
+
+        if (isset($this->params[0]) && isset($this->params[1])) {
+            if ('0' == $this->params[1]) {
+                /** @var clients_adresses $oClientAddress */
+                $oClientAddress = $this->loadData('clients_adresses');
+
+                if ($oClientAddress->get($this->params[0], 'id_client')) {
+
+                    $oClientAddress->cp_fiscal = $_POST['zip'];
+                    $oClientAddress->ville_fiscal = $_POST['city'];
+                    $oClientAddress->update();
+                    $sResult = 'ok';
+                }
+            } elseif ('1' == $this->params[1]) {
+                /** @var companies $oCompanies */
+                $oCompanies = $this->loadData('companies');
+                if ($oCompanies->get($this->params[0], 'id_client_owner')) {
+
+                    $oCompanies->zip = $_POST['zip'];
+                    $oCompanies->city = $_POST['city'];
+                    $oCompanies->update();
+                    $sResult = 'ok';
+                }
+            }
+        }
+
+        echo $sResult;
+    }
+
+    public function _patchClient()
+    {
+        $this->autoFireView = false;
+        $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+
+        /** @var clients $oClient */
+        $oClient = $this->loadData('clients');
+
+        $sResult = 'nok';
+
+        if (isset($this->params[0]) && $oClient->get($this->params[0])) {
+            foreach ($_POST as $item => $value) {
+                $oClient->$item = $value;
+            }
+            $oClient->update();
+            $sResult = 'ok';
+        }
+
+        echo $sResult;
+    }
 }

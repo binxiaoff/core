@@ -22,7 +22,6 @@ tmp/
 public/admin/.htaccess
 public/default/var
 public/default/.htaccess
-public/default/Landing-Pages-Externes/
 config.php
 data/crud/*
 route.php

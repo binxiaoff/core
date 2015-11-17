@@ -33,9 +33,14 @@ class insee_pays extends insee_pays_crud
         parent::insee_pays($bdd, $params);
     }
 
-    public function create($list_field_value = array())
+    public function get($id, $field = 'id_insee_pays')
     {
-        parent::create($list_field_value);
+        return parent::get($id, $field);
+    }
+
+    public function delete($id, $field = 'id_insee_pays')
+    {
+        parent::delete($id, $field);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -46,7 +51,7 @@ class insee_pays extends insee_pays_crud
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM insee_pays' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM `insee_pays`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -62,39 +67,35 @@ class insee_pays extends insee_pays_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM insee_pays ' . $where;
+        $sql = 'SELECT count(*) FROM `insee_pays` ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int)($this->bdd->result($result, 0, 0));
     }
 
-    public function exist($list_field_value)
+    public function exist($id, $field = 'id_insee_pays')
     {
-        $list = '';
-        foreach ($list_field_value as $champ => $valeur) {
-            $list .= ' AND ' . $champ . ' = "' . $valeur . '" ';
-        }
-
-        $sql    = 'SELECT * FROM insee_pays WHERE 1=1 ' . $list . ' ';
+        $sql    = 'SELECT * FROM `insee_pays` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function getByCountryName($sCountryName)
+    public function getByCountryIso($sCodeIso)
     {
-        $result = $this->bdd->query('SELECT * FROM insee_pays WHERE LIBCOG LIKE "' . $sCountryName . '"');
+        $result = $this->bdd->query('SELECT * FROM insee_pays WHERE CODEISO2 LIKE "' . $sCodeIso . '"');
 
         if ($this->bdd->num_rows() == 1) {
             $record = $this->bdd->fetch_array($result);
 
-            $this->COG    = $record['COG'];
-            $this->ACTUAL = $record['ACTUAL'];
-            $this->CAPAY  = $record['CAPAY'];
-            $this->CRPAY  = $record['CRPAY'];
-            $this->ANI    = $record['ANI'];
-            $this->LIBCOG = $record['LIBCOG'];
-            $this->LIBENR = $record['LIBENR'];
-            $this->ANCNOM = $record['ANCNOM'];
+            $this->CODEISO2 = $record['CODEISO2'];
+            $this->COG      = $record['COG'];
+            $this->ACTUAL   = $record['ACTUAL'];
+            $this->CAPAY    = $record['CAPAY'];
+            $this->CRPAY    = $record['CRPAY'];
+            $this->ANI      = $record['ANI'];
+            $this->LIBCOG   = $record['LIBCOG'];
+            $this->LIBENR   = $record['LIBENR'];
+            $this->ANCNOM   = $record['ANCNOM'];
 
             return true;
         } else {
@@ -102,4 +103,5 @@ class insee_pays extends insee_pays_crud
             return false;
         }
     }
+
 }

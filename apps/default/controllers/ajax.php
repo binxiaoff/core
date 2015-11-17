@@ -40,57 +40,68 @@ class ajaxController extends bootstrap
         $_SESSION['inscription_etape2']['preciser']          = $_POST['preciser'];
     }
 
-    public function _autocompleteCp()
+    public function _checkPostCode()
     {
         $this->autoFireView = false;
+        $response = 'nok';
 
-        if (isset($_POST['ville']) && $this->villes->get($this->bdd->escape_string($_POST['ville']), 'ville')) {
-
-            if (strlen($this->villes->cp) == 4) {
-                $lecp = '0' . $this->villes->cp;
-            } else {
-                $lecp = $this->villes->cp;
-            }
-
-            echo $lecp;
-        } else {
-            echo 'nok';
+        if (isset($this->params[1]) && 1 != $this->params[1]) {
+            echo 'ok';
+            return;
         }
+        if (isset($this->params[0]) && '' != $this->params[0]) {
+            /** @var villes $oVille */
+            $oVille = $this->loadData('villes');
+
+            if ($oVille->exist($this->params[0], 'cp')) {
+                $response = 'ok';
+            }
+            unset($oVille);
+        }
+        echo $response;
     }
 
-    public function _checkCp()
+    public function _checkCity()
     {
         $this->autoFireView = false;
+        $response = 'nok';
 
-
-        if (isset($_POST['cp'])) {
-
-            $error = 'ok';
-
-            // Ville existante
-            if (isset($_POST['ville']) && $this->villes->get($this->bdd->escape_string($_POST['ville']), 'ville')) {
-                if ($_POST['cp'] == '') {
-                    $error = 'nok';
-                }
-                if (! is_numeric($_POST['cp'])) {
-                    $error = 'nok';
-                }
-                if (strlen($_POST['cp']) != 5) {
-                    $error = 'nok';
-                }
-            } // Ville n'existe pas en bdd
-            else {
-                // on n'a pas de cp
-                if ($_POST['cp'] == '') {
-                    $error = 'nok';
-                }
-            }
-        } else {
-            $error = 'nok';
+        if (isset($this->params[1]) && 1 != $this->params[1]) {
+            echo 'ok';
+            return;
         }
+        if (isset($this->params[0]) && '' != $this->params[0]) {
+            /** @var villes $oVille */
+            $oVille = $this->loadData('villes');
 
-        echo $error;
-        die;
+            if ($oVille->exist(urldecode($this->params[0]), 'ville')) {
+                $response = 'ok';
+            }
+            unset($oVille);
+        }
+        echo $response;
+    }
+
+    public function _checkPostCodeCity()
+    {
+        $this->autoFireView = false;
+        $response = 'nok';
+
+        if (isset($this->params[2]) && 1 != $this->params[2]) {
+            echo 'ok';
+            return;
+        }
+        $this->params[1] = urldecode($this->params[1]);
+        if (isset($this->params[0]) && '' != $this->params[0] && isset($this->params[1]) && '' != $this->params[1]) {
+            /** @var villes $oVille */
+            $oVille = $this->loadData('villes');
+
+            if ($oVille->get($this->params[0] . '" AND ville = "' . $this->params[1], 'cp')) {
+                $response = 'ok';
+            }
+            unset($oVille);
+        }
+        echo $response;
     }
 
     public function _load_project()
@@ -484,54 +495,43 @@ class ajaxController extends bootstrap
         }
     }
 
-    public function _villes()
+    function _get_cities()
     {
         $this->autoFireView = false;
+        $aCities = array();
+        if (isset($_GET['term']) && '' !== trim($_GET['term'])) {
+            $_GET  = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
+            $oVilles = $this->loadData('villes');
 
-        $this->villes = $this->loadData('villes');
-
-        // cp
-        if (isset($this->params[0]) && $this->params[0] == 'cp') {
-            if (isset($_GET['term'])) {
-                $getCp = $this->bdd->escape_string($_GET['term']);
+            $bBirthPlace = false;
+            if (isset($this->params[0]) && 'birthplace' === $this->params[0]) {
+                $bBirthPlace = true;
             }
 
-            if ($getCp != '') {
-                $lcp   = $this->villes->select('cp LIKE "%' . $getCp . '%"');
-                $tabCp = array();
-
-                foreach ($lcp as $key => $cp) {
-                    if (strlen($cp['cp']) == 4) {
-                        $lecp = '0' . $cp['cp'];
+            if ($bBirthPlace) {
+                $aResults = $oVilles->lookupCities($_GET['term'], array('ville', 'cp'), true);
+            } else {
+                $aResults = $oVilles->lookupCities($_GET['term']);
+            }
+            if (false === empty($aResults)) {
+                foreach ($aResults as $aItem) {
+                    if ($bBirthPlace) {
+                        // unique insee code
+                        $aCities[$aItem['insee']] = array(
+                            'label' => $aItem['ville'] . ' (' . $aItem['num_departement'] . ')',
+                            'value' => $aItem['insee']
+                        );
                     } else {
-                        $lecp = $cp['cp'];
+                        $aCities[] = array(
+                            'label' => $aItem['ville'] . ' (' . $aItem['cp'] . ')',
+                            'value' => $aItem['insee']
+                        );
                     }
-
-                    $tabCp[$key] = $lecp;
                 }
-                echo json_encode(array_unique($tabCp));
-            } else {
-                echo '{}';
-            }
-        } // villes
-        else {
-            if (isset($_GET['term'])) {
-                $ville = $this->bdd->escape_string($_GET['term']);
-            }
-
-            if ($ville != '') {
-                $tabVilles = array();
-                $lVilles   = $this->villes->select('ville LIKE "%' . $ville . '%"');
-
-                foreach ($lVilles as $key => $v) {
-                    $tabVilles[$key] = $v['ville'];
-                }
-
-                echo json_encode($tabVilles);
-            } else {
-                echo '{}';
             }
         }
+
+        echo json_encode($aCities);
     }
 
     public function _displayAll()
