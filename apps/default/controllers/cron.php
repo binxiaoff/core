@@ -69,6 +69,7 @@ class cronController extends bootstrap
     public function _minute()
     {
         if (true === $this->startCron('correctionOffreAccepteAucuneDate', 5)) {
+
             $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
             $this->loans                   = $this->loadData('loans');
             $this->transactions            = $this->loadData('transactions');
@@ -82,6 +83,7 @@ class cronController extends bootstrap
                     $this->loans->get($offre['bdc'], 'id_loan');
 
                     $this->indexage_vos_operations_boucle = $this->loadData('indexage_vos_operations');
+
                     $this->indexage_vos_operations_boucle->get($offre['id'], 'id');
                     $this->indexage_vos_operations_boucle->date_operation = $this->loans->updated;
                     $this->indexage_vos_operations_boucle->solde          = $this->transactions->getSoldeDateLimite_fulldate($offre['id_client'], $this->loans->updated) * 100;
@@ -3124,11 +3126,11 @@ class cronController extends bootstrap
                 <td class="right">' . $this->ficelle->formatNumber($soldeDeLaVeille) . '</td>
                 <td class="right">' . $this->ficelle->formatNumber($soldeReel) . '</td>
                 <td class="right">' . $this->ficelle->formatNumber($oldecart) . '</td>
-				<td class="right">' . $this->ficelle->formatNumber($soldePromotion_old) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($soldePromotion_old) . '</td>
                 <td class="right">' . $this->ficelle->formatNumber($soldeSFFPME_old) . '</td>
-				<td class="right">' . $this->ficelle->formatNumber($soldeAdminFiscal_old) . '</td>
-				<td colspan="10">&nbsp;</td>
-			</tr>';
+                <td class="right">' . $this->ficelle->formatNumber($soldeAdminFiscal_old) . '</td>
+                <td colspan="10">&nbsp;</td>
+            </tr>';
 
             foreach ($listDates as $key => $date) {
 
@@ -3338,12 +3340,12 @@ class cronController extends bootstrap
                     $totalAdminFiscalVir += $adminFiscalVir;
 
                     $tableau .= '
-				<tr>
-					<td class="dates">' . (strlen($key) < 2 ? '0' : '') . $key . '/' . $lemoisLannee2 . '</td>
+                <tr>
+                    <td class="dates">' . (strlen($key) < 2 ? '0' : '') . $key . '/' . $lemoisLannee2 . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($alimCB[$date]['montant']) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($alimVirement[$date]['montant']) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($alimPrelevement[$date]['montant']) . '</td>
-					<td class="right">' . $this->ficelle->formatNumber($unilend_bienvenue[$date]['montant']) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($unilend_bienvenue[$date]['montant']) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($leRembEmprunteur) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber(str_replace('-', '', $virementEmprunteur[$date]['montant'])) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($virementEmprunteur[$date]['montant_unilend']) . '</td>
@@ -3355,47 +3357,30 @@ class cronController extends bootstrap
                     <td class="right">' . $this->ficelle->formatNumber($contributions_additionnelles) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($prelevements_solidarite) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($crds) . '</td>
-
                     <td class="right">' . $this->ficelle->formatNumber(str_replace('-', '', $retraitPreteur[$date]['montant'])) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($sommeMouvements) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($soldeTheorique) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($leSoldeReel) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber(round($ecartSoldes, 2)) . '</td>
-					<td class="right">' . $this->ficelle->formatNumber($soldePromotion) . '</td>
-					<td class="right">' . $this->ficelle->formatNumber($soldeSFFPME) . '</td>
-					<td class="right">' . $this->ficelle->formatNumber($soldeAdminFiscal) . '</td>
-
-					<td class="right">' . $this->ficelle->formatNumber($offrePromo) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($soldePromotion) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($soldeSFFPME) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($soldeAdminFiscal) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($offrePromo) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($octroi_pret) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($capitalPreteur) . '</td>
-                   	<td class="right">' . $this->ficelle->formatNumber($interetNetPreteur) . '</td>
-					<td class="right">' . $this->ficelle->formatNumber($affectationEchEmpr) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($interetNetPreteur) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($affectationEchEmpr) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($ecartMouvInternes) . '</td>
-
                     <td class="right">' . $this->ficelle->formatNumber($virementsOK) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($virementsAttente) . '</td>
-					<td class="right">' . $this->ficelle->formatNumber($adminFiscalVir) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($adminFiscalVir) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($sommePrelev) . '</td>
-				</tr>';
+                </tr>';
                 } else {
                     $tableau .= '
                 <tr>
                     <td class="dates">' . (strlen($key) < 2 ? '0' : '') . $key . '/' . $lemoisLannee2 . '</td>
                     <td>&nbsp;</td>
-					<td>&nbsp;</td>
-                    <td>&nbsp;</td>
-					<td>&nbsp;</td>
-					<td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-                    <td>&nbsp;</td>
-					<td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
@@ -3408,26 +3393,40 @@ class cronController extends bootstrap
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
-					<td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
-					<td>&nbsp;</td>
-					<td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
                 </tr>';
                 }
             }
 
             $tableau .= '
             <tr>
-				<td colspan="33">&nbsp;</td>
-			</tr>
+                <td colspan="33">&nbsp;</td>
+            </tr>
             <tr>
-				<th>Total mois</th>
+                <th>Total mois</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalAlimCB) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalAlimVirement) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalAlimPrelevement) . '</th>
-				<th class="right">' . $this->ficelle->formatNumber($totalVirementUnilend_bienvenue) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalVirementUnilend_bienvenue) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalRembEmprunteur) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalVirementEmprunteur) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalVirementCommissionUnilendEmprunteur) . '</th>
@@ -3440,27 +3439,25 @@ class cronController extends bootstrap
                 <th class="right">' . $this->ficelle->formatNumber($totalPrelevements_solidarite) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalCrds) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber(str_replace('-', '', $totalRetraitPreteur)) . '</th>
-				<th class="right">' . $this->ficelle->formatNumber($totalSommeMouvements) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalSommeMouvements) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalNewsoldeDeLaVeille) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalNewSoldeReel) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber(round($totalEcartSoldes, 2)) . '</th>
-				<th class="right">' . $this->ficelle->formatNumber($totalSoldePromotion) . '</th>
-				<th class="right">' . $this->ficelle->formatNumber($totalSoldeSFFPME) . '</th>
-				<th class="right">' . $this->ficelle->formatNumber($totalSoldeAdminFiscal) . '</th>
-
-				<th class="right">' . $this->ficelle->formatNumber($totalOffrePromo) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalSoldePromotion) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalSoldeSFFPME) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalSoldeAdminFiscal) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalOffrePromo) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalOctroi_pret) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalCapitalPreteur) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalInteretNetPreteur) . '</th>
-				<th class="right">' . $this->ficelle->formatNumber($totalAffectationEchEmpr) . '</th>
-				<th class="right">' . $this->ficelle->formatNumber($totalEcartMouvInternes) . '</th>
-
+                <th class="right">' . $this->ficelle->formatNumber($totalAffectationEchEmpr) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalEcartMouvInternes) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalVirementsOK) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalVirementsAttente) . '</th>
-				<th class="right">' . $this->ficelle->formatNumber($totalAdminFiscalVir) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalAdminFiscalVir) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totaladdsommePrelev) . '</th>
-			</tr>
-		</table>';
+            </tr>
+        </table>';
 
             $table[1]['name'] = 'totalAlimCB';
             $table[1]['val']  = $totalAlimCB;
@@ -3582,19 +3579,18 @@ class cronController extends bootstrap
             $oldecart = $soldeDeLaVeille - $soldeReel;
 
             $tableau .= '
-		<table border="0" cellpadding="0" cellspacing="0" style=" background-color:#fff; font:11px/13px Arial, Helvetica, sans-serif; color:#000;width: 2500px;">
-
+        <table border="0" cellpadding="0" cellspacing="0" style=" background-color:#fff; font:11px/13px Arial, Helvetica, sans-serif; color:#000;width: 2500px;">
             <tr>
-				<th colspan="34" style="font:italic 18px Arial, Helvetica, sans-serif; text-align:center;">&nbsp;</th>
-			</tr>
+                <th colspan="34" style="font:italic 18px Arial, Helvetica, sans-serif; text-align:center;">&nbsp;</th>
+            </tr>
             <tr>
-				<th colspan="34" style="height:35px;font:italic 18px Arial, Helvetica, sans-serif; text-align:center;">UNILEND</th>
-			</tr>
-			<tr>
-				<th rowspan="2">' . $lannee . '</th>
-				<th colspan="3">Chargements compte prêteurs</th>
-				<th>Chargements offres</th>
-				<th>Echeances<br />Emprunteur</th>
+                <th colspan="34" style="height:35px;font:italic 18px Arial, Helvetica, sans-serif; text-align:center;">UNILEND</th>
+            </tr>
+            <tr>
+                <th rowspan="2">' . $lannee . '</th>
+                <th colspan="3">Chargements compte prêteurs</th>
+                <th>Chargements offres</th>
+                <th>Echeances<br />Emprunteur</th>
                 <th>Octroi prêt</th>
                 <th>Commissions<br />octroi prêt</th>
                 <th>Commissions<br />restant dû</th>
@@ -3605,19 +3601,16 @@ class cronController extends bootstrap
                 <th colspan="6">Mouvements internes</th>
                 <th colspan="3">Virements</th>
                 <th>Prélèvements</th>
-
-			</tr>
-			<tr>
-
-				<td class="center">Carte<br />bancaire</td>
-				<td class="center">Virement</td>
-				<td class="center">Prélèvement</td>
-				<td class="center">Virement</td>
-				<td class="center">Prélèvement</td>
+            </tr>
+            <tr>
+                <td class="center">Carte<br />bancaire</td>
+                <td class="center">Virement</td>
+                <td class="center">Prélèvement</td>
+                <td class="center">Virement</td>
+                <td class="center">Prélèvement</td>
                 <td class="center">Virement</td>
                 <td class="center">Virement</td>
                 <td class="center">Virement</td>
-
                 <td class="center">Prélèvements<br />obligatoires</td>
                 <td class="center">Retenues à la<br />source</td>
                 <td class="center">CSG</td>
@@ -3630,33 +3623,30 @@ class cronController extends bootstrap
                 <td class="center">Solde<br />théorique</td>
                 <td class="center">Solde<br />réel</td>
                 <td class="center">Ecart<br />global</td>
-				<td class="center">Solde<br />Promotions</td>
-				<td class="center">Solde<br />SFF PME</td>
-				<td class="center">Solde Admin.<br>Fiscale</td>
-
-				<td class="center">Offre promo</td>
+                <td class="center">Solde<br />Promotions</td>
+                <td class="center">Solde<br />SFF PME</td>
+                <td class="center">Solde Admin.<br>Fiscale</td>
+                <td class="center">Offre promo</td>
                 <td class="center">Octroi prêt</td>
                 <td class="center">Retour prêteur<br />(Capital)</td>
                 <td class="center">Retour prêteur<br />(Intérêts nets)</td>
-				<td class="center">Affectation<br />Ech. Empr.</td>
+                <td class="center">Affectation<br />Ech. Empr.</td>
                 <td class="center">Ecart<br />fiscal</td>
-
                 <td class="center">Fichier<br />virements</td>
                 <td class="center">Dont<br />SFF PME</td>
-				<td class="center">Administration<br />Fiscale</td>
+                <td class="center">Administration<br />Fiscale</td>
                 <td class="center">Fichier<br />prélèvements</td>
-			</tr>
-			<tr>
-				<td colspan="18">Début d\'année</td>
+            </tr>
+            <tr>
+                <td colspan="18">Début d\'année</td>
                 <td class="right">' . $this->ficelle->formatNumber($soldeDeLaVeille) . '</td>
                 <td class="right">' . $this->ficelle->formatNumber($soldeReel) . '</td>
                 <td class="right">' . $this->ficelle->formatNumber($oldecart) . '</td>
-				<td class="right">' . $this->ficelle->formatNumber($soldePromotion_old) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($soldePromotion_old) . '</td>
                 <td class="right">' . $this->ficelle->formatNumber($soldeSFFPME_old) . '</td>
-				<td class="right">' . $this->ficelle->formatNumber($soldeAdminFiscal_old) . '</td>
-
-				<td colspan="10">&nbsp;</td>
-			</tr>';
+                <td class="right">' . $this->ficelle->formatNumber($soldeAdminFiscal_old) . '</td>
+                <td colspan="10">&nbsp;</td>
+            </tr>';
 
             $sommetotalAlimCB                              = 0;
             $sommetotalAlimVirement                        = 0;
@@ -3769,82 +3759,78 @@ class cronController extends bootstrap
 
                 $tableau .= '
                 <tr>
-                	<th>' . $this->dates->tableauMois['fr'][$i] . '</th>';
+                    <th>' . $this->dates->tableauMois['fr'][$i] . '</th>';
 
                 if ($lemois != false) {
                     $tableau .= '
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalAlimCB']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalAlimVirement']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalAlimPrelevement']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalVirementUnilend_bienvenue']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalRembEmprunteur']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalVirementEmprunteur']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalVirementCommissionUnilendEmprunteur']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalCommission']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalPrelevements_obligatoires']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalRetenues_source']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalCsg']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalPrelevements_sociaux']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalContributions_additionnelles']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalPrelevements_solidarite']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalCrds']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber(str_replace('-', '', $lemois['totalRetraitPreteur'])) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalSommeMouvements']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalNewsoldeDeLaVeille']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalNewSoldeReel']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalEcartSoldes']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalSoldePromotion']) . '</td>
-
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalSoldeSFFPME']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalSoldeAdminFiscal']) . '</td>
-
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalOffrePromo']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalOctroi_pret']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalCapitalPreteur']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalInteretNetPreteur']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalAffectationEchEmpr']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalEcartMouvInternes']) . '</td>
-
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalVirementsOK']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalVirementsAttente']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totalAdminFiscalVir']) . '</td>
-						<td class="right">' . $this->ficelle->formatNumber($lemois['totaladdsommePrelev']) . '</td>';
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalAlimCB']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalAlimVirement']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalAlimPrelevement']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalVirementUnilend_bienvenue']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalRembEmprunteur']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalVirementEmprunteur']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalVirementCommissionUnilendEmprunteur']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalCommission']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalPrelevements_obligatoires']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalRetenues_source']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalCsg']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalPrelevements_sociaux']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalContributions_additionnelles']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalPrelevements_solidarite']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalCrds']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber(str_replace('-', '', $lemois['totalRetraitPreteur'])) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalSommeMouvements']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalNewsoldeDeLaVeille']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalNewSoldeReel']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalEcartSoldes']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalSoldePromotion']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalSoldeSFFPME']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalSoldeAdminFiscal']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalOffrePromo']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalOctroi_pret']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalCapitalPreteur']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalInteretNetPreteur']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalAffectationEchEmpr']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalEcartMouvInternes']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalVirementsOK']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalVirementsAttente']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totalAdminFiscalVir']) . '</td>
+                        <td class="right">' . $this->ficelle->formatNumber($lemois['totaladdsommePrelev']) . '</td>';
                 } else {
                     $tableau .= '
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						<td>&nbsp;</td>
-						';
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>';
                 }
 
                 $tableau .= '</tr>';
@@ -3852,12 +3838,11 @@ class cronController extends bootstrap
 
             $tableau .= '
             <tr>
-				<th>Total année</th>
-
-				<th class="right">' . $this->ficelle->formatNumber($sommetotalAlimCB) . '</th>
+                <th>Total année</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalAlimCB) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($sommetotalAlimVirement) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($sommetotalAlimPrelevement) . '</th>
-				<th class="right">' . $this->ficelle->formatNumber($sommetotalVirementUnilend_bienvenue) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalVirementUnilend_bienvenue) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($sommetotalRembEmprunteur) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($sommetotalVirementEmprunteur) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($sommetotalVirementCommissionUnilendEmprunteur) . '</th>
@@ -3874,25 +3859,21 @@ class cronController extends bootstrap
                 <th class="right">' . $this->ficelle->formatNumber($sommetotalNewsoldeDeLaVeille) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($sommetotalNewSoldeReel) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($sommetotalEcartSoldes) . '</th>
-				<th class="right">' . $this->ficelle->formatNumber($sommetotalSoldePromotion) . '</th>
-				<th class="right">' . $this->ficelle->formatNumber($sommetotalSoldeSFFPME) . '</th>
-				<th class="right">' . $this->ficelle->formatNumber($sommetotalSoldeAdminFiscal) . '</th>
-
-				<th class="right">' . $this->ficelle->formatNumber($sommetotalOffrePromo) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalSoldePromotion) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalSoldeSFFPME) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalSoldeAdminFiscal) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalOffrePromo) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($sommetotalOctroi_pret) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($sommetotalCapitalPreteur) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($sommetotalInteretNetPreteur) . '</th>
-				 <th class="right">' . $this->ficelle->formatNumber($sommetotalAffectationEchEmpr) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalAffectationEchEmpr) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($sommetotalEcartMouvInternes) . '</th>
-
                 <th class="right">' . $this->ficelle->formatNumber($sommetotalVirementsOK) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($sommetotalVirementsAttente) . '</th>
-				<th class="right">' . $this->ficelle->formatNumber($sommetotalAdminFiscalVir) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($sommetotalAdminFiscalVir) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($sommetotaladdsommePrelev) . '</th>
-
             </tr>
-
-		</table>';
+        </table>';
 
             if ($this->Config['env'] == 'prod') {
                 echo utf8_decode($tableau);
@@ -4482,6 +4463,7 @@ class cronController extends bootstrap
         ini_set('max_execution_time', 300); //300 seconds = 5 minutes
 
         if (true === $this->startCron('declarationContratPret', 5)) {
+
             $loans    = $this->loadData('loans');
             $projects = $this->loadData('projects');
 
@@ -4502,9 +4484,11 @@ class cronController extends bootstrap
                         $projects->get($l['id_project'], 'id_project');
 
                         $path = $this->path . 'protected/declarationContratPret/' . substr($l['added'], 0, 4) . '/' . $projects->slug . '/';
-                        $nom  = 'Unilend_declarationContratPret_' . $l['id_loan'] . '.pdf';
+                        $nom = 'Unilend_declarationContratPret_' . $l['id_loan'] . '.pdf';
 
-                        $oCommandPdf = new Command('pdf', 'declarationContratPret_html', array($l['id_loan'], $path), $this->language);
+                        $oCommandPdf = new Command('pdf', 'declarationContratPret_html', array(
+                            $l['id_loan'], $path
+                        ), $this->language);
                         $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
                         $oPdf->_declarationContratPret_html($l['id_loan'], $path);
 
@@ -4985,6 +4969,7 @@ class cronController extends bootstrap
     public function _checkEmailBidKO()
     {
         if (true === $this->startCron('checkEmailBidKO', 1)) {
+
             // On fait notre cron toutes les  5 minutes et toutes les minutes entre 15h30 et 16h00
             $les5    = array(0, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55);
             $minutes = date('i');
@@ -5018,7 +5003,7 @@ class cronController extends bootstrap
 
                 $iEmailsSent  = 0;
                 $iBidsUpdated = 0;
-                $lBidsKO      = $this->bids->select('status = 2 AND status_email_bid_ko = 0');
+                $lBidsKO = $this->bids->select('status = 2 AND status_email_bid_ko = 0');
 
                 foreach ($lBidsKO as $e) {
                     // On check si on a pas de changement en cours de route
@@ -5030,6 +5015,7 @@ class cronController extends bootstrap
                         $this->bids->status_email_bid_ko == '0'
                         && in_array($this->current_projects_status->status, array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT))
                     ) {
+
                         $this->lenders_accounts->get($e['id_lender_account'], 'id_lender_account');
                         $this->preteur->get($this->lenders_accounts->id_client_owner, 'id_client');
 
@@ -5252,6 +5238,7 @@ class cronController extends bootstrap
     public function _relance_completude()
     {
         if (true === $this->startCron('relanceCompletude', 5)) {
+
             $this->clients                = $this->loadData('clients');
             $this->clients_status         = $this->loadData('clients_status');
             $this->clients_status_history = $this->loadData('clients_status_history');
@@ -5441,6 +5428,7 @@ class cronController extends bootstrap
     public function _genere_factures()
     {
         if (true === $this->startCron('genereFacture', 5)) {
+
             $projects    = $this->loadData('projects');
             $factures    = $this->loadData('factures');
             $companies   = $this->loadData('companies');
@@ -5448,15 +5436,14 @@ class cronController extends bootstrap
 
             foreach ($factures->selectEcheancesRembAndNoFacture() as $r) {
                 $oCommandPdf = new Command('pdf', 'facture_ER', array($r['hash'], $r['id_project'], $r['ordre']), $this->language);
-                $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre']);
-            }
+                    $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
+                    $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre']);
+                }
 
             foreach ($projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT) as $projet) {
                 if (false === $factures->get($projet['id_project'], 'type_commission = 1 AND id_project')) {
                     $companies->get($projet['id_company'], 'id_company');
                     $emprunteurs->get($companies->id_client_owner, 'id_client');
-
                     $oCommandPdf = new Command('pdf', 'facture_EF', array($emprunteurs->hash, $r['id_project']), $this->language);
                     $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
                     $oPdf->_facture_EF($emprunteurs->hash, $r['id_project']);
@@ -5472,6 +5459,7 @@ class cronController extends bootstrap
     public function _check_alim_cb()
     {
         if (true === $this->startCron('checkAlimCb', 5)) {
+
             $this->autoFireHeader = false;
             $this->autoFireHead   = false;
             $this->autoFireView   = false;
@@ -8232,5 +8220,40 @@ class cronController extends bootstrap
         $oLogger    = new ULogger('SendDataloader', $this->logPath, 'cron.log');
         $oLogger->addRecord(ULogger::INFO, 'Send to dataloader type ' . $sType . ' in ' . round($iTimeEndDataloader, 2),
             array(__FILE__ . ' on line ' . __LINE__));
+    }
+
+    /**
+     * Function to calculate the IRR (Internal Rate of Return) for each lender on a regular basis
+     * Given the amount of lenders and the time and resources needed for calculation
+     * it does one iteration par day on 800 accounts if not specified otherwise
+     */
+    public function _calculateIRRForAllLenders()
+    {
+        if (true === $this->startCron('LendersStats', 30)){
+            set_time_limit (2000);
+            $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 800;
+            $oDateTime               = new DateTime('NOW');
+            $fTimeStart              = microtime(true);
+            $oLoggerIRR              = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
+            $oLendersAccounts        = $this->loadData('lenders_accounts');
+            $oLendersAccountStats    = $this->loadData('lenders_account_stats');
+            $aLendersAccounts        = $oLendersAccounts->selectLendersForIRR($iAmountOfLenderAccounts);
+
+            foreach ($aLendersAccounts as $aLender) {
+                try {
+                    $fXIRR                                   = $oLendersAccounts->calculateIRR($aLender['id_lender_account']);
+                    $oLendersAccountStats->id_lender_account = $aLender['id_lender_account'];
+                    $oLendersAccountStats->tri_date          = $oDateTime->format('Y-m-d H:i:s');
+                    $oLendersAccountStats->tri_value         = $fXIRR;
+                    $oLendersAccountStats->create();
+
+                } catch (Exception $e) {
+                    $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). $e->getTraceAsString());
+                }
+
+                $this->oLogger->addRecord(ULogger::INFO, 'Temps calcul TRI : ' . round(microtime(true) - $fTimeStart, 2));
+            }
+            $this->stopCron();
+        }
     }
 }

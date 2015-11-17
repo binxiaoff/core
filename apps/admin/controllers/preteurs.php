@@ -1,5 +1,8 @@
 <?php
 
+use Unilend\librairies\ULogger;
+
+
 class preteursController extends bootstrap
 {
     /**
@@ -2125,25 +2128,26 @@ class preteursController extends bootstrap
 
         // PORTFOLIO DETAILS
 
-        // TRI
-        $this->TRI = $this->calculTRI();
+        //IRR
+        try {
+            $this->IRR = $this->lenders_accounts->calculateIRR($this->lenders_accounts->id_lender_account);
+        } catch (Exception $e){
+            $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
+            $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
+            $this->IRR = 'non calculable';
+        }
 
         // amount of projects online since his registration
         $statusOk                = array(projects_status::A_FUNDER, projects_status::EN_FUNDING, projects_status::REMBOURSEMENT, projects_status::PRET_REFUSE);
         $this->projectsPublished = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, $statusOk);
 
-        $statusKo            = array(projects_status::PROBLEME, projects_status::RECOUVREMENT);
+
+        //Number of problematic projects in his wallet
+        $statusKo            = array(projects_status::PROBLEME, projects_status::RECOUVREMENT, projects_status::PROBLEME_J_PLUS_X);
         $this->problProjects = $this->projects->countProjectsByStatusAndLender($this->lenders_accounts->id_lender_account, $statusKo);
         $this->totalProjects = $this->loans->getNbPprojet($this->lenders_accounts->id_lender_account);
     }
 
-    private function calculTRI()
-    {
-        $valuesTRI = $this->lenders_accounts->getValuesforTRI($this->lenders_accounts->id_lender_account);
-
-        $oFinancial = new \PHPExcel_Calculation_Financial();
-        return round($oFinancial->XIRR(array_values($valuesTRI), array_keys($valuesTRI)) * 100, 2);
-    }
 
     public function _contratPdf()
     {
