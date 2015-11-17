@@ -6,20 +6,20 @@
         <property name="configOverrideMap">
             <map>
                 <entry key="sfdc.debugMessages" value="false"/>
-                <entry key="sfdc.debugMessagesFile" value="/srv/sites/unilend/log/salesforce_lenders.log"/>
+                <entry key="sfdc.debugMessagesFile" value="/home/unilend/www/log/salesforce_lenders.log"/>
                 <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
                 <entry key="sfdc.password" value="07244af39be84a439c328e212b44e2fbb41f0358cd162716757bca5b9b22fc4f7d7ca470edb66c09"/>
-                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"/>
+                <entry key="process.encryptionKeyFile" value="/home/unilend/www/dataloader/conf/key.txt"/>
                 <entry key="sfdc.timeoutSecs" value="540"/>
                 <entry key="sfdc.loadBatchSize" value="200"/>
                 <entry key="sfdc.entity" value="Contact"/>
                 <entry key="sfdc.externalIdField" value="ID_Client__c"/>
                 <entry key="sfdc.insertNulls" value="true"/>
                 <entry key="process.operation" value="upsert"/>
-                <entry key="process.mappingFile" value="/srv/sites/unilend/dataloader/map/Mapping_Lenders.sdl"/>
-                <entry key="process.outputError" value="/srv/sites/unilend/log/errorLenders.csv"/>
-                <entry key="dataAccess.name" value="/srv/sites/unilend/dataloader/extract/preteurs.csv" />
+                <entry key="process.mappingFile" value="/home/unilend/www/dataloader/map/Mapping_Lenders.sdl"/>
+                <entry key="process.outputError" value="/home/unilend/www/log/errorLenders.csv"/>
+                <entry key="dataAccess.name" value="/home/unilend/www/dataloader/extract/preteurs.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
@@ -32,20 +32,20 @@
         <property name="configOverrideMap">
             <map>
                 <entry key="sfdc.debugMessages" value="false"/>
-                <entry key="sfdc.debugMessagesFile" value="/srv/sites/unilend/log/salesforce_Companies.log"/>
+                <entry key="sfdc.debugMessagesFile" value="/home/unilend/www/log/salesforce_Companies.log"/>
                 <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
                 <entry key="sfdc.password" value="07244af39be84a439c328e212b44e2fbb41f0358cd162716757bca5b9b22fc4f7d7ca470edb66c09"/>
-                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"/>
+                <entry key="process.encryptionKeyFile" value="/home/unilend/www/dataloader/conf/key.txt"/>
                 <entry key="sfdc.timeoutSecs" value="540"/>
                 <entry key="sfdc.loadBatchSize" value="200"/>
                 <entry key="sfdc.entity" value="Account"/>
                 <entry key="sfdc.insertNulls" value="true"/>
                 <entry key="sfdc.externalIdField" value="ID_Emprunteur__c"/>
                 <entry key="process.operation" value="upsert"/>
-                <entry key="process.mappingFile" value="/srv/sites/unilend/dataloader/map/Mapping_Company.sdl"/>
-                <entry key="process.outputError" value="/srv/sites/unilend/log/errorCompanies.csv"/>
-                <entry key="dataAccess.name" value="/srv/sites/unilend/dataloader/extract/companies.csv" />
+                <entry key="process.mappingFile" value="/home/unilend/www/dataloader/map/Mapping_Company.sdl"/>
+                <entry key="process.outputError" value="/home/unilend/www/log/errorCompanies.csv"/>
+                <entry key="dataAccess.name" value="/home/unilend/www/dataloader/extract/companies.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
@@ -58,20 +58,20 @@
         <property name="configOverrideMap">
             <map>
                 <entry key="sfdc.debugMessages" value="false"/>
-                <entry key="sfdc.debugMessagesFile" value="/srv/sites/unilend/log/salesforce_Borrowers.log"/>
+                <entry key="sfdc.debugMessagesFile" value="/home/unilend/www/log/salesforce_Borrowers.log"/>
                 <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
                 <entry key="sfdc.password" value="07244af39be84a439c328e212b44e2fbb41f0358cd162716757bca5b9b22fc4f7d7ca470edb66c09"/>
-                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"/>
+                <entry key="process.encryptionKeyFile" value="/home/unilend/www/dataloader/conf/key.txt"/>
                 <entry key="sfdc.timeoutSecs" value="540"/>
                 <entry key="sfdc.loadBatchSize" value="200"/>
                 <entry key="sfdc.entity" value="Contact"/>
                 <entry key="sfdc.insertNulls" value="true"/>
                 <entry key="sfdc.externalIdField" value="ID_Client__c"/>
                 <entry key="process.operation" value="upsert"/>
-                <entry key="process.mappingFile" value="/srv/sites/unilend/dataloader/map/Mapping_Borrowers.sdl"/>
-                <entry key="process.outputError" value="/srv/sites/unilend/log/errorBorrowers.csv"/>
-                <entry key="dataAccess.name" value="/srv/sites/unilend/dataloader/extract/emprunteurs.csv" />
+                <entry key="process.mappingFile" value="/home/unilend/www/dataloader/map/Mapping_Borrowers.sdl"/>
+                <entry key="process.outputError" value="/home/unilend/www/log/errorBorrowers.csv"/>
+                <entry key="dataAccess.name" value="/home/unilend/www/dataloader/extract/emprunteurs.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
@@ -84,20 +84,20 @@
         <property name="configOverrideMap">
             <map>
                 <entry key="sfdc.debugMessages" value="false"/>
-                <entry key="sfdc.debugMessagesFile" value="/srv/sites/unilend/log/salesforce_Projects.log"/>
+                <entry key="sfdc.debugMessagesFile" value="/home/unilend/www/log/salesforce_Projects.log"/>
                 <entry key="sfdc.endpoint" value="https://www.salesforce.com"/>
                 <entry key="sfdc.username" value="arnaud.schwartz@unilend.fr"/>
                 <entry key="sfdc.password" value="07244af39be84a439c328e212b44e2fbb41f0358cd162716757bca5b9b22fc4f7d7ca470edb66c09"/>
-                <entry key="process.encryptionKeyFile" value="/srv/sites/unilend/dataloader/conf/key.txt"/>
+                <entry key="process.encryptionKeyFile" value="/home/unilend/www/dataloader/conf/key.txt"/>
                 <entry key="sfdc.timeoutSecs" value="540"/>
                 <entry key="sfdc.loadBatchSize" value="200"/>
                 <entry key="sfdc.entity" value="Dossier__c"/>
                 <entry key="sfdc.insertNulls" value="true"/>
                 <entry key="sfdc.externalIdField" value="Numero_Dossier_BO__c"/>
                 <entry key="process.operation" value="upsert"/>
-                <entry key="process.mappingFile" value="/srv/sites/unilend/dataloader/map/Mapping_Projects.sdl"/>
-                <entry key="process.outputError" value="/srv/sites/unilend/log/errorProjects.csv"/>
-                <entry key="dataAccess.name" value="/srv/sites/unilend/dataloader/extract/projects.csv" />
+                <entry key="process.mappingFile" value="/home/unilend/www/dataloader/map/Mapping_Projects.sdl"/>
+                <entry key="process.outputError" value="/home/unilend/www/log/errorProjects.csv"/>
+                <entry key="dataAccess.name" value="/home/unilend/www/dataloader/extract/projects.csv" />
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
