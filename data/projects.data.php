@@ -219,7 +219,7 @@ class projects extends projects_crud
 
     public function selectProjectsByStatus($status, $where = '', $order = '', $start = '', $nb = '')
     {
-        $sWhereClause = 'ps.status IN (' . $status . ')';
+        $sWhereClause = 'projects_status.status IN (' . $status . ')';
 
         if ('' !== trim($where)) {
             $sWhereClause .= ' ' . $where . ' ';

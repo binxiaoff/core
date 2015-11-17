@@ -2143,7 +2143,7 @@ class preteursController extends bootstrap
 
 
         //Number of problematic projects in his wallet
-        $statusKo            = array(projects_status::PROBLEME, projects_status::RECOUVREMENT, projects_status::PROBLEME_J_PLUS_X);
+        $statusKo            = array(projects_status::PROBLEME, projects_status::RECOUVREMENT);
         $this->problProjects = $this->projects->countProjectsByStatusAndLender($this->lenders_accounts->id_lender_account, $statusKo);
         $this->totalProjects = $this->loans->getNbPprojet($this->lenders_accounts->id_lender_account);
     }
