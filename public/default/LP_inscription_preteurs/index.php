@@ -1547,8 +1547,12 @@
             $('[data-autocomplete]').each(function()
             {
                 if($(this).data('autocomplete') == 'city' || $(this).data('autocomplete') == 'post_code' || $(this).data('autocomplete') == 'birth_city') {
+                    var getBirthPlace= '';
+                    if ($(this).data('autocomplete') == 'birth_city') {
+                        getBirthPlace = 'birthplace';
+                    }
                     $(this).autocomplete({
-                        source: '<?= $url_site ?>/ajax/get_cities/',
+                        source: '<?= $url_site ?>/ajax/get_cities/' + getBirthPlace + '/',
                         minLength: 3,
                         search: function( event, ui ) {
                             if ($(this).data('autocomplete') == 'birth_city') {

@@ -3180,13 +3180,35 @@ class ajaxController extends bootstrap
         if (isset($_GET['term']) && '' !== trim($_GET['term'])) {
             $_GET  = filter_input_array(INPUT_GET, FILTER_SANITIZE_STRING);
             $oVilles = $this->loadData('villes');
-            $aResults = $oVilles->lookupCities($_GET['term']);
+
+            $bBirthPlace = false;
+            if (isset($this->params[0]) && 'birthplace' === $this->params[0]) {
+                $bBirthPlace = true;
+            }
+
+            if ($bBirthPlace) {
+                $aResults = $oVilles->lookupCities($_GET['term'], array('ville', 'cp'), true);
+            } else {
+                $aResults = $oVilles->lookupCities($_GET['term']);
+            }
             if (false === empty($aResults)) {
-                foreach($aResults as $aItem) {
-                    $aCities[] = array(
-                        'label' => $aItem['ville'] . ' (' . $aItem['cp'] . ')',
-                        'value' => $aItem['insee']
-                    );
+                if ($bBirthPlace) {
+                    foreach ($aResults as $aItem) {
+
+                        // unique insee code
+                        $aCities[$aItem['insee']] = array(
+                            'label' => $aItem['ville'] . ' (' . $aItem['num_departement'] . ')',
+                            'value' => $aItem['insee']
+                        );
+                    }
+                    $aCities = array_values($aCities);
+                } else {
+                    foreach ($aResults as $aItem) {
+                        $aCities[] = array(
+                            'label' => $aItem['ville'] . ' (' . $aItem['cp'] . ')',
+                            'value' => $aItem['insee']
+                        );
+                    }
                 }
             }
         }

@@ -143,14 +143,14 @@ class villes extends villes_crud
         }
 
         $sql = 'SELECT * FROM (
-                  SELECT id_ville,ville,cp,insee
+                  SELECT id_ville, ville, cp, insee, num_departement
                   FROM villes
                   WHERE ('.$sWhere.') '.$sIncludeOldCity.'
                   ORDER BY ville ASC
                 ) start_by
                 UNION
                 SELECT * FROM (
-                    SELECT id_ville,ville,cp,insee
+                    SELECT id_ville, ville, cp, insee, num_departement
                     FROM villes
                     WHERE (' . $sWhereBis . ') ' . $sIncludeOldCity . '
                     ORDER BY ville ASC
