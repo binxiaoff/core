@@ -414,23 +414,17 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .table .fav-btn { display: inline-block; vertical-align: top; margin: -2px 0 0 10px; }
 
     .single-project-mobile .statistic-table { margin-bottom: 20px; }
-
     .single-project-mobile .statistic-table th,
     .single-project-mobile .statistic-table td { font-size: 10px; }
-
     .single-project-mobile .statistic-table td { height: auto; padding: 5px 0 !important; }
     .single-project-mobile .statistic-table th { padding: 0 0 0 5px; line-height: 28px; }
-
     .single-project-mobile .statistic-table td:first-child { padding-left: 0; }
     .single-project-mobile .statistic-table td:last-child { padding-right: 0; }
     .single-project-mobile .statistic-table td:not(:first-child) { white-space: nowrap; }
-
     .single-project-mobile .statistic-table .year-nav th { background-color: #a1a5a7; text-align: center; font-size: 12px; }
     .single-project-mobile .statistic-table .year-nav th:first-child { background-color: #fff; }
-
     .single-project-mobile .statistic-table td.intitule { width: auto; }
     .single-project-mobile .statistic-table td.sameSize { width: 60px; }
-
     .single-project-mobile .statistic-table td.inner-table { padding: 0 !important; }
 
     .tab .table-filter .period,
@@ -881,7 +875,6 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .single-project-mobile p.single-project-meta strong { color: #00a453; font-weight: 400; }
 
     .single-project-mobile .single-project-stats { text-align: center; }
-    .single-project-mobile .single-project-stats > h2 { letter-spacing: normal; }
 
     .single-project-mobile .single-project-stats [class^="ico-"] { font-size: 0; line-height: 0; display: inline-block; vertical-align: middle; position: relative; top: -2px; background-repeat: no-repeat; background-position: 0 0; -webkit-background-size: 100% 100%; background-size: 100% 100%; }
     .single-project-mobile .single-project-stats .ico-pig { width: 20px; height: 19px; background-image: url(images/ico-pig.png); }
@@ -891,7 +884,9 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .single-project-mobile .single-project-stats .ico-star-on { width: 10px; height: 10px; background-image: url(images/ico-star-on.png); }
     .single-project-mobile .single-project-stats .ico-star-off { width: 10px; height: 10px; background-image: url(images/ico-star-off.png); }
 
-    .single-project-mobile .single-project-stats h2 { font-family: Helvetica, Arial, sans-serif; font-size: 24px; line-height: 30px; color: #fff; font-weight: bold; padding: 7px 0; margin: 0; background-color: #b10366; }
+    .single-project-mobile .single-project-stats h2,
+    .single-project-mobile .single-project-stats h3 { font-family: Helvetica, Arial, sans-serif; font-size: 24px; line-height: 30px; color: #fff; font-weight: bold; padding: 7px 0; margin: 0; background-color: #b10366; letter-spacing: normal; }
+    .single-project-mobile .single-project-stats h3 { font-size: 18px; line-height: 24px; }
     .single-project-mobile .single-project-stats h2 a { color: inherit; text-decoration: none; -webkit-appearance: none; }
     .single-project-mobile .single-project-stats ul { font-family: Helvetica, Arial, sans-serif; list-style: none outside none; font-size: 15px; line-height: 18px; color: #4d4d4d; font-weight: bold; text-align: center; padding: 10px 0; background-color: #d2d1d1; }
     .single-project-mobile .single-project-stats li { display: inline-block; vertical-align: middle; padding: 0 10px; }
@@ -907,11 +902,14 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .single-project-mobile .single-project-progress-bar span { display: block; background-color: #ffffff; border-radius: 6px; text-align: center; }
     .single-project-mobile .single-project-progress-bar span small { font-size: 11px; line-height: 14px; color: #b10366; font-weight: bold;  margin-left: 5px; }
 
+    .single-project-mobile .single-project-info { font-size: 14px; line-height: 15px; text-align: center; background-color: #e6e5e5; padding: 10px; margin-bottom: 15px; }
+    .single-project-mobile .single-project-info p { padding: 5px 0; color: #4d4d4d; }
+
     .single-project-mobile .single-project-actions { text-align: center; padding: 15px; border-bottom: 1px solid #e3e4e4; margin: 0 -15px; }
     .single-project-mobile .single-project-actions .btn { font-size: 16px; line-height: 1.7; height: auto; padding: 8px 15px 6px; }
 
     .single-project-mobile .ex-article { padding-bottom: 0; }
-    .single-project-mobile .ex-article h3 { font-size: 15px; line-height: 24px; color: #a1a5a7; color: #a1a5a7; font-weight: normal; padding: 10px 25px 10px 15px; margin: 0 -15px; }
+    .single-project-mobile .ex-article h3 { font-size: 15px; line-height: 24px; color: #a1a5a7; font-weight: normal; padding: 10px 25px 10px 15px; margin: 0 -15px; }
     .single-project-mobile .ex-article h3 a { color: inherit; text-transform: none; }
     .single-project-mobile .ex-article h3 .icon-arrow-down { top: 50%; right: 15px; margin-top: -6px; }
     .single-project-mobile .ex-article h3 .icon-arrow-down.up { margin-top: -9px; }
