@@ -8244,13 +8244,13 @@ class cronController extends bootstrap
     /**
      * Function to calculate the IRR (Internal Rate of Return) for each lender on a regular basis
      * Given the amount of lenders and the time and resources needed for calculation
-     * it does one iteration par day on 800 accounts
+     * it does one iteration par day on 800 accounts if not specified otherwise
      */
     public function _calculateIRRForAllLenders()
     {
         if (true === $this->startCron('LendersStats', 30)){
             set_time_limit (2000);
-            $iAmountOfLenderAccounts = 800;
+            $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 800;
             $oDateTime               = new DateTime('NOW');
             $fTimeStart              = microtime(true);
             $oLoggerIRR              = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
