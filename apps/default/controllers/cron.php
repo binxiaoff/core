@@ -769,6 +769,7 @@ class cronController extends bootstrap
     public function create_echeances($id_project)
     {
         ini_set('max_execution_time', 300); //300 seconds = 5 minutes
+        ini_set('memory_limit', '512M');
 
         // chargement des datas
         $this->loans           = $this->loadData('loans');
@@ -960,6 +961,8 @@ class cronController extends bootstrap
     // fonction create echeances emprunteur
     public function createEcheancesEmprunteur($id_project)
     {
+        ini_set('memory_limit', '512M');
+
         $loans                  = $this->loadData('loans');
         $projects               = $this->loadData('projects');
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
