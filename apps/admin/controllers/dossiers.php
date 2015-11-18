@@ -1136,6 +1136,8 @@ class dossiersController extends bootstrap
 
                             // on rentre dans le cron si statut égale 1
                             if ($settingsControleRemb->value == 1) {
+                                ini_set('memory_limit', '512M');
+
                                 // On passe le statut a zero pour signaler qu'on est en cours de traitement
                                 $settingsControleRemb->value = 0;
                                 $settingsControleRemb->update();
