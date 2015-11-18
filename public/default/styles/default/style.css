@@ -893,8 +893,8 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .widget-info .widget-body { padding: 50px 20px 40px; color: #4d4d4d; }
 .widget-info .widget-body p { padding-bottom: 30px; }
 
-.progressBar { width: 218px; height: 11px; border: 3px solid #d2d1d1; border-radius: 10px; background: #b10366; }
-.progressBar div { display:block; height: 100%; background-color: #fff; border-radius: 6px; text-align: center; }
+.progressBar { height: 11px; border: 3px solid #d2d1d1; border-radius: 8px; background: #d2d1d1; }
+.progressBar div { width:0px; display:block; height: 100%; background-color: #ffffff; border-radius: 6px; text-align: center; }
 .progressBar div span { display:block; font-size: 11px; line-height: 11px; color: #b10366; font-weight: bold;  margin-left: 5px; }
 
 /* ===========================
