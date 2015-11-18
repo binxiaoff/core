@@ -165,7 +165,7 @@ class projects_status extends projects_status_crud
                     $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . $this->status . ', ' . $this->getNextStatus($this->status) . ')';
                     break;
                 case self::ATTENTE_ANALYSTE:
-                    $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . $this->status . ', ' . self::REVUE_ANALYSTE . ')';
+                    $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . $this->status . ')';
                     break;
                 case self::PREP_FUNDING:
                     $sPossibleStatus = 'status IN (' . self::PREP_FUNDING . ',' . self::A_FUNDER . ')';
