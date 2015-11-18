@@ -1,23 +1,23 @@
 <script type="text/javascript">
 	$(document).ready(function(){
-		
-		jQuery.tablesorter.addParser({ id: "fancyNumber", is: function(s) { return /[\-\+]?\s*[0-9]{1,3}(\.[0-9]{3})*,[0-9]+/.test(s); }, format: function(s) { return jQuery.tablesorter.formatFloat( s.replace(/,/g,'').replace(' €','').replace(' ','') ); }, type: "numeric" }); 
+
+		jQuery.tablesorter.addParser({ id: "fancyNumber", is: function(s) { return /[\-\+]?\s*[0-9]{1,3}(\.[0-9]{3})*,[0-9]+/.test(s); }, format: function(s) { return jQuery.tablesorter.formatFloat( s.replace(/,/g,'').replace(' €','').replace(' ','') ); }, type: "numeric" });
 		$(".tablesorter").tablesorter();
-		
+
 		$.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 		$("#datepik_1").datepicker({showOn: 'both', buttonImage: '<?=$this->surl?>/images/admin/calendar.gif', buttonImageOnly: true,changeMonth: true,changeYear: true,yearRange: '<?=(date('Y')-10)?>:<?=(date('Y')+10)?>'});
 		$("#datepik_2").datepicker({showOn: 'both', buttonImage: '<?=$this->surl?>/images/admin/calendar.gif', buttonImageOnly: true,changeMonth: true,changeYear: true,yearRange: '<?=(date('Y')-10)?>:<?=(date('Y')+10)?>'});
-		
+
 		<?
 		if($this->nb_lignes != '')
 		{
 		?>
-			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});		
+			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});
 		<?
 		}
 		?>
 	});
-		
+
 	<?
 	if(isset($_SESSION['freeow']))
 	{
@@ -48,7 +48,7 @@
         <li>Gestion de offre de bienvenue</li>
     </ul>
     <h1>Gestion offre de bienvenue</h1>
-    
+
     <div class="fenetre_offres_de_bienvenues">
         <form method="post" name="form_offres" id="form_offres" enctype="multipart/form-data" action="" target="_parent">
             <fieldset>
@@ -69,9 +69,9 @@
                         <th><label>Motif :</label></th>
                         <td><?=$this->motifOffreBienvenue?></td>
                         <th><label for="montant">Solde Reel disponible :</label></th>
-                        <td><?=number_format($this->sumDispoPourOffres/100, 2, ',', ' ')?> €</td>
+                        <td><?=$this->ficelle->formatNumber($this->sumDispoPourOffres/100)?> €</td>
                     </tr>
-                    
+
                     <tr>
                         <th colspan="4" style="text-align:center;">
                             <input type="hidden" name="form_send_offres" id="form_send_offres" />
@@ -86,7 +86,7 @@
 	if(count($this->lOffres) > 0)
 	{
 	?>
-    	<h2>Somme des offres de bienvenue déjà donnée : <?=number_format($this->sumOffres/100, 2, ',', ' ')?> €</h2>
+    	<h2>Somme des offres de bienvenue déjà donnée : <?=$this->ficelle->formatNumber($this->sumOffres/100)?> €</h2>
     	<table class="tablesorter">
         	<thead>
                 <tr>
@@ -107,16 +107,16 @@
 			{
 				$this->clients->get($o['id_client'],'id_client');
 				?>
-				<tr class="<?=($i%2 == 1?'':'odd')?> " > 
+				<tr class="<?=($i%2 == 1?'':'odd')?> " >
                 	<td><?=$o['motif']?></td>
                     <td><?=$this->clients->slug_origine?></td>
                     <td><?=$o['id_client']?></td>
                     <td><?=$this->clients->nom?></td>
                     <td><?=$this->clients->prenom?></td>
                     <td><?=$this->clients->email?></td>
-                    <td align="center"><?=number_format($o['montant']/100, 2, ',', ' ')?> €</td>
+                    <td align="center"><?=$this->ficelle->formatNumber($o['montant']/100)?> €</td>
                     <td align="center"><?=date('d/m/y H:i:s',strtotime($o['added']))?></td>
-                </tr>   
+                </tr>
             	<?
 				$i++;
             }
@@ -145,6 +145,6 @@
 		}
 	}
     ?>
-    
+
 </div>
 <?php unset($_SESSION['freeow']); ?>

@@ -23,7 +23,7 @@ table { border-collapse: collapse; border-spacing: 0; }
 body { font: 12px Arial, Helvetica, sans-serif; color: #B10366; }
 
 a:focus, a:hover { color: #A1A5A7; text-decoration: underline; }
-	
+
 a { color: #B10366; text-decoration: none; cursor: pointer; }
 
 h1, h2, h3 { font-weight: bold; color: #B10366; }
@@ -53,19 +53,19 @@ body.loginBody { background: #FFF; }
 #contener { position: absolute;  top: 0; left: 0; margin: 0; padding: 0; width: 100%; text-align: center;}
 
 #contenerIframe { position: absolute;  top: 0; left: 0; margin: 0; padding: 0; width: 100%; text-align: left;}
-	
+
 #logo_site { margin: 150px auto 30px; }
 
 #contenu_login { width: 430px; margin: 0 auto; padding: 20px; border: 1px solid #B10366; -moz-border-radius: 10px; -webkit-border-radius: 10px; -khtml-border-radius: 10px; border-radius: 10px; text-align: center; }
-	
+
 table.login { width: /*340px*/378px; margin: 0 auto; }
 
 table.login td { text-align: right; vertical-align: middle; padding: 10px 10px; }
 
 table.login label { cursor: pointer; font-weight: bold; }
-	
+
 .input_login { width: 200px; height: 25px; background: #FFF; border: 1px solid #B10366; margin: 0; padding: 0 4px; font: 12px Arial, Helvetica, sans-serif; color: #B10366; }
-	
+
 .btn { background: #B10366; border: 1px solid #B10366; color: #FFF; margin: 0; padding: 5px; text-align: center; font: bold 14px Verdana, Geneva, sans-serif; cursor: pointer; -moz-border-radius: 5px; -webkit-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; }
 
 .btnRouge { background: #FF0000; border: 1px solid #FF0000; color: #FFF; margin: 0; padding: 5px; text-align: center; font: bold 14px Verdana, Geneva, sans-serif; cursor: pointer; -moz-border-radius: 5px; -webkit-border-radius: 5px; -khtml-border-radius: 5px; border-radius: 5px; }
@@ -83,7 +83,7 @@ table.login label { cursor: pointer; font-weight: bold; }
 .btn_link:visited { color: #FFF; text-decoration:none; }
 
 .btnDroite { text-align: right; margin: -30px 0 20px 0; }
-	
+
 #footer_login { margin: 30px auto 0; padding: 0; }
 
 #header { position: absolute; top: 0; left: 50%; margin: 0 0 0 -600px; padding: 10px; width: 1180px; height: 70px; background-color: #FFF; text-align: left; }
@@ -96,23 +96,23 @@ table.login label { cursor: pointer; font-weight: bold; }
 
 #navigation { position: absolute; top: 90px; left: 50%; margin: 0 0 0 -600px; padding: 0; width: 1200px; height: 30px; background-color: #B10366; text-align: left; }
 
-#menu_deroulant { position: absolute; top: 0; left: 0; z-index:300; width: 1200px; list-style-type: none; margin: 0 0 0 0; padding: 0; border: 0; } 
-	
+#menu_deroulant { position: absolute; top: 0; left: 0; z-index:300; width: 1200px; list-style-type: none; margin: 0 0 0 0; padding: 0; border: 0; }
+
 #menu_deroulant li { float: left; width: 120px; /* width: 150px;*/ text-align: center; margin: 0; padding: 0; border: 0; font-size: 12px; font-weight: bold; }
 
 #menu_deroulant li a:link, #menu_deroulant li a:visited { display: block; min-height: 22px; color: white; margin: 0; padding: 8px 0 0 0; border: 0; text-decoration: none; }
 
 #menu_deroulant li a:hover, #menu_deroulant li a:active, #menu_deroulant li a.active { background-color: #E3E4E5; color: black; }
 
-#menu_deroulant li:hover > .sous_menu { display: block; } 
+#menu_deroulant li:hover > .sous_menu { display: block; }
 
-#menu_deroulant .sous_menu { list-style-type: none; margin: 0; padding: 0; border: 0;  display: none; } 
+#menu_deroulant .sous_menu { list-style-type: none; margin: 0; padding: 0; border: 0;  display: none; }
 
-#menu_deroulant .sous_menu li { float: none; margin: 0; padding: 0; border: 0; } 
+#menu_deroulant .sous_menu li { float: none; margin: 0; padding: 0; border: 0; }
 
 #menu_deroulant .sous_menu li a:link, #menu_deroulant .sous_menu li a:visited { display: block; color: black; margin: 0; border: 0; text-decoration: none; background-color: #E3E4E5; }
 
-#menu_deroulant .sous_menu li a:hover { color:  white; background-color: #B10366; } 
+#menu_deroulant .sous_menu li a:hover { color:  white; background-color: #B10366; }
 
 #contenu { margin: 120px auto 0; padding: 10px 20px 20px; width: 1160px; text-align: left; background-color: #FFF; }
 
@@ -128,7 +128,7 @@ table.login label { cursor: pointer; font-weight: bold; }
 
 #pager img,#pager1 img,#pager2 img,#pager3 img,#pager4 img,#pager5 img { margin: 0; padding: 0; cursor:pointer; vertical-align: middle; }
 
-#pager .pagedisplay,#pager1 .pagedisplay,#pager2 .pagedisplay,#pager3 .pagedisplay,#pager4 .pagedisplay,#pager5 .pagedisplay { margin: 0; padding: 5px 0 0 0; width: 50px; text-align: center; border:0; font-size: 12px; color:#B10366; } 
+#pager .pagedisplay,#pager1 .pagedisplay,#pager2 .pagedisplay,#pager3 .pagedisplay,#pager4 .pagedisplay,#pager5 .pagedisplay { margin: 0; padding: 5px 0 0 0; width: 50px; text-align: center; border:0; font-size: 12px; color:#B10366; }
 
 #pager .pagesize,#pager1 .pagesize,#pager2 .pagesize,#pager3 .pagesize,#pager4 .pagesize,#pager5 .pagesize { display:none; }
 
@@ -144,26 +144,26 @@ table.form_periode td.multiple { padding: 5px 5px 10px 5px; text-align: right; v
 
 table.cont_periode { width: 800px; margin: 0 auto; }
 
-table.form_periode td { text-align: center; vertical-align: middle; }  
+table.form_periode td { text-align: center; vertical-align: middle; }
 
 #onglets { margin: 15px auto; padding: 0 0 5px 0; width: 1160px; border-bottom: 5px solid #E3E4E5; }
-    
+
 #onglets a { background-color: #B10366; color: white; text-decoration: none; margin: 0; padding: 5px 8px 5px 8px; text-align: center; font-size:12px; font-weight:bold; cursor: pointer; -moz-border-radius: 5px 5px 0 0; -webkit-border-radius: 5px 5px 0 0;  -khtml-border-radius: 5px 5px 0 0;  border-radius: 5px 5px 0 0; }
-    
+
 #onglets a.active { background-color: #E3E4E5; color: #FFF; }
 
 #onglets_produits { margin: 0; padding: 0 0 5px 0; width: 530px; border-bottom: 5px solid #E3E4E5; }
-    
+
 #onglets_produits a { background-color: #B10366; color: white; text-decoration: none; margin: 0; padding: 5px 8px 5px 8px; text-align: center; font-size:12px; font-weight:bold; cursor: pointer; -moz-border-radius: 5px 5px 0 0; -webkit-border-radius: 5px 5px 0 0;  -khtml-border-radius: 5px 5px 0 0;  border-radius: 5px 5px 0 0; }
-    
+
 #onglets_produits a.active { background-color: #E3E4E5; color: #FFF; }
 
-/************/	
+/************/
 /* COLORBOX */
 /************/
 
 #popup { background-color: #FFF; padding: 20px; border: 2px solid #E3E4E5; -moz-border-radius: 10px; -webkit-border-radius: 10px; -khtml-border-radius: 10px; border-radius: 10px; }
-    
+
 .closeBtn { position:absolute; top: 8px; right: 8px; }
 
 table.recupPassword { width: 360px; margin: 0; }
@@ -171,7 +171,7 @@ table.recupPassword { width: 360px; margin: 0; }
 table.recupPassword td { text-align: right; vertical-align: middle; padding: 5px 5px; }
 
 table.recupPassword label { cursor: pointer; font-weight: bold; }
-	
+
 .input_recupPassword { width: 150px; height: 25px; background: #FFF; border: 1px solid #E3E4E5; margin: 0; padding: 0 4px; font: 12px Arial, Helvetica, sans-serif; color: white; }
 
 table.formColor { width: 500px; margin: 0; }
@@ -209,7 +209,7 @@ table.form label { cursor: pointer; font-weight: bold; }
 table.form td.vign { padding: 7px 10px 4px 5px; text-align: center; vertical-align: top; width: 135px; height: 135px; }
 
 table.form td img.vign { margin: 5px 0; padding:0; }
-    
+
 table.form td img.delete { vertical-align: middle; }
 
 table.form td img.case { vertical-align: middle; cursor:pointer; }
@@ -225,7 +225,7 @@ table.lng label { cursor: pointer; font-weight: bold; }
 .input_big { width: 1152px; height: 25px; background: #ECECEC; border: 1px solid #A1A5A7; margin: 0; padding: 0 4px; font: 12px Arial, Helvetica, sans-serif; color: #B10366; }
 
 .input_large { width: 250px; height: 25px; background: #ECECEC; border: 1px solid #A1A5A7; margin: 0; padding: 0 4px; font: 12px Arial, Helvetica, sans-serif; color: #B10366; }
-	
+
 .input_moy { width: 150px; height: 25px; background: #ECECEC; border: 1px solid #A1A5A7; margin: 0; padding: 0 4px; font: 12px Arial, Helvetica, sans-serif; color: #B10366; }
 
 .input_court { width: 50px; height: 25px; background: #ECECEC; border: 1px solid #A1A5A7; margin: 0; padding: 0 4px; font: 12px Arial, Helvetica, sans-serif; color: #B10366; }
@@ -252,7 +252,7 @@ table.lng label { cursor: pointer; font-weight: bold; }
 
 .gauche { position: relative; float: left; display: inline; margin: 0; padding: 15px 150px 0 0; width: 450px; border-right: 5px solid #B10366; }
 
-.droite { position: relative; float: right; display: inline; margin: 0; padding: 15px 0 0 15px; width: 530px; }	
+.droite { position: relative; float: right; display: inline; margin: 0; padding: 15px 0 0 15px; width: 530px; }
 
 .bloc_onglet { position: relative; float: left; margin: 10px auto 0; padding: 0; width: 100%; }
 
@@ -281,9 +281,9 @@ table.lng label { cursor: pointer; font-weight: bold; }
 /* message completude */
 .liwording td{padding-bottom:3px;padding-right: 5px;}
 .liwording img.add{cursor:pointer;vertical-align: middle;}
-.input_li{width:90%;margin-bottom: 5px;color: #b10366;font: 12px Arial,Helvetica,sans-serif;height: 18px;border: 1px solid #a1a5a7;background:#ececec;}
+.input_li{width:90%;margin: 5px;color: #b10366;font: 12px Arial,Helvetica,sans-serif;height: 18px;border: 1px solid #a1a5a7;background:#ececec;}
 .delete_li{cursor:pointer;display: inline-block; margin-left: 5px; text-align: center; vertical-align: middle;}
-.content_li_wording{border:1px solid; width:100%;min-height:25px;padding:5px;text-align:center;}
+.content_li_wording{border:1px solid; width:100%;min-height:25px;text-align:center;}
 
 #content_email_completude{width:100%;height:150px; color: #b10366;font: 12px Arial,Helvetica,sans-serif;border: 1px solid #a1a5a7;background:#ececec;}
 .message_completude{display:none;}
@@ -294,3 +294,5 @@ table.lng label { cursor: pointer; font-weight: bold; }
 
 #phoca-captcha{float:left;}
 .reloadCaptcha{float:left;margin-right:5px;margin-top:4px;cursor:pointer;}
+.ui-autocomplete { background: #f4f4f4 none repeat scroll 0 0; color: #a1a5a7; border: 1px solid #dbdcdd; border-radius: 4px; z-index: 99999; max-height: 200px; overflow-x: hidden; overflow-y: scroll; max-width: 350px;}
+.ui-widget-content a { color: #a1a5a7; font-size: 14px; font-style: italic; line-height: 1.2; }

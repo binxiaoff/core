@@ -121,7 +121,7 @@ class universignController extends bootstrap
                 $clients_mandats->update();
             }
 
-            header("location:" . $this->lurl . '/universign/confirmation/mandat/' . $clients_mandats->id_mandat);
+            header('Location: ' . $this->lurl . '/universign/confirmation/mandat/' . $clients_mandats->id_mandat);
             die;
         } elseif (isset($this->params[2]) && isset($this->params[1]) && $this->params[1] == 'pouvoir' &&
             $projects_pouvoir->get($this->params[2], 'id_pouvoir') && $projects_pouvoir->status == 0
@@ -184,8 +184,7 @@ class universignController extends bootstrap
                         $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                         $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
+                        $this->email = $this->loadLib('email');
                         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                         $this->email->addRecipient(trim($destinaire));
                         //$this->email->addRecipient(trim(implode(',', $this->Config['DebugMailIt'])));
@@ -194,7 +193,6 @@ class universignController extends bootstrap
                         $this->email->setHTMLBody(utf8_decode($texteMail));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                         $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir and Mandat Ok', array($projects_pouvoir->id_project));
-                        // fin mail
                     } else {
                         $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir Ok but Mandat not signed.', array($projects_pouvoir->id_project));
                     }
@@ -212,10 +210,104 @@ class universignController extends bootstrap
                 $projects_pouvoir->status = 2;
                 $projects_pouvoir->update();
             }
-            header("location:" . $this->lurl . '/universign/confirmation/pouvoir/' . $projects_pouvoir->id_pouvoir);
+            header('Location: ' . $this->lurl . '/universign/confirmation/pouvoir/' . $projects_pouvoir->id_pouvoir);
+            die;
+        } elseif (isset($this->params[1], $this->params[2]) && $this->params[1] === 'cgv_emprunteurs') {
+            $oProjectCgv = $this->loadData('project_cgv');
+
+            if (false === $oProjectCgv->get($this->params[2], 'id') || $oProjectCgv->status != project_cgv::STATUS_NO_SIGN) {
+                header('Location: ' . $this->lurl);
+                die;
+            }
+
+            if ($this->params[0] === 'success') {
+                $uni_url = $this->uni_url;
+                $uni_id  = $oProjectCgv->id_universign; // a collection id
+
+                $c = new Client($uni_url);
+                $f = new Request('requester.getDocumentsByTransactionId', array(new Value($uni_id, "string")));
+
+                $r = &$c->send($f);
+                $this->oLogger->addRecord(ULogger::INFO, 'CGV emprunteur send to Universign', array($oProjectCgv->id_project));
+
+                if (! $r->faultCode()) {
+                    $doc['name']    = $r->value()->arrayMem(0)->structMem('name')->scalarVal();
+                    $doc['content'] = $r->value()->arrayMem(0)->structMem('content')->scalarVal();
+
+                    file_put_contents($doc['name'], $doc['content']);
+
+                    $oProjectCgv->status = project_cgv::STATUS_SIGN_UNIVERSIGN;
+                    $oProjectCgv->update();
+
+                    $this->oLogger->addRecord(ULogger::INFO, 'CGV emprunteur Ok', array($oProjectCgv->id_project));
+
+                    $oClients   = $this->loadData('clients');
+                    $oProjects  = $this->loadData('projects');
+                    $oCompanies = $this->loadData('companies');
+                    $oUsers     = $this->loadData('users');
+
+                    if (! $oProjects->get($oProjectCgv->id_project, 'id_project')) {
+                        header('Location: ' . $this->lurl);
+                        return;
+                    }
+                    if (! $oCompanies->get($oProjects->id_company, 'id_company')) {
+                        header('Location: ' . $this->lurl);
+                        return;
+                    }
+                    if (! $oClients->get($oCompanies->id_client_owner, 'id_client')) {
+                        header('Location: ' . $this->lurl);
+                        return;
+                    }
+
+                    if (false === empty($oProjects->id_commercial) && $oUsers->get($oProjects->id_commercial, 'id_user')) {
+                        $sRecipient = $oUsers->email;
+                    } else {
+                        $this->settings->get('Adresse notification cgv emprunteur signe', 'type');
+                        $sRecipient = $this->settings->value;
+                    }
+
+                    $this->mails_text->get('notification-cgv-projet-signe', 'lang = "' . $this->language . '" AND type');
+
+                    $aReplacements = array(
+                        '[AURL]'         => $this->aurl,
+                        '[SURL]'         => $this->surl,
+                        '[PROJECT_ID]'   => $oProjects->id_project,
+                        '[COMPANY_NAME]' => $oCompanies->name,
+                        '[PROJECT_NAME]' => $oProjects->title_bo,
+                        '[CGV_BORROWER]' => $this->lurl . $oProjectCgv->getUrlPath()
+                    );
+
+                    $this->email = $this->loadLib('email');
+                    $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
+                    $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($this->mails_text->subject)) . '?=');
+                    $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), utf8_decode($this->mails_text->content)));
+                    $this->email->addRecipient(trim($sRecipient));
+
+                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+
+                    $this->oLogger->addRecord(ULogger::INFO, 'CGV emprunteur notification mail sent', array($oProjectCgv->id_project));
+                } else {
+                    $this->oLogger->addRecord(ULogger::ERROR, 'CGV emprunteur NOK. ERROR : ' . $r->faultCode() . ' ; REASON : ' . $r->faultString(), array($oProjectCgv->id_project));
+                    mail(implode(',', $this->Config['DebugMailIt']), 'unilend erreur universign reception', 'id cgv_project : ' . $oProjectCgv->id . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
+                }
+            } elseif ($this->params[0] === 'fail') {
+                $this->oLogger->addRecord(ULogger::ERROR, 'CGV emprunteur failed.', array($oProjectCgv->id_project));
+
+                $oProjectCgv->status = project_cgv::STATUS_SIGN_FAILED;
+                $oProjectCgv->update();
+                // redirection sur page confirmation : une erreur est parvenue essayez plus tard
+            } elseif ($this->params[0] === 'cancel') {
+                $this->oLogger->addRecord(ULogger::ERROR, 'CGV emprunteur cancelled.', array($oProjectCgv->id_project));
+
+                $oProjectCgv->status = project_cgv::STATUS_SIGN_CANCELLED;
+                $oProjectCgv->update();
+                // redirection sur page confirmation : vous avez annulé voulez vous signer votre mandat ?
+            }
+
+            header('Location: ' . $this->lurl . '/universign/confirmation/cgv_emprunteurs/' . $oProjectCgv->id . '/' . sha1($oProjectCgv->id_project . '_' . $oProjectCgv->id_tree));
             die;
         } else {
-            header("location:" . $this->lurl);
+            header('Location: ' . $this->lurl);
             die;
         }
     }
@@ -228,7 +320,7 @@ class universignController extends bootstrap
         if ($clients_mandats->get($this->params[0], 'id_mandat') && $clients_mandats->status != 1) {
             if ($clients_mandats->url_universign != '' && $clients_mandats->status == 0) {
                 $this->oLogger->addRecord(ULogger::INFO, 'Mandat not signed. Redirection to universign.', array($clients_mandats->id_project));
-                header("location:" . $clients_mandats->url_universign);
+                header('Location: ' . $clients_mandats->url_universign);
                 die;
             } else {
                 switch ($clients_mandats->status) {
@@ -321,7 +413,7 @@ class universignController extends bootstrap
                     $clients_mandats->status         = 0;
                     $clients_mandats->update();
                     $this->oLogger->addRecord(ULogger::INFO, 'Mandat response generation from universign : OK. Redirection to universign to sign.', array($clients_mandats->id_project));
-                    header("location:" . $url);
+                    header('Location: ' . $url);
                     die;
 
                 } else {
@@ -345,7 +437,7 @@ class universignController extends bootstrap
             // on check si deja existant en bdd avec l'url universign et si encore en cours
             if (isset($this->params[1]) && $this->params[1] == 'NoUpdateUniversign' && $projects_pouvoir->url_universign != '' && $projects_pouvoir->status == 0) {// si le meme jour alors on regenere pas le pdf universign
                 $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir not signed but flag bdd exist. Redirection to universign.', array($projects_pouvoir->id_project));
-                header("location:" . $projects_pouvoir->url_universign);
+                header('Location: ' . $projects_pouvoir->url_universign);
                 die;
             } else {// Sinon on crée
                 switch ($projects_pouvoir->status) {
@@ -446,7 +538,7 @@ class universignController extends bootstrap
                     $projects_pouvoir->status         = 0;
                     $projects_pouvoir->update();
                     $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir response generation from universign : OK. Redirection to universign to sign.', array($projects_pouvoir->id_project));
-                    header("location:" . $url);
+                    header('Location: ' . $url);
                     die;
                 } else {
                     //displays the error code and the fault message
@@ -498,7 +590,6 @@ class universignController extends bootstrap
                     $this->message = 'Vous n\'avez pas encore signé votre mandat';
                     $this->oLogger->addRecord(ULogger::INFO, 'Mandat confirmation : not signed.', array($clients_mandats->id_project));
                 }
-
             } elseif ($this->params[0] == 'pouvoir' && $projects_pouvoir->get($this->params[1], 'id_pouvoir')) {// si on a le pouvoir
                 // on recup le projet
                 $projects->get($projects_pouvoir->id_project, 'id_project');
@@ -524,15 +615,164 @@ class universignController extends bootstrap
                     $this->message = 'Vous n\'avez pas encore signé votre pouvoir';
                     $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir confirmation : not signed.', array($projects_pouvoir->id_project));
                 }
+            } elseif ($this->params[0] == 'cgv_emprunteurs') {
+                // CGV Emprunteur (project)
+                $oProjectCgv = $this->loadData('project_cgv');
+
+                if (
+                    false === isset($this->params[1], $this->params[2])
+                    || false === $oProjectCgv->get($this->params[1], 'id')
+                    || $this->params[2] !== sha1($oProjectCgv->id_project . '_' . $oProjectCgv->id_tree)
+                ) {
+                    header('Location: ' . $this->lurl);
+                    die;
+                }
+
+                $this->setView('cgv_emprunteurs');
+
+                $projects->get($oProjectCgv->id_project, 'id_project');
+                $companies->get($projects->id_company, 'id_company');
+                $clients->get($companies->id_client_owner, 'id_client');
+
+                $this->status   = $oProjectCgv->status;
+                $this->lien_pdf = $this->lurl . $oProjectCgv->getUrlPath();
+
+                if ($oProjectCgv->status == project_cgv::STATUS_NO_SIGN) {
+                    $this->oLogger->addRecord(ULogger::INFO, 'CGV borrower confirmation : not signed.', array($oProjectCgv->id_project));
+                }
             } else {
-                $this->oLogger->addRecord(ULogger::INFO, 'Confirmation not pouvoir and not mandat. Redirection home page.', array($projects_pouvoir->id_project));
-                header("location:" . $this->lurl);
+                $this->oLogger->addRecord(ULogger::INFO, 'Unknown document for confirmation. Redirection home page.');
+                header('Location: ' . $this->lurl);
                 die;
             }
         } else {
-            $this->oLogger->addRecord(ULogger::INFO, 'Confirmation not pouvoir and not mandat. Redirection home page.', array($projects_pouvoir->id_project));
-            header("location:" . $this->lurl);
+            $this->oLogger->addRecord(ULogger::INFO, 'Unknown document for confirmation. Redirection home page.');
+            header('Location: ' . $this->lurl);
             die;
+        }
+    }
+
+    public function _cgv_emprunteurs()
+    {
+        if (false === isset($this->params[0]) || false === isset($this->params[1]) || false === is_numeric($this->params[0])) {
+            header('Location: ' . $this->lurl);
+            return;
+        }
+
+        $oProjectCgv = $this->loadData('project_cgv');
+        $oClients    = $this->loadData('clients');
+        $oProjects   = $this->loadData('projects');
+        $oCompanies  = $this->loadData('companies');
+
+        // on check les id et si le pdf n'est pas deja signé
+        if ($oProjectCgv->get($this->params[0], 'id') && project_cgv::STATUS_NO_SIGN == $oProjectCgv->status) {
+            if($this->params[1] !== $oProjectCgv->name) {
+                header('Location: ' . $this->lurl);
+                return;
+            }
+            // on check si deja existant en bdd avec l'url universign et si encore en cours
+            if ($oProjectCgv->url_universign != '' && date('Y-m-d', strtotime($oProjectCgv->updated)) === date('Y-m-d')) {
+                // If it's the same day, we don't regenerate the universign
+                header('Location: ' . $oProjectCgv->url_universign);
+                return;
+            }
+            // If not we create it.
+            if (! $oProjects->get($oProjectCgv->id_project, 'id_project')) {
+                header('Location: ' . $this->lurl);
+                return;
+            }
+            if (! $oCompanies->get($oProjects->id_company, 'id_company')) {
+                header('Location: ' . $this->lurl);
+                return;
+            }
+            if (! $oClients->get($oCompanies->id_client_owner, 'id_client')) {
+                header('Location: ' . $this->lurl);
+                return;
+            }
+
+            $uni_url      = $this->uni_url; // address of the universign server with basic authentication
+            $firstname    = $oClients->prenom; // the signatory first name
+            $lastname     = $oClients->nom; // the signatory last name
+            $organization = $oCompanies->name;
+            $phoneNumber  = str_replace(' ', '', $oClients->telephone); // the signatory mobile phone number
+            $email        = $oClients->email; // the signatory mobile phone number
+            $doc_name     = $this->path . 'protected/pdf/cgv_emprunteurs/' . $oProjectCgv->name; // the name of the PDF document to sign
+
+            if (false === file_exists($doc_name)) {
+                header('Location: ' . $this->lurl);
+                return;
+            }
+
+            $doc_content = file_get_contents($doc_name); // the binary content of the PDF file
+            $returnPage  = array(
+                'success' => $this->lurl . '/universign/success/cgv_emprunteurs/' . $oProjectCgv->id,
+                'fail'    => $this->lurl . '/universign/fail/cgv_emprunteurs/' . $oProjectCgv->id,
+                'cancel'  => $this->lurl . '/universign/cancel/cgv_emprunteurs/' . $oProjectCgv->id
+            );
+
+            // positionnement signature
+            $page = 1;
+            $x    = 430;
+            $y    = 750;
+
+            $c = new Client($uni_url);
+
+            $docSignatureField = array(
+                'page'        => new Value($page, 'int'),
+                'x'           => new Value($x, 'int'),
+                'y'           => new Value($y, 'int'),
+                'signerIndex' => new Value(0, 'int'),
+                'label'       => new Value('Unilend', 'string')
+            );
+
+            $signer = array(
+                'firstname'    => new Value($firstname, 'string'),
+                'lastname'     => new Value($lastname, 'string'),
+                'organization' => new Value($organization, 'string'),
+                'phoneNum'     => new Value($phoneNumber, 'string'),
+                'emailAddress' => new Value($email, 'string')
+            );
+
+            $doc = array(
+                'content'         => new Value($doc_content, 'base64'),
+                'name'            => new Value($doc_name, 'string'),
+                'signatureFields' => new Value(array(new Value($docSignatureField, 'struct')), 'array')
+            );
+
+            $language = 'fr';
+            $signers  = array(new Value($signer, 'struct'));
+            $request  = array(
+                'documents'          => new Value(array(new Value($doc, 'struct')), 'array'),
+                'signers'            => new Value($signers, 'array'),
+                'successURL'         => new Value($returnPage['success'], 'string'),
+                'failURL'            => new Value($returnPage['fail'], 'string'),
+                'cancelURL'          => new Value($returnPage['cancel'], 'string'),
+                'certificateTypes'   => new Value(array(new Value('timestamp', 'string')), 'array'),//the types of accepted certificate : timestamp for simple signature
+                'language'           => new Value($language, 'string'),
+                'identificationType' => new Value('sms', 'string'),
+                'description'        => new Value('CGV Emprunteur ID : ' . $oProjectCgv->id, 'string'),
+            );
+
+            $f = new Request('requester.requestTransaction', array(new Value($request, 'struct')));
+            $r = &$c->send($f);
+
+            if (!$r->faultCode()) {
+                //if the request succeeded
+                $url = $r->value()->structMem('url')->scalarVal(); //you should redirect the signatory to this url
+                $id  = $r->value()->structMem('id')->scalarVal(); //you should store this id
+
+                $oProjectCgv->id_universign  = $id;
+                $oProjectCgv->url_universign = $url;
+                $oProjectCgv->update();
+
+                header('Location: ' . $url);
+                die;
+            } else {
+                mail(implode(',', $this->Config['DebugMailIt']), 'unilend erreur universign reception', 'id cgv project : ' . $oProjectCgv->id . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: ' . $r->faultString());
+            }
+        } else {
+            header('Location: ' . $this->lurl);
+            return;
         }
     }
 }

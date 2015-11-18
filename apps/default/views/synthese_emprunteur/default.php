@@ -12,8 +12,8 @@
                 </div>
                 <div class="row colored clearfix">
                     <div class="col left">
-                        <p><?=$this->lng['synthese']['montant-emprunte']?> : <?=number_format($this->sum, 2, ',', ' ')?> €	</p>
-                        <p><?=$this->lng['synthese']['mensualite']?> : <?=number_format($this->montant_mensuel, 2, ',', ' ')?> €</p>
+                        <p><?=$this->lng['synthese']['montant-emprunte']?> : <?=$this->ficelle->formatNumber($this->sum)?> €	</p>
+                        <p><?=$this->lng['synthese']['mensualite']?> : <?=$this->ficelle->formatNumber($this->montant_mensuel)?> €</p>
                     </div>
                     <div class="col right">
                         <p><?=$this->lng['synthese']['nombre-de-preteurs']?> : <?=$this->nbPeteurs?></p>
@@ -24,5 +24,5 @@
         </div>
     </div>
 </div>
-		
+
 <!--#include virtual="ssi-footer.shtml"  -->

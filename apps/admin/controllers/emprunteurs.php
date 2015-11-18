@@ -399,7 +399,6 @@ class emprunteursController extends bootstrap
                                 $mensualite = $echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva;
                                 $mensualite = ($mensualite / 100);
 
-                                // Variables du mailing
                                 $surl         = $this->surl;
                                 $url          = $this->lurl;
                                 $projet       = $project->title;
@@ -408,15 +407,14 @@ class emprunteursController extends bootstrap
 
                                 $this->nextEcheance = $prelevements->select('status = 0 AND id_project = ' . $projects['id_project']);
 
-                                // Variables du mailing
                                 $varMail = array(
                                     'surl'                   => $surl,
                                     'url'                    => $url,
                                     'prenom_e'               => $e->prenom,
                                     'nom_e'                  => $companie->name,
-                                    'mensualite'             => number_format($mensualite, 2, ',', ' '),
-                                    'montant'                => number_format($project->amount, 0, ',', ' '),
-                                    'taux_moyen'             => number_format($taux_moyen, 2, ',', ' '),
+                                    'mensualite'             => $this->ficelle->formatNumber($mensualite),
+                                    'montant'                => $this->ficelle->formatNumber($project->amount, 0),
+                                    'taux_moyen'             => $this->ficelle->formatNumber($taux_moyen),
                                     'link_compte_emprunteur' => $this->lurl . '/projects/detail/' . $project->id_project,
                                     'link_mandat'            => $link_mandat,
                                     'link_pouvoir'           => $link_pouvoir,

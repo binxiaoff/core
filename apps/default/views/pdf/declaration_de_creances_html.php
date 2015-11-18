@@ -71,23 +71,23 @@
 
     <div class="creance_declaree">
 		<div class="case1">
-        	<?=number_format($this->echu, 2, ',', ' ')?>
+        	<?=$this->ficelle->formatNumber($this->echu)?>
         </div>
         <div class="case2">
 
         </div>
         <div class="case3">
-        	Bon de caisse à ordre, émis le  <?=date('d/m/Y',strtotime($this->oLoans->added))?>, échéance au <?=$this->lastEcheance?>, d’un montant de <?=number_format(($this->oLoans->amount/100), 2, ',', ' ')?>€ assorti d’un taux d’intérêt annuel de <?=number_format($this->oLoans->rate, 1, ',', ' ')?>%, amortissable mensuellement.
+        	Bon de caisse à ordre, émis le  <?=date('d/m/Y',strtotime($this->oLoans->added))?>, échéance au <?=$this->lastEcheance?>, d’un montant de <?=$this->ficelle->formatNumber(($this->oLoans->amount/100))?>€ assorti d’un taux d’intérêt annuel de <?=$this->ficelle->formatNumber($this->oLoans->rate, 1)?>%, amortissable mensuellement.
         </div>
 
         <div class="case4">
-        	<?=number_format($this->echoir, 2, ',', ' ')?>
+        	<?=$this->ficelle->formatNumber($this->echoir)?>
         </div>
         <div class="case5">
 
         </div>
         <div class="case6">
-        	<?=number_format($this->total, 2, ',', ' ')?>
+        	<?=$this->ficelle->formatNumber($this->total)?>
         </div>
         <div class="case7"></div>
 
@@ -137,7 +137,7 @@
     <div style="clear:both;"></div>
 
     <div class="montant_total">
-    	<?=number_format($this->total, 2, ',', ' ')?>
+    	<?=$this->ficelle->formatNumber($this->total)?>
     </div>
 
 </div>

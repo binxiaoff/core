@@ -26,11 +26,11 @@ a img { border: 0; } /* @note : no borders on image-links */
 a:hover img, a:focus img, a:active img { opacity: 0.9; }
 *:focus {outline: none;}
 
-/* listes */ 
-ul, ol { margin: 0; padding: 0; list-style:none; } 
+/* listes */
+ul, ol { margin: 0; padding: 0; list-style:none; }
 
-/* paragraphes */ 
-p { margin: 0; } 
+/* paragraphes */
+p { margin: 0; }
 
 /* forms */
 label, button, input[type="button"], input[type="reset"], input[type="submit"] { cursor: pointer; }
@@ -77,8 +77,10 @@ input:-moz-placeholder { color:#727272; }
 
 b, strong { font-weight: bold; }
 
-/*iOS buttons – remove rounded corners*/
+/*iOS buttons ï¿½ remove rounded corners*/
 input, textarea, select {
 -webkit-appearance: none;
 -webkit-border-radius: 0;
 }
+.ui-autocomplete { background: #f4f4f4 none repeat scroll 0 0; color: #a1a5a7; border: 1px solid #dbdcdd; border-radius: 4px; z-index: 99999; max-height: 200px; overflow-x: hidden; overflow-y: scroll; }
+.ui-widget-content a { color: #a1a5a7; font-size: 14px; font-style: italic; line-height: 1.2; }

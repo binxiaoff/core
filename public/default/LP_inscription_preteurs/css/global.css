@@ -60,7 +60,7 @@
 #projet_analyse > .wrapper > #slider_projet > div > div > div > div { color: #b00366; float: left; width: 160px; margin: 0 20px 0 0; }
 #projet_analyse > .wrapper > #slider_projet > div > div > div > div > p { font-size: 12px; line-height: 15px; margin-top: 10px; }
 
-/* SIMULEZ VOS INTERETS */	
+/* SIMULEZ VOS INTERETS */
 #simulez_vos_interets > .wrapper > #pret { padding-left: 60px; margin-top: 35px; }
 #simulez_vos_interets > .wrapper > #pret > h1 { background: url(../img/picto_pret1.png) left center no-repeat; text-transform: uppercase; font-size: 30px; line-height: 50px; padding-left: 70px; color: #b00366; height: 50px; }
 #simulez_vos_interets > .wrapper > #pret > div#pret_left { float: left; padding-right: 10px; }
@@ -68,7 +68,7 @@
 #simulez_vos_interets > .wrapper > #pret > div#pret_left > div > p { padding-left: 8px; line-height: 38px; float: left; }
 #simulez_vos_interets > .wrapper > #pret > div#pret_left > div > input { color: #727272; background: #ffffff url(../img/euro.png) right center no-repeat; width: 138px; border: none; height: 38px; font-size: 20px; padding: 0 30px 0 13px; float: right; }
 #simulez_vos_interets > .wrapper > #pret > div#pret_left > div > input::-webkit-input-placeholder { font-style: italic; font-size: 18px; }
-#simulez_vos_interets > .wrapper > #pret > div#pret_left > div > input:-ms-input-placeholder { font-style: italic; font-size: 18px; } 
+#simulez_vos_interets > .wrapper > #pret > div#pret_left > div > input:-ms-input-placeholder { font-style: italic; font-size: 18px; }
 #simulez_vos_interets > .wrapper > #pret > div#pret_left > div > inputinput:-moz-placeholder { font-style: italic; font-size: 18px; }
 #simulez_vos_interets > .wrapper > #pret > div#pret_left > div > input:-moz-placeholder { font-style: italic; font-size: 18px; }
 #simulez_vos_interets > .wrapper > #pret > div#pret_left > div > input::-moz-placeholder { font-style: italic; font-size: 18px; }

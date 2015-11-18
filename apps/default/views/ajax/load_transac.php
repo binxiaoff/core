@@ -23,7 +23,7 @@ foreach($this->lTrans as $t)
 	<tr>
 		<td><?=$this->lesStatuts[$t['type_transaction']].($t['type_transaction'] == 5?' - '.$this->companies->name:'')?></td>
 		<td><?=$this->dates->formatDate($t['date_transaction'],'d-m-Y')?></td>
-		<td><?=number_format($t['montant']/100, 2, ',', ' ')?> €</td>
+		<td><?=$this->ficelle->formatNumber($t['montant']/100)?> €</td>
 	</tr>
 	<?
 }

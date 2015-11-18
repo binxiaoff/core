@@ -17,7 +17,7 @@ class bootstrap extends Controller
     public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
-        // Mise en session de l'url demandée pour un retour si deconnecté sauf pour la fonction login du controller root
+
         if ($this->current_function != 'login') {
             $_SESSION['redirection_url'] = $_SERVER['REQUEST_URI'];
         }
@@ -69,8 +69,6 @@ class bootstrap extends Controller
             $this->ln->updateTextTranslations($_POST['section'], $_POST['nom'], $values);
         }
 
-        // Chargement des fichiers CSS
-        //$this->loadCss('../scripts/default/colorbox/colorbox');
         $this->loadCss('default/izicom');
         $this->loadCss('default/colorbox');
         $this->loadCss('default/fonts');
@@ -80,10 +78,7 @@ class bootstrap extends Controller
         $this->loadCss('default/style', 0, 'all', 'css', date('Ymd')); // permet d'avoir un nouveau cache de js par jour chez l'utilisateur
         $this->loadCss('default/style-edit', 0, 'all', 'css', date('Ymd'));
 
-
-        // Chargement des fichier JS
         $this->loadJs('default/jquery/jquery-1.10.2.min');
-        //$this->loadJs('default/colorbox/jquery.colorbox-min');
         $this->loadJs('default/bootstrap-tooltip');
         $this->loadJs('default/jquery.carouFredSel-6.2.1-packed');
         $this->loadJs('default/jquery.c2selectbox');
@@ -96,6 +91,10 @@ class bootstrap extends Controller
         $this->loadJs('default/functions', 0, date('Ymd'));
         $this->loadJs('default/main', 0, date('YmdH'));
         $this->loadJs('default/ajax', 0, date('Ymd'));
+
+        $this->meta_title       = '';
+        $this->meta_description = '';
+        $this->meta_keywords    = '';
 
         // Lutte contre le XSS
         if (is_array($_POST)) {
@@ -466,80 +465,9 @@ class bootstrap extends Controller
                     $this->login_log->statut      = 0;
                     $this->login_log->retour      = $this->error_login;
                     $this->login_log->create();
-
                 }
-            } // end if isset($_POST["captcha"])
-        }// fin login
-
-        //print_r($_SESSION['login']);
-        // On recupere le formulaire de connexion s'il est passé
-        //if($this->clients->handleLogin('connect','login','password'))
-//		{
-//
-//
-//			$this->clients_history->id_client = $_SESSION['client']['id_client'];
-//			$this->clients_history->type = $_SESSION['client']['status_pre_emp'];
-//			$this->clients_history->status = 1; // statut login
-//			$this->clients_history->create();
-//
-//			$statut_preteur = false;
-//
-//			// On renvoi chez le preteur
-//			if($_SESSION['client']['status_pre_emp'] == 1){
-//				$statut_preteur = true;
-//			}
-//			// On renvoi chez l'emprunteur
-//			elseif($_SESSION['client']['status_pre_emp'] == 2){
-//				header('Location:'.$this->lurl.'/synthese_emprunteur');
-//				die;
-//			}
-//			elseif($_SESSION['client']['status_pre_emp'] == 3){
-//				$_SESSION['status_pre_emp'] = 1;
-//				$statut_preteur = true;
-//			}
-//
-//			if($statut_preteur == true)
-//			{
-//
-//				// Si on est en cours d'inscription on redirige sur le form
-//				if($_SESSION['client']['etape_inscription_preteur'] < 3){
-//					$etape = ($_SESSION['client']['etape_inscription_preteur']+1);
-//					header('Location:'.$this->lurl.'/inscription_preteur/etape'.$etape);
-//					die;
-//				}
-//				else{
-//
-//
-//
-//					// on check le statut du preteur
-//					$this->clients_status->getLastStatut($_SESSION['client']['id_client']);
-//					if(in_array($this->clients_status->status,array(20,30))){
-//
-//						if(in_array($_SESSION['client']['type'],array(1,3))) $lapage = 'particulier_doc';
-//						else $lapage = 'societe_doc';
-//
-//						header('Location:'.$this->lurl.'/profile/'.$lapage);
-//						die;
-//					}
-//					/*elseif($this->clients_status->status < 60){
-//						header('Location:'.$this->lurl.'/profile');
-//						die;
-//					}*/
-//					else{
-//						header('Location:'.$this->lurl.'/synthese');
-//						die;
-//					}
-//				}
-//
-//
-//			}
-//
-//		}
-//		elseif(isset($_POST['login']) && isset($_POST['password']))
-//		{
-//			$this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
-//
-//		}
+            }
+        }
 
         $this->connect_ok = false;
         if ($this->clients->checkAccess()) {
@@ -556,11 +484,8 @@ class bootstrap extends Controller
                     $this->etape_transition = true;
                 }
 
-
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
                 $this->nbProjets = $this->projects->countSelectProjectsByStatus('30,50,60,70,80', ' AND id_company = ' . $this->companies->id_company . ' AND p.status = 0 AND p.display = 0');
-
-                /////////////////////////////////////////////////
 
                 // pour les emprunteurs donc satut 2 ou 3
                 // Lien conditions generales depot dossier
@@ -574,15 +499,10 @@ class bootstrap extends Controller
                     $this->contentCGUDepotDossier[$this->elements->slug]    = $elt['value'];
                     $this->complementCGUDepotDossier[$this->elements->slug] = $elt['complement'];
                 }
-
-                /////////////////////////////////////////////////
             }
-
-            /////////////////////////////////////////////////
 
             // preteur ou les deux mais pas que les emprunteurs
             if ($this->clients->status_pre_emp == 1 || $this->clients->status_pre_emp == 3) {
-
                 // particulier
                 if ($this->clients->type == 1) {
                     // cgu particulier
@@ -603,8 +523,6 @@ class bootstrap extends Controller
                     $this->complementCGU[$this->elements->slug] = $elt['complement'];
                 }
 
-
-                // DATAS
                 $this->lenders_accounts = $this->loadData('lenders_accounts');
                 $this->notifications    = $this->loadData('notifications');
                 $this->bids             = $this->loadData('bids');
@@ -612,7 +530,6 @@ class bootstrap extends Controller
                 $this->companies_notifs = $this->loadData('companies');
                 $this->loans            = $this->loadData('loans');
 
-                // trad
                 $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
                 $this->lng['notifications']    = $this->ln->selectFront('preteur-notifications', $this->language, $this->App);
 
@@ -620,35 +537,24 @@ class bootstrap extends Controller
                 $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
                 $this->nbNotifdisplay = 10;
-
                 $this->lNotifHeader  = $this->notifications->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'added DESC', 0, $this->nbNotifdisplay);
                 $this->NbNotifHeader = $this->notifications->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND status = 0');
-
                 $this->NbNotifHeaderEnTout = $this->notifications->counter('id_lender = ' . $this->lenders_accounts->id_lender_account);
-
-
             }
-
-            /////////////////////////////////////////////////
-
 
             // Solde du compte preteur
             $this->solde = $this->transactions->getSolde($this->clients->id_client);
-
-
         }
 
         // page projet tri
         // 1 : terminé bientôt
         // 2 : nouveauté
 
-
         $this->tabOrdreProject = array(
             '',
-            'lestatut ASC, IF(lestatut = 2, p.date_retrait ,"") DESC, IF(lestatut = 1, p.date_retrait ,"") ASC,status DESC',
+            'lestatut ASC, IF(lestatut = 2, p.date_retrait ,"") DESC, IF(lestatut = 1, p.date_retrait ,"") ASC, projects_status.status DESC',
             'p.date_publication DESC'
         );
-
 
         // Afficher les projets terminés ? (1 : oui | 0 : non)
         $this->settings->get('Afficher les projets termines', 'type');
