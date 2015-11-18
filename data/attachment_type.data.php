@@ -176,7 +176,7 @@ class attachment_type extends attachment_type_crud
     public function getAllTypesForLender()
     {
         $aTypes = array(
-            self::CNI_PASSPORTE_DIRIGEANT,
+            self::CNI_PASSPORTE,
             self::CNI_PASSPORTE_VERSO,
             self::JUSTIFICATIF_DOMICILE,
             self::RIB,
