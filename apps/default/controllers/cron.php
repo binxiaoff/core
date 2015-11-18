@@ -2167,11 +2167,11 @@ class cronController extends bootstrap
 
         $array  = array();
         $handle = @fopen($url, "r"); //lecture du fichier
-        if ($handle) {
 
+        if ($handle) {
             $i = 0;
             while (($ligne = fgets($handle)) !== false) {
-                if (strpos($ligne, 'CANTONNEMENT') == true || strpos($ligne, 'DECANTON') == true)
+                if (strpos($ligne, 'CANTONNEMENT') == true || strpos($ligne, 'DECANTON') == true) {
                     $codeEnregi = substr($ligne, 0, 2);
                     if ($codeEnregi == 04) {
                         $i++;
@@ -2179,7 +2179,6 @@ class cronController extends bootstrap
                     //echo $i.' '.$ligne.'<br>';
                     $tabRestriction[$i] = $i;
                 } else {
-
                     $codeEnregi = substr($ligne, 0, 2);
 
                     if ($codeEnregi == 04) {
@@ -2204,14 +2203,12 @@ class cronController extends bootstrap
                         $array[$i]['dateEcriture']        = substr($ligne, 34, 6);
                         $array[$i]['codeMotifRejet']      = substr($ligne, 40, 2);
                         $array[$i]['dateValeur']          = substr($ligne, 42, 6);
-                        //$array[$i]['libelleOpe1'] = substr($ligne,48,31);
-                        $array[$i]['zoneReserv2']     = substr($ligne, 79, 2);
-                        $array[$i]['numEcriture']     = substr($ligne, 81, 7);
-                        $array[$i]['codeExoneration'] = substr($ligne, 88, 1);
-                        $array[$i]['zoneReserv3']     = substr($ligne, 89, 1);
-
-                        $array[$i]['refOp']  = substr($ligne, 104, 16);
-                        $array[$i]['ligne1'] = $ligne;
+                        $array[$i]['zoneReserv2']         = substr($ligne, 79, 2);
+                        $array[$i]['numEcriture']         = substr($ligne, 81, 7);
+                        $array[$i]['codeExoneration']     = substr($ligne, 88, 1);
+                        $array[$i]['zoneReserv3']         = substr($ligne, 89, 1);
+                        $array[$i]['refOp']               = substr($ligne, 104, 16);
+                        $array[$i]['ligne1']              = $ligne;
 
                         // On affiche la ligne seulement si c'est un virement
                         if (!in_array(substr($ligne, 32, 2), array(23, 25, 'A1', 'B1'))) {
@@ -2268,38 +2265,6 @@ class cronController extends bootstrap
             $this->stopCron();
             return $array;
         }
-    }
-
-    function _letest()
-    {
-        //echo 'test';
-        //die;
-        // connexion
-        //$connection = ssh2_connect('ssh.reagi.com', 22);
-        //ssh2_auth_password($connection, 'sfpmei', '769kBa5v48Sh3Nug');
-        //$sftp = ssh2_sftp($connection);
-        // Lien
-        //$lien = 'ssh2.sftp://'.$sftp.'/home/sfpmei/receptions/UNILEND-00040631007-'.date('Ymd').'.txt';
-
-        //$lien = $this->path . 'protected/sftp/reception/UNILEND-00040631007-20150506.txt';
-        $lien = $this->path.'protected/sftp/reception/unilend.txt';
-        // enregistrement chez nous
-        $file = file_get_contents($lien);
-        if ($file === false)
-        {
-            echo 'pas de fichier';
-        }
-        else
-        {
-            //file_put_contents($this->path.'protected/sftp/reception/UNILEND-00040631007-'.date('Ymd').'.txt',$file);
-            // lecture du fichier
-            $lrecus = $this->recus2array($lien);
-
-            echo '<pre>';
-            print_r($lrecus);
-            echo '</pre>';
-        }
-        die;
     }
 
     // reception virements/prelevements (toutes les 30 min)
@@ -2994,10 +2959,9 @@ class cronController extends bootstrap
         }
     }
 
-
     // Utilisé pour mettre a jours les echeances emprunteurs et preteurs suite a un prelevement emprunteur
-    function updateEcheances($id_project, $montant, $remb_auto) {
-
+    public function updateEcheances($id_project, $montant, $remb_auto)
+    {
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $echeanciers = $this->loadData('echeanciers');
         $projects_remb = $this->loadData('projects_remb');
