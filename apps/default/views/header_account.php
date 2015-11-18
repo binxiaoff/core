@@ -153,7 +153,7 @@ if (isset($_SESSION['lexpress']))
                                                 <div class="content_notif">
                                                     <?
                                                     $montant = ($this->bids->amount - $r['amount']);
-                                                    ?><?= $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a'] ?> <b style="color:#b20066;"><?= number_format($this->bids->rate, 2, ',', ' ') ?> %</b><?= $this->lng['notifications']['offre-refusee-pour-un-montant-de'] ?> <b style="color:#b20066;"><?= number_format($this->bids->amount / 100, 2, ',', ' ') ?> €</b> <?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a> <?= $this->lng['notifications']['offre-refusee-a-ete-decoupe'] ?> <b style="color:#b20066;"><?= number_format($r['amount'] / 100, 2, ',', ' ') ?> €</b><?= $this->lng['notifications']['offre-refusee-point'] ?>
+                                                    ?><?= $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate) ?> %</b><?= $this->lng['notifications']['offre-refusee-pour-un-montant-de'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->amount / 100, 2) ?> €</b> <?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a> <?= $this->lng['notifications']['offre-refusee-a-ete-decoupe'] ?> <b style="color:#b20066;"><?= number_format($r['amount'] / 100) ?> €</b><?= $this->lng['notifications']['offre-refusee-point'] ?>
                                                 </div><?
                                             }
                                             else
@@ -162,7 +162,7 @@ if (isset($_SESSION['lexpress']))
                                                 <b><?= $this->lng['notifications']['offre-refusee'] ?></b><br />
 
                                                 <div class="content_notif">
-                                                    <?= $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a'] ?> <b style="color:#b20066;"><?= number_format($this->bids->rate, 2, ',', ' ') ?> %</b> <?= $this->lng['notifications']['offre-refusee-pour-un-montant-de'] ?> <b style="color:#b20066;"><?= number_format($r['amount'] / 100, 2, ',', ' ') ?> €</b> <?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a> <?= $this->lng['notifications']['offre-refusee-nest-plus-recevable'] ?>
+                                                    <?= $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate) ?> %</b> <?= $this->lng['notifications']['offre-refusee-pour-un-montant-de'] ?> <b style="color:#b20066;"><?= number_format($r['amount'] / 100) ?> €</b> <?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a> <?= $this->lng['notifications']['offre-refusee-nest-plus-recevable'] ?>
                                                 </div>
                                                 <?
                                             }
@@ -174,7 +174,7 @@ if (isset($_SESSION['lexpress']))
                                             ?>
                                             <b><?= $this->lng['notifications']['remboursement'] ?></b><br />
                                             <div class="content_notif">
-                                                <?= $this->lng['notifications']['remboursement-vous-venez-de-recevoir-un-remboursement-de'] ?> <b style="white-space:nowrap;color:#b20066;"><?= number_format($r['amount'] / 100, 2, ',', ' ') ?> €</b> <?= $this->lng['notifications']['remboursement-pour-le-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a><?= $this->lng['notifications']['remboursement-point'] ?>
+                                                <?= $this->lng['notifications']['remboursement-vous-venez-de-recevoir-un-remboursement-de'] ?> <b style="white-space:nowrap;color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b> <?= $this->lng['notifications']['remboursement-pour-le-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a><?= $this->lng['notifications']['remboursement-point'] ?>
                                             </div>
                                             <?
                                         }
@@ -187,8 +187,8 @@ if (isset($_SESSION['lexpress']))
                                             ?>
                                             <b><?= $this->lng['notifications']['offre-placee'] ?></b><br />
                                             <div class="content_notif">
-                                                <?= $this->lng['notifications']['offre-placee-votre-offre-de-pret-de'] ?> <b style="color:#b20066;white-space:nowrap;"><?= number_format($this->bids->amount / 100, 2, ',', ' ') ?> €</b> <?= $this->lng['notifications']['offre-placee-a'] ?>
-                                                <b style="color:#b20066;"><?= number_format((float) $this->bids->rate, 2, ',', ' ') ?> %</b> <?= $this->lng['notifications']['offre-placee-sur-le-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a> <?= $this->lng['notifications']['offre-placee-point'] ?>
+                                                <?= $this->lng['notifications']['offre-placee-votre-offre-de-pret-de'] ?> <b style="color:#b20066;white-space:nowrap;"><?= $this->ficelle->formatNumber($this->bids->amount / 100) ?> €</b> <?= $this->lng['notifications']['offre-placee-a'] ?>
+                                                <b style="color:#b20066;"><?= $this->ficelle->formatNumber((float) $this->bids->rate) ?> %</b> <?= $this->lng['notifications']['offre-placee-sur-le-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a> <?= $this->lng['notifications']['offre-placee-point'] ?>
                                             </div>
                                             <?
                                         }
@@ -201,7 +201,7 @@ if (isset($_SESSION['lexpress']))
                                             ?>
                                             <b><?= $this->lng['notifications']['offre-acceptee'] ?></b><br />
                                             <div class="content_notif">
-                                                <?= $this->lng['notifications']['offre-acceptee-votre-offre-de-pret-de'] ?> <b style="color:#b20066;"><?= number_format($this->loans->rate, 2, ',', ' ') ?> %</b> <?= $this->lng['notifications']['offre-acceptee-pour-un-montant-de'] ?> <b style="color:#b20066;white-space:nowrap;"><?= number_format($this->loans->amount / 100, 2, ',', ' ') ?> €</b> <?= $this->lng['notifications']['offre-acceptee-sur-le-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['offre-acceptee-a-ete-acceptee'] ?>
+                                                <?= $this->lng['notifications']['offre-acceptee-votre-offre-de-pret-de'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->loans->rate) ?> %</b> <?= $this->lng['notifications']['offre-acceptee-pour-un-montant-de'] ?> <b style="color:#b20066;white-space:nowrap;"><?= number_format($this->loans->amount / 100) ?> €</b> <?= $this->lng['notifications']['offre-acceptee-sur-le-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['offre-acceptee-a-ete-acceptee'] ?>
                                             </div>
                                             <?
                                         }
@@ -211,7 +211,7 @@ if (isset($_SESSION['lexpress']))
                                             ?>
                                             <b><?= $this->lng['notifications']['conf-alim-virement'] ?></b><br />
                                             <div class="content_notif">
-                                                <?= $this->lng['notifications']['conf-alim-virement-votre-alim-par-virement-dun-montant-de'] ?> <b style="white-space:nowrap;color:#b20066;"><?= number_format($r['amount'] / 100, 2, ',', ' ') ?> €</b> <?= $this->lng['notifications']['conf-alim-virement-a-ete-ajoute-a-votre-solde'] ?>
+                                                <?= $this->lng['notifications']['conf-alim-virement-votre-alim-par-virement-dun-montant-de'] ?> <b style="white-space:nowrap;color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b> <?= $this->lng['notifications']['conf-alim-virement-a-ete-ajoute-a-votre-solde'] ?>
                                             </div>
                                             <?
                                         }
@@ -221,7 +221,7 @@ if (isset($_SESSION['lexpress']))
                                             ?>
                                             <b><?= $this->lng['notifications']['conf-alim-cb'] ?></b><br />
                                             <div class="content_notif">
-                                                <?= $this->lng['notifications']['conf-alim-cb-votre-alim-par-cb-dun-montant-de'] ?> <b style="color:#b20066;"><?= number_format($r['amount'] / 100, 2, ',', ' ') ?> €</b> <?= $this->lng['notifications']['conf-alim-cb-a-ete-ajoute-a-votre-solde'] ?>
+                                                <?= $this->lng['notifications']['conf-alim-cb-votre-alim-par-cb-dun-montant-de'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b> <?= $this->lng['notifications']['conf-alim-cb-a-ete-ajoute-a-votre-solde'] ?>
                                             </div>
                                             <?
                                         }
@@ -231,7 +231,7 @@ if (isset($_SESSION['lexpress']))
                                             ?>
                                             <b><?= $this->lng['notifications']['conf-retrait'] ?></b><br />
                                             <div class="content_notif">
-                                                <?= $this->lng['notifications']['conf-retrait-votre-retrait-dun-montant-de'] ?> <b style="color:#b20066;"><?= number_format($r['amount'] / 100, 2, ',', ' ') ?> €</b><?= $this->lng['notifications']['conf-retrait-a-ete-pris-en-compte'] ?>
+                                                <?= $this->lng['notifications']['conf-retrait-votre-retrait-dun-montant-de'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b><?= $this->lng['notifications']['conf-retrait-a-ete-pris-en-compte'] ?>
                                             </div>
                                             <?
                                         }
@@ -241,7 +241,7 @@ if (isset($_SESSION['lexpress']))
                                             $this->projects_notifs->get($r['id_project'], 'id_project');
                                             ?>
                                             <b><?= $this->lng['notifications']['annonce-nouveau-projet'] ?></b><br />
-                                            <div class="content_notif"><?= $this->lng['notifications']['annonce-nouveau-projet-nouveau-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['annonce-nouveau-projet-mis-en-ligne-le'] ?> <?= date('d/m/Y', strtotime($this->projects_notifs->date_publication_full)) ?> <?= $this->lng['notifications']['annonce-nouveau-projet-a'] ?> <?= date('H\Hi', strtotime($this->projects_notifs->date_publication_full)) ?><?= $this->lng['notifications']['annonce-nouveau-projet-montant-demande'] ?> <b style="color:#b20066;white-space:nowrap;"><?= number_format($this->projects_notifs->amount, 2, ',', ' ') ?> €</b> <?= $this->lng['notifications']['annonce-nouveau-projet-sur-une-periode-de'] ?> <?= $this->projects_notifs->period ?> <?= $this->lng['notifications']['annonce-nouveau-projet-mois'] ?>
+                                            <div class="content_notif"><?= $this->lng['notifications']['annonce-nouveau-projet-nouveau-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['annonce-nouveau-projet-mis-en-ligne-le'] ?> <?= date('d/m/Y', strtotime($this->projects_notifs->date_publication_full)) ?> <?= $this->lng['notifications']['annonce-nouveau-projet-a'] ?> <?= date('H\Hi', strtotime($this->projects_notifs->date_publication_full)) ?><?= $this->lng['notifications']['annonce-nouveau-projet-montant-demande'] ?> <b style="color:#b20066;white-space:nowrap;"><?= $this->ficelle->formatNumber($this->projects_notifs->amount) ?> €</b> <?= $this->lng['notifications']['annonce-nouveau-projet-sur-une-periode-de'] ?> <?= $this->projects_notifs->period ?> <?= $this->lng['notifications']['annonce-nouveau-projet-mois'] ?>
                                             </div>
                                             <?
                                         } elseif ($r['type'] == 9) {

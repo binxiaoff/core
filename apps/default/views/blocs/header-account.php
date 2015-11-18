@@ -6,9 +6,9 @@ if ($this->clients->status_pre_emp == 1)
     <div class="logedin-panel right">
 
         <a href="<?= $this->lurl ?>/synthese" class="header_account_name"><strong><?= $this->lng['header']['bonjour'] ?> <?= $this->clients->prenom ?> <?= $this->clients->nom ?></strong></a>
-        <?php /* ?><strong><?=$this->lng['header']['solde']?> : <span><span id="solde"><?=number_format($this->solde, 2, ',', ' ')?></span> €</span></strong><?php */ ?>
+        <?php /* ?><strong><?=$this->lng['header']['solde']?> : <span><span id="solde"><?=$this->ficelle->formatNumber($this->solde)?></span> €</span></strong><?php */ ?>
 
-        <strong><?= $this->lng['header']['solde'] ?> : <span><span id="solde"><?= number_format($this->solde, 2, ',', ' ') ?></span> €</span>&nbsp; <a href="<?= $this->lurl ?>/alimentation" style="font-size:11px;"><?= $this->lng['header']['ajouter-de-largent'] ?></a></strong>
+        <strong><?= $this->lng['header']['solde'] ?> : <span><span id="solde"><?= $this->ficelle->formatNumber($this->solde) ?></span> €</span>&nbsp; <a href="<?= $this->lurl ?>/alimentation" style="font-size:11px;"><?= $this->lng['header']['ajouter-de-largent'] ?></a></strong>
 
         <div class="dd">
             <span class="bullet notext">bullet</span>

@@ -6,11 +6,11 @@ if (count($this->lEnchere) > 0) {
             <th width="125"><span id="triNum_mobile">N°<i class="icon-arrows"></i></span></th>
             <th width="180">
                 <span id="triTx_mobile"><?= $this->lng['preteur-projets']['taux-dinteret'] ?> <i class="icon-arrows"></i></span>
-                <small><?= $this->lng['preteur-projets']['taux-moyen'] ?> : <?= number_format($this->avgRate, 1, ',', ' ') ?> %</small>
+                <small><?= $this->lng['preteur-projets']['taux-moyen'] ?> : <?= $this->ficelle->formatNumber($this->avgRate, 1) ?> %</small>
             </th>
             <th width="214">
                 <span id="triAmount_mobile"><?= $this->lng['preteur-projets']['montant'] ?> <i class="icon-arrows"></i></span>
-                <small><?= $this->lng['preteur-projets']['montant-moyen'] ?> : <?= number_format($this->avgAmount / 100, 2, ',', ' ') ?> €</small>
+                <small><?= $this->lng['preteur-projets']['montant-moyen'] ?> : <?= $this->ficelle->formatNumber($this->avgAmount / 100) ?> €</small>
             </th>
             <th width="101"><span id="triStatuts_mobile"><?= $this->lng['preteur-projets']['statuts'] ?> <i class="icon-arrows"></i></span></th>
         </tr>
@@ -26,8 +26,8 @@ if (count($this->lEnchere) > 0) {
                 if ($e['ordre'] <= 5 || $e['ordre'] > $this->CountEnchere - 5) {
                     ?><tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
                         <td><?= ($vous == true ? '<span class="enchereVous">' . $e['ordre'] . ' (' . $this->lng['preteur-projets']['vous'] . ')</span>' : $e['ordre']) ?></td>
-                        <td><?= number_format($e['rate'], 1, ',', ' ') ?> %</td>
-                        <td><?= number_format($e['amount'] / 100, 0, ',', ' ') ?> €</td>
+                        <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
+                        <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
                         <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
                     </tr><?
                 }
@@ -37,8 +37,8 @@ if (count($this->lEnchere) > 0) {
             } else {
                 ?><tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
                     <td><?= ($vous == true ? '<span class="enchereVous">' . $e['ordre'] . ' (' . $this->lng['preteur-projets']['vous'] . ')</span>' : $e['ordre']) ?></td>
-                    <td><?= number_format($e['rate'], 1, ',', ' ') ?> %</td>
-                    <td><?= number_format($e['amount'] / 100, 0, ',', ' ') ?> €</td>
+                    <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
+                    <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
                     <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
                 </tr><?
             }
@@ -58,8 +58,8 @@ if (count($this->lEnchere) > 0) {
     ?>
     <script>
         $("#direction_mobile").html('<?=$this->direction?>');
-        
-        
+
+
         $("#triNum_mobile").click(function () {
             $("#tri_mobile").html('ordre');
             $(".displayAll_mobile").click();

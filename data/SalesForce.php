@@ -97,10 +97,13 @@ class SalesForce
         $sQuery = "SELECT
                     co.id_company AS 'IDCompany',
                     REPLACE(co.siren,'\t','') AS 'Siren',
-                    CONVERT(CAST(REPLACE(co.name,',','') as BINARY) USING utf8) AS 'RaisonSociale',
-                    CONVERT(CAST(REPLACE(co.adresse1,',','') as BINARY) USING utf8) AS 'Adresse1',
+                    CASE REPLACE(co.name,',','')
+                      WHEN '' THEN 'A renseigner'
+                      ELSE REPLACE(co.name,',','')
+                    END AS 'RaisonSociale',
+                    REPLACE(co.adresse1,',','') AS 'Adresse1',
                     REPLACE(co.zip,',','') AS 'CP',
-                    CONVERT(CAST(REPLACE(co.city,',','') as BINARY) USING utf8) AS 'Ville',
+                    REPLACE(co.city,',','') AS 'Ville',
                     acountry.fr AS 'Pays',
                     REPLACE(co.email_facture,',','') AS 'EmailFacturation',
                     co.id_client_owner AS 'IDClient',
@@ -120,16 +123,20 @@ class SalesForce
                     c.id_client as 'IDClient',
                     c.id_client as 'IDClient_2',
                     c.id_langue as 'Langue',
-                    CONVERT(CAST(REPLACE(c.civilite,',','') as BINARY) USING utf8) as 'Civilite',
-                    CONVERT(CAST(REPLACE(c.nom,',','') as BINARY) USING utf8) as 'Nom',
-                    CONVERT(CAST(REPLACE(c.nom_usage,',','') as BINARY) USING utf8) as 'Nom_usage',
-                    CONVERT(CAST(REPLACE(c.prenom,',','') as BINARY) USING utf8) as 'Prenom',
-                    CONVERT(CAST(REPLACE(c.fonction,',','') as BINARY) USING utf8) as 'Fonction',
+                    REPLACE(c.civilite,',','') as 'Civilite',
+                    REPLACE(c.nom,',','') as 'Nom',
+                    REPLACE(c.nom_usage,',','') as 'Nom_usage',
+                    REPLACE(c.prenom,',','') as 'Prenom',
+                    CONVERT(REPLACE(c.fonction,',','') USING utf8) as 'Fonction',
                     CASE c.naissance
-                      WHEN '0000-00-00' then ''
-                      ELSE c.naissance
+                      WHEN '0000-00-00' then '2001-01-01'
+                      ELSE
+                          CASE SUBSTRING(c.naissance,1,1)
+                            WHEN '0' then '2001-01-01'
+                            ELSE c.naissance
+                          END
                     END as 'DateNaissance',
-                    CONVERT(CAST(REPLACE(ville_naissance,',','') as BINARY) USING utf8) as 'VilleNaissance',
+                    REPLACE(ville_naissance,',','') as 'VilleNaissance',
                     ccountry.fr as 'PaysNaissance',
                     nv2.fr_f as 'Nationalite',
                     REPLACE(c.telephone,'\t','') as 'Telephone',
@@ -158,11 +165,11 @@ class SalesForce
                       WHEN '0000-00-00 00:00:00' then ''
                       ELSE c.lastlogin
                     END as 'DateDernierLogin',
-                    CONVERT(CAST(REPLACE(ca.adresse1,',','') as BINARY) USING utf8) as 'Adresse1',
-                    CONVERT(CAST(REPLACE(ca.adresse2,',','') as BINARY) USING utf8) as 'Adresse2',
-                    CONVERT(CAST(REPLACE(ca.adresse3,',','') as BINARY) USING utf8) as 'Adresse3',
-                    CONVERT(CAST(REPLACE(ca.cp,',','') as BINARY) USING utf8) as 'CP',
-                    CONVERT(CAST(REPLACE(ca.ville,',','') as BINARY) USING utf8) as 'Ville',
+                    REPLACE(ca.adresse1,',','') as 'Adresse1',
+                    REPLACE(ca.adresse2,',','') as 'Adresse2',
+                    REPLACE(ca.adresse3,',','') as 'Adresse3',
+                    REPLACE(ca.cp,',','') as 'CP',
+                    REPLACE(ca.ville,',','') as 'Ville',
                     acountry.fr as 'Pays',
                     '012240000002G4e' as 'Sfcompte'
                   FROM
@@ -188,8 +195,8 @@ class SalesForce
     {
         $sQuery = "SELECT
                         p.id_project AS 'IDProjet',
-                        CONVERT(CAST(REPLACE(cl.source,',','') as BINARY) USING utf8) AS 'Source1',
-                        CONVERT(CAST(REPLACE(cl.source2,',','') as BINARY) USING utf8) AS 'Source2',
+                        REPLACE(cl.source,',','') AS 'Source1',
+                        REPLACE(cl.source2,',','') AS 'Source2',
                         p.id_company AS 'IDCompany',
                         p.amount AS 'Amount',
                         p.period AS 'NbMois',
@@ -209,18 +216,21 @@ class SalesForce
                           WHEN '0000-00-00 00:00:00' then ''
                           ELSE p.updated
                         END AS 'Date_Mise_Jour',
-                        CONVERT(CAST(REPLACE(ps.label,',','') as BINARY) USING utf8) AS 'Status',
+                        REPLACE(ps.label,',','') AS 'Status',
                         pn.note AS 'Note',
-                        CONVERT(CAST(REPLACE(co.name,',','') as BINARY) USING utf8) AS 'Nom_Societe',
-                        CONVERT(CAST(REPLACE(co.forme,',','') as BINARY) USING utf8) AS 'Forme',
+                        CASE REPLACE(co.name,',','')
+                          WHEN '' THEN 'A renseigner'
+                          ELSE REPLACE(co.name,',','')
+                        END AS 'Nom_Societe',
+                        REPLACE(co.forme,',','') AS 'Forme',
                         REPLACE(co.siren,'\t','') AS 'Siren',
-                        CONVERT(CAST(REPLACE(co.adresse1,',','') as BINARY) USING utf8) as 'Adresse1',
-                        CONVERT(CAST(REPLACE(co.adresse2,',','') as BINARY) USING utf8) as 'Adresse2',
+                        REPLACE(co.adresse1,',','') as 'Adresse1',
+                        REPLACE(co.adresse2,',','') as 'Adresse2',
                         REPLACE(co.zip,',','') AS 'CP',
-                        CONVERT(CAST(REPLACE(co.city,',','') as BINARY) USING utf8) AS 'Ville',
+                        REPLACE(co.city,',','') AS 'Ville',
                         co.id_pays AS 'IdPays',
                         REPLACE(co.phone,'\t','') AS 'Telephone',
-                        CONVERT(CAST(co.status_client as BINARY) USING utf8) AS 'Status_Client',
+                        co.status_client AS 'Status_Client',
                         CASE co.added
                           WHEN '0000-00-00 00:00:00' then ''
                           ELSE co.added
@@ -239,11 +249,11 @@ class SalesForce
                     LEFT JOIN
                         projects_notes pn ON (p.id_project = pn.id_project)
                     LEFT JOIN
-                      projects_last_status_history  pslh on pslh.id_project = p.id_project
+                      projects_last_status_history pslh ON pslh.id_project = p.id_project
                     LEFT JOIN
-                      projects_status_history psh on psh.id_project_status_history = pslh.id_project_status_history
+                      projects_status_history psh ON psh.id_project_status_history = pslh.id_project_status_history
                     LEFT JOIN
-                      projects_status ps on ps.id_project_status = psh.id_project_status";
+                      projects_status ps ON ps.id_project_status = psh.id_project_status";
 
         $this->tryIt($sQuery, 'projects');
     }
@@ -254,19 +264,23 @@ class SalesForce
                     c.id_client as 'IDClient',
                     la.id_lender_account as 'IDPreteur',
                     c.id_langue as 'Langue',
-                    CONVERT(CAST(REPLACE(c.source,',','') as BINARY) USING utf8) as 'Source1',
-                    CONVERT(CAST(REPLACE(c.source2,',','') as BINARY) USING utf8) as 'Source2',
-                    CONVERT(CAST(REPLACE(c.source3,',','') as BINARY) USING utf8) as 'Source3',
-                    CONVERT(CAST(REPLACE(c.civilite,',','') as BINARY) USING utf8) as 'Civilite',
-                    CONVERT(CAST(REPLACE(c.nom,',','') as BINARY) USING utf8) as 'Nom',
-                    CONVERT(CAST(REPLACE(c.nom_usage,',','') as BINARY) USING utf8) as 'NomUsage',
-                    CONVERT(CAST(REPLACE(c.prenom,',','') as BINARY) USING utf8) as 'Prenom',
-                    CONVERT(CAST(REPLACE(c.fonction,',','') as BINARY) USING utf8) as 'Fonction',
+                    REPLACE(c.source,',','') as 'Source1',
+                    REPLACE(c.source2,',','') as 'Source2',
+                    REPLACE(c.source3,',','') as 'Source3',
+                    REPLACE(c.civilite,',','') as 'Civilite',
+                    REPLACE(c.nom,',','') as 'Nom',
+                    REPLACE(c.nom_usage,',','') as 'NomUsage',
+                    REPLACE(c.prenom,',','') as 'Prenom',
+                    REPLACE(c.fonction,',','') as 'Fonction',
                     CASE c.naissance
-                    	WHEN '0000-00-00' then ''
-                    	ELSE c.naissance
+                    	WHEN '0000-00-00' then '2001-01-01'
+                    	ELSE
+                          CASE SUBSTRING(c.naissance,1,1)
+                            WHEN '0' then '2001-01-01'
+                            ELSE c.naissance
+                          END
                     END as 'Datenaissance',
-                    CONVERT(CAST(REPLACE(ville_naissance,',','') as BINARY) USING utf8) as 'Villenaissance',
+                    REPLACE(ville_naissance,',','') as 'Villenaissance',
                     ccountry.fr as 'PaysNaissance',
                     nv2.fr_f as 'Nationalite',
                     REPLACE(c.telephone,'\t','') as 'Telephone',
@@ -285,7 +299,7 @@ class SalesForce
                     END as 'Valide',
                     CASE c.status_pre_emp
                         WHEN 1
-                            THEN (SELECT CONVERT(CAST(cs.label as BINARY) USING utf8) FROM clients_status_history cshs1
+                            THEN (SELECT cs.label FROM clients_status_history cshs1
                                   inner join clients_status cs on cshs1.id_client_status =cs.id_client_status
                                   WHERE cshs1.id_client=c.id_client
                                   ORDER BY cshs1.added DESC LIMIT 1)
@@ -303,15 +317,15 @@ class SalesForce
                       ELSE c.lastlogin
                     END as 'DateDernierLogin',
                     cs.id_client_status as 'StatutValidation',
-                    CONVERT(CAST(status_inscription_preteur as BINARY) USING utf8) as 'StatusInscription',
+                    status_inscription_preteur as 'StatusInscription',
                     count(
                         distinct(l.id_project)
                     ) as 'NbPretsValides',
-                    CONVERT(CAST(REPLACE(ca.adresse1,',','') as BINARY) USING utf8) as 'Adresse1',
-                    CONVERT(CAST(REPLACE(ca.adresse2,',','') as BINARY) USING utf8) as 'Adresse2',
-                    CONVERT(CAST(REPLACE(ca.adresse3,',','') as BINARY) USING utf8) as 'Adresse3',
-                    CONVERT(CAST(REPLACE(ca.cp,',','') as BINARY) USING utf8) as 'CP',
-                    CONVERT(CAST(REPLACE(ca.ville,',','') as BINARY) USING utf8) as 'Ville',
+                    REPLACE(ca.adresse1,',','') as 'Adresse1',
+                    REPLACE(ca.adresse2,',','') as 'Adresse2',
+                    REPLACE(ca.adresse3,',','') as 'Adresse3',
+                    REPLACE(ca.cp,',','') as 'CP',
+                    REPLACE(ca.ville,',','') as 'Ville',
                     acountry.fr as 'Pays',
                     SUM(l.amount)/100 as 'TotalPretEur',
                     '' as 'DeletingProspect',
@@ -348,11 +362,11 @@ class SalesForce
     {
         $sQuery = "SELECT id_prospect,
                     id_langue,
-                    CONVERT(CAST(REPLACE(source,',','') as BINARY) USING utf8) as 'source',
-                    CONVERT(CAST(REPLACE(source2,',','') as BINARY) USING utf8) as 'source2',
-                    CONVERT(CAST(REPLACE(source3,',','') as BINARY) USING utf8) as 'source3',
-                    CONVERT(CAST(REPLACE(nom,',','') as BINARY) USING utf8) as 'nom',
-                    CONVERT(CAST(REPLACE(prenom,',','') as BINARY) USING utf8) as 'prenom',
+                    REPLACE(source,',','') as 'source',
+                    REPLACE(source2,',','') as 'source2',
+                    REPLACE(source3,',','') as 'source3',
+                    REPLACE(nom,',','') as 'nom',
+                    REPLACE(prenom,',','') as 'prenom',
                     email,
                     CASE added
                       WHEN '0000-00-00 00:00:00' then ''
@@ -390,11 +404,11 @@ class SalesForce
                                               $aRow['prenom'],
                                               '', '', '', '', '', '', '',
                                               $aRow['email'],
-                                              '', '', 'Prospect', '',
+                                              '', 'Prospect', 'Prospect', '',
                                               $aRow['added'],
                                               $aRow['updated'],
                                               '', '', '', '', '', '', '', '', '', '', 0, '',
-                                              '0012400000F6xvT');
+                                              '0012400000K0Bxw');
                         fputs($rCsvFile, '""' . implode('"", ""', $aCsvProspect) . '""' . "\n");
 
                         //Array adding in file tempProspect.csv for check if become a client (deleting or not)
@@ -455,7 +469,7 @@ class SalesForce
     {
         if (true === $this->createExtractDir()) {
             $iTimeStartCsv = microtime(true);
-            $sNameFile .= (!preg_match('/(\.csv)$/i', $sNameFile)) ? '.csv' : '';
+            $sNameFile .= (1 !== preg_match('/(\.csv)$/i', $sNameFile)) ? '.csv' : '';
             $rCsvFile   = fopen(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT . $sNameFile, 'w');
             $iCountLine = 0;
             $that       = $this;

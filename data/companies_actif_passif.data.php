@@ -29,64 +29,78 @@
 class companies_actif_passif extends companies_actif_passif_crud
 {
 
-	function companies_actif_passif($bdd,$params='')
+    public function companies_actif_passif($bdd, $params = '')
     {
-        parent::companies_actif_passif($bdd,$params);
+        parent::companies_actif_passif($bdd, $params);
     }
-    
-    function get($id,$field='id_actif_passif')
+
+    public function get($id, $field = 'id_actif_passif')
     {
-        return parent::get($id,$field);
+        return parent::get($id, $field);
     }
-    
-    function update($cs='')
+
+    public function update($cs = '')
     {
         parent::update($cs);
     }
-    
-    function delete($id,$field='id_actif_passif')
+
+    public function delete($id, $field = 'id_actif_passif')
     {
-    	parent::delete($id,$field);
+        parent::delete($id, $field);
     }
-    
-    function create($cs='')
+
+    public function create($cs = '')
     {
         $id = parent::create($cs);
         return $id;
     }
-	
-	function select($where='',$order='',$start='',$nb='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
-		if($order != '')
-			$order = ' ORDER BY '.$order;
-		$sql = 'SELECT * FROM `companies_actif_passif`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
 
-		$resultat = $this->bdd->query($sql);
-		$result = array();
-		while($record = $this->bdd->fetch_array($resultat))
-		{
-			$result[] = $record;
-		}
-		return $result;
-	} 
-	
-	function counter($where='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
-			
-		$sql='SELECT count(*) FROM `companies_actif_passif` '.$where;
+    public function select($where = '', $order = '', $start = '', $nb = '')
+    {
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
+        if ($order != '') {
+            $order = ' ORDER BY ' . $order;
+        }
+        $sql = 'SELECT * FROM `companies_actif_passif`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-		$result = $this->bdd->query($sql);
-		return (int)($this->bdd->result($result,0,0));
-	}
-	
-	function exist($id,$field='id_actif_passif')
-	{
-		$sql = 'SELECT * FROM `companies_actif_passif` WHERE '.$field.'="'.$id.'"';
-		$result = $this->bdd->query($sql);
-		return ($this->bdd->fetch_array($result,0,0)>0);
-	}
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
+
+    public function counter($where = '')
+    {
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
+
+        $sql = 'SELECT count(*) FROM `companies_actif_passif` ' . $where;
+
+        $result = $this->bdd->query($sql);
+        return (int)($this->bdd->result($result, 0, 0));
+    }
+
+    public function exist($id, $field = 'id_actif_passif')
+    {
+        $sql    = 'SELECT * FROM `companies_actif_passif` WHERE ' . $field . '="' . $id . '"';
+        $result = $this->bdd->query($sql);
+        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+    }
+
+    public function yearExist($iCompanyId, $iYear)
+    {
+        $iCompanyId = $this->bdd->escape_string($iCompanyId);
+        $iYear      = $this->bdd->escape_string($iYear);
+
+        $sSql = "SELECT EXISTS(SELECT 1 FROM companies_actif_passif WHERE id_company = $iCompanyId AND annee = $iYear) as exist_active";
+
+        $rResult = $this->bdd->query($sSql);
+        $aResult = $this->bdd->fetch_array($rResult);
+        return $aResult['exist_active'] == 1;
+    }
 }

@@ -7,7 +7,7 @@
            	<option value="<?=date('Y')?>"><?=$this->lng['profile']['annee']?> <?=date('Y')?></option>
 			<?
 			for($i=date('Y');$i>=2009;$i--){
-				?><option value="<?=$i?>"><?=$this->lng['profile']['annee']?> <?=$i?></option><?	
+				?><option value="<?=$i?>"><?=$this->lng['profile']['annee']?> <?=$i?></option><?
 			}
 			?>
         </select>
@@ -43,27 +43,27 @@
             <div class="th-wrap"><i title="<?=$this->lng['profile']['info-9']?>" class="icon-arrow-next tooltip-anchor"></i></div>
         </th>
     </tr>
-	
+
     <?
-	
+
 	if($this->lLoans != false)
 	{
 		foreach($this->lLoans as $k => $l)
 		{
 			$this->projects->get($l['id_project'],'id_project');
 			$this->companies->get($this->projects->id_company,'id_company');
-			
+
 			$this->projects_status->getLastStatut($l['id_project']);
-			
+
 
 			$SumAremb = $this->echeanciers->select('id_loan = '.$l['id_loan'].' AND status = 0','ordre ASC',0,1);
 
 			$fiscal = $SumAremb[0]['prelevements_obligatoires']+$SumAremb[0]['retenues_source']+$SumAremb[0]['csg']+$SumAremb[0]['prelevements_sociaux']+$SumAremb[0]['contributions_additionnelles']+$SumAremb[0]['prelevements_solidarite']+$SumAremb[0]['crds'];
-			
+
 			/*echo 'Montant : '.$SumAremb[0]['montant'].'<br>';
 			echo 'fiscale : '.$fiscal.'<br>';
 			echo (($SumAremb[0]['montant']/100)-$fiscal).'<br>';*/
-			
+
 			?>
 			<tr>
 				<td>
@@ -74,10 +74,10 @@
 				</td>
 				<td><?=$this->dates->formatDate($this->projects->date_fin,'d-m-Y')?></td>
 				<td><div class="cadreEtoiles"><div class="etoile <?=$this->lNotes[$this->projects->risk]?>"></div></div></td>
-				<td style="white-space: nowrap;"><?=number_format($l['amount']/100, 2, ',', ' ')?> €</td>
+				<td style="white-space: nowrap;"><?=$this->ficelle->formatNumber($l['amount']/100)?> €</td>
 				<td><?=$this->dates->formatDate($SumAremb[0]['date_echeance'],'d-m-Y')?></td>
-				<td style="white-space: nowrap;"><?=number_format($l['rate'], 2, ',', ' ')?> %</td>
-				<td><?=number_format(($SumAremb[0]['montant']/100)-$fiscal, 2, ',', ' ')?> <?=$this->lng['profile']['euros-par-mois']?></td>
+				<td style="white-space: nowrap;"><?=$this->ficelle->formatNumber($l['rate'])?> %</td>
+				<td><?=$this->ficelle->formatNumber(($SumAremb[0]['montant']/100)-$fiscal)?> <?=$this->lng['profile']['euros-par-mois']?></td>
 				<td>
                 	<?
 					if($this->projects_status->status >=80)

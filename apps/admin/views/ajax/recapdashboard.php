@@ -1,30 +1,23 @@
-
-<h1><?=$this->dates->tableauMois['fr'][$this->month].' '.$this->year?></h1>
+<h1><?= $this->dates->tableauMois['fr'][$this->month] . ' ' . $this->year ?></h1>
 <table class="recapDashboard">
     <tr>
         <th>Prêteurs connectés :</th>
-        <td><?=$this->nbPreteurLogin?></td>
-        
+        <td><?= $this->nbPreteurLogin ?></td>
         <th>Fonds déposés :</th>
-        <td><?=number_format($this->nbFondsDeposes,2,',',' ')?> €</td>
-        
+        <td><?= $this->ficelle->formatNumber($this->nbFondsDeposes) ?> €</td>
         <th>Emprunteurs connectés :</th>
-        <td><?=$this->nbEmprunteurLogin?></td>
-        
+        <td><?= $this->nbEmprunteurLogin ?></td>
         <th>Dossiers déposés :</th>
-        <td><?=$this->nbDepotDossier?></td>
+        <td><?= $this->nbDepotDossier ?></td>
     </tr>
     <tr>
         <th>Prêteurs inscrits :</th>
-        <td><?=$this->nbInscriptionPreteur?></td>
-        
+        <td><?= $this->nbInscriptionPreteur ?></td>
         <th>Fonds prêtés :</th>
-        <td><?=number_format($this->nbFondsPretes,2,',',' ')?> €</td>
-        
+        <td><?= $this->ficelle->formatNumber($this->nbFondsPretes) ?> €</td>
         <th>Emprunteurs inscrits :</th>
-        <td><?=$this->nbInscriptionEmprunteur?></td>
-        
+        <td><?= $this->nbInscriptionEmprunteur ?></td>
         <th>Total capital restant dus :</th>
-        <td><?=number_format($this->TotalCapitalRestant,2,',',' ')?> €</td>
+        <td><?= $this->ficelle->formatNumber($this->TotalCapitalRestant) ?> €</td>
     </tr>
 </table>

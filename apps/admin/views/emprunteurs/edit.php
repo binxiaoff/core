@@ -208,7 +208,7 @@ if (isset($_SESSION['freeow'])) {
                         <td><?= $p['id_project'] ?></td>
                         <td><?= $p['title'] ?></td>
                         <td><?= $this->projects_status->label ?></td>
-                        <td><?= number_format($p['amount'], 2, ',', ' ') ?> €</td>
+                        <td><?= $this->ficelle->formatNumber($p['amount']) ?> €</td>
                         <td>
                             <?
                             if ($this->projects_pouvoir->get($p['id_project'], 'id_project')) {

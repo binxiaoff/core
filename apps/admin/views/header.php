@@ -111,6 +111,8 @@
                     <li><a href="<?=$this->lurl?>/preteurs/liste_preteurs_non_inscrits" title="Liste des prêteurs non inscrits">Liste des prêteurs non inscrits</a></li>
                     <li><a href="<?=$this->lurl?>/preteurs/activation" title="Activation prêteurs">Activation prêteurs</a></li>
                     <li><a href="<?=$this->lurl?>/preteurs/offres_de_bienvenue" title="Gestion offre de bienvenue">Gestion offre de bienvenue</a></li>
+                    <li><a href="<?=$this->lurl?>/preteurs/control_fiscal_city" title="Matching ville fiscale">Matching ville fiscale</a></li>
+                    <li><a href="<?=$this->lurl?>/preteurs/control_birth_city" title="Matching ville de naissance">Matching ville de naissance</a></li>
                 </ul>
             </li>
         <?
@@ -122,6 +124,7 @@
                 <ul class="sous_menu">
                     <li><a href="<?=$this->lurl?>/emprunteurs" title="Arbo emprunteurs">Arbo emprunteurs</a></li>
                     <li><a href="<?=$this->lurl?>/emprunteurs/gestion" title="Gestion emprunteurs">Gestion emprunteurs</a></li>
+                    <li><a href="<?=$this->lurl?>/prescripteurs/gestion" title="Gestion prescripteur">Gestion prescripteur</a></li>
                     <li><a href="<?=$this->lurl?>/dossiers" title="Gestion des dossiers">Gestion des dossiers</a></li>
                     <li><a href="<?=$this->lurl?>/dossiers/funding" title="Dossiers en funding">Dossiers en funding</a></li>
                     <li><a href="<?=$this->lurl?>/dossiers/remboursements" title="Remboursements">Remboursements</a></li>

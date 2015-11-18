@@ -148,8 +148,8 @@ class dates
     {
         $d = explode(' ', $date);
         $d = explode('-', $d[0]);
-        $m = (int)($d[1]);
-        $d = (int)($d[2]) . ' ' . $this->tableauMois[$ln][$m] . ' ' . $d[0];
+        $m = (int) ($d[1]);
+        $d = (int) ($d[2]) . ' ' . $this->tableauMois[$ln][$m] . ' ' . $d[0];
         return $d;
     }
 
@@ -192,8 +192,8 @@ class dates
     {
         $d   = explode('-', $date);
         $d1  = explode(' ', $d[2]);
-        $m   = (int)($d[1]);
-        $day = (int)($d1[0]);
+        $m   = (int) ($d[1]);
+        $day = (int) ($d1[0]);
         $j   = date("w", mktime(0, 0, 0, $m, $day, $d[0]));
 
         $ladate = $this->tableauJours2[$ln][$j] . ' ' . $day . ' ' . $this->tableauMois[$ln][$m] . ' ' . $d[0];
@@ -658,8 +658,11 @@ class dates
             case 11:
                 return 30;
             case 2:
-                if (($annee % 4) == 0) return 29;
-                else return 28;
+                if (($annee % 4) == 0) {
+                    return 29;
+                } else {
+                    return 28;
+                }
         }
         return 31;
     }
@@ -680,11 +683,11 @@ class dates
 
         $diff_date        = $date2 - $date1;
         $diff             = array();
-        $diff['secondes'] = (int)($diff_date);
-        $diff['minutes']  = (int)($diff_date / (60));
-        $diff['heures']   = (int)($diff_date / (60 * 60));
-        $diff['jours']    = (int)($diff_date / (60 * 60 * 24));
-        $diff['mois']     = (int)($diff_date / (60 * 60 * 24 * 30));
+        $diff['secondes'] = (int) ($diff_date);
+        $diff['minutes']  = (int) ($diff_date / (60));
+        $diff['heures']   = (int) ($diff_date / (60 * 60));
+        $diff['jours']    = (int) ($diff_date / (60 * 60 * 24));
+        $diff['mois']     = (int) ($diff_date / (60 * 60 * 24 * 30));
 
         return $diff;
     }
@@ -703,18 +706,30 @@ class dates
     {
         $nb_jours = 0;
         for ($annee = $deb_annee; $annee <= $fin_annee; $annee++) {
-            if ($annee == $deb_annee) $from_mois = $deb_mois;
-            else $from_mois = 1;
+            if ($annee == $deb_annee) {
+                $from_mois = $deb_mois;
+            } else {
+                $from_mois = 1;
+            }
 
-            if ($annee == $fin_annee) $to_mois = $fin_mois;
-            else $to_mois = 12;
+            if ($annee == $fin_annee) {
+                $to_mois = $fin_mois;
+            } else {
+                $to_mois = 12;
+            }
 
             for ($mois = $from_mois; $mois <= $to_mois; $mois++) {
-                if (($mois == $deb_mois) && ($annee == $deb_annee)) $from_jour = $deb_jour;
-                else $from_jour = 1;
+                if (($mois == $deb_mois) && ($annee == $deb_annee)) {
+                    $from_jour = $deb_jour;
+                } else {
+                    $from_jour = 1;
+                }
 
-                if (($mois == $fin_mois) && ($annee == $fin_annee)) $to_jour = $fin_jour;
-                else $to_jour = $this->nb_jour_dans_mois($mois, $annee);
+                if (($mois == $fin_mois) && ($annee == $fin_annee)) {
+                    $to_jour = $fin_jour;
+                } else {
+                    $to_jour = $this->nb_jour_dans_mois($mois, $annee);
+                }
 
                 $nb_jours += $to_jour - $from_jour + 1;
             }

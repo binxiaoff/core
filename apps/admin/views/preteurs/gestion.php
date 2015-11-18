@@ -1,11 +1,11 @@
 <script type="text/javascript">
 	$(document).ready(function(){
-		$(".tablesorter").tablesorter({headers:{8:{sorter: false}}});	
+		$(".tablesorter").tablesorter({headers:{8:{sorter: false}}});
 		<?
 		if($this->nb_lignes != '')
 		{
 		?>
-			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});		
+			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});
 		<?
 		}
 		?>
@@ -80,7 +80,7 @@
                     <td class="leLender<?=$c['id_lender_account']?>"><?=$c['prenom_ou_dirigeant']?></td>
                     <td class="leLender<?=$c['id_lender_account']?>"><?=$c['email']?></td>
                     <td class="leLender<?=$c['id_lender_account']?>"><?=$c['telephone']?></td>
-                    <td class="leLender<?=$c['id_lender_account']?>"><?=number_format($c['solde'], 2, ',', ' ')?> €</td>
+                    <td class="leLender<?=$c['id_lender_account']?>"><?=$this->ficelle->formatNumber($c['solde'])?> €</td>
                     <td class="leLender<?=$c['id_lender_account']?>"><?=$c['bids_encours']?></td>
 					<td class="leLender<?=$c['id_lender_account']?>"><?=$c['status']==1?'en ligne':'hors ligne'?></td>
 
@@ -92,7 +92,7 @@
                                 <a href="<?=$this->lurl?>/preteurs/edit/<?=$c['id_lender_account']?>">
 								<img src="<?=$this->surl?>/images/admin/edit.png" alt="Modifier <?=$c['nom'].' '.$c['prenom']?>" />
 							</a>
-							
+
                             <?
 						}
 						else
@@ -111,7 +111,7 @@
 						?>
 
                   	</td>
-                </tr>   
+                </tr>
             <?
 				$i++;
             }

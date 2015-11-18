@@ -1,18 +1,18 @@
 <script type="text/javascript">
 	$(document).ready(function(){
-		
+
 		jQuery.tablesorter.addParser({ id: "fancyNumber", is: function(s) { return /[\-\+]?\s*[0-9]{1,3}(\.[0-9]{3})*,[0-9]+/.test(s); }, format: function(s) { return jQuery.tablesorter.formatFloat( s.replace(/,/g,'').replace(' €','').replace(' ','') ); }, type: "numeric" });
-		
-		$(".tablesorter").tablesorter({headers:{9:{sorter: false}}});	
+
+		$(".tablesorter").tablesorter({headers:{9:{sorter: false}}});
 		<?
 		if($this->nb_lignes != '')
 		{
 		?>
-			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});		
+			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});
 		<?
 		}
 		?>
-		
+
 		$("#Reset").click(function() {
 			$("#siren").val('');
 			$("#nom").val('');
@@ -20,10 +20,10 @@
 			$("#prenom").val('');
 			$("#email").val('');
 			$("#projet").val('');
-			
-			
+
+
 		});
-		
+
 	});
 	<?
 	if(isset($_SESSION['freeow']))
@@ -56,8 +56,8 @@
 	{
 		?><h1>Liste des <?=count($this->lProjects)?> derniers remboursements</h1><?
 	}
-	?>	
-    
+	?>
+
     <style>
 	table.formColor{width:673px;}
 	.select{width:251px;}
@@ -81,7 +81,7 @@
                 <tr>
                     <th><label for="projet">Projet :</label></th>
                     <td><input type="text" name="projet" id="projet" class="input_large" value="<?=$_POST['projet']?>"/></td>
-                	
+
                     <th><label for="email">Email :</label></th>
                     <td><input type="text" name="email" id="email" class="input_large" value="<?=$_POST['email']?>"/></td>
                 </tr>
@@ -96,14 +96,14 @@
         </fieldset>
     </form>
     </div>
-    
+
     <?
 	if(count($this->lProjects) > 0)
 	{
 	?>
     	<table class="tablesorter">
         	<thead>
-                <tr>  
+                <tr>
                     <th>ID</th>
                     <th>Nom</th>
                     <th>Prénom</th>
@@ -113,7 +113,7 @@
                     <th width="70">Rbsmt</th>
                     <th>Date</th>
                     <th>Auto?</th>
-                    <th>&nbsp;</th>  
+                    <th>&nbsp;</th>
                 </tr>
            	</thead>
             <tbody>
@@ -124,17 +124,17 @@
 				$this->projects->get($r['id_project'],'id_project');
 				$this->companies->get($this->projects->id_company,'id_company');
 				$this->clients->get($this->companies->id_client_owner,'id_client');
-				
+
 				$datePremiereEcheance = $this->echeanciers->getDatePremiereEcheance($r['id_project']);
-				
+
 				$rembTotal = $this->echeanciers->getRembTotalEmprunteur($r['id_project']);
 				$prochainRemb = $this->echeanciers_emprunteur->select('id_project = '.$r['id_project'].' AND status_emprunteur = 0','ordre ASC');
-				
-				
+
+
 				$nextRemb['montant'] = ($prochainRemb[0]['montant']/100)+($prochainRemb[0]['commission']/100)+($prochainRemb[0]['tva']/100);
 				$nextRemb['date_echeance_emprunteur'] = $prochainRemb[0]['date_echeance_emprunteur'];
-				
-				
+
+
 			?>
             	<tr<?=($i%2 == 1?'':' class="odd"')?>>
                     <td><?=$this->projects->id_project?></td>
@@ -143,7 +143,7 @@
                     <td><?=$this->clients->email?></td>
                     <td><?=$this->companies->name?></td>
                     <td><?=$this->projects->title_bo?></td>
-                    <td><?=number_format($nextRemb['montant'],2,',',' ')?></td>
+                    <td><?=$this->ficelle->formatNumber($nextRemb['montant'])?></td>
                     <td><?=$this->dates->formatDate($nextRemb['date_echeance_emprunteur'],'d/m/Y')?></td>
                     <td><?=($this->projects->remb_auto == 1?'Non':'Oui')?></td>
                     <td align="center">
@@ -151,7 +151,7 @@
                             <img src="<?=$this->surl?>/images/admin/modif.png" alt="detail" />
                         </a>
                   	</td>
-                </tr>   
+                </tr>
             <?
 				$i++;
             }

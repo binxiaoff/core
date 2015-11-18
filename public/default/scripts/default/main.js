@@ -342,3 +342,64 @@ function validateIban(iban) {
 
     return previousModulo == 1;
 }
+
+function initAutocompleteCity()
+{
+    $('[data-autocomplete]').each(function() {
+        if($(this).data('autocomplete') == 'city' || $(this).data('autocomplete') == 'post_code' || $(this).data('autocomplete') == 'birth_city') {
+            var getBirthPlace= '';
+            if ($(this).data('autocomplete') == 'birth_city') {
+                getBirthPlace = 'birthplace/';
+            }
+            $(this).autocomplete({
+                source: add_url + '/ajax/get_cities/' + getBirthPlace,
+                minLength: 3,
+
+                search: function( event, ui ) {
+                    if ($(this).data('autocomplete') == 'birth_city'){
+                        $("#insee_birth").val('');
+                    }
+                    $(this).removeClass('LV_invalid_field');
+                },
+
+                select: function( event, ui ) {
+                    event.preventDefault();
+
+                    var myRegexp = /(.+)\s\((.+)\)/;
+                    var match = myRegexp.exec(ui.item.label);
+
+                    if(match != null) {
+                        var row = $(this).parent(".row");
+
+                        switch ($(this).data('autocomplete')) {
+                            case 'birth_city' :
+                                $(this).val(match[1])
+                                    .removeClass('LV_invalid_field')
+                                    .addClass('LV_valid_field');
+                                $("#insee_birth").val(ui.item.value);
+                                break;
+                            case 'city' :
+                                $(this).val(match[1])
+                                    .removeClass('LV_invalid_field')
+                                    .addClass('LV_valid_field');
+                                $(this).siblings("[data-autocomplete='post_code']")
+                                    .val( match[2])
+                                    .removeClass('LV_invalid_field')
+                                    .addClass('LV_valid_field');
+                                break;
+                            case 'post_code' :
+                                $(this).val( match[2])
+                                    .removeClass('LV_invalid_field')
+                                    .addClass('LV_valid_field');
+                                $(this).siblings("[data-autocomplete='city']")
+                                    .val(match[1])
+                                    .removeClass('LV_invalid_field')
+                                    .addClass('LV_valid_field');
+                                break;
+                        }
+                    }
+                }
+            });
+        }
+    });
+}

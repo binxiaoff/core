@@ -58,10 +58,14 @@ a:hover img { transition: color 300ms, background-color 300ms, opacity 300ms; -w
 
 .shell { margin:0 auto; width:960px; }
 
+.introduction {font-size:18px;}
+.introduction > span {color:#b10366; font-weight: bold;}
+.introduction + ul {padding-left:60px; margin-top:5px;}
+
 .unstyled-list { list-style:none outside none; padding:0; color:#a1a5a7; }
 .unstyled-list li { padding-bottom:14px; }
 
-.field { border:1px solid #dbdcdd; background:#f4f4f4; border-radius:3px; line-height:18px; height:18px; width:274px; padding:7px 24px 8px 12px; display:block; font-style:italic; color:#a1a5a7; }
+.field { border:1px solid #dbdcdd; background:#f4f4f4; border-radius:3px; line-height:18px; height:18px; width:271px; padding:7px 24px 8px 12px; display:block; font-style:italic; color:#a1a5a7; }
 textarea.field { height:148px; }
 
 .field-extra-tiny { width:52px; }
@@ -187,11 +191,11 @@ form p { padding-left:13px; }
 /* === Elements - Buttons === */
 .btn,
 .btn:before {
-	-webkit-transition:75ms;
-	   -moz-transition:75ms;
-	    -ms-transition:75ms;
-	     -o-transition:75ms;
-	        transition:75ms;
+    -webkit-transition:75ms;
+       -moz-transition:75ms;
+        -ms-transition:75ms;
+         -o-transition:75ms;
+            transition:75ms;
 }
 .btn { display:inline-block; height:47px; background:#b10366; border-radius:4px; border:none;padding:0 20px; position:relative; z-index:1; top:-5px; font:18px/47px 'TrendSansOne', sans-serif; letter-spacing:-0.10em; color:#fff; text-align:center; cursor:pointer; *display:inline; *zoom:1; text-transform: uppercase;}
 .btn:after { content:''; position:absolute; top:0; left:0; right:0; bottom:0; z-index:-1; background:#b10366; border-radius:4px; }
@@ -313,41 +317,41 @@ a:hover > .icon-big-facebook { background-position:-60px -90px; }
 
 .arrow-left,
 .arrow-right {
-	border-top:1em outset transparent;
-	border-bottom:1em outset transparent;
+    border-top:1em outset transparent;
+    border-bottom:1em outset transparent;
 }
 .arrow-left {
-	border-left:0 none transparent;
-	border-right-width:1em;
-	border-right-style:solid;
+    border-left:0 none transparent;
+    border-right-width:1em;
+    border-right-style:solid;
 }
 .arrow-right {
-	border-right:0 none transparent;
-	border-left-width:1em;
-	border-left-style:solid;
+    border-right:0 none transparent;
+    border-left-width:1em;
+    border-left-style:solid;
 }
 
 .arrow-top,
 .arrow-bottom {
-	border-left:1em outset transparent;
-	border-right:1em outset transparent;
+    border-left:1em outset transparent;
+    border-right:1em outset transparent;
 }
 .arrow-top {
-	border-top:0 none transparent;
-	border-bottom-width:1em;
-	border-bottom-style:solid;
+    border-top:0 none transparent;
+    border-bottom-width:1em;
+    border-bottom-style:solid;
 }
 .arrow-bottom {
-	border-bottom:0 none transparent;
-	border-top-width:1em;
-	border-top-style:solid;
+    border-bottom:0 none transparent;
+    border-top-width:1em;
+    border-top-style:solid;
 }
 
 .arrow-big { font-size:13px; }
 
 
 /* ===========================
-	#Modules
+    #Modules
 ============================ */
 
 /* === Logo === */
@@ -377,11 +381,11 @@ a:hover > .icon-big-facebook { background-position:-60px -90px; }
 
 /* === Navigation === */
 .navigation { position:absolute; top:110px; left:0; right:0; z-index:4;
-	-webkit-transition:background 300ms;
-	   -moz-transition:background 300ms;
-	    -ms-transition:background 300ms;
-	     -o-transition:background 300ms;
-	        transition:background 300ms;
+    -webkit-transition:background 300ms;
+       -moz-transition:background 300ms;
+        -ms-transition:background 300ms;
+         -o-transition:background 300ms;
+            transition:background 300ms;
 }
 .navigation .shell > ul { list-style:none outside none; padding:0; float:left; }
 
@@ -403,11 +407,11 @@ a:hover > .icon-big-facebook { background-position:-60px -90px; }
 .navigation .shell > ul > li > a,
 .navigation .shell > ul > li > a:after,
 .navigation ul ul {
-	-webkit-transition:300ms;
-	   -moz-transition:300ms;
-	    -ms-transition:300ms;
-	     -o-transition:300ms;
-	        transition:300ms;
+    -webkit-transition:300ms;
+       -moz-transition:300ms;
+        -ms-transition:300ms;
+         -o-transition:300ms;
+            transition:300ms;
 }
 
 
@@ -694,7 +698,7 @@ a:hover > .icon-big-facebook { background-position:-60px -90px; }
 
 
 /* ===========================
-	#Main Style
+    #Main Style
 ============================ */
 .wrapper { position:relative; min-height:100%; }
 
@@ -709,7 +713,7 @@ a:hover > .icon-big-facebook { background-position:-60px -90px; }
 
 
 /* ===========================
-	#popup
+    #popup
 ============================ */
 .popup { width: 625px; padding: 40px 20px; position:relative; background: #fafafa; }
 .popup a.popup-close { height: 12px; width: 12px; background: url(images/close-popup.png) no-repeat 0 0; position:absolute; top: 10px; right: 20px; font-size: 0; line-height: 0; text-indent: -4000px; }
@@ -742,7 +746,7 @@ form .row.rel { position:relative; }
 form .row.rel .euro-sign { left: 0; right: auto; }
 
 /* ===========================
-	Tabs Nav
+    Tabs Nav
 ============================ */
 
 .tabs-nav { height: 42px; margin-bottom: 25px; border-bottom: 1px solid #b10366; }
@@ -765,7 +769,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .tab-form .c2-sb-wrap { margin-bottom: 30px; }
 
 /* ===========================
-	Info Table
+    Info Table
 ============================ */
 
 .info-table table { width: 825px; }
@@ -780,7 +784,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .info-table .code-list p span { display:block; }
 
 /* ===========================
-	Year Nav
+    Year Nav
 ============================ */
 .section-c {}
 .year-nav { ,bottom: 35px; line-height: 22px; }
@@ -791,7 +795,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .year-place-holder { min-height: 265px; margin-bottom: 25px; border: 1px solid #dddddd; background:#f3f3f3; box-shadow: inset 0 0 2px #fff; }
 
 /* ===========================
-	Legends List
+    Legends List
 ============================ */
 .legends-list ul { padding: 0; }
 .legends-list li { display: inline; padding-left: 50px; font-size: 15px; line-height: 18px; color: #a1a5a7; }
@@ -813,7 +817,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .table th.narrow-th { padding-left: 17px; color: #fff; font: 11px/15px Arial; text-transform: uppercase; text-align:left; }
 
 /* ===========================
-	Project
+    Project
 ============================ */
 .page-title h1 { float:left; padding-bottom: 40px; font-size: 28px; line-height: 32px; }
 .nav-tools { padding-top: 10px; }
@@ -845,7 +849,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .project-c .info p { padding-bottom: 10px; }
 
 .stat-list { padding: 0; }
-.stat-list li { float:left; width: /*65px*/ 75px; height: 83px; padding-bottom: 10px; margin-right: 25px; list-style-type: none; background: #e6e6e6; text-align:center; color: #4d4d4d; font-weight:bold; font-size: 14px; line-height: 18px; }
+.stat-list li { float:left; width: 75px; height: 83px; padding-bottom: 10px; margin-right: 25px; list-style-type: none; background: #e6e6e6; text-align:center; color: #4d4d4d; font-weight:bold; font-size: 14px; line-height: 18px; }
 .stat-list li .i-holder { display:block; height: 33px; line-height: 33px; margin-bottom: 10px; background: #b10366; text-align:center; }
 .stat-list li span { font-size: 24px; line-height: 28px; }
 
@@ -858,12 +862,13 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .nth-table-row, .project-c .orders-table td.nth-table-row { text-align: center; background: #f7e5ef; font-size: 14px; line-height: 30px; color: #b10366; }
 
 /* ===========================
-	Sidebar
+    Sidebar
 ============================ */
 .sidebar { width: 280px; }
-.widget-price { }
 .widget-price .widget-top,
-.widget-info .widget-top { height: 72px; background: #b10366; text-align:center; font-weight:bold; line-height: 72px; color: #fff; font-size: 30px; }
+.widget-info .widget-top { background: #b10366; text-align:center; font-weight:bold; color: #fff; font-size: 24px; height: 72px; line-height: 72px; }
+
+.widget-price {}
 .widget-price .widget-top i { width: 29px; height: 25px; }
 .widget-price .widget-body,
 .widget-info .widget-body { background: #e3e4e5; color: #4d4d4d; }
@@ -882,16 +887,18 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .widget-price button.btn:after { background: #8e0252; }
 .widget-price .last-row { padding-bottom: 29px; }
 .widget-price p { padding-bottom: 0; }
-.progressBar { width: 218px; height: 11px; padding: 2px 3px; border-radius: 10px; background: #b10366; }
-.progressBar div { position: relative; display:block; height: 100%; background-color: #fff; border-radius: 5px; text-align: right; width: 0; }
-.progressBar div span { position:absolute; top: 15px; display:block; font-size: 11px; line-height: 20px; color: #b10366; font-weight:bold; }
 
-.widget-info .widget-top  { font-size: 24px; }
+.widget-info {}
+.widget-info .widget-top.two-lines { height: 65px; line-height: 30px; padding-top: 7px; }
 .widget-info .widget-body { padding: 50px 20px 40px; color: #4d4d4d; }
 .widget-info .widget-body p { padding-bottom: 30px; }
 
+.progressBar { width: 218px; height: 11px; border: 3px solid #d2d1d1; border-radius: 10px; background: #b10366; }
+.progressBar div { display:block; height: 100%; background-color: #fff; border-radius: 6px; text-align: center; }
+.progressBar div span { display:block; font-size: 11px; line-height: 11px; color: #b10366; font-weight: bold;  margin-left: 5px; }
+
 /* ===========================
-	Statistic Table
+    Statistic Table
 ============================ */
 .statistic-table { margin-bottom: 60px; }
 .statistic-table table { width: 100%; }
@@ -907,7 +914,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .statistic-tables.year-nav a { height: 41px; padding: 0 15px; line-height: 41px; font-size: 14px; font-weight:bold; }
 
 /* ===========================
-	Ex article
+    Ex article
 ============================ */
 .ex-article { padding-bottom: 20px; }
 .ex-article h3 { position: relative; padding: 0 0 10px; margin-bottom: 9px; border-bottom: 1px solid #e3e4e5; }
@@ -918,7 +925,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 
 
 /* ===========================
-	Notification
+    Notification
 ============================ */
 .natification-msg { position: relative; margin-bottom: 40px; padding: 20px 30px; background: #fbf2f7; }
 .natification-msg h3 { padding: 0; margin-bottom: 15px; font: 18px/22px Arial, sans-serif; color: #b10366; letter-spacing: 0; }
@@ -928,7 +935,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .natification-msg a.esc-btn { position:absolute; top: 12px; right: 12px; display:block; width: 12px; height: 12px; background: url(images/sprite.png) no-repeat -36px -161px; }
 
 /* ===========================
-	Dashboard
+    Dashboard
 ============================ */
 
 .dashboard .page-title { padding-bottom: 30px; }
@@ -997,7 +1004,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .unProjet .btn.multi { min-width: 90px; padding-left: 0; padding-right: 0; }
 
 /* ==========================================================================
-	#Form Manage
+    #Form Manage
 ========================================================================== */
 .form-manage .form-head { margin-bottom: 7px; }
 .form-manage .form-head p { font-size: 16px; font-weight: bold; }
@@ -1021,7 +1028,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .form-manage .form-btn { display: none; height: 30px; line-height: 30px; }
 
 /* ==========================================================================
-	#Table Manage
+    #Table Manage
 ========================================================================== */
 .table-manage table { width: 100%; border-collapse: collapse; text-align: left; table-layout: fixed; }
 
@@ -1042,27 +1049,27 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 
 
 /* ===========================
-	Chrome Issue
+    Chrome Issue
 ============================ */
 
 @media screen and (-webkit-min-device-pixel-ratio:0) {
-	.btn .icon-arrow-next, .btn .icon-arrow-prev { margin-top: 2px; }
-	.info-table .btn { line-height: 39px; }
-	.post-schedule .post-box .info .btn,
-	.register-form .coupon .btn { line-height: 41px; }
-	.widget-price button.btn,
-	.emprunto-box .btn.alone,
-	.tab .btn,
-	.register-form .btn,
-	.contact-form .btn,
-	.tc .btn  { line-height: 51px; }
-	.coupon .btn,
-	.btn-small,
-	.navigation .outnav { line-height: 38px; }
-	.tab .info-table .btn { line-height: 39px; }
-	.btn-small.multi { line-height: 15px; }
-	.btn-small.multi { font-size: 13px; }
-	.btn-stand-alone { line-height: 72px; }
+    .btn .icon-arrow-next, .btn .icon-arrow-prev { margin-top: 2px; }
+    .info-table .btn { line-height: 39px; }
+    .post-schedule .post-box .info .btn,
+    .register-form .coupon .btn { line-height: 41px; }
+    .widget-price button.btn,
+    .emprunto-box .btn.alone,
+    .tab .btn,
+    .register-form .btn,
+    .contact-form .btn,
+    .tc .btn  { line-height: 51px; }
+    .coupon .btn,
+    .btn-small,
+    .navigation .outnav { line-height: 38px; }
+    .tab .info-table .btn { line-height: 39px; }
+    .btn-small.multi { line-height: 15px; }
+    .btn-small.multi { font-size: 13px; }
+    .btn-stand-alone { line-height: 72px; }
 }
 
 @media \0screen {
