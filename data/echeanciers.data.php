@@ -121,17 +121,17 @@ class echeanciers extends echeanciers_crud
     {
         if (false === is_null($sType) && 'dashboard' == $sType) {
             $sql = "SELECT
-					SUM(e.$champ)
-				FROM
-					echeanciers e
-				INNER JOIN
-					loans l on l.id_lender = e.id_lender and l.id_loan = e.id_loan
-				INNER JOIN
-					bids b on b.id_bid = l.id_bid
-				WHERE
-					e.status = 0
-				AND e.id_lender = $id_lender
-				AND b.status = 1";
+                    SUM(e.$champ)
+                FROM
+                    echeanciers e
+                INNER JOIN
+                    loans l on l.id_lender = e.id_lender and l.id_loan = e.id_loan
+                INNER JOIN
+                    bids b on b.id_bid = l.id_bid
+                WHERE
+                    e.status = 0
+                AND e.id_lender = $id_lender
+                AND b.status = 1";
         } else {
             $sql = "SELECT SUM($champ) FROM `echeanciers` WHERE status = 0 AND id_lender = $id_lender";
         }
@@ -341,19 +341,19 @@ class echeanciers extends echeanciers_crud
     public function getSumRevenuesFiscalesByMonths($id_lender, $year)
     {
         $sql = 'SELECT
-		SUM(prelevements_obligatoires) as prelevements_obligatoires,
-		SUM(retenues_source) as retenues_source,
-		SUM(csg) as csg,
-		SUM(prelevements_sociaux) as prelevements_sociaux,
-		SUM(contributions_additionnelles) as contributions_additionnelles,
-		SUM(prelevements_solidarite) as prelevements_solidarite,
-		SUM(crds) as crds,
-		LEFT(date_echeance_reel,7) AS date
-		FROM `echeanciers`
-		WHERE status = 1
-		AND id_lender = ' . $id_lender . '
-		AND YEAR(date_echeance_reel) = ' . $year . '
-		GROUP BY LEFT(date_echeance_reel,7)';
+        SUM(prelevements_obligatoires) as prelevements_obligatoires,
+        SUM(retenues_source) as retenues_source,
+        SUM(csg) as csg,
+        SUM(prelevements_sociaux) as prelevements_sociaux,
+        SUM(contributions_additionnelles) as contributions_additionnelles,
+        SUM(prelevements_solidarite) as prelevements_solidarite,
+        SUM(crds) as crds,
+        LEFT(date_echeance_reel,7) AS date
+        FROM `echeanciers`
+        WHERE status = 1
+        AND id_lender = ' . $id_lender . '
+        AND YEAR(date_echeance_reel) = ' . $year . '
+        GROUP BY LEFT(date_echeance_reel,7)';
 
         $result = $this->bdd->query($sql);
         $res    = array();
@@ -403,19 +403,19 @@ class echeanciers extends echeanciers_crud
     public function getSumRevenuesFiscalesByYear($id_lender, $debut, $fin)
     {
         $sql = 'SELECT
-		SUM(prelevements_obligatoires) as prelevements_obligatoires,
-		SUM(retenues_source) as retenues_source,
-		SUM(csg) as csg,
-		SUM(prelevements_sociaux) as prelevements_sociaux,
-		SUM(contributions_additionnelles) as contributions_additionnelles,
-		SUM(prelevements_solidarite) as prelevements_solidarite,
-		SUM(crds) as crds,
-		YEAR(date_echeance_reel) AS date
-		FROM `echeanciers`
-		WHERE status = 1
-		AND id_lender = ' . $id_lender . '
-		AND YEAR(date_echeance_reel) >= ' . $debut . ' AND YEAR(date_echeance_reel) <= ' . $fin . '
-		GROUP BY YEAR(date_echeance_reel)';
+        SUM(prelevements_obligatoires) as prelevements_obligatoires,
+        SUM(retenues_source) as retenues_source,
+        SUM(csg) as csg,
+        SUM(prelevements_sociaux) as prelevements_sociaux,
+        SUM(contributions_additionnelles) as contributions_additionnelles,
+        SUM(prelevements_solidarite) as prelevements_solidarite,
+        SUM(crds) as crds,
+        YEAR(date_echeance_reel) AS date
+        FROM `echeanciers`
+        WHERE status = 1
+        AND id_lender = ' . $id_lender . '
+        AND YEAR(date_echeance_reel) >= ' . $debut . ' AND YEAR(date_echeance_reel) <= ' . $fin . '
+        GROUP BY YEAR(date_echeance_reel)';
 
         $result = $this->bdd->query($sql);
         $res    = array();
@@ -591,19 +591,19 @@ class echeanciers extends echeanciers_crud
     public function getEcheanceByDayAll_old($date, $statutEmprunteur = '0')
     {
         $sql = 'SELECT
-		SUM(montant) as montant,
-		SUM(capital) as capital,
-		SUM(interets) as interets,
-		SUM(commission) as commission,
-		SUM(tva) as tva,
-		SUM(prelevements_obligatoires) as prelevements_obligatoires,
-		SUM(retenues_source) as retenues_source,
-		SUM(csg) as csg,
-		SUM(prelevements_sociaux) as prelevements_sociaux,
-		SUM(contributions_additionnelles) as contributions_additionnelles,
-		SUM(prelevements_solidarite) as prelevements_solidarite,
-		SUM(crds) as crds
-		FROM `echeanciers` WHERE status_emprunteur = ' . $statutEmprunteur . ' AND LEFT(date_echeance_emprunteur_reel,10) = "' . $date . '" GROUP BY  LEFT(date_echeance_emprunteur_reel,10)';
+        SUM(montant) as montant,
+        SUM(capital) as capital,
+        SUM(interets) as interets,
+        SUM(commission) as commission,
+        SUM(tva) as tva,
+        SUM(prelevements_obligatoires) as prelevements_obligatoires,
+        SUM(retenues_source) as retenues_source,
+        SUM(csg) as csg,
+        SUM(prelevements_sociaux) as prelevements_sociaux,
+        SUM(contributions_additionnelles) as contributions_additionnelles,
+        SUM(prelevements_solidarite) as prelevements_solidarite,
+        SUM(crds) as crds
+        FROM `echeanciers` WHERE status_emprunteur = ' . $statutEmprunteur . ' AND LEFT(date_echeance_emprunteur_reel,10) = "' . $date . '" GROUP BY  LEFT(date_echeance_emprunteur_reel,10)';
 
 
         $resultat = $this->bdd->query($sql);
@@ -617,19 +617,19 @@ class echeanciers extends echeanciers_crud
     public function getEcheanceByDayAll($date, $statutEmprunteur = '0')
     {
         $sql = 'SELECT
-		SUM(montant) as montant,
-		SUM(capital) as capital,
-		SUM(interets) as interets,
-		SUM(commission) as commission,
-		SUM(tva) as tva,
-		SUM(prelevements_obligatoires) as prelevements_obligatoires,
-		SUM(retenues_source) as retenues_source,
-		SUM(csg) as csg,
-		SUM(prelevements_sociaux) as prelevements_sociaux,
-		SUM(contributions_additionnelles) as contributions_additionnelles,
-		SUM(prelevements_solidarite) as prelevements_solidarite,
-		SUM(crds) as crds
-		FROM `echeanciers` WHERE status_emprunteur = ' . $statutEmprunteur . ' AND LEFT(date_echeance_reel,10) = "' . $date . '" GROUP BY  LEFT(date_echeance_reel,10)';
+        SUM(montant) as montant,
+        SUM(capital) as capital,
+        SUM(interets) as interets,
+        SUM(commission) as commission,
+        SUM(tva) as tva,
+        SUM(prelevements_obligatoires) as prelevements_obligatoires,
+        SUM(retenues_source) as retenues_source,
+        SUM(csg) as csg,
+        SUM(prelevements_sociaux) as prelevements_sociaux,
+        SUM(contributions_additionnelles) as contributions_additionnelles,
+        SUM(prelevements_solidarite) as prelevements_solidarite,
+        SUM(crds) as crds
+        FROM `echeanciers` WHERE status_emprunteur = ' . $statutEmprunteur . ' AND LEFT(date_echeance_reel,10) = "' . $date . '" GROUP BY  LEFT(date_echeance_reel,10)';
 
 
         $resultat = $this->bdd->query($sql);
@@ -648,31 +648,31 @@ class echeanciers extends echeanciers_crud
         $anneemois = $anneemois[0] . '-' . $anneemois[1];
 
         $sql = 'SELECT
-		SUM(montant) as montant,
-		SUM(capital) as capital,
-		SUM(interets) as interets,
-		SUM(commission) as commission,
-		SUM(tva) as tva,
-		SUM(prelevements_obligatoires) as prelevements_obligatoires,
-		SUM(retenues_source) as retenues_source,
-		SUM(csg) as csg,
-		SUM(prelevements_sociaux) as prelevements_sociaux,
-		SUM(contributions_additionnelles) as contributions_additionnelles,
-		SUM(prelevements_solidarite) as prelevements_solidarite,
-		SUM(crds) as crds
-		FROM echeanciers e
-		LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
-		LEFT JOIN clients c ON l.id_client_owner = c.id_client
-		WHERE e.status_emprunteur = 1
+        SUM(montant) as montant,
+        SUM(capital) as capital,
+        SUM(interets) as interets,
+        SUM(commission) as commission,
+        SUM(tva) as tva,
+        SUM(prelevements_obligatoires) as prelevements_obligatoires,
+        SUM(retenues_source) as retenues_source,
+        SUM(csg) as csg,
+        SUM(prelevements_sociaux) as prelevements_sociaux,
+        SUM(contributions_additionnelles) as contributions_additionnelles,
+        SUM(prelevements_solidarite) as prelevements_solidarite,
+        SUM(crds) as crds
+        FROM echeanciers e
+        LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
+        LEFT JOIN clients c ON l.id_client_owner = c.id_client
+        WHERE e.status_emprunteur = 1
                 AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
-		' . ($morale != '' ? ' AND c.type = ' . $morale : '');
+        ' . ($morale != '' ? ' AND c.type = ' . $morale : '');
         if ($exonere == 1) {
             $sql .= '
-			 AND l.exonere = 1
-			 AND "' . $anneemois . '" NOT BETWEEN LEFT(l.debut_exoneration,7) AND LEFT(l.fin_exoneration,7)';
+             AND l.exonere = 1
+             AND "' . $anneemois . '" NOT BETWEEN LEFT(l.debut_exoneration,7) AND LEFT(l.fin_exoneration,7)';
         }
         $sql .= '
-		 AND LEFT(date_echeance_reel,10) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
+         AND LEFT(date_echeance_reel,10) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
 
         //echo $sql;
 
@@ -691,26 +691,26 @@ class echeanciers extends echeanciers_crud
         $anneemois = $anneemois[0] . '-' . $anneemois[1];
 
         $sql = 'SELECT
-			SUM(montant) as montant,
-			SUM(capital) as capital,
-			SUM(interets) as interets,
-			SUM(commission) as commission,
-			SUM(tva) as tva,
-			SUM(prelevements_obligatoires) as prelevements_obligatoires,
-			SUM(retenues_source) as retenues_source,
-			SUM(csg) as csg,
-			SUM(prelevements_sociaux) as prelevements_sociaux,
-			SUM(contributions_additionnelles) as contributions_additionnelles,
-			SUM(prelevements_solidarite) as prelevements_solidarite,
-			SUM(crds) as crds
-			FROM echeanciers e
-			LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
-			LEFT JOIN clients c ON l.id_client_owner = c.id_client
-			WHERE e.status_emprunteur = 1
+            SUM(montant) as montant,
+            SUM(capital) as capital,
+            SUM(interets) as interets,
+            SUM(commission) as commission,
+            SUM(tva) as tva,
+            SUM(prelevements_obligatoires) as prelevements_obligatoires,
+            SUM(retenues_source) as retenues_source,
+            SUM(csg) as csg,
+            SUM(prelevements_sociaux) as prelevements_sociaux,
+            SUM(contributions_additionnelles) as contributions_additionnelles,
+            SUM(prelevements_solidarite) as prelevements_solidarite,
+            SUM(crds) as crds
+            FROM echeanciers e
+            LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
+            LEFT JOIN clients c ON l.id_client_owner = c.id_client
+            WHERE e.status_emprunteur = 1
                         AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
-			AND c.type = 1
-			AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = l.id_lender_account AND LEFT(lih.added,10) <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0
-			AND LEFT(date_echeance_reel,10) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
+            AND c.type = 1
+            AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = l.id_lender_account AND LEFT(lih.added,10) <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0
+            AND LEFT(date_echeance_reel,10) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
 
 
         $resultat = $this->bdd->query($sql);
@@ -727,42 +727,6 @@ class echeanciers extends echeanciers_crud
         $anneemois = $anneemois[0] . '-' . $anneemois[1];
 
         $sql = 'SELECT
-			SUM(montant) as montant,
-			SUM(capital) as capital,
-			SUM(interets) as interets,
-			SUM(commission) as commission,
-			SUM(tva) as tva,
-			SUM(prelevements_obligatoires) as prelevements_obligatoires,
-			SUM(retenues_source) as retenues_source,
-			SUM(csg) as csg,
-			SUM(prelevements_sociaux) as prelevements_sociaux,
-			SUM(contributions_additionnelles) as contributions_additionnelles,
-			SUM(prelevements_solidarite) as prelevements_solidarite,
-			SUM(crds) as crds
-			FROM echeanciers e
-			LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
-			LEFT JOIN clients c ON l.id_client_owner = c.id_client
-			WHERE e.status_emprunteur = 1
-                        AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
-			' . ($morale != '' ? ' AND c.type = ' . $morale : '');
-
-        if ($exonere != '') {
-            if ($exonere == '1') {
-                $sql .= '
-					 AND l.exonere = 1
-					 AND "' . $anneemois . '" BETWEEN LEFT(l.debut_exoneration,7) AND LEFT(l.fin_exoneration,7)';
-            } else {
-                $sql .= ' AND l.exonere = ' . $exonere;
-            }
-        }
-
-        $sql .= '
-			AND LEFT(date_echeance_reel,10) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
-
-
-        /*}
-            else{
-            $sql='SELECT
             SUM(montant) as montant,
             SUM(capital) as capital,
             SUM(interets) as interets,
@@ -778,8 +742,22 @@ class echeanciers extends echeanciers_crud
             FROM echeanciers e
             LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
             LEFT JOIN clients c ON l.id_client_owner = c.id_client
-            WHERE e.status_emprunteur = 1'.($exonere != ''?' AND l.exonere = '.$exonere:'').($morale != ''?' AND c.type = '.$morale:'').' AND LEFT(date_echeance_reel,10) BETWEEN "'.$date1.'" AND "'.$date2.'"';
-        }*/
+            WHERE e.status_emprunteur = 1
+                        AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
+            ' . ($morale != '' ? ' AND c.type = ' . $morale : '');
+
+        if ($exonere != '') {
+            if ($exonere == '1') {
+                $sql .= '
+                     AND l.exonere = 1
+                     AND "' . $anneemois . '" BETWEEN LEFT(l.debut_exoneration,7) AND LEFT(l.fin_exoneration,7)';
+            } else {
+                $sql .= ' AND l.exonere = ' . $exonere;
+            }
+        }
+
+        $sql .= '
+            AND LEFT(date_echeance_reel,10) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
 
 
         $resultat = $this->bdd->query($sql);
@@ -801,18 +779,6 @@ class echeanciers extends echeanciers_crud
         $sql = 'UPDATE echeanciers SET date_echeance = "' . $date_echeance . '", date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE status_emprunteur = 0 AND id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" ';
         $this->bdd->query($sql);
     }
-
-    /*// mise à jour remb exoneration preteur
-    function update_prelevements_obligatoires($id_lender,$exonere,$prelevements_obligatoires='')
-    {
-        if($exonere == 1){
-            $sql='UPDATE echeanciers SET prelevements_obligatoires = 0, updated = "'.date('Y-m-d H:i:s').'" WHERE id_lender = '.$id_lender.' AND status = 0';
-        }
-        elseif($exonere == 0 && $prelevements_obligatoires != ''){
-            $sql='UPDATE echeanciers SET prelevements_obligatoires = ROUND((interets/100) * '.$prelevements_obligatoires.',2), updated = "'.date('Y-m-d H:i:s').'" WHERE id_lender = '.$id_lender.' AND status = 0';
-        }
-        $this->bdd->query($sql);
-    }*/
 
     // mise à jour remb exoneration preteur
     public function update_prelevements_obligatoires($id_lender, $exonere, $prelevements_obligatoires = '', $debut = '', $fin = '')
@@ -842,16 +808,16 @@ class echeanciers extends echeanciers_crud
 
         if ($etranger > 0) {
             $sql = '
-			UPDATE echeanciers SET
-				prelevements_obligatoires = 0,
-				retenues_source = ROUND((interets/100) * ' . $tabImpo['retenues_source'] . ',2),
-				csg = 0,
-				prelevements_sociaux = 0,
-				contributions_additionnelles = 0,
-				prelevements_solidarite = 0,
-				crds = 0,
-				updated = "' . date('Y-m-d H:i:s') . '"
-			WHERE id_lender = ' . $id_lender . ' AND status = 0';
+            UPDATE echeanciers SET
+                prelevements_obligatoires = 0,
+                retenues_source = ROUND((interets/100) * ' . $tabImpo['retenues_source'] . ',2),
+                csg = 0,
+                prelevements_sociaux = 0,
+                contributions_additionnelles = 0,
+                prelevements_solidarite = 0,
+                crds = 0,
+                updated = "' . date('Y-m-d H:i:s') . '"
+            WHERE id_lender = ' . $id_lender . ' AND status = 0';
 
             $this->bdd->query($sql);
         } else {
@@ -867,16 +833,16 @@ class echeanciers extends echeanciers_crud
             $prelevements_obligatoires = 'ROUND((interets/100) * ' . $tabImpo['prelevements_obligatoires'] . ',2)';
 
             $sql = '
-			UPDATE echeanciers SET
-				prelevements_obligatoires = ' . $prelevements_obligatoires . ',
-				retenues_source = 0,
-				csg = ROUND((interets/100) * ' . $tabImpo['csg'] . ',2),
-				prelevements_sociaux = ROUND((interets/100) * ' . $tabImpo['prelevements_sociaux'] . ',2),
-				contributions_additionnelles = ROUND((interets/100) * ' . $tabImpo['contributions_additionnelles'] . ',2),
-				prelevements_solidarite = ROUND((interets/100) * ' . $tabImpo['prelevements_solidarite'] . ',2),
-				crds = ROUND((interets/100) * ' . $tabImpo['crds'] . ',2),
-				updated = "' . date('Y-m-d H:i:s') . '"
-			WHERE id_lender = ' . $id_lender . ' AND status = 0';
+            UPDATE echeanciers SET
+                prelevements_obligatoires = ' . $prelevements_obligatoires . ',
+                retenues_source = 0,
+                csg = ROUND((interets/100) * ' . $tabImpo['csg'] . ',2),
+                prelevements_sociaux = ROUND((interets/100) * ' . $tabImpo['prelevements_sociaux'] . ',2),
+                contributions_additionnelles = ROUND((interets/100) * ' . $tabImpo['contributions_additionnelles'] . ',2),
+                prelevements_solidarite = ROUND((interets/100) * ' . $tabImpo['prelevements_solidarite'] . ',2),
+                crds = ROUND((interets/100) * ' . $tabImpo['crds'] . ',2),
+                updated = "' . date('Y-m-d H:i:s') . '"
+            WHERE id_lender = ' . $id_lender . ' AND status = 0';
 
             $this->bdd->query($sql);
 
@@ -900,16 +866,16 @@ class echeanciers extends echeanciers_crud
 
         if ($etranger > 0) {
             $sql = '
-			UPDATE echeanciers SET
-				prelevements_obligatoires = 0,
-				retenues_source = ROUND((interets/100) * ' . $tabImpo['retenues_source'] . ',2),
-				csg = 0,
-				prelevements_sociaux = 0,
-				contributions_additionnelles = 0,
-				prelevements_solidarite = 0,
-				crds = 0,
-				updated = "' . date('Y-m-d H:i:s') . '"
-			WHERE id_lender = ' . $id_lender . ' AND status = 0';
+            UPDATE echeanciers SET
+                prelevements_obligatoires = 0,
+                retenues_source = ROUND((interets/100) * ' . $tabImpo['retenues_source'] . ',2),
+                csg = 0,
+                prelevements_sociaux = 0,
+                contributions_additionnelles = 0,
+                prelevements_solidarite = 0,
+                crds = 0,
+                updated = "' . date('Y-m-d H:i:s') . '"
+            WHERE id_lender = ' . $id_lender . ' AND status = 0';
         } else {
             if ($exonere == 1) {
                 $prelevements_obligatoires = 0;
@@ -918,16 +884,16 @@ class echeanciers extends echeanciers_crud
             }
 
             $sql = '
-			UPDATE echeanciers SET
-				prelevements_obligatoires = ' . $prelevements_obligatoires . ',
-				retenues_source = 0,
-				csg = ROUND((interets/100) * ' . $tabImpo['csg'] . ',2),
-				prelevements_sociaux = ROUND((interets/100) * ' . $tabImpo['prelevements_sociaux'] . ',2),
-				contributions_additionnelles = ROUND((interets/100) * ' . $tabImpo['contributions_additionnelles'] . ',2),
-				prelevements_solidarite = ROUND((interets/100) * ' . $tabImpo['prelevements_solidarite'] . ',2),
-				crds = ROUND((interets/100) * ' . $tabImpo['crds'] . ',2),
-				updated = "' . date('Y-m-d H:i:s') . '"
-			WHERE id_lender = ' . $id_lender . ' AND status = 0';
+            UPDATE echeanciers SET
+                prelevements_obligatoires = ' . $prelevements_obligatoires . ',
+                retenues_source = 0,
+                csg = ROUND((interets/100) * ' . $tabImpo['csg'] . ',2),
+                prelevements_sociaux = ROUND((interets/100) * ' . $tabImpo['prelevements_sociaux'] . ',2),
+                contributions_additionnelles = ROUND((interets/100) * ' . $tabImpo['contributions_additionnelles'] . ',2),
+                prelevements_solidarite = ROUND((interets/100) * ' . $tabImpo['prelevements_solidarite'] . ',2),
+                crds = ROUND((interets/100) * ' . $tabImpo['crds'] . ',2),
+                updated = "' . date('Y-m-d H:i:s') . '"
+            WHERE id_lender = ' . $id_lender . ' AND status = 0';
         }
         $this->bdd->query($sql);
     }
@@ -943,15 +909,15 @@ class echeanciers extends echeanciers_crud
         }
 
         $sql = '
-		SELECT
-			id_echeancier,
-			id_lender,
-			id_project,
-			ROUND(((ROUND((montant/100),2)) - prelevements_obligatoires - retenues_source - csg - prelevements_sociaux - contributions_additionnelles - prelevements_solidarite - crds),2) as rembNet,
-		ROUND((prelevements_obligatoires + retenues_source + csg + prelevements_sociaux + contributions_additionnelles + prelevements_solidarite + crds),2) as etat,
-		status_email_remb,
-		status
-		FROM `echeanciers`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        SELECT
+            id_echeancier,
+            id_lender,
+            id_project,
+            ROUND(((ROUND((montant/100),2)) - prelevements_obligatoires - retenues_source - csg - prelevements_sociaux - contributions_additionnelles - prelevements_solidarite - crds),2) as rembNet,
+        ROUND((prelevements_obligatoires + retenues_source + csg + prelevements_sociaux + contributions_additionnelles + prelevements_solidarite + crds),2) as etat,
+        status_email_remb,
+        status
+        FROM `echeanciers`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -964,20 +930,20 @@ class echeanciers extends echeanciers_crud
     public function requete_revenus($id_project)
     {
         $sql = '
-			SELECT
-				e.id_lender,
-				le.id_client_owner,
-				le.id_company_owner,
-				e.capital,
-				e.interets,
-				e.retenues_source,
-				e.prelevements_obligatoires,
-				(SELECT lih.resident_etranger FROM lenders_imposition_history lih WHERE lih.added <= e.date_echeance_reel AND lih.id_lender = e.id_lender ORDER BY lih.added DESC LIMIT 1) as resident,
-				e.date_echeance_reel
-			FROM echeanciers e
-			LEFT JOIN lenders_accounts le ON le.id_lender_account = e.id_lender
-			WHERE e.status = 1 AND e.id_project = ' . $id_project . '
-			ORDER BY e.date_echeance';
+            SELECT
+                e.id_lender,
+                le.id_client_owner,
+                le.id_company_owner,
+                e.capital,
+                e.interets,
+                e.retenues_source,
+                e.prelevements_obligatoires,
+                (SELECT lih.resident_etranger FROM lenders_imposition_history lih WHERE lih.added <= e.date_echeance_reel AND lih.id_lender = e.id_lender ORDER BY lih.added DESC LIMIT 1) as resident,
+                e.date_echeance_reel
+            FROM echeanciers e
+            LEFT JOIN lenders_accounts le ON le.id_lender_account = e.id_lender
+            WHERE e.status = 1 AND e.id_project = ' . $id_project . '
+            ORDER BY e.date_echeance';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -992,18 +958,18 @@ class echeanciers extends echeanciers_crud
     {
 
         $sql = '
-		SELECT
-			e.id_project,
-			e.ordre,
-			e.date_echeance,
-			e.status,
-			e.date_echeance_emprunteur,
-			e.status_emprunteur,
-			(SELECT ROUND(SUM(ee.montant+ee.commission+ee.tva)/100,2) FROM echeanciers_emprunteur ee WHERE e.id_project = ee.id_project AND e.ordre = ee.ordre) as montant_emprunteur
-		FROM echeanciers e
-		WHERE LEFT(e.date_echeance,10) = "' . $date . '" AND status_emprunteur = 0
-		GROUP BY e.id_project
-		ORDER BY e.ordre';
+        SELECT
+            e.id_project,
+            e.ordre,
+            e.date_echeance,
+            e.status,
+            e.date_echeance_emprunteur,
+            e.status_emprunteur,
+            (SELECT ROUND(SUM(ee.montant+ee.commission+ee.tva)/100,2) FROM echeanciers_emprunteur ee WHERE e.id_project = ee.id_project AND e.ordre = ee.ordre) as montant_emprunteur
+        FROM echeanciers e
+        WHERE LEFT(e.date_echeance,10) = "' . $date . '" AND status_emprunteur = 0
+        GROUP BY e.id_project
+        ORDER BY e.ordre';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -1017,21 +983,21 @@ class echeanciers extends echeanciers_crud
     public function requeteGetecheancePrelevement()
     {
         $sql = "SELECT
-				la.id_client_owner as id_client,
-				la.id_lender_account,
-				la.updated,
-				la.debut_exoneration,
-				la.fin_exoneration,
-				e.id_echeancier,
-				e.date_echeance,
-				e.date_echeance_reel,
-				e.status,
-				e.interets,
-				e.prelevements_obligatoires,
-				e.id_project
-			FROM lenders_accounts la
-			LEFT JOIN echeanciers e ON e.id_lender = la.id_lender_account
-			WHERE LEFT(la.updated,10) >= '2014-11-28' AND la.exonere = 1 AND la.debut_exoneration >= '2014-11-28' AND e.status = 1 AND LEFT(e.updated,10) >= '2014-11-28' AND la.debut_exoneration = '2015-01-01' AND LEFT(e.date_echeance_reel,10) >= '2014-12-01' ORDER BY e.date_echeance_reel";
+                la.id_client_owner as id_client,
+                la.id_lender_account,
+                la.updated,
+                la.debut_exoneration,
+                la.fin_exoneration,
+                e.id_echeancier,
+                e.date_echeance,
+                e.date_echeance_reel,
+                e.status,
+                e.interets,
+                e.prelevements_obligatoires,
+                e.id_project
+            FROM lenders_accounts la
+            LEFT JOIN echeanciers e ON e.id_lender = la.id_lender_account
+            WHERE LEFT(la.updated,10) >= '2014-11-28' AND la.exonere = 1 AND la.debut_exoneration >= '2014-11-28' AND e.status = 1 AND LEFT(e.updated,10) >= '2014-11-28' AND la.debut_exoneration = '2015-01-01' AND LEFT(e.date_echeance_reel,10) >= '2014-12-01' ORDER BY e.date_echeance_reel";
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -1087,22 +1053,7 @@ class echeanciers extends echeanciers_crud
         return $result;
     }
 
-    // retourne la somme total a rembourser pour un porjet
-    public function get_liste_preteur_on_project_old($id_project = '')
-    {
-        $sql = 'SELECT id_lender FROM `echeanciers`
-                      WHERE id_project = ' . $id_project . '
-                      GROUP BY id_lender';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-    // retourne la somme total a rembourser pour un porjet
+     // retourne la somme total a rembourser pour un porjet
     public function reste_a_payer_ra($id_project = '', $ordre = '')
     {
         $sql = 'SELECT SUM(capital) FROM `echeanciers`
