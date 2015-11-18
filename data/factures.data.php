@@ -30,6 +30,11 @@
 class factures extends factures_crud
 {
     public function __construct($bdd, $params = '')
+
+    const TYPE_COMMISSION_FINANCEMENT = 1;
+    const TYPE_COMMISSION_REMBOURSEMENT = 2;
+
+    public function __construct($bdd, $params = '')
     {
         parent::factures($bdd, $params);
     }
@@ -71,6 +76,8 @@ class factures extends factures_crud
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
+    public function fa()
+    public function selectEcheancesRembAndNoFacture()
     public function selectEcheancesRembAndNoFacture()
     {
         $sql = '
