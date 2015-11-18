@@ -809,6 +809,7 @@ class depot_de_dossierController extends bootstrap
                 $this->bDisplayContact = true;
                 $this->sMessage        = $this->lng['depot-de-dossier-fin']['analyse'];
                 break;
+            case \projects_status::COMPLETUDE_ETAPE_3:
             case \projects_status::A_TRAITER:
             case \projects_status::EN_ATTENTE_PIECES:
                 if (1 == $this->projects->process_fast) {
