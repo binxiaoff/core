@@ -991,7 +991,7 @@ class depot_de_dossierController extends bootstrap
                 }
                 break;
             case \projects_status::COMPLETUDE_ETAPE_3:
-                if ($this->projects->process_fast == 1 && $sPage !== self::PAGE_NAME_FILES) {
+                if ($this->projects->process_fast == 1 && false === in_array($sPage, array(self::PAGE_NAME_END, self::PAGE_NAME_FILES))) {
                     $this->redirect(self::PAGE_NAME_FILES);
                 } elseif ($this->projects->process_fast == 0 && $sPage !== self::PAGE_NAME_STEP_3) {
                     $this->redirect(self::PAGE_NAME_STEP_3);
