@@ -59,13 +59,13 @@
                     <div class="account-data">
                         <div class="row">
                             <span class="small info"><?=$this->lng['espace-emprunteur']['vos-informations-personnelles']?></span>
-                            <span class="small content">Prénom</span>
-                            <span class="small content">Nom</span>
-                            <span class="small content">Titre</span>
+                            <span class="small content"><?=$this->client->prenom?></span>
+                            <span class="small content"><?=$this->client->nom?></span>
+                            <span class="small content"><?=$this->client->function?></span>
                         </div>
                         <div class="row">
-                            <span class="medium content">Portable</span>
-                            <span class="medium content">Email de contact</span>
+                            <span class="medium content"><?=$this->client->mobile?></span>
+                            <span class="medium content"><?=$this->client->email?></span>
                         </div>
                         <div class="row">
                             <span
@@ -73,21 +73,21 @@
                         </div>
                         <div class="row">
                             <span class="small info" style="height: 200px;"><?=$this->lng['espace-emprunteur']['coordonnes-de-votre-entreprise']?></span>
-                            <span class="medium content">SIREN</span>
+                            <span class="medium content"><?=$this->company->siren?></span>
                         </div>
                         <div class="row">
-                            <span class="large content">Raison sociale</span>
+                            <span class="large content"><?=$this->company->name?></span>
                         </div>
                         <div class="row">
-                            <span class="large content">Adresse</span>
+                            <span class="large content"><?=$this->company->adresse1?></span>
                         </div>
                         <div class="row">
-                            <span class="medium content">CP</span>
-                            <span class="medium content">Ville</span>
+                            <span class="medium content"><?=$this->company->zip?></span>
+                            <span class="medium content"><?=$this->company->city?></span>
                         </div>
                         <div class="row">
-                            <span class="medium content">Téléphone société</span>
-                            <span class="medium content">Email facturation</span>
+                            <span class="medium content"><?=$this->company->phone?></span>
+                            <span class="medium content"><?=$this->company->email_facture?></span>
                         </div>
                     </div>
                     <div class="clear" style="clear: both"></div>
@@ -104,11 +104,11 @@
                     <div class="row row-bank" >
                         <div class="row" style="float: left;">
                             <span class="small info"><?=$this->lng['espace-emprunteur']['votre-rib']?></span>
-                            <span class="medium content">BIC</span>
+                            <span class="medium content"><?=$this->company->bic?></span>
                         </div>
                         <div class="row" style="float: left;">
                             <span class="small info">&nbsp;</span>
-                            <span class="large content">IBAN</span>
+                            <span class="large content"><?=$this->company->iban?></span>
                         </div>
                         <div class="row" style="float: left;">
                             &nbsp;
