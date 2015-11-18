@@ -29,33 +29,12 @@
 class companies extends companies_crud
 {
 
-    function companies($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::companies($bdd, $params);
     }
 
-    function get($id, $field = 'id_company')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_company')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -73,7 +52,7 @@ class companies extends companies_crud
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -85,10 +64,51 @@ class companies extends companies_crud
         return (int)($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id, $field = 'id_company')
+    public function exist($id, $field = 'id_company')
     {
         $sql    = 'SELECT * FROM `companies` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
+    }
+
+    /**
+     * Selects all projects of a company which have the specified status
+     * @param int|null  $iCompanyId
+     * @param array     $aStatus
+     * @return array
+     */
+    public function getProjectsForCompany($iCompanyId = null, $aStatus)
+    {
+        if (null === $iCompanyId) {
+            $iCompanyId = $this->id_company;
+        }
+
+        if (is_array($aStatus)) {
+            $sStatus = implode(",", $aStatus);
+        } else {
+            $sStatus = $aStatus;
+        }
+
+        $sql    = 'SELECT
+                      p.*,
+                      ps.status as project_status
+                  FROM
+                      projects p
+                      INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
+                      INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
+                      INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+                  WHERE
+                      p.id_company = '.$iCompanyId.'
+                      AND ps.status IN ('.$sStatus.')';
+
+
+        $resultat = $this->bdd->query($sql);
+        $aProjects   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $aProjects[] = $record;
+        }
+        return $aProjects;
+
+
     }
 }
