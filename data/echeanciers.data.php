@@ -1024,7 +1024,7 @@ class echeanciers extends echeanciers_crud
         return $result;
     }
 
-    // retourne la somme total a rembourser pour un porjet
+    // retourne la somme total a rembourser pour un projet
     public function getSumRestanteARembByProject_only($id_project = '', $date_debut = "")
     {
         $sql = 'SELECT SUM(capital) FROM `echeanciers`
@@ -1038,7 +1038,7 @@ class echeanciers extends echeanciers_crud
     }
 
 
-    // retourne la somme total a rembourser pour un porjet
+    // retourne la somme total a rembourser pour un projet
     public function get_liste_preteur_on_project($id_project = '')
     {
         $sql = 'SELECT * FROM `echeanciers`
@@ -1053,7 +1053,7 @@ class echeanciers extends echeanciers_crud
         return $result;
     }
 
-     // retourne la somme total a rembourser pour un porjet
+     // retourne la somme total a rembourser pour un projet
     public function reste_a_payer_ra($id_project = '', $ordre = '')
     {
         $sql = 'SELECT SUM(capital) FROM `echeanciers`
