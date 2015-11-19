@@ -893,9 +893,9 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .widget-info .widget-body { padding: 50px 20px 40px; color: #4d4d4d; }
 .widget-info .widget-body p { padding-bottom: 30px; }
 
-.progressBar { height: 11px; border: 3px solid #d2d1d1; border-radius: 8px; background: #d2d1d1; }
-.progressBar div { width:0px; display:block; height: 100%; background-color: #ffffff; border-radius: 6px; text-align: center; }
-.progressBar div span { display:block; font-size: 11px; line-height: 11px; color: #b10366; font-weight: bold;  margin-left: 5px; }
+.progressBar { width: 218px; height: 11px; padding: 2px 3px; border-radius: 10px; background: #b10366; }
+.progressBar div { position: relative; display:block; height: 100%; background-color: #fff; border-radius: 5px; text-align: right; width: 0; }
+.progressBar div span { position:absolute; top: 15px; display:block; font-size: 11px; line-height: 20px; color: #b10366; font-weight:bold; }
 
 /* ===========================
     Statistic Table
