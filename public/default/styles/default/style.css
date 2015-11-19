@@ -30,7 +30,6 @@ ul p , ol p { padding:0; color:#a1a5a7; }
 .lt-ie10 ul p,
 .lt-ie10 ol p { display:inline; }
 
-
 input, textarea, select { font-size:14px; font-family:'Arial', sans-serif; }
 input[type="submit"], button { cursor:pointer; overflow:visible; }
 fieldset { border:0 none; }
@@ -43,6 +42,10 @@ a img { transition: color 1000ms, background-color 1000ms, opacity 1000ms; -webk
 a:hover,
 a:hover img { transition: color 300ms, background-color 300ms, opacity 300ms; -webkit-transition: color 300ms, background-color 300ms, opacity 300ms;}
 
+.show-scrollbar ::-webkit-scrollbar {-webkit-appearance: none;}
+.show-scrollbar ::-webkit-scrollbar:vertical {width: 11px;}
+.show-scrollbar ::-webkit-scrollbar-thumb {border-radius: 8px; background-color: rgba(0, 0, 0, .5); border: 2px solid #f4f4f4; /* should match background, can't be transparent */}
+.show-scrollbar ::-webkit-scrollbar-track {background-color: transparent; border-radius: 8px;}
 
 /* === Helper Classes === */
 .notext { text-indent:100%; white-space:nowrap; overflow:hidden; }

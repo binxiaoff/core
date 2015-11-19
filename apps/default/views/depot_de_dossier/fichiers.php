@@ -18,7 +18,7 @@
                     <div class="row-title"><?= $this->lng['espace-emprunteur']['type-de-document'] ?></div>
                     <div class="row-title"><?= $this->lng['espace-emprunteur']['champs-dupload'] ?></div>
                 </div>
-                <div class="row row-upload">
+                <div class="row row-upload show-scrollbar">
                     <select class="custom-select required field field-large">
                         <option value=""><?= $this->lng['espace-emprunteur']['selectionnez-un-document'] ?></option>
                         <?php foreach ($this->aAttachmentTypes as $aAttachmentType) { ?>
