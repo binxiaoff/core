@@ -338,8 +338,8 @@ class universignController extends bootstrap
                 $clients->get($clients_mandats->id_client, 'id_client');
 
                 $uni_url     = $this->uni_url; // address of the universign server with basic authentication
-                $firstname   = utf8_decode($clients->prenom); // the signatory first name
-                $lastname    = utf8_decode($clients->nom); // the signatory last name
+                $firstname   = $clients->prenom; // the signatory first name
+                $lastname    = $clients->nom; // the signatory last name
                 $phoneNumber = str_replace(' ', '', $clients->telephone); // the signatory mobile phone number
                 $email       = $clients->email; // the signatory mobile phone number
                 $doc_name    = $this->path . 'protected/pdf/mandat/' . $clients_mandats->name; // the name of the PDF document to sign
@@ -462,8 +462,8 @@ class universignController extends bootstrap
 
                 //used variables
                 $uni_url      = $this->uni_url; // address of the universign server with basic authentication
-                $firstname    = utf8_decode($clients->prenom); // the signatory first name
-                $lastname     = utf8_decode($clients->nom); // the signatory last name
+                $firstname    = $clients->prenom; // the signatory first name
+                $lastname     = $clients->nom; // the signatory last name
                 $organization = $companies->name;
                 $phoneNumber  = str_replace(' ', '', $clients->telephone); // the signatory mobile phone number
                 $email        = $clients->email; // the signatory mobile phone number
