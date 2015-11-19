@@ -756,7 +756,7 @@ class pdfController extends bootstrap
                 $this->transactions->get($this->projects->id_project, 'type_transaction = 9 AND status = 1 AND etat = 1 AND id_project');
 
                 $this->dateRemb    = $histoRemb[0]['added'];
-                $this->num_facture = 'FR-E' . date('Ymd', strtotime($this->dateRemb)) . str_pad($this->compteur_factures->compteurJournalier($this->projects->id_project), 5, "0", STR_PAD_LEFT);
+                $this->num_facture = 'FR-E' . date('Ymd', strtotime($this->dateRemb)) . str_pad($this->compteur_factures->compteurJournalier($this->projects->id_project, $this->dateRemb), 5, "0", STR_PAD_LEFT);
                 $this->ttc         = ($this->transactions->montant_unilend / 100);
                 $cm                = ($this->tva + 1); // CM
                 $this->ht          = ($this->ttc / $cm); // HT
@@ -835,12 +835,11 @@ class pdfController extends bootstrap
         if ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
             $uneEcheancePreteur       = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . $iOrdre, '', 0, 1);
             $this->date_echeance_reel = $uneEcheancePreteur[0]['date_echeance_reel'];
-            $time_date_echeance_reel  = strtotime($this->date_echeance_reel);
 
             if ($this->oEcheanciersEmprunteur->get($this->projects->id_project, 'ordre = ' . $iOrdre . '  AND id_project')) {
-                $compteur = $this->compteur_factures->compteurJournalier($this->projects->id_project);
+                $compteur = $this->compteur_factures->compteurJournalier($this->projects->id_project, $this->date_echeance_reel);
 
-                $this->num_facture = 'FR-E' . date('Ymd', $time_date_echeance_reel) . str_pad($compteur, 5, "0", STR_PAD_LEFT);
+                $this->num_facture = 'FR-E' . date('Ymd', strtotime($this->date_echeance_reel)) . str_pad($compteur, 5, "0", STR_PAD_LEFT);
                 $this->ht          = ($this->oEcheanciersEmprunteur->commission / 100);
                 $this->taxes       = ($this->oEcheanciersEmprunteur->tva / 100);
                 $this->ttc         = ($this->ht + $this->taxes);
