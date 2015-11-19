@@ -236,8 +236,6 @@ class cronController extends bootstrap
                                     $this->transactions->transaction      = 2; // transaction virtuelle
                                     $this->transactions->id_transaction   = $this->transactions->create();
 
-                                    $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : the transaction (' . $this->transactions->id_transaction . ') has been created for partial bid (' . $e['id_bid'] . ')');
-
                                     $this->wallets_lines->id_lender                = $e['id_lender_account'];
                                     $this->wallets_lines->type_financial_operation = 20;
                                     $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
@@ -248,16 +246,12 @@ class cronController extends bootstrap
                                     $this->wallets_lines->id_project               = $e['id_project'];
                                     $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
 
-                                    $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : the wallet line (' . $this->wallets_lines->id_wallet_line . ') has been created for partial bid (' . $e['id_bid'] . ')');
-
                                     $this->notifications->type       = 1; // rejet
                                     $this->notifications->id_lender  = $e['id_lender_account'];
                                     $this->notifications->id_project = $e['id_project'];
                                     $this->notifications->amount     = $montant_a_crediter;
                                     $this->notifications->id_bid     = $e['id_bid'];
                                     $this->notifications->create();
-
-                                    $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : the notification (' . $this->notifications->id_notification . ') has been created for partial bid (' . $e['id_bid'] . ')');
 
                                     $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
                                     $this->clients_gestion_mails_notif->id_notif        = 3; // offre refusée
@@ -266,8 +260,6 @@ class cronController extends bootstrap
                                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                                     $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
                                     $this->clients_gestion_mails_notif->create();
-
-                                    $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : the client gestion mail notif (' . $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif . ') has been created for partial bid (' . $e['id_bid'] . ')');
 
                                     $sumOffres = $this->offres_bienvenues_details->sum('id_client = ' . $this->lenders_accounts->id_client_owner . ' AND id_bid = ' . $e['id_bid'], 'montant');
 
@@ -284,8 +276,6 @@ class cronController extends bootstrap
                                             $this->offres_bienvenues_details->type               = 2;
 
                                             $this->offres_bienvenues_details->create();
-
-                                            $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : A new line offres de bienvenues (' . $this->offres_bienvenues_details->id_offre_bienvenue_detail . ') has been created for partial bid (' . $e['id_bid'] . ')');
                                         }
                                     }
                                 }
@@ -333,8 +323,6 @@ class cronController extends bootstrap
                                 $this->transactions->transaction      = 2; // transaction virtuelle
                                 $this->transactions->id_transaction   = $this->transactions->create();
 
-                                $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : the transaction (' . $this->transactions->id_transaction . ') has been created for unaccepted bid (' . $e['id_bid'] . ')');
-
                                 $this->wallets_lines->id_lender                = $e['id_lender_account'];
                                 $this->wallets_lines->type_financial_operation = 20;
                                 $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
@@ -345,8 +333,6 @@ class cronController extends bootstrap
                                 $this->wallets_lines->amount                   = $e['amount'];
                                 $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
 
-                                $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : the wallet line (' . $this->wallets_lines->id_wallet_line . ') has been created for unaccepted bid (' . $e['id_bid'] . ')');
-
                                 $this->notifications->type       = 1; // rejet
                                 $this->notifications->id_lender  = $e['id_lender_account'];
                                 $this->notifications->id_project = $e['id_project'];
@@ -354,16 +340,12 @@ class cronController extends bootstrap
                                 $this->notifications->id_bid     = $e['id_bid'];
                                 $this->notifications->create();
 
-                                $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : the notifications (' . $this->notifications->id_notification . ') has been created for unaccepted bid (' . $e['id_bid'] . ')');
-
                                 $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
                                 $this->clients_gestion_mails_notif->id_notif        = 3; // offre refusée
                                 $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
                                 $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                                 $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
                                 $this->clients_gestion_mails_notif->create();
-
-                                $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : the client gestion mail notif (' . $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif . ') has been created for unaccepted bid (' . $e['id_bid'] . ')');
 
                                 $sumOffres = $this->offres_bienvenues_details->sum('id_client = ' . $this->lenders_accounts->id_client_owner . ' AND id_bid = ' . $e['id_bid'], 'montant');
                                 if ($sumOffres > 0) {
@@ -381,8 +363,6 @@ class cronController extends bootstrap
                                     $this->offres_bienvenues_details->type               = 2;
 
                                     $this->offres_bienvenues_details->create();
-
-                                    $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : A new line offres de bienvenues (' . $this->offres_bienvenues_details->id_offre_bienvenue_detail . ') has been created for unaccepted bid (' . $e['id_bid'] . ')');
                                 }
                             }
                         }
@@ -656,8 +636,6 @@ class cronController extends bootstrap
                         $this->transactions->transaction      = 2; // transaction virtuelle
                         $this->transactions->id_transaction   = $this->transactions->create();
 
-                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : the transaction (' . $this->transactions->id_transaction . ') has been created for KO bid (' . $e['id_bid'] . ')');
-
                         $this->wallets_lines->id_lender                = $e['id_lender_account'];
                         $this->wallets_lines->type_financial_operation = 20;
                         $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
@@ -667,8 +645,6 @@ class cronController extends bootstrap
                         $this->wallets_lines->id_bid_remb              = $e['id_bid'];
                         $this->wallets_lines->amount                   = $e['amount'];
                         $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
-
-                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : the wallet line (' . $this->wallets_lines->id_wallet_line . ') has been created for KO bid (' . $e['id_bid'] . ')');
 
                         $this->bids->get($e['id_bid'], 'id_bid');
                         $this->bids->status = 2;
@@ -683,16 +659,12 @@ class cronController extends bootstrap
                         $this->notifications->id_bid          = $e['id_bid'];
                         $this->notifications->id_notification = $this->notifications->create();
 
-                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : the notifications (' . $this->notifications->id_notification . ') has been created for KO bid (' . $e['id_bid'] . ')');
-
                         $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
                         $this->clients_gestion_mails_notif->id_notif        = 3; // offre refusée
                         $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
                         $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                         $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
                         $this->clients_gestion_mails_notif->create();
-
-                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : the client gestion mail notif (' . $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif . ') has been created for KO bid (' . $e['id_bid'] . ')');
 
                         $sumOffres = $this->offres_bienvenues_details->sum('id_client = ' . $this->lenders_accounts->id_client_owner . ' AND id_bid = ' . $e['id_bid'], 'montant');
                         if ($sumOffres > 0) {
@@ -711,8 +683,6 @@ class cronController extends bootstrap
                             $this->offres_bienvenues_details->type               = 2;
 
                             $this->offres_bienvenues_details->create();
-
-                            $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : A new line offres de bienvenues (' . $this->offres_bienvenues_details->id_offre_bienvenue_detail . ') has been created for KO bid (' . $e['id_bid'] . ')');
                         }
 
                         $this->projects->get($e['id_project'], 'id_project');
