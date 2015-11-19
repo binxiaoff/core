@@ -615,4 +615,53 @@ class projects extends projects_crud
 
         return $aProjects;
     }
+
+
+    public function calculateAvgInterestRate($iProjectId = null, $iProjectStatus = null)
+    {
+        if ($iProjectId === null) {
+            $iProjectId = $this->id_project;
+        }
+
+        if ($iProjectStatus === null) {
+            $oProject_status = new \projects_status($this->bdd);
+            $iProjectStatus = $oProject_status->getLastStatut($this->id_project);
+        }
+
+        $iUpperValue = 0;
+        $iLowerValue = 0;
+        $oLoans      = new \loans($this->bdd);
+        $oBids       = new \bids($this->bdd);
+
+
+        switch ($iProjectStatus) {
+            case projects_status::REMBOURSEMENT:
+            case projects_status::REMBOURSE:
+            case projects_status::PROBLEME:
+            case projects_status::RECOUVREMENT:
+            case projects_status::REMBOURSEMENT_ANTICIPE:
+                foreach ($oLoans->select('id_project = ' . $iProjectId) as $aLoans) {
+                    $iUpperValue += ($aLoans['rate'] * ($aLoans['amount'] / 100));
+                    $iLowerValue += ($aLoans['amount'] / 100);
+                }
+                break;
+            case projects_status::FUNDE:
+            case projects_status::FUNDING_KO:
+            case projects_status::PRET_REFUSE:
+            case projects_status::EN_FUNDING:
+            case projects_status::DEFAUT:
+                foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status = 1') as $aBids) {
+                    $iUpperValue += ($aBids['rate'] * ($aBids['amount'] / 100));
+                    $iLowerValue += ($aBids['amount'] / 100);
+                }
+                break;
+            default:
+                trigger_error('Unknown project status. Could not calculate amounts', E_USER_WARNING);
+                break;
+        }
+
+        $fAvgRate = $iUpperValue > 0 && $iLowerValue > 0 ? round(($iUpperValue / $iLowerValue), 2) : 0;
+
+        return $fAvgRate;
+    }
 }
