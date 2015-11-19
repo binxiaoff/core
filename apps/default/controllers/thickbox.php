@@ -297,4 +297,12 @@ class thickboxController extends bootstrap
             }
         }
     }
+
+    public function _pop_up_anticipation()
+    {
+        $this->lng['espace-emprunteur'] = $this->ln->selectFront('espace-emprunteur', $this->language, $this->App);
+        $this->projects->get($this->params[0]);
+        $this->fIR = round($this->projects->calculateAvgInterestRate($this->projects->id_project), 2);
+    }
+
 }
