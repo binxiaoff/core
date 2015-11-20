@@ -72,21 +72,21 @@ class companies extends companies_crud
     }
 
     /**
-     * Selects all projects of a company which have the specified status
-     * @param int|null  $iCompanyId
-     * @param array     $aStatus
+     * gets all projects for one company with our without status
+     * @param null|int $iCompanyId
+     * @param null|array $aStatus
      * @return array
      */
-    public function getProjectsForCompany($iCompanyId = null, $aStatus)
+    public function getProjectsForCompany($iCompanyId = null, $aStatus = null)
     {
         if (null === $iCompanyId) {
             $iCompanyId = $this->id_company;
         }
 
-        if (is_array($aStatus)) {
-            $sStatus = implode(",", $aStatus);
+        if (isset($aStatus)) {
+            $sStatus = (is_array($aStatus))? ' AND ps.status IN ('.implode(',', $aStatus).')': ' AND ps.status IN ('.$aStatus.')';
         } else {
-            $sStatus = $aStatus;
+            $sStatus = '';
         }
 
         $sql    = 'SELECT
@@ -98,9 +98,8 @@ class companies extends companies_crud
                       INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
                       INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
                   WHERE
-                      p.id_company = '.$iCompanyId.'
-                      AND ps.status IN ('.$sStatus.')';
-
+                      p.id_company = '.$iCompanyId.$sStatus.'
+                      ORDER BY project_status DESC';
 
         $resultat = $this->bdd->query($sql);
         $aProjects   = array();
