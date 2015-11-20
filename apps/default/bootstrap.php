@@ -753,15 +753,7 @@ class bootstrap extends Controller
         // Lien conditions generales depot dossier
         $this->settings->get('Lien conditions generales depot dossier', 'type');
         $this->cguDepotDossier = $this->settings->value;
-
-//        // Recuperation du contenu de la page
-//        $contenu = $this->tree_elements->select('id_tree = "' . $this->cguDepotDossier . '" AND id_langue = "' . $this->language . '"');
-//        foreach ($contenu as $elt) {
-//            $this->elements->get($elt['id_element']);
-//            $this->contentCGUDepotDossier[ $this->elements->slug ]    = $elt['value'];
-//            $this->complementCGUDepotDossier[ $this->elements->slug ] = $elt['complement'];
-//        }
-
+        
     }
 
 }
