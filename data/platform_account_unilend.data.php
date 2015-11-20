@@ -28,6 +28,9 @@
 
 class platform_account_unilend extends platform_account_unilend_crud
 {
+    const TYPE_COMMISSION_PROJECT  = 1;
+    const TYPE_COMMISSION_DUE_DATE = 2;
+    const TYPE_WITHDRAW            = 3;
 
     public function platform_account_unilend($bdd, $params = '')
     {
@@ -96,5 +99,15 @@ class platform_account_unilend extends platform_account_unilend_crud
         } else {
             return $this->id;
         }
+    }
+
+    public function getBalance()
+    {
+
+        $sql='SELECT SUM(amount) FROM `platform_account_unilend` ';
+
+        $result = $this->bdd->query($sql);
+
+        return (int)($this->bdd->result($result, 0, 0));
     }
 }
