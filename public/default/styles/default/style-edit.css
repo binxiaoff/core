@@ -12,13 +12,13 @@
 .navigation ul ul{width: auto; padding: 10px 13px 10px 18px;}
 .testimonials .slides li{height:100px;}
 .testimonials .slides li a{
-	text-decoration:none;
+    text-decoration:none;
 }
 .captcha-holder {
     padding: 5px 55px 0 0;
 }
 
-.c2-sb-wrap, .c2-sb-wrap .c2-sb-inner-wrap, .c2-sb-wrap .c2-sb-text, .c2-sb-wrap .c2-sb-button{z-index:2;}
+.c2-sb-wrap .c2-sb-inner-wrap, .c2-sb-wrap .c2-sb-text, .c2-sb-wrap .c2-sb-button{z-index:2;}
 
 .field-error .c2-sb-text{color: #C84747;}
 
@@ -32,7 +32,6 @@
 .content_sitemap ul,.content_sitemap ol {padding-left: 20px;}
 
 blockquote{padding: 23px 40px 0;}
-
 
 .footer-social{width: 235px;}
 
@@ -140,8 +139,8 @@ form p{padding-left:0px;}
 
 .cadreEtoiles{overflow:hidden;height:17px;width:62px;position:relative;top:10px;left:4px;}
 .etoile{
-	background: url("images/stars.png") no-repeat scroll 0 0 transparent;
-	height:9px;width:691px;position:relative;top:1px;
+    background: url("images/stars.png") no-repeat scroll 0 0 transparent;
+    height:9px;width:691px;position:relative;top:1px;
 }
 
 .etoile10{right:-3px;}
@@ -160,7 +159,7 @@ form p{padding-left:0px;}
 .enchereVous{position:relative;left:-58px;}
 
 .register-form .pass-field-holder em{
-	color: #b10366;
+    color: #b10366;
     display: block;
     font-size: 9px;
     line-height: 11px;
@@ -247,7 +246,7 @@ h1.inscription{letter-spacing: -0.12em;}
 .sidebar-notifs .dd .content .notif .date_notif{font-size:11px;color:#a1a5a7;}
 
 .bell-notif{
-	background-image: url("images/bell/white.png");
+    background-image: url("images/bell/white.png");
     background-position: center bottom;
     background-repeat: no-repeat;
     background-size: 20px auto;
@@ -255,15 +254,15 @@ h1.inscription{letter-spacing: -0.12em;}
     height: 28px;
     margin-top: 2px;
     width: 19px;
-	}
-	
+    }
+
 .bell-notif:hover{
-	background-image: url("images/bell/pink.png");
-   
-	}
-	
+    background-image: url("images/bell/pink.png");
+
+    }
+
 .bell-notif .nb-notif{
-	background-image: url("images/bell/notif.png");
+    background-image: url("images/bell/notif.png");
     background-position: left 0;
     background-repeat: no-repeat;
     background-size: 18px auto;
@@ -275,18 +274,18 @@ h1.inscription{letter-spacing: -0.12em;}
     padding-top: 1px;
     position: relative;
     width: 19px;
-	padding-left: 5px;
+    padding-left: 5px;
 }
 
 
 .pop_up_cgv_lien{
-	text-decoration:none !important; 
-	font-weight:bold !important; 
-	color: #b10366 !important;
+    text-decoration:none !important;
+    font-weight:bold !important;
+    color: #b10366 !important;
 }
 
 .pop_up_cgv_lien:hover{
-	text-decoration:underline !important;
+    text-decoration:underline !important;
 }
 
 
@@ -303,51 +302,51 @@ h1.inscription{letter-spacing: -0.12em;}
 
 /* vos operation cercles */
 .ou{
-	background: url("images/cercle.png") no-repeat scroll left center rgba(0, 0, 0, 0);
-	background-position: 29px 4px;
-	background-repeat: no-repeat;
-	background-size: 23px auto;
+    background: url("images/cercle.png") no-repeat scroll left center rgba(0, 0, 0, 0);
+    background-position: 29px 4px;
+    background-repeat: no-repeat;
+    background-size: 23px auto;
 }
 
 .plus{
-	background-position: left;
+    background-position: left;
 }
 
 .moins{
-	background-position: right;	
+    background-position: right;
 }
 
 
 .icon-double{
-	background: url("images/dbl_fleche.png") no-repeat scroll left center rgba(0, 0, 0, 0);
-	background-position: 2px -3px;
-	background-repeat: no-repeat;
-	background-size: 25px auto;
-	width: 29px;
-	height: 21px;
+    background: url("images/dbl_fleche.png") no-repeat scroll left center rgba(0, 0, 0, 0);
+    background-position: 2px -3px;
+    background-repeat: no-repeat;
+    background-size: 25px auto;
+    width: 29px;
+    height: 21px;
 }
 
 .icon-bdc{
-	background: url("images/bdc.png") no-repeat scroll left center rgba(0, 0, 0, 0);
-	background-position: 2px -3px;
-	background-repeat: no-repeat;
-	background-size: 25px auto;
-	width: 29px;
-	height: 21px;
+    background: url("images/bdc.png") no-repeat scroll left center rgba(0, 0, 0, 0);
+    background-position: 2px -3px;
+    background-repeat: no-repeat;
+    background-size: 25px auto;
+    width: 29px;
+    height: 21px;
 }
 
 
 .cookies {
-		background: none repeat scroll 0 0 #eaeaea;
-		border: medium none;
-		bottom: 0;
-		left: 0;
-		opacity: 0.9;
-		position: fixed;
-		text-align: left;
-		width: 100%;
-		z-index: 999999;
-	}
+        background: none repeat scroll 0 0 #eaeaea;
+        border: medium none;
+        bottom: 0;
+        left: 0;
+        opacity: 0.9;
+        position: fixed;
+        text-align: left;
+        width: 100%;
+        z-index: 999999;
+    }
 .cookies .content_cookies{vertical-align: middle;width: 79%;border: medium none; background: none repeat scroll 0% 0% transparent; display: inline-block;}
 .cookies .content_cookies div{border: medium none; background: none repeat scroll 0% 0% transparent; color: #727272; padding: 10px; font-size: 12px; text-align: left;}
 .cookies .accept_cookies{width: 19%;vertical-align: middle; border: medium none; background: none repeat scroll 0% 0% transparent; right: 10px; display: inline-block;}
@@ -358,26 +357,25 @@ h1.inscription{letter-spacing: -0.12em;}
 /*::i-block-chrome, #sinscrire, #seconnecter{line-height:53px;}*/
 
 @media screen and (-webkit-min-device-pixel-ratio:0) {
-	.field-mini {
-	  width:131px;
-	}
-	.banner h2{
-		font-size: 33px;
-	}
-	.login-panel a.lienHeader{
-		font-size: 10px;
-	}
-	.login-panel a.lienHeader.open {
-		margin-right: 37px;
-	}
-	.login-panel a.lienHeader.pwd {
-		margin-right: 53px;
-	}
-	
-	#sinscrire, #seconnecter{line-height:52px;}
-	/*::#sinscrire, #seconnecter{line-height:53px;}*/
-}
+    .field-mini {
+      width:131px;
+    }
+    .banner h2{
+        font-size: 33px;
+    }
+    .login-panel a.lienHeader{
+        font-size: 10px;
+    }
+    .login-panel a.lienHeader.open {
+        margin-right: 37px;
+    }
+    .login-panel a.lienHeader.pwd {
+        margin-right: 53px;
+    }
 
+    #sinscrire, #seconnecter{line-height:52px;}
+    /*::#sinscrire, #seconnecter{line-height:53px;}*/
+}
 
 @media \0screen {
     .header { height: 73px; }

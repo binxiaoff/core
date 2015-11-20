@@ -1,6 +1,5 @@
 <script type="text/javascript">
-    $(document).ready(function () {
-
+    $(function () {
         jQuery.tablesorter.addParser({id: "fancyNumber", is: function (s) {
                 return /[\-\+]?\s*[0-9]{1,3}(\.[0-9]{3})*,[0-9]+/.test(s);
             }, format: function (s) {
@@ -8,18 +7,12 @@
             }, type: "numeric"});
 
         $(".tablesorter").tablesorter();
-<?
-if ($this->nb_lignes != '') {
-    ?>
+        <?php if ($this->nb_lignes != '') { ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
-    <?
-}
-?>
-
+        <?php } ?>
     });
-<?
-if (isset($_SESSION['freeow'])) {
-    ?>
+
+    <?php if (isset($_SESSION['freeow'])) { ?>
         $(document).ready(function () {
             var title, message, opts, container;
             title = "<?= $_SESSION['freeow']['title'] ?>";
@@ -28,11 +21,10 @@ if (isset($_SESSION['freeow'])) {
             opts.classes = ['smokey'];
             $('#freeow-tr').freeow(title, message, opts);
         });
-    <?
-    unset($_SESSION['freeow']);
-}
-?>
+    <?php unset($_SESSION['freeow']); ?>
+    <?php }?>
 </script>
+
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <ul class="breadcrumbs">
@@ -52,28 +44,30 @@ if (isset($_SESSION['freeow'])) {
     <table class="recap">
         <tr>
             <th style="width:140px;">Total Com : </th>
-            <td><?= number_format($this->commission / 100, 2, ',', ' ') ?> €</td>
-        </tr><tr>    
+            <td><?= $this->ficelle->formatNumber($this->commission / 100) ?> €</td>
+        </tr>
+        <tr>
             <th style="width:140px;">Commission / Mois : </th>
-            <td><?= number_format($this->comParMois / 100, 2, ',', ' ') ?> €</td>
-        </tr><tr>    
+            <td><?= $this->ficelle->formatNumber($this->comParMois / 100) ?> €</td>
+        </tr>
+        <tr>
             <th style="width:140px;">Commission TTC / Mois : </th>
-            <td><?= number_format($this->comTtcParMois / 100, 2, ',', ' ') ?> €</td>
-        </tr><tr>    
+            <td><?= $this->ficelle->formatNumber($this->comTtcParMois / 100) ?> €</td>
+        </tr>
+        <tr>
             <th style="width:140px;">TVA : </th>
-            <td><?= number_format($this->tva / 100, 2, ',', ' ') ?> €</td>
-        </tr><tr>   
+            <td><?= $this->ficelle->formatNumber($this->tva / 100) ?> €</td>
+        </tr>
+        <tr>
             <th style="width:140px;">Total TVA : </th>
-            <td><?= number_format($this->totalTva / 100, 2, ',', ' ') ?> €</td>
+            <td><?= $this->ficelle->formatNumber($this->totalTva / 100) ?> €</td>
         </tr>
     </table>
     <br />
-    <?
-    if (count($this->lRemb) > 0) {
-        ?>
+    <?php if (count($this->lRemb) > 0) { ?>
         <table class="tablesorter">
             <thead>
-                <tr> 
+                <tr>
                     <th>Echeance</th>
                     <th>Interets</th>
                     <th>Capital</th>
@@ -82,12 +76,12 @@ if (isset($_SESSION['freeow'])) {
                     <th>TVA</th>
                     <th>Montant emprunteur (I+C+ComTTC)</th>
                     <th>Capital restant</th>
+                    <th>Date d'envoi du prélèvement</th>
                     <th>Date echeance Emprunteur</th>
-                    <?php /* ?><th>Statut</th><?php */ ?>
                 </tr>
             </thead>
             <tbody>
-                <?
+            <?php
                 $i = 1;
                 $capRestant = $this->capital;
                 foreach ($this->lRemb as $r) {
@@ -96,66 +90,62 @@ if (isset($_SESSION['freeow'])) {
                     $capRestant -= $r['capital'];
                     if ($capRestant < 0)
                         $capRestant = 0;
+
+                    //on va récuperer la date d'envoi du prelevement, pour cela on doit lier la table echeancier_emp à prelevements, on utilisera la clé "Ordre + id_projet"
+                    $date_envoi_prelevement = "";
+
+                    if ($this->prelevements->get($r['id_project'], 'num_prelevement = ' . $r['ordre'] . ' AND id_project')) {
+                        $date_envoi_prelevement = $this->dates->formatDate($this->prelevements->date_execution_demande_prelevement, 'd/m/Y');
+                    }
                     ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-
                         <td><?= $r['ordre'] ?></td>
-                        <td><?= number_format($r['interets'] / 100, 2, ',', ' ') ?></td>
-                        <td><?= number_format($r['capital'] / 100, 2, ',', ' ') ?></td>
-                        <td><?= number_format($r['montant'] / 100, 2, ',', ' ') ?></td>
-                        <td><?= number_format($r['commission'] / 100, 2, ',', ' ') ?></td>
-                        <td><?= number_format($r['tva'] / 100, 2, ',', ' ') ?></td>
-                        <td><?= number_format($montantEmprunteur / 100, 2, ',', ' ') ?></td>
-                        <td><?= number_format($capRestant / 100, 2, ',', ' ') ?></td>
+                        <td><?= $this->ficelle->formatNumber($r['interets'] / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber($r['capital'] / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber($r['montant'] / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber($r['commission'] / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber($r['tva'] / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber($montantEmprunteur / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber($capRestant / 100) ?></td>
+                        <td><?= $date_envoi_prelevement ?></td>
                         <td><?= $this->dates->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
-                        <?php /* ?><td><?=($r['status']==1?'Remboursé':'A venir')?></td><?php */ ?>
-                    </tr>   
-                    <?
-                    $i++;
-                }
-                // ajout de la ligne du RA
-                if ($this->montant_ra > 0) {
-                    ?>
+                    </tr>
+                        <?php
+                        $i++;
+                    }
+                    // ajout de la ligne du RA
+                    if ($this->montant_ra > 0) {
+                        ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-
                         <td><?= $r['ordre'] + 1 ?></td>
                         <td>0</td>
-                        <td><?= number_format($this->montant_ra, 2, ',', ' ') ?></td>
-                        <td><?= number_format($this->montant_ra, 2, ',', ' ') ?></td>
+                        <td><?= $this->ficelle->formatNumber($this->montant_ra) ?></td>
+                        <td><?= $this->ficelle->formatNumber($this->montant_ra) ?></td>
                         <td>0</td>
                         <td>0</td>
-                        <td><?= number_format($this->montant_ra, 2, ',', ' ') ?></td>
+                        <td><?= $this->ficelle->formatNumber($this->montant_ra) ?></td>
                         <td>0</td>
                         <td><?= $this->dates->formatDate($this->date_ra, 'd/m/Y') ?></td>
-                        <?php /* ?><td><?=($r['status']==1?'Remboursé':'A venir')?></td><?php */ ?>
                     </tr>
-                    <?php
-                }
-                ?>
+                    <?php } ?>
             </tbody>
         </table>
-        <?
-        if ($this->nb_lignes != '') {
-            ?>
-            <table>
-                <tr>
-                    <td id="pager">
-                        <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
-                        <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
-                        <input type="text" class="pagedisplay" />
-                        <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
-                        <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
-                        <select class="pagesize">
-                            <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
-                        </select>
-                    </td>
-                </tr>
-            </table>
-            <?
-        }
-        ?>
-        <?
-    }
-    ?>
+        <?php if ($this->nb_lignes != '') { ?>
+        <table>
+            <tr>
+                <td id="pager">
+                    <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
+                    <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
+                    <input type="text" class="pagedisplay" />
+                    <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
+                    <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
+                    <select class="pagesize">
+                        <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
+                    </select>
+                </td>
+            </tr>
+        </table>
+        <?php } ?>
+    <?php } ?>
 </div>
 <?php unset($_SESSION['freeow']); ?>

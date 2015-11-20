@@ -63,7 +63,7 @@
                     </td>
                     <td><?=$this->dates->formatDate($pf['added'],'d-m-Y');?></td>
                     <td><?=$this->companies->risk?></td>
-                    <td><?=number_format($pf['amount'], 0, ',', ' ')?>€</td>
+                    <td><?=$this->ficelle->formatNumber($pf['amount'], 0)?>€</td>
                     <td><?=$this->dates->formatDate($date_fin,'d-m-Y');?></td>
                     <?
 
@@ -80,7 +80,7 @@
 					// remboursement et plus
 					else
 					{
-						?><td><?=number_format($montant_mensuel, 2, ',', ' ')?>€/mois</td><?
+						?><td><?=$this->ficelle->formatNumber($montant_mensuel)?>€/mois</td><?
 					}
 					?>
                     <td><a href="#" class="tooltip-anchor icon-pdf" data-original-title="" title=""></a></td>

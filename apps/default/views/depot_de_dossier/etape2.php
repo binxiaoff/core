@@ -1,241 +1,234 @@
-<style type="text/css">
-.uploader input.field { width: 280px;}
-</style>
-
 <div class="main">
     <div class="shell">
-    	
-        <?=$this->fireView('../blocs/depot-de-dossier')?>
-    	<p><?=$this->lng['etape2']['contenu']?></p>
-    	<?
-		if(isset($this->params[0]) && $this->params[0] == 'nok'){
-			echo $this->lng['etape1']['contenu-non-eligible'];
-		}
-		elseif(isset($_SESSION['error_pre_empr'])){
-			echo $_SESSION['error_pre_empr'];
-			unset($_SESSION['error_pre_empr']);	
-		}
-    	else{
-			
-			if($this->error_email_representative_exist == true || $this->error_email_exist == true){
-				?><p style="color:#c84747;text-align:center;"><?=$this->lng['etape2']['erreur-email']?></p><?
-			}
-			?>
-            
-			<div class="register-form">
-				<form action="" method="post" id="form_depot_dossier" name="form_depot_dossier" enctype="multipart/form-data">
-					<div class="row">
-						<p><?=$this->lng['etape1']['identite-de-la-societe']?></p>
-	
-						<input type="text" name="raison-sociale" id="raison-sociale" title="<?=$this->lng['etape2']['raison-sociale']?>" value="<?=($this->companies->name != ''?$this->companies->name:$this->lng['etape2']['raison-sociale'])?>" class="field field-large required" data-validators="Presence">
-	
-					</div><!-- /.row -->
-	
-					<div class="row">
-						<p><?=$this->lng['etape2']['identite-du-representant-de-la-societe']?></p>
-	
-						<input type="text" name="nom_representative" title="<?=$this->lng['etape2']['nom']?>" value="<?=($this->nom_dirigeant!=''?$this->nom_dirigeant:$this->lng['etape2']['nom'])?>" id="nom_representative" class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
-						<input type="text" name="prenom_representative" title="<?=$this->lng['etape2']['prenom']?>" value="<?=($this->prenom_dirigeant!=''?$this->prenom_dirigeant:$this->lng['etape2']['prenom'])?>" id="prenom_representative" class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
-					</div><!-- /.row -->
-	
-					<div class="row">
-						<input type="text" name="email_representative" title="<?=$this->lng['etape2']['email']?>" value="<?=($this->email_dirigeant!=''?$this->email_dirigeant:$this->lng['etape2']['email'])?>" id="email_representative" class="field field-large required" data-validators="Presence&amp;Email" onkeyup="checkConf(this.value,'conf_email_representative')">
-						<input type="text" name="conf_email_representative" title="Confirmation Email*" value="<?=($this->conf_email_representative != ''?$this->conf_email_representative:'Confirmation Email*')?>" id="conf_email_representative" class="field field-large required" data-validators="Confirmation, { match: 'email_representative' }" >
-					</div><!-- /.row -->
-	
-					<div class="row">
-						<input type="text" name="phone_representative" id="phone_representative" value="<?=($this->phone_dirigeant!=''?$this->phone_dirigeant:$this->lng['etape2']['telephone'])?>" title="<?=$this->lng['etape2']['telephone']?>" class="field field-large required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 14}">
-                        <input type="text" name="fonction_representative" title="<?=$this->lng['etape2']['fonction']?>" value="<?=($this->fonction_dirigeant!=''?$this->fonction_dirigeant:$this->lng['etape2']['fonction'])?>" id="fonction_representative" class="field field-large required" data-validators="Presence">
-					</div><!-- /.row -->
-	
-					<div class="row">
-						<div class="form-choose fixed">
-							<span class="title"><?=$this->lng['etape2']['vous-etes']?></span>
-	
-							<div class="radio-holder-wrap radios-about" style="float: left; width:733px;">
-								<div class="radio-holder" style="width:733px; padding-bottom: 10px;">
-									<label for="radio1-1-about"><?=$this->lng['etape2']['dirigeant-entreprise']?></label>
-									<input <?=(isset($_POST['send_form_depot_dossier'])?($this->companies->status_client == 1?'checked':''):'checked')?> type="radio" class="custom-input" name="radio1-about" id="radio1-1-about" value="1">
-								</div><!-- /.radio-holder -->
-	
-								<div class="radio-holder" style="width:733px; padding-bottom: 10px;">
-									<label for="radio1-3-about"><?=$this->lng['etape2']['conseil-externe-entreprise']?></label>
-									<input <?=($this->companies->status_client == 3?'checked':'')?> type="radio" class="custom-input" name="radio1-about" id="radio1-3-about" value="3" data-condition="show:.identification">
-								</div><!-- /.radio-holder -->
-							</div><!-- /.radio-holder-wrap -->
-						</div><!-- /.form-choose -->
-					</div><!-- /.row -->
-	
-					<div class="about-sections">
-						
-						<div class="about-section">
-							
-						</div><!-- /.about-section -->
-	
-						<div class="about-section identification">
-							<div class="row">
-								<select name="autre" style="width:458px;" id="autre" class="field field-large custom-select required">
-									<option value="0"><?=$this->lng['etape2']['choisir']?></option>
-                                    <option value="0"><?=$this->lng['etape2']['choisir']?></option>
-									<?
-									foreach($this->conseil_externe as $k => $conseil_externe){
-										?><option <?=($this->companies->status_conseil_externe_entreprise == $k?'selected':'')?> value="<?=$k?>" ><?=$conseil_externe?></option><?
-									}
-									?>
-								</select>
-	
-								<input style="display:none;" type="text" name="autre-preciser" title="<?=$this->lng['etape2']['autre']?>" value="<?=($this->companies->preciser_conseil_externe_entreprise!=''?$this->companies->preciser_conseil_externe_entreprise:$this->lng['etape2']['autre'])?>" id="autre-preciser" class="field field-large">
-							</div><!-- /.row -->
-	
-							<div class="row" >
-								<p><?=$this->lng['etape2']['vos-coordonnees']?></p>
-	
-								<div class="form-choose fixed radio_sex">
-									<span class="title"><?=$this->lng['etape2']['civilite']?></span>
-									<div class="radio-holder">
-										<label for="female"><?=$this->lng['etape2']['madame']?></label>
-										<input type="radio" class="custom-input" name="sex" id="female"  value="Mme" <?=($this->clients->civilite=='Mme'?'checked="checked"':'')?>>
-									</div><!-- /.radio-holder -->
-	
-									<div class="radio-holder">
-										<label for="male"><?=$this->lng['etape2']['monsieur']?></label>
-										<input type="radio" class="custom-input" name="sex" id="male"  value="M." <?=($this->clients->civilite=='M.'?'checked="checked"':'')?>>
-									</div><!-- /.radio-holder -->
-								</div><!-- /.form-choose -->
-							</div><!-- /.row -->
-	
-							<div class="row">
-								<input type="text" name="nom-famille" id="nom-famille" title="<?=$this->lng['etape2']['nom']?>" value="<?=($this->clients->nom!=''?$this->clients->nom:$this->lng['etape2']['nom'])?>" class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
-								<input type="text" name="prenom" id="prenom" title="<?=$this->lng['etape2']['prenom']?>" value="<?=($this->clients->prenom!=''?$this->clients->prenom:$this->lng['etape2']['prenom'])?>" class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}" >
-							</div><!-- /.row -->
-	
-							<div class="row">
-								<input type="text" name="email" id="email" title="<?=$this->lng['etape2']['email']?>" value="<?=($this->clients->email!=''?$this->clients->email:$this->lng['etape2']['email'])?>" class="field field-large required" data-validators="Presence&amp;Email" onkeyup="checkConf(this.value,'conf_email')" >
-								<input type="text" name="conf_email" id="conf_email" title="<?=$this->lng['etape2']['confirmation-email']?>" value="<?=($this->conf_email!=''?$this->conf_email:$this->lng['etape2']['confirmation-email'])?>" class="field field-large required" data-validators="Confirmation,{ match: 'email' }" >
-							</div><!-- /.row -->
-	
-							<div class="row">
-								<input type="text" name="phone" id="phone" value="<?=($this->clients->telephone!=''?$this->clients->telephone:$this->lng['etape2']['telephone'])?>" title="<?=$this->lng['etape2']['telephone']?>" class="field field-large required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 14}">
-                                <input type="text" name="fonction" title="<?=$this->lng['etape2']['fonction']?>" value="<?=($this->clients->fonction!=''?$this->clients->fonction:$this->lng['etape2']['fonction'])?>" id="fonction" class="field field-large required" data-validators="Presence">
-							</div><!-- /.row -->
-						</div><!-- /.about-section -->
-					</div><!-- /.about-sections -->
-	
-					<div class="row">
-						<p><?=$this->lng['etape2']['documents-financiers']?></p>
-	
-						<div class="uploader" data-file="1" style="width:460px; float: left;">
-							<span style="display:block;">Dernière liasse fiscale*</span>
-							<input type="text" class="field required" id="dernière-liasse-fiscale" data-validators="Presence" readonly="readonly" value="<?=$this->companies_details->fichier_derniere_liasse_fiscale?>">
-							<div class="file-holder">
-								<span class="btn btn-small" style="line-height:40px; padding: 0 15px; margin-top: 3px;">
-									<?=$this->lng['etape2']['parcourir']?><span class="file-upload">
-										<input type="file" class="file-field" name="fichier1">
-									</span>
-								</span>
-							</div>
-                            <i style="display:inline-block; color: #b20066;font-size:10px;font-family:Arial, Helvetica, sans-serif;">
-							<?=$this->lng['etape2']['contenu-fichier']?>
-                            </i>
-						</div>
-						<div class="uploader" data-file="1" style="width:460px; float:left; margin-left: 16px;">
-							<span style="display:block;"><?=$this->lng['etape2']['autre']?></span>
-							<input type="text" class="field" readonly="readonly">
-							<div class="file-holder">
-								<span class="btn btn-small" style="line-height:40px; padding: 0 15px; margin-top: 3px;">
-									<?=$this->lng['etape2']['parcourir']?><span class="file-upload">
-										<input type="file" class="file-field" name="fichier2">
-									</span>
-								</span>
-							</div>
-						</div>
-					</div><!-- /.row -->
-	
-					<div class="row">
-                    	<label for="radio1-3-about"><?=$this->lng['etape2']['label-toutes-informations-utiles']?></label>
-						<textarea name="comments" cols="30" rows="10" title="<?=$this->lng['etape2']['toutes-informations-utiles']?>" id="comments" class="field field-mega"><?=($this->projects->comments!=''?$this->projects->comments:$this->lng['etape2']['toutes-informations-utiles'])?></textarea>
-					</div><!-- /.row -->
-	
-					<div class="row">
-						<div class="cb-holder">
-							<label class="check" for="accept-cgu"><?=$this->lng['etape2']['je-reconnais-avoir-pris-connaissance']?> <a style="color:#A1A5A7; text-decoration: underline;" class="check" target="_blank" href="<?=$this->lurl.'/'.$this->tree->getSlug($this->lienConditionsGenerales,$this->language)?>"><?=$this->lng['etape2']['des-conditions-generales-de-vente']?></a></label>
-							<input type="checkbox" class="custom-input required" name="accept-cgu" id="accept-cgu">
-						</div><!-- /.cb-holder -->
-					</div><!-- /.row -->
-					
-					<span class="form-caption"><?=$this->lng['etape2']['champs-obligatoires']?></span>
-					<div class="form-foot row row-cols centered">
-						<input type="hidden" name="send_form_depot_dossier" />
-						<button class="btn" type="submit"><?=$this->lng['etape2']['deposer-son-dossier']?><i class="icon-arrow-next"></i></button>
-					</div><!-- /.form-foot foot-cols -->
-				</form>
-			</div><!-- /.register-form -->
-			<?
-		}
-		?>
-    </div><!-- /.shell -->
+        <div class="introduction"><?php printf($this->lng['etape2']['contenu'], $this->ficelle->formatNumber($this->projects->amount, 0), $this->iAverageFundingDuration); ?></div>
+        <ul><li><?= str_replace(' - ', '</li><li>', trim($this->lng['etape2']['avantages'], ' -')) ?></li></ul>
+        <div class="register-form">
+            <form action="<?= $_SERVER['REQUEST_URI'] ?>" method="post" id="form_depot_dossier" name="form_depot_dossier" enctype="multipart/form-data">
+                <div class="row">
+                    <input type="text" name="raison_sociale" id="raison_sociale"
+                           placeholder="<?= $this->lng['etape2']['raison-sociale'] ?>"
+                           value="<?= $this->aForm['raison_sociale'] ?>"
+                           class="field field-large required<?= isset($this->aErrors['raison_sociale']) ? ' LV_invalid_field' : '' ?>" data-validators="Presence">
+                </div>
+                <div class="row"><?= $this->lng['etape2']['identite-du-representant-de-la-societe'] ?></div>
+                <div class="row">
+                    <div class="form-choose fixed">
+                        <div class="radio-holder">
+                            <label for="civilite_madame"><?= $this->lng['etape2']['madame'] ?></label>
+                            <input type="radio" class="custom-input" name="civilite" id="civilite_madame"
+                                   value="Mme"<?= $this->aForm['civilite'] == 'Mme' ? ' checked' : '' ?>>
+                        </div>
+                        <div class="radio-holder">
+                            <label for="civilite_monsieur"><?= $this->lng['etape2']['monsieur'] ?></label>
+                            <input type="radio" class="custom-input" name="civilite" id="civilite_monsieur"
+                                   value="M."<?= $this->aForm['civilite'] == 'M.' ? ' checked' : '' ?>>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <input type="text" name="prenom" id="prenom"
+                           placeholder="<?= $this->lng['etape2']['prenom'] ?>"
+                           value="<?= $this->aForm['prenom'] ?>"
+                           class="field required"
+                           data-validators="Presence&amp;Format,{pattern:/^([^0-9]*)$/}">
+                    <input type="text" name="nom" id="nom"
+                           placeholder="<?= $this->lng['etape2']['nom'] ?>"
+                           value="<?= $this->aForm['nom'] ?>"
+                           class="field required"
+                           data-validators="Presence&amp;Format,{pattern:/^([^0-9]*)$/}">
+                    <input type="text" name="fonction" id="fonction"
+                           placeholder="<?= $this->lng['etape2']['fonction'] ?>"
+                           value="<?= $this->aForm['fonction'] ?>"
+                           class="field required"
+                           data-validators="Presence&amp;Format,{pattern:/^([^0-9]*)$/}">
+                </div>
+                <div class="row">
+                    <input type="email" name="email" id="email"
+                           placeholder="<?= $this->lng['etape2']['email'] ?>"
+                           value="<?= empty($this->aForm['email']) && false === empty($this->sStep1Email) ? $this->sStep1Email : $this->aForm['email'] ?>"
+                           class="field required"
+                           data-validators="Presence&amp;Email">
+                    <input type="text" name="telephone" id="telephone"
+                           placeholder="<?= $this->lng['etape2']['telephone'] ?>"
+                           value="<?= $this->aForm['telephone'] ?>"
+                           class="field required"
+                           data-validators="Presence&amp;Numericality&amp;Length,{minimum: 9, maximum: 14}">
+                </div>
+                <div class="row">
+                    <div class="form-choose">
+                        <div class="radio-holder">
+                            <label for="gerant-oui"><?= $this->lng['etape2']['dirigeant-entreprise'] ?></label>
+                            <input type="radio" class="custom-input" name="gerant" id="gerant-oui"
+                                   value="oui"<?= $this->aForm['gerant'] === 'oui' ? ' checked' : '' ?>
+                                   data-condition="show:.cgv">
+                        </div>
+                        <div class="radio-holder">
+                            <label for="gerant-non"><?= $this->lng['etape2']['conseil-externe-entreprise'] ?></label>
+                            <input type="radio" class="custom-input" name="gerant" id="gerant-non"
+                                   value="non"<?= $this->aForm['gerant'] === 'non' ? ' checked' : '' ?>
+                                   data-condition="show:.prescripteur">
+                        </div>
+                    </div>
+                </div>
+                <div class="row prescripteur"><?= $this->lng['etape2']['vos-coordonnees'] ?></div>
+                <div class="row prescripteur">
+                    <div class="form-choose fixed">
+                        <div class="radio-holder">
+                            <label for="civilite_prescripteur_madame"><?= $this->lng['etape2']['madame'] ?></label>
+                            <input type="radio" class="custom-input" name="civilite_prescripteur" id="civilite_prescripteur_madame"
+                                   value="Mme"<?= $this->aForm['civilite_prescripteur'] == 'Mme' ? ' checked' : '' ?>>
+                        </div>
+                        <div class="radio-holder">
+                            <label for="civilite_prescripteur_monsieur"><?= $this->lng['etape2']['monsieur'] ?></label>
+                            <input type="radio" class="custom-input" name="civilite_prescripteur" id="civilite_prescripteur_monsieur"
+                                   value="M."<?= $this->aForm['civilite_prescripteur'] == 'M.' ? ' checked' : '' ?>>
+                        </div>
+                    </div>
+                </div>
+                <div class="row prescripteur">
+                    <input type="text" name="prenom_prescripteur" id="prenom_prescripteur"
+                           placeholder="<?= $this->lng['etape2']['prenom'] ?>"
+                           value="<?= $this->aForm['prenom_prescripteur'] ?>"
+                           class="field required"
+                           data-validators="Presence&amp;Format,{pattern:/^([^0-9]*)$/}">
+                    <input type="text" name="nom_prescripteur" id="nom_prescripteur"
+                           placeholder="<?= $this->lng['etape2']['nom'] ?>"
+                           value="<?= $this->aForm['nom_prescripteur'] ?>"
+                           class="field required"
+                           data-validators="Presence&amp;Format,{pattern:/^([^0-9]*)$/}">
+                    <input type="text" name="fonction_prescripteur" id="fonction_prescripteur"
+                           placeholder="<?= $this->lng['etape2']['fonction'] ?>"
+                           value="<?= $this->aForm['fonction_prescripteur'] ?>"
+                           class="field required"
+                           data-validators="Presence&amp;Format,{pattern:/^([^0-9]*)$/}">
+                </div>
+                <div class="row prescripteur">
+                    <input type="email" name="email_prescripteur" id="email_prescripteur"
+                           placeholder="<?= $this->lng['etape2']['email'] ?>"
+                           value="<?= $this->aForm['email_prescripteur'] ?>"
+                           class="field required"
+                           data-validators="Presence&amp;Email">
+                    <input type="text" name="telephone_prescripteur" id="telephone_prescripteur"
+                           placeholder="<?= $this->lng['etape2']['telephone'] ?>"
+                           value="<?= $this->aForm['telephone_prescripteur'] ?>"
+                           class="field required"
+                           data-validators="Presence&amp;Numericality&amp;Length,{minimum: 9, maximum: 14}">
+                </div>
+                <?php if (true === $this->bAnnualAccountsQuestion) { ?>
+                    <div class="row">
+                        <div class="form-choose radio_comptables">
+                            <span class="title"><?= $this->lng['etape2']['exercices-comptables'] ?></span>
+                            <div class="radio-holder">
+                                <label for="bilans-oui"><?= $this->lng['etape2']['oui'] ?></label>
+                                <input type="radio" class="custom-input" name="bilans" id="bilans-oui" value="oui"<?= $this->aForm['bilans'] === 'oui' ? ' checked' : '' ?>>
+                            </div>
+                            <div class="radio-holder">
+                                <label for="bilans-non"><?= $this->lng['etape2']['non'] ?></label>
+                                <input type="radio" class="custom-input" name="bilans" id="bilans-non" value="non"<?= $this->aForm['bilans'] === 'non' ? ' checked' : '' ?>>
+                            </div>
+                        </div>
+                    </div>
+                <?php } ?>
+                <div class="row">
+                    <label for="commentaires"><?= $this->lng['etape2']['label-toutes-informations-utiles'] ?></label>
+                    <textarea name="commentaires" id="commentaires" cols="30" rows="10"
+                              placeholder="<?= $this->lng['etape2']['toutes-informations-utiles'] ?>"
+                              class="field field-mega"><?= $this->aForm['commentaires'] ?></textarea>
+                </div>
+                <div class="row">
+                    <table>
+                        <tr>
+                            <td style="vertical-align:middle;"><label for="duree"><?php printf($this->lng['etape2']['choisir-duree-de-remboursement'], $this->ficelle->formatNumber($this->projects->amount, 0)); ?> &nbsp;</label></td>
+                            <td>
+                                <select name="duree" id="duree" class="field field-small required custom-select">
+                                    <option value="0"><?= $this->lng['etape2']['duree'] ?></option>
+                                    <?php foreach ($this->dureePossible as $duree): ?>
+                                        <option value="<?= $duree ?>"<?= $duree == $this->aForm['duree'] ? ' selected' : '' ?>><?= $duree ?> mois</option>
+                                    <?php endforeach ?>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="row">
+                    <div class="cb-holder">
+                        <label class="cgv" for="cgv"><?= $this->lng['etape2']['je-reconnais-avoir-pris-connaissance'] ?>
+                            <a style="color:#A1A5A7; text-decoration: underline;" class="cgv" target="_blank" href="<?= $this->lurl . '/' . $this->tree->getSlug($this->lienConditionsGenerales, $this->language) ?>"><?= $this->lng['etape2']['des-conditions-generales-de-vente'] ?></a>
+                        </label>
+                        <input type="checkbox" class="custom-input" name="cgv" id="cgv">
+                    </div>
+                </div>
+                <div class="row">
+                    <span class="form-caption"><?= $this->lng['etape2']['champs-obligatoires'] ?></span>
+                </div>
+                <div class="form-foot row row-cols centered">
+                    <input type="hidden" name="send_form_depot_dossier"/>
+                    <button class="btn" style="height: 70px; line-height: 1.2em;" type="submit">
+                        <?= $this->lng['etape2']['deposer-son-dossier'] ?>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
-<style type="text/css">
-	.file-upload { overflow:visible; }
-	.uploader { overflow:hidden; }
-</style>
-<script type="text/javascript">
-<?
-if($this->error_email_representative_exist == true){
-	?>
-	$("#email_representative").addClass('LV_invalid_field');
-	$("#email_representative").removeClass('LV_valid_field');
-	<?
-}
-elseif($this->error_email_exist == true){
-	?>
-	$("#email").addClass('LV_invalid_field');
-	$("#email").removeClass('LV_valid_field');
-	<?
-}
-?>
+<script>
+    var validColor = '#727272',
+        errorColor = '#C84747';
 
-$(document).ready(function () {
-  	$('#conf_email_representative').bind('paste', function (e) { e.preventDefault(); });
-	$('#conf_email').bind('paste', function (e) { e.preventDefault(); });
-});
+    $(function() {
+        $('input[type=radio]').on('change click', function() {
+            $(this).parent('.radio-holder').css('color', validColor).css('font-weight', '');
+        });
 
-$('select#autre').on('change', function() {
-	if ($('option:selected', this).val() == '3') { $('#autre-preciser').show(); }
-	else { $('#autre-preciser').hide(); };
-});
+        $('#cgv').on('change click', function() {
+            $('.cgv').css('color', validColor).css('font-weight', '');
+        });
 
-$('input.file-field').on('change', function(){
-	var $self = $(this),
-		val = $self.val()
+        <?php if (empty($this->aForm['email']) && false === empty($this->sStep1Email)) { ?>
+        $('input[type=radio][name=gerant]').on('click change', function() {
+            if ($(this).val() == 'oui') {
+                $('#email').val('<?= $this->sStep1Email ?>');
+                $('#email_prescripteur').val('');
+            } else {
+                $('#email').val('');
+                $('#email_prescripteur').val('<?= $this->sStep1Email ?>');
+            }
+            $('#email,#email_prescripteur').removeClass('LV_valid_field LV_invalid_field')
+        });
+        <?php } ?>
 
-	if( val.length != 0 || val != '' ){
-		$self.closest('.uploader').find('input.field').val(val);
-	};
-});
+        $('#form_depot_dossier').submit(function(event) {
+            var error = false;
 
-// form depot de dissuer
-$( "#form_depot_dossier" ).submit(function( event ){
-	var radio = true;
-	
-	if($('input[type=radio][name=radio1-about]:checked').attr('value') == '3'){
-		if($('input[type=radio][name=sex]:checked').length){$('.radio_sex').css('color','#727272');}
-		else{$('.radio_sex').css('color','#C84747');radio = false}
-	}
-	else{$('.radio_sex').css('color','#727272');}
-	
-	if($('#accept-cgu').is(':checked') == false){$('.check').css('color','#C84747');radio = false}
-	else{$('.check').css('color','#727272');}
-	
-	if(radio == false){event.preventDefault();}
-});
+            if ($('input[type=radio][name=civilite]:checked').length == 0) {
+                $('input[type=radio][name=civilite]').parent('.radio-holder').css('color', errorColor).css('font-weight', 'bold');
+                error = true;
+            }
+            if ($('input[type=radio][name=gerant]:checked').length == 0) {
+                $('input[type=radio][name=gerant]').parent('.radio-holder').css('color', errorColor);
+                error = true;
+            }
+            if ($('input[type=radio][name=gerant]:checked').val() == 'non' && $('input[type=radio][name=civilite_prescripteur]:checked').length == 0) {
+                $('input[type=radio][name=civilite_prescripteur]').parent('.radio-holder').css('color', errorColor);
+                error = true;
+            }
+            if ($('input[type=radio][name=gerant]:checked').val() == 'oui' && $('#cgv').is(':checked') == false) {
+                $('.cgv').css('color', errorColor).css('font-weight', 'bold');
+                error = true;
+            }
+            if ($('input[type=radio][name=bilans]').length && $('input[type=radio][name=bilans]:checked').length == 0) {
+                $('input[type=radio][name=bilans]').parent('.radio-holder').css('color', errorColor);
+                error = true;
+            }
+
+            if (error) {
+                event.preventDefault();
+            }
+        });
+    });
 </script>
 
-<?
-if($this->Config['env'] == 'prod'){
-	// TAG Unilend -Ligatus
-	?>
-    <img src="https://ext.ligatus.com/conversion/?c=65835&a=7195" width="1" height="1" /><?
-}
-?>
+<?php if ($this->Config['env'] == 'prod') { ?>
+    <img src="https://ext.ligatus.com/conversion/?c=65835&a=7195" width="1" height="1">
+<?php } ?>

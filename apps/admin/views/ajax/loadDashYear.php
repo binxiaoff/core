@@ -1,12 +1,12 @@
 <h1>Fonds déposés sur la plateforme (<?=$this->year?>)</h1>
-<div id="caannuel" style="width: 100%; height: 300px;"></div>        
+<div id="caannuel" style="width: 100%; height: 300px;"></div>
 <br /><br />
 <style>
     table.recapDashboard,table.ratioDashboard{border :2px solid #B10366;width: 100%;}
     table.recapDashboard td,table.recapDashboard th,table.ratioDashboard td, table.ratioDashboard th{padding:10px;}
     table.recapDashboard th{width: 155px;}
     table.ratioDashboard th{width: 195px;}
-    
+
 </style>
 <div class="btnDroite" style="margin:0px;">
     <select name="annee" id="annee" class="select" style="width:95px;" onchange="recapdashboard(this.value,<?=$this->year?>)">
@@ -15,13 +15,13 @@
     {
         if(strlen($i) < 2) $month = '0'.$i;
         else $month = $i;
-        
+
         ?><option <?=(date('m') == $month?'selected':'')?> value="<?=$i?>"><?=$this->dates->tableauMois['fr'][$i]?></option><?
     }
-    
-        
-        
-        
+
+
+
+
     ?>
     </select>
 </div>
@@ -31,28 +31,22 @@
         <tr>
             <th>Prêteurs connectés :</th>
             <td><?=$this->nbPreteurLogin?></td>
-            
             <th>Fonds déposés :</th>
-            <td><?=number_format($this->nbFondsDeposes,2,',',' ')?> €</td>
-            
+            <td><?= $this->ficelle->formatNumber($this->nbFondsDeposes) ?> €</td>
             <th>Emprunteurs connectés :</th>
             <td><?=$this->nbEmprunteurLogin?></td>
-            
             <th>Dossiers déposés :</th>
             <td><?=$this->nbDepotDossier?></td>
         </tr>
         <tr>
             <th>Prêteurs inscrits :</th>
             <td><?=$this->nbInscriptionPreteur?></td>
-            
             <th>Fonds prêtés :</th>
-            <td><?=number_format($this->nbFondsPretes,2,',',' ')?> €</td>
-            
+            <td><?= $this->ficelle->formatNumber($this->nbFondsPretes) ?> €</td>
             <th>Emprunteurs inscrits :</th>
             <td><?=$this->nbInscriptionEmprunteur?></td>
-            
             <th>Total capital restant dus :</th>
-            <td><?=number_format($this->TotalCapitalRestant,2,',',' ')?> €</td>
+            <td><?= $this->ficelle->formatNumber($this->TotalCapitalRestant) ?> €</td>
         </tr>
     </table>
 </div>
@@ -65,7 +59,7 @@
     {
         if(strlen($i) < 2) $month = '0'.$i;
         else $month = $i;
-        
+
         ?><option <?=(date('m') == $month?'selected':'')?> value="<?=$i?>"><?=$this->dates->tableauMois['fr'][$i]?></option><?
     }
     ?>
@@ -76,26 +70,23 @@
     <table class="ratioDashboard">
         <tr>
             <th>% Dossier :</th>
-            <td><?=number_format($this->ratioProjects,2,',',' ')?> %</td>
-            
+            <td><?= $this->ficelle->formatNumber($this->ratioProjects) ?> %</td>
             <th>Montant déposé moyen :</th>
-            <td><?=number_format($this->moyenneDepotsFonds,2,',',' ')?> €</td>
-            
+            <td><?= $this->ficelle->formatNumber($this->moyenneDepotsFonds) ?> €</td>
             <th>part de reprêt sur 1 financement :</th>
-            <td><?=number_format($this->tauxRepret,2,',',' ')?> %</td>
-            
+            <td><?= $this->ficelle->formatNumber($this->tauxRepret) ?> %</td>
             <th>Taux attrition :</th>
-            <td><?=number_format($this->tauxAttrition,2,',',' ')?> %</td>
+            <td><?= $this->ficelle->formatNumber($this->tauxAttrition) ?> %</td>
         </tr>
     </table>
 </div>
 <script type="text/javascript">
-	var chart;	
+	var chart;
 	$(document).ready(function()
 	{
 		chart = new Highcharts.Chart(
 		{
-			chart: 
+			chart:
 			{
 				renderTo: 'caannuel',
 				defaultSeriesType: 'spline',
@@ -103,7 +94,7 @@
 				marginBottom: 35
 			},
 			colors: ['#B10366','#59AC26','#89A54E','#80699B','#3D96AE','#DB843D','#92A8CD','#A47D7C','#B5CA92'],
-			title: 
+			title:
 			{
 				text: '',
 				x: -20 // center
@@ -111,7 +102,7 @@
 			xAxis:
 			{
 				categories: ['Jan','Fév','Mar','Avr','Mai','Juin','Juil','Aout','Sept','Oct','Nov','Déc'],
-				title: 
+				title:
 				{
 					text: 'Mois',
 					style:
@@ -138,7 +129,7 @@
 					color: '#B10366'
 				}]
 			},
-			
+
 			plotOptions:
 			{
 				column:
@@ -174,7 +165,7 @@
 					echo $this->caParmois[$i].($i!=12?',':'');
 				}
 				?>]
-			}, 
+			},
 			{
 				name: 'Fonds virés',
 				data: [
@@ -185,7 +176,7 @@
 					echo $this->VirementsParmois[$i].($i!=12?',':'');
 				}
 				?>]
-			}, 
+			},
 			{
 				name: 'Fonds remboursés',
 				data: [
@@ -197,7 +188,7 @@
 				}
 				?>]
 			}
-			
+
 			<?php
 			if(count($this->lTypes) > 0)
 			{
@@ -205,7 +196,7 @@
 				{
 					$this->partenaires_types->get($part['id_type']);
 				?>
-					, 
+					,
 					{
 						name: '<?=$this->partenaires_types->nom?>',
 						data: [
@@ -217,7 +208,7 @@
 						}
 						?>]
 					}
-				<?php	
+				<?php
 				}
 			}
 			?>

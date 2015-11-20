@@ -38,11 +38,11 @@ foreach($this->lLoans as $k => $l)
     //$SumAremb = $this->echeanciers->getSumArembByProject($_POST['id_lender'],$l['id_project']);
     //$SumAremb = $this->echeanciers->select('id_loan = '.$l['id_loan'].' AND ordre = 1');
 	$SumAremb = $this->echeanciers->select('id_loan = '.$l['id_loan'].' AND status = 0','ordre ASC',0,1);
-	
+
 	$fiscal = $SumAremb[0]['prelevements_obligatoires']+$SumAremb[0][' 	retenues_source']+$SumAremb[0]['csg']+$SumAremb[0]['prelevements_sociaux']+$SumAremb[0]['contributions_additionnelles']+$SumAremb[0]['prelevements_solidarite']+$SumAremb[0]['crds'];
-			
+
 	$this->projects_status->getLastStatut($l['id_project']);
-	
+
     ?>
     <tr>
         <td>
@@ -53,10 +53,10 @@ foreach($this->lLoans as $k => $l)
         </td>
         <td><?=$this->dates->formatDate($this->projects->date_fin,'d-m-Y')?></td>
         <td><div class="cadreEtoiles"><div class="etoile <?=$this->lNotes[$this->projects->risk]?>"></div></div></td>
-       <td style="white-space: nowrap;"><?=number_format($l['amount']/100, 2, ',', ' ')?> €</td>
+       <td style="white-space: nowrap;"><?=$this->ficelle->formatNumber($l['amount']/100)?> €</td>
         <td><?=$this->dates->formatDate($SumAremb[0]['date_echeance'],'d-m-Y')?></td>
-        <td style="white-space: nowrap;"><?=number_format($l['rate'], 2, ',', ' ')?> %</td>
-        <td><?=number_format(($SumAremb[0]['montant']/100)-$fiscal, 2, ',', ' ')?> <?=$this->lng['profile']['euros-par-mois']?></td>
+        <td style="white-space: nowrap;"><?=$this->ficelle->formatNumber($l['rate'])?> %</td>
+        <td><?=$this->ficelle->formatNumber(($SumAremb[0]['montant']/100)-$fiscal)?> <?=$this->lng['profile']['euros-par-mois']?></td>
         <td>
 			<?
 			if($this->projects_status->status >=80)
@@ -65,9 +65,9 @@ foreach($this->lLoans as $k => $l)
 			}
 			?>
 		</td>
-        
+
         <?php /*?><td><a href="<?=$this->lurl?>/projects/detail/<?=$this->projects->slug?>" class="btn btn-info btn-small"><?=$this->lng['profile']['details']?></a></td><?php */?>
-        
+
         <?
 		// smock-it
 		if($this->projects->id_project == 1456){
@@ -78,10 +78,10 @@ foreach($this->lLoans as $k => $l)
 		else{
 			?>
 			<td><a href="<?=$this->lurl?>/projects/detail/<?=$this->projects->slug?>" class="btn btn-info btn-small"><?=$this->lng['profile']['details']?></a></td>
-			<?	
+			<?
 		}
 		?>
-        
+
     </tr>
     <?
 }

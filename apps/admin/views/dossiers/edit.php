@@ -16,7 +16,6 @@
 </style>
 <script type="text/javascript">
     $(document).ready(function () {
-
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
         $("#date").datepicker({
@@ -65,9 +64,7 @@
             }
         });
 
-        <?php
-            if ($this->nb_lignes != ''){
-        ?>
+        <?php if ($this->nb_lignes != '') { ?>
         $(".tablesorter").tablesorterPager({
             container: $("#pager"),
             positionFixed: false,
@@ -75,9 +72,8 @@
         });
         <?php } ?>
     });
-    <?php
-        if (isset($_SESSION['freeow'])) {
-    ?>
+
+    <?php if (isset($_SESSION['freeow'])) { ?>
     $(document).ready(function () {
         var title, message, opts, container;
         title = "<?= $_SESSION['freeow']['title'] ?>";
@@ -85,30 +81,22 @@
         opts = {};
         opts.classes = ['smokey'];
         $('#freeow-tr').freeow(title, message, opts);
-
     });
-    <?php
-            unset($_SESSION['freeow']);
-        }
-    ?>
+    <?php unset($_SESSION['freeow']); ?>
+    <?php } ?>
 </script>
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
-
 <div id="contenu">
     <ul class="breadcrumbs">
         <li><a href="<?= $this->lurl ?>/emprunteurs" title="Emprunteurs">Emprunteurs</a> -</li>
         <li><a href="<?= $this->lurl ?>/dossiers" title="Gestion des dossiers">Gestion des dossiers</a> -</li>
         <li>Detail Dossier</li>
     </ul>
-
     <h1>Detail dossier : <?= $this->projects->title ?></h1>
-
-    <form method="post" name="dossier_resume" id="dossier_resume" enctype="multipart/form-data"
-          action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
+    <form method="post" name="dossier_resume" id="dossier_resume" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <div id="resume">
             <h2>Resume & actions</h2>
-
             <div class="gauche">
                 <h2>Identité</h2>
                 <table class="form" style="width: 580px;">
@@ -127,74 +115,95 @@
                     <tr>
                         <th><label for="siren">SIREN :</label></th>
                         <td>
-
-                            <?php
-                            if ($this->projects->create_bo == 1) {
-                                ?><input type="text" name="siren" id="siren" class="input_large" value="<?= $this->companies->siren ?>"/><?
-                            } else {
-                                ?><input type="hidden" name="siren" id="siren"value="<?= $this->companies->siren ?>"/><?
-                                echo $this->companies->siren;
-                            }
-                            ?>
+                        <?php if ($this->projects->create_bo == 1) { ?>
+                            <input type="text" name="siren" id="siren" class="input_large" value="<?= $this->companies->siren ?>">
+                        <?php } else { ?>
+                            <input type="hidden" name="siren" id="siren"value="<?= $this->companies->siren ?>">
+                            <?= $this->companies->siren ?>
+                        <?php } ?>
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="rcs">SIRET :</label></th>
-                        <td><input type="text" name="siret" id="siret" class="input_large" value="<?= $this->companies->siret ?>"/></td>
+                        <th><label for="siret">SIRET :</label></th>
+                        <td>
+                            <input type="text" name="siret" id="siret" class="input_large" value="<?= $this->companies->siret ?>"/>
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="rcs">RCS :</label></th>
-                        <td><input type="text" name="rcs" id="rcs" class="input_large" value="<?= $this->companies->rcs ?>"/></td>
+                        <td>
+                            <input type="text" name="rcs" id="rcs" class="input_large" value="<?= $this->companies->rcs ?>"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="code_naf">Code NAF :</label></th>
+                        <td>
+                            <input type="text" name="code_naf" id="code_naf" class="input_large" value="<?= $this->companies->code_naf ?>"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="libelle_naf">Libellé NAF :</label></th>
+                        <td>
+                            <input type="text" name="libelle_naf" id="libelle_naf" class="input_large" value="<?= $this->companies->libelle_naf ?>"/>
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="title_bo">Titre du projet :</label></th>
-                        <td><input type="text" name="title_bo" id="title_bo" class="input_large" value="<?= $this->projects->title_bo ?>"/></td>
+                        <td>
+                            <input type="text" name="title_bo" id="title_bo" class="input_large" value="<?= $this->projects->title_bo ?>"/>
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="societe">Nom société :</label></th>
-                        <td><input type="text" name="societe" id="societe" class="input_large" value="<?= $this->companies->name ?>"/></td>
-
+                        <td>
+                            <input type="text" name="societe" id="societe" class="input_large" value="<?= $this->companies->name ?>"/>
+                        </td>
+                    </tr>
                     <tr>
                         <th><label for="title">Titre du projet FO :</label></th>
-                        <td><input type="text" name="title" id="title" class="input_large" value="<?= $this->projects->title ?>"/></td>
+                        <td>
+                            <input type="text" name="title" id="title" class="input_large" value="<?= $this->projects->title ?>"/>
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="sector">Secteur de la société :</label></th>
                         <td>
                             <select name="sector" id="sector" class="select">
-                                <?php
-                                foreach ($this->lSecteurs as $k => $s) {
-                                    ?>
+                                <option value=""></option>
+                                <?php foreach ($this->lSecteurs as $k => $s) { ?>
                                     <option <?= ($this->companies->sector == $k + 1 ? 'selected' : '') ?> value="<?= $k + 1 ?>"><?= $s ?></option>
-                                    <?php
-                                }
-                                ?>
+                                <?php } ?>
                             </select>
                         </td>
                     </tr>
                     <tr>
                         <th><label for="tribunal_com">Tribunal de commerce :</label></th>
-                        <td><input type="text" name="tribunal_com" id="tribunal_com" class="input_large" value="<?= $this->companies->tribunal_com ?>"/></td>
+                        <td>
+                            <input type="text" name="tribunal_com" id="tribunal_com" class="input_large" value="<?= $this->companies->tribunal_com ?>"/>
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="activite">Activité :</label></th>
-                        <td><input type="text" name="activite" id="activite" class="input_large" value="<?= $this->companies->activite ?>"/></td>
+                        <td>
+                            <input type="text" name="activite" id="activite" class="input_large" value="<?= $this->companies->activite ?>"/>
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="lieu_exploi">Lieu exploitation :</label></th>
-                        <td><input type="text" name="lieu_exploi" id="lieu_exploi" class="input_large" value="<?= $this->companies->lieu_exploi ?>"/></td>
+                        <td>
+                            <input type="text" name="lieu_exploi" id="lieu_exploi" class="input_large" value="<?= $this->companies->lieu_exploi ?>"/>
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="nature_project">Nature du projet :</label></th>
 
-                        <td><textarea class="textarea_lng" name="nature_project" id="nature_project" style="height: 100px;width: 427px;"><?= $this->projects->nature_project ?></textarea>
+                        <td>
+                            <textarea class="textarea_lng" name="nature_project" id="nature_project" style="height: 100px;width: 427px;"><?= $this->projects->nature_project ?></textarea>
                         </td>
                     </tr>
                     <tr>
                         <th><label for="photo_projet">Photo projet :</label></th>
-                        <td><input type="file" name="photo_projet" id="photo_projet"/><br/>
-                            <a target="_blank" href="<?= $this->surl ?>/images/dyn/projets/source/<?= $this->projects->photo_projet ?>"><?= $this->projects->photo_projet ?></a>
-                        </td>
+                        <td><input type="file" name="photo_projet" id="photo_projet" /><br /><a target="_blank" href="<?= $this->surl ?>/images/dyn/projets/source/<?= $this->projects->photo_projet ?>"><?= $this->projects->photo_projet ?></a></td>
                     </tr>
                     <tr>
                         <th><label for="lien_video">Lien vidéo :</label></th>
@@ -204,12 +213,13 @@
                     </tr>
                 </table>
                 <br><br>
-
                 <h2>Contact</h2>
                 <table class="form" style="width: 495px;">
                     <tr>
                         <th><label for="adresse">Adress correspondant :</label></th>
-                        <td><input type="text" name="adresse" id="adresse" class="input_large" value="<?= $this->adresse ?>"/></td>
+                        <td>
+                            <input type="text" name="adresse" id="adresse" class="input_large" value="<?= $this->adresse ?>"/>
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="city">Ville correspondant :</label></th>
@@ -225,30 +235,26 @@
                     </tr>
                 </table>
             </div>
-
             <div class="droite">
                 <h2>Montant</h2>
                 <table class="form" style="width: 575px;">
                     <tr>
                         <th><label for="montant">Montant du prêt* :</label></th>
-                        <td><input style="background-color:#AAACAC;" type="text" name="montant" id="montant" class="input_moy" value="<?= number_format($this->projects->amount, 2, ',', ' ') ?>"/> €</td>
+                        <td>
+                            <input style="background-color:#AAACAC;" type="text" name="montant" id="montant" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->amount) ?>"/> €
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="duree">Durée du prêt* :</label></th>
                         <td>
-                            <select name="duree" id="duree" class="select"
-                                    style="width:160px;background-color:#AAACAC;">
-                                <?php foreach ($this->dureePossible as $duree): ?>
-                                    <option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois
-                                    </option>
+                            <select name="duree" id="duree" class="select" style="width:160px;background-color:#AAACAC;" >
+                                <?php foreach($this->dureePossible as $duree): ?>
+                                    <option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
                                 <?php endforeach ?>
-                                <option <?= ((int)$this->projects->period === 1000000 || (int)$this->projects->period === 0 ? 'selected' : '') ?> value="0">
-                                    je ne sais pas
-                                </option>
+                                <option <?= ((int)$this->projects->period === 1000000 || (int)$this->projects->period === 0 ? 'selected' : '') ?> value="0">Je ne sais pas</option>
                             </select>
                         </td>
                     </tr>
-
                     <tr class="content_risk" <?= ($this->current_projects_status->status >= 35 ? '' : 'style="display:none"') ?>>
                         <th><label for="risk">Niveau de risque* :</label></th>
                         <td>
@@ -277,9 +283,16 @@
                         <th><label for="rate">Score :</label></th>
                         <td><?= $this->companies->altares_scoreVingt ?>/20</td>
                     </tr>
+                    <tr>
+                        <th><label for="rate">Score Sectoriel :</label></th>
+                        <td><?= $this->companies->altares_scoreSectorielCent/100*20 ?>/20</td>
+                    </tr>
+                    <tr>
+                        <th><label for="rate">Date dernier bilan:</label></th>
+                        <td><?= $this->date_dernier_bilan_jour . '/' . $this->date_dernier_bilan_mois . '/' . $this->date_dernier_bilan_annee?></td>
+                    </tr>
                 </table>
                 <br><br>
-
                 <h2>Remboursement anticipé / Information</h2>
                 <table class="form" style="width: 538px; border: 1px solid #B10366;">
                     <tr>
@@ -288,9 +301,7 @@
                             <label for="statut"><?= $this->phrase_resultat ?></label>
                         </td>
                     </tr>
-                    <?php
-                    if ($this->virement_recu) {
-                        ?>
+                    <?php if ($this->virement_recu) { ?>
                         <tr>
                             <th>Virement reçu le :</th>
                             <td>
@@ -334,9 +345,7 @@
                             <label for="statut"><?= $this->montant_restant_du_preteur ?>€</label>
                         </td>
                     </tr>
-                    <?php
-                    if (false === $this->virement_recu) {
-                        ?>
+                    <?php if (false == $this->virement_recu) { ?>
                         <tr>
                             <th>Motif à indiquer sur le virement :</th>
                             <td>
@@ -347,16 +356,10 @@
                     }
                     ?>
                 </table>
-                <?php
-                if (!$this->virement_recu && !$this->remb_anticipe_effectue && isset($this->date_next_echeance)) {
-                    ?>
+                <?php if (! $this->virement_recu && ! $this->remb_anticipe_effectue && isset($this->date_next_echeance)) { ?>
                     * : Le montant correspond aux CRD des échéances restantes après celle du <?= $this->date_next_echeance ?> qui sera prélevé normalement
-                    <?php
-                }
-                ?>
-
+                <?php } ?>
                 <br><br><br><br>
-
                 <h2>Actions</h2>
                 <table class="form" style="width: 538px;">
                     <tr>
@@ -396,53 +399,57 @@
                         </td>
                     </tr>
                     <tr>
+                        <th><label for="commercial">Commercial :</label></th>
+                        <td>
+                            <select name="commercial" id="commercial" class="select">
+                                <option value="0">Choisir</option>
+                                <?php foreach ($this->aSalesPersons as $aSalesPerson) { ?>
+                                    <option <?= ($this->projects->id_commercial == $aSalesPerson['id_user'] ? 'selected' : '') ?> value="<?= $aSalesPerson['id_user'] ?>"><?= $aSalesPerson['firstname'] ?> <?= $aSalesPerson['name'] ?></option>
+                                <?php } ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr id="analysts-row"<?php if ($this->current_projects_status->status < \projects_status::ATTENTE_ANALYSTE && empty($this->projects->id_analyste)) { ?> style="display: none;"<?php } ?>>
                         <th><label for="analyste">Analyste :</label></th>
                         <td>
                             <select name="analyste" id="analyste" class="select">
                                 <option value="0">Choisir</option>
-                                <?php
-                                foreach ($this->lUsers as $u) {
-                                    ?>
-                                    <option <?= ($this->projects->id_analyste == $u['id_user'] ? 'selected' : '') ?> value="<?= $u['id_user'] ?>"><?= $u['firstname'] ?> <?= $u['name'] ?></option>
-                                    <?php
-                                }
-                                ?>
+                                <?php foreach ($this->aAnalysts as $aAnalyst) { ?>
+                                    <option <?= ($this->projects->id_analyste == $aAnalyst['id_user'] ? 'selected' : '') ?> value="<?= $aAnalyst['id_user'] ?>"><?= $aAnalyst['firstname'] ?> <?= $aAnalyst['name'] ?></option>
+                                <?php } ?>
                             </select>
                         </td>
                     </tr>
-                    <tr>
+                <tr>
                         <th><label for="status">Statut :</label></th>
                         <td id="current_statut">
                             <?php
-                            $sDiplayPeriodHS     = 'none';
+                            $sDisplayPeriodHS    = 'none';
                             $sDisplayMsgPeriodHs = 'none';
-                            $sDiplayStatus       = 'block';
+                            $sDisplayStatus      = 'block';
                             $sDisplayMsgProject  = 'block';
+
                             if ($this->current_projects_status->status == 130) {
-                                echo "Remboursement anticipé";
+                                echo 'Remboursement anticipé';
                             } else {
                                 if (count($this->lProjects_status) > 0) {
-                                if ((0 === (int)$this->projects->period ||
-                                    1000000 === (int)$this->projects->period ||
-                                    '' == $this->companies_details->fichier_rib) &&
-                                    $this->current_projects_status->status == 35) {
-                                        $sDiplayPeriodHS     = 'block';
-                                        $sDiplayStatus       = 'none';
+                                    if (
+                                        (0 == $this->projects->period || 1000000 == $this->projects->period || empty($this->aAttachments[3]['path'])) // No RIB or no duration selected
+                                        && $this->current_projects_status->status == 35
+                                    ) {
+                                        $sDisplayPeriodHS    = 'block';
+                                        $sDisplayStatus      = 'none';
                                         $sDisplayMsgPeriodHs = 'block';
                                         $sDisplayMsgProject  = 'none';
                                     }
-                            ?>
-                                    <span id="displayPeriodHS" style="display:<?= $sDiplayPeriodHS ?>;">
+                                ?>
+                                    <span id="displayPeriodHS" style="display:<?= $sDisplayPeriodHS ?>;">
                                         <?= $this->current_projects_status->label ?>
                                     </span>
-                                    <select name="status" id="status" class="select" style="display:<?= $sDiplayStatus ?>;" <?= ($this->current_projects_status->status == 130 ? '"disabled"' : "") ?>>
-                                        <?php
-                                        foreach ($this->lProjects_status as $s) {
-                                            ?>
-                                            <option <?= ($this->current_projects_status->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
-                                            <?php
-                                        }
-                                        ?>
+                                    <select name="status" id="status" class="select" style="display:<?= $sDisplayStatus ?>;" <?= ($this->current_projects_status->status == 130 ? '"disabled"' : "") ?>>
+                                    <?php foreach ($this->lProjects_status as $s) { ?>
+                                        <option <?= ($this->current_projects_status->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
+                                    <?php } ?>
                                     </select>
                                     <?php
                                 } else {
@@ -454,11 +461,15 @@
                             ?>
                         </td>
                     </tr>
+                    <?php if ($this->current_projects_status->status == \projects_status::NOTE_EXTERNE_FAIBLE && false === empty($this->current_projects_status_history->content)) { ?>
+                    <tr>
+                        <th><label for="status">Motif :</label></th>
+                        <td><?= $this->current_projects_status_history->content ?></td>
+                    </tr>
+                    <?php } ?>
                 </table>
                 <table class="form" style="width: 538px;">
-                    <?php
-                    if (in_array($this->current_projects_status->status, array(20, 31, 33, 35))) {
-                        ?>
+                    <?php if (in_array($this->current_projects_status->status, array(25, 31, 33, 35))) { ?>
                         <tr class="change_statut" <?= ($this->current_projects_status->status == 35 ? '' : 'style="display:none"') ?>>
                             <td colspan="2">
                                 <span id="msgProject" style="display:<?= $sDisplayMsgProject ?>;">Vous devez changer le statut du projet pour ajouter une date de publication et de retrait</span>
@@ -466,9 +477,8 @@
                                 <div class="block_cache change_statut"></div>
                             </td>
                         </tr>
-                        <?php
-                    }
-                    ?>
+                    <?php } ?>
+
                     <tr class="content_date_publicaion" <?= ($this->current_projects_status->status >= 35 ? '' : 'style="display:none"') ?>>
                         <th><label for="date_publication">Date de publication* :</label></th>
                         <td id="date_publication">
@@ -494,8 +504,7 @@
                                     <?php
                                     for ($h = 0; $h < 24; $h++) {
                                         ?>
-                                        <option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_publication == $h ? "selected=selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option>
-                                        <?php
+                                        <option value="<?= (strlen($h) < 2 ? "0" . $h : $h) ?>" <?= ($heure_date_publication == $h ? "selected=selected" : "") ?>><?= (strlen($h) < 2 ? "0" . $h : $h) ?></option><?php
                                     }
                                     ?>
                                 </select>h
@@ -578,39 +587,27 @@
                             ?>
                         </td>
                     </tr>
-                    <?php
-                    if (isset($this->retour_dates_valides) && $this->retour_dates_valides != "") {
-                        ?>
+
+                    <?php if (isset($this->retour_dates_valides) && $this->retour_dates_valides != "") { ?>
                         <tr class="content_date_retrait">
                             <th></th>
                             <td style="color:red; font-weight:bold;"><?= $this->retour_dates_valides ?></td>
                         </tr>
-                        <?php
-                    }
-                    ?>
+                    <?php } ?>
+
                     <tr>
                         <td></td>
                         <td id="status_dossier">
-                            <?php
-                            if (in_array($this->current_projects_status->status, array(20))) {
-                                ?>
-                                <input  type="button" id="status_dosier_valider" class="btn" onClick="check_status_dossierV2(31,<?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
-                                <?php
-                            }
-                            if (in_array($this->current_projects_status->status, array(20))) {
-                                ?>
-                                <input type="button" id="status_dosier_rejeter" class="btn" onClick="check_status_dossierV2(30,<?= $this->projects->id_project ?>);" style="background:#CC0000;border-color:#CC0000;font-size:10px;" value="Rejeter dossier">
-                                <?php
-                            }
-                            ?>
+                        <?php if ($this->current_projects_status->status == \projects_status::EN_ATTENTE_PIECES) { ?>
+                            <input type="button" id="status_dosier_valider" class="btn" onclick="check_status_dossierV2(25, <?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
+                            <input type="button" id="status_dosier_rejeter" class="btn" onclick="check_status_dossierV2(30, <?= $this->projects->id_project ?>);" style="background:#CC0000;border-color:#CC0000;font-size:10px;" value="Rejeter dossier">
+                        <?php } ?>
                         </td>
                     </tr>
-                    <?php
-                    if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1) {
-                        ?>
+
+                    <?php if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status == 1) { ?>
                         <tr>
                             <th><label for="pouvoir">Pouvoir :</label></th>
-
                             <td>
                                 <div>
                                     <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>"><?= $this->projects_pouvoir->name ?></a>
@@ -625,29 +622,22 @@
                         <tr>
                             <th></th>
                             <td>
-                                <?php
-                                if ($this->projects_pouvoir->status_remb == '0' && $this->current_projects_status->status == 60) {
-                                    ?>
+                                <?php if ($this->projects_pouvoir->status_remb == '0' && $this->current_projects_status->status == 60) { ?>
                                     <select name="satut_pouvoir" id="satut_pouvoir" class="select">
                                         <option <?= ($this->projects_pouvoir->status_remb == '0' ? 'selected' : '') ?> value="0">En attente</option>
                                         <option <?= ($this->projects_pouvoir->status_remb == '1' ? 'selected' : '') ?> value="1">Validé</option>
                                     </select>
-                                    <?
-                                }
-                                ?>
+                                <?php } ?>
                             </td>
                         </tr>
-                        <?php
-                    } elseif ($this->current_projects_status->status == 60) {// si projet fundé
-                        ?>
+                    <?php } elseif ($this->current_projects_status->status == \projects_status::FUNDE) { ?>
                         <tr>
                             <th><label for="upload_pouvoir">Pouvoir :</label></th>
                             <td><input type="file" name="upload_pouvoir" id="upload_pouvoir"/></td>
                         </tr>
-                        <?php
-                    }
-                    if ($this->current_projects_status->status == 60) {
-                        ?>
+                    <?php } ?>
+
+                    <?php if ($this->current_projects_status->status == \projects_status::FUNDE) { ?>
                         <tr>
                             <th>Prêt refusé :</th>
                             <td>
@@ -657,9 +647,7 @@
                                 </select>
                             </td>
                         </tr>
-                        <?php
-                    }
-                    ?>
+                    <?php } ?>
                 </table>
             </div>
             <style>
@@ -677,9 +665,10 @@
             <div style="display:none" class="recharge">
                 <script type="text/javascript">
                     $("#status").change(function () {
-                        if ($("#status").val() == 40) {
+                        var status = $("#status").val();
+                        if (status == <?= \projects_status::A_FUNDER ?>) {
                             $(".change_statut").hide();
-                        } else if ($("#status").val() != 80) {
+                        } else if (status != <?= \projects_status::REMBOURSEMENT ?>) {
                             $(".change_statut").show();
                         }
                     });
@@ -696,6 +685,7 @@
     </form>
     <hr style="border: 2px solid #B10366;">
     <br><br>
+
     <h2>Mémos</h2>
     <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/addMemo/<?= $this->projects->id_project ?>" class="btn_link thickbox">Ajouter un mémo</a></div>
     <br/><br/><br/>
@@ -753,14 +743,15 @@
         }
         ?>
     </div>
+    <br>
     <style type="text/css">
-        #etape1, #etape2, #etape3, #etape3bis, #etape4, #etape5, #etape6, #etape7 {
+        #tab_email, #etape1, #etape2, #etape3, #etape3bis, #etape4, #etape5, #etape6, #etape7 {
             border: 2px solid #B10366;
             display: none;
             padding: 10px;
         }
 
-        #title_etape1, #title_etape2, #title_etape3, #title_etape3bis, #title_etape4, #title_etape5, #title_etape6, #title_etape7 {
+        #title_tab_email, #title_etape1, #title_etape2, #title_etape3, #title_etape3bis, #title_etape4, #title_etape5, #title_etape6, #title_etape7 {
             cursor: pointer;
             text-align: center;
             background-color: #B10366;
@@ -770,7 +761,7 @@
             font-weight: bold;
         }
 
-        #valid_etape1, #valid_etape2, #valid_etape3, #valid_etape3bis, #valid_etape4, #valid_etape5, #valid_etape6, #valid_etape7 {
+        #tab_email_msg, #valid_etape1, #valid_etape2, #valid_etape3, #valid_etape3bis, #valid_etape4, #valid_etape5, #valid_etape6, #valid_etape7 {
             display: none;
             text-align: center;
             font-size: 16px;
@@ -782,9 +773,141 @@
             display: inline;
         }
     </style>
-    <br/><br/>
+
     <div id="lesEtapes">
-        <div id="title_etape2">Etape 1</div>
+        <div id="title_tab_email">Email</div>
+        <div id="tab_email">
+            <div style="float: right; min-width: 550px;">
+                <h2>Historique</h2>
+                <?php if (false === empty($this->aEmails) || false === empty($this->project_cgv->id)) : ?>
+                    <table class="tablesorter">
+                        <tbody>
+                        <?php if (false === empty($this->project_cgv->id)) : ?>
+                            <tr>
+                                <td>
+                                    CGV envoyées le <?= date('d/m/Y à H:i:s', strtotime($this->project_cgv->added)) ?>
+                                    (<a href="<?= $this->furl . $this->project_cgv->getUrlPath() ?>" target="_blank">PDF</a>)
+                                    <?php if (in_array($this->project_cgv, array(project_cgv::STATUS_SIGN_UNIVERSIGN, project_cgv::STATUS_SIGN_FO))) : ?>
+                                        <br/><strong>signées</strong> le <?= date('d/m/Y à H:i:s', strtotime($this->project_cgv->updated))  ?>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                        <?php foreach ($this->aEmails as $aEmail) : ?>
+                            <tr>
+                                <td>
+                                    <?php $this->users->get($aEmail['id_user'], 'id_user'); ?>
+                                    Envoyé le <?= date('d/m/Y à H:i:s', strtotime($aEmail['added'])) ?> par <?= $this->users->name ?><br>
+                                    <?= $aEmail['content'] ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+            </div>
+            <div id="edit_projects_tab_email">
+                <h2>Configuration d'envoi d'Email</h2>
+                <input type="checkbox" name="stop_relances" id="stop_relances" value="1" <?= $this->projects->stop_relances == 1 ? 'checked':'' ?>/> <label for="stop_relances">Arrêt des relances</label>
+                <br/>
+                <br/>
+                <a href="#" class="btn_link" id="save_projects_tab_email" data-project-id="<?= $this->projects->id_project ?>">Sauvegarder</a>
+            </div>
+            <br />
+            <div id="tab_email_msg">Données sauvegardées</div>
+            <br />
+            <div id="send_cgv">
+                <h2>Envoi des CGV</h2>
+                <a href="<?= $this->lurl ?>/dossiers/send_cgv_ajax/<?= $this->projects->id_project ?>" class="btn_link thickbox cboxElement">Envoyer</a>
+            </div>
+
+            <?php if (in_array($this->current_projects_status->status, array(\projects_status::EN_ATTENTE_PIECES, \projects_status::ATTENTE_ANALYSTE, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING))) { ?>
+            <br />
+            <br />
+            <div id="send_completeness">
+                <h2>Complétude - Personnalisation du message</h2>
+                <div class="liwording">
+                    <table>
+                        <?php foreach($this->completude_wording as $sSlug => $sWording):?><tr>
+                            <td>
+                                <a class="add_wording" id="add-<?= $sSlug ?>"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
+                            </td>
+                            <td>
+                                <span class="content-add-<?= $sSlug ?>"><?= $sWording ?></span>
+                            </td>
+                            </tr>
+                        <?php endforeach?>
+                    </table>
+                </div>
+                <br />
+                <h3 class="test">Listes : </h3>
+                <div class="content_li_wording"></div>
+                <fieldset style="width:100%;">
+                    <table class="formColor" style="width:100%;">
+                        <tr>
+                            <td>
+                                <label for="id">Saisir votre message :</label>
+                                <textarea name="content_email_completude" id="content_email_completude"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <a id="completude_preview" href="<?= $this->lurl ?>/dossiers/completude_preview/<?= $this->projects->id_project ?>" class="btn_link thickbox cboxElement">Prévisualiser</a>
+                            </th>
+                        </tr>
+                    </table>
+                </fieldset>
+            </div>
+            <?php } ?>
+        </div>
+        <br/>
+
+        <div id="title_etape1">Etape 1</div>
+        <div id="etape1">
+            <form method="post" name="dossier_etape1" id="dossier_etape1" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
+                <table class="form" style="width: 100%;">
+                    <tr>
+                        <th><label for="montant_etape1">Montant :</label></th>
+                        <td>
+                            <input type="text" name="montant_etape1" id="montant_etape1" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->amount) ?>"/> €
+                        </td>
+
+                        <th><label for="duree_etape1">Durée du prêt :</label></th>
+                        <td>
+                            <select name="duree_etape1" id="duree_etape1" class="select">
+                                <?php foreach ($this->dureePossible as $duree): ?>
+                                    <option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
+                                <?php endforeach ?>
+                                <option <?= ((int)$this->projects->period === 1000000 || (int)$this->projects->period === 0) ? 'selected' : '' ?> value="0">Je ne sais pas</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="siren_etape1">SIREN :</label></th>
+                        <td>
+                            <?php
+                            if ($this->projects->create_bo == 1) {
+                                ?><input type="text" name="siren_etape1" id="siren_etape1" class="input_large" value="<?= $this->companies->siren ?>"/><?
+                            } else {
+                                ?><input type="hidden" name="siren_etape1" id="siren_etape1" value="<?= $this->companies->siren ?>"/><?
+                                echo $this->companies->siren;
+                            }
+                            ?>
+                        </td>
+
+                        <th></th>
+                        <td></td>
+                    </tr>
+                </table>
+                <div id="valid_etape1">Données sauvegardées</div>
+                <div class="btnDroite">
+                    <input type="button" class="btn_link" value="Sauvegarder" onclick="valid_etape1(<?= $this->projects->id_project ?>)">
+                </div>
+            </form>
+        </div>
+        <br/>
+
+        <div id="title_etape2">Etape 2</div>
         <div id="etape2">
             <form method="post" name="dossier_etape2" id="dossier_etape2" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
                 <table class="form" style="width: 100%;">
@@ -796,25 +919,32 @@
                     </tr>
                     <tr>
                         <th><label for="capital_social_etape2">Capital social :</label></th>
-                        <td><input type="text" name="capital_social_etape2" id="capital_social_etape2" class="input_large" value="<?= number_format($this->companies->capital, 2, ',', ' ') ?>"/></td>
+                        <td><input type="text" name="capital_social_etape2" id="capital_social_etape2" class="input_large" value="<?= $this->ficelle->formatNumber($this->companies->capital) ?>"/></td>
                         <th><label for="creation_date_etape2">Date de création (jj/mm/aaaa):</label></th>
-                        <td><input readonly="readonly" type="text" name="creation_date_etape2" id="creation_date_etape2" class="input_dp" value="<?= $this->dates->formatDate($this->companies->date_creation, 'd/m/Y') ?>"/>
-                        </td>
+                        <td><input readonly="readonly" type="text" name="creation_date_etape2" id="creation_date_etape2" class="input_dp" value="<?= $this->dates->formatDate($this->companies->date_creation, 'd/m/Y') ?>"/></td>
                     </tr>
                     <tr>
                         <th colspan="4" style="text-align:left;"><br/>Coordonnées du siège social :</th>
                     </tr>
                     <tr>
                         <th><label for="address_etape2">Adresse :</label></th>
-                        <td><input type="text" name="address_etape2" id="address_etape2" class="input_large" value="<?= $this->companies->adresse1 ?>"/></td>
+                        <td>
+                            <input type="text" name="address_etape2" id="address_etape2" class="input_large" value="<?= $this->companies->adresse1 ?>"/>
+                        </td>
                         <th><label for="ville_etape2">Ville :</label></th>
-                        <td><input type="text" name="ville_etape2" id="ville_etape2" class="input_large" value="<?= $this->companies->city ?>"/></td>
+                        <td>
+                            <input type="text" name="ville_etape2" id="ville_etape2" class="input_large" value="<?= $this->companies->city ?>"/>
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="postal_etape2">Code postal :</label></th>
-                        <td><input type="text" name="postal_etape2" id="postal_etape2" class="input_court" value="<?= $this->companies->zip ?>"/></td>
+                        <td>
+                            <input type="text" name="postal_etape2" id="postal_etape2" class="input_court" value="<?= $this->companies->zip ?>"/>
+                        </td>
                         <th><label for="phone_etape2">Téléphone :</label></th>
-                        <td><input type="text" name="phone_etape2" id="phone_etape2" class="input_moy" value="<?= $this->companies->phone ?>"/></td>
+                        <td>
+                            <input type="text" name="phone_etape2" id="phone_etape2" class="input_moy" value="<?= $this->companies->phone ?>"/>
+                        </td>
                     </tr>
                     <tr>
                         <td colspan="4" style="text-align:left;">
@@ -827,64 +957,47 @@
                     </tr>
                     <tr <?= ($this->companies->status_adresse_correspondance == 0 ? '' : 'style="display:none;"') ?> class="same_adresse">
                         <th><label for="adresse_correspondance_etape2">Adresse :</label></th>
-                        <td><input type="text" name="adresse_correspondance_etape2" id="adresse_correspondance_etape2" class="input_large" value="<?= $this->clients_adresses->adresse1 ?>"/></td>
+                        <td>
+                            <input type="text" name="adresse_correspondance_etape2" id="adresse_correspondance_etape2" class="input_large" value="<?= $this->clients_adresses->adresse1 ?>"/>
+                        </td>
                         <th><label for="city_correspondance_etape2">Ville :</label></th>
-                        <td><input type="text" name="city_correspondance_etape2" id="city_correspondance_etape2" class="input_large" value="<?= $this->clients_adresses->ville ?>"/></td>
+                        <td>
+                            <input type="text" name="city_correspondance_etape2" id="city_correspondance_etape2" class="input_large" value="<?= $this->clients_adresses->ville ?>"/>
+                        </td>
                     </tr>
                     <tr <?= ($this->companies->status_adresse_correspondance == 0 ? '' : 'style="display:none;"') ?>
                         class="same_adresse">
                         <th><label for="zip_correspondance_etape2">Code postal :</label></th>
-                        <td><input type="text" name="zip_correspondance_etape2" id="zip_correspondance_etape2" class="input_court" value="<?= $this->clients_adresses->cp ?>"/></td>
+                        <td>
+                            <input type="text" name="zip_correspondance_etape2" id="zip_correspondance_etape2" class="input_court" value="<?= $this->clients_adresses->cp ?>"/>
+                        </td>
                         <th><label for="phone_correspondance_etape2">Téléphone :</label></th>
-                        <td><input type="text" name="phone_correspondance_etape2" id="phone_correspondance_etape2" class="input_moy" value="<?= $this->clients_adresses->telephone ?>"/></td>
+                        <td>
+                            <input type="text" name="phone_correspondance_etape2" id="phone_correspondance_etape2" class="input_moy" value="<?= $this->clients_adresses->telephone ?>"/>
+                        </td>
                     </tr>
                     <tr>
                         <th colspan="4" style="text-align:left;"><br/>Vous êtes :</th>
                     </tr>
                     <tr>
                         <td colspan="4" style="text-align:left;">
-                            <input <?= ($this->companies->status_client == 1 ? 'checked' : '') ?> type="radio" name="enterprise_etape2" id="enterprise1_etape2" value="1"/>
-                            <label for="enterprise1_etape2"> Je suis le dirigeant de l'entreprise </label>
+                            <input <?= false === $this->bHasPrescripteur ? 'checked' : '' ?> type="radio" name="enterprise_etape2" id="enterprise1_etape2" value="1"/><label for="enterprise1_etape2"> Je suis le dirigeant de l'entreprise </label>
                         </td>
                     </tr>
                     <tr>
                         <td colspan="4" style="text-align:left;">
-                            <input <?= ($this->companies->status_client == 2 ? 'checked' : '') ?> type="radio" name="enterprise_etape2" id="enterprise2_etape2" value="2"/>
-                            <label for="enterprise2_etape2"> Je ne suis pas le dirigeant de l'entreprise mais je bénéficie d'une délégation de pouvoir </label>
+                            <input <?= true === $this->bHasPrescripteur ? 'checked' : ''?> type="radio" name="enterprise_etape2" id="enterprise3_etape2" value="3"/><label for="enterprise3_etape2"> Je suis un conseil externe de l'entreprise </label>
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="4" style="text-align:left;">
-                            <input <?= ($this->companies->status_client == 3 ? 'checked' : '') ?> type="radio" name="enterprise_etape2" id="enterprise3_etape2" value="3"/>
-                            <label for="enterprise3_etape2"> Je suis un conseil externe de l'entreprise </label>
-                        </td>
-                    </tr>
-                    <tr <?= ($this->companies->status_client == 3 ? '' : 'style="display:none;"') ?> class="statut_dirigeant3_etape2">
-                        <th><label for="status_conseil_externe_entreprise_etape2">Type de conseiller :</label></th>
-                        <td>
-                            <select name="status_conseil_externe_entreprise_etape2" id="status_conseil_externe_entreprise_etape2" class="select">
-                                <option value="0">Choisir</option>
-                                <?php
-                                foreach ($this->conseil_externe as $k => $conseil_externe) {
-                                    ?>
-                                    <option <?= ($this->companies->status_conseil_externe_entreprise == $k ? 'selected' : '') ?> value="<?= $k ?>" ><?= $conseil_externe ?></option>
-                                    <?php
-                                }
-                                ?>
-                            </select>
-                        </td>
-                        <th><label for="preciser_conseil_externe_entreprise_etape2">Autre (préciser) :</label></th>
-                        <td><input type="text" name="preciser_conseil_externe_entreprise_etape2" id="preciser_conseil_externe_entreprise_etape2" class="input_large" value="<?= $this->companies->preciser_conseil_externe_entreprise ?>"/></td>
-                    </tr>
-                    <tr>
-                        <th colspan="4" style="text-align:left;"><br/>Vos coordonnées :</th>
+                        <th colspan="4" style="text-align:left;"><br/>Identification du dirigeant :</th>
                     </tr>
                     <tr>
                         <th>Civilité :</th>
                         <td>
-                            <input <?= ($this->clients->civilite == 'Mme' ? 'checked' : '') ?> type="radio" name="civilite_etape2" id="civilite1_etape2" value="Mme"/>
+                            <input <?= $this->clients->civilite == 'Mme' ? 'checked' : '' ?> type="radio" name="civilite_etape2" id="civilite1_etape2" value="Mme"/>
                             <label for="civilite1_etape2">Madame</label>
-                            <input <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?> type="radio" name="civilite_etape2" id="civilite2_etape2" value="M."/>
+                            <input <?= $this->clients->civilite == 'M.' ? 'checked' : '' ?> type="radio" name="civilite_etape2" id="civilite2_etape2" value="M."/>
                             <label for="civilite2_etape2">Monsieur</label>
                         </td>
                         <th></th>
@@ -892,93 +1005,103 @@
                     </tr>
                     <tr>
                         <th><label for="nom_etape2">Nom :</label></th>
-                        <td><input type="text" name="nom_etape2" id="nom_etape2" class="input_large" value="<?= $this->clients->nom ?>"/></td>
+                        <td>
+                            <input type="text" name="nom_etape2" id="nom_etape2" class="input_large" value="<?= $this->clients->nom ?>"/>
+                        </td>
                         <th><label for="prenom_etape2">Prénom :</label></th>
-                        <td><input type="text" name="prenom_etape2" id="prenom_etape2" class="input_large" value="<?= $this->clients->prenom ?>"/></td>
+                        <td>
+                            <input type="text" name="prenom_etape2" id="prenom_etape2" class="input_large" value="<?= $this->clients->prenom ?>"/>
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="fonction_etape2">Fonction :</label></th>
-                        <td><input type="text" name="fonction_etape2" id="fonction_etape2" class="input_large" value="<?= $this->clients->fonction ?>"/></td>
+                        <td>
+                            <input type="text" name="fonction_etape2" id="fonction_etape2" class="input_large" value="<?= $this->clients->fonction ?>"/>
+                        </td>
                         <th><label for="email_etape2">Email :</label></th>
-                        <td><input type="text" name="email_etape2" id="email_etape2" class="input_large" value="<?= $this->clients->email ?>"/></td>
+                        <td>
+                            <input type="text" name="email_etape2" id="email_etape2" class="input_large" value="<?= $this->clients->email ?>"/>
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="phone_new_etape2">Téléphone :</label></th>
-                        <td><input type="text" name="phone_new_etape2" id="phone_new_etape2" class="input_moy" value="<?= $this->clients->telephone ?>"/></td>
-                        <th></th>
-                        <td></td>
-                    </tr>
-
-                    <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?>
-                        class="statut_dirigeant_etape2">
-                        <th colspan="4" style="text-align:left;"><br/>Identification du dirigeant :</th>
-                    </tr>
-                    <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?>
-                        class="statut_dirigeant_etape2">
-                        <th>Civilité :</th>
                         <td>
-                            <input <?= ($this->companies->civilite_dirigeant == 'Mme' ? 'checked' : '') ?> type="radio" name="civilite2_etape2" id="civilite21_etape2" value="Mme"/>
-                            <label for="civilite21_etape2">Madame</label>
-                            <input <?= ($this->companies->civilite_dirigeant == 'M.' ? 'checked' : '') ?> type="radio" name="civilite2_etape2" id="civilite22_etape2" value="M."/>
-                            <label for="civilite22_etape2">Monsieur</label>
+                            <input type="text" name="phone_new_etape2" id="phone_new_etape2" class="input_moy" value="<?= $this->clients->telephone ?>"/>
                         </td>
                         <th></th>
                         <td></td>
                     </tr>
-                    <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?>
-                        class="statut_dirigeant_etape2">
-                        <th><label for="nom2_etape2">Nom :</label></th>
-                        <td><input type="text" name="nom2_etape2" id="nom2_etape2" class="input_large" value="<?= $this->companies->nom_dirigeant ?>"/></td>
-                        <th><label for="prenom2_etape2">Prénom :</label></th>
-                        <td><input type="text" name="prenom2_etape2" id="prenom2_etape2" class="input_large" value="<?= $this->companies->prenom_dirigeant ?>"/></td>
+                    <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
+                        <th colspan="4" style="text-align:left;"><br/>Prescripteur :</th>
                     </tr>
-                    <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?>
-                        class="statut_dirigeant_etape2">
-                        <th><label for="fonction2_etape2">Fonction :</label></th>
-                        <td><input type="text" name="fonction2_etape2" id="fonction2_etape2" class="input_large" value="<?= $this->companies->fonction_dirigeant ?>"/></td>
-                        <th><label for="email2_etape2">Email :</label></th>
-                        <td><input type="text" name="email2_etape2" id="email2_etape2" class="input_large" value="<?= $this->companies->email_dirigeant ?>"/></td>
+                    <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
+                        <th>Civilité :</th>
+                        <td colspan="3" id="civilite_prescripteur"><?= $this->clients_prescripteurs->civilite ?></td>
                     </tr>
-                    <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?>
-                        class="statut_dirigeant_etape2">
-                        <th><label for="phone_new2_etape2">Téléphone :</label></th>
-                        <td><input type="text" name="phone_new2_etape2" id="phone_new2_etape2" class="input_moy" value="<?= $this->companies->phone_dirigeant ?>"/></td>
-                        <th></th>
-                        <td></td>
+                    <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
+                        <th>Nom :</th>
+                        <td id="nom_prescripteur"><?= $this->clients_prescripteurs->nom ?></td>
+                        <th>Prénom :</th>
+                        <td id="prenom_prescripteur"><?= $this->clients_prescripteurs->prenom ?></td>
                     </tr>
+                    <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
+                        <th>Téléphone :</th>
+                        <td id="telephone_prescripteur"><?= $this->clients_prescripteurs->telephone ?></td>
+                        <th>Email :</th>
+                        <td id="email_prescripteur"><?= $this->clients_prescripteurs->email ?></td>
+                    </tr>
+                    <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="identification_prescripteur">
+                        <th>Raison sociale :</th>
+                        <td id="company_prescripteur"><?= $this->companies_prescripteurs->name ?></td>
+                        <th>Siren :</th>
+                        <td id="siren_prescripteur"><?= $this->companies_prescripteurs->siren ?></td>
+                    </tr>
+                    <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
+                        <td colspan="4">
+                            <input class="input_large" name="search_prescripteur" id="search_prescripteur" placeholder="nom, prenom ou email du prescripteur" />
+                            <a id="btn_search_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/search_ajax/" onclick="$(this).attr('href', '<?= $this->lurl ?>/prescripteurs/search_ajax/' + $('#search_prescripteur').val());">Rechercher un prescripteur existant</a>
+                        </td>
+                    </tr>
+                    <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
+                        <td colspan="4">
+                            <a id="btn_add_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/add_client" target="_blank">Créer un prescripteur</a>
+                        </td>
+                    </tr>
+                    <input type="hidden" id="id_prescripteur" name="id_prescripteur" value="<?= $this->prescripteurs->id_prescripteur ?>" />
                 </table>
-
+                <br />
+                <br />
                 <div id="valid_etape2">Données sauvegardées</div>
-                <div class="btnDroite"><input type="button" class="btn_link" value="Sauvegarder" onclick="valid_etape2(<?= $this->projects->id_project ?>)"></div>
+                <div class="btnDroite">
+                    <input type="button" class="btn_link" value="Sauvegarder" onclick="valid_etape2(<?= $this->projects->id_project ?>)">
+                </div>
             </form>
         </div>
         <br/>
 
-        <div id="title_etape3">Etape 2</div>
+        <div id="title_etape3">Etape 3</div>
         <div id="etape3">
             <form method="post" name="dossier_etape3" id="dossier_etape3" enctype="multipart/form-data"
                   action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
                 <table class="form" style="width: 100%;">
                     <tr>
                         <th><label for="montant_etape3">Montant :</label></th>
-                        <td><input type="text" name="montant_etape3" id="montant_etape3" class="input_large" value="<?= number_format($this->projects->amount, 2, ',', ' ') ?>"/> €
-                        </td>
-
+                        <td><input type="text" name="montant_etape3" id="montant_etape3" class="input_large" value="<?= $this->ficelle->formatNumber($this->projects->amount) ?>"/> €</td>
                         <th><label for="duree_etape3">Durée du prêt :</label></th>
                         <td>
                             <select name="duree_etape3" id="duree_etape3" class="select">
                                 <?php foreach ($this->dureePossible as $duree): ?>
                                     <option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
                                 <?php endforeach ?>
-                                <option <?= ((int)$this->projects->period === 1000000 || (int)$this->projects->period === 0 ? 'selected' : '') ?> value="0">
-                                    je ne sais pas
-                                </option>
+                                <option <?= ((int)$this->projects->period === 1000000 || (int)$this->projects->period === 0 ? 'selected' : '') ?> value="0">Je ne sais pas</option>
                             </select>
                         </td>
                     </tr>
                     <tr>
                         <th><label for="titre_etape3">Titre projet :</label></th>
-                        <td colspan="3"><input style="width:780px;" type="text" name="titre_etape3" id="titre_etape3" class="input_large" value="<?= $this->projects->title ?>"/></td>
+                        <td colspan="3">
+                            <input style="width:780px;" type="text" name="titre_etape3" id="titre_etape3" class="input_large" value="<?= $this->projects->title ?>"/>
+                        </td>
                     </tr>
                     <tr>
                         <th><label for="objectif_etape3">Objectif du crédit :</label></th>
@@ -1008,12 +1131,14 @@
 
 
                 <div id="valid_etape3">Données sauvegardées</div>
-                <div class="btnDroite"><input type="button" class="btn_link" value="Sauvegarder" onclick="valid_etape3(<?= $this->projects->id_project ?>)"></div>
+                <div class="btnDroite">
+                    <input type="button" class="btn_link" value="Sauvegarder" onclick="valid_etape3(<?= $this->projects->id_project ?>)">
+                </div>
             </form>
         </div>
         <br/>
 
-        <div id="title_etape4">Etape 3</div>
+        <div id="title_etape4">Etape 4</div>
         <div id="etape4">
             <script language="javascript" type="text/javascript">
                 function formUploadCallbackcsv(result) {
@@ -1054,7 +1179,6 @@
                                     }
                                     ?>
                                 </select>
-
                                 <select name="mois_etape4" id="mois_etape4" class="select">
                                     <?php
                                     foreach ($this->dates->tableauMois['fr'] as $k => $mois) {
@@ -1089,8 +1213,7 @@
                             <?php
                             foreach ($this->lbilans as $b) {
                                 ?>
-                                <th><?= $b['date'] ?></th>
-                                <?php
+                                <th><?= $b['date'] ?></th><?php
                             }
                             ?>
                             </thead>
@@ -1100,11 +1223,10 @@
                                 <?php
                                 for ($i = 0; $i < 5; $i++) {
                                     ?>
-                                    <td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
-                                        <input name="ca_<?= $i ?>" id="ca_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['ca'] != false ? number_format($this->lbilans[$i]['ca'], 2, ',', ' ') : ''); ?>"/>
-                                        <input type="hidden" id="ca_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
-                                    </td>
-                                    <?php
+                                <td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
+                                    <input name="ca_<?= $i ?>" id="ca_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['ca'] != false ? $this->ficelle->formatNumber($this->lbilans[$i]['ca']) : ''); ?>"/>
+                                    <input type="hidden" id="ca_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
+                                    </td><?php
                                 }
                                 ?>
                             </tr>
@@ -1113,11 +1235,10 @@
                                 <?php
                                 for ($i = 0; $i < 5; $i++) {
                                     ?>
-                                    <td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
-                                        <input name="resultat_brute_exploitation_<?= $i ?>" id="resultat_brute_exploitation_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['resultat_brute_exploitation'] != false ? number_format($this->lbilans[$i]['resultat_brute_exploitation'], 2, ',', ' ') : ''); ?>"/>
-                                        <input type="hidden" id="resultat_brute_exploitation_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
-                                    </td>
-                                    <?php
+                                <td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
+                                    <input name="resultat_brute_exploitation_<?= $i ?>" id="resultat_brute_exploitation_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['resultat_brute_exploitation'] != false ? $this->ficelle->formatNumber($this->lbilans[$i]['resultat_brute_exploitation']) : ''); ?>"/>
+                                    <input type="hidden" id="resultat_brute_exploitation_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
+                                    </td><?php
                                 }
                                 ?>
                             </tr>
@@ -1126,11 +1247,10 @@
                                 <?php
                                 for ($i = 0; $i < 5; $i++) {
                                     ?>
-                                    <td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
-                                        <input name="resultat_exploitation_<?= $i ?>" id="resultat_exploitation_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['resultat_exploitation'] != false ? number_format($this->lbilans[$i]['resultat_exploitation'], 2, ',', ' ') : ''); ?>"/>
-                                        <input type="hidden" id="resultat_exploitation_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
-                                    </td>
-                                    <?php
+                                <td class="<?= ($i < 3 ? 'grisfonceBG' : '') ?>">
+                                    <input name="resultat_exploitation_<?= $i ?>" id="resultat_exploitation_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['resultat_exploitation'] != false ? $this->ficelle->formatNumber($this->lbilans[$i]['resultat_exploitation']) : ''); ?>"/>
+                                    <input type="hidden" id="resultat_exploitation_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
+                                    </td><?php
                                 }
                                 ?>
                             </tr>
@@ -1140,7 +1260,7 @@
                                 for ($i = 0; $i < 5; $i++) {
                                     ?>
                                     <td <?= ($i < 3 ? 'class="grisfonceBG"' : '') ?>>
-                                        <input name="investissements_<?= $i ?>" id="investissements_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['investissements'] != false ? number_format($this->lbilans[$i]['investissements'], 2, ',', ' ') : ''); ?>"/>
+                                        <input name="investissements_<?= $i ?>" id="investissements_<?= $i ?>" type="text" class="input_moy <?= ($i < 3 ? 'grisfonceBG' : '') ?>" value="<?= ($this->lbilans[$i]['investissements'] != false ? $this->ficelle->formatNumber($this->lbilans[$i]['investissements']) : ''); ?>"/>
                                         <input type="hidden" id="investissements_id_<?= $i ?>" value="<?= $this->lbilans[$i]['id_bilan'] ?>"/>
                                     </td>
                                     <?php
@@ -1170,45 +1290,51 @@
                         }
                     }
                     ?>
+                    <br /><br />
+
+                    <table class="form" style="width: 100%;">
+                        <tr>
+                            <th><label for="ca_declara_client">Chiffe d'affaires declaré par client</label></th>
+                            <td>
+                                <input type="text" name="ca_declara_client" id="ca_declara_client" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->ca_declara_client, 0) ?>"/>
+                            </td>
+                            <th><label for="resultat_exploitation_declara_client">Résultat d'exploitation declaré par client</label></th>
+                            <td>
+                                <input type="text" name="resultat_exploitation_declara_client" id="resultat_exploitation_declara_client" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->resultat_exploitation_declara_client, 0) ?>"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th><label for="fonds_propres_declara_client">Fonds propres declarés par client</label></th>
+                            <td>
+                                <input type="text" name="fonds_propres_declara_client" id="fonds_propres_declara_client" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->fonds_propres_declara_client, 0) ?>"/>
+                            </td>
+                        </tr>
+
+                    </table>
                     <br/><br/>
+
                     <table class="form" style="width: 100%;">
                         <tr>
                             <th><label for="encours_actuel_dette_fianciere">Encours actuel de la dette financière :</label></th>
-                            <td>
-                                <input type="text" name="encours_actuel_dette_fianciere" id="encours_actuel_dette_fianciere" class="input_moy" value="<?= ($this->companies_details->encours_actuel_dette_fianciere != false ? number_format($this->companies_details->encours_actuel_dette_fianciere, 2, '.', '') : '') ?>"/> €
-                            </td>
-                            <th><label for="remb_a_venir_cette_annee">Remboursements à venir cette année :</label></th>
-                            <td>
-                                <input type="text" name="remb_a_venir_cette_annee" id="remb_a_venir_cette_annee" class="input_moy" value="<?= ($this->companies_details->remb_a_venir_cette_annee != false ? number_format($this->companies_details->remb_a_venir_cette_annee, 2, '.', '') : '') ?>"/> €
-                            </td>
+                            <td><input type="text" name="encours_actuel_dette_fianciere" id="encours_actuel_dette_fianciere" class="input_moy" value="<?= ($this->companies_details->encours_actuel_dette_fianciere != false ? number_format($this->companies_details->encours_actuel_dette_fianciere, 2, '.', '') : '') ?>"/> €</td>
+                            <th><label for="remb_a_venir_cette_annee">Remboursements à venir cette année  :</label></th>
+                            <td><input type="text" name="remb_a_venir_cette_annee" id="remb_a_venir_cette_annee" class="input_moy" value="<?= ($this->companies_details->remb_a_venir_cette_annee != false ? number_format($this->companies_details->remb_a_venir_cette_annee, 2, '.', '') : '') ?>"/> €</td>
                         </tr>
                         <tr>
                             <th><label for="remb_a_venir_annee_prochaine">Remboursements à venir l'année prochaine :</label></th>
-                            <td>
-                                <input type="text" name="remb_a_venir_annee_prochaine" id="remb_a_venir_annee_prochaine" class="input_moy" value="<?= ($this->companies_details->remb_a_venir_annee_prochaine != false ? number_format($this->companies_details->remb_a_venir_annee_prochaine, 2, '.', '') : '') ?>"/> €
-                            </td>
+                            <td><input type="text" name="remb_a_venir_annee_prochaine" id="remb_a_venir_annee_prochaine" class="input_moy" value="<?= ($this->companies_details->remb_a_venir_annee_prochaine != false ? number_format($this->companies_details->remb_a_venir_annee_prochaine, 2, '.', '') : '') ?>"/> €</td>
                             <th><label for="tresorie_dispo_actuellement">Trésorerie disponible actuellement :</label></th>
-                            <td>
-                                <input type="text" name="tresorie_dispo_actuellement" id="tresorie_dispo_actuellement" class="input_moy" value="<?= ($this->companies_details->tresorie_dispo_actuellement != false ? number_format($this->companies_details->tresorie_dispo_actuellement, 2, '.', '') : '') ?>"/> €
-                            </td>
+                            <td><input type="text" name="tresorie_dispo_actuellement" id="tresorie_dispo_actuellement" class="input_moy" value="<?= ($this->companies_details->tresorie_dispo_actuellement != false ? number_format($this->companies_details->tresorie_dispo_actuellement, 2, '.', '') : '') ?>"/> €</td>
                         </tr>
                         <tr>
-                            <th>
-                                <label for="autre_demandes_financements_prevues">Autres demandes de financements prévues<br/>
-                                    (autres que celles que vous réalisez auprès d'Unilend) :</label></th>
-                            <td>
-                                <input type="text" name="autre_demandes_financements_prevues" id="autre_demandes_financements_prevues" class="input_moy" value="<?= ($this->companies_details->autre_demandes_financements_prevues != false ? number_format($this->companies_details->autre_demandes_financements_prevues, 2, '.', '') : '') ?>"/> €
-                            </td>
+                            <th><label for="autre_demandes_financements_prevues">Autres demandes de financements prévues<br /> (autres que celles que vous réalisez auprès d'Unilend) :</label></th>
+                            <td><input type="text" name="autre_demandes_financements_prevues" id="autre_demandes_financements_prevues" class="input_moy" value="<?= ($this->companies_details->autre_demandes_financements_prevues != false ? number_format($this->companies_details->autre_demandes_financements_prevues, 2, '.', '') : '') ?>"/> €</td>
                             <th></th>
                             <td></td>
                         </tr>
                         <tr>
-                            <th>
-                                <label for="precisions">Vous souhaitez apporter des précisions <br/> pour nous aider à mieux vous comprendre ? :</label>
-                            </th>
-                            <td colspan="3">
-                                <textarea style="width:350px;" name="precisions" id="precisions" class="textarea"/><?= $this->companies_details->precisions ?></textarea>
-                            </td>
+                            <th><label for="precisions">Vous souhaitez apporter des précisions <br /> pour nous aider à mieux vous comprendre ? :</label></th>
+                            <td colspan="3"><textarea style="width:350px;" name="precisions" id="precisions" class="textarea" /><?= $this->companies_details->precisions ?></textarea></td>
                         </tr>
                     </table>
                     <!-- actif / passif-->
@@ -1264,10 +1390,11 @@
                                     foreach ($this->lCompanies_actif_passif as $ap) {
                                         ?>
                                         <th><?= $ap['annee'] ?></th><?
-                                        if ($i == 3)
+                                        if ($i == 3) {
                                             break;
-                                        else
+                                        } else {
                                             $i++;
+                                        }
                                     }
                                     ?>
                                     </thead>
@@ -1314,10 +1441,11 @@
                                             $ap[$arrayBilans[7]['value']])
                                         ?>
                                         <td id="<?= $t['value'] ?>_<?= $ap['ordre'] ?>" ><?= $totalAnnee ?></td><?
-                                        if ($b == 3)
+                                        if ($b == 3) {
                                             break;
-                                        else
+                                        } else {
                                             $b++;
+                                        }
                                     }
                                     ?>
                                     </tr>
@@ -1368,7 +1496,6 @@
 
                             <?php
                             foreach ($arrayBilansPassif as $k => $t) {
-
                                 // entete
                                 if ($k == 0) {
                                     ?>
@@ -1527,7 +1654,7 @@
                             </td>
                             <th><label for="pret_oseo">Prêt OSEO :</label></th>
                             <td>
-                                <input type="text" name="pret_oseo" id="pret_oseo" class="input_moy" value="<?= ($this->companies_details->pret_oseo != false ? number_format($this->companies_details->pret_oseo, 2, '.', '') : '') ?>"/>                                 €
+                                <input type="text" name="pret_oseo" id="pret_oseo" class="input_moy" value="<?= ($this->companies_details->pret_oseo != false ? number_format($this->companies_details->pret_oseo, 2, '.', '') : '') ?>"/> €
                             </td>
                         </tr>
 
@@ -1543,7 +1670,9 @@
                 <br/><br/>
 
                 <div id="valid_etape4">Données sauvegardées</div>
-                <div class="btnDroite"><input type="button" class="btn_link" value="Sauvegarder" onclick="valid_etape4(<?= $this->projects->id_project ?>)"></div>
+                <div class="btnDroite">
+                    <input type="button" class="btn_link" value="Sauvegarder" onclick="valid_etape4(<?= $this->projects->id_project ?>)">
+                </div>
             </form>
         </div>
         <br/>
@@ -1581,7 +1710,6 @@
                                                id="<?= $aDateBilans['Year'] ?>_<?= $sKeyAltares ?>" type="text" class="input_moy"
                                                value="<?= (isset($this->aDisplayRatioAndAnalyse['Bilan'][$aDateBilans['Year']][$sKeyAltares])) ? $this->aDisplayRatioAndAnalyse['Bilan'][$aDateBilans['Year']][$sKeyAltares]['fValueLine'] : 0 ?>"
                                                />
-
                                     </td>
                                     <?php
                                 }
@@ -1608,76 +1736,31 @@
             </table>
         </div>
         <br>
-        <div id="title_etape5">Etape 4</div>
+        <div id="title_etape5">Etape 5</div>
         <div id="etape5">
-            <script language="javascript" type="text/javascript">
+            <script type="text/javascript">
                 function formUploadCallback(result) {
+                    var aStatus = jQuery.parseJSON(result);
+                    if(aStatus.length != 0) {
+                        $.each(aStatus, function(fileType, value){
+                            if ('ok' == value) {
+                                $(".statut_" + fileType).html('Enregistré');
 
-                    var obj = jQuery.parseJSON(result);
-                    var enregistre = '<span style="color:green;">Enregistré</span>';
-                    if (obj.fichier1 == 'ok') {
-                        $(".statut_fichier1").html(enregistre);
+                                <?php if (0 < $this->projects->period  && 1000000 > $this->projects->period && 35 == $this->current_projects_status->status) { ?>
+                                    if (fileType == 'fichier_3' && $('#displayPeriodHS').css('display') == 'block') { // RIB
+                                        $("#status").css('display', 'block');
+                                        $("#msgProject").css('display', 'block');
+                                        $('#displayPeriodHS').css('display', 'none');
+                                        $("#msgProjectPeriodHS").css('display', 'none');
+                                    }
+                                <?php } ?>
+                            }
+                        });
+                        $("#valid_etape5").slideDown();
+                        setTimeout(function () {
+                            $("#valid_etape5").slideUp();
+                        }, 4000);
                     }
-                    if (obj.fichier2 == 'ok') {
-                        $(".statut_fichier2").html(enregistre);
-                        if($('#displayPeriodHS').css('display') == 'block' &&
-                            0 < <?= (int)$this->projects->period ?> &&
-                            1000000 > <?= (int)$this->projects->period ?> &&
-                            35 == <?= $this->current_projects_status->status ?>){
-                            $("#status").css('display', 'block');
-                            $("#msgProject").css('display', 'block');
-                            $('#displayPeriodHS').css('display', 'none');
-                            $("#msgProjectPeriodHS").css('display', 'none');
-                        }
-                    }
-                    if (obj.fichier3 == 'ok') {
-                        $(".statut_fichier3").html(enregistre);
-                    }
-                    if (obj.fichier4 == 'ok') {
-                        $(".statut_fichier4").html(enregistre);
-                    }
-                    if (obj.fichier5 == 'ok') {
-                        $(".statut_fichier5").html(enregistre);
-                    }
-                    if (obj.fichier6 == 'ok') {
-                        $(".statut_fichier6").html(enregistre);
-                    }
-                    if (obj.fichier7 == 'ok') {
-                        $(".statut_fichier7").html(enregistre);
-                    }
-                    if (obj.fichier8 == 'ok') {
-                        $(".statut_fichier8").html(enregistre);
-                    }
-                    if (obj.fichier9 == 'ok') {
-                        $(".statut_fichier9").html(enregistre);
-                    }
-                    if (obj.fichier10 == 'ok') {
-                        $(".statut_fichier10").html(enregistre);
-                    }
-                    if (obj.fichier11 == 'ok') {
-                        $(".statut_fichier11").html(enregistre);
-                    }
-                    if (obj.fichier12 == 'ok') {
-                        $(".statut_fichier12").html(enregistre);
-                    }
-                    if (obj.fichier13 == 'ok') {
-                        $(".statut_fichier13").html(enregistre);
-                    }
-                    if (obj.fichier15 == 'ok') {
-                        $(".statut_fichier15").html(enregistre);
-                    }
-                    if (obj.fichier16 == 'ok') {
-                        $(".statut_fichier16").html(enregistre);
-                    }
-                    if (obj.fichier17 == 'ok') {
-                        $(".statut_fichier17").html(enregistre);
-                    }
-
-                    //console.log("Upload OK:", result);
-                    $("#valid_etape5").slideDown();
-                    setTimeout(function () {
-                        $("#valid_etape5").slideUp();
-                    }, 4000);
                 }
             </script>
             <form method="post" name="dossier_etape5" id="dossier_etape5" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/file/<?= $this->params[0] ?>" target="upload_target">
@@ -1687,147 +1770,33 @@
                     ?>
                     <table class="tablesorter">
                         <thead>
+                        <th></th>
                         <th width="200">Nom</th>
                         <th>Fichier</th>
                         <th>Statut</th>
                         <th></th>
                         </thead>
                         <tbody>
+                        <?php foreach ($this->aAttachmentTypes as $sAttachmentType) { ?>
                         <tr>
-                            <td>Extrait Kbis</td>
-                            <td>
-                                <a href="<?= $this->url ?>/protected/extrait_kbis/<?= $this->companies_details->fichier_extrait_kbis ?>"><?= $this->companies_details->fichier_extrait_kbis ?></a>
+                            <td class="remove_col">
+                                <?php if (isset($this->aAttachments[$sAttachmentType['id']]['path'])) { ?>
+                                    <a href="#" data-id="<?= $this->aAttachments[$sAttachmentType['id']]['id'] ?>" data-label="<?= $sAttachmentType['label'] ?>" class="icon_remove_attachment"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" title="Supprimer"></a>
+                                <?php } ?>
                             </td>
-                            <td class="statut_fichier1"><?= ($this->companies_details->fichier_extrait_kbis != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier1" id="fichier_extrait_kbis"/></td>
-                        </tr>
-                        <tr>
-                            <td>RIB</td>
-                            <td>
-                                <a href="<?= $this->url ?>/protected/rib/<?= $this->companies_details->fichier_rib ?>"><?= $this->companies_details->fichier_rib ?></a>
+                            <td class="type_col"><?= $sAttachmentType['label'] ?></td>
+                            <td class="label_col">
+                                <?php if (isset($this->aAttachments[$sAttachmentType['id']]['path'])) { ?>
+                                    <a href="<?= $this->url ?>/attachment/download/id/<?= $this->aAttachments[$sAttachmentType['id']]['id'] ?>/file/<?= urlencode($this->aAttachments[$sAttachmentType['id']]['path']) ?>"><?= $this->aAttachments[$sAttachmentType['id']]['path'] ?></a>
+                                <?php } ?>
                             </td>
-                            <td class="statut_fichier2"><?= ($this->companies_details->fichier_rib != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier2" id="fichier_rib"/></td>
+                            <td class="statut_fichier_<?= $sAttachmentType['id'] ?>" id="statut_fichier_id_<?= $sAttachmentType['id'] ?>"><?= isset($this->aAttachments[$sAttachmentType['id']]) === true ? 'Enregistré' : '' ?></td>
+                            <td><input type="file" name="<?= $sAttachmentType['id'] ?>" id="fichier_project_<?= $sAttachmentType['id'] ?>"/></td>
                         </tr>
-                        <tr>
-                            <td>Délégation de pouvoir</td>
-                            <td>
-                                <a href="<?= $this->url ?>/protected/delegation_pouvoir/<?= $this->companies_details->fichier_delegation_pouvoir ?>"><?= $this->companies_details->fichier_delegation_pouvoir ?></a>
-                            </td>
-                            <td class="statut_fichier3"><?= ($this->companies_details->fichier_delegation_pouvoir != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier3" id="fichier_delegation_pouvoir"/></td>
-                        </tr>
-                        <tr>
-                            <td>Logo de la société</td>
-                            <td><a target="_blank"
-                                   href="<?= $this->surl ?>/var/images/logos_companies/<?= $this->companies_details->fichier_logo_societe ?>"><?= $this->companies_details->fichier_logo_societe ?></a>
-                            </td>
-                            <td class="statut_fichier4"><?= ($this->companies_details->fichier_logo_societe != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier4" id="fichier_logo_societe"/></td>
-                        </tr>
-                        <tr>
-                            <td>Photo du dirigeant</td>
-                            <td>
-                                <a href="<?= $this->url ?>/protected/photo_dirigeant/<?= $this->companies_details->fichier_photo_dirigeant ?>"><?= $this->companies_details->fichier_photo_dirigeant ?></a>
-                            </td>
-                            <td class="statut_fichier5"><?= ($this->companies_details->fichier_photo_dirigeant != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier5" id="fichier_photo_dirigeant"/></td>
-                        </tr>
-
-
-                        <tr>
-                            <td>cni/passeport</td>
-                            <td>
-                                <a href="<?= $this->url ?>/protected/cni_passeport_emprunteur/<?= $this->companies_details->fichier_cni_passeport ?>"><?= $this->companies_details->fichier_cni_passeport ?></a>
-                            </td>
-                            <td class="statut_fichier6"><?= ($this->companies_details->fichier_cni_passeport != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier6" id="fichier_cni_passeport"/></td>
-                        </tr>
-                        <tr>
-                            <td>Dernière liasse fiscale</td>
-                            <td>
-                                <a href="<?= $this->url ?>/protected/derniere_liasse_fiscale/<?= $this->companies_details->fichier_derniere_liasse_fiscale ?>"><?= $this->companies_details->fichier_derniere_liasse_fiscale ?></a>
-                            </td>
-                            <td class="statut_fichier7"><?= ($this->companies_details->fichier_derniere_liasse_fiscale != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier7" id="fichier_derniere_liasse_fiscale"/></td>
-                        </tr>
-                        <tr>
-                            <td>Derniers comptes approuvés</td>
-                            <td>
-                                <a href="<?= $this->url ?>/protected/derniers_comptes_approuves/<?= $this->companies_details->fichier_derniers_comptes_approuves ?>"><?= $this->companies_details->fichier_derniers_comptes_approuves ?></a>
-                            </td>
-                            <td class="statut_fichier8"><?= ($this->companies_details->fichier_derniers_comptes_approuves != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier8" id="fichier_derniers_comptes_approuves"/></td>
-                        </tr>
-                        <tr>
-                            <td>Derniers comptes consolidés du groupe</td>
-                            <td>
-                                <a href="<?= $this->url ?>/protected/derniers_comptes_consolides_groupe/<?= $this->companies_details->fichier_derniers_comptes_consolides_groupe ?>"><?= $this->companies_details->fichier_derniers_comptes_consolides_groupe ?></a>
-                            </td>
-                            <td><?= ($this->companies_details->fichier_derniers_comptes_consolides_groupe != '' ? 'Enregistré' : '') ?></td>
-                            <td class="statut_fichier9"><input type="file" name="fichier9" id="fichier_derniers_comptes_consolides_groupe"/></td>
-                        </tr>
-                        <tr>
-                            <td>Annexes et rapport spécial du commissaire aux comptes</td>
-                            <td>
-                                <a href="<?= $this->url ?>/protected/annexes_rapport_special_commissaire_compte/<?= $this->companies_details->fichier_annexes_rapport_special_commissaire_compte ?>"><?= $this->companies_details->fichier_annexes_rapport_special_commissaire_compte ?></a>
-                            </td>
-                            <td class="statut_fichier10"><?= ($this->companies_details->fichier_annexes_rapport_special_commissaire_compte != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier10" id="fichier_annexes_rapport_special_commissaire_compte"/></td>
-                        </tr>
-                        <tr>
-                            <td>Arrêté comptable récent</td>
-                            <td>
-                                <a href="<?= $this->url ?>/protected/arret_comptable_recent/<?= $this->companies_details->fichier_arret_comptable_recent ?>"><?= $this->companies_details->fichier_arret_comptable_recent ?></a>
-                            </td>
-                            <td class="statut_fichier11"><?= ($this->companies_details->fichier_arret_comptable_recent != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier11" id="fichier_arret_comptable_recent"/></td>
-                        </tr>
-                        <tr>
-                            <td>Budget de l'exercice en cours et de l'exercice à venir</td>
-                            <td>
-                                <a href="<?= $this->url ?>/protected/budget_exercice_en_cours_a_venir/<?= $this->companies_details->fichier_budget_exercice_en_cours_a_venir ?>"><?= $this->companies_details->fichier_budget_exercice_en_cours_a_venir ?></a>
-                            </td>
-                            <td class="statut_fichier12"><?= ($this->companies_details->fichier_budget_exercice_en_cours_a_venir != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier12" id="fichier_budget_exercice_en_cours_a_venir"/></td>
-                        </tr>
-                        <tr>
-                            <td>Notation de la Banque de France</td>
-                            <td>
-                                <a href="<?= $this->url ?>/protected/notation_banque_france/<?= $this->companies_details->fichier_notation_banque_france ?>"><?= $this->companies_details->fichier_notation_banque_france ?></a>
-                            </td>
-                            <td class="statut_fichier13"><?= ($this->companies_details->fichier_notation_banque_france != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier13" id="fichier_notation_banque_france"/></td>
-                        </tr>
-                        <tr>
-                            <td>Autre 1</td>
-                            <td>
-                                <a href="<?= $this->url ?>/protected/autres/<?= $this->companies_details->fichier_autre_1 ?>"><?= $this->companies_details->fichier_autre_1 ?></a>
-                            </td>
-                            <td class="statut_fichier15"><?= ($this->companies_details->fichier_autre_1 != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier15" id="fichier_autre_1"/></td>
-                        </tr>
-                        <tr>
-                            <td>Autre 2</td>
-                            <td>
-                                <a href="<?= $this->url ?>/protected/autres/<?= $this->companies_details->fichier_autre_2 ?>"><?= $this->companies_details->fichier_autre_2 ?></a>
-                            </td>
-                            <td class="statut_fichier16"><?= ($this->companies_details->fichier_autre_2 != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier16" id="fichier_autre_2"/></td>
-                        </tr>
-                        <tr>
-                            <td>Autre 3</td>
-                            <td>
-                                <a href="<?= $this->url ?>/protected/autres/<?= $this->companies_details->fichier_autre_3 ?>"><?= $this->companies_details->fichier_autre_3 ?></a>
-                            </td>
-                            <td class="statut_fichier17"><?= ($this->companies_details->fichier_autre_3 != '' ? 'Enregistré' : '') ?></td>
-                            <td><input type="file" name="fichier17" id="fichier_autre_3"/></td>
-                        </tr>
+                        <?php } ?>
                         </tbody>
                     </table>
-                    <?php
-                    if ($this->nb_lignes != '') {
-                        ?>
+                    <?php if ($this->nb_lignes != '') { ?>
                         <table>
                             <tr>
                                 <td id="pager">
@@ -1843,10 +1812,8 @@
                                 </td>
                             </tr>
                         </table>
-                        <?php
-                    }
-                }
-                ?>
+                    <?php } ?>
+                <?php } ?>
                 <br/>
 
                 <div id="valid_etape5">Données sauvegardées</div>
@@ -1866,24 +1833,20 @@
                 $moyenne1 = (($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1));
                 $moyenne = round($moyenne1, 1);
                 ?>
-                <div id="title_etape6">Etape 5</div>
+                <div id="title_etape6">Etape 6</div>
                 <div id="etape6">
                     <table class="form tableNotes" style="width: 100%;">
                         <tr>
-
                             <th><label for="performance_fianciere">Performance financière</label></th>
                             <td>
                                 <span id="performance_fianciere"><?= $this->projects_notes->performance_fianciere ?></span> /10
                             </td>
-
                             <th><label for="marche_opere">Marché opéré</label></th>
                             <td><span id="marche_opere"><?= $this->projects_notes->marche_opere ?></span> /10</td>
-
                             <th><label for="qualite_moyen_infos_financieres">Qualité des moyens & infos financières</label></th>
                             <td>
                                 <input tabindex="6" id="qualite_moyen_infos_financieres" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->qualite_moyen_infos_financieres ?>" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
                             </td>
-
                             <th><label for="notation_externe">Notation externe</label></th>
                             <td>
                                 <input tabindex="7" id="notation_externe" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->notation_externe ?>" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
@@ -1916,15 +1879,11 @@
                                 <table>
                                     <tr>
                                         <th><label for="global">Global</label></th>
-                                        <td>
-                                            <input tabindex="4" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global ?>" name="global" id="global" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
-                                        </td>
+                                        <td><input tabindex="4" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global ?>" name="global" id="global" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10</td>
                                     </tr>
                                     <tr>
                                         <th><label for="individuel">Individuel</label></th>
-                                        <td>
-                                            <input tabindex="5" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
-                                        </td>
+                                        <td><input tabindex="5" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10</td>
                                     </tr>
                                 </table>
                             </td>
@@ -1935,19 +1894,13 @@
                         </tr>
                         <tr>
                             <td colspan="8" style="text-align:center;">
-                                <?php
-                                if(false === $this->bReadonlyRiskNote){
-                            ?>
+                            <?php if (false === $this->bReadonlyRiskNote) { ?>
                                 <label for="avis" style="text-align:left;display: block;">Avis :</label><br/>
                                 <textarea tabindex="8" name="avis" style="height:700px;" id="avis" class="textarea_large avis"/><?= $this->projects_notes->avis ?></textarea>
                                 <script type="text/javascript">var ckedAvis = CKEDITOR.replace('avis', {height: 700});</script>
-                            <?php
-                                } else {
-                            ?>
+                            <?php } else { ?>
                                 <div style="color:black;"><?= $this->projects_notes->avis ?></div>
-                            <?php
-                                }
-                                ?>
+                            <?php } ?>
                             </td>
                         </tr>
                     </table>
@@ -2030,7 +1983,7 @@
             // si statut revueA
             if ($this->current_projects_status->status >= 33) {
                 ?>
-                <div id="title_etape7">Etape 6</div>
+                <div id="title_etape7">Etape 7</div>
                 <div id="etape7">
                     <table class="form tableNotes" style="width: 100%;">
                         <tr>
@@ -2042,7 +1995,6 @@
                             <td style="vertical-align:top;">
                                 <span id="marche_opere2"><?= $this->projects_notes->marche_opere ?></span> /10
                             </td>
-
                             <th><label for="qualite_moyen_infos_financieres2">Qualité des moyens & infos financières</label></th>
                             <td>
                                 <input tabindex="14" id="qualite_moyen_infos_financieres2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->qualite_moyen_infos_financieres ?>" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
@@ -2057,15 +2009,11 @@
                                 <table>
                                     <tr>
                                         <th><label for="structure2">Structure</label></th>
-                                        <td>
-                                            <input tabindex="9" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->structure ?>" name="structure2" id="structure2" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
-                                        </td>
+                                        <td><input tabindex="9" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->structure ?>" name="structure2" id="structure2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10</td>
                                     </tr>
                                     <tr>
                                         <th><label for="rentabilite2">Rentabilité</label></th>
-                                        <td>
-                                            <input tabindex="10" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->rentabilite ?>" name="rentabilite2" id="rentabilite2" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
-                                        </td>
+                                        <td><input tabindex="10" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->rentabilite ?>" name="rentabilite2" id="rentabilite2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10</td>
                                     </tr>
                                     <tr>
                                         <th><label for="tresorerie2">Trésorerie</label></th>
@@ -2079,9 +2027,7 @@
                                 <table>
                                     <tr>
                                         <th><label for="global2">Global</label></th>
-                                        <td>
-                                            <input tabindex="12" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global ?>" name="global2" id="global2" maxlength="4" onkeyup="nodizaines(this.value, this.id);" <?= ($this->bReadonlyRiskNote) ? 'readonly' : ''; ?>/> /10
-                                        </td>
+                                        <td><input tabindex="12" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global ?>" name="global2" id="global2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"/> /10</td>
                                     </tr>
                                     <tr>
                                         <th><label for="individuel2">Individuel</label></th>
@@ -2098,19 +2044,13 @@
                         </tr>
                         <tr>
                             <td colspan="8" style="text-align:center;">
-                                <?php
-                                if(false === $this->bReadonlyRiskNote){
-                                    ?>
-                                    <label for="avis_comite" style="text-align:left;display: block;">Avis comité :</label><br/>
-                                    <textarea tabindex="16" name="avis_comite" style="height:700px;" id="avis_comite" class="textarea_large avis_comite"><?= $this->projects_notes->avis_comite; ?></textarea>
-                                    <script type="text/javascript">var ckedAvis_comite = CKEDITOR.replace('avis_comite', {height: 700});</script>
-                                <?php
-                                } else {
-                                ?>
-                                    <div style="color:black;"><?= $this->projects_notes->avis_comite; ?></div>
-                                    <?php
-                                }
-                                ?>
+                            <?php if (false === $this->bReadonlyRiskNote) { ?>
+                                <label for="avis_comite" style="text-align:left;display: block;">Avis comité :</label><br/>
+                                <textarea tabindex="16" name="avis_comite" style="height:700px;" id="avis_comite" class="textarea_large avis_comite"><?= $this->projects_notes->avis_comite; ?></textarea>
+                                <script type="text/javascript">var ckedAvis_comite = CKEDITOR.replace('avis_comite', {height: 700});</script>
+                            <?php } else { ?>
+                                <div style="color:black;"><?= $this->projects_notes->avis_comite; ?></div>
+                            <?php } ?>
                             </td>
                         </tr>
                     </table>
@@ -2191,22 +2131,21 @@
     </div>
 </div>
 <script>
-    <?php
-        for ($i = 1; $i <= 7; $i++) {
-    ?>
+    <?php for ($i = 1; $i <= 7; $i++) { ?>
     $('#title_etape<?= $i ?>').click(function () {
         $('#etape<?= $i ?>').slideToggle();
     });
-    $('#title_etape<?= $i ?>bis').click(function () {
-        $('#etape<?= $i ?>bis').slideToggle();
+    <?php } ?>
+
+    $('#title_etape3bis').click(function () {
+        $('#etape3bis').slideToggle();
     });
 
-    <?php
-        }
-    ?>
+    $('#title_tab_email').click(function() {
+        $('#tab_email').slideToggle();
+    });
 
     $("#dossier_resume").submit(function (event) {
-
         if ($("#statut_encours").val() == '0') {
             $("#statut_encours").val('1');
             $(".submitdossier").remove();
@@ -2228,19 +2167,123 @@
     $('#enterprise1_etape2').click(function () {
         if ($(this).attr('checked') == true) {
             $('.statut_dirigeant_etape2').hide('slow');
-            $('.statut_dirigeant3_etape2').hide('slow');
+            $('.identification_prescripteur').hide('slow');
         }
     });
-    $('#enterprise2_etape2').click(function () {
-        if ($(this).attr('checked') == true) {
-            $('.statut_dirigeant_etape2').show('slow');
-            $('.statut_dirigeant3_etape2').hide('slow');
-        }
-    });
+
     $('#enterprise3_etape2').click(function () {
         if ($(this).attr('checked') == true) {
             $('.statut_dirigeant_etape2').show('slow');
-            $('.statut_dirigeant3_etape2').show('slow');
+            $('.identification_prescripteur').show('slow');
         }
+    });
+
+    $('.icon_remove_attachment').click(function(e) {
+        e.preventDefault();
+        var id = $(this).data('id');
+        var type = $(this).data('label');
+        var response = confirm("Voulez-vous supprimer " + type + "?");
+        if (response == true) {
+            $.ajax({
+                url: "<?= $this->lurl ?>/dossiers/remove_file",
+                dataType: 'json',
+                type: 'POST',
+                data: {
+                    attachment_id: id
+                },
+                error: function() {
+                    alert('An error has occurred');
+                },
+                success: function(data) {
+                    if(false === $.isEmptyObject(data)) {
+                        $.each(data, function(fileId, value){
+                            if ('ok' == value) {
+                                $("#statut_fichier_id_"+fileId).html('Supprimé');
+                                $(this).remove;
+                                $("#statut_fichier_id_"+fileId).parent().find('.label_col').html('');
+                                $("#statut_fichier_id_"+fileId).parent().find('.remove_col').html('');
+                            }
+
+                        });
+                        $("#valid_etape5").slideDown();
+                        setTimeout(function () {
+                            $("#valid_etape5").slideUp();
+                        }, 4000);
+                    } else {
+                        alert('An error has occurred');
+                    }
+                }
+            });
+        }
+    });
+
+    $('#save_projects_tab_email').click(function(e){
+        e.preventDefault();
+        var iProjectId =$(this).data('project-id');
+        var iFlag = 0;
+        if ($('#stop_relances').is(':checked')) {
+            iFlag = 1;
+        }
+
+        $.ajax({
+            url: "<?= $this->lurl ?>/dossiers/tab_email",
+            type: 'POST',
+            data: {
+                project_id: iProjectId,
+                flag: iFlag
+            },
+            error: function() {
+                alert('An error has occurred');
+            },
+            success: function(data) {
+                if('ok' == data) {
+                    $("#tab_email_msg").slideDown();
+                    setTimeout(function () {
+                        $("#tab_email_msg").slideUp();
+                    }, 4000);
+                } else {
+                    alert('An error has occurred');
+                }
+            }
+        });
+    });
+
+    function deleteWordingli(id){
+        var id_delete = id;
+        var id_input = id.replace("delete", "input");
+        $("#"+id_delete).remove();
+        $("#"+id_input).remove();
+    }
+
+    $(".add_wording").click(function(e) {
+        e.preventDefault();
+        var id = $(this).attr("id");
+        var content = $(".content-"+id).html();
+        if ($("#input-"+id).length == 0) {
+            var champ = "<input class=\"input_li\" type=\"text\" value=\""+content+"\" name=\"input-"+id+"\" id=\"input-"+id+"\">";
+            var clickdelete = '<a onclick="deleteWordingli(this.id)" class="delete_wording" id="delete-'+id+'"><img src="'+add_surl+'/images/admin/delete.png" ></a>';
+            $('.content_li_wording').append(champ+clickdelete);
+        }
+    });
+
+    $( "#completude_preview" ).click(function() {
+        var content = $("#content_email_completude").val();
+        var list = '';
+        $(".input_li").each(function() {
+            list = list + "<li>"+$(this).val()+"</li>";
+        });
+
+        $.post(
+            add_url+"/ajax/session_project_completude",
+            {
+                id_project: "<?= $this->projects->id_project ?>",
+                content: content,
+                list: list
+            }
+        ).done(function( data ) {
+            if(data != 'nok'){
+                $( "#send_completeness" ).get(0).click();
+            }
+        });
     });
 </script>

@@ -136,8 +136,8 @@ if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_com
                     <td><?= $t['bdc'] ?></td>
                     <td class="companieleft"><?= $t['libelle_projet'] ?></td>
                     <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
-                    <td <?= $couleur ?>><?= number_format($t['montant_operation'] / 100, 2, ',', ' ') ?> €</td>
-                    <td><?= number_format($t['solde'], 2, ',', ' ') ?> €</td>
+                    <td <?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?> €</td>
+                    <td><?= $this->ficelle->formatNumber($t['solde']) ?> €</td>
                 </tr>
                 <tr class="content_transact <?= ($i % 2 == 1 ? '' : 'odd') ?>" height="0">
                     <td colspan="7">
@@ -150,7 +150,7 @@ if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_com
                                     <td width="145px"
                                         class="detail_left"><?= $this->lng['preteur-operations-vos-operations']['capital-rembourse'] ?></td>
                                     <td width="100px" class="chiffres"
-                                        style="padding-bottom:8px; color:#40b34f;"><?= number_format(($t['montant_capital'] / 100), 2, ',', ' ') ?>
+                                        style="padding-bottom:8px; color:#40b34f;"><?= $this->ficelle->formatNumber(($t['montant_capital'] / 100)) ?>
                                         €
                                     </td>
                                     <td width="107px">&nbsp;</td>
@@ -159,7 +159,7 @@ if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_com
                                     <td></td>
                                     <td class="detail_left"><?= $this->lng['preteur-operations-vos-operations']['interets-recus'] ?></td>
                                     <td class="chiffres"
-                                        style="color:#40b34f;"><?= number_format(($t['montant_interet'] / 100), 2, ',', ' ') ?>
+                                        style="color:#40b34f;"><?= $this->ficelle->formatNumber(($t['montant_interet'] / 100)) ?>
                                         €
                                     </td>
                                     <td>&nbsp;</td>
@@ -168,7 +168,7 @@ if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_com
                                     <td></td>
                                     <td class="detail_left"><?= $t['libelle_prelevement'] ?></td>
                                     <td class="chiffres" style="color:red;">
-                                        -<?= number_format($t['montant_prelevement'], 2, ',', ' ') ?> €
+                                        -<?= $this->ficelle->formatNumber($t['montant_prelevement']) ?> €
                                     </td>
                                     <td>&nbsp;</td>
                                 </tr>
@@ -237,8 +237,8 @@ if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_com
                     <td></td>
                     <td></td>
                     <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
-                    <td <?= $couleur ?>><?= number_format($t['montant_operation'] / 100, 2, ',', ' ') ?> €</td>
-                    <td><?= number_format($t['solde'], 2, ',', ' ') ?> €</td>
+                    <td <?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?> €</td>
+                    <td><?= $this->ficelle->formatNumber($t['solde']) ?> €</td>
                 </tr>
                 <?
                 $i++;
@@ -264,8 +264,8 @@ if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_com
                     <td><?= $bdc ?></td>
                     <td class="companieleft"><?= $t['libelle_projet'] ?></td>
                     <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
-                    <td <?= (!$offre_accepte ? $couleur : '') ?>><?= number_format($t['montant_operation'] / 100, 2, ',', ' ') . ' €' ?></td>
-                    <td><?= number_format($t['solde'], 2, ',', ' ') ?> €<?= $asterix ?></td>
+                    <td <?= (!$offre_accepte ? $couleur : '') ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) . ' €' ?></td>
+                    <td><?= $this->ficelle->formatNumber($t['solde']) ?> €<?= $asterix ?></td>
                 </tr>
                 <?
                 $i++;
@@ -288,7 +288,7 @@ if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_com
     	<th colspan="2" class="pdfSolde"><?=$this->lng['preteur-operations-pdf']['solde-de-votre-compte']?></th>
    		<td style="font-size: 17px;font-weight:bold;"><?=date('d-m-Y',strtotime($this->date_fin))?></td>
         <td></td>
-    	<td style="font-size: 17px;font-weight:bold;"><?=number_format($soldetotal, 2, ',', ' ')?> €</td>
+    	<td style="font-size: 17px;font-weight:bold;"><?=$this->ficelle->formatNumber($soldetotal)?> €</td>
     </tr>
 </table>
 

@@ -28,6 +28,7 @@
 
 class elements extends elements_crud
 {
+	const TYPE_PDF_CGU = 183;
 
 	function elements($bdd,$params='')
     {

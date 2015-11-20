@@ -13,18 +13,18 @@ nbactions.xml
 nb-configuration.xml
 .nb-gradle/
 
-# iZinoa
-/protected/
-/log/
+### Izinoa ###
+protected/
+log/
 backup2/
 backup3/
 tmp/
-/public/admin/.htaccess
-/public/default/var
-/public/default/.htaccess
-/public/default/Landing-Pages-Externes/
-/config.php
-/route.php
+public/admin/.htaccess
+public/default/var
+public/default/.htaccess
+config.php
+data/crud/*
+route.php
 *.rej
 
 # PHPStorm

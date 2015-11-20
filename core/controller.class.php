@@ -55,7 +55,12 @@ class Controller
 
     public function __construct(&$command, $config, $app)
     {
-        $this->initUnilendAutoload();
+        setlocale(LC_TIME, 'fr_FR.utf8');
+        setlocale(LC_TIME, 'fr_FR');
+
+        require_once __DIR__ . '/../Autoloader.php';
+        Autoloader::register();
+
         $this->oCache = Cache::getInstance();
 
         //Variables de session pour la fenetre de debug
@@ -63,7 +68,6 @@ class Controller
         unset($_SESSION['debug']);
         unset($_SESSION['msg']);
 
-        // Construction
         $this->Command      = $command;
         $this->Config       = $config;
         $this->App          = $app;
@@ -261,12 +265,12 @@ class Controller
     //Gere l'affichage du pied de page
     public function fireFooter($footer = '', $morestats = '')
     {
-        $footer = ('' == $footer && isset($this->footer)) ? $this->footer : 'footer';
+        $footer = empty($footer) ? (empty($this->footer) ? 'footer' : $this->footer) : $footer;
 
-        if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $footer . '.php')) {
+        if (! file_exists($this->path . 'apps/' . $this->App . '/views/' . $footer . '.php')) {
             call_user_func(array(&$this, '_error'), 'footer not found : views/' . $footer . '.php');
         } else {
-            include($this->path . 'apps/' . $this->App . '/views/' . $footer . '.php');
+            include $this->path . 'apps/' . $this->App . '/views/' . $footer . '.php';
         }
     }
 
@@ -290,7 +294,7 @@ class Controller
 							</tr>
 							<tr>
 								<td>Template</td>
-								<td>' . $this->current_template . '</td>
+								<td>' . (isset($this->current_template) ? $this->current_template : '') . '</td>
 							</tr>
 							<tr>
 								<td>Mon IP</td>
@@ -340,7 +344,7 @@ class Controller
 				<fieldset style="border:1px solid #ff7800; padding:5px; background-color:white;">
 					<legend style="border:1px solid #ff7800; padding:2px; background-color:white;"><strong>setDebug:</strong></legend>
 			';
-        if (count($_SESSION['msg']) > 0) {
+        if (isset($_SESSION['msg']) && count($_SESSION['msg']) > 0) {
             foreach ($_SESSION['msg'] as $title => $elem) {
                 echo '<PRE>';
                 echo($title != '' ? $title . ' : ' : '');
@@ -355,7 +359,7 @@ class Controller
 					<fieldset style="border:1px solid red; padding:5px; background-color:white;">
 						<legend style="border:1px solid red; padding:2px; background-color:white;"><strong>Errors:</strong></legend>
 			';
-        if (count($_SESSION['error']) > 0) {
+        if (isset($_SESSION['error']) && count($_SESSION['error']) > 0) {
             foreach ($_SESSION['error'] as $elem) {
                 echo '<PRE>';
                 print_r($elem);
@@ -399,9 +403,9 @@ class Controller
 			<div style="position:fixed; top:100%; left:0px; width:100%; height:20px; background-color:#F1EDED;border-top: 1px solid #919191;font-size:12px; margin:-20px auto 0 auto;  ">
 				<span style="cursor: pointer;" onclick="document.getElementById(\'divdebug\').style.display=\'block\';">[O]</span>
 				<span style="cursor: pointer;" onclick="document.getElementById(\'divdebug\').style.display=\'none\';">[X]</span> |
-				<span style="color: #ff7800; font-weight:bold;">' . count($_SESSION['msg']) . ' setdebug</span> |
-				<span style="color: red; font-weight:bold;">' . count($_SESSION['error']) . ' erreur </span> |
-				<span style="color: #0096ff; font-weight:bold;">' . count($_SESSION['debug']) . ' requ&ecirc;tes </span> |
+				<span style="color: #ff7800; font-weight:bold;">' . (isset($_SESSION['msg']) ? count($_SESSION['msg']) : 0) . ' setdebug</span> |
+				<span style="color: red; font-weight:bold;">' . (isset($_SESSION['error']) ? count($_SESSION['error']) : 0) . ' erreur </span> |
+				<span style="color: #0096ff; font-weight:bold;">' . (isset($_SESSION['debug']) ? count($_SESSION['debug']) : 0) . ' requ&ecirc;tes </span> |
 				<span style="color: #066500; font-weight:bold;">' . count($this->params) . ' params </span> |
 				<span style="color: #7C0CCF; font-weight:bold;">' . count($_POST) . ' post </span> |
 				<span style="color: #44251F; font-weight:bold;"> session </span> |
@@ -760,12 +764,6 @@ class Controller
         if ($this->enableCache) {
             $this->cacheCurrentPage = true;
         }
-    }
-
-    public function initUnilendAutoload()
-    {
-        require_once __DIR__ . '/../Autoloader.php';
-        Autoloader::register();
     }
 
     // Initialisation du cache

@@ -28,145 +28,154 @@
 
 class projects_status extends projects_status_crud
 {
+    const NOTE_EXTERNE_FAIBLE    = 5;
+    const PAS_3_BILANS           = 6;
+    const COMPLETUDE_ETAPE_2     = 7;
+    const COMPLETUDE_ETAPE_3     = 8;
+    const ABANDON                = 9;
+    const A_TRAITER              = 10;
+    const EN_ATTENTE_PIECES      = 20;
+    const ATTENTE_ANALYSTE       = 25;
+    const REJETE                 = 30;
+    const REVUE_ANALYSTE         = 31;
+    const REJET_ANALYSTE         = 32;
+    const COMITE                 = 33;
+    const REJET_COMITE           = 34;
+    const PREP_FUNDING           = 35;
+    const A_FUNDER               = 40;
+    const EN_FUNDING             = 50;
+    const FUNDE                  = 60;
+    const FUNDING_KO             = 70;
+    const PRET_REFUSE            = 75;
+    const REMBOURSEMENT          = 80;
+    const REMBOURSE              = 90;
+    const PROBLEME               = 100;
+    const RECOUVREMENT           = 110;
+    const DEFAUT                 = 120;
+    const REMBOURSEMENT_ANTICIPE = 130;
 
-	const NON_LU = 10;
-	const A_LETUDE = 20;
-	const A_FUNDER = 40;
-	const EN_FUNDING = 50;
-	const FUNDE = 60;
-	const FUNDING_KO = 70;
-	const REJETE = 30;
-	const REMBOURSEMENT = 80;
-	const PROBLEME = 100;
-	const RECOUVREMENT = 110;
-	const DEFAULT_STATUS = 120;
-	const REMBOURSE = 90;
-	const PRET_REFUSE = 75;
-	const REVUE_ANALYSTE = 31;
-	const REJET_ANALYSTE = 32;
-	const COMITE = 33;
-	const REJET_COMITE = 34;
-	const PREP_FUNDING = 35;
-	const NOTE_EXTERNE_FAIBLE = 5;
-	const PAS_3_BILANS = 6;
-	const ABANDON_ETAPE_2 = 7;
-	const REMBOURSEMENT_ANTICIPE = 130;
-	const PROBLEME_J_PLUS_X = 140;
-
-
-	function projects_status($bdd,$params='')
+    public function __construct($bdd, $params = '')
     {
-        parent::projects_status($bdd,$params);
+        parent::projects_status($bdd, $params);
     }
 
-    function get($id,$field='id_project_status')
+    public function get($id, $field = 'id_project_status')
     {
-        return parent::get($id,$field);
+        return parent::get($id, $field);
     }
 
-    function update($cs='')
+    public function delete($id, $field = 'id_project_status')
     {
-        parent::update($cs);
+        parent::delete($id, $field);
     }
 
-    function delete($id,$field='id_project_status')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
-    	parent::delete($id,$field);
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
+        if ($order != '') {
+            $order = ' ORDER BY ' . $order;
+        }
+        $sql = 'SELECT * FROM `projects_status`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
     }
 
-    function create($cs='')
+    public function counter($where = '')
     {
-        $id = parent::create($cs);
-        return $id;
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
+
+        $sql = 'SELECT count(*) FROM `projects_status` ' . $where;
+
+        $result = $this->bdd->query($sql);
+        return (int)($this->bdd->result($result, 0, 0));
     }
 
-	function select($where='',$order='',$start='',$nb='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
-		if($order != '')
-			$order = ' ORDER BY '.$order;
-		$sql = 'SELECT * FROM `projects_status`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+    public function exist($id, $field = 'id_project_status')
+    {
+        $result = $this->bdd->query('SELECT * FROM `projects_status` WHERE ' . $field . ' = "' . $id . '"');
+        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+    }
 
-		$resultat = $this->bdd->query($sql);
-		$result = array();
-		while($record = $this->bdd->fetch_array($resultat))
-		{
-			$result[] = $record;
-		}
-		return $result;
-	}
+    public function getIdStatus($status)
+    {
+        $result = $this->bdd->query('SELECT id_project_status FROM `projects_status` WHERE status = "' . $status . '"');
+        return (int)($this->bdd->result($result, 0, 0));
+    }
 
-	function counter($where='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
+    public function getLabel($status)
+    {
+        $result = $this->bdd->query('SELECT label FROM `projects_status` WHERE status = "' . $status . '"');
+        return ($this->bdd->result($result, 0, 0));
+    }
 
-		$sql='SELECT count(*) FROM `projects_status` '.$where;
+    public function getLastStatut($id_project)
+    {
+        $result            = $this->bdd->query('SELECT id_project_status FROM projects_status_history WHERE id_project = ' . $id_project . ' ORDER BY id_project_status_history DESC LIMIT 1');
+        $id_project_statut = (int) $this->bdd->result($result, 0, 0);
 
-		$result = $this->bdd->query($sql);
-		return (int)($this->bdd->result($result,0,0));
-	}
+        return parent::get($id_project_statut, 'id_project_status');
+    }
 
-	function exist($id,$field='id_project_status')
-	{
-		$sql = 'SELECT * FROM `projects_status` WHERE '.$field.'="'.$id.'"';
-		$result = $this->bdd->query($sql);
-		return ($this->bdd->fetch_array($result,0,0)>0);
-	}
-
-	function getIdStatus($status)
-	{
-		$sql = 'SELECT id_project_status
-				FROM `projects_status`
-				WHERE status = "'.$status.'"
-				';
-
-		$result = $this->bdd->query($sql);
-		return (int)($this->bdd->result($result,0,0));
-	}
-
-	function getLabel($status)
-	{
-		$sql = 'SELECT label
-				FROM `projects_status`
-				WHERE status = "'.$status.'"
-				';
-
-		$result = $this->bdd->query($sql);
-		return ($this->bdd->result($result,0,0));
-	}
-
-	function getLastStatut($id_project)
-	{
-		$sql = 'SELECT id_project_status
+    public function getLastStatutByMonth($id_project, $month, $year)
+    {
+        $sql = 'SELECT id_project_status
 				FROM `projects_status_history`
-				WHERE id_project = '.$id_project.'
+				WHERE id_project = ' . $id_project . '
+				AND MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year . '
 				ORDER BY added DESC
 				LIMIT 1
 				';
 
-		$result = $this->bdd->query($sql);
-		$id_project_statut = (int)($this->bdd->result($result,0,0));
+        $result            = $this->bdd->query($sql);
+        $id_project_statut = (int)($this->bdd->result($result, 0, 0));
 
-		return parent::get($id_project_statut,'id_project_status');
-	}
+        return parent::get($id_project_statut, 'id_project_status');
+    }
 
-	function getLastStatutByMonth($id_project,$month,$year)
-	{
-		$sql = 'SELECT id_project_status
-				FROM `projects_status_history`
-				WHERE id_project = '.$id_project.'
-				AND MONTH(added) = '.$month.' AND YEAR(added) = '.$year.'
-				ORDER BY added DESC
-				LIMIT 1
-				';
+    public function getNextStatus($iStatus)
+    {
+        return (int) $this->bdd->result($this->bdd->query('SELECT status FROM projects_status WHERE status > ' . $iStatus . ' ORDER BY status ASC LIMIT 1'));
+    }
 
-		$result = $this->bdd->query($sql);
-		$id_project_statut = (int)($this->bdd->result($result,0,0));
+    /**
+     * @param                         $iProjectId
+     * @param projects_status_history $oProjectStatusHistory
+     *
+     * @return array|bool
+     */
+    public function getPossibleStatus($iProjectId, projects_status_history $oProjectStatusHistory)
+    {
+        if ($this->status >= self::REMBOURSEMENT) {
+            $sPossibleStatus = 'status >= '. self::REMBOURSEMENT;
+        } else {
+            switch ($this->status) {
+                case self::ABANDON:
+                    return $this->select('id_project_status = ' . $oProjectStatusHistory->getBeforeLastStatus($iProjectId) . ' OR status = ' . $this->status);
+                case self::A_TRAITER:
+                case self::EN_ATTENTE_PIECES:
+                    $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . $this->status . ', ' . $this->getNextStatus($this->status) . ')';
+                    break;
+                case self::ATTENTE_ANALYSTE:
+                    $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . $this->status . ')';
+                    break;
+                case self::PREP_FUNDING:
+                    $sPossibleStatus = 'status IN (' . self::PREP_FUNDING . ',' . self::A_FUNDER . ')';
+                    break;
+                case self::REJETE:
+                default:
+                    return array();
+            }
+        }
 
-		return parent::get($id_project_statut,'id_project_status');
-	}
-
-
+        return $this->select($sPossibleStatus, 'status ASC');
+    }
 }

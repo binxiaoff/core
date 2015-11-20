@@ -65,7 +65,7 @@
                     <td><?=$this->nbPreteurLogin?></td>
 
                     <th>Fonds déposés :</th>
-                    <td><?=number_format($this->nbFondsDeposes,2,',',' ')?> €</td>
+                    <td><?=$this->ficelle->formatNumber($this->nbFondsDeposes)?> €</td>
 
                     <th>Emprunteurs connectés :</th>
                     <td><?=(isset($this->nbEmprunteurLogin)) ? $this->nbEmprunteurLogin : 0 ?></td>
@@ -78,13 +78,13 @@
                     <td><?=(isset($this->nbInscriptionPreteur)) ? $this->nbInscriptionPreteur : 0 ?></td>
 
                     <th>Fonds prêtés :</th>
-                    <td><?=number_format($this->nbFondsPretes,2,',',' ')?> €</td>
+                    <td><?=$this->ficelle->formatNumber($this->nbFondsPretes)?> €</td>
 
                     <th>Emprunteurs inscrits :</th>
                     <td><?=(isset($this->nbInscriptionEmprunteur)) ? $this->nbInscriptionEmprunteur : 0 ?></td>
 
                     <th>Total capital restant dus :</th>
-                    <td><?=number_format($this->TotalCapitalRestant,2,',',' ')?> €</td>
+                    <td><?=$this->ficelle->formatNumber($this->TotalCapitalRestant)?> €</td>
                 </tr>
             </table>
         </div>
@@ -108,16 +108,16 @@
             <table class="ratioDashboard">
                 <tr>
                     <th>% Dossier :</th>
-                    <td><?=number_format($this->ratioProjects,2,',',' ')?> %</td>
+                    <td><?=$this->ficelle->formatNumber($this->ratioProjects)?> %</td>
 
                     <th>Montant déposé moyen :</th>
-                    <td><?=number_format($this->moyenneDepotsFonds,2,',',' ')?> €</td>
+                    <td><?=$this->ficelle->formatNumber($this->moyenneDepotsFonds)?> €</td>
 
                     <th>part de reprêt sur 1 financement :</th>
-                    <td><?=number_format($this->tauxRepret,2,',',' ')?> %</td>
+                    <td><?=$this->ficelle->formatNumber($this->tauxRepret)?> %</td>
 
                     <th>Taux attrition :</th>
-                    <td><?=number_format($this->tauxAttrition,2,',',' ')?> %</td>
+                    <td><?=$this->ficelle->formatNumber($this->tauxAttrition)?> %</td>
                 </tr>
             </table>
         </div>

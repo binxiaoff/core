@@ -12,29 +12,29 @@
 		navPos = 0,
 		sidPos = 0,
 		footerPos = 0;
-		
+
 	$doc.on('ready', function() {
 		navPos = $('.navigation').offset().top;
-		
+
 		var sidebar_exist = false;
 
 		if ( $('.sidebar').length ) {
 			sidPos = $('.sidebar').offset().top;
 			footerPos = $('.footer').offset().top;
 		}
-		
+
 		// Blink fields
 		$doc.on('focusin', '.field, textarea', function() {
-			
+
 			if ( this.title == this.value ) {
 				var ca = this;
 				window.setTimeout(function() {
 					ca.setSelectionRange(0,0);
 					ca.focus();
         	}, 0);
-				
+
 			}
-			
+
 			// if ( this.title == this.value ) {
 			// 	this.value = '';
 			// }
@@ -70,10 +70,10 @@
 					ca.setSelectionRange(0,0);
 					ca.focus();
         	}, 0);
-				
+
 			}
 		});
-		
+
 		$('.logedin-panel').hover(function(){
 			$(this).find('.dd').stop(true,true).show();
 		},function(){
@@ -83,7 +83,7 @@
 		$('.tooltip-anchor').tooltip();
 
 		$('.custom-select').c2Selectbox();
-		
+
 		$( "#datepicker" ).datepicker({
 			inline: true,
 			changeMonth: true,
@@ -131,25 +131,25 @@
 				$('.progressBar').each(function(){
 					var per = $(this).data('percent');
 					progress(per, $(this));
-				});		
+				});
 			}
 			function progress(percent, $element) {
 				var progressBarWidth = percent * $element.width() / 100;
 				$element.find('div').animate({ width: progressBarWidth }, 1200, function(){
 					var leftP = $(this).width();
-					
-					
-					$(this).find('span').html(percent.toString().replace('.',',') + "%&nbsp;").css('left', leftP);	
+
+
+					$(this).find('span').html(percent.toString().replace('.',',') + "%&nbsp;").css('left', leftP);
 				})
 			}
 		});
-		
+
 		// Pass fields
 		$('.pass-field-holder').each(function(){
 			var $self = $(this),
 				$input = $self.find('input'),
 				$fake = $('<span class="fake-field">' + $input.attr('title') + '</span>');
-			
+
 			$self.append($fake);
 			$fake.on('click', function(){
 				//$fake.hide()
@@ -170,7 +170,7 @@
 				visible: 1
 			}
 		});
-		
+
 		$('.chart-slider').carouFredSel({
 			width: 420,
 			height: 260,
@@ -197,7 +197,7 @@
 						val = $self.val()
 					if ( val.length != 0 || val != '' ) {
 						$self.closest('.uploader').find('input.field').val(val);
-						
+
 						var idx = $('#rule-selector').val();
 						$('.rules-list li[data-rule="'+idx+'"]').addClass('valid');
 					}
@@ -222,7 +222,7 @@
 				val = val.replace(/\\/g, '/').replace(/.*\//, '');
 
 				//$self.closest('.uploader').find('input.field').val(val).addClass('LV_valid_field').closest('.row-upload').addClass('file-uploaded');
-				
+
 				$self.closest('.uploader').find('input.field').val(val).addClass('LV_valid_field').addClass('file-uploaded');
 			}
 		});
@@ -244,13 +244,13 @@
 
 			window.print();
 		});*/
-		
+
 		Highcharts.setOptions({
 			lang: {
 				decimalPoint: ","
 			}
 		});
-		
+
 		// Graphic Chart
 		if ( $('.graphic-box').length ) {
 			var leSoldePourcent = parseFloat($('#leSoldePourcent').html());
@@ -269,7 +269,7 @@
 		        title: {
 		            text: ''
 		        },
-		        
+
 		        plotOptions: {
 		            pie: {
 		                allowPointSelect: true,
@@ -299,7 +299,7 @@
 			var argentPrete = parseFloat($('#argentPrete').html());
 			var argentRemb = parseFloat($('#argentRemb').html());
 			var interets = parseFloat($('#interets').html());
-			
+
 			$('#bar-chart').highcharts({
 	            chart: {
 					backgroundColor:'#fafafa',
@@ -338,7 +338,7 @@
 				tooltip: {
 					valueSuffix: ' €',
 				},
-			
+
 	            plotOptions: {
 		            bar: {
 		            	pointWidth: 35,
@@ -366,11 +366,11 @@
 						color: '#ee5396',
 						y: interets
 					}
-		                
+
 		            ]
 	            }]
 	        });
-			
+
 			if($('#remb1').html() === undefined) var remb1 = 0;
 			else var remb1 = parseFloat($('#remb1').html());
 			if($('#remb2').html() === undefined) var remb2 = 0;
@@ -395,7 +395,7 @@
 			else var remb11 = parseFloat($('#remb11').html());
 			if($('#remb12').html() === undefined) var remb12 = 0;
 			else var remb12 = parseFloat($('#remb12').html());
-			
+
 			if($('#inte1').html() === undefined) var inte1 = 0;
 			else var inte1 = parseFloat($('#inte1').html());
 			if($('#inte2').html() === undefined) var inte2 = 0;
@@ -420,7 +420,7 @@
 			else var inte11 = parseFloat($('#inte11').html());
 			if($('#inte12').html() === undefined) var inte12 = 0;
 			else var inte12 = parseFloat($('#inte12').html());
-			
+
 			$('#bar-mensuels-1').highcharts({
 	            chart: {
 	                type: 'column',
@@ -674,7 +674,7 @@
 	        });
 		}
 	});
-		
+
 		/*$doc.on('click', 'a.popup-close, .close-btn', function(event){
 			event.preventDefault();
 			$.colorbox.close();
@@ -685,13 +685,13 @@
 		if ( $('body').is('.has-fixed-nav') ) {
 			var scrolled = $win.scrollTop();
 			var newfooterPos = footerPos-800;
-			
+
 			if ( scrolled >= navPos ) {
 				$('body').addClass('nav-fixed');
 			} else {
 				$('body').removeClass('nav-fixed');
 			}
-			
+
 			if ( $('.sidebar').length ) {
 				if ( scrolled >= sidPos-60 ) {
 					$('.sidebar').addClass('sidebar-fixed');
@@ -792,13 +792,13 @@ var Form = (function($){
 
 		bindEvents();
 
-		initAutocomplete(settings.selector);
+		initAutocompleteCity();
 		initConditionals(settings.selector);
 		initValidation(settings.selector);
-		
+
 	}
 	function bindEvents(){
-		var timer = null; 
+		var timer = null;
 
 		$(settings.selector).on('submit', function(event){
 			var $form = $(this);
@@ -806,15 +806,15 @@ var Form = (function($){
 			/*if($('.validationRadio1').attr("checked"))
 			{
 				alert('check');
-				
+
 			}
 			else
 			{
-				alert('ncheck');	
+				alert('ncheck');
 			}*/
-			
-			
-			
+
+
+
 			if(
 				$('.LV_invalid_field:visible', $form).length ||
 				$('input.required:visible', $form).value == '' ||
@@ -844,7 +844,7 @@ var Form = (function($){
 						$('html,body').stop(true, true).animate({ scrollTop: $firstVisible.offset().top - 60 }, 'slow');
 					}
 				}, 100);
-				
+
 				return false;
 			}
 		});
@@ -856,8 +856,8 @@ var Form = (function($){
 				fieldTitle = $self[0].title,
 				validators = $self.data('validators').split('&'),
 				validationObject = new LiveValidation(this.id);
-				
-			
+
+
 			for (var i = validators.length - 1; i >= 0; i--) {
 				var str = 'validationObject.add(Validate.' + validators[i] + ')';
 				eval(str);
@@ -870,58 +870,6 @@ var Form = (function($){
 			$self.data('vaildation-instance', validationObject);
 		});
 	}
-
-	/*function initAutocomplete($cnt){
-		$('[data-autocomplete]', $cnt).each(function(){
-			var $field = $(this);
-
-			$field.autocomplete({
-				source: ACData[$field.data('autocomplete')]
-			});
-		});
-
-	}*/
-	
-	function initAutocomplete($cnt){
-		$('[data-autocomplete]', $cnt).each(function(){
-			var $field = $(this);
-			
-			if($field.data('autocomplete') == 'cities')
-			{
-				$field.autocomplete({
-					source: add_url + '/ajax/villes/',
-					minLength: 2,
-					select: function( event, ui ) {
-						
-						if($(this).attr('id') == 'ville_inscription' || $(this).attr('id') == 'ville')
-						{
-							var val = { 
-								ville: ui.item.value
-							}
-							$.post(add_url + '/ajax/autocompleteCp', val).done(function(data) {
-								
-								if(data != 'nok')
-								{
-									$("#postal").val(data);
-								}
-							});
-							
-						}
-					}
-				});	
-			}
-			else if($field.data('autocomplete') == 'postCodes')
-			{
-				$field.autocomplete({
-					source: add_url + '/ajax/villes/cp/',
-					minLength: 2
-				});
-			}
-			
-		});
-
-	}
-	
 
 	function initConditionals($cnt){
 		$('[data-condition]', $cnt).on('change', function(){
@@ -951,7 +899,6 @@ var Form = (function($){
 			}
 		})
 	}
-
 
 	return {
 		initialise: initialise

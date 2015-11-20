@@ -810,32 +810,21 @@
 			<div id="title_etape5">Etape 5</div> 
 			<div id="etape5">
 				<script language="javascript" type="text/javascript">
-				function formUploadCallback (result) {
-					
-					var obj = jQuery.parseJSON(result);
-					var enregistre = '<span style="color:green;">Enregistré</span>' ;
-					if(obj.fichier1 == 'ok'){$(".statut_fichier1").html(enregistre);}
-					if(obj.fichier2 == 'ok'){$(".statut_fichier2").html(enregistre);}
-					if(obj.fichier3 == 'ok'){$(".statut_fichier3").html(enregistre);}
-					if(obj.fichier4 == 'ok'){$(".statut_fichier4").html(enregistre);}
-					if(obj.fichier5 == 'ok'){$(".statut_fichier5").html(enregistre);}
-					if(obj.fichier6 == 'ok'){$(".statut_fichier6").html(enregistre);}
-					if(obj.fichier7 == 'ok'){$(".statut_fichier7").html(enregistre);}
-					if(obj.fichier8 == 'ok'){$(".statut_fichier8").html(enregistre);}
-					if(obj.fichier9 == 'ok'){$(".statut_fichier9").html(enregistre);}
-					if(obj.fichier10 == 'ok'){$(".statut_fichier10").html(enregistre);}
-					if(obj.fichier11 == 'ok'){$(".statut_fichier11").html(enregistre);}
-					if(obj.fichier12 == 'ok'){$(".statut_fichier12").html(enregistre);}
-					if(obj.fichier13 == 'ok'){$(".statut_fichier13").html(enregistre);}
-					if(obj.fichier15 == 'ok'){$(".statut_fichier15").html(enregistre);}
-					if(obj.fichier16 == 'ok'){$(".statut_fichier16").html(enregistre);}
-					if(obj.fichier17 == 'ok'){$(".statut_fichier17").html(enregistre);}
-					
-					//console.log("Upload OK:", result);
-					$("#valid_etape5").slideDown();
-					setTimeout(function() {
-						$("#valid_etape5").slideUp();
-					}, 4000);
+				function formUploadCallback(result) {
+					var aStatus = jQuery.parseJSON(result);
+					if(aStatus.length != 0) {
+						$.each(aStatus, function(fileType, value){
+							if ('ok' == value) {
+								$(".statut_"+fileType).html('Enregistré');
+							}
+
+						});
+						$("#valid_etape5").slideDown();
+						setTimeout(function () {
+							$("#valid_etape5").slideUp();
+						}, 4000);
+					}
+
 				}
 				</script>
 				<form method="post" name="dossier_etape5" id="dossier_etape5" enctype="multipart/form-data" action="<?=$this->lurl?>/dossiers/file/<?=$this->params[0]?>" target="upload_target">
@@ -852,115 +841,18 @@
                                     <th></th>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>Extrait Kbis</td>
-                                        <td><a href="<?=$this->url?>/protected/extrait_kbis/<?=$this->companies_details->fichier_extrait_kbis?>" ><?=$this->companies_details->fichier_extrait_kbis?></a></td>
-                                        <td class="statut_fichier1"><?=($this->companies_details->fichier_extrait_kbis!=''?'Enregistré':'')?></td>
-                                        <td><input type="file" name="fichier1" id="fichier_extrait_kbis" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>RIB</td>
-                                        <td><a href="<?=$this->url?>/protected/rib/<?=$this->companies_details->fichier_rib?>" ><?=$this->companies_details->fichier_rib?></a></td>
-                                        <td class="statut_fichier2"><?=($this->companies_details->fichier_rib!=''?'Enregistré':'')?></td>
-                                        <td><input type="file" name="fichier2" id="fichier_rib" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Délégation de pouvoir </td>
-                                        <td><a href="<?=$this->url?>/protected/delegation_pouvoir/<?=$this->companies_details->fichier_delegation_pouvoir?>" ><?=$this->companies_details->fichier_delegation_pouvoir?></a></td>
-                                        <td class="statut_fichier3"><?=($this->companies_details->fichier_delegation_pouvoir!=''?'Enregistré':'')?></td>
-                                        <td><input type="file" name="fichier3" id="fichier_delegation_pouvoir" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Logo de la société</td>
-                                        <td><a target="_blank" href="<?=$this->surl?>/var/images/logos_companies/<?=$this->companies_details->fichier_logo_societe?>" ><?=$this->companies_details->fichier_logo_societe?></a></td>
-                                        <td class="statut_fichier4"><?=($this->companies_details->fichier_logo_societe!=''?'Enregistré':'')?></td>
-                                        <td><input type="file" name="fichier4" id="fichier_logo_societe" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Photo du dirigeant</td>
-                                        <td><a href="<?=$this->url?>/protected/photo_dirigeant/<?=$this->companies_details->fichier_photo_dirigeant?>" ><?=$this->companies_details->fichier_photo_dirigeant?></a></td>
-                                        <td class="statut_fichier5"><?=($this->companies_details->fichier_photo_dirigeant!=''?'Enregistré':'')?></td>
-                                        <td><input type="file" name="fichier5" id="fichier_photo_dirigeant" /></td>
-                                    </tr>
-                                    
-                                    
-                                    
-                                    
-                                    <tr>
-                                        <td>cni/passeport </td>
-                                        <td><a href="<?=$this->url?>/protected/cni_passeport_emprunteur/<?=$this->companies_details->fichier_cni_passeport?>" ><?=$this->companies_details->fichier_cni_passeport?></a></td>
-                                        <td class="statut_fichier6"><?=($this->companies_details->fichier_cni_passeport!=''?'Enregistré':'')?></td>
-                                        <td><input type="file" name="fichier6" id="fichier_cni_passeport" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Dernière liasse fiscale</td>
-                                        <td><a href="<?=$this->url?>/protected/derniere_liasse_fiscale/<?=$this->companies_details->fichier_derniere_liasse_fiscale?>" ><?=$this->companies_details->fichier_derniere_liasse_fiscale?></a></td>
-                                        <td class="statut_fichier7"><?=($this->companies_details->fichier_derniere_liasse_fiscale!=''?'Enregistré':'')?></td>
-                                        <td><input type="file" name="fichier7" id="fichier_derniere_liasse_fiscale" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Derniers comptes approuvés</td>
-                                        <td><a href="<?=$this->url?>/protected/derniers_comptes_approuves/<?=$this->companies_details->fichier_derniers_comptes_approuves?>" ><?=$this->companies_details->fichier_derniers_comptes_approuves?></a></td>
-                                        <td class="statut_fichier8"><?=($this->companies_details->fichier_derniers_comptes_approuves!=''?'Enregistré':'')?></td>
-                                        <td><input type="file" name="fichier8" id="fichier_derniers_comptes_approuves" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Derniers comptes consolidés du groupe</td>
-                                        <td><a href="<?=$this->url?>/protected/derniers_comptes_consolides_groupe/<?=$this->companies_details->fichier_derniers_comptes_consolides_groupe?>" ><?=$this->companies_details->fichier_derniers_comptes_consolides_groupe?></a></td>
-                                        <td><?=($this->companies_details->fichier_derniers_comptes_consolides_groupe!=''?'Enregistré':'')?></td>
-                                        <td class="statut_fichier9"><input type="file" name="fichier9" id="fichier_derniers_comptes_consolides_groupe" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Annexes et rapport spécial du commissaire aux comptes </td>
-                                        <td><a href="<?=$this->url?>/protected/annexes_rapport_special_commissaire_compte/<?=$this->companies_details->fichier_annexes_rapport_special_commissaire_compte?>" ><?=$this->companies_details->fichier_annexes_rapport_special_commissaire_compte?></a></td>
-                                        <td class="statut_fichier10"><?=($this->companies_details->fichier_annexes_rapport_special_commissaire_compte!=''?'Enregistré':'')?></td>
-                                        <td><input type="file" name="fichier10" id="fichier_annexes_rapport_special_commissaire_compte" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Arrêté comptable récent </td>
-                                        <td><a href="<?=$this->url?>/protected/arret_comptable_recent/<?=$this->companies_details->fichier_arret_comptable_recent?>" ><?=$this->companies_details->fichier_arret_comptable_recent?></a></td>
-                                        <td class="statut_fichier11"><?=($this->companies_details->fichier_arret_comptable_recent!=''?'Enregistré':'')?></td>
-                                        <td><input type="file" name="fichier11" id="fichier_arret_comptable_recent" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Budget de l'exercice en cours et de l'exercice à venir </td>
-                                        <td><a href="<?=$this->url?>/protected/budget_exercice_en_cours_a_venir/<?=$this->companies_details->fichier_budget_exercice_en_cours_a_venir?>" ><?=$this->companies_details->fichier_budget_exercice_en_cours_a_venir?></a></td>
-                                        <td class="statut_fichier12"><?=($this->companies_details->fichier_budget_exercice_en_cours_a_venir!=''?'Enregistré':'')?></td>
-                                        <td><input type="file" name="fichier12" id="fichier_budget_exercice_en_cours_a_venir" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Notation de la Banque de France </td>
-                                        <td><a href="<?=$this->url?>/protected/notation_banque_france/<?=$this->companies_details->fichier_notation_banque_france?>" ><?=$this->companies_details->fichier_notation_banque_france?></a></td>
-                                        <td class="statut_fichier13"><?=($this->companies_details->fichier_notation_banque_france!=''?'Enregistré':'')?></td>
-                                        <td><input type="file" name="fichier13" id="fichier_notation_banque_france" /></td>
-                                    </tr>
-                                    
-                                    
-                                    
-                                    
-                                    <?php /*?><tr>
-                                        <td>Dernier bilan certifié</td>
-                                        <td><a href="<?=$this->url?>/protected/dernier_bilan_certifie/<?=$this->companies_details->fichier_dernier_bilan_certifie?>" ><?=$this->companies_details->fichier_dernier_bilan_certifie?></a></td>
-                                        <td><input type="file" name="fichier14" id="fichier_dernier_bilan_certifie" /></td>
-                                    </tr><?php */?>
-                                    <tr>
-                                        <td>Autre 1</td>
-                                        <td><a href="<?=$this->url?>/protected/autres/<?=$this->companies_details->fichier_autre_1?>" ><?=$this->companies_details->fichier_autre_1?></a></td>
-                                        <td class="statut_fichier15"><?=($this->companies_details->fichier_autre_1!=''?'Enregistré':'')?></td>
-                                        <td><input type="file" name="fichier15" id="fichier_autre_1" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Autre 2</td>
-                                        <td><a href="<?=$this->url?>/protected/autres/<?=$this->companies_details->fichier_autre_2?>" ><?=$this->companies_details->fichier_autre_2?></a></td>
-                                        <td class="statut_fichier16"><?=($this->companies_details->fichier_autre_2!=''?'Enregistré':'')?></td>
-                                        <td><input type="file" name="fichier16" id="fichier_autre_2" /></td>
-                                    </tr>
-                                    <tr>
-                                        <td>Autre 3</td>
-                                        <td><a href="<?=$this->url?>/protected/autres/<?=$this->companies_details->fichier_autre_3?>" ><?=$this->companies_details->fichier_autre_3?></a></td>
-                                        <td class="statut_fichier17"><?=($this->companies_details->fichier_autre_3!=''?'Enregistré':'')?></td>
-                                        <td><input type="file" name="fichier17" id="fichier_autre_3" /></td>
-                                    </tr>
+								<?php foreach($this->aAttachmentTypes as $sAttachmentType): ?>
+									<tr>
+										<td><?=$sAttachmentType['label']?></td>
+										<td>
+											<?php if(isset($this->aAttachments[$sAttachmentType['id']]['path'])): ?>
+												<a href="<?= $this->url ?>/attachment/download/id/<?= $this->aAttachments[$sAttachmentType['id']]['id'] ?>/file/<?= urlencode($this->aAttachments[$sAttachmentType['id']]['path']) ?>"><?= $this->aAttachments[$sAttachmentType['id']]['path'] ?></a>
+											<?php endif; ?>
+										</td>
+										<td class="statut_fichier_<?=$sAttachmentType['id']?>"><?= isset($this->aAttachments[$sAttachmentType['id']]) === true ? 'Enregistré' : '' ?></td>
+										<td><input type="file" name="<?=$sAttachmentType['id']?>" id="fichier_project_<?=$sAttachmentType['id']?>"/></td>
+									</tr>
+								<?php endforeach; ?>
                                 </tbody>
                             </table>
                             <?

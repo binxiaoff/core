@@ -26,7 +26,6 @@ class rootController extends bootstrap
             $paramSlug = isset($this->params[0]) ? $this->params[0] : '';
         }
 
-        // On regarde si on a une redirection sur ce slug
         $this->redirections = $this->loadData('redirections');
 
         if ($this->redirections->get(array('from_slug' => $paramSlug, 'id_langue' => $this->language))) {
@@ -62,7 +61,7 @@ class rootController extends bootstrap
                     die;
                 } else {
                     // source
-                    $this->ficelle->source($_GET['utm_source'], $this->lurl . '/inscription_preteur/etape1', $_GET['utm_source2']);
+                    $this->ficelle->source(isset($_GET['utm_source']) ? $_GET['utm_source'] : '', $this->lurl . '/inscription_preteur/etape1', isset($_GET['utm_source2']) ? $_GET['utm_source2'] : '');
 
                     header('Location:' . $this->lurl . '/inscription_preteur');
                     die;
@@ -71,8 +70,12 @@ class rootController extends bootstrap
 
             // Redirection depot de dossier
             if ($this->tree->id_tree == 128) {
-                $this->ficelle->source($_GET['utm_source'], $this->lurl . '/financement-participatif-pme-empruntez-aupres-du-grand-public', $_GET['utm_source2']);
-                header('Location:' . $this->lurl . '/financement-participatif-pme-empruntez-aupres-du-grand-public');
+                $this->ficelle->source(
+                    isset($_GET['utm_source']) ? $_GET['utm_source'] : '',
+                    $this->lurl . '/lp-depot-de-dossier',
+                    isset($_GET['utm_source2']) ? $_GET['utm_source2'] : ''
+                );
+                header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
                 die;
             }
 
@@ -400,247 +403,12 @@ class rootController extends bootstrap
             ////////////////////////////
 
             if ($this->tree->id_template == 4) {
-                //Recuperation des element de traductions
                 $this->lng['contact'] = $this->ln->selectFront('contact', $this->language, $this->App);
 
-                // Chargement des datas
                 $this->demande_contact = $this->loadData('demande_contact');
 
-                // Form envoyé
                 if (isset($_POST['send_form_contact'])) {
-
-                    $this->demande_contact->demande   = $_POST['demande'];
-                    $this->demande_contact->preciser  = $_POST['preciser'];
-                    $this->demande_contact->nom       = $this->ficelle->majNom($_POST['nom']);
-                    $this->demande_contact->prenom    = $this->ficelle->majNom($_POST['prenom']);
-                    $this->demande_contact->email     = $_POST['email'];
-                    $this->demande_contact->message   = $_POST['message'];
-                    $this->demande_contact->societe   = $_POST['societe'];
-                    $this->demande_contact->telephone = $_POST['telephone'];
-
-                    $this->form_ok = true;
-
-                    $this->error_demande = 'ok';
-                    $this->error_message = 'ok';
-                    $this->error_nom     = 'ok';
-                    $this->error_prenom  = 'ok';
-                    $this->error_email   = 'ok';
-                    $this->error_captcha = 'ok';
-
-                    if (isset($_POST['telephone']) && $_POST['telephone'] != '' && $_POST['telephone'] != $this->lng['contact']['telephone']) {
-                        $this->error_telephone = 'ok';
-
-                        if (! is_numeric($_POST['telephone'])) {
-                            $this->form_ok         = false;
-                            $this->error_telephone = 'nok';
-                        }
-                    }
-
-                    if (! isset($_POST['demande']) || $_POST['demande'] == '' || $_POST['demande'] == 0) {
-                        $this->form_ok       = false;
-                        $this->error_demande = 'nok';
-                    }
-
-                    if (! isset($_POST['nom']) || $_POST['nom'] == '' || $_POST['nom'] == $this->lng['contact']['nom']) {
-                        $this->form_ok   = false;
-                        $this->error_nom = 'nok';
-                    }
-
-                    if (! isset($_POST['prenom']) || $_POST['prenom'] == '' || $_POST['prenom'] == $this->lng['contact']['prenom']) {
-                        $this->form_ok      = false;
-                        $this->error_prenom = 'nok';
-                    }
-
-                    if (! isset($_POST['email']) || $_POST['email'] == '' || $_POST['email'] == $this->lng['contact']['email']) {
-                        $this->form_ok     = false;
-                        $this->error_email = 'nok';
-                    } elseif (! $this->ficelle->isEmail($_POST['email'])) {
-                        $this->form_ok     = false;
-                        $this->error_email = 'nok';
-                    }
-
-                    if (! isset($_POST['message']) || $_POST['message'] == '' || $_POST['message'] == $this->lng['contact']['message']) {
-                        $this->form_ok       = false;
-                        $this->error_message = 'nok';
-                    }
-
-                    if (! isset($_POST['captcha']) || $_POST['captcha'] == '' || $_POST['captcha'] == $this->lng['contact']['captcha']) {
-                        $this->form_ok       = false;
-                        $this->error_captcha = 'nok';
-                    } elseif ($_SESSION['securecode'] != strtolower($_POST['captcha'])) {
-                        $this->form_ok       = false;
-                        $this->error_captcha = 'nok';
-                    }
-
-                    if ($this->form_ok == true) {
-                        $this->confirmation = $this->lng['contact']['confirmation'];
-
-                        if ($this->demande_contact->demande != 5) {
-                            $this->demande_contact->preciser = '';
-                        }
-
-                        $this->demande_contact->create();
-
-                        // Destinataire Unilend
-                        if ($this->demande_contact->demande == 1) {
-                            $this->settings->get('Adresse presse', 'type');
-                        } elseif ($this->demande_contact->demande == 2) {
-                            $this->settings->get('Adresse preteur', 'type');
-                        } elseif ($this->demande_contact->demande == 3) {
-                            $this->settings->get('Adresse emprunteur', 'type');
-                        } elseif ($this->demande_contact->demande == 4) {
-                            $this->settings->get('Adresse recrutement', 'type');
-                        } elseif ($this->demande_contact->demande == 5) {
-                            $this->settings->get('Adresse autre', 'type');
-                        } elseif ($this->demande_contact->demande == 6) {
-                            $this->settings->get('Adresse partenariat', 'type');
-                        }
-
-                        $destinataire = $this->settings->value;
-
-                        // Liste des objets
-                        $objets = array('', 'Relation presse', 'Demande preteur', 'Demande Emprunteur', 'Recrutement', 'Autre', 'Partenariat');
-
-                        //*****************************//
-                        //*** ENVOI DU MAIL CONTACT ***//
-                        //*****************************//
-
-                        // Recuperation du modele de mail
-                        $this->mails_text->get('demande-de-contact', 'lang = "' . $this->language . '" AND type');
-
-                        // Variables du mailing
-                        $surl   = $this->surl;
-                        $url    = $this->lurl;
-                        $email  = $this->demande_contact->email;
-                        $nom    = $this->demande_contact->nom;
-                        $prenom = $this->demande_contact->prenom;
-                        $objet  = $objets[$this->demande_contact->demande];
-
-                        // FB
-                        $this->settings->get('Facebook', 'type');
-                        $lien_fb = $this->settings->value;
-
-                        // Twitter
-                        $this->settings->get('Twitter', 'type');
-                        $lien_tw = $this->settings->value;
-
-                        $pageProjets = $this->tree->getSlug(4, $this->language);
-
-                        // Variables du mailing
-                        $varMail = array(
-                            'surl'     => $surl,
-                            'url'      => $url,
-                            'email_c'  => $email,
-                            'prenom_c' => $prenom,
-                            'nom_c'    => $nom,
-                            'objet'    => $objet,
-                            'projets'  => $this->lurl . '/' . $pageProjets,
-                            'lien_fb'  => $lien_fb,
-                            'lien_tw'  => $lien_tw
-                        );
-
-                        // Construction du tableau avec les balises EMV
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                        // Attribution des données aux variables
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        if ($this->Config['env'] == 'prod') // nmp
-                        {
-                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $_POST['email'], $tabFiler);
-                            // Injection du mail NMP dans la queue
-                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                        } else // non nmp
-                        {
-                            $this->email->addRecipient(trim($_POST['email']));
-                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                        }
-
-                        //***************************************//
-                        //*** ENVOI DU MAIL CONTACT A UNILEND ***//
-                        //***************************************//
-
-                        // Recuperation du modele de mail
-                        $this->mails_text->get('notification-demande-de-contact', 'lang = "' . $this->language . '" AND type');
-
-                        // Variables du mailing
-                        $surl   = $this->surl;
-                        $url    = $this->lurl;
-                        $email  = $this->demande_contact->email;
-                        $nom    = utf8_decode($this->demande_contact->nom);
-                        $prenom = utf8_decode($this->demande_contact->prenom);
-                        $objet  = ($objets[$this->demande_contact->demande]);
-
-                        $this->demande_contact->preciser  = $_POST['preciser'];
-                        $this->demande_contact->nom       = $this->ficelle->majNom($_POST['nom']);
-                        $this->demande_contact->prenom    = $this->ficelle->majNom($_POST['prenom']);
-                        $this->demande_contact->email     = $_POST['email'];
-                        $this->demande_contact->message   = $_POST['message'];
-                        $this->demande_contact->societe   = $_POST['societe'];
-                        $this->demande_contact->telephone = $_POST['telephone'];
-
-                        $infos = '<ul>';
-                        $infos .= '<li>Type demande : ' . $objet . '</li>';
-                        if ($this->demande_contact->demande == 5) {
-                            $infos .= '<li>Preciser :' . utf8_decode($this->demande_contact->preciser) . '</li>';
-                        }
-                        $infos .= '<li>Nom : ' . utf8_decode($this->demande_contact->nom) . '</li>';
-                        $infos .= '<li>Prenom : ' . utf8_decode($this->demande_contact->prenom) . '</li>';
-                        $infos .= '<li>Email : ' . utf8_decode($this->demande_contact->email) . '</li>';
-                        $infos .= '<li>telephone : ' . utf8_decode($this->demande_contact->telephone) . '</li>';
-                        $infos .= '<li>Societe : ' . utf8_decode($this->demande_contact->societe) . '</li>';
-                        $infos .= '<li>Message : ' . utf8_decode($this->demande_contact->message) . '</li>';
-                        $infos .= '</ul>';
-
-                        // Attribution des données aux variables
-                        $sujetMail = $this->mails_text->subject;
-                        eval("\$sujetMail = \"$sujetMail\";");
-
-                        $texteMail = $this->mails_text->content;
-                        eval("\$texteMail = \"$texteMail\";");
-
-                        $exp_name = $this->mails_text->exp_name;
-                        eval("\$exp_name = \"$exp_name\";");
-
-                        // Nettoyage de printemps
-                        $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                        $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->addRecipient(trim($destinataire));
-                        $this->email->setReplyTo(utf8_decode($this->demande_contact->email),
-                            utf8_decode($this->demande_contact->nom) . ' ' . utf8_decode($this->demande_contact->prenom));
-
-                        $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-                        $this->email->setHTMLBody($texteMail);
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-
-                        $this->demande_contact->demande   = '';
-                        $this->demande_contact->preciser  = '';
-                        $this->demande_contact->nom       = '';
-                        $this->demande_contact->prenom    = '';
-                        $this->demande_contact->email     = '';
-                        $this->demande_contact->message   = '';
-                        $this->demande_contact->societe   = '';
-                        $this->demande_contact->telephone = '';
-
-                        $this->error_demande = '';
-                        $this->error_message = '';
-                        $this->error_nom     = '';
-                        $this->error_prenom  = '';
-                        $this->error_email   = '';
-                        $this->error_captcha = '';
-                    }
+                    $this->contactForm();
                 }
             }
 
@@ -671,7 +439,7 @@ class rootController extends bootstrap
 
                 // ensemblee des fonds recupérés
                 $compteurFonds = $this->transactions->sum('type_transaction = 9', 'montant_unilend-montant');
-                $compteurFonds = number_format(($compteurFonds / 100), 0, ',', ' ');
+                $compteurFonds = $this->ficelle->formatNumber(($compteurFonds / 100), 0);
                 $tabCompteur   = str_split($compteurFonds);
 
                 $this->compteur = '';
@@ -833,19 +601,9 @@ class rootController extends bootstrap
                 $this->setView('../templates/' . $this->templates->slug, true);
             }
         } else {
-            // On regarde si on a une redirection sur ce slug
-            $this->redirections = $this->loadData('redirections');
-
-            if ($this->redirections->get(array('from_slug' => $paramSlug, 'id_langue' => $this->language))) {
-                header('Location:' . $this->lurl . '/' . $this->redirections->to_slug, true, 301);
-                die;
-            } else {
-                //header("HTTP/1.0 404 Not Found");
-                header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
-                $this->setView('../root/404');
-            }
+            header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
+            $this->setView('../root/404');
         }
-
     }
 
     public function _logout()
@@ -1365,15 +1123,11 @@ class rootController extends bootstrap
     // Enregistrement et lecture du pdf cgv
     public function _pdf_cgv_preteurs()
     {
-        // Inclusion controller pdf
-        include($this->path . '/apps/default/controllers/pdf.php');
-        // Si connecté
-        if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
+        include_once $this->path . '/apps/default/controllers/pdf.php';
 
-            // on regarde si c'est bien un preteur
+        if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
             $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'preteur', $this->clients->id_client);
 
-            // CGU
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $id_tree_cgu = $this->settings->value;
 
@@ -1390,26 +1144,21 @@ class rootController extends bootstrap
 
             // si c'est un ancien cgv de la liste on lance le pdf
             if (in_array($id_tree_cgu, array(92, 95, 93, 254, 255))) {
-                $name = $this->content['pdf-cgu'];
-
-                header("Content-disposition: attachment; filename=" . $name);
+                header("Content-disposition: attachment; filename=" . $this->content['pdf-cgu']);
                 header("Content-Type: application/force-download");
                 @readfile($this->surl . '/var/fichiers/' . $this->content['pdf-cgu']);
             } else {
-
+                $oCommandPdf    = new Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
+                $oPdf           = new pdfController($oCommandPdf, $this->Config, 'default');
                 $path           = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client . '/';
-                $sNamePdf       = 'CGV-UNILEND-PRETEUR-' . $this->clients->hash . '-' . $id_tree_cgu;
+                $sNamePdf       = 'cgv_preteurs-' . $this->clients->hash . '-' . $id_tree_cgu;
                 $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
 
-                $this->tree->get(array('id_tree' => $id_tree_cgu, 'id_langue' => 'fr'));
+                if (false === file_exists($path . $sNamePdf)) {
+                    $this->_cgv_preteurs(true, $oPdf, array($this->clients->hash));
+                    $oPdf->WritePdf($path . $sNamePdf, 'cgv_preteurs');
+                }
 
-                // Génération pdf
-                $oCommandPdf = new Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
-                $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-
-                $this->_cgv_preteurs(true, $oPdf, array($this->clients->hash));
-
-                $oPdf->WritePdf($path . $sNamePdf, 'cgv_preteurs');
                 $oPdf->ReadPdf($path . $sNamePdf, $sNamePdfClient);
             }
         }
@@ -1421,16 +1170,13 @@ class rootController extends bootstrap
     {
         $this->params = (false === is_null($aParams)) ? $aParams : $this->params;
 
-        // DATAS
         $this->pays                    = $this->loadData('pays_v2');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->companies               = $this->loadData('companies');
 
-        // CGU
         $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
         $id_tree_cgu = $this->settings->value;
 
-        // Recuperation du contenu de la page
         $contenu = $this->tree_elements->select('id_tree = "' . $id_tree_cgu . '" AND id_langue = "' . $this->language . '"');
         foreach ($contenu as $elt) {
             $this->elements->get($elt['id_element']);
@@ -1438,14 +1184,10 @@ class rootController extends bootstrap
             $this->complement[$this->elements->slug] = $elt['complement'];
         }
 
-        // Si connecté ou si on a le hash du client
         if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
-
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-            // Si c'est le pdf qui appel on retire les truc en trop
             if (isset($this->params[0]) && $this->params[0] != 'morale' && $this->params[0] != 'nosign') {
-                // On masque les Head, header et footer originaux plus le debug
                 $this->autoFireHeader = false;
                 $this->autoFireHead   = true;
                 $this->autoFireFooter = false;
@@ -1454,8 +1196,6 @@ class rootController extends bootstrap
 
             // Particulier
             if (in_array($this->clients->type, array(1, 3))) {
-
-                // Date naissance
                 $naissance = date('d/m/Y', strtotime($this->clients->naissance));
 
                 // Pays fiscal
@@ -1472,22 +1212,19 @@ class rootController extends bootstrap
                     $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC');
                     $dateAccept  = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($listeAccept[0]['added'])); // date dernier CGV
                 }
-                $variables = array('[Civilite]', '[Prenom]', '[Nom]', '[date]', '[ville_naissance]', '[adresse_fiscale]', '[date_validation_cgv]');
 
-                // Contenu
-                $contentVariables = array(
-                    $this->clients->civilite,
-                    $this->clients->prenom,
-                    $this->clients->nom,
-                    $naissance,
-                    $this->clients->ville_naissance,
-                    $this->clients_adresses->adresse_fiscal . ', ' . $this->clients_adresses->ville_fiscal . ', ' . $this->clients_adresses->cp_fiscal . ', ' . $pays_fiscal,
-                    $dateAccept
+                $aReplacements = array(
+                    '[Civilite]'            => $this->clients->civilite,
+                    '[Prenom]'              => utf8_encode($this->clients->prenom),
+                    '[Nom]'                 => utf8_encode($this->clients->nom),
+                    '[date]'                => $naissance,
+                    '[ville_naissance]'     => utf8_encode($this->clients->ville_naissance),
+                    '[adresse_fiscale]'     => utf8_encode($this->clients_adresses->adresse_fiscal . ', ' . $this->clients_adresses->ville_fiscal . ', ' . $this->clients_adresses->cp_fiscal . ', ' . $pays_fiscal),
+                    '[date_validation_cgv]' => $dateAccept
                 );
 
-                $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement']);
+                $this->mandat_de_recouvrement = str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement']);
             } else { // Entreprise
-
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
 
                 // Pays fiscal
@@ -1504,38 +1241,260 @@ class rootController extends bootstrap
                     $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC');
                     $dateAccept  = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($listeAccept[0]['added'])); // date dernier CGV
                 }
-                $variables = array('[Civilite]', '[Prenom]', '[Nom]', '[Fonction]', '[Raison_sociale]', '[adresse_fiscale]', '[date_validation_cgv]');
 
-                $contentVariables = array(
-                    $this->clients->civilite,
-                    $this->clients->prenom,
-                    $this->clients->nom,
-                    $this->clients->fonction,
-                    $this->companies->name,
-                    $this->companies->adresse1 . ', ' . $this->companies->zip . ', ' . $this->companies->city . ', ' . $pays_fiscal,
-                    $dateAccept
+                $aReplacements = array(
+                    '[Civilite]'            => $this->clients->civilite,
+                    '[Prenom]'              => utf8_encode($this->clients->prenom),
+                    '[Nom]'                 => utf8_encode($this->clients->nom),
+                    '[Fonction]'            => utf8_encode($this->clients->fonction),
+                    '[Raison_sociale]'      => utf8_encode($this->companies->name),
+                    '[adresse_fiscale]'     => utf8_encode($this->companies->adresse1 . ', ' . $this->companies->zip . ', ' . $this->companies->city . ', ' . $pays_fiscal),
+                    '[date_validation_cgv]' => $dateAccept
                 );
 
-                $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement-personne-morale']);
+                $this->mandat_de_recouvrement = str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement-personne-morale']);
             }
-        } else { // Si pas connecté
-            if (isset($this->params[0]) && $this->params[0] == 'morale') {
-                $variables                    = array('[Civilite]', '[Prenom]', '[Nom]', '[Fonction]', '[Raison_sociale]', '[adresse_fiscale]', '[date_validation_cgv]');
-                $tabVariables                 = explode(';', $this->content['contenu-variables-par-defaut-morale']);
-                $contentVariables             = $tabVariables;
-                $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement-personne-morale']);
-            } else {
-                $variables    = array('[Civilite]', '[Prenom]', '[Nom]', '[date]', '[ville_naissance]', '[adresse_fiscale]', '[date_validation_cgv]');
-                $tabVariables = explode(';', $this->content['contenu-variables-par-defaut']);
+        } elseif (isset($this->params[0]) && $this->params[0] == 'morale') {
+            $variables                    = array('[Civilite]', '[Prenom]', '[Nom]', '[Fonction]', '[Raison_sociale]', '[adresse_fiscale]', '[date_validation_cgv]');
+            $tabVariables                 = explode(';', $this->content['contenu-variables-par-defaut-morale']);
+            $contentVariables             = $tabVariables;
+            $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement-personne-morale']);
+        } else {
+            $variables    = array('[Civilite]', '[Prenom]', '[Nom]', '[date]', '[ville_naissance]', '[adresse_fiscale]', '[date_validation_cgv]');
+            $tabVariables = explode(';', $this->content['contenu-variables-par-defaut']);
 
-                $contentVariables             = $tabVariables;
-                $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement']);
-            }
+            $contentVariables             = $tabVariables;
+            $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement']);
         }
 
         if (true === $bPdf && false === is_null($oPdf)) {
             $this->content['mandatRecouvrement'] = $this->mandat_de_recouvrement;
             $oPdf->setDisplay('cgv_preteurs', $this->content);
+        }
+    }
+
+    public function contactForm()
+    {
+        $this->lng['contact'] = $this->ln->selectFront('contact', $this->language, $this->App);
+
+        $this->demande_contact            = $this->loadData('demande_contact');
+        $this->demande_contact->demande   = $_POST['demande'];
+        $this->demande_contact->preciser  = '';
+        $this->demande_contact->nom       = $this->ficelle->majNom($_POST['nom']);
+        $this->demande_contact->prenom    = $this->ficelle->majNom($_POST['prenom']);
+        $this->demande_contact->email     = $_POST['email'];
+        $this->demande_contact->message   = $_POST['message'];
+        $this->demande_contact->societe   = $_POST['societe'];
+        $this->demande_contact->telephone = $_POST['telephone'];
+
+        $this->form_ok = true;
+
+        $this->error_demande = 'ok';
+        $this->error_message = 'ok';
+        $this->error_nom     = 'ok';
+        $this->error_prenom  = 'ok';
+        $this->error_email   = 'ok';
+        $this->error_captcha = 'ok';
+
+        if (isset($_POST['telephone']) && $_POST['telephone'] != '' && $_POST['telephone'] != $this->lng['contact']['telephone']) {
+            $this->error_telephone = 'ok';
+
+            if (! is_numeric($_POST['telephone'])) {
+                $this->form_ok         = false;
+                $this->error_telephone = 'nok';
+            }
+        }
+
+        if (! isset($_POST['demande']) || $_POST['demande'] == '' || $_POST['demande'] == 0) {
+            $this->form_ok       = false;
+            $this->error_demande = 'nok';
+        }
+
+        if (! isset($_POST['nom']) || $_POST['nom'] == '' || $_POST['nom'] == $this->lng['contact']['nom']) {
+            $this->form_ok   = false;
+            $this->error_nom = 'nok';
+        }
+
+        if (! isset($_POST['prenom']) || $_POST['prenom'] == '' || $_POST['prenom'] == $this->lng['contact']['prenom']) {
+            $this->form_ok      = false;
+            $this->error_prenom = 'nok';
+        }
+
+        if (! isset($_POST['email']) || $_POST['email'] == '' || $_POST['email'] == $this->lng['contact']['email']) {
+            $this->form_ok     = false;
+            $this->error_email = 'nok';
+        } elseif (! $this->ficelle->isEmail($_POST['email'])) {
+            $this->form_ok     = false;
+            $this->error_email = 'nok';
+        }
+
+        if (! isset($_POST['message']) || $_POST['message'] == '' || $_POST['message'] == $this->lng['contact']['message']) {
+            $this->form_ok       = false;
+            $this->error_message = 'nok';
+        }
+
+        if (! isset($_POST['captcha']) || $_POST['captcha'] == '' || $_POST['captcha'] == $this->lng['contact']['captcha']) {
+            $this->form_ok       = false;
+            $this->error_captcha = 'nok';
+        } elseif ($_SESSION['securecode'] != strtolower($_POST['captcha'])) {
+            $this->form_ok       = false;
+            $this->error_captcha = 'nok';
+        }
+
+        if ($this->form_ok == true) {
+            $this->confirmation = $this->lng['contact']['confirmation'];
+
+            if ($this->demande_contact->demande != 5) {
+                $this->demande_contact->preciser = '';
+            }
+
+            $this->demande_contact->create();
+
+            // Destinataire Unilend
+            if ($this->demande_contact->demande == 1) {
+                $this->settings->get('Adresse presse', 'type');
+            } elseif ($this->demande_contact->demande == 2) {
+                $this->settings->get('Adresse preteur', 'type');
+            } elseif ($this->demande_contact->demande == 3) {
+                $this->settings->get('Adresse emprunteur', 'type');
+            } elseif ($this->demande_contact->demande == 4) {
+                $this->settings->get('Adresse recrutement', 'type');
+            } elseif ($this->demande_contact->demande == 5) {
+                $this->settings->get('Adresse autre', 'type');
+            } elseif ($this->demande_contact->demande == 6) {
+                $this->settings->get('Adresse partenariat', 'type');
+            }
+
+            $destinataire = $this->settings->value;
+
+            // Liste des objets
+            $objets = array('', 'Relation presse', 'Demande preteur', 'Demande Emprunteur', 'Recrutement', 'Autre', 'Partenariat');
+
+            //*****************************//
+            //*** ENVOI DU MAIL CONTACT ***//
+            //*****************************//
+
+            $this->mails_text->get('demande-de-contact', 'lang = "' . $this->language . '" AND type');
+
+            $surl   = $this->surl;
+            $url    = $this->lurl;
+            $email  = $this->demande_contact->email;
+            $nom    = $this->demande_contact->nom;
+            $prenom = $this->demande_contact->prenom;
+            $objet  = $objets[$this->demande_contact->demande];
+
+            $this->settings->get('Facebook', 'type');
+            $lien_fb = $this->settings->value;
+
+            $this->settings->get('Twitter', 'type');
+            $lien_tw = $this->settings->value;
+
+            $pageProjets = $this->tree->getSlug(4, $this->language);
+
+            $varMail = array(
+                'surl'     => $surl,
+                'url'      => $url,
+                'email_c'  => $email,
+                'prenom_c' => $prenom,
+                'nom_c'    => $nom,
+                'objet'    => $objet,
+                'projets'  => $this->lurl . '/' . $pageProjets,
+                'lien_fb'  => $lien_fb,
+                'lien_tw'  => $lien_tw
+            );
+
+            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+            $this->email = $this->loadLib('email');
+            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+            $this->email->setSubject(stripslashes($sujetMail));
+            $this->email->setHTMLBody(stripslashes($texteMail));
+
+            if ($this->Config['env'] == 'prod') {
+                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $_POST['email'], $tabFiler);
+                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+            } else {
+                $this->email->addRecipient(trim($_POST['email']));
+                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            }
+
+            //***************************************//
+            //*** ENVOI DU MAIL CONTACT A UNILEND ***//
+            //***************************************//
+
+            // Recuperation du modele de mail
+            $this->mails_text->get('notification-demande-de-contact', 'lang = "' . $this->language . '" AND type');
+
+            $surl   = $this->surl;
+            $url    = $this->lurl;
+            $email  = $this->demande_contact->email;
+            $nom    = utf8_decode($this->demande_contact->nom);
+            $prenom = utf8_decode($this->demande_contact->prenom);
+            $objet  = ($objets[$this->demande_contact->demande]);
+
+            $this->demande_contact->preciser  = $_POST['preciser'];
+            $this->demande_contact->nom       = $this->ficelle->majNom($_POST['nom']);
+            $this->demande_contact->prenom    = $this->ficelle->majNom($_POST['prenom']);
+            $this->demande_contact->email     = $_POST['email'];
+            $this->demande_contact->message   = $_POST['message'];
+            $this->demande_contact->societe   = $_POST['societe'];
+            $this->demande_contact->telephone = $_POST['telephone'];
+
+            $infos = '<ul>';
+            $infos .= '<li>Type demande : ' . $objet . '</li>';
+            if ($this->demande_contact->demande == 5) {
+                $infos .= '<li>Preciser :' . utf8_decode($this->demande_contact->preciser) . '</li>';
+            }
+            $infos .= '<li>Nom : ' . utf8_decode($this->demande_contact->nom) . '</li>';
+            $infos .= '<li>Prenom : ' . utf8_decode($this->demande_contact->prenom) . '</li>';
+            $infos .= '<li>Email : ' . utf8_decode($this->demande_contact->email) . '</li>';
+            $infos .= '<li>telephone : ' . utf8_decode($this->demande_contact->telephone) . '</li>';
+            $infos .= '<li>Societe : ' . utf8_decode($this->demande_contact->societe) . '</li>';
+            $infos .= '<li>Message : ' . utf8_decode($this->demande_contact->message) . '</li>';
+            $infos .= '</ul>';
+
+            $sujetMail = $this->mails_text->subject;
+            eval("\$sujetMail = \"$sujetMail\";");
+
+            $texteMail = $this->mails_text->content;
+            eval("\$texteMail = \"$texteMail\";");
+
+            $exp_name = $this->mails_text->exp_name;
+            eval("\$exp_name = \"$exp_name\";");
+
+            $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
+            $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
+
+            $this->email = $this->loadLib('email');
+            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+            $this->email->addRecipient(trim($destinataire));
+            $this->email->setReplyTo(utf8_decode($this->demande_contact->email),
+                utf8_decode($this->demande_contact->nom) . ' ' . utf8_decode($this->demande_contact->prenom));
+
+            $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
+            $this->email->setHTMLBody($texteMail);
+
+            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+
+            $this->demande_contact->demande   = '';
+            $this->demande_contact->preciser  = '';
+            $this->demande_contact->nom       = '';
+            $this->demande_contact->prenom    = '';
+            $this->demande_contact->email     = '';
+            $this->demande_contact->message   = '';
+            $this->demande_contact->societe   = '';
+            $this->demande_contact->telephone = '';
+
+            $this->error_demande = '';
+            $this->error_message = '';
+            $this->error_nom     = '';
+            $this->error_prenom  = '';
+            $this->error_email   = '';
+            $this->error_captcha = '';
         }
     }
 }

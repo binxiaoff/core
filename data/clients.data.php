@@ -111,7 +111,7 @@ class clients extends clients_crud
         }
     }
 
-    public function handleLogout()
+    public function handleLogout($bRedirect = true)
     {
         unset($_SESSION['auth']);
         unset($_SESSION['token']);
@@ -119,7 +119,9 @@ class clients extends clients_crud
         unset($_SESSION['panier']);
         unset($_SESSION['partenaire']);
 
-        header('location:http://' . $_SERVER['HTTP_HOST'] . '/' . $this->params['lng'] . $this->loginPage);
+        if ($bRedirect) {
+            header('Location: http://' . $_SERVER['HTTP_HOST'] . '/' . $this->params['lng'] . $this->loginPage);
+        }
     }
 
     public function login($email, $pass)
@@ -172,7 +174,7 @@ class clients extends clients_crud
         $sql = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '"';
         $res = $this->bdd->query($sql);
 
-        if ($this->bdd->num_rows($res) == 1) {
+        if ($this->bdd->num_rows($res) >= 1) {
             return false;
         } else {
             return true;
@@ -201,12 +203,12 @@ class clients extends clients_crud
 
     public function getLastStatut($id_client)
     {
-        $sql              = 'SELECT id_client_status
-				FROM `clients_status_history`
-				WHERE id_client = ' . $id_client . '
-				ORDER BY added DESC
-				LIMIT 1
-				';
+        $sql = 'SELECT id_client_status
+                FROM `clients_status_history`
+                WHERE id_client = ' . $id_client . '
+                ORDER BY added DESC
+                LIMIT 1
+                ';
         $result           = $this->bdd->query($sql);
         $id_client_status = (int) ($this->bdd->result($result, 0, 0));
 
@@ -220,8 +222,8 @@ class clients extends clients_crud
     public function checkCompteCreate($id_client)
     {
         $sql    = 'SELECT count(*)
-				FROM `clients_status_history`
-				WHERE id_client = ' . $id_client;
+                FROM `clients_status_history`
+                WHERE id_client = ' . $id_client;
         $result = $this->bdd->query($sql);
         $nb     = (int) ($this->bdd->result($result, 0, 0));
 
@@ -305,7 +307,7 @@ class clients extends clients_crud
 
     public function searchEmprunteurs($ref = '', $nom = '', $email = '', $prenom = '', $societe = '', $siret = '', $status = '', $start = '', $nb = '')
     {
-        $where = 'WHERE 1 = 1';
+        $where = '1 = 1';
 
         if ($ref != '') {
             $where .= ' AND c.id_client IN(' . $ref . ')';
@@ -329,11 +331,16 @@ class clients extends clients_crud
             $where .= ' AND c.status LIKE "%' . $status . '%"';
         }
 
-        $where .= ' AND c.status_pre_emp > 1';
-
-        $sql      = 'SELECT c.*,co.* FROM clients c LEFT JOIN companies co ON c.id_client = co.id_client_owner ' . $where . ' GROUP BY c.id_client ORDER BY c.id_client DESC' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-        $resultat = $this->bdd->query($sql);
         $result   = array();
+        $resultat = $this->bdd->query('
+            SELECT c.*,
+                co.*
+            FROM clients c
+            LEFT JOIN companies co ON c.id_client = co.id_client_owner
+            WHERE ' . $where . '
+            GROUP BY c.id_client
+            ORDER BY c.id_client DESC' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''))
+        );
 
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
@@ -381,12 +388,12 @@ class clients extends clients_crud
         }
 
         $sql = 'SELECT l.*,c.*,co.*
-		FROM lenders_accounts l
-		LEFT JOIN clients c ON c.id_client = l.id_client_owner
-		LEFT JOIN companies co ON co.id_company = l.id_company_owner
-		' . $where . '
-		GROUP BY l.id_lender_account
-		ORDER BY l.id_lender_account DESC' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        FROM lenders_accounts l
+        LEFT JOIN clients c ON c.id_client = l.id_client_owner
+        LEFT JOIN companies co ON co.id_company = l.id_company_owner
+        ' . $where . '
+        GROUP BY l.id_lender_account
+        ORDER BY l.id_lender_account DESC' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -444,41 +451,41 @@ class clients extends clients_crud
         $where .= $and;
 
         $sql = "
-		SELECT
-			la.id_lender_account as id_lender_account,
-			c.id_client as id_client,
-			c.status as status,
-			c.email as email,
-			c.telephone as telephone,
-			c.status_inscription_preteur as status_inscription_preteur,
-			(SELECT ROUND(SUM(t.montant/100),2) FROM transactions t WHERE t.etat = 1 AND t.status = 1 AND t.id_client = c.id_client AND t.type_transaction NOT IN (9,6)) as solde,
-			(SELECT COUNT(amount) FROM loans l WHERE l.id_lender = la.id_lender_account) as bids_valides,
-			(SELECT COUNT(amount) FROM bids b WHERE b.id_lender_account = la.id_lender_account AND b.status = 0) as bids_encours,
+        SELECT
+            la.id_lender_account as id_lender_account,
+            c.id_client as id_client,
+            c.status as status,
+            c.email as email,
+            c.telephone as telephone,
+            c.status_inscription_preteur as status_inscription_preteur,
+            (SELECT ROUND(SUM(t.montant/100),2) FROM transactions t WHERE t.etat = 1 AND t.status = 1 AND t.id_client = c.id_client AND t.type_transaction NOT IN (9,6)) as solde,
+            (SELECT COUNT(amount) FROM loans l WHERE l.id_lender = la.id_lender_account) as bids_valides,
+            (SELECT COUNT(amount) FROM bids b WHERE b.id_lender_account = la.id_lender_account AND b.status = 0) as bids_encours,
 
-			CASE la.id_company_owner
-				WHEN 0 THEN c.prenom
-				ELSE
-					(SELECT
-						CASE co.status_client
-							WHEN 1 THEN CONCAT(c.prenom,' ',c.nom)
-							ELSE CONCAT(co.prenom_dirigeant,' ',co.nom_dirigeant)
-						END as dirigeant
-					 FROM companies co WHERE co.id_company = la.id_company_owner)
-			END as prenom_ou_dirigeant,
-			CASE la.id_company_owner
-				WHEN 0 THEN c.nom
-				ELSE (SELECT co.name FROM companies co WHERE co.id_company = la.id_company_owner)
-			END as nom_ou_societe,
-			CASE la.id_company_owner
-				WHEN 0 THEN REPLACE(c.nom_usage,'Nom D\'usage','')
-				ELSE ''
-			END as nom_usage
-		FROM lenders_accounts la
-		LEFT JOIN clients c ON c.id_client = la.id_client_owner
-		LEFT JOIN companies co ON co.id_company = la.id_company_owner
-		" . $where . "
-		GROUP BY la.id_lender_account
-		ORDER BY la.id_lender_account DESC " . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+            CASE la.id_company_owner
+                WHEN 0 THEN c.prenom
+                ELSE
+                    (SELECT
+                        CASE co.status_client
+                            WHEN 1 THEN CONCAT(c.prenom,' ',c.nom)
+                            ELSE CONCAT(co.prenom_dirigeant,' ',co.nom_dirigeant)
+                        END as dirigeant
+                     FROM companies co WHERE co.id_company = la.id_company_owner)
+            END as prenom_ou_dirigeant,
+            CASE la.id_company_owner
+                WHEN 0 THEN c.nom
+                ELSE (SELECT co.name FROM companies co WHERE co.id_company = la.id_company_owner)
+            END as nom_ou_societe,
+            CASE la.id_company_owner
+                WHEN 0 THEN REPLACE(c.nom_usage,'Nom D\'usage','')
+                ELSE ''
+            END as nom_usage
+        FROM lenders_accounts la
+        LEFT JOIN clients c ON c.id_client = la.id_client_owner
+        LEFT JOIN companies co ON co.id_company = la.id_company_owner
+        " . $where . "
+        GROUP BY la.id_lender_account
+        ORDER BY la.id_lender_account DESC " . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -500,35 +507,35 @@ class clients extends clients_crud
     public function selectPreteurs($dateMoins1Mois)
     {
         $sql = '
-		SELECT
-			c.id_client,
-		   la.id_lender_account,
-		   c.type,
-		   la.exonere,
-		   la.debut_exoneration,
-		   la.fin_exoneration,
-		   e.id_project,
-		   e.id_loan,
-		   e.ordre,
-		   e.montant,
-		   e.capital,
-		   e.interets,
-		   e.prelevements_obligatoires,
-		   e.retenues_source,
-		   e.csg,
-		   e.prelevements_sociaux,
-		   e.contributions_additionnelles,
-		   e.prelevements_solidarite,
-		   e.crds,
-		   e.date_echeance,
-		   e.date_echeance_reel,
-		   e.status,
-		   e.date_echeance_emprunteur,
-		   e.date_echeance_emprunteur_reel
-		FROM echeanciers e
-		LEFT JOIN lenders_accounts la  ON la.id_lender_account = e.id_lender
-		LEFT JOIN clients c ON c.id_client = la.id_client_owner
-		WHERE LEFT(e.date_echeance_reel,7) = "' . $dateMoins1Mois . '" AND e.status = 1 ORDER BY e.date_echeance ASC';
+        SELECT
+            c.id_client,
+           la.id_lender_account,
+           c.type,
+           la.exonere,
+           la.debut_exoneration,
+           la.fin_exoneration,
+           e.id_project,
+           e.id_loan,
+           e.ordre,
+           e.montant,
+           e.capital,
+           e.interets,
+           e.prelevements_obligatoires,
+           e.retenues_source,
+           e.csg,
+           e.prelevements_sociaux,
+           e.contributions_additionnelles,
+           e.prelevements_solidarite,
+           e.crds,
+           e.date_echeance,
+           e.date_echeance_reel,
+           e.status,
+           e.date_echeance_emprunteur,
+           e.date_echeance_emprunteur_reel
+        FROM echeanciers e
+        LEFT JOIN lenders_accounts la  ON la.id_lender_account = e.id_lender
+        LEFT JOIN clients c ON c.id_client = la.id_client_owner
+        WHERE LEFT(e.date_echeance_reel,7) = "' . $dateMoins1Mois . '" AND e.status = 1 ORDER BY e.date_echeance ASC';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -552,20 +559,20 @@ class clients extends clients_crud
         }
 
         $sql = '
-			SELECT
-				c.*,
-				(SELECT cs.status FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as status_client,
-				(SELECT cs.label FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as label_status,
-				(SELECT csh.added FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as added_status,
-				(SELECT csh.id_client_status_history FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as id_client_status_history,
-				l.id_company_owner as id_company,
-				l.type_transfert as type_transfert,
-				l.motif as motif,
-				l.fonds,
-				l.id_lender_account as id_lender
-			FROM clients c
-			LEFT JOIN lenders_accounts l ON c.id_client = l.id_client_owner
-			' . $where . $status . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+            SELECT
+                c.*,
+                (SELECT cs.status FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as status_client,
+                (SELECT cs.label FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as label_status,
+                (SELECT csh.added FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as added_status,
+                (SELECT csh.id_client_status_history FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) as id_client_status_history,
+                l.id_company_owner as id_company,
+                l.type_transfert as type_transfert,
+                l.motif as motif,
+                l.fonds,
+                l.id_lender_account as id_lender
+            FROM clients c
+            LEFT JOIN lenders_accounts l ON c.id_client = l.id_client_owner
+            ' . $where . $status . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -588,12 +595,12 @@ class clients extends clients_crud
         }
 
         $sql = '
-			SELECT
-				c.id_client,
-				l.id_lender_account as id_lender
-			FROM clients c
-			LEFT JOIN lenders_accounts l ON c.id_client = l.id_client_owner
-			WHERE (SELECT cs.status FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) IN (' . $status . ')' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+            SELECT
+                c.id_client,
+                l.id_lender_account as id_lender
+            FROM clients c
+            LEFT JOIN lenders_accounts l ON c.id_client = l.id_client_owner
+            WHERE (SELECT cs.status FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) IN (' . $status . ')' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -605,24 +612,24 @@ class clients extends clients_crud
 
     public function update_added($date, $id_client)
     {
-        $sql = "UPDATE `unilend`.`clients` SET `added` = '" . $date . "' WHERE `clients`.`id_client` = " . $id_client . ";";
+        $sql = "UPDATE clients SET added = '" . $date . "' WHERE id_client = " . $id_client;
         $this->bdd->query($sql);
     }
 
     public function get_prospects()
     {
-        $sql = 'SELECT *
-				FROM `clients` c
-					LEFT JOIN clients_adresses ca ON (ca.id_client = c.id_client)
-				WHERE c.added < "2014-07-31 00:00:00"
-				AND c.status = 0
-				AND c.telephone = ""
-				AND c.mobile = ""
-				AND ca.	adresse1 = ""
-				AND ca.cp = ""
-				AND ca.ville = ""
-				AND c.email != ""
-				';
+        $sql = '
+            SELECT *
+            FROM clients c
+            LEFT JOIN clients_adresses ca ON (ca.id_client = c.id_client)
+            WHERE c.added < "2014-07-31 00:00:00"
+                AND c.status = 0
+                AND c.telephone = ""
+                AND c.mobile = ""
+                AND ca.    adresse1 = ""
+                AND ca.cp = ""
+                AND ca.ville = ""
+                AND c.email != ""';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -652,5 +659,76 @@ class clients extends clients_crud
 
         $result = $this->bdd->query($sql);
         return (int) ($this->bdd->result($result, 0, 0));
+    }
+
+    public function searchPrescripteur($iAdvisorId = '', $nom = '', $prenom = '', $email = '', $sCompanyName = '', $sSiren = '', $offset = '', $limit = 100, $sOperation = 'AND')
+    {
+        $aWhere = array();
+
+        if ('' !== $nom) {
+            $nom = $this->bdd->escape_string($nom);
+            $aWhere[] = 'c.nom LIKE "%' . $nom . '%"';
+        }
+        if ('' !== $email) {
+            $email = $this->bdd->escape_string($email);
+            $aWhere[] = 'c.email LIKE "%' . $email . '%"';
+        }
+        if ('' !== $prenom) {
+            $prenom = $this->bdd->escape_string($prenom);
+            $aWhere[] = 'c.prenom LIKE "%' . $prenom . '%"';
+        }
+
+        if ('' !== $sCompanyName) {
+            $sCompanyName = $this->bdd->escape_string($sCompanyName);
+            $aWhere[] = 'com.name LIKE "%' . $sCompanyName . '%"';
+        }
+
+        if ('' !== $sSiren) {
+            $sSiren = $this->bdd->escape_string($sSiren);
+            $aWhere[] = 'com.siren = "' . $sSiren . '"';
+        }
+
+        $sWhere = '';
+        if ('' !== $iAdvisorId) {
+            $iAdvisorId = $this->bdd->escape_string($iAdvisorId);
+            $sWhere = ' WHERE p.id_prescripteur = '. $iAdvisorId;
+        } elseif (false === empty($aWhere)) {
+            $sWhere = ' WHERE ' . implode(' ' . $sOperation.' ', $aWhere);
+        }
+
+        if ('' !== $offset) {
+            $offset = $this->bdd->escape_string($offset);
+            $offset = ' OFFSET '. $offset;
+        }
+
+        if ('' !== $limit) {
+            $limit = $this->bdd->escape_string($limit);
+            $limit = ' LIMIT '. $limit;
+        }
+
+        $sql = 'SELECT * FROM clients c
+                INNER JOIN prescripteurs p USING (id_client)
+                INNER JOIN companies com ON p.id_entite = com.id_company'
+                . $sWhere
+                . ' ORDER BY c.id_client DESC'
+                . $limit
+                . $offset;
+
+        $oQuery = $this->bdd->query($sql);
+        $result   = array();
+
+        while ($record = $this->bdd->fetch_array($oQuery)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
+
+    public function isPrescripteur(prescripteurs $oPrescripteurs, $iClientId = null)
+    {
+        if (null === $iClientId) {
+            $iClientId = $this->id_client;
+        }
+
+        return $oPrescripteurs->exist($iClientId, 'id_client');
     }
 }

@@ -57,9 +57,8 @@
 								R.C.S.
 							</div>
 							<div class="col-small">
-								<?=$this->companies->siren?>
+								<?=$this->companies->rcs?>
 							</div>
-							<div class="cl">&nbsp;</div>
 						</li>
 					</ul>
 				</div>
@@ -91,7 +90,6 @@
 							<div class="col-small">
 								<?=$this->clients->fonction?>
 							</div>
-							<div class="cl">&nbsp;</div>
 						</li>
 					</ul>
 				</div>
@@ -110,7 +108,7 @@
 								<?=$this->bloc_pouvoir['montant-total']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->montantPrete, 2, ',', ' ')?> &euro;
+								<?=$this->ficelle->formatNumber($this->montantPrete)?> &euro;
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -120,7 +118,7 @@
 								<?=$this->bloc_pouvoir['taux-i-annuel']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->taux, 2, ',', ' ')?> %
+								<?=$this->ficelle->formatNumber($this->taux)?> %
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -165,24 +163,23 @@
 								<?=$this->bloc_pouvoir['montant-mensualites']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->rembByMonth, 2, ',', ' ')?> &euro;
+								<?=$this->ficelle->formatNumber($this->rembByMonth)?> &euro;
 							</div>
-							<div class="cl">&nbsp;</div>
-						</li>
-						<li>
-							<h5><?=$this->bloc_pouvoir['les-bons-nominatifs']?></h5>
 						</li>
 					</ul>
 				</div>
 				<div class="list">
 					<ul>
+						<li>
+							<h5><?=$this->bloc_pouvoir['les-bons-nominatifs']?></h5>
+						</li>
 						<li><?=$this->bloc_pouvoir['la-signature-engage']?></li>
 						<li>
 							<div class="col-long">
 								<?=$this->bloc_pouvoir['a-rembourser-153']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->montantPrete, 2, ',', ' ')?> &euro;
+								<?=$this->ficelle->formatNumber($this->montantPrete)?> &euro;
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -191,7 +188,7 @@
 								<?=$this->bloc_pouvoir['assortie']?>
 							</div>
 							<div class="col-small">
-								<?=number_format($this->taux, 2, ',', ' ')?> %
+								<?=$this->ficelle->formatNumber($this->taux)?> %
 							</div>
 							<div class="cl">&nbsp;</div>
 						</li>
@@ -220,10 +217,7 @@
 					</ul>
 				</div>
 			</div>
-			<!-- End Page Break -->
-
-			<!-- Page Break -->
-			<div class="page-break">
+			<div>
 				<h3 class="pink"><?=$this->bloc_pdf_contrat['dernier-bilan']?></h3>
 				<div class="list">
 					<ul>
@@ -231,38 +225,38 @@
 							<?=$this->bloc_pdf_contrat['au']?> <?=$this->date_dernier_bilan_jour?>/<?=$this->date_dernier_bilan_mois?>/<?=$this->date_dernier_bilan_annee?>
 						</li>
 					</ul>
-				</div>
-				<h5><?=$this->bloc_pdf_contrat['actif']?></h5>
-				<div class="list">
-					<ul>
-						<li><?=$this->bloc_pdf_contrat['immo-corpo']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['immobilisations_corporelles'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['immo-incorpo']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['immobilisations_incorporelles'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['immo-financieres']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['immobilisations_financieres'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['stocks']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['stocks'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['creances']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['creances_clients'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['dispo']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['disponibilites'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['valeurs-mobilieres']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['valeurs_mobilieres_de_placement'], 2, ',', ' ')?> &euro;</div></li>
-					</ul>
-				</div>
-				<div class="total-row">
-					<?=$this->bloc_pdf_contrat['total-actif']?> : <?=number_format($this->totalActif, 2, ',', ' ')?> &euro;
-				</div>
-				<h5><?=$this->bloc_pdf_contrat['passif']?></h5>
-				<div class="list">
-					<ul>
-						<li><?=$this->bloc_pdf_contrat['capitaux']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['capitaux_propres'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['provisions']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['provisions_pour_risques_et_charges'], 2, ',', ' ')?> &euro;</div></li>
-                        <li><?=$this->bloc_pdf_contrat['amortissements-sur-immo']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['amortissement_sur_immo'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['dettes-fi']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['dettes_financieres'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['dettes-fourn']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['dettes_fournisseurs'], 2, ',', ' ')?> &euro;</div></li>
-						<li><?=$this->bloc_pdf_contrat['autres-dettes']?><div class="col-small nowrap"><?=number_format($this->l_AP[0]['autres_dettes'], 2, ',', ' ')?> &euro;</div></li>
-					</ul>
-				</div>
-				<div class="total-row">
-					<?=$this->bloc_pdf_contrat['total-passif']?> : <?=number_format($this->totalPassif, 2, ',', ' ')?> &euro;
-				</div>
-				<div class="center-text">
-					<?=$this->bloc_pdf_contrat['certifie']?>
+					<h5><?=$this->bloc_pdf_contrat['actif']?></h5>
+					<div class="list">
+						<ul>
+							<li><?=$this->bloc_pdf_contrat['immo-corpo']?><div class="col-small nowrap"><?=$this->ficelle->formatNumber($this->l_AP[0]['immobilisations_corporelles'])?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['immo-incorpo']?><div class="col-small nowrap"><?=$this->ficelle->formatNumber($this->l_AP[0]['immobilisations_incorporelles'])?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['immo-financieres']?><div class="col-small nowrap"><?=$this->ficelle->formatNumber($this->l_AP[0]['immobilisations_financieres'])?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['stocks']?><div class="col-small nowrap"><?=$this->ficelle->formatNumber($this->l_AP[0]['stocks'])?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['creances']?><div class="col-small nowrap"><?=$this->ficelle->formatNumber($this->l_AP[0]['creances_clients'])?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['dispo']?><div class="col-small nowrap"><?=$this->ficelle->formatNumber($this->l_AP[0]['disponibilites'])?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['valeurs-mobilieres']?><div class="col-small nowrap"><?=$this->ficelle->formatNumber($this->l_AP[0]['valeurs_mobilieres_de_placement'])?> &euro;</div></li>
+						</ul>
+					</div>
+					<div class="total-row">
+						<?=$this->bloc_pdf_contrat['total-actif']?> : <?=$this->ficelle->formatNumber($this->totalActif)?> &euro;
+					</div>
+					<h5><?=$this->bloc_pdf_contrat['passif']?></h5>
+					<div class="list">
+						<ul>
+							<li><?=$this->bloc_pdf_contrat['capitaux']?><div class="col-small nowrap"><?=$this->ficelle->formatNumber($this->l_AP[0]['capitaux_propres'])?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['provisions']?><div class="col-small nowrap"><?=$this->ficelle->formatNumber($this->l_AP[0]['provisions_pour_risques_et_charges'])?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['amortissements-sur-immo']?><div class="col-small nowrap"><?=$this->ficelle->formatNumber($this->l_AP[0]['amortissement_sur_immo'])?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['dettes-fi']?><div class="col-small nowrap"><?=$this->ficelle->formatNumber($this->l_AP[0]['dettes_financieres'])?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['dettes-fourn']?><div class="col-small nowrap"><?=$this->ficelle->formatNumber($this->l_AP[0]['dettes_fournisseurs'])?> &euro;</div></li>
+							<li><?=$this->bloc_pdf_contrat['autres-dettes']?><div class="col-small nowrap"><?=$this->ficelle->formatNumber($this->l_AP[0]['autres_dettes'])?> &euro;</div></li>
+						</ul>
+					</div>
+					<div class="total-row">
+						<?=$this->bloc_pdf_contrat['total-passif']?> : <?=$this->ficelle->formatNumber($this->totalPassif)?> &euro;
+					</div>
+					<div class="center-text">
+						<?=$this->bloc_pdf_contrat['certifie']?>
+					</div>
 				</div>
 			</div>
 			<!-- End Page Break -->
@@ -302,12 +296,12 @@
 									?>
 									<tr>
 										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->dates->formatDate($r['date_echeance_emprunteur'],'d/m/Y')?></td>
-										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($r['capital']/100,2,',',' ')?> &euro;</td>
-										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($r['interets']/100,2,',',' ')?> &euro;</td>
-										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($r['commission']/100,2,',',' ')?> &euro;</td>
-										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($r['tva']/100,2,',',' ')?> &euro;</td>
-										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($montantEmprunteur/100,2,',',' ')?> &euro;</td>
-										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($capRestant/100,2,',',' ')?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($r['capital']/100)?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($r['interets']/100)?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($r['commission']/100)?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($r['tva']/100)?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($montantEmprunteur/100)?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($capRestant/100)?> &euro;</td>
 									</tr>
 									<?
 								}
@@ -335,12 +329,12 @@
 									?>
 									<tr>
 										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->dates->formatDate($r['date_echeance_emprunteur'],'d/m/Y')?></td>
-										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($r['capital']/100,2,',',' ')?> &euro;</td>
-										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($r['interets']/100,2,',',' ')?> &euro;</td>
-										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($r['commission']/100,2,',',' ')?> &euro;</td>
-										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($r['tva']/100,2,',',' ')?> &euro;</td>
-										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($montantEmprunteur/100,2,',',' ')?> &euro;</td>
-										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($capRestant/100,2,',',' ')?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($r['capital']/100)?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($r['interets']/100)?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($r['commission']/100)?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($r['tva']/100)?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($montantEmprunteur/100)?> &euro;</td>
+										<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($capRestant/100)?> &euro;</td>
 									</tr>
 									<?
 								}
@@ -382,12 +376,12 @@
                                 ?>
                                 <tr>
                                     <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->dates->formatDate($r['date_echeance_emprunteur'],'d/m/Y')?></td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($r['capital']/100,2,',',' ')?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($r['interets']/100,2,',',' ')?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($r['commission']/100,2,',',' ')?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($r['tva']/100,2,',',' ')?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($montantEmprunteur/100,2,',',' ')?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($capRestant/100,2,',',' ')?> &euro;</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($r['capital']/100)?> &euro;</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($r['interets']/100)?> &euro;</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($r['commission']/100)?> &euro;</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($r['tva']/100)?> &euro;</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($montantEmprunteur/100)?> &euro;</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($capRestant/100)?> &euro;</td>
                                 </tr>
                                 <?
                             }
@@ -465,8 +459,8 @@
 											<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=$this->clients_adresses->adresse1?></td>
 											<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=$this->clients_adresses->cp?></td>
 											<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?=$this->clients_adresses->ville?></td>
-											<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($l['amount']/100,2,',',' ')?> &euro;</td>
-											<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=number_format($l['rate'],2,',',' ')?> %</td>
+											<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($l['amount']/100)?> &euro;</td>
+											<td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?=$this->ficelle->formatNumber($l['rate'])?> %</td>
 										</tr>
 										<?
 										$var++;

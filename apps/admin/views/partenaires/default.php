@@ -1,11 +1,11 @@
 <script type="text/javascript">
 	$(document).ready(function(){
-		$(".tablesorter").tablesorter({headers:{7:{sorter: false}}});	
+		$(".tablesorter").tablesorter({headers:{7:{sorter: false}}});
 		<?
 		if($this->nb_lignes != '')
 		{
 		?>
-			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});		
+			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});
 		<?
 		}
 		?>
@@ -48,7 +48,7 @@
                     <th>Nb de clics</th>
                     <th>Nb Cmdes</th>
                     <th>CA (TTC)</th>
-                    <th>&nbsp;</th>  
+                    <th>&nbsp;</th>
                 </tr>
            	</thead>
             <tbody>
@@ -59,11 +59,11 @@
 				// Recuperation des infos
 				$this->promotions->get($p['id_code'],'id_code');
 				$this->partenaires_types->get($p['id_type'],'id_type');
-				
+
 				// Recuperation du CA
 				$capart = $this->partenaires->recupCA($p['id_partenaire']);
 				$nbcmd = $this->partenaires->recupCmde($p['id_partenaire']);
-				
+
 				// Recuperation du nombre de clic total
 				$nbclic = $this->partenaires->nbClicTotal($p['id_partenaire']);
 			?>
@@ -74,11 +74,11 @@
                     <?php /*?><td><?=$this->promotions->code?></td><?php */?>
                     <td><?=$nbclic?></td>
                     <td><?=$nbcmd?></td>
-                    <td><?=number_format($capart,2,',',' ')?>&nbsp;&euro;</td>
+                    <td><?=$this->ficelle->formatNumber($capart)?>&nbsp;&euro;</td>
                     <td align="center">
 						<a href="<?=$this->lurl?>/partenaires/status/<?=$p['id_partenaire']?>/<?=$p['status']?>" title="<?=($p['status']==1?'Passer hors ligne':'Passer en ligne')?>">
                             <img src="<?=$this->surl?>/images/admin/<?=($p['status']==1?'offline':'online')?>.png" alt="<?=($p['status']==1?'Passer hors ligne':'Passer en ligne')?>" />
-                        </a> 
+                        </a>
                         <a href="<?=$this->lurl?>/partenaires/edit/<?=$p['id_partenaire']?>" class="thickbox">
                             <img src="<?=$this->surl?>/images/admin/edit.png" alt="Modifier <?=$p['nom']?>" />
                         </a>
@@ -92,7 +92,7 @@
                             <img src="<?=$this->surl?>/images/admin/delete.png" alt="Supprimer <?=$p['nom']?>" />
                         </a>
                   	</td>
-                </tr>   
+                </tr>
             <?
 				$i++;
             }

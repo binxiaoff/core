@@ -1,0 +1,27 @@
+@font-face {
+    font-family: 'TrendSansOne';
+    src: url('fonts/latinotype_-_trendsansone-webfont.eot');
+    src: url('fonts/latinotype_-_trendsansone-webfont.eot?#iefix') format('embedded-opentype'),
+         url('fonts/latinotype_-_trendsansone-webfont.woff') format('woff'),
+         url('fonts/latinotype_-_trendsansone-webfont.ttf') format('truetype'),
+         url('fonts/latinotype_-_trendsansone-webfont.svg#trend_sansone') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'TrendSansOne';
+    src: url('fonts/trendsans-one-webfont.eot');
+    src: url('fonts/trendsans-one-webfont.eot?#iefix') format('embedded-opentype'),
+         url('fonts/trendsans-one-webfont.woff') format('woff'),
+         url('fonts/trendsans-one-webfont.ttf') format('truetype'),
+         url('fonts/trendsans-one-webfont.svg#trend_sansone') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@media screen and (-webkit-min-device-pixel-ratio:0) {
+	@font-face {
+		font-family: 'TrendSansOne';
+		src: url('fonts/trendsans-one-webfont.svg#trend_sansone') format('svg');
+	}
+}

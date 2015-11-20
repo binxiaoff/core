@@ -298,26 +298,30 @@ abstract class Mailer
                     $header_cc = $email->headers->get('Cc');
                     if (!is_null($header_cc)) {
                         $header_cc     = $header_cc->__toString();
-                        $new_header_cc = new Mime_Header('Cc',
-                            implode(', ', self::clearAddressList($header_cc)));
+                        $new_header_cc = new Mime_Header('Cc', implode(', ', self::clearAddressList($header_cc)));
                         $headers       = str_replace($header_cc, $new_header_cc->__toString(), $headers);
                     }
                 }
 
                 if (defined('ENVIRONMENT') && ENVIRONMENT !== 'prod') {
+                    // @todo once mailcatcher is installed on every dev/demo, email domain check may be deleted (not subject prefixing)
                     $aRecipients = explode(', ', $recipients);
 
                     foreach ($aRecipients as $iIndex => $sRecipient) {
-                        if (1 !== preg_match('/@(dev|)unilend.fr$/', $sRecipient)) {
+                        if (1 !== preg_match('/@unilend.fr$/', $sRecipient)) {
                             unset($aRecipients[$iIndex]);
                         }
+                    }
+
+                    if (empty($aRecipients)) {
+                        $aRecipients[] = 'test-' . ENVIRONMENT . '@unilend.fr';
                     }
 
                     $recipients = implode(', ', $aRecipients);
                     $subject    = '[' . ENVIRONMENT . '] ' . $subject;
                 }
 
-                if (! empty($recipients)) {
+                if (false === empty($recipients)) {
                     if (!ini_get('safe_mode') && !is_null($rPath)) {
                         $result = mail($recipients, $subject, $message, $headers, '-f' . $rPath);
                     } else {
@@ -485,6 +489,8 @@ class Email
     const PRIORITY_NORMAL = 3;
     const PRIORITY_LOW = 4;
     const PRIORITY_LOWEST = 5;
+
+    const EMAIL_ADDRESS_ANALYSTS = 'analystes@unilend.fr';
 
     /**
      * Email du destinataire
