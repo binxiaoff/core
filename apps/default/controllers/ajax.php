@@ -495,7 +495,7 @@ class ajaxController extends bootstrap
         }
     }
 
-    function _get_cities()
+    public function _get_cities()
     {
         $this->autoFireView = false;
         $aCities = array();
@@ -508,10 +508,11 @@ class ajaxController extends bootstrap
                 $bBirthPlace = true;
             }
 
+            $sTerm = htmlspecialchars_decode($_GET['term'], ENT_QUOTES);
             if ($bBirthPlace) {
-                $aResults = $oVilles->lookupCities($_GET['term'], array('ville', 'cp'), true);
+                $aResults = $oVilles->lookupCities($sTerm, array('ville', 'cp'), true);
             } else {
-                $aResults = $oVilles->lookupCities($_GET['term']);
+                $aResults = $oVilles->lookupCities($sTerm);
             }
             if (false === empty($aResults)) {
                 foreach ($aResults as $aItem) {
