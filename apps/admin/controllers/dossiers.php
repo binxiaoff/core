@@ -606,7 +606,7 @@ class dossiersController extends bootstrap
                     if (
                         $_POST['commercial'] > 0
                         && $_POST['commercial'] != $this->projects->id_commercial
-                        && $this->current_projects_status < \projects_status::EN_ATTENTE_PIECES
+                        && $this->current_projects_status->status < \projects_status::EN_ATTENTE_PIECES
                     ) {
                         $_POST['status'] = \projects_status::EN_ATTENTE_PIECES;
                     }
@@ -614,7 +614,7 @@ class dossiersController extends bootstrap
                     if (
                         $_POST['analyste'] > 0
                         && $_POST['analyste'] != $this->projects->id_analyste
-                        && $this->current_projects_status < \projects_status::REVUE_ANALYSTE
+                        && $this->current_projects_status->status < \projects_status::REVUE_ANALYSTE
                     ) {
                         $_POST['status'] = \projects_status::REVUE_ANALYSTE;
                     }
