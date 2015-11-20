@@ -731,4 +731,27 @@ class clients extends clients_crud
 
         return $oPrescripteurs->exist($iClientId, 'id_client');
     }
+
+    public function isLender(lenders_accounts $oLendersAccounts, $iClientId = null)
+    {
+        if (null === $iClientId) {
+            $iClientId = $this->id_client;
+        }
+
+        return $oLendersAccounts->exist($iClientId, 'id_client_owner');
+
+    }
+
+    public function isBorrower(projects $oProjects, $iClientId = null)
+    {
+        if (null === $iClientId) {
+            $iClientId = $this->id_client;
+        }
+
+        $oCompanies = new \companies($this->bdd);
+        $oCompanies->get($iClientId, 'id_client_owner');
+
+        return $oProjects->exist($oCompanies->id_company, 'id_company');
+
+    }
 }
