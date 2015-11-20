@@ -2088,8 +2088,8 @@ class ajaxController extends bootstrap
                     $moyenne1 = (($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1));
                     $moyenne  = round($moyenne1, 1);
                     $etape_6  = '
-                    <div id="title_etape6">Etape 6</div>
-                    <div id="etape6">
+                    <div class="tab_title" id="title_etape6">Etape 6</div>
+                    <div class="tab_content" id="etape6">
                         <form method="post" name="dossier_etape6" id="dossier_etape6" action="" target="_parent">
                             <table class="form tableNotes" style="width: 100%;">
                                 <tr>
@@ -2165,10 +2165,6 @@ class ajaxController extends bootstrap
                     </div>
 
                     <script type="text/javascript">
-                    $("#title_etape6").click(function() {
-                        $("#etape6").slideToggle();
-                    });
-
                     $(".cal_moyen").keyup(function() {
                         // --- Chiffre et marché ---
                         var structure = parseFloat($("#structure").val().replace(",","."));
@@ -2411,8 +2407,8 @@ class ajaxController extends bootstrap
                 // pas encore fait
                 if ($this->current_projects_status->status != \projects_status::REJET_ANALYSTE) {
                     $etape_7 = '
-                    <div id="title_etape7">Etape 7</div>
-                    <div id="etape7">
+                    <div class="tab_title" id="title_etape7">Etape 7</div>
+                    <div class="tab_content" id="etape7">
                         <table class="form tableNotes" style="width: 100%;">
                             <tr>
                                 <th><label for="performance_fianciere2">Performance financière</label></th>
@@ -2490,9 +2486,6 @@ class ajaxController extends bootstrap
 
                     </div>
                     <script type="text/javascript">
-                        $("#title_etape7").click(function() {
-                            $("#etape7").slideToggle();
-                        });
                         $(".cal_moyen").keyup(function() {
                             // --- Chiffre et marché ---
 

@@ -15,7 +15,7 @@
     }
 </style>
 <script type="text/javascript">
-    $(document).ready(function () {
+    $(function () {
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
         $("#date").datepicker({
@@ -64,6 +64,10 @@
             }
         });
 
+        $(document).click('.tab_title', function(event) {
+            $(event.target).next().slideToggle();
+        });
+
         <?php if ($this->nb_lignes != '') { ?>
         $(".tablesorter").tablesorterPager({
             container: $("#pager"),
@@ -74,15 +78,15 @@
     });
 
     <?php if (isset($_SESSION['freeow'])) { ?>
-    $(document).ready(function () {
-        var title, message, opts, container;
-        title = "<?= $_SESSION['freeow']['title'] ?>";
-        message = "<?= $_SESSION['freeow']['message'] ?>";
-        opts = {};
-        opts.classes = ['smokey'];
-        $('#freeow-tr').freeow(title, message, opts);
-    });
-    <?php unset($_SESSION['freeow']); ?>
+        $(function () {
+            var title, message, opts, container;
+            title = "<?= $_SESSION['freeow']['title'] ?>";
+            message = "<?= $_SESSION['freeow']['message'] ?>";
+            opts = {};
+            opts.classes = ['smokey'];
+            $('#freeow-tr').freeow(title, message, opts);
+        });
+        <?php unset($_SESSION['freeow']); ?>
     <?php } ?>
 </script>
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
@@ -745,13 +749,13 @@
     </div>
     <br>
     <style type="text/css">
-        #tab_email, #etape1, #etape2, #etape3, #etape3bis, #etape4, #etape5, #etape6, #etape7 {
+        .tab_content {
             border: 2px solid #B10366;
             display: none;
             padding: 10px;
         }
 
-        #title_tab_email, #title_etape1, #title_etape2, #title_etape3, #title_etape3bis, #title_etape4, #title_etape5, #title_etape6, #title_etape7 {
+        .tab_title {
             cursor: pointer;
             text-align: center;
             background-color: #B10366;
@@ -768,15 +772,11 @@
             font-weight: bold;
             color: #009933;
         }
-
-        .table_bilan {
-            display: inline;
-        }
     </style>
 
     <div id="lesEtapes">
-        <div id="title_tab_email">Email</div>
-        <div id="tab_email">
+        <div class="tab_title" id="title_tab_email">Email</div>
+        <div class="tab_content" id="tab_email">
             <div style="float: right; min-width: 550px;">
                 <h2>Historique</h2>
                 <?php if (false === empty($this->aEmails) || false === empty($this->project_cgv->id)) : ?>
@@ -862,8 +862,8 @@
         </div>
         <br/>
 
-        <div id="title_etape1">Etape 1</div>
-        <div id="etape1">
+        <div class="tab_title" id="title_etape1">Etape 1</div>
+        <div class="tab_content" id="etape1">
             <form method="post" name="dossier_etape1" id="dossier_etape1" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
                 <table class="form" style="width: 100%;">
                     <tr>
@@ -907,8 +907,8 @@
         </div>
         <br/>
 
-        <div id="title_etape2">Etape 2</div>
-        <div id="etape2">
+        <div class="tab_title" id="title_etape2">Etape 2</div>
+        <div class="tab_content" id="etape2">
             <form method="post" name="dossier_etape2" id="dossier_etape2" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
                 <table class="form" style="width: 100%;">
                     <tr>
@@ -1079,8 +1079,8 @@
         </div>
         <br/>
 
-        <div id="title_etape3">Etape 3</div>
-        <div id="etape3">
+        <div class="tab_title" id="title_etape3">Etape 3</div>
+        <div class="tab_content" id="etape3">
             <form method="post" name="dossier_etape3" id="dossier_etape3" enctype="multipart/form-data"
                   action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
                 <table class="form" style="width: 100%;">
@@ -1138,9 +1138,9 @@
         </div>
         <br/>
 
-        <div id="title_etape4">Etape 4</div>
-        <div id="etape4">
-            <script language="javascript" type="text/javascript">
+        <div class="tab_title" id="title_etape4">Etape 4</div>
+        <div class="tab_content" id="etape4">
+            <script type="text/javascript">
                 function formUploadCallbackcsv(result) {
                     console.log("Upload OK:", result);
 
@@ -1676,8 +1676,8 @@
             </form>
         </div>
         <br/>
-        <div id="title_etape3bis">Etape 3 Bis</div>
-        <div id="etape3bis">
+        <div class="tab_title" id="title_etape4bis">Etape 4 Bis</div>
+        <div class="tab_content" id="etape4bis">
             <table class="tablesorter" style="text-align:center;">
                 <thead>
                 <th></th>
@@ -1736,8 +1736,8 @@
             </table>
         </div>
         <br>
-        <div id="title_etape5">Etape 5</div>
-        <div id="etape5">
+        <div class="tab_title" id="title_etape5">Etape 5</div>
+        <div class="tab_content" id="etape5">
             <script type="text/javascript">
                 function formUploadCallback(result) {
                     var aStatus = jQuery.parseJSON(result);
@@ -1833,8 +1833,8 @@
                 $moyenne1 = (($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1));
                 $moyenne = round($moyenne1, 1);
                 ?>
-                <div id="title_etape6">Etape 6</div>
-                <div id="etape6">
+                <div class="tab_title" id="title_etape6">Etape 6</div>
+                <div class="tab_content" id="etape6">
                     <table class="form tableNotes" style="width: 100%;">
                         <tr>
                             <th><label for="performance_fianciere">Performance financière</label></th>
@@ -1983,8 +1983,8 @@
             // si statut revueA
             if ($this->current_projects_status->status >= 33) {
                 ?>
-                <div id="title_etape7">Etape 7</div>
-                <div id="etape7">
+                <div class="tab_title" id="title_etape7">Etape 7</div>
+                <div class="tab_content" id="etape7">
                     <table class="form tableNotes" style="width: 100%;">
                         <tr>
                             <th><label for="performance_fianciere2">Performance financière</label></th>
@@ -2131,20 +2131,6 @@
     </div>
 </div>
 <script>
-    <?php for ($i = 1; $i <= 7; $i++) { ?>
-    $('#title_etape<?= $i ?>').click(function () {
-        $('#etape<?= $i ?>').slideToggle();
-    });
-    <?php } ?>
-
-    $('#title_etape3bis').click(function () {
-        $('#etape3bis').slideToggle();
-    });
-
-    $('#title_tab_email').click(function() {
-        $('#tab_email').slideToggle();
-    });
-
     $("#dossier_resume").submit(function (event) {
         if ($("#statut_encours").val() == '0') {
             $("#statut_encours").val('1');
