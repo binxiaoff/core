@@ -1,6 +1,6 @@
 <?
 // preteur
-if ($this->bLender === true) {
+if ($this->bIsLender === true) {
     ?>
     <div class="logedin-panel right">
 
@@ -27,13 +27,11 @@ if ($this->bLender === true) {
         </div>
     </div><!-- /.login-panel -->
     <?
-} // emprunteur
-else {
-    ?>
+} elseif ($this->bIsBorrower === true) {?>
     <div class="logedin-panel right">
         <a href="<?= $this->lurl ?>/espace_emprunteur/identite" class="header_account_name">
-            <strong><?= $this->company->siren ?></strong></a>
-            <strong><?= $this->company->name ?></strong>
+            <strong><?= $this->lng['header']['siren'].$this->companies->siren ?></strong></a>
+            <strong><?= $this->companies->name ?></strong>
         <a href="<?= $this->lurl ?>/logout"><?= $this->lng['header']['deconnexion'] ?></a>
     </div><!-- /.login-panel -->
     <?
