@@ -49,18 +49,22 @@
                     <th><?=$this->lng['espace-emprunteur']['mandat']?></th>
                 </tr>
                 <?php
-                foreach ($this->aClientsProjects as $iKey => $aProject) { ?>
+                foreach ($this->aClientsProjects as $iKey => $aProject) : ?>
                     <tr class="documents">
                         <td><?= $aProject['id_project'] ?></td>
-                        <td><a href="<?= $this->lurl . $aProject['pouvoir'][0]['url_pdf'] ?>"><img
-                                    src="https://dev.www.unilend.fr/styles/default/images/pdf50.png"></a></td>
                         <td>
-                            <a href="<?= $this->lurl . $aProject['mandat'][0]['url_pdf'] ?>">
-                                <img src="https://dev.www.unilend.fr/styles/default/images/pdf50.png"></a>
+                            <a href="<?= $this->lurl . '/pdf/pouvoir/' . $this->clients->hash . '/' . $aProject['id_project'] ?>">
+                                <img src="<?= $this->lurl . '/styles/default/images/pdf50.png' ?>"></a>
+                            <?= ($aProject['pouvoir'][0]['status'] > 0) ? $this->lng['espace-emprunteur']['pouvoir-signe'] : $this->lng['espace-emprunteur']['pouvoir-a-signer'] ?>
+                        </td>
+                        <td>
+                            <a href="<?= $this->lurl . '/pdf/mandat/' . $this->clients->hash . '/' . $aProject['id_project'] ?>">
+                                <img src="<?= $this->lurl . '/styles/default/images/pdf50.png' ?>"></a>
+                            <?= $this->lng['espace-emprunteur'][$aProject['mandat'][0]['status-trad']] ?>
                         </td>
                     </tr>
                     <?php
-                }
+                endforeach
                 ?>
             </table>
 
@@ -80,8 +84,7 @@
                         <td><?= $aInvoice['num_facture'] ?></td>
                         <td><?= $aInvoice['id_project'] ?></td>
                         <td><?= $aInvoice['date'] ?></td>
-                        <td><a class="tooltip-anchor icon-pdf" href="<?= $aInvoice['url'] ?>">
-                                </a>
+                        <td><a class="tooltip-anchor icon-pdf" href="<?= $aInvoice['url'] ?>"></a>
                     </tr>
                     <?php
                 } ?>
