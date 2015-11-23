@@ -29,6 +29,11 @@
 class clients_mandats extends clients_mandats_crud
 {
 
+    const STATUS_EN_COURS = 0;
+    const STATUS_SIGNE = 1;
+    const STATUS_ANNULE = 2;
+    const STATUS_FAIL = 3;
+
     public function __construct($bdd, $params = '')
     {
         parent::clients_mandats($bdd, $params);
