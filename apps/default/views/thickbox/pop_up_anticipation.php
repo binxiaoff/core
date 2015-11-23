@@ -18,7 +18,7 @@
     <div class="popup-cnt" style="padding:10px;">
         <p><?php printf($this->lng['espace-emprunteur']['pop-up-confirmation-de-cloture-anticipe'], $this->fIR) ?></p>
 
-        <form action="<?= $this->lurl ?>/espace_emprunteur/projets/<?= $this->projects->id_project ?>" method="post"
+        <form action="<?= $this->lurl ?>/espace_emprunteur/projets/<?= $this->projects->hash ?>" method="post"
               class="form_mdp_lost" name="confirm_cloture_anticipation" id="confirm_cloture_anticipation">
             <table border="1" style="margin:auto;">
                 <tr>
