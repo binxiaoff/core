@@ -8,7 +8,11 @@
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
-            yearRange: '<?=(date('Y')-10)?>:<?=(date('Y')+10)?>'
+            yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
+        });
+
+        $(document).click('.tab_title', function(event) {
+            $(event.target).next().slideToggle();
         });
 
         <?php if ($this->nb_lignes != '') { ?>
@@ -91,7 +95,7 @@
         </form>
     <?php } elseif ($this->create_etape_ok == true) { ?>
         <style type="text/css">
-            .tab_title {cursor: pointer; text-align: center; background-color: #b10366; color: white; padding: 5px; font-size: 16px; font-weight: bold;}
+            .tab_title {cursor: pointer; text-align: center; background-color: #b10366; color: white; padding: 5px; font-size: 16px; font-weight: bold; margin-top: 15px;}
             .tab_content {border: 2px solid #b10366; padding: 10px;}
             #valid_etape1, #valid_etape2, #valid_etape3, #valid_etape4, #valid_etape5 {display: none; text-align: center; font-size: 16px; font-weight: bold; color: #009933;}
             #etape2, #etape3, #etape4, #etape5 {display: none;}
@@ -137,7 +141,7 @@
                     </div>
                 </form>
             </div>
-            <br/>
+
             <div class="tab_title" id="title_etape2">Etape 2</div>
             <div class="tab_content" id="etape2">
                 <form method="post" name="dossier_etape2" id="dossier_etape2" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
@@ -343,7 +347,7 @@
                     </div>
                 </form>
             </div>
-            <br/>
+
             <div class="tab_title" id="title_etape3">Etape 3</div>
             <div class="tab_content" id="etape3">
                 <form method="post" name="dossier_etape3" id="dossier_etape3" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
@@ -395,7 +399,7 @@
                     </div>
                 </form>
             </div>
-            <br/>
+
             <div class="tab_title" id="title_etape4">Etape 4</div>
             <div class="tab_content" id="etape4">
                 <script language="javascript" type="text/javascript">
@@ -845,7 +849,7 @@
                     </div>
                 </form>
             </div>
-            <br/>
+
             <div class="tab_title" id="title_etape5">Etape 5</div>
             <div class="tab_content" id="etape5">
                 <script type="text/javascript">
@@ -936,10 +940,6 @@
 </div>
 
 <script>
-    $('.tab_title').click(function () {
-        $(this).next().slideToggle();
-    });
-
     $('#same_address_etape2').click(function () {
         if ($(this).attr('checked') == true) {
             $('.same_adresse').hide('slow');

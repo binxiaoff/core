@@ -763,6 +763,7 @@
             padding: 5px;
             font-size: 16px;
             font-weight: bold;
+            margin-top: 15px;
         }
 
         #tab_email_msg, #valid_etape1, #valid_etape2, #valid_etape3, #valid_etape3bis, #valid_etape4, #valid_etape5, #valid_etape6, #valid_etape7 {
@@ -1675,7 +1676,8 @@
                 </div>
             </form>
         </div>
-        <br/>
+
+        <?php /*
         <div class="tab_title" id="title_etape4bis">Etape 4 Bis</div>
         <div class="tab_content" id="etape4bis">
             <table class="tablesorter" style="text-align:center;">
@@ -1735,7 +1737,8 @@
                 </tbody>
             </table>
         </div>
-        <br>
+        */ ?>
+
         <div class="tab_title" id="title_etape5">Etape 5</div>
         <div class="tab_content" id="etape5">
             <script type="text/javascript">
@@ -1825,7 +1828,7 @@
                 <iframe id="upload_target" name="upload_target" src="#"></iframe>
             </div>
         </div>
-        <br/>
+
         <div id="content_etape6">
             <?php
             // si statut revueA
@@ -1977,7 +1980,7 @@
             }
             ?>
         </div>
-        <br/>
+
         <div id="content_etape7">
             <?php
             // si statut revueA

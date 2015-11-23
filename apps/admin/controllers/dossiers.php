@@ -16,11 +16,6 @@ class dossiersController extends bootstrap
      */
     public $bReadonlyRiskNote;
 
-    /**
-     * @var array with all data for template
-     */
-    public $aDisplayRatioAndAnalyse;
-
     public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
@@ -68,23 +63,23 @@ class dossiersController extends bootstrap
 
     private function displayRatioAndAnalyse()
     {
-        $aDisplayOrderActif  = array('AA', 'AB', 'AD', 'AF', 'AH', 'AJ', 'AL', 'AN', 'AP', 'AR', 'AT', 'AV', 'AX', 'CS',
-                                     'CU', 'BB', 'BD', 'BF', 'BH', 'BJ', 'BL', 'BN', 'BP', 'BR', 'BT', 'BV', 'BX', 'BZ',
-                                     'CB', 'CH', 'CF', 'CD', 'CJ', 'CW', 'CM', 'CN');
-        $aDisplayOrderPassif = array('DA', 'DL', 'DO', 'BK', 'CK', 'DR', 'DS', 'DT', 'DU', 'DV', 'DW', 'DX', 'DY', 'DZ',
-                                     'EA', 'EB', 'ED');
-        $aDisplayOrderInfos  = array('EH', 'EI', 'HP', 'HQ', 'A1', '0J', 'VH', 'VI');
-        $aDisplayOrderResult = array('FL', 'FM', 'FN', 'FO', 'FP', 'FQ', 'FS', 'FT', 'FU', 'FV', 'FW', 'FX', 'FY', 'FZ', 'GA',
-                                     'GB', 'GC', 'GD', 'GE', 'GG', 'GV', 'GU', 'GW', 'HB', 'HC', 'HF', 'HG', 'HN');
-        $aDisplayTypeBilan   = array('Actif'  => 'Actif',
-                                     'Passif' => 'Passif',
-                                     'Infos'  => 'Autres Infos',
-                                     'Result' => 'Compte de r&eacute;sultat');
-        $aDateBilan          = array();
-        $aDisplayBilan       = array();
+        $aAssets         = array('AA', 'AB', 'AD', 'AF', 'AH', 'AJ', 'AL', 'AN', 'AP', 'AR', 'AT', 'AV', 'AX', 'CS', 'CU', 'BB', 'BD', 'BF', 'BH', 'BJ', 'BL', 'BN', 'BP', 'BR', 'BT', 'BV', 'BX', 'BZ', 'CB', 'CH', 'CF', 'CD', 'CJ', 'CW', 'CM', 'CN');
+        $aDebts          = array('DA', 'DL', 'DO', 'BK', 'CK', 'DR', 'DS', 'DT', 'DU', 'DV', 'DW', 'DX', 'DY', 'DZ', 'EA', 'EB', 'ED');
+        $aInfo           = array('EH', 'EI', 'HP', 'HQ', 'A1', '0J', 'VH', 'VI');
+        $aAnnualAccounts = array('FL', 'FM', 'FN', 'FO', 'FP', 'FQ', 'FS', 'FT', 'FU', 'FV', 'FW', 'FX', 'FY', 'FZ', 'GA', 'GB', 'GC', 'GD', 'GE', 'GG', 'GV', 'GU', 'GW', 'HB', 'HC', 'HF', 'HG', 'HN');
 
-        $aTrad           = $this->ln->selectFront('dossiers', $this->language, $this->App);
-        $oAltaresBalance = $this->oAltares->getBalanceSheets($this->companies->siren)->return;
+        $aDisplayTypeBilan   = array(
+            'Assets'  => 'Assets',
+            'Debts' => 'Debts',
+            'Infos'  => 'Autres Infos',
+            'Result' => 'Compte de r&eacute;sultat'
+        );
+
+        $aDateBilan      = array();
+        $aDisplayBilan   = array();
+        $oAltares        = new Altares($this->bdd);
+        $oAltaresBalance = $oAltares->getBalanceSheets($this->companies->siren);
+
         foreach ($oAltaresBalance->myInfo->bilans as $oBilans) {
             $oDateCalculate = new DateTime($oBilans->dateClotureN);
             $sDateEnd       = $oDateCalculate->format('d/m/Y');
@@ -95,6 +90,7 @@ class dossiersController extends bootstrap
                 'Duration'  => $oBilans->dureeN,
                 'Year'      => substr($oBilans->dateClotureN, 0, 4)
             );
+
             foreach ($oBilans->posteList as $oDataBilan) {
                 if (array_key_exists('Altares_' . $oDataBilan->poste, $aTrad)) {
                     $aDisplayBilan[substr($oBilans->dateClotureN, 0, 4)][$oDataBilan->poste] = array(
@@ -105,12 +101,11 @@ class dossiersController extends bootstrap
         }
 
         $this->aDisplayRatioAndAnalyse = array(
-            'Trad'        => $aTrad,
             'TypeBilan'   => $aDisplayTypeBilan,
-            'OrderActif'  => $aDisplayOrderActif,
-            'OrderPassif' => $aDisplayOrderPassif,
-            'OrderInfos'  => $aDisplayOrderInfos,
-            'OrderResult' => $aDisplayOrderResult,
+            'assets'      => $aAssets,
+            'debts'       => $aDebts,
+            'OrderInfos'  => $aInfo,
+            'OrderResult' => $aAnnualAccounts,
             'DateBilan'   => $aDateBilan,
             'Bilan'       => $aDisplayBilan
         );
@@ -373,7 +368,7 @@ class dossiersController extends bootstrap
                 }
             }
 
-            $this->displayRatioAndAnalyse();
+            //$this->displayRatioAndAnalyse();
 
             $this->attachment_type  = $this->loadData('attachment_type');
             $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects($this->language);
