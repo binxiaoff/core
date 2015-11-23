@@ -58,7 +58,7 @@
                                  alt="<?= $aProject['photo_projet'] ?>" class="thumb"></td>
                         <td><?= $aProject['id_project'] ?></td>
                         <td><?= $aProject['nature_project'] ?></td>
-                        <td><?= $aProject['amount'] ?> € <br> <?= $aProject['period'] ?> mois</td>
+                        <td><?= $this->ficelle->formatNumber($aProject['amount'],0) ?> € <br> <?= $aProject['period'] ?> mois</td>
                         <td><?= $this->lng['espace-emprunteur'][$aProject['project_status_label']] ?></td>
                         <td><a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">Voir le projet</a>
                         </td>
@@ -89,7 +89,7 @@
                                  alt="<?= $aProject['photo_projet'] ?>" class="thumb"></td>
                         <td><?= $aProject['id_project'] ?></td>
                         <td><?= $aProject['nature_project'] ?></td>
-                        <td><?= $aProject['amount'] ?> € <br> <?= $aProject['period'] ?> mois</td>
+                        <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> € <br> <?= $aProject['period'] ?> mois</td>
                         <td><?= $aProject['date_retrait'] ?></td>
                         <td><?= $aProject['funding-progress'] ?> %</td>
                         <td><?= $aProject['AverageIR'] ?> %</td>
@@ -132,11 +132,11 @@
                                  alt="<?= $aProject['photo_projet'] ?>" class="thumb"></td>
                         <td><?= $aProject['id_project'] ?></td>
                         <td><?= $aProject['nature_project'] ?></td>
-                        <td><?= $aProject['amount'] ?> € <br> <?= $aProject['period'] ?> mois</td>
+                        <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> € <br> <?= $aProject['period'] ?> mois</td>
                         <td><?= $aProject['date_retrait'] ?></td>
-                        <td><?= $aProject['MonthlyPayment'] ?> €</td>
+                        <td><?= $this->ficelle->formatNumber($aProject['MonthlyPayment']) ?> €</td>
                         <td><?= $aProject['AverageIR'] ?> %</td>
-                        <td><?= $aProject['RemainingDueCapital'] ?> €</td>
+                        <td><?= $this->ficelle->formatNumber($aProject['RemainingDueCapital']) ?> €</td>
                         <td><?= $aProject['DateNextMonthlyPayment'] ?></td>
                         <td><a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">Voir le projet</a>
                         </td>
