@@ -96,7 +96,7 @@
                         <td>
                             <?php if ($aProject['funding-progress'] == 100 && $aProject['date_retrait'] > date('Y-m-d H:i:s')) { ?>
                                 <a class="btn btn-info btn-small popup-link"
-                                   href="<?= $this->lurl ?>/thickbox/pop_up_anticipation/<?= $aProject['id_project'] ?>">Arrêter</a>
+                                   href="<?= $this->lurl ?>/thickbox/pop_up_anticipation/<?= $aProject['hash'] ?>">Arrêter</a>
                             <?php }
                             ?>
                         </td>
