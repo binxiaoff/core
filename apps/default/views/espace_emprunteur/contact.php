@@ -1,5 +1,15 @@
 <div class="main">
     <div class="shell">
+        <?php
+        if ($this->bSuccessMessage === true ) { ?>
+
+            <span>
+                <?= $this->lng['espace-emprunteur']['confirmation-demande-contact'] ?>
+            </span>
+        <?php
+        } else {
+
+        ?>
         <div class="contact">
             <h1><?=$this->lng['espace-emprunteur']['nous-contacter'] ?></h1>
             <div class="contact-form">
@@ -7,7 +17,7 @@
                     <div class="row">
                         <input type="text"
                                placeholder="<?= $this->lng['espace-emprunteur']['contact-siren'] ?>"
-                               value="<?= $this->aContactRequest['siren'] ?>"
+                               value="<?= empty($this->aContactRequest['siren'])? $this->companies->siren: $this->aContactRequest['siren'] ?>"
                                name="siren" id="siren"
                                class="field field-large required <?= isset($this->aErrors['siren']) ? ' LV_invalid_field' : '' ?>"
                                data-validators="Presence">
@@ -15,7 +25,7 @@
                     <div class="row">
                         <input type="text"
                                placeholder="<?= $this->lng['espace-emprunteur']['contact-societe'] ?>"
-                               value="<?= $this->aContactRequest['company'] ?>"
+                               value="<?= empty($this->aContactRequest['company'])? $this->companies->name : $this->aContactRequest['company'] ?>"
                                id="company" name="company"
                                class="field field-large required <?= isset($this->aErrors['company']) ? ' LV_invalid_field' : '' ?>"
                                data-validators="Presence">
@@ -52,10 +62,12 @@
                     </div>
                     <div class="row">
                         <select class="custom-select required field field-large" name="demande" id="demande">
-                            <option value=""><?= $this->lng['espace-emprunteur']['contact-selectionnez-un-sujet'] ?></option>
-                            <?php foreach ($this->aRequestSubjects as $aRequestSubject) { ?>
-                                <option value="<?= $aRequestSubject['id_contact_request_subject'] ?>"><?= $aRequestSubject['label'] ?></option>
-                            <?php } ?>
+                            <option value="0"><?= $this->lng['espace-emprunteur']['contact-selectionnez-un-sujet'] ?></option>
+                            <?php foreach ($this->aRequestSubjects as $aRequestSubject) : ?>
+                                <option value="<?= $aRequestSubject['id_contact_request_subject'] ?>"
+                                <?= $aRequestSubject['id_contact_request_subject'] == $this->aContactRequest['demande'] ? ' selected ' : '' ?>
+                                ><?= $aRequestSubject['label'] ?></option>
+                            <?php endforeach ?>
                         </select>
                     </div>
 
@@ -120,3 +132,5 @@
         }
     });
 </script>
+
+<?php } ?>
