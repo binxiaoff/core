@@ -2,9 +2,7 @@
 
 class projectsController extends bootstrap
 {
-    var $Command;
-
-    function projectsController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
@@ -20,7 +18,7 @@ class projectsController extends bootstrap
         $this->page = 'projects';
     }
 
-    function _default()
+    public function _default()
     {
         // On prend le header account
         $this->setHeader('header_account');
@@ -29,7 +27,7 @@ class projectsController extends bootstrap
 
         // On check si y a un compte
         if (!$this->clients->checkAccess()) {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->lurl);
             die;
         } else {
             // check preteur ou emprunteur (ou les deux)
@@ -68,11 +66,9 @@ class projectsController extends bootstrap
         $this->nbProjects      = $aElementsProjects['nbProjects'];
     }
 
-    function _detail()
+    public function _detail()
     {
-        // restriction pour capital
         if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' || $this->lurl == 'http://partenaire.unilend.challenges.fr') {
-            //if($this->lurl == 'http://capital.unilend.fr' || $this->lurl == 'http://challenges.unilend.fr'){
             $this->autoFireHeader = true;
             $this->autoFireDebug = false;
             $this->autoFireHead = true;
@@ -90,41 +86,35 @@ class projectsController extends bootstrap
             $this->utm_source = '';
         }
 
-        // Chargement des datas
-        $this->projects = $this->loadData('projects');
-        $this->companies = $this->loadData('companies');
-        $this->companies_details = $this->loadData('companies_details');
-        $this->favoris = $this->loadData('favoris');
-        $this->emprunteur = $this->loadData('clients');
-        $this->projects_status = $this->loadData('projects_status');
-        $this->companies_actif_passif = $this->loadData('companies_actif_passif');
-        $this->companies_bilans = $this->loadData('companies_bilans');
-        $this->transactions = $this->loadData('transactions');
-        $this->wallets_lines = $this->loadData('wallets_lines');
-        $this->loans = $this->loadData('loans');
-        $this->bids = $this->loadData('bids');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->echeanciers = $this->loadData('echeanciers');
-        $this->notifications = $this->loadData('notifications');
-        $this->clients_status = $this->loadData('clients_status');
-        $this->prospects = $this->loadData('prospects');
-        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications'); // add gestion alertes
-        $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif'); // add gestion alertes
-        $this->projects_status_history = $this->loadData('projects_status_history');
+        $this->projects                      = $this->loadData('projects');
+        $this->companies                     = $this->loadData('companies');
+        $this->companies_details             = $this->loadData('companies_details');
+        $this->favoris                       = $this->loadData('favoris');
+        $this->emprunteur                    = $this->loadData('clients');
+        $this->projects_status               = $this->loadData('projects_status');
+        $this->companies_actif_passif        = $this->loadData('companies_actif_passif');
+        $this->companies_bilans              = $this->loadData('companies_bilans');
+        $this->transactions                  = $this->loadData('transactions');
+        $this->wallets_lines                 = $this->loadData('wallets_lines');
+        $this->loans                         = $this->loadData('loans');
+        $this->bids                          = $this->loadData('bids');
+        $this->lenders_accounts              = $this->loadData('lenders_accounts');
+        $this->echeanciers                   = $this->loadData('echeanciers');
+        $this->notifications                 = $this->loadData('notifications');
+        $this->clients_status                = $this->loadData('clients_status');
+        $this->prospects                     = $this->loadData('prospects');
+        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+        $this->projects_status_history       = $this->loadData('projects_status_history');
 
-        //traduction
         $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
         if ($this->clients->checkAccess()) {
-            // On prend le header account
             $this->setHeader('header_account');
         }
 
-        // restriction mise en prod
-        if (in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']])) //if($_SERVER['REMOTE_ADDR'] == '93.26.42.99')
-        {
+        if (in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']])) {
             $this->restriction_ip = true;
-            //$this->restriction_ip = false;
         } else {
             $this->restriction_ip = false;
         }
@@ -134,7 +124,7 @@ class projectsController extends bootstrap
             $this->meta_title = $this->projects->title . ' - Unilend';
 
             // source
-            $this->ficelle->source($_GET['utm_source'], $this->lurl . '/' . $this->params[0], $_GET['utm_source2']);
+            $this->ficelle->source(empty($_GET['utm_source']) ?: $_GET['utm_source'], $this->lurl . '/' . $this->params[0], empty($_GET['utm_source2']) ?: $_GET['utm_source2']);
 
             // Pret min
             $this->settings->get('Pret min', 'type');
@@ -170,8 +160,8 @@ class projectsController extends bootstrap
             $this->lastStatushisto = $this->lastStatushisto[0];
 
             // si le status est inferieur a "a funder" on autorise pas a voir le projet
-            if ($this->projects_status->status < 40) {
-                header('Location:' . $this->lurl);
+            if ($this->projects_status->status < \projects_status::A_FUNDER) {
+                header('Location: ' . $this->lurl);
                 die;
             }
 
@@ -188,7 +178,7 @@ class projectsController extends bootstrap
 
             // page d'attente entre la cloture du projet et le traitement de cloture du projet
             $this->page_attente = false;
-            if ($dateRetrait <= $today && $this->projects_status->status == 50) {
+            if ($dateRetrait <= $today && $this->projects_status->status == \projects_status::EN_FUNDING) {
                 $this->page_attente = true;
             }
 
@@ -197,46 +187,39 @@ class projectsController extends bootstrap
             ////////////////////////
 
             if (isset($_POST['send_pret'])) {
-
-                // Histo client //
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'id_projet' => $this->projects->id_project));
                 $this->clients_history_actions->histo(9, 'bid', $this->clients->id_client, $serialize);
-                ////////////////
-
 
                 // Si la date du jour est egale ou superieur a la date de retrait on redirige.
                 if ($today >= $dateRetrait) {
                     $_SESSION['messFinEnchere'] = $this->lng['preteur-projets']['mess-fin-enchere'];
-                    // message l'alerte
-                    //mail('d.courtier@equinoa.com','Alert unilend Pret','Un mec a voulu preter apres la datede retrait '.$this->clients->id_client.' Le :'.date('Y-m-d H:i:s'));
 
-                    header('location:' . $this->lurl . '/projects/detail/' . $this->projects->slug);
+                    header('Location: ' . $this->lurl . '/projects/detail/' . $this->projects->slug);
                     die;
                 } elseif ($this->clients_status->status < 60) { // preteur non activé
-                    header('location:' . $this->lurl . '/projects/detail/' . $this->projects->slug);
+                    header('Location: ' . $this->lurl . '/projects/detail/' . $this->projects->slug);
                     die;
                 }
 
-                $montant_p = str_replace(' ', '', $_POST['montant_pret']);
-                $montant_p = str_replace(',', '.', $montant_p);
-
+                $montant_p = isset($_POST['montant_pret']) ? str_replace(array(' ', ','), array('', '.'), $_POST['montant_pret']) : 0;
                 $montant_p = explode('.', $montant_p);
                 $montant_p = $montant_p[0];
 
-                $tx_p = $_POST['taux_pret'];
-
                 $this->form_ok = true;
 
-                // On verifie les champs
-                if (!isset($_POST['taux_pret']) || $_POST['taux_pret'] == '') {
+                if (empty($_POST['taux_pret'])) {
                     $this->form_ok = false;
                 } elseif ($_POST['taux_pret'] == '-') {
                     $this->form_ok = false;
-                } elseif ($_POST['taux_pret'] > 10) { // taux a 10% max
+                } elseif ($_POST['taux_pret'] > 10) {
                     $this->form_ok = false;
                 }
 
-                if (!isset($_POST['montant_pret']) || $_POST['montant_pret'] == '' || $_POST['montant_pret'] == '0') {
+                $fMaxCurrentRate = $this->bids->getProjectMaxRate($this->projects->id_project);
+
+                if ($_POST['taux_pret'] >= $fMaxCurrentRate) {
+                    $this->form_ok = false;
+                } elseif (!isset($_POST['montant_pret']) || $_POST['montant_pret'] == '' || $_POST['montant_pret'] == '0') {
                     $this->form_ok = false;
                 } elseif (!is_numeric($montant_p)) {
                     $this->form_ok = false;
@@ -246,57 +229,52 @@ class projectsController extends bootstrap
                     $this->form_ok = false;
                 } elseif ($montant_p >= $this->projects->amount) {
                     $this->form_ok = false;
-                }
-                if ($this->projects_status->status != 50) {
+                } elseif ($this->projects_status->status != 50) {
                     $this->form_ok = false;
                 }
 
                 if (isset($this->params['1']) && $this->params['1'] == 'fast' && $this->form_ok == false) {
-                    header('location:' . $this->lurl . '/synthese');
+                    header('Location: ' . $this->lurl . '/synthese');
                     die;
                 }
 
-                // Si tout est ok let's go
+                $tx_p = $_POST['taux_pret'];
+
                 if ($this->form_ok == true && isset($_SESSION['tokenBid']) && $_SESSION['tokenBid'] == $_POST['send_pret']) {
                     unset($_SESSION['tokenBid']);
-                    // On enregistre la transaction virtuelle
-                    $this->transactions->id_client = $this->clients->id_client;
-                    $this->transactions->montant = '-' . ($montant_p * 100);
-                    $this->transactions->id_langue = 'fr';
+
+                    $this->transactions->id_client        = $this->clients->id_client;
+                    $this->transactions->montant          = '-' . ($montant_p * 100);
+                    $this->transactions->id_langue        = 'fr';
                     $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                    $this->transactions->status = '1';
-                    $this->transactions->etat = '1';
-                    $this->transactions->id_project = $this->projects->id_project;
-                    $this->transactions->transaction = '2';
-                    $this->transactions->ip_client = $_SERVER['REMOTE_ADDR'];
+                    $this->transactions->status           = '1';
+                    $this->transactions->etat             = '1';
+                    $this->transactions->id_project       = $this->projects->id_project;
+                    $this->transactions->transaction      = '2';
+                    $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                     $this->transactions->type_transaction = '2';
-                    $this->transactions->id_transaction = $this->transactions->create();
+                    $this->transactions->create();
 
-                    // On enrgistre aussi dans le wallet line
-                    $this->wallets_lines->id_lender = $this->lenders_accounts->id_lender_account;
+                    $this->wallets_lines->id_lender                = $this->lenders_accounts->id_lender_account;
                     $this->wallets_lines->type_financial_operation = 20; // enchere
-                    $this->wallets_lines->id_transaction = $this->transactions->id_transaction;
-                    $this->wallets_lines->status = 1;
-                    $this->wallets_lines->type = 2; // transaction virtuelle
-                    $this->wallets_lines->amount = '-' . ($montant_p * 100);
-                    $this->wallets_lines->id_project = $this->projects->id_project;
-                    $this->wallets_lines->id_wallet_line = $this->wallets_lines->create();
+                    $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
+                    $this->wallets_lines->status                   = 1;
+                    $this->wallets_lines->type                     = 2; // transaction virtuelle
+                    $this->wallets_lines->amount                   = '-' . ($montant_p * 100);
+                    $this->wallets_lines->id_project               = $this->projects->id_project;
+                    $this->wallets_lines->create();
 
-                    // ordre des bids
                     $numBid = $this->bids->counter('id_project = ' . $this->projects->id_project);
                     $numBid += 1;
 
-                    // on enregistre l'enchere
-                    $this->bids->id_lender_account = $this->lenders_accounts->id_lender_account;
-                    $this->bids->id_project = $this->projects->id_project;
+                    $this->bids->id_lender_account     = $this->lenders_accounts->id_lender_account;
+                    $this->bids->id_project            = $this->projects->id_project;
                     $this->bids->id_lender_wallet_line = $this->wallets_lines->id_wallet_line;
-                    $this->bids->amount = $montant_p * 100;
-                    $this->bids->rate = $tx_p;
-                    $this->bids->ordre = $numBid;
-                    $this->bids->id_bid = $this->bids->create();
+                    $this->bids->amount                = $montant_p * 100;
+                    $this->bids->rate                  = $tx_p;
+                    $this->bids->ordre                 = $numBid;
+                    $this->bids->create();
 
-
-                    /// OFFRE DE BIENVENUE ///
                     $offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
 
                     // Liste des offres non utilisées
@@ -330,7 +308,6 @@ class projectsController extends bootstrap
                                     $offres_bienvenues_details->montant = ($montant_coupe_a_remb * 100);
                                     $offres_bienvenues_details->create();
                                 }
-
                             } else {
                                 break;
                             }
@@ -349,47 +326,40 @@ class projectsController extends bootstrap
                     ///// FIN NOTIFICATION OFFRE PLACEE ///////
 
                     if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 2, 'immediatement') == true) {
-
-                        // Motif virement
-                        $p = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
-                        $nom = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
+                        $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
+                        $nom       = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
                         $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-                        $motif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+                        $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
 
                         //*********************************//
                         //*** ENVOI DU MAIL CONFIRM BID ***//
                         //*********************************//
 
-                        // Recuperation du modele de mail
                         $this->mails_text->get('confirmation-bid', 'lang = "' . $this->language . '" AND type');
 
-                        // FB
                         $this->settings->get('Facebook', 'type');
                         $lien_fb = $this->settings->value;
 
-                        // Twitter
                         $this->settings->get('Twitter', 'type');
                         $lien_tw = $this->settings->value;
 
-                        $timeAdd = strtotime($this->bids->added);
-                        $month = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
-
+                        $timeAdd     = strtotime($this->bids->added);
+                        $month       = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
                         $pageProjets = $this->tree->getSlug(4, $this->language);
-
-                        $varMail = array(
-                            'surl' => $this->surl,
-                            'url' => $this->lurl,
-                            'prenom_p' => $this->clients->prenom,
+                        $varMail     = array(
+                            'surl'           => $this->surl,
+                            'url'            => $this->lurl,
+                            'prenom_p'       => $this->clients->prenom,
                             'nom_entreprise' => $this->companies->name,
-                            'valeur_bid' => $this->ficelle->formatNumber($montant_p),
-                            'taux_bid' => $this->ficelle->formatNumber($tx_p, 1),
-                            'date_bid' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                            'heure_bid' => date('H:i:s', strtotime($this->bids->added)),
-                            'projet-p' => $this->lurl . '/' . $pageProjets,
+                            'valeur_bid'     => $this->ficelle->formatNumber($montant_p),
+                            'taux_bid'       => $this->ficelle->formatNumber($tx_p, 1),
+                            'date_bid'       => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
+                            'heure_bid'      => date('H:i:s', strtotime($this->bids->added)),
+                            'projet-p'       => $this->lurl . '/' . $pageProjets,
                             'motif_virement' => $motif,
-                            'lien_fb' => $lien_fb,
-                            'lien_tw' => $lien_tw);
-
+                            'lien_fb'        => $lien_fb,
+                            'lien_tw'        => $lien_tw
+                        );
 
                         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
@@ -404,7 +374,6 @@ class projectsController extends bootstrap
 
                         if ($this->Config['env'] === 'prod') {
                             Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                            // Injection du mail NMP dans la queue
                             $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                         } else {
                             $this->email->addRecipient(trim($this->clients->email));
@@ -417,19 +386,17 @@ class projectsController extends bootstrap
                         $this->clients_gestion_mails_notif->immediatement = 0;
                     }
 
-                    //////// GESTION ALERTES //////////
                     $this->clients_gestion_mails_notif->id_client = $this->clients->id_client;
                     $this->clients_gestion_mails_notif->id_notif = 2; // offre placée
                     $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                     $this->clients_gestion_mails_notif->id_transaction = $this->transactions->id_transaction;
                     $this->clients_gestion_mails_notif->create();
-                    //////// FIN GESTION ALERTES //////////
 
                     $_SESSION['messPretOK'] = $this->lng['preteur-projets']['mess-pret-conf'];
 
 
-                    header('location:' . $this->lurl . '/projects/detail/' . $this->projects->slug);
+                    header('Location: ' . $this->lurl . '/projects/detail/' . $this->projects->slug);
                     die;
                 }
                 ////// FIN ENREGISTREMENT BID /////
@@ -451,7 +418,6 @@ class projectsController extends bootstrap
                     $form_valid = false;
                     $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
                 }
-
 
                 if (!isset($email) || $email == '' || $email == $this->lng['landing-page']['email']) {
                     $form_valid = false;
@@ -483,7 +449,7 @@ class projectsController extends bootstrap
 
                     $_SESSION['landing_page'] = true;
 
-                    header('location:' . $this->lurl . '/inscription_preteur/etape1/' . $this->clients->hash);
+                    header('Location: ' . $this->lurl . '/inscription_preteur/etape1/' . $this->clients->hash);
                     die;
                 }
             }
@@ -497,13 +463,13 @@ class projectsController extends bootstrap
             $this->annee = $this->dates->formatDate($this->projects->date_retrait, 'Y');
 
             // intervalle aujourd'hui et retrait
-            $inter = $this->dates->intervalDates(date('Y-m-d H:i:s'), $this->projects->date_retrait . ' ' . $this->heureFinFunding);
+            $inter = $this->dates->intervalDates(date('Y-m-d H:i:s'), $this->projects->date_retrait . ' ' . $this->heureFinFunding . ':00');
             if ($inter['mois'] > 0) $this->dateRest = $inter['mois'] . ' mois';
             else $this->dateRest = '';
 
             // Date de retrait complete
             if ($this->projects_status->status == 50) {
-                $this->date_retrait = $this->dates->formatDateComplete($this->projects->date_retrait . ' ' . $this->heureFinFunding);
+                $this->date_retrait = $this->dates->formatDateComplete($this->projects->date_retrait);
                 $this->heure_retrait = substr($this->heureFinFunding, 0, 2);
             } else {
                 $this->date_retrait = $this->dates->formatDateComplete($this->projects->date_fin);
@@ -576,23 +542,21 @@ class projectsController extends bootstrap
 
                 $this->lEnchereRate = $this->bids->select('id_project = ' . $this->projects->id_project, 'rate ASC,added ASC');
                 $leSoldeE = 0;
-                foreach ($this->lEnchereRate as $k => $e) {
-                    // on parcour les encheres jusqu'au montant de l'emprunt
+                foreach ($this->lEnchereRate as $e) {
                     if ($leSoldeE < $this->projects->amount) {
-                        // le solde total des encheres
                         $leSoldeE += ($e['amount'] / 100);
                         $this->txLenderMax = $e['rate'];
                     }
                 }
             }
 
-            // Liste des encheres enregistrées
-            $this->lEnchere = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
-
+            $this->lEnchere     = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
             $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
+            $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
 
-            $this->avgAmount = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
-            if ($this->avgAmount == false) $this->avgAmount = 0;
+            if ($this->avgAmount == false) {
+                $this->avgAmount = 0;
+            }
 
             // moyenne pondéré
             $montantHaut = 0;
@@ -677,7 +641,7 @@ class projectsController extends bootstrap
                 }
             }
         } else {
-            header('location:' . $this->lurl . '/projects');
+            header('Location: ' . $this->lurl . '/projects');
             die;
         }
     }
