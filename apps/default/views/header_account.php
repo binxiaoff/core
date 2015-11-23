@@ -315,17 +315,17 @@ if (isset($_SESSION['lexpress']))
     {
         ?>
         <style type="text/css">
-            .navigation .styled-nav{width: 713px;}
+            .navigation .styled-nav{width: 900px;}
         </style>
             <div class="navigation ">
                 <div class="shell clearfix">
-                    <ul class="styled-nav">
-                        <li class="active nav-item-home" style="position: relative;top: 10px;height: 16px;overflow:hidden;"><a href="<?= $this->lurl ?>/projets"><i class="icon-home"></i></a></li>
-                        <li><a <?= ($this->page == 'projets' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/projets"><?= $this->lng['header']['vos-projets'] ?></a></li>
-                        <li><a <?= ($this->page == 'operations' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/operations"><?= $this->lng['header']['vos-operations'] ?></a></li>
-                        <li><a <?= ($this->page == 'profil' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/profil"><?= $this->lng['header']['votre-profil'] ?></a></li>
-                        <li><a <?= ($this->page == 'faq' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/faq"><?= $this->lng['header']['faq'] ?></a></li>
-                        <li><a <?= ($this->page == 'contact' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/contact"><?= $this->lng['header']['contact'] ?></a></li>
+                    <ul class="styled-nav" style="margin-top: 10px;">
+                        <li class="active nav-item-home" style="position: relative;top: 10px;height: 16px;overflow:hidden;"><a href="<?= $this->lurl ?>/espace_emprunteur/projets"><i class="icon-home"></i></a></li>
+                        <li><a <?= ($this->page == 'projets' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/espace_emprunteur/projets"><?= $this->lng['header']['vos-projets'] ?></a></li>
+                        <li><a <?= ($this->page == 'operations' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/espace_emprunteur/operations"><?= $this->lng['header']['vos-operations'] ?></a></li>
+                        <li><a <?= ($this->page == 'profil' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/espace_emprunteur/profil"><?= $this->lng['header']['votre-profil'] ?></a></li>
+                        <li><a <?= ($this->page == 'faq' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/espace_emprunteur/faq"><?= $this->lng['header']['faq'] ?></a></li>
+                        <li><a <?= ($this->page == 'contact' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/espace_emprunteur/contact"><?= $this->lng['header']['contact'] ?></a></li>
                     </ul><!-- /.nav-main -->
                 </div><!-- /.shell -->
             </div><!-- /.navigation -->
