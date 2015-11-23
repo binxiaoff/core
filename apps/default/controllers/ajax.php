@@ -814,8 +814,10 @@ class ajaxController extends bootstrap
                 $this->email->addRecipient(trim($clients->email));
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
+            echo 'ok';
+        } else {
+            echo 'nok';
         }
-        echo 'nok';
     }
 
     public function _load_finances()
