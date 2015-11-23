@@ -133,7 +133,7 @@
         var form_ok = true;
         var newpass = $('#passNew');
 
-        if (controleMdp(newpass.val(), 'passNew') == false) {
+        if (controleMdp(newpass.val(), 'passNew', false) == false) {
             form_ok = false
         }
 
