@@ -810,7 +810,7 @@
                                 <td>
                                     CGV envoyées le <?= date('d/m/Y à H:i:s', strtotime($this->project_cgv->added)) ?>
                                     (<a href="<?= $this->furl . $this->project_cgv->getUrlPath() ?>" target="_blank">PDF</a>)
-                                    <?php if (in_array($this->project_cgv, array(project_cgv::STATUS_SIGN_UNIVERSIGN, project_cgv::STATUS_SIGN_FO))) : ?>
+                                    <?php if (in_array($this->project_cgv->status, array(project_cgv::STATUS_SIGN_UNIVERSIGN, project_cgv::STATUS_SIGN_FO))) : ?>
                                         <br/><strong>signées</strong> le <?= date('d/m/Y à H:i:s', strtotime($this->project_cgv->updated))  ?>
                                     <?php endif; ?>
                                 </td>
@@ -1322,17 +1322,17 @@
                         <tr>
                             <th><label for="ca_declara_client">Chiffe d'affaires declaré par client</label></th>
                             <td>
-                                <input type="text" name="ca_declara_client" id="ca_declara_client" class="input_moy" value="<?= $this->projects->ca_declara_client ?>"/>
+                                <input type="text" name="ca_declara_client" id="ca_declara_client" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->ca_declara_client, 0) ?>"/>
                             </td>
                             <th><label for="resultat_exploitation_declara_client">Résultat d'exploitation declaré par client</label></th>
                             <td>
-                                <input type="text" name="resultat_exploitation_declara_client" id="resultat_exploitation_declara_client" class="input_moy" value="<?= $this->projects->resultat_exploitation_declara_client ?>"/>
+                                <input type="text" name="resultat_exploitation_declara_client" id="resultat_exploitation_declara_client" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->resultat_exploitation_declara_client, 0) ?>"/>
                             </td>
                         </tr>
                         <tr>
                             <th><label for="fonds_propres_declara_client">Fonds propres declarés par client</label></th>
                             <td>
-                                <input type="text" name="fonds_propres_declara_client" id="fonds_propres_declara_client" class="input_moy" value="<?= $this->projects->fonds_propres_declara_client ?>"/>
+                                <input type="text" name="fonds_propres_declara_client" id="fonds_propres_declara_client" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->fonds_propres_declara_client, 0) ?>"/>
                             </td>
                         </tr>
 

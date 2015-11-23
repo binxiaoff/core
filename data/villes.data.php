@@ -167,9 +167,9 @@ class villes extends villes_crud
     {
         $sTerm = str_replace(' ', '-', strtoupper($sTerm));
         // Replace ST, SNT with SAINT
-        $sTerm = preg_replace('/(^|.+-)((ST)|(SNT))(.+)/', '$1SAINT$5', $sTerm);
+        $sTerm = preg_replace('/(^|.+-)((ST)|(SNT))(-)(.+)/', '$1SAINT$5$6', $sTerm);
         // Replace STE with SAINTE
-        $sTerm = preg_replace('/(^|.+-)(STE)(.+)/', '$1SAINTE$3', $sTerm);
+        $sTerm = preg_replace('/(^|.+-)(STE)(-)(.+)/', '$1SAINTE$3$4', $sTerm);
         // Remove le la les l' from the beginning of the term
         $sTerm = preg_replace('/^(LE-|LA-|LES-|L\')(.+)/', '$2', $sTerm);
 

@@ -720,6 +720,7 @@ class statsController extends bootstrap
                 $codeCom = $this->villes->getInseeCode($this->companies->zip, $this->companies->city);
                 $codeComNaissance = '';
                 $retenuesource    = '';
+                $sLieuNaissance = '';
             } else {
                 $this->etranger = 0;
 
@@ -797,6 +798,13 @@ class statsController extends bootstrap
                     $ville_paysFiscal = $paysFiscal;
                 }
 
+                if (1 >= $e['id_pays_naissance']) {
+                    $sLieuNaissance = $e['ville_naissance'];
+                } else {
+                    $this->pays->get($e['id_pays_naissance'], 'id_pays');
+                    $sLieuNaissance = $this->pays->fr;
+                }
+
                 $this->clients->get($e['id_client'], 'id_client');
                 $codeComNaissance = $this->clients->insee_birth == '' ? '00000' : $this->clients->insee_birth;
                 $depNaiss = substr($codeComNaissance, 0, 2) !== '97' ? substr($codeComNaissance, 0, 2) : substr($codeComNaissance, 0, 3);
@@ -811,7 +819,7 @@ class statsController extends bootstrap
             if ($entreprise == true) {
                 $aData[] = array($motif, $this->companies->name, '', '', '', '', '', '', '', '', $this->companies->siret, $isoFiscal, '', str_replace(';', ',', $this->companies->adresse1), $codeCom, '', $this->companies->zip, $ville_paysFiscal, '', $isoFiscal, 'X', $retenuesource, 'N', $this->companies->phone, '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
             } else {
-                $aData[] = array($motif, $e['nom'], $e['civilite'], $e['nom'], $e['prenom'], $naissance, $depNaiss, $codeComNaissance, $e['ville_naissance'], '', '', $isoFiscal, '', str_replace(';', ',', $adresse_fiscal), $codeCom, $commune, $cp, $ville_paysFiscal, '', $isoNaissance, 'X', $retenuesource, 'N', $e['telephone'], '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
+                $aData[] = array($motif, $e['nom'], $e['civilite'], $e['nom'], $e['prenom'], $naissance, $depNaiss, $codeComNaissance, $sLieuNaissance, '', '', $isoFiscal, '', str_replace(';', ',', $adresse_fiscal), $codeCom, $commune, $cp, $ville_paysFiscal, '', $isoNaissance, 'X', $retenuesource, 'N', $e['telephone'], '', $this->lenders_accounts->iban, $this->lenders_accounts->bic, $e['email'], '');
             }
         }
 

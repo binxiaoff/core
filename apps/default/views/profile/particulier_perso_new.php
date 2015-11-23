@@ -383,7 +383,7 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
 
             <div class="row row-triple-fields">
                 <input type="text" id="postal2" name="postal2" class="field field-small required" data-autocomplete="post_code"
-                       placeholder="<?=$this->lng['etape1']['code-postal']?>" value="<?=$this->clients_adresses?>" title="<?=$this->lng['etape1']['code-postal']?>" />
+                       placeholder="<?=$this->lng['etape1']['code-postal']?>" value="<?= $this->clients_adresses->cp ?>" title="<?=$this->lng['etape1']['code-postal']?>" />
                 <input type="text" id="ville2" name="ville2" class="field field-small required" data-autocomplete="city"
                        placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=$this->clients_adresses->ville?>" />
                 <?php //Ajout CM 06/08/14 ?>

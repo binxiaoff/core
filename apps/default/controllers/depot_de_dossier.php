@@ -306,7 +306,7 @@ class depot_de_dossierController extends bootstrap
 
         if (is_null($this->iAverageFundingDuration)) {
             // @todo arbitrary choice
-            $this->iAverageFundingDuration = 360;
+            $this->iAverageFundingDuration = 15;
         }
 
         $oCompanyCreationDate          = new \DateTime($this->companies->date_creation);
@@ -809,6 +809,7 @@ class depot_de_dossierController extends bootstrap
                 $this->bDisplayContact = true;
                 $this->sMessage        = $this->lng['depot-de-dossier-fin']['analyse'];
                 break;
+            case \projects_status::COMPLETUDE_ETAPE_3:
             case \projects_status::A_TRAITER:
             case \projects_status::EN_ATTENTE_PIECES:
                 if (1 == $this->projects->process_fast) {
@@ -991,9 +992,9 @@ class depot_de_dossierController extends bootstrap
                 }
                 break;
             case \projects_status::COMPLETUDE_ETAPE_3:
-                if ($this->projects->process_fast == 1 && $sPage !== self::PAGE_NAME_FILES) {
+                if ($this->projects->process_fast == 1 && false === in_array($sPage, array(self::PAGE_NAME_END, self::PAGE_NAME_FILES))) {
                     $this->redirect(self::PAGE_NAME_FILES);
-                } elseif ($sPage !== self::PAGE_NAME_STEP_3) {
+                } elseif ($this->projects->process_fast == 0 && $sPage !== self::PAGE_NAME_STEP_3) {
                     $this->redirect(self::PAGE_NAME_STEP_3);
                 }
                 break;

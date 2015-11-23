@@ -181,6 +181,8 @@ class cronController extends bootstrap
     // On check les projet a faire passer en fundé ou en funding ko
     public function _check_projet_en_funding()
     {
+        $oLogger = new ULogger('cron', $this->logPath, 'cron_check_projet_en_funding.log');
+
         $this->bids                      = $this->loadData('bids');
         $this->loans                     = $this->loadData('loans');
         $this->wallets_lines             = $this->loadData('wallets_lines');
@@ -234,8 +236,15 @@ class cronController extends bootstrap
                     // on passe le projet en fundé
                     $this->projects_status_history->addStatus(-1, 60, $projects['id_project']);
 
+                    $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' is now changed to status funded.');
+
                     $this->lEnchere = $this->bids->select('id_project = ' . $projects['id_project'] . ' AND status = 0', 'rate ASC,added ASC');
                     $leSoldeE       = 0;
+
+                    $iBidNbTotal = count($this->lEnchere);
+                    $iTreatedBitNb = 0;
+                    $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iBidNbTotal . ' bids in total.');
+
                     foreach ($this->lEnchere as $k => $e) {
                         if ($leSoldeE < $projects['amount']) {
                             $amount = $e['amount'];
@@ -321,6 +330,8 @@ class cronController extends bootstrap
                                 $this->bids->status = 1;
                                 $this->bids->update();
 
+                                $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : The bid (' . $e['id_bid'] . ') status has been updated to 1');
+
                                 $this->loans->id_bid     = $e['id_bid'];
                                 $this->loans->id_lender  = $e['id_lender_account'];
                                 $this->loans->id_project = $e['id_project'];
@@ -328,6 +339,8 @@ class cronController extends bootstrap
 
                                 $this->loans->rate = $e['rate'];
                                 $this->loans->create();
+
+                                $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : bid (' . $e['id_bid'] . ') has been transferred to loan (' . $this->loans->id_loan . ').');
                             }
                         } else {// Pour les encheres qui depassent on rend l'argent
                             $this->bids->get($e['id_bid'], 'id_bid');
@@ -336,6 +349,8 @@ class cronController extends bootstrap
                             if ($this->bids->status == '0') {
                                 $this->bids->status = 2;
                                 $this->bids->update();
+
+                                $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : The bid (' . $e['id_bid'] . ') status has been updated to 2');
 
                                 $this->lenders_accounts->get($e['id_lender_account'], 'id_lender_account');
 
@@ -395,6 +410,8 @@ class cronController extends bootstrap
                                 }
                             }
                         }
+                        $iTreatedBitNb ++;
+                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated.');
                     }
 
                     $this->create_echeances($projects['id_project']);
@@ -466,6 +483,7 @@ class cronController extends bootstrap
                             $this->email->addRecipient(trim($e->email));
                             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                         }
+                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : email emprunteur-dossier-funde-et-termine sent');
                     }
 
                     $this->projects->get($projects['id_project'], 'id_project');
@@ -520,7 +538,9 @@ class cronController extends bootstrap
 
                     // on parcourt les bids ok du projet et on envoie les mail
                     $lLoans = $this->loans->select('id_project = ' . $projects['id_project']);
-
+                    $iLoanNbTotal = count($lLoans);
+                    $iTreatedLoanNb = 0;
+                    $oLogger->addRecord(ULogger::INFO, 'project : ' .  $iLoanNbTotal . ' loans to send email');
                     foreach ($lLoans as $l) {
                         $this->projects->get($l['id_project'], 'id_project');
                         $this->lenders_accounts->get($l['id_lender'], 'id_lender_account');
@@ -587,7 +607,11 @@ class cronController extends bootstrap
                                 $this->email->addRecipient(trim($preteur->email));
                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                             }
+                            $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : email preteur-bid-ok sent for loan (' . $l['id_loan'] . ')');
                         }
+                        $iTreatedLoanNb++;
+
+                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iTreatedLoanNb . '/' . $iLoanNbTotal . ' loan notification mail sent');
                     }
                 } else {// Funding KO (le solde demandé n'a pas ete atteint par les encheres)
                     // On passe le projet en funding ko
@@ -631,9 +655,15 @@ class cronController extends bootstrap
                             $this->email->addRecipient(trim($this->clients->email));
                             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                         }
+                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : email emprunteur-dossier-funding-ko sent');
                     }
 
                     $this->lEnchere = $this->bids->select('id_project = ' . $projects['id_project'], 'rate ASC,added ASC');
+
+                    $iBidNbTotal = count($this->lEnchere);
+                    $iTreatedBitNb = 0;
+                    $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iBidNbTotal . 'bids in total.');
+
                     foreach ($this->lEnchere as $k => $e) {
                         $this->lenders_accounts->get($e['id_lender_account'], 'id_lender_account');
 
@@ -663,6 +693,8 @@ class cronController extends bootstrap
                         $this->bids->get($e['id_bid'], 'id_bid');
                         $this->bids->status = 2;
                         $this->bids->update();
+
+                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : The bid (' . $e['id_bid'] . ') status has been updated to 2');
 
                         $this->notifications->type            = 1; // rejet
                         $this->notifications->id_lender       = $e['id_lender_account'];
@@ -755,7 +787,11 @@ class cronController extends bootstrap
                                 $this->email->addRecipient(trim($this->clients->email));
                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                             }
+                            $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : email preteur-dossier-funding-ko sent');
                         }
+
+                        $iTreatedBitNb ++;
+                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iTreatedBitNb . '/' . $iBidNbTotal . 'bids treated.');
                     }
                 } // fin funding ko
 
@@ -813,7 +849,8 @@ class cronController extends bootstrap
     public function create_echeances($id_project)
     {
         ini_set('max_execution_time', 300); //300 seconds = 5 minutes
-
+        ini_set('memory_limit', '512M');
+        $oLogger = new ULogger('cron', $this->logPath, 'cron_check_projet_en_funding.log');
         // chargement des datas
         $this->loans           = $this->loadData('loans');
         $this->projects        = $this->loadData('projects');
@@ -885,6 +922,10 @@ class cronController extends bootstrap
             // Liste des loans du projet
             $lLoans = $this->loans->select('id_project = ' . $this->projects->id_project);
 
+            $iLoanNbTotal = count($lLoans);
+            $iTreatedLoanNb = 0;
+            $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' . $iLoanNbTotal . ' in total.');
+
             // on parcourt les loans du projet en remboursement
             foreach ($lLoans as $l) {
                 //////////////////////////////
@@ -912,7 +953,6 @@ class cronController extends bootstrap
                 $nbecheances = $this->projects->period;
                 $taux        = ($l['rate'] / 100);
                 $commission  = $com;
-                $tva         = $tva;
 
                 $tabl = $this->remb->echeancier($capital, $nbecheances, $taux, $commission, $tva);
 
@@ -996,7 +1036,11 @@ class cronController extends bootstrap
                     $this->echeanciers->date_echeance                = $dateEcheance;
                     $this->echeanciers->date_echeance_emprunteur     = $dateEcheance_emprunteur;
                     $this->echeanciers->create();
+
+                    $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : echeanciers (' . $this->echeanciers->id_echeancier . ') and order (' . $this->echeanciers->ordre .') has been created for loan (' .  $l['id_loan'] . ')');
                 }
+                $iTreatedLoanNb ++;
+                $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' .  $iTreatedLoanNb . '/' . $iLoanNbTotal . ' lender loan treated.');
             }
         }
     }
@@ -1004,6 +1048,10 @@ class cronController extends bootstrap
     // fonction create echeances emprunteur
     public function createEcheancesEmprunteur($id_project)
     {
+        ini_set('memory_limit', '512M');
+
+        $oLogger = new ULogger('cron', $this->logPath, 'cron_check_projet_en_funding.log');
+
         $loans                  = $this->loadData('loans');
         $projects               = $this->loadData('projects');
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
@@ -1039,7 +1087,6 @@ class cronController extends bootstrap
         $nbecheances = $projects->period;
         $taux        = ($tauxMoyen / 100);
         $commission  = $com;
-        $tva         = $tva;
 
         $tabl = $remb->echeancier($capital, $nbecheances, $taux, $commission, $tva);
 
@@ -1048,6 +1095,9 @@ class cronController extends bootstrap
 
         $lEcheanciers = $echeanciers->getSumRembEmpruntByMonths($projects->id_project);
 
+        $iEcheancierNbTotal = count($lEcheanciers);
+        $iTreatedEcheancierNb = 0;
+        $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' .$iEcheancierNbTotal . ' in total.');
         foreach ($lEcheanciers as $k => $e) {
             // Date d'echeance emprunteur
             $dateEcheance_emprunteur = $this->dates->dateAddMoisJoursV3($projects->date_fin, $k);
@@ -1065,6 +1115,11 @@ class cronController extends bootstrap
             $echeanciers_emprunteur->tva                      = $donneesEcheances['tvaCom'] * 100; // et tva du projet
             $echeanciers_emprunteur->date_echeance_emprunteur = $dateEcheance_emprunteur;
             $echeanciers_emprunteur->create();
+
+            $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' :  echeance (' . $echeanciers_emprunteur->id_echeanciers_emprunteur . ') has been created.');
+
+            $iTreatedEcheancierNb ++;
+            $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' . $iTreatedEcheancierNb . '/' . $iEcheancierNbTotal . ' borrower echeance created.');
         }
     }
 
@@ -4872,275 +4927,256 @@ class cronController extends bootstrap
     public function _checkBids()
     {
         if (true === $this->startCron('checkBids', 5)) {
+            ini_set('max_execution_time', '300');
+            ini_set('memory_limit', '1G');
 
-            // On fait notre cron toutes les  5 minutes et toutes les minutes entre 15h30 et 16h00
-            $les5    = array(00, 05, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55);
-            $minutes = date('i');
-            ini_set('max_execution_time', '30000');
-            ini_set('memory_limit', '2048M');
-            $dateDeb = mktime(15, 30, 0, date("m"), date("d"), date("Y"));
-            $dateFin = mktime(16, 00, 0, date("m"), date("d"), date("Y"));
-            //cron 5 min et toutes les minutes de 15h30 à 16h00
-            if (in_array($minutes, $les5) || time() >= $dateDeb && time() <= $dateFin) {
+            $this->projects                      = $this->loadData('projects');
+            $this->projects_status               = $this->loadData('projects_status');
+            $this->emprunteur                    = $this->loadData('clients');
+            $this->companies                     = $this->loadData('companies');
+            $this->bids                          = $this->loadData('bids');
+            $this->lenders_accounts              = $this->loadData('lenders_accounts');
+            $this->preteur                       = $this->loadData('clients');
+            $this->notifications                 = $this->loadData('notifications');
+            $this->wallets_lines                 = $this->loadData('wallets_lines');
+            $this->bids_logs                     = $this->loadData('bids_logs');
+            $this->offres_bienvenues_details     = $this->loadData('offres_bienvenues_details');
+            $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications'); // add gestion alertes
+            $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif'); // add gestion alertes
 
-                // on rentre dans le cron si statut égale 1 pour eviter les double passages
-                $this->projects                  = $this->loadData('projects');
-                $this->projects_status           = $this->loadData('projects_status');
-                $this->emprunteur                = $this->loadData('clients');
-                $this->companies                 = $this->loadData('companies');
-                $this->bids                      = $this->loadData('bids');
-                $this->lenders_accounts          = $this->loadData('lenders_accounts');
-                $this->preteur                   = $this->loadData('clients');
-                $this->notifications             = $this->loadData('notifications');
-                $this->wallets_lines             = $this->loadData('wallets_lines');
-                $this->bids_logs                 = $this->loadData('bids_logs');
-                $this->offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
+            foreach ($this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, ' AND p.status = 0') as $p) {
+                $aLogContext     = array();
+                $bids_logs       = false;
+                $nb_bids_ko      = 0;
+                $leSoldeE        = 0;
+                $montantEmprunt  = $p['amount'];
+                $nb_bids_encours = $this->bids->counter('id_project = ' . $p['id_project'] . ' AND status = 0');
+                $total_bids      = $this->bids->counter('id_project = ' . $p['id_project']);
+                $soldeBid        = $this->bids->getSoldeBid($p['id_project']);
 
-                $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications'); // add gestion alertes
-                $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif'); // add gestion alertes
-                $lProjects                           = $this->projects->select('status = 0');
+                $this->bids_logs->debut      = date('Y-m-d H:i:s');
+                $this->bids_logs->id_project = $p['id_project'];
 
-                foreach ($lProjects as $p) {
-                    $this->projects_status->getLastStatut($p['id_project']);
+                if ($soldeBid >= $montantEmprunt) {
+                    foreach ($this->bids->select('id_project = ' . $p['id_project'] . ' AND status = 0', 'rate ASC, added ASC') as $e) {
+                        if ($leSoldeE < $montantEmprunt) {
+                            $leSoldeE += ($e['amount'] / 100);
+                        } else { // Les bid qui depassent on leurs redonne leur argent et on met en ko
+                            $bids_logs = true;
+                            $this->bids->get($e['id_bid'], 'id_bid');
 
-                    if ($this->projects_status->status == 50) {
-                        $this->bids_logs->debut      = date('Y-m-d H:i:s');
-                        $this->bids_logs->id_project = $p['id_project'];
+                            $this->bids->status = 2; // statut bid ko
+                            $this->bids->update();
 
-                        $bids_logs       = false;
-                        $nb_bids_ko      = 0;
-                        $nb_bids_encours = $this->bids->counter('id_project = ' . $p['id_project'] . ' AND status = 0');
-                        $total_bids      = $this->bids->counter('id_project = ' . $p['id_project']);
+                            $this->lenders_accounts->get($e['id_lender_account'], 'id_lender_account');
+                            $this->preteur->get($this->lenders_accounts->id_client_owner, 'id_client');
 
-                        // la sum des encheres
-                        $soldeBid = $this->bids->getSoldeBid($p['id_project']);
-                        // Reste a payer
-                        $montantEmprunt = $p['amount'];
+                            $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
+                            $this->transactions->montant          = $e['amount'];
+                            $this->transactions->id_langue        = 'fr';
+                            $this->transactions->date_transaction = date('Y-m-d H:i:s');
+                            $this->transactions->status           = '1';
+                            $this->transactions->etat             = '1';
+                            $this->transactions->id_project       = $p['id_project'];
+                            $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                            $this->transactions->type_transaction = 2;
+                            $this->transactions->id_bid_remb      = $e['id_bid'];
+                            $this->transactions->transaction      = 2; // transaction virtuelle
+                            $this->transactions->create();
 
-                        if ($soldeBid >= $montantEmprunt) {
-                            // on recup les bid en statut en cours
-                            $this->lEnchere = $this->bids->select('id_project = ' . $p['id_project'] . ' AND status = 0', 'rate ASC,added ASC');
-                            $leSoldeE       = 0;
-                            foreach ($this->lEnchere as $k => $e) {
-                                // on parcour les encheres jusqu'au montant de l'emprunt
-                                if ($leSoldeE < $montantEmprunt) {
-                                    $amount = $e['amount'];
-                                    $leSoldeE += ($e['amount'] / 100);
-                                } else { // Les bid qui depassent on leurs redonne leur argent et on met en ko
-                                    $bids_logs = true;
-                                    $this->bids->get($e['id_bid'], 'id_bid');
+                            $this->wallets_lines->id_lender                = $e['id_lender_account'];
+                            $this->wallets_lines->type_financial_operation = 20;
+                            $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
+                            $this->wallets_lines->status                   = 1;
+                            $this->wallets_lines->type                     = 2;
+                            $this->wallets_lines->id_bid_remb              = $e['id_bid'];
+                            $this->wallets_lines->amount                   = $e['amount'];
+                            $this->wallets_lines->id_project               = $p['id_project'];
+                            $this->wallets_lines->create();
 
-                                    // On fait un double chek pour eviter un doublon
-                                    if ($this->bids->status == 0) {
-                                        $this->bids->status = 2; // statut bid ko
-                                        $this->bids->update();
+                            $this->notifications->type       = 1; // rejet
+                            $this->notifications->id_lender  = $e['id_lender_account'];
+                            $this->notifications->id_project = $p['id_project'];
+                            $this->notifications->amount     = $e['amount'];
+                            $this->notifications->id_bid     = $e['id_bid'];
+                            $this->notifications->create();
 
-                                        $this->lenders_accounts->get($e['id_lender_account'], 'id_lender_account');
-                                        $this->preteur->get($this->lenders_accounts->id_client_owner, 'id_client');
+                            $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
+                            $this->clients_gestion_mails_notif->id_notif        = 3; // rejet
+                            $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                            $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                            $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
+                            $this->clients_gestion_mails_notif->create();
 
-                                        $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
-                                        $this->transactions->montant          = $e['amount'];
-                                        $this->transactions->id_langue        = 'fr';
-                                        $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                                        $this->transactions->status           = '1';
-                                        $this->transactions->etat             = '1';
-                                        $this->transactions->id_project       = $p['id_project'];
-                                        $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                                        $this->transactions->type_transaction = 2;
-                                        $this->transactions->id_bid_remb      = $e['id_bid'];
-                                        $this->transactions->transaction      = 2; // transaction virtuelle
-                                        $this->transactions->id_transaction   = $this->transactions->create();
-
-                                        $this->wallets_lines->id_lender                = $e['id_lender_account'];
-                                        $this->wallets_lines->type_financial_operation = 20;
-                                        $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
-                                        $this->wallets_lines->status                   = 1;
-                                        $this->wallets_lines->type                     = 2;
-                                        $this->wallets_lines->id_bid_remb              = $e['id_bid'];
-                                        $this->wallets_lines->amount                   = $e['amount'];
-                                        $this->wallets_lines->id_project               = $p['id_project'];
-                                        $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
-
-                                        $this->notifications->type       = 1; // rejet
-                                        $this->notifications->id_lender  = $e['id_lender_account'];
-                                        $this->notifications->id_project = $p['id_project'];
-                                        $this->notifications->amount     = $e['amount'];
-                                        $this->notifications->id_bid     = $e['id_bid'];
-                                        $this->notifications->create();
-
-                                        $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
-                                        $this->clients_gestion_mails_notif->id_notif        = 3; // rejet
-                                        $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
-                                        $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                                        $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
-                                        $this->clients_gestion_mails_notif->create();
-
-                                        $sumOffres = $this->offres_bienvenues_details->sum('id_client = ' . $this->lenders_accounts->id_client_owner . ' AND id_bid = ' . $e['id_bid'], 'montant');
-                                        if ($sumOffres > 0) {
-                                            // sum des offres inferieur au montant a remb
-                                            if ($sumOffres <= $e['amount']) {
-                                                $this->offres_bienvenues_details->montant = $sumOffres;
-                                            } else {// Si montant des offres superieur au remb on remb le montant a crediter
-                                                $this->offres_bienvenues_details->montant = $e['amount'];
-                                            }
-
-                                            $this->offres_bienvenues_details->id_offre_bienvenue = 0;
-                                            $this->offres_bienvenues_details->id_client          = $this->lenders_accounts->id_client_owner;
-                                            $this->offres_bienvenues_details->id_bid             = 0;
-                                            $this->offres_bienvenues_details->id_bid_remb        = $e['id_bid'];
-                                            $this->offres_bienvenues_details->status             = 0;
-                                            $this->offres_bienvenues_details->type               = 2;
-
-                                            $this->offres_bienvenues_details->create();
-                                        }
-                                        $nb_bids_ko++;
-                                    } // fin condition eviter double
-                                } // fin bids qui depassent
-
-                                $this->bids->get($e['id_bid'], 'id_bid');
-                                $this->bids->checked = 1;
-                                $this->bids->update();
-                            } // fin boucle bids en cours
-
-                            // EMAIL EMPRUNTEUR FUNDE //
-
-                            if ($p['status_solde'] == 0) {
-                                // Mise a jour du statut pour envoyer qu'une seule fois le mail a l'emprunteur
-                                $this->projects->get($p['id_project'], 'id_project');
-                                $this->projects->status_solde = 1;
-                                $this->projects->update();
-
-                                $this->settings->get('Facebook', 'type');
-                                $lien_fb = $this->settings->value;
-
-                                $this->settings->get('Twitter', 'type');
-                                $lien_tw = $this->settings->value;
-
-                                $this->settings->get('Heure fin periode funding', 'type');
-                                $this->heureFinFunding = $this->settings->value;
-
-                                $this->companies->get($p['id_company'], 'id_company');
-                                $this->emprunteur->get($this->companies->id_client_owner, 'id_client');
-
-                                $tab_date_retrait = explode(' ', $p['date_retrait_full']);
-                                $tab_date_retrait = explode(':', $tab_date_retrait[1]);
-                                $heure_retrait    = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
-
-                                if ($heure_retrait == '00:00') {
-                                    $heure_retrait = $this->heureFinFunding;
+                            $sumOffres = $this->offres_bienvenues_details->sum('id_client = ' . $this->lenders_accounts->id_client_owner . ' AND id_bid = ' . $e['id_bid'], 'montant');
+                            if ($sumOffres > 0) {
+                                // sum des offres inferieur au montant a remb
+                                if ($sumOffres <= $e['amount']) {
+                                    $this->offres_bienvenues_details->montant = $sumOffres;
+                                } else {// Si montant des offres superieur au remb on remb le montant a crediter
+                                    $this->offres_bienvenues_details->montant = $e['amount'];
                                 }
 
-                                $inter = $this->dates->intervalDates(date('Y-m-d H:i:s'), $p['date_retrait'] . ' ' . $heure_retrait . ':00');
-
-                                if ($inter['mois'] > 0) {
-                                    $tempsRest = $inter['mois'] . ' mois';
-                                } elseif ($inter['jours'] > 0) {
-                                    $tempsRest = $inter['jours'] . ' jours';
-                                } elseif ($inter['heures'] > 0 && $inter['minutes'] >= 120) {
-                                    $tempsRest = $inter['heures'] . ' heures';
-                                } elseif ($inter['minutes'] > 0 && $inter['minutes'] < 120) {
-                                    $tempsRest = $inter['minutes'] . ' min';
-                                } else {
-                                    $tempsRest = $inter['secondes'] . ' secondes';
-                                }
-
-                                //*** ENVOI DU MAIL FUNDE EMPRUNTEUR ***//
-
-                                $this->mails_text->get('emprunteur-dossier-funde', 'lang = "' . $this->language . '" AND type');
-
-                                // Taux moyen pondéré
-                                $montantHaut = 0;
-                                $montantBas  = 0;
-                                foreach ($this->bids->select('id_project = ' . $p['id_project'] . ' AND status = 0') as $b) {
-                                    $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                                    $montantBas += ($b['amount'] / 100);
-                                }
-                                $taux_moyen = ($montantHaut / $montantBas);
-                                $taux_moyen = $this->ficelle->formatNumber($taux_moyen);
-
-                                $varMail = array(
-                                    'surl'                   => $this->surl,
-                                    'url'                    => $this->lurl,
-                                    'prenom_e'               => utf8_decode($this->emprunteur->prenom),
-                                    'taux_moyen'             => $taux_moyen,
-                                    'link_compte_emprunteur' => $this->lurl . '/synthese_emprunteur',
-                                    'temps_restant'          => $tempsRest,
-                                    'projet'                 => $p['title'],
-                                    'lien_fb'                => $lien_fb,
-                                    'lien_tw'                => $lien_tw
-                                );
-
-                                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                                $this->email = $this->loadLib('email');
-                                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                $this->email->setSubject(stripslashes($sujetMail));
-                                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                                // Pas de mail si le compte est desactivé
-                                if ($this->emprunteur->status == 1) {
-                                    if ($this->Config['env'] == 'prod') {
-                                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->emprunteur->email, $tabFiler);
-                                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                    } else {
-                                        $this->email->addRecipient(trim($this->emprunteur->email));
-                                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                    }
-                                }
-                                //*** ENVOI DU MAIL NOTIFICATION FUNDE 100% ***//
-
-                                $this->settings->get('Adresse notification projet funde a 100', 'type');
-                                $destinataire = $this->settings->value;
-
-                                $nbPeteurs = $this->bids->getNbPreteurs($p['id_project']);
-
-                                $this->mails_text->get('notification-projet-funde-a-100', 'lang = "' . $this->language . '" AND type');
-
-                                $surl = $this->surl;
-                                $url = $this->lurl;
-                                $id_projet = $p['id_project'];
-                                $title_projet = utf8_decode($p['title']);
-                                $nbPeteurs = $nbPeteurs;
-                                $tx = $taux_moyen;
-                                $periode = $tempsRest;
-
-                                $sujetMail = htmlentities($this->mails_text->subject);
-                                eval("\$sujetMail = \"$sujetMail\";");
-
-                                $texteMail = $this->mails_text->content;
-                                eval("\$texteMail = \"$texteMail\";");
-
-                                $exp_name = $this->mails_text->exp_name;
-                                eval("\$exp_name = \"$exp_name\";");
-
-                                $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                                $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                                $this->email = $this->loadLib('email');
-                                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                $this->email->addRecipient(trim($destinataire));
-
-                                $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
-                                $this->email->setHTMLBody($texteMail);
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                            } // Fin partie mail emprunteur
-                        } // Fin solde atteint
-                        // Si on a au moins un bid ko de traité
-                        if ($bids_logs == true) {
-                            $total_bids_ko                    = $this->bids->counter('id_project = ' . $p['id_project'] . ' AND status = 2');
-                            $this->bids_logs->nb_bids_encours = $nb_bids_encours;
-                            $this->bids_logs->nb_bids_ko      = $nb_bids_ko;
-                            $this->bids_logs->total_bids      = $total_bids;
-                            $this->bids_logs->total_bids_ko   = $total_bids_ko;
-                            $this->bids_logs->fin             = date('Y-m-d H:i:s');
-                            $this->bids_logs->create();
+                                $this->offres_bienvenues_details->id_offre_bienvenue = 0;
+                                $this->offres_bienvenues_details->id_client          = $this->lenders_accounts->id_client_owner;
+                                $this->offres_bienvenues_details->id_bid             = 0;
+                                $this->offres_bienvenues_details->id_bid_remb        = $e['id_bid'];
+                                $this->offres_bienvenues_details->status             = 0;
+                                $this->offres_bienvenues_details->type               = 2;
+                                $this->offres_bienvenues_details->create();
+                            }
+                            $nb_bids_ko++;
                         }
-                    } // Fin projet en funding
-                } // Fin boucle projets
+
+                        if (1 != $this->bids->checked) {
+                            $this->bids->checked = 1;
+                            $this->bids->update();
+                        }
+                    }
+
+                    $aLogContext['Project ID']    = $p['id_project'];
+                    $aLogContext['Balance']       = $soldeBid;
+                    $aLogContext['Rejected bids'] = $nb_bids_ko;
+
+                    // EMAIL EMPRUNTEUR FUNDE //
+                    if ($p['status_solde'] == 0) {
+                        $this->oLogger->addRecord(ULogger::INFO, 'Project funded - send email to borrower', array('Project ID' => $p['id_project']));
+
+                        // Mise a jour du statut pour envoyer qu'une seule fois le mail a l'emprunteur
+                        $this->projects->get($p['id_project'], 'id_project');
+                        $this->projects->status_solde = 1;
+                        $this->projects->update();
+
+                        $this->settings->get('Facebook', 'type');
+                        $lien_fb = $this->settings->value;
+
+                        $this->settings->get('Twitter', 'type');
+                        $lien_tw = $this->settings->value;
+
+                        $this->settings->get('Heure fin periode funding', 'type');
+                        $this->heureFinFunding = $this->settings->value;
+
+                        $this->companies->get($p['id_company'], 'id_company');
+                        $this->emprunteur->get($this->companies->id_client_owner, 'id_client');
+
+                        $tab_date_retrait = explode(' ', $p['date_retrait_full']);
+                        $tab_date_retrait = explode(':', $tab_date_retrait[1]);
+                        $heure_retrait    = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
+
+                        if ($heure_retrait == '00:00') {
+                            $heure_retrait = $this->heureFinFunding;
+                        }
+
+                        $inter = $this->dates->intervalDates(date('Y-m-d H:i:s'), $p['date_retrait'] . ' ' . $heure_retrait . ':00');
+
+                        if ($inter['mois'] > 0) {
+                            $tempsRest = $inter['mois'] . ' mois';
+                        } elseif ($inter['jours'] > 0) {
+                            $tempsRest = $inter['jours'] . ' jours';
+                        } elseif ($inter['heures'] > 0 && $inter['minutes'] >= 120) {
+                            $tempsRest = $inter['heures'] . ' heures';
+                        } elseif ($inter['minutes'] > 0 && $inter['minutes'] < 120) {
+                            $tempsRest = $inter['minutes'] . ' min';
+                        } else {
+                            $tempsRest = $inter['secondes'] . ' secondes';
+                        }
+
+                        //*** ENVOI DU MAIL FUNDE EMPRUNTEUR ***//
+
+                        $this->mails_text->get('emprunteur-dossier-funde', 'lang = "' . $this->language . '" AND type');
+
+                        // Taux moyen pondéré
+                        $montantHaut = 0;
+                        $montantBas  = 0;
+                        foreach ($this->bids->select('id_project = ' . $p['id_project'] . ' AND status = 0') as $b) {
+                            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                            $montantBas += ($b['amount'] / 100);
+                        }
+                        $taux_moyen = ($montantHaut / $montantBas);
+                        $taux_moyen = $this->ficelle->formatNumber($taux_moyen);
+
+                        $varMail = array(
+                            'surl'                   => $this->surl,
+                            'url'                    => $this->lurl,
+                            'prenom_e'               => utf8_decode($this->emprunteur->prenom),
+                            'taux_moyen'             => $taux_moyen,
+                            'link_compte_emprunteur' => $this->lurl . '/synthese_emprunteur',
+                            'temps_restant'          => $tempsRest,
+                            'projet'                 => $p['title'],
+                            'lien_fb'                => $lien_fb,
+                            'lien_tw'                => $lien_tw
+                        );
+
+                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                        $this->email = $this->loadLib('email');
+                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                        $this->email->setSubject(stripslashes($sujetMail));
+                        $this->email->setHTMLBody(stripslashes($texteMail));
+
+                        // Pas de mail si le compte est desactivé
+                        if ($this->emprunteur->status == 1) {
+                            if ($this->Config['env'] == 'prod') {
+                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->emprunteur->email, $tabFiler);
+                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                            } else {
+                                $this->email->addRecipient(trim($this->emprunteur->email));
+                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                            }
+                        }
+                        //*** ENVOI DU MAIL NOTIFICATION FUNDE 100% ***//
+
+                        $this->settings->get('Adresse notification projet funde a 100', 'type');
+                        $destinataire = $this->settings->value;
+
+                        $nbPeteurs = $this->bids->getNbPreteurs($p['id_project']);
+
+                        $this->mails_text->get('notification-projet-funde-a-100', 'lang = "' . $this->language . '" AND type');
+
+                        $surl = $this->surl;
+                        $url = $this->lurl;
+                        $id_projet = $p['id_project'];
+                        $title_projet = utf8_decode($p['title']);
+                        $nbPeteurs = $nbPeteurs;
+                        $tx = $taux_moyen;
+                        $periode = $tempsRest;
+
+                        $sujetMail = htmlentities($this->mails_text->subject);
+                        eval("\$sujetMail = \"$sujetMail\";");
+
+                        $texteMail = $this->mails_text->content;
+                        eval("\$texteMail = \"$texteMail\";");
+
+                        $exp_name = $this->mails_text->exp_name;
+                        eval("\$exp_name = \"$exp_name\";");
+
+                        $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
+                        $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
+
+                        $this->email = $this->loadLib('email');
+                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                        $this->email->addRecipient(trim($destinataire));
+
+                        $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
+                        $this->email->setHTMLBody($texteMail);
+                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                    }
+                }
+
+                if ($bids_logs == true) {
+                    $this->bids_logs->nb_bids_encours = $nb_bids_encours;
+                    $this->bids_logs->nb_bids_ko      = $nb_bids_ko;
+                    $this->bids_logs->total_bids      = $total_bids;
+                    $this->bids_logs->total_bids_ko   = $this->bids->counter('id_project = ' . $p['id_project'] . ' AND status = 2');
+                    $this->bids_logs->fin             = date('Y-m-d H:i:s');
+                    $this->bids_logs->create();
+                }
+
+                $this->oLogger->addRecord(ULogger::INFO, 'Project ID: ' . $p['id_project'], $aLogContext);
             }
 
             $this->stopCron();

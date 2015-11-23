@@ -606,7 +606,7 @@ class dossiersController extends bootstrap
                     if (
                         $_POST['commercial'] > 0
                         && $_POST['commercial'] != $this->projects->id_commercial
-                        && $this->current_projects_status < \projects_status::EN_ATTENTE_PIECES
+                        && $this->current_projects_status->status < \projects_status::EN_ATTENTE_PIECES
                     ) {
                         $_POST['status'] = \projects_status::EN_ATTENTE_PIECES;
                     }
@@ -614,7 +614,7 @@ class dossiersController extends bootstrap
                     if (
                         $_POST['analyste'] > 0
                         && $_POST['analyste'] != $this->projects->id_analyste
-                        && $this->current_projects_status < \projects_status::REVUE_ANALYSTE
+                        && $this->current_projects_status->status < \projects_status::REVUE_ANALYSTE
                     ) {
                         $_POST['status'] = \projects_status::REVUE_ANALYSTE;
                     }
@@ -2043,6 +2043,8 @@ class dossiersController extends bootstrap
 
                             // on rentre dans le cron si statut égale 1
                             if ($settingsControleRemb->value == 1) {
+                                ini_set('memory_limit', '512M');
+
                                 // On passe le statut a zero pour signaler qu'on est en cours de traitement
                                 $settingsControleRemb->value = 0;
                                 $settingsControleRemb->update();

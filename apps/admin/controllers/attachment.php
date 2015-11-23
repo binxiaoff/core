@@ -47,7 +47,7 @@ class attachmentController extends bootstrap
             header('Location: ' . $this->lurl);
         }
 
-        $sAttachmentPath = $oAttachmentHelper->getFullPath($oAttachment->type_owner, $oAttachment->id_type) . $sFileName;
+        $sAttachmentPath = $oAttachmentHelper->getFullPath($oAttachment->type_owner, $oAttachment->id_type) . $oAttachment->path;
 
         if (file_exists($sAttachmentPath)) {
             header('Content-Description: File Transfer');
