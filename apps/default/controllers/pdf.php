@@ -226,6 +226,11 @@ class pdfController extends bootstrap
                     $oClientsMandats->id_mandat  = $oClientsMandats->create();
                 } else {
                     $oClientsMandats->get($aPendingMandates[0]['id_mandat'], 'id_mandat');
+
+                    if (false === file_exists($sPath . $aPendingMandates[0]['name'])) {
+                        $this->GenerateWarrantyHtml();
+                        $this->WritePdf($sPath . $aPendingMandates[0]['name'], 'warranty');
+                    }
                 }
             }
 
