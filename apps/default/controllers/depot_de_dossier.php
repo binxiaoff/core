@@ -290,6 +290,8 @@ class depot_de_dossierController extends bootstrap
     {
         $this->page = 2;
 
+        $this->bDisplayTouchvives = true;
+
         $this->checkProjectHash(self::PAGE_NAME_STEP_2);
 
         $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-etape-2'];
@@ -795,6 +797,7 @@ class depot_de_dossierController extends bootstrap
 
         $this->bDisplayContact = false;
         $this->sMessage        = $this->lng['depot-de-dossier-fin']['contenu-non-eligible'];
+        $this->bDisplayTouchvives = false;
 
         switch ($this->projects_status->status) {
             case \projects_status::ABANDON:
@@ -844,6 +847,7 @@ class depot_de_dossierController extends bootstrap
                         }
                         break;
                 }
+                $this->bDisplayTouchvives = true;
                 break;
         }
 
