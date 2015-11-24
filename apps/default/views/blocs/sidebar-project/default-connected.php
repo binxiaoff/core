@@ -60,7 +60,7 @@
                             <select name="tx_p" id="tx_p" class="custom-select field-hundred">
                                 <option value="<?= $this->projects->target_rate ?>"><?= $this->projects->target_rate ?></option>
                                 <?php foreach (range(10, 4, -0.1) as $fRate) { ?>
-                                    <?php if ($this->soldeBid < $this->projects->amount || $fRate < round($this->txLenderMax + 1, 1)) { ?>
+                                    <?php if ($this->soldeBid < $this->projects->amount || $fRate < round($this->txLenderMax, 1)) { ?>
                                         <option value="<?= $fRate ?>"><?= $this->ficelle->formatNumber($fRate, 1) ?>%</option>
                                     <?php } ?>
                                 <?php } ?>
