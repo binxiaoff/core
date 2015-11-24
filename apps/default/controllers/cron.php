@@ -4049,7 +4049,7 @@ class cronController extends bootstrap
                     // add the withdraw unilend
                     $oAccountUnilend->id_transaction    = $transactions->id_transaction;
                     $oAccountUnilend->type              = platform_account_unilend::TYPE_WITHDRAW;
-                    $oAccountUnilend->amount            = '-' . $total;
+                    $oAccountUnilend->amount            = -1 * $total;
                     $oAccountUnilend->create();
                 }
             }
@@ -7530,7 +7530,7 @@ class cronController extends bootstrap
                             $bank_unilend->status                 = 1;
                             $bank_unilend->create();
 
-                            $oAccountUnilend->addEcheanceCommssion($echeanciers_emprunteur->id_echeancier_emprunteur);
+                            $oAccountUnilend->addDueDateCommssion($echeanciers_emprunteur->id_echeancier_emprunteur);
 
                             $this->mails_text->get('facture-emprunteur-remboursement', 'lang = "' . $this->language . '" AND type');
 

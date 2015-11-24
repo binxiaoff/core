@@ -2949,7 +2949,7 @@ class dossiersController extends bootstrap
                             if (0 < $commission) {
                                 /** @var platform_account_unilend $oAccountUnilend */
                                 $oAccountUnilend = $this->loadData('platform_account_unilend');
-                                $oAccountUnilend->addEcheanceCommssion($RembEmpr['id_echeancier_emprunteur']);
+                                $oAccountUnilend->addDueDateCommssion($RembEmpr['id_echeancier_emprunteur']);
                             }
                             /* echo '---------------------<br>';
                               echo 'etat : '.$TotalEtat.'<br>';

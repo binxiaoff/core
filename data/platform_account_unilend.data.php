@@ -32,7 +32,7 @@ class platform_account_unilend extends platform_account_unilend_crud
     const TYPE_COMMISSION_DUE_DATE = 2;
     const TYPE_WITHDRAW            = 3;
 
-    public function platform_account_unilend($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::platform_account_unilend($bdd, $params);
     }
@@ -40,17 +40,17 @@ class platform_account_unilend extends platform_account_unilend_crud
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
-            $where = ' WHERE '.$where;
+            $where = ' WHERE ' . $where;
         }
 
         if ($order != '') {
-            $order = ' ORDER BY '.$order;
+            $order = ' ORDER BY ' . $order;
         }
 
-        $sql = 'SELECT * FROM `platform_account_unilend`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+        $sql = 'SELECT * FROM `platform_account_unilend`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
-        $result = array();
+        $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
@@ -60,10 +60,10 @@ class platform_account_unilend extends platform_account_unilend_crud
     public function counter($where = '')
     {
         if ($where != '') {
-            $where = ' WHERE '.$where;
+            $where = ' WHERE ' . $where;
         }
 
-        $sql='SELECT count(*) FROM `platform_account_unilend` '.$where;
+        $sql = 'SELECT count(*) FROM `platform_account_unilend` ' . $where;
 
         $result = $this->bdd->query($sql);
         return (int)($this->bdd->result($result, 0, 0));
@@ -71,14 +71,14 @@ class platform_account_unilend extends platform_account_unilend_crud
 
     public function exist($id, $field = 'id')
     {
-        $sql = 'SELECT * FROM `platform_account_unilend` WHERE '.$field.'="'.$id.'"';
+        $sql    = 'SELECT * FROM `platform_account_unilend` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0)>0);
+        return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function addEcheanceCommssion($iIdEcheancierEmprunteur)
+    public function addDueDateCommssion($iBorrowerDueDateId)
     {
-        if (false === $this->get($iIdEcheancierEmprunteur . '" AND type = "2', 'id_echeance_emprunteur')) {
+        if (false === $this->get($iBorrowerDueDateId . '" AND type = "2', 'id_echeance_emprunteur')) {
             $sql = 'INSERT INTO platform_account_unilend (id_echeance_emprunteur, id_project, amount, type, added, updated)
                     SELECT DISTINCT ee.id_echeancier_emprunteur, ee.id_project, ee.commission + ee.tva, 2, ee.updated, now()
                     FROM echeanciers_emprunteur ee
@@ -87,7 +87,7 @@ class platform_account_unilend extends platform_account_unilend_crud
                     WHERE ee.status_emprunteur = 1
                     AND ep.status = 1
                     AND ee.status_ra = 0
-                    AND id_echeancier_emprunteur='.$iIdEcheancierEmprunteur;
+                    AND id_echeancier_emprunteur=' . $iBorrowerDueDateId;
 
             $this->bdd->query($sql);
 
@@ -104,7 +104,7 @@ class platform_account_unilend extends platform_account_unilend_crud
     public function getBalance()
     {
 
-        $sql='SELECT SUM(amount) FROM `platform_account_unilend` ';
+        $sql = 'SELECT SUM(amount) FROM `platform_account_unilend` ';
 
         $result = $this->bdd->query($sql);
 
