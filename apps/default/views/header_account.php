@@ -1,10 +1,10 @@
-<?
+<?php
 // header personalisé pour l'express
 if (isset($_SESSION['lexpress']))
 {
     ?>
     <iframe name="lexpress" SRC="<?= $_SESSION['lexpress']['header'] ?>" scrolling="no" height="138px" width="100%" FRAMEBORDER="no"></iframe>
-    <?
+    <?php
 }
 ?>
 <div class="wrapper">
@@ -26,11 +26,26 @@ if (isset($_SESSION['lexpress']))
 
         </div><!-- /.shell -->
     </div><!-- /.header -->
-    <?
-// preteur
+
+<?php
+if ($this->bIsBorrowerAndLender) {
+ ?>
+    <script type="text/javascript">
+            $(document).ready(function () {
+                        $.colorbox({
+                        href: "-<?= $this->lurl ?>/thickbox/pop_up_lender_and_borrower",
+                        fixed: true,
+                        maxWidth: '90%',
+                        onClosed: function () {
+                            /*location.reload();*/
+                        }
+                    });
+            });
+    </script>
+<?php
+}
     if ($this->bDisplayLender )
     {
-
         //Affichage de la popup de CGV si on a pas encore valide
         // cgu societe
         if (in_array($this->clients->type, array(2, 4)))
@@ -310,7 +325,6 @@ if (isset($_SESSION['lexpress']))
         </div><!-- /.navigation -->
         <?
     }
-// emprunteur
     elseif ($this->bDisplayBorrower )
     {
         ?>
