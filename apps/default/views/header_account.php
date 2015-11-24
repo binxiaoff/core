@@ -28,7 +28,7 @@ if (isset($_SESSION['lexpress']))
     </div><!-- /.header -->
     <?
 // preteur
-    if ($this->bIsLender === true )
+    if ($this->bDisplayLender )
     {
 
         //Affichage de la popup de CGV si on a pas encore valide
@@ -311,7 +311,7 @@ if (isset($_SESSION['lexpress']))
         <?
     }
 // emprunteur
-    elseif ($this->bIsBorrower === true )
+    elseif ($this->bDisplayBorrower )
     {
         ?>
         <style type="text/css">
