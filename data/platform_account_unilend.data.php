@@ -65,7 +65,7 @@ class platform_account_unilend extends platform_account_unilend_crud
         }
         $result = $this->bdd->query('SELECT count(*) FROM `platform_account_unilend` ' . $where);
 
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id')
@@ -86,24 +86,22 @@ class platform_account_unilend extends platform_account_unilend_crud
                     WHERE ee.status_emprunteur = 1
                     AND ep.status = 1
                     AND ee.status_ra = 0
-                    AND id_echeancier_emprunteur=' . $iBorrowerDueDateId;
+                    AND id_echeancier_emprunteur = ' . $iBorrowerDueDateId;
 
             $this->bdd->query($sql);
 
             $this->id = $this->bdd->insert_id();
 
             $this->get($this->id, 'id');
-
-            return $this->id;
-        } else {
-            return $this->id;
         }
+
+        return $this->id;
     }
 
     public function getBalance()
     {
         $result = $this->bdd->query('SELECT SUM(amount) FROM `platform_account_unilend`');
 
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($result, 0, 0);
     }
 }
