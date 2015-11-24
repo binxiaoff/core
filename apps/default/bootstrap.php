@@ -226,9 +226,9 @@ class bootstrap extends Controller
         //gestion du captcha
         if (isset($_POST["captcha"])) {
             if (isset($_SESSION["securecode"]) && $_SESSION["securecode"] == strtolower($_POST["captcha"])) {
-                $content_captcha = 'ok';
+                $bCaptchaOk = true;
             } else {
-                $content_captcha           = 'ko';
+                $bCaptchaOk                = false;
                 $this->displayCaptchaError = true;
             }
         }
@@ -240,7 +240,7 @@ class bootstrap extends Controller
 
 
             // SI on a le captcha d'actif, et qu'il est faux, on bloque avant tout pour ne pas laisser de piste sur le couple login/mdp
-            if (isset($_POST["captcha"]) && $content_captcha == "ko") {
+            if (isset($bCaptchaOk) && $bCaptchaOk === false) {
                 //on trace la tentative
                 $this->login_log              = $this->loadData('login_log');
                 $this->login_log->pseudo      = $_POST['login'];
@@ -251,30 +251,25 @@ class bootstrap extends Controller
                 $this->login_log->create();
 
                 $_SESSION['login']['displayCaptchaError'] = $this->displayCaptchaError;
+
             } else {
-                $no_error = true;
+
+                $bErrorLogin = false;
 
                 if ($_POST['login'] == '' || $_POST['password'] == '') {
-                    $no_error = false;
+                    $bErrorLogin = true;
                 } elseif ($this->clients->exist($_POST['login'], 'email') == false) {
-                    $no_error = false;
+                    $bErrorLogin = true;
                 } elseif ($this->clients->login($_POST['login'], $_POST['password']) == false) {
-                    $no_error = false;
+                    $bErrorLogin = true;
                 }
 
-                // Si erreur on affiche le message
-                if ($no_error) {
-                    // On recupere le formulaire de connexion s'il est passé
+                if ($bErrorLogin === false) {
+
                     if ($this->clients->handleLogin('connect', 'login', 'password')) {
-                        //vidage des trackeurs d'echec en session
+
                         unset($_SESSION['login']);
 
-                        $this->clients_history->id_client = $_SESSION['client']['id_client'];
-                        $this->clients_history->type      = $_SESSION['client']['status_pre_emp'];
-                        $this->clients_history->status    = 1; // statut login
-                        $this->clients_history->create();
-
-                        // TODO @Antoine: on continue à loger le stauts_pret_empr dans la table clients history?
                         if (isset($_COOKIE['acceptCookies'])) {
                             $this->create_cookies = false;
 
@@ -284,94 +279,86 @@ class bootstrap extends Controller
                             }
                         }
 
-                        $this->bIsLender = $this->clients->isLender($this->lenders_accounts,$_SESSION['client']['id_client']);
-                        $this->bIsBorrower = $this->clients->isBorrower($this->projects, $_SESSION['client']['id_client']);
+                        $this->checkIfLenderOrBorrower();
 
-                        if ($this->bIsLender === true) {
+                        $this->clients_history->id_client = $_SESSION['client']['id_client'];
+                        $this->clients_history->type      = ($this->bIsBorrowerAndLender) ? 3 : ($this->bIsLender) ? 1 : ($this->bIsBorrower) ? 2 : 0;
+                        $this->clients_history->status    = 1; // statut login
+                        $this->clients_history->create();
+
+
+                        if ($this->bIsBorrowerAndLender) {
+
+
+                        } elseif ($this->bIsLender) {
                             $this->loginLender();
 
-                        } elseif ($this->bIsBorrower === true) {
+                        } elseif ($this->bIsBorrower) {
                             $this->loginBorrower();
-
-                        } else {
-                            $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
                         }
+
+
                     } else {
-                        /* A chaque tentative on double le temps d'attente entre 2 demande.
-
-                        - tentative 2 = 1seconde d'attente
-                        - tentative 3 = 2 sec
-                        - tentative 4 = 4 sec
-                        - etc...
-
-                        Au bout de 10 demandes (avec la même IP) DANS LES 10 min
-                        - Ajout d'un captcha + @ admin
-
-                        */
-
-                        // H - 10min
-                        $h_moins_dix_min = date('Y-m-d H:i:s', mktime(date('H'), date('i') - 10, 0, date('m'), date('d'), date('Y')));
-
-                        //on récupère le nombre de tentative déjà faite avec l'ip du user
-                        $this->login_log                 = $this->loadData('login_log');
-                        $this->nb_tentatives_precedentes = $this->login_log->counter('IP = "' . $_SERVER["REMOTE_ADDR"] . '" AND date_action >= "' . $h_moins_dix_min . '" AND statut = 0');
-
-                        $this->duree_waiting = 0;
-
-                        //parametrage de la boucle de temps
-                        $coef_multiplicateur = 2;
-                        $resultat_precedent  = 1;
-
-                        if ($this->nb_tentatives_precedentes > 0 && $this->nb_tentatives_precedentes < 1000) // 1000 pour ne pas bloquer le site
-                        {
-                            for ($i = 1; $i <= $this->nb_tentatives_precedentes; $i++) {
-                                $this->duree_waiting = $resultat_precedent * $coef_multiplicateur;
-                                $resultat_precedent  = $this->duree_waiting;
-                            }
-                        }
-
-                        // DEBUG
-                        //$this->duree_waiting = 1;
-
-                        //retour
                         $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
-
-                        //mise en session
-                        $_SESSION['login']['duree_waiting']             = $this->duree_waiting;
-                        $_SESSION['login']['nb_tentatives_precedentes'] = $this->nb_tentatives_precedentes;
-                        $_SESSION['login']['displayCaptchaError']       = $this->displayCaptchaError;
-
-
-                        //on trace la tentative
-                        $this->login_log              = $this->loadData('login_log');
-                        $this->login_log->pseudo      = $_POST['login'];
-                        $this->login_log->IP          = $_SERVER["REMOTE_ADDR"];
-                        $this->login_log->date_action = date('Y-m-d H:i:s');
-                        $this->login_log->statut      = 0;
-                        $this->login_log->retour      = $this->error_login;
-                        $this->login_log->create();
                     }
+                } else {
+
+                    $oDateTime           = new \datetime('NOW - 10 minutes');
+                    $sNowMinusTenMinutes = $oDateTime->format('Y-m-d H:i:s');
+
+                    $this->login_log      = $this->loadData('login_log');
+                    $this->iPreviousTrys  = $this->login_log->counter('IP = "' . $_SERVER["REMOTE_ADDR"] . '" AND date_action >= "' . $sNowMinusTenMinutes . '" AND statut = 0');
+                    $this->iWaitingPeriod = 0;
+                    $iPreviousResult      = 1;
+
+                    if ($this->iPreviousTrys > 0 && $this->iPreviousTrys < 1000) // 1000 pour ne pas bloquer le site
+                    {
+                        for ($i = 1; $i <= $this->iPreviousTrys; $i++) {
+                            $this->iWaitingPeriod = $iPreviousResult * 2;
+                            $iPreviousResult      = $this->iWaitingPeriod;
+                        }
+                    }
+
+                    $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
+
+                    $_SESSION['login']['duree_waiting']             = $this->iWaitingPeriod;
+                    $_SESSION['login']['nb_tentatives_precedentes'] = $this->iPreviousTrys;
+                    $_SESSION['login']['displayCaptchaError']       = $this->displayCaptchaError;
+
+                    $this->login_log              = $this->loadData('login_log');
+                    $this->login_log->pseudo      = $_POST['login'];
+                    $this->login_log->IP          = $_SERVER["REMOTE_ADDR"];
+                    $this->login_log->date_action = date('Y-m-d H:i:s');
+                    $this->login_log->statut      = 0;
+                    $this->login_log->retour      = $this->error_login;
+                    $this->login_log->create();
                 }
             }
         }
 
-        $this->connect_ok = false;
         if ($this->clients->checkAccess()) {
-
-            $this->connect_ok = true;
 
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-            $this->bIsLender = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
-            $this->bIsBorrower = $this->clients->isBorrower($this->projects, $_SESSION['client']['id_client']);
+            $this->checkIfLenderOrBorrower();
 
-            if ($this->bIsBorrower === true) {
+            if ($this->bIsBorrower) {
                 $this->getDataBorrower();
             }
 
-            if ($this->bIsLender === true ) {
+            if ($this->bIsLender ) {
                 $this->getDataLender();
+            }
+
+            if (isset($_POST['acceder-espace-preteur'])) {
+                header('Location:' . $this->lurl . '/synthese');
+                die;
+            }
+
+            if (isset($_POST['acceder-espace-emprunteur'])) {
+                header('Location:' . $this->lurl . '/espace_emprunteur');
+                die;
             }
         }
 
@@ -560,6 +547,7 @@ class bootstrap extends Controller
 
     private function loginLender()
     {
+        $this->bDisplayLender = true;
 
         /// creation de champs en bdd pour la gestion des mails de notifiaction ////
 
@@ -677,6 +665,8 @@ class bootstrap extends Controller
 
     private function loginBorrower()
     {
+        $this->bDisplayBorrower = true;
+
         $this->settings->get('Lien conditions generales depot dossier', 'type');
         $this->cguDepotDossier = $this->settings->value;
 
@@ -701,6 +691,7 @@ class bootstrap extends Controller
 
     private function getDataLender()
     {
+        $this->bDisplayLender = true;
         // particulier
         if ($this->clients->type == 1) {
             // cgu particulier
@@ -747,13 +738,19 @@ class bootstrap extends Controller
 
     private function getDataBorrower()
     {
-
+        $this->bDisplayBorrower = true;
         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
         // Lien conditions generales depot dossier
         $this->settings->get('Lien conditions generales depot dossier', 'type');
         $this->cguDepotDossier = $this->settings->value;
-        
+
+    }
+
+    private function checkIfLenderOrBorrower(){
+        $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
+        $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $_SESSION['client']['id_client']);
+        $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
     }
 
 }
