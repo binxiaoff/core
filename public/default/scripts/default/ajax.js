@@ -268,6 +268,13 @@ function controlePostCodeCity(elmCp, elmCity, elmCountry, async)
 {
     async = typeof async !== 'undefined' ? async : true;
     var result = false;
+
+    if ('' == elmCp.val() || '' == elmCity.val()) {
+        elmCp.addClass('LV_invalid_field').removeClass('LV_valid_field');
+        elmCity.addClass('LV_invalid_field').removeClass('LV_valid_field');
+        return result;
+    }
+
     $.ajax({
         url: add_url + '/ajax/checkPostCodeCity/' + elmCp.val() + '/' + elmCity.val() + '/' + elmCountry.val(),
         method: 'GET',
