@@ -518,7 +518,7 @@ class ajaxController extends bootstrap
                 foreach ($aResults as $aItem) {
                     if ($bBirthPlace) {
                         // unique insee code
-                        $aCities[$aItem['insee']] = array(
+                        $aCities[$aItem['insee'].'-'.$aItem['ville']] = array(
                             'label' => $aItem['ville'] . ' (' . $aItem['num_departement'] . ')',
                             'value' => $aItem['insee']
                         );
