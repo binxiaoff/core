@@ -54,6 +54,7 @@ class platform_account_unilend extends platform_account_unilend_crud
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
+
         return $result;
     }
 
@@ -62,17 +63,15 @@ class platform_account_unilend extends platform_account_unilend_crud
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
+        $result = $this->bdd->query('SELECT count(*) FROM `platform_account_unilend` ' . $where);
 
-        $sql = 'SELECT count(*) FROM `platform_account_unilend` ' . $where;
-
-        $result = $this->bdd->query($sql);
         return (int)($this->bdd->result($result, 0, 0));
     }
 
     public function exist($id, $field = 'id')
     {
-        $sql    = 'SELECT * FROM `platform_account_unilend` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT * FROM `platform_account_unilend` WHERE ' . $field . '="' . $id . '"');
+
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
@@ -103,10 +102,7 @@ class platform_account_unilend extends platform_account_unilend_crud
 
     public function getBalance()
     {
-
-        $sql = 'SELECT SUM(amount) FROM `platform_account_unilend` ';
-
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT SUM(amount) FROM `platform_account_unilend`');
 
         return (int)($this->bdd->result($result, 0, 0));
     }
