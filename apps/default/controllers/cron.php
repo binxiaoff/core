@@ -4004,27 +4004,17 @@ class cronController extends bootstrap
         if (true === $this->startCron('retraitUnilend', 5)) {
 
             $jour = date('d');
-
             $datesVirements = array(1, 15);
 
             if (in_array($jour, $datesVirements)) {
-
-                // chargement des datas
-                $virements    = $this->loadData('virements');
-                $bank_unilend = $this->loadData('bank_unilend');
-                $transactions = $this->loadData('transactions');
-
-                // 3%+tva  + les retraits Unilend
-                $comProjet = $bank_unilend->sumMontant('status IN(0,3) AND type IN(0,3) AND retrait_fiscale = 0');
-                // com sur remb
-                $comRemb = $bank_unilend->sumMontant('status = 1 AND type IN(1,2)');
-
-                $etatRemb = $bank_unilend->sumMontantEtat('status = 1 AND type IN(2)');
-
-                // On prend la com projet + la com sur les remb et on retire la partie pour l'etat
-                echo $total = $comRemb + $comProjet - $etatRemb;
+                $oAccountUnilend = $this->loadData('platform_account_unilend');
+                $total = $oAccountUnilend->getBalance();
 
                 if ($total > 0) {
+                    $virements    = $this->loadData('virements');
+                    $transactions = $this->loadData('transactions');
+                    $bank_unilend = $this->loadData('bank_unilend');
+
                     // On enregistre la transaction
                     $transactions->id_client        = 0;
                     $transactions->montant          = $total;
@@ -4055,6 +4045,12 @@ class cronController extends bootstrap
                     $bank_unilend->type                   = 3;
                     $bank_unilend->status                 = 3;
                     $bank_unilend->create();
+
+                    // add the withdraw unilend
+                    $oAccountUnilend->id_transaction    = $transactions->id_transaction;
+                    $oAccountUnilend->type              = platform_account_unilend::TYPE_WITHDRAW;
+                    $oAccountUnilend->amount            = -1 * $total;
+                    $oAccountUnilend->create();
                 }
             }
 
@@ -7422,6 +7418,7 @@ class cronController extends bootstrap
             $projects_remb_log       = $this->loadData('projects_remb_log');
             $bank_unilend            = $this->loadData('bank_unilend');
             $projects_remb           = $this->loadData('projects_remb');
+            $oAccountUnilend         = $this->loadData('platform_account_unilend');
 
             $settingsDebutRembAuto = $this->loadData('settings');
             $settingsDebutRembAuto->get('Heure de début de traitement des remboursements auto prêteurs', 'type');
@@ -7532,6 +7529,8 @@ class cronController extends bootstrap
                             $bank_unilend->id_echeance_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur;
                             $bank_unilend->status                 = 1;
                             $bank_unilend->create();
+
+                            $oAccountUnilend->addDueDateCommssion($echeanciers_emprunteur->id_echeancier_emprunteur);
 
                             $this->mails_text->get('facture-emprunteur-remboursement', 'lang = "' . $this->language . '" AND type');
 
