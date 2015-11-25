@@ -1,5 +1,5 @@
 <style>
-    table {
+    .documents table {
         table-layout: fixed;
         margin-bottom: 30px;
         width: 100%;
@@ -8,14 +8,14 @@
         border-radius: 3px;
     }
 
-    td {
+    .documents td {
         width: 300px;
         text-align: left;
         vertical-align: middle;
         padding: 5px;
     }
 
-    th {
+    .documents th {
         text-align: left;
         vertical-align: middle;
         padding: 5px;
@@ -25,7 +25,7 @@
         font-size: 13px;
     }
 
-    tr:nth-child(even) {
+    .documents tr:nth-child(even) {
         background-color: #f4f4f4;
     }
 
@@ -42,7 +42,7 @@
     <div class="shell">
         <div class="documents">
             <h2><?=$this->lng['espace-emprunteur']['documents-contractuels']?></h2>
-            <table>
+            <table class="documents">
                 <tr class="table-head">
                     <th><?=$this->lng['espace-emprunteur']['identifiant-projet']?></th>
                     <th><?=$this->lng['espace-emprunteur']['pouvoir']?></th>
