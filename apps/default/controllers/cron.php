@@ -6090,7 +6090,7 @@ class cronController extends bootstrap
     }
 
     // Fonction qui crée les notification nouveaux projet pour les prêteurs (immediatement)(OK)
-    public function nouveau_projet($id_project)
+    private function nouveau_projet($id_project)
     {
         $this->clients                       = $this->loadData('clients');
         $this->notifications                 = $this->loadData('notifications');
@@ -6111,7 +6111,19 @@ class cronController extends bootstrap
         $this->projects->get($id_project, 'id_project');
         $this->companies->get($this->projects->id_company, 'id_company');
 
-        $lPreteurs = $this->clients->selectPreteursByStatus(60);
+        $varMail = array(
+            'surl'            => $this->surl,
+            'url'             => $this->furl,
+            'nom_entreprise'  => $this->companies->name,
+            'projet-p'        => $this->furl . '/projects/detail/' . $this->projects->slug,
+            'montant'         => $this->ficelle->formatNumber($this->projects->amount, 0),
+            'duree'           => $this->projects->period,
+            'gestion_alertes' => $this->lurl . '/profile',
+            'lien_fb'         => $lien_fb,
+            'lien_tw'         => $lien_tw
+        );
+
+        $lPreteurs = $this->clients->selectPreteursByStatus(60, 'c.status = 1');
 
         $oLogger->addRecord(ULogger::DEBUG, 'Lenders count: ' . count($lPreteurs));
 
@@ -6129,12 +6141,6 @@ class cronController extends bootstrap
             $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
 
             if ($this->clients_gestion_notifications->getNotif($preteur['id_client'], 1, 'immediatement') == true) {
-                $bReturn = $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-
-                if (false === $bReturn) {
-                    $oLogger->addRecord(ULogger::ALERT, 'Unable to get mail notification: ' . $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif);
-                }
-
                 $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                 $this->clients_gestion_mails_notif->update();
 
@@ -6144,19 +6150,9 @@ class cronController extends bootstrap
                 $id_client = str_pad($preteur['id_client'], 6, 0, STR_PAD_LEFT);
                 $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
 
-                $varMail = array(
-                    'surl'            => $this->surl,
-                    'url'             => $this->furl,
-                    'prenom_p'        => $preteur['prenom'],
-                    'nom_entreprise'  => $this->companies->name,
-                    'projet-p'        => $this->furl . '/projects/detail/' . $this->projects->slug,
-                    'montant'         => $this->ficelle->formatNumber($this->projects->amount, 0),
-                    'duree'           => $this->projects->period,
-                    'motif_virement'  => $motif,
-                    'gestion_alertes' => $this->lurl . '/profile',
-                    'lien_fb'         => $lien_fb,
-                    'lien_tw'         => $lien_tw
-                );
+                $varMail['prenom_p']        = $preteur['prenom'];
+                $varMail['motif_virement']  = $motif;
+
                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
@@ -6168,16 +6164,14 @@ class cronController extends bootstrap
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                if ($preteur['status'] == 1) {
-                    $oLogger->addRecord(ULogger::DEBUG, 'Email sent to: ' . $preteur['email']);
+                $oLogger->addRecord(ULogger::DEBUG, 'Email sent to: ' . $preteur['email']);
 
-                    if ($this->Config['env'] == 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteur['email'], $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($preteur['email']));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                if ($this->Config['env'] == 'prod') {
+                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteur['email'], $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $this->email->addRecipient(trim($preteur['email']));
+                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
             }
         }
