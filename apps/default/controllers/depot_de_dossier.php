@@ -162,22 +162,20 @@ class depot_de_dossierController extends bootstrap
         $this->companies->phone               = isset($oResult->myInfo->siege->telephone) ? str_replace(' ', '', $oResult->myInfo->siege->telephone) : '';
 
         if (isset($oResult->myInfo->identite) && is_object($oResult->myInfo->identite)) {
-            $oIdentity                 = $oResult->myInfo->identite;
-            $sLastAccountStatementDate = isset($oIdentity->dateDernierBilan) && strlen($oIdentity->dateDernierBilan) > 0 ? substr($oIdentity->dateDernierBilan, 0, 10) : (date('Y') - 1) . '-12-31';
+            $this->companies->name          = $oResult->myInfo->identite->raisonSociale;
+            $this->companies->forme         = $oResult->myInfo->identite->formeJuridique;
+            $this->companies->capital       = $oResult->myInfo->identite->capital;
+            $this->companies->code_naf      = $oResult->myInfo->identite->naf5EntreCode;
+            $this->companies->libelle_naf   = $oResult->myInfo->identite->naf5EntreLibelle;
+            $this->companies->adresse1      = $oResult->myInfo->identite->rue;
+            $this->companies->city          = $oResult->myInfo->identite->ville;
+            $this->companies->zip           = $oResult->myInfo->identite->codePostal;
+            $this->companies->rcs           = $oResult->myInfo->identite->rcs;
+            $this->companies->siret         = $oResult->myInfo->identite->siret;
+            $this->companies->date_creation = substr($oResult->myInfo->identite->dateCreation, 0, 10);
+
+            $sLastAccountStatementDate = isset($oResult->myInfo->identite->dateDernierBilan) && strlen($oResult->myInfo->identite->dateDernierBilan) > 0 ? substr($oResult->myInfo->identite->dateDernierBilan, 0, 10) : (date('Y') - 1) . '-12-31';
             $aLastAccountStatementDate = explode('-', $sLastAccountStatementDate);
-
-            $this->companies->name                              = $oIdentity->raisonSociale;
-            $this->companies->forme                             = $oIdentity->formeJuridique;
-            $this->companies->capital                           = $oIdentity->capital;
-            $this->companies->code_naf                          = $oIdentity->naf5EntreCode;
-            $this->companies->libelle_naf                       = $oIdentity->naf5EntreLibelle;
-            $this->companies->adresse1                          = $oIdentity->rue;
-            $this->companies->city                              = $oIdentity->ville;
-            $this->companies->zip                               = $oIdentity->codePostal;
-            $this->companies->rcs                               = $oIdentity->rcs;
-            $this->companies->siret                             = $oIdentity->siret;
-            $this->companies->date_creation                     = substr($oIdentity->dateCreation, 0, 10);
-
             $this->companies_details->date_dernier_bilan        = $sLastAccountStatementDate;
             $this->companies_details->date_dernier_bilan_mois   = $aLastAccountStatementDate[1];
             $this->companies_details->date_dernier_bilan_annee  = $aLastAccountStatementDate[0];
@@ -198,74 +196,7 @@ class depot_de_dossierController extends bootstrap
 
         switch ($oResult->myInfo->eligibility) {
             case 'Oui':
-                /**
-                 * We only keep N to N - 4 annual accounts
-                 * If N to N - 2 are not created, we create them (empty)
-                 * Annual accounts are sorted by year
-                 */
-                $iCurrentYear    = (int) date('Y');
-                $aAnnualAccounts = array();
-                if (isset($oResult->myInfo->bilans) && is_array($oResult->myInfo->bilans)) {
-                    foreach ($oResult->myInfo->bilans as $iIndex => $oAccounts) {
-                        $iYear = (int) substr($oAccounts->bilan->dateClotureN, 0, 4);
-
-                        if ($iYear >= $iCurrentYear - 4 && $iYear <= $iCurrentYear) {
-                            $aAnnualAccounts[$iYear] = $iIndex;
-                        }
-                    }
-                }
-
-                for ($iYear = $iCurrentYear; $iYear >= $iCurrentYear - 2; $iYear--) {
-                    if (false === isset($aAnnualAccounts[$iYear])) {
-                        $aAnnualAccounts[$iYear] = null;
-                    }
-                }
-
-                krsort($aAnnualAccounts);
-
-                $iOrder = 1;
-                foreach ($aAnnualAccounts as $iYear => $iBalanceSheetIndex) {
-                    $this->companies_bilans->id_company = $this->companies->id_company;
-                    $this->companies_bilans->date       = $iYear;
-
-                    $this->companies_actif_passif->annee      = $iYear;
-                    $this->companies_actif_passif->ordre      = $iOrder;
-                    $this->companies_actif_passif->id_company = $this->companies->id_company;
-
-                    if (false === is_null($iBalanceSheetIndex)) {
-                        $oBalanceSheet        = $oResult->myInfo->bilans[$iBalanceSheetIndex];
-                        $aFormattedAssetsDebt = array();
-                        $aAssetsDebt          = array_merge($oBalanceSheet->bilanRetraiteInfo->posteActifList, $oBalanceSheet->bilanRetraiteInfo->postePassifList);
-
-                        $this->companies_bilans->ca                          = $oBalanceSheet->syntheseFinanciereInfo->syntheseFinanciereList[0]->montantN;
-                        $this->companies_bilans->resultat_exploitation       = $oBalanceSheet->syntheseFinanciereInfo->syntheseFinanciereList[1]->montantN;
-                        $this->companies_bilans->resultat_brute_exploitation = $oBalanceSheet->soldeIntermediaireGestionInfo->SIGList[9]->montantN;
-                        $this->companies_bilans->investissements             = $oBalanceSheet->bilan->posteList[0]->valeur;
-
-                        foreach ($aAssetsDebt as $oAssetsDebtLine) {
-                            $aFormattedAssetsDebt[$oAssetsDebtLine->posteCle] = $oAssetsDebtLine->montant;
-                        }
-
-                        $this->companies_actif_passif->immobilisations_corporelles        = $aFormattedAssetsDebt['posteBR_IMCOR'];
-                        $this->companies_actif_passif->immobilisations_incorporelles      = $aFormattedAssetsDebt['posteBR_IMMINC'];
-                        $this->companies_actif_passif->immobilisations_financieres        = $aFormattedAssetsDebt['posteBR_IMFI'];
-                        $this->companies_actif_passif->stocks                             = $aFormattedAssetsDebt['posteBR_STO'];
-                        $this->companies_actif_passif->creances_clients                   = $aFormattedAssetsDebt['posteBR_BV'] + $aFormattedAssetsDebt['posteBR_BX'] + $aFormattedAssetsDebt['posteBR_ACCCA'] + $aFormattedAssetsDebt['posteBR_ACHE_']; // Créances_clients = avances et acomptes + créances clients + autres créances et cca + autres créances hors exploitation
-                        $this->companies_actif_passif->disponibilites                     = $aFormattedAssetsDebt['posteBR_CF'];
-                        $this->companies_actif_passif->valeurs_mobilieres_de_placement    = $aFormattedAssetsDebt['posteBR_CD'];
-                        $this->companies_actif_passif->capitaux_propres                   = $aFormattedAssetsDebt['posteBR_CPRO'] + $aFormattedAssetsDebt['posteBR_NONVAL']; // capitaux propres = capitaux propres + non valeurs
-                        $this->companies_actif_passif->provisions_pour_risques_et_charges = $aFormattedAssetsDebt['posteBR_PROVRC'] + $aFormattedAssetsDebt['posteBR_PROAC']; // provisions pour risques et charges = provisions pour risques et charges + provisions actif circulant
-                        $this->companies_actif_passif->amortissement_sur_immo             = $aFormattedAssetsDebt['posteBR_AMPROVIMMO'];
-                        $this->companies_actif_passif->dettes_financieres                 = $aFormattedAssetsDebt['posteBR_EMP'] + $aFormattedAssetsDebt['posteBR_VI'] + $aFormattedAssetsDebt['posteBR_EH']; // dettes financières = emprunts + dettes groupe et associés + concours bancaires courants
-                        $this->companies_actif_passif->dettes_fournisseurs                = $aFormattedAssetsDebt['posteBR_DW'] + $aFormattedAssetsDebt['posteBR_DX']; // dettes fournisseurs = avances et acomptes clients + dettes fournisseurs
-                        $this->companies_actif_passif->autres_dettes                      = $aFormattedAssetsDebt['posteBR_AUTDETTEXPL'] + $aFormattedAssetsDebt['posteBR_DZ'] + $aFormattedAssetsDebt['posteBR_AUTDETTHEXPL']; // autres dettes = autres dettes exploitation + dettes sur immos et comptes rattachés + autres dettes hors exploitation
-                    }
-
-                    $this->companies_bilans->create();
-                    $this->companies_actif_passif->create();
-
-                    ++$iOrder;
-                }
+                $oAltares->setCompanyFinancial($this->companies->id_company, $oResult->myInfo);
 
                 $oCompanyCreationDate = new \DateTime($this->companies->date_creation);
                 $oInterval            = $oCompanyCreationDate->diff(new \DateTime());

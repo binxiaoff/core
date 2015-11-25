@@ -74,9 +74,62 @@ class Altares
         return $this->soapCall($this->oSettings->value, 'getDerniersBilans', array('siren' => $iSIREN, 'nbBilans' => $iSheetsCount));
     }
 
-    public function setCompanyData($iCompanyId)
+    /**
+     * Set financial data of the given company according to Altares response
+     * @param integer $iCompanyId
+     * @param \stdClass|null $oEligibilityInfo
+     */
+    public function setCompanyFinancial($iCompanyId, $oEligibilityInfo = null)
     {
-        // @todo
+        $oCompanyAnnualAccounts = new \companies_bilans($this->oDatabase);
+        $oCompanyAssetsDebts    = new \companies_actif_passif($this->oDatabase);
+        $oCompany               = new \companies($this->oDatabase);
+        $oCompany->get($iCompanyId);
+
+        if (is_null($oEligibilityInfo)) {
+            $oEligibilityInfo = $this->getEligibility($oCompany->siren)->myInfo;
+        }
+
+        $aAnnualAccounts = array();
+        foreach ($oEligibilityInfo->bilans as $oAnnualAccounts) {
+            $aAnnualAccounts[substr($oAnnualAccounts->bilan->dateClotureN, 0, 10)] = $oAnnualAccounts;
+        }
+
+        ksort($aAnnualAccounts);
+
+        foreach ($aAnnualAccounts as $sClosingDate => $oAnnualAccounts) {
+            $aFormattedAssetsDebt = array();
+            $aAssetsDebt          = array_merge($oAnnualAccounts->bilanRetraiteInfo->posteActifList, $oAnnualAccounts->bilanRetraiteInfo->postePassifList);
+
+            foreach ($aAssetsDebt as $oAssetsDebtLine) {
+                $aFormattedAssetsDebt[$oAssetsDebtLine->posteCle] = $oAssetsDebtLine->montant;
+            }
+
+            $oCompanyAnnualAccounts->id_company                  = $oCompany->id_company;
+            $oCompanyAnnualAccounts->cloture_exercice_fiscal     = $sClosingDate;
+            $oCompanyAnnualAccounts->duree_exercice_fiscal       = $oAnnualAccounts->bilan->dureeN;
+            $oCompanyAnnualAccounts->ca                          = $oAnnualAccounts->syntheseFinanciereInfo->syntheseFinanciereList[0]->montantN;
+            $oCompanyAnnualAccounts->resultat_brute_exploitation = $oAnnualAccounts->soldeIntermediaireGestionInfo->SIGList[9]->montantN;
+            $oCompanyAnnualAccounts->resultat_exploitation       = $oAnnualAccounts->syntheseFinanciereInfo->syntheseFinanciereList[1]->montantN;
+            $oCompanyAnnualAccounts->investissements             = $oAnnualAccounts->bilan->posteList[0]->valeur;
+            $oCompanyAnnualAccounts->create();
+
+            $oCompanyAssetsDebts->immobilisations_corporelles        = $aFormattedAssetsDebt['posteBR_IMCOR'];
+            $oCompanyAssetsDebts->immobilisations_incorporelles      = $aFormattedAssetsDebt['posteBR_IMMINC'];
+            $oCompanyAssetsDebts->immobilisations_financieres        = $aFormattedAssetsDebt['posteBR_IMFI'];
+            $oCompanyAssetsDebts->stocks                             = $aFormattedAssetsDebt['posteBR_STO'];
+            $oCompanyAssetsDebts->creances_clients                   = $aFormattedAssetsDebt['posteBR_BV'] + $aFormattedAssetsDebt['posteBR_BX'] + $aFormattedAssetsDebt['posteBR_ACCCA'] + $aFormattedAssetsDebt['posteBR_ACHE_']; // Créances_clients = avances et acomptes + créances clients + autres créances et cca + autres créances hors exploitation
+            $oCompanyAssetsDebts->disponibilites                     = $aFormattedAssetsDebt['posteBR_CF'];
+            $oCompanyAssetsDebts->valeurs_mobilieres_de_placement    = $aFormattedAssetsDebt['posteBR_CD'];
+            $oCompanyAssetsDebts->capitaux_propres                   = $aFormattedAssetsDebt['posteBR_CPRO'] + $aFormattedAssetsDebt['posteBR_NONVAL']; // capitaux propres = capitaux propres + non valeurs
+            $oCompanyAssetsDebts->provisions_pour_risques_et_charges = $aFormattedAssetsDebt['posteBR_PROVRC'] + $aFormattedAssetsDebt['posteBR_PROAC']; // provisions pour risques et charges = provisions pour risques et charges + provisions actif circulant
+            $oCompanyAssetsDebts->amortissement_sur_immo             = $aFormattedAssetsDebt['posteBR_AMPROVIMMO'];
+            $oCompanyAssetsDebts->dettes_financieres                 = $aFormattedAssetsDebt['posteBR_EMP'] + $aFormattedAssetsDebt['posteBR_VI'] + $aFormattedAssetsDebt['posteBR_EH']; // dettes financières = emprunts + dettes groupe et associés + concours bancaires courants
+            $oCompanyAssetsDebts->dettes_fournisseurs                = $aFormattedAssetsDebt['posteBR_DW'] + $aFormattedAssetsDebt['posteBR_DX']; // dettes fournisseurs = avances et acomptes clients + dettes fournisseurs
+            $oCompanyAssetsDebts->autres_dettes                      = $aFormattedAssetsDebt['posteBR_AUTDETTEXPL'] + $aFormattedAssetsDebt['posteBR_DZ'] + $aFormattedAssetsDebt['posteBR_AUTDETTHEXPL']; // autres dettes = autres dettes exploitation + dettes sur immos et comptes rattachés + autres dettes hors exploitation
+            $oCompanyAssetsDebts->id_bilan                           = $oCompanyAnnualAccounts->id_bilan;
+            $oCompanyAssetsDebts->create();
+        }
     }
 
     /**
