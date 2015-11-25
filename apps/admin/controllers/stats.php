@@ -673,7 +673,7 @@ class statsController extends bootstrap
         // EQ-Retenue à la source
         $this->settings->get(63);
         $this->retenuesource = $this->settings->value;
-        $this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60', '(SELECT count(*) from loans where status = 0 AND id_lender = l.id_lender_account) > 1');
+        $this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60', '(SELECT count(*) from loans where status = 0 AND id_lender = l.id_lender_account) >= 1');
     }
 
     public function _requete_beneficiaires_csv()
@@ -694,7 +694,7 @@ class statsController extends bootstrap
         // EQ-Retenue à la source
         $this->settings->get(63);
         $this->retenuesource = $this->settings->value;
-        $this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60', '(SELECT count(*) from loans where status = 0 AND id_lender = l.id_lender_account) > 1');
+        $this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60', '(SELECT count(*) from loans where status = 0 AND id_lender = l.id_lender_account) >= 1');
 
         $aData = array();
         foreach ($this->lPre as $e) {
