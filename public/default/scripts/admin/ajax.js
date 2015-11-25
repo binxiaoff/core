@@ -515,14 +515,6 @@ function create_client(id_project) {
     });
 }
 
-function valid_create(id_project) {
-    var val = {id_project: id_project}
-    $.post(add_url + '/ajax/valid_create', val).done(function (data) {
-
-        $(location).attr('href', add_url + '/dossiers');
-    });
-}
-
 function valid_etape2(id_project) {
 
     if ($("#same_address_etape2").attr('checked') == true) var same_address_etape2 = 1;
@@ -634,148 +626,27 @@ function valid_etape3(id_project) {
     });
 }
 
-function valid_etape4(id_project) {
-
-    var val = {
-        ca_0: $("#ca_0").val(),
-        ca_id_0: $("#ca_id_0").val(),
-        ca_1: $("#ca_1").val(),
-        ca_id_1: $("#ca_id_1").val(),
-        ca_2: $("#ca_2").val(),
-        ca_id_2: $("#ca_id_2").val(),
-        ca_3: $("#ca_3").val(),
-        ca_id_3: $("#ca_id_3").val(),
-        ca_4: $("#ca_4").val(),
-        ca_id_4: $("#ca_id_4").val(),
-        resultat_brute_exploitation_0: $("#resultat_brute_exploitation_0").val(),
-        resultat_brute_exploitation_id_0: $("#resultat_brute_exploitation_id_0").val(),
-        resultat_brute_exploitation_1: $("#resultat_brute_exploitation_1").val(),
-        resultat_brute_exploitation_id_1: $("#resultat_brute_exploitation_id_1").val(),
-        resultat_brute_exploitation_2: $("#resultat_brute_exploitation_2").val(),
-        resultat_brute_exploitation_id_2: $("#resultat_brute_exploitation_id_2").val(),
-        resultat_brute_exploitation_3: $("#resultat_brute_exploitation_3").val(),
-        resultat_brute_exploitation_id_3: $("#resultat_brute_exploitation_id_3").val(),
-        resultat_brute_exploitation_4: $("#resultat_brute_exploitation_4").val(),
-        resultat_brute_exploitation_id_4: $("#resultat_brute_exploitation_id_4").val(),
-        resultat_exploitation_0: $("#resultat_exploitation_0").val(),
-        resultat_exploitation_id_0: $("#resultat_exploitation_id_0").val(),
-        resultat_exploitation_1: $("#resultat_exploitation_1").val(),
-        resultat_exploitation_id_1: $("#resultat_exploitation_id_1").val(),
-        resultat_exploitation_2: $("#resultat_exploitation_2").val(),
-        resultat_exploitation_id_2: $("#resultat_exploitation_id_2").val(),
-        resultat_exploitation_3: $("#resultat_exploitation_3").val(),
-        resultat_exploitation_id_3: $("#resultat_exploitation_id_3").val(),
-        resultat_exploitation_4: $("#resultat_exploitation_4").val(),
-        resultat_exploitation_id_4: $("#resultat_exploitation_id_4").val(),
-        investissements_0: $("#investissements_0").val(),
-        investissements_id_0: $("#investissements_id_0").val(),
-        investissements_1: $("#investissements_1").val(),
-        investissements_id_1: $("#investissements_id_1").val(),
-        investissements_2: $("#investissements_2").val(),
-        investissements_id_2: $("#investissements_id_2").val(),
-        investissements_3: $("#investissements_3").val(),
-        investissements_id_3: $("#investissements_id_3").val(),
-        investissements_4: $("#investissements_4").val(),
-        investissements_id_4: $("#investissements_id_4").val(),
-        jour_etape4: $("#jour_etape4").val(),
-        mois_etape4: $("#mois_etape4").val(),
-        annee_etape4: $("#annee_etape4").val(),
-        ca_declara_client: $("#ca_declara_client").val(),
-        resultat_exploitation_declara_client: $("#resultat_exploitation_declara_client").val(),
-        fonds_propres_declara_client: $("#fonds_propres_declara_client").val(),
-
-        encours_actuel_dette_fianciere: $("#encours_actuel_dette_fianciere").val(),
-        remb_a_venir_cette_annee: $("#remb_a_venir_cette_annee").val(),
-        remb_a_venir_annee_prochaine: $("#remb_a_venir_annee_prochaine").val(),
-        tresorie_dispo_actuellement: $("#tresorie_dispo_actuellement").val(),
-        autre_demandes_financements_prevues: $("#autre_demandes_financements_prevues").val(),
-        precisions: $("#precisions").val(),
-
-        immobilisations_corporelles_1: $("#immobilisations_corporelles_1").val(),
-        immobilisations_corporelles_2: $("#immobilisations_corporelles_2").val(),
-        immobilisations_corporelles_3: $("#immobilisations_corporelles_3").val(),
-        immobilisations_incorporelles_1: $("#immobilisations_incorporelles_1").val(),
-        immobilisations_incorporelles_2: $("#immobilisations_incorporelles_2").val(),
-        immobilisations_incorporelles_3: $("#immobilisations_incorporelles_3").val(),
-        immobilisations_financieres_1: $("#immobilisations_financieres_1").val(),
-        immobilisations_financieres_2: $("#immobilisations_financieres_2").val(),
-        immobilisations_financieres_3: $("#immobilisations_financieres_3").val(),
-        stocks_1: $("#stocks_1").val(),
-        stocks_2: $("#stocks_2").val(),
-        stocks_3: $("#stocks_3").val(),
-        creances_clients_1: $("#creances_clients_1").val(),
-        creances_clients_2: $("#creances_clients_2").val(),
-        creances_clients_3: $("#creances_clients_3").val(),
-        disponibilites_1: $("#disponibilites_1").val(),
-        disponibilites_2: $("#disponibilites_2").val(),
-        disponibilites_3: $("#disponibilites_3").val(),
-        valeurs_mobilieres_de_placement_1: $("#valeurs_mobilieres_de_placement_1").val(),
-        valeurs_mobilieres_de_placement_2: $("#valeurs_mobilieres_de_placement_2").val(),
-        valeurs_mobilieres_de_placement_3: $("#valeurs_mobilieres_de_placement_3").val(),
-        capitaux_propres_1: $("#capitaux_propres_1").val(),
-        capitaux_propres_2: $("#capitaux_propres_2").val(),
-        capitaux_propres_3: $("#capitaux_propres_3").val(),
-        provisions_pour_risques_et_charges_1: $("#provisions_pour_risques_et_charges_1").val(),
-        provisions_pour_risques_et_charges_2: $("#provisions_pour_risques_et_charges_2").val(),
-        provisions_pour_risques_et_charges_3: $("#provisions_pour_risques_et_charges_3").val(),
-        amortissement_sur_immo_1: $("#amortissement_sur_immo_1").val(),
-        amortissement_sur_immo_2: $("#amortissement_sur_immo_2").val(),
-        amortissement_sur_immo_3: $("#amortissement_sur_immo_3").val(),
-        dettes_financieres_1: $("#dettes_financieres_1").val(),
-        dettes_financieres_2: $("#dettes_financieres_2").val(),
-        dettes_financieres_3: $("#dettes_financieres_3").val(),
-        dettes_fournisseurs_1: $("#dettes_fournisseurs_1").val(),
-        dettes_fournisseurs_2: $("#dettes_fournisseurs_2").val(),
-        dettes_fournisseurs_3: $("#dettes_fournisseurs_3").val(),
-        autres_dettes_1: $("#autres_dettes_1").val(),
-        autres_dettes_2: $("#autres_dettes_2").val(),
-        autres_dettes_3: $("#autres_dettes_3").val(),
-
-        decouverts_bancaires: $("#decouverts_bancaires").val(),
-        lignes_de_tresorerie: $("#lignes_de_tresorerie").val(),
-        affacturage: $("#affacturage").val(),
-        escompte: $("#escompte").val(),
-        financement_dailly: $("#financement_dailly").val(),
-        credit_de_tresorerie: $("#credit_de_tresorerie").val(),
-        credit_bancaire_investissements_materiels: $("#credit_bancaire_investissements_materiels").val(),
-        credit_bancaire_investissements_immateriels: $("#credit_bancaire_investissements_immateriels").val(),
-        rachat_entreprise_ou_titres: $("#rachat_entreprise_ou_titres").val(),
-        credit_immobilier: $("#credit_immobilier").val(),
-        credit_bail_immobilier: $("#credit_bail_immobilier").val(),
-        credit_bail: $("#credit_bail").val(),
-        location_avec_option_achat: $("#location_avec_option_achat").val(),
-        location_financiere: $("#location_financiere").val(),
-        location_longue_duree: $("#location_longue_duree").val(),
-        pret_oseo: $("#pret_oseo").val(),
-        pret_participatif: $("#pret_participatif").val(),
-
-        id_project: id_project,
-        etape: 4
-    }
+function valid_etape4_1(id_project) {
+    var val = 'id_project=' + id_project + '&etape=4_1&' + $('#dossier_etape4_1').serialize();
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
-        $("#valid_etape4").slideDown();
+        $("#valid_etape4_1").slideDown();
 
         setTimeout(function () {
-            $("#valid_etape4").slideUp();
+            $("#valid_etape4_1").slideUp();
         }, 3000);
 
     });
 }
 
-function refeshEtape4(id_project) {
+function valid_etape4_3(id_project) {
+    var val = 'id_project=' + id_project + '&etape=4_3&' + $('#dossier_etape4_3').serialize();
 
-    var val = {
-        id_project: id_project
-    }
-    $.post(add_url + '/ajax/refeshEtape4', val).done(function (data) {
-        if (data != 'nok') {
-            $("#contenu_etape4").html(data);
-            $("#valid_upload_etape4").slideDown();
+    $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
+        $("#valid_etape4_3").slideDown();
 
-            setTimeout(function () {
-                $("#valid_upload_etape4").slideUp();
-            }, 3000);
-        }
+        setTimeout(function () {
+            $("#valid_etape4_3").slideUp();
+        }, 3000);
     });
 }
 
@@ -786,14 +657,14 @@ function valid_etape6(id_project) {
         question3: $("#question3").val(),
         id_project: id_project,
         etape: 6
-    }
+    };
+
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
         $("#valid_etape6").slideDown();
 
         setTimeout(function () {
             $("#valid_etape6").slideUp();
         }, 3000);
-
     });
 }
 
@@ -801,12 +672,10 @@ function recapdashboard(month, annee) {
     var val = {
         month: month,
         annee: annee
-    }
+    };
+
     $.post(add_url + '/ajax/recapdashboard', val).done(function (data) {
-
-
         $("#recapDashboard").html(data);
-
     });
 }
 
@@ -814,15 +683,12 @@ function ratioDashboard(month, annee) {
     var val = {
         month: month,
         annee: annee
-    }
+    };
+
     $.post(add_url + '/ajax/ratioDashboard', val).done(function (data) {
-
-
         $("#ratioDashboard").html(data);
-
     });
 }
-
 
 function generer_le_mdp(id_client) {
 

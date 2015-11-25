@@ -695,37 +695,22 @@ class ajaxController extends bootstrap
             $this->clients          = $this->loadData('clients');
             $this->clients_adresses = $this->loadData('clients_adresses');
 
-            // Histo user //
             $serialize = serialize($_POST);
             $this->users_history->histo(8, 'dossier edit etapes', $_SESSION['user']['id_user'], $serialize);
-            ////////////////
 
             if ($_POST['etape'] == 1) {
-                // on recup le projet
                 $this->projects->get($_POST['id_project'], 'id_project');
-
-                // on recup l'entreprise
-                $this->companies->get($this->projects->id_company, 'id_company');
-
-                $this->projects->amount = str_replace(' ', '', str_replace(',', '.', $_POST['montant_etape1']));
+                $this->projects->amount = $this->cleanFormatedNumber($_POST['montant_etape1']);
                 $this->projects->period = (0 < (int) $_POST['duree_etape1']) ? (int) $_POST['duree_etape1'] : $this->projects->period;
-                $this->companies->siren = $_POST['siren_etape1'];
-
-                // on enregistre les modifs
                 $this->projects->update();
-                $this->companies->update();
 
-            } elseif ($_POST['etape'] == 2) {
-                // on recup le projet
-                $this->projects->get($_POST['id_project'], 'id_project');
-
-                // on recup l'entreprise
                 $this->companies->get($this->projects->id_company, 'id_company');
-
-                // on recup le client
+                $this->companies->siren = $_POST['siren_etape1'];
+                $this->companies->update();
+            } elseif ($_POST['etape'] == 2) {
+                $this->projects->get($_POST['id_project'], 'id_project');
+                $this->companies->get($this->projects->id_company, 'id_company');
                 $this->clients->get($this->companies->id_client_owner, 'id_client');
-
-                // on recup le client
                 $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
 
                 $iIdPrescripteur = 'true' === $_POST['has_prescripteur'] ? $_POST['id_prescripteur'] : 0;
@@ -733,52 +718,41 @@ class ajaxController extends bootstrap
                 $this->projects->id_prescripteur = $iIdPrescripteur;
                 $this->projects->update();
 
-                $this->companies->name    = $_POST['raison_sociale_etape2'];
-                $this->companies->forme   = $_POST['forme_juridique_etape2'];
-                $this->companies->capital = str_replace(' ', '', str_replace(',', '.', $_POST['capital_social_etape2']));
-
-                $creation_date_etape2           = explode('/', $_POST['creation_date_etape2']);
-                $this->companies->date_creation = $creation_date_etape2[2] . '-' . $creation_date_etape2[1] . '-' . $creation_date_etape2[0];
-                $this->companies->adresse1      = $_POST['address_etape2'];
-                $this->companies->city          = $_POST['ville_etape2'];
-                $this->companies->zip           = $_POST['postal_etape2'];
-                $this->companies->phone         = $_POST['phone_etape2'];
-
+                $creation_date_etape2                           = explode('/', $_POST['creation_date_etape2']);
+                $this->companies->name                          = $_POST['raison_sociale_etape2'];
+                $this->companies->forme                         = $_POST['forme_juridique_etape2'];
+                $this->companies->capital                       = $this->cleanFormatedNumber($_POST['capital_social_etape2']);
+                $this->companies->date_creation                 = $creation_date_etape2[2] . '-' . $creation_date_etape2[1] . '-' . $creation_date_etape2[0];
+                $this->companies->adresse1                      = $_POST['address_etape2'];
+                $this->companies->city                          = $_POST['ville_etape2'];
+                $this->companies->zip                           = $_POST['postal_etape2'];
+                $this->companies->phone                         = $_POST['phone_etape2'];
                 $this->companies->status_adresse_correspondance = $_POST['same_address_etape2'];
+                $this->companies->status_client                 = $_POST['enterprise_etape2'];
+
                 if ($this->companies->status_adresse_correspondance == 0) {
-                    // adresse client
                     $this->clients_adresses->adresse1  = $_POST['adresse_correspondance_etape2'];
                     $this->clients_adresses->ville     = $_POST['city_correspondance_etape2'];
                     $this->clients_adresses->cp        = $_POST['zip_correspondance_etape2'];
                     $this->clients_adresses->telephone = $_POST['phone_correspondance_etape2'];
                 } else {
-                    // adresse client
                     $this->clients_adresses->adresse1  = $_POST['address_etape2'];
                     $this->clients_adresses->ville     = $_POST['ville_etape2'];
                     $this->clients_adresses->cp        = $_POST['postal_etape2'];
                     $this->clients_adresses->telephone = $_POST['phone_etape2'];
                 }
 
-
-                $this->companies->status_client = $_POST['enterprise_etape2'];
-
                 $this->clients->civilite = $_POST['civilite_etape2'];
                 $this->clients->nom      = $this->ficelle->majNom($_POST['nom_etape2']);
                 $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_etape2']);
                 $this->clients->fonction = $_POST['fonction_etape2'];
 
-                ///////// on check si mail existe deja si c'est le cas on rajoute l'id projet
-                //$clients = $this->loadData('clients');
-                /* if($clients->get($_POST['email_etape2'],'email') && strpos($_POST['email_etape2'], $this->projects->id_project) === false){ */
-
                 if ($this->clients->counter('email = "' . $_POST['email_etape2'] . '" AND id_client <> ' . $this->clients->id_client) > 0) {
-
                     $this->clients->email = $_POST['email_etape2'];
                     $this->clients->email .= '-' . $this->projects->id_project;
                 } elseif ($this->clients->email != $_POST['email_etape2']) {
                     $this->clients->email = $_POST['email_etape2'];
                 }
-                //////////
 
                 $this->clients->telephone = $_POST['phone_new_etape2'];
 
@@ -808,14 +782,13 @@ class ajaxController extends bootstrap
                     $this->companies->preciser_conseil_externe_entreprise = '';
                 }
 
-                // on enregistre les modifs
                 $this->companies->update();
                 $this->clients->update();
                 $this->clients_adresses->update();
             } elseif ($_POST['etape'] == 3) {
                 $this->projects = $this->loadData('projects');
                 $this->projects->get($_POST['id_project'], 'id_project');
-                $this->projects->amount               = str_replace(array(' ', ','), array('', '.'), $_POST['montant_etape3']);
+                $this->projects->amount               = $this->cleanFormatedNumber($_POST['montant_etape3']);
                 $this->projects->period               = $_POST['duree_etape3'];
                 $this->projects->title                = $_POST['titre_etape3'];
                 $this->projects->objectif_loan        = $_POST['objectif_etape3'];
@@ -823,120 +796,117 @@ class ajaxController extends bootstrap
                 $this->projects->means_repayment      = $_POST['moyen_etape3'];
                 $this->projects->comments             = $_POST['comments_etape3'];
                 $this->projects->update();
-            } elseif ($_POST['etape'] == 4) {
+            } elseif ($_POST['etape'] == 4.1) {
                 $this->projects          = $this->loadData('projects');
+                $this->companies_details = $this->loadData('companies_details');
+
+                $this->projects->get($_POST['id_project'], 'id_project');
+                $this->projects->ca_declara_client                    = $this->cleanFormatedNumber($_POST['ca_declara_client']);
+                $this->projects->resultat_exploitation_declara_client = $this->cleanFormatedNumber($_POST['resultat_exploitation_declara_client']);
+                $this->projects->fonds_propres_declara_client         = $this->cleanFormatedNumber($_POST['fonds_propres_declara_client']);
+                $this->projects->update();
+
+                $this->companies_details->get($this->projects->id_company, 'id_company');
+                $this->companies_details->date_dernier_bilan                          = $_POST['annee_etape4'] . '-' . $_POST['mois_etape4'] . '-' . $_POST['jour_etape4'];
+                $this->companies_details->encours_actuel_dette_fianciere              = $this->cleanFormatedNumber($_POST['encours_actuel_dette_fianciere']);
+                $this->companies_details->remb_a_venir_cette_annee                    = $this->cleanFormatedNumber($_POST['remb_a_venir_cette_annee']);
+                $this->companies_details->remb_a_venir_annee_prochaine                = $this->cleanFormatedNumber($_POST['remb_a_venir_annee_prochaine']);
+                $this->companies_details->tresorie_dispo_actuellement                 = $this->cleanFormatedNumber($_POST['tresorie_dispo_actuellement']);
+                $this->companies_details->autre_demandes_financements_prevues         = $this->cleanFormatedNumber($_POST['autre_demandes_financements_prevues']);
+                $this->companies_details->precisions                                  = $_POST['precisions'];
+                $this->companies_details->decouverts_bancaires                        = $this->cleanFormatedNumber($_POST['decouverts_bancaires']);
+                $this->companies_details->lignes_de_tresorerie                        = $this->cleanFormatedNumber($_POST['lignes_de_tresorerie']);
+                $this->companies_details->affacturage                                 = $this->cleanFormatedNumber($_POST['affacturage']);
+                $this->companies_details->escompte                                    = $this->cleanFormatedNumber($_POST['escompte']);
+                $this->companies_details->financement_dailly                          = $this->cleanFormatedNumber($_POST['financement_dailly']);
+                $this->companies_details->credit_de_tresorerie                        = $this->cleanFormatedNumber($_POST['credit_de_tresorerie']);
+                $this->companies_details->credit_bancaire_investissements_materiels   = $this->cleanFormatedNumber($_POST['credit_bancaire_investissements_materiels']);
+                $this->companies_details->credit_bancaire_investissements_immateriels = $this->cleanFormatedNumber($_POST['credit_bancaire_investissements_immateriels']);
+                $this->companies_details->rachat_entreprise_ou_titres                 = $this->cleanFormatedNumber($_POST['rachat_entreprise_ou_titres']);
+                $this->companies_details->credit_immobilier                           = $this->cleanFormatedNumber($_POST['credit_immobilier']);
+                $this->companies_details->credit_bail_immobilier                      = $this->cleanFormatedNumber($_POST['credit_bail_immobilier']);
+                $this->companies_details->credit_bail                                 = $this->cleanFormatedNumber($_POST['credit_bail']);
+                $this->companies_details->location_avec_option_achat                  = $this->cleanFormatedNumber($_POST['location_avec_option_achat']);
+                $this->companies_details->location_financiere                         = $this->cleanFormatedNumber($_POST['location_financiere']);
+                $this->companies_details->location_longue_duree                       = $this->cleanFormatedNumber($_POST['location_longue_duree']);
+                $this->companies_details->pret_oseo                                   = $this->cleanFormatedNumber($_POST['pret_oseo']);
+                $this->companies_details->pret_participatif                           = $this->cleanFormatedNumber($_POST['pret_participatif']);
+                $this->companies_details->update();
+            } elseif ($_POST['etape'] == 4.2) {
+            } elseif ($_POST['etape'] == 4.3) {
                 $this->companies_bilans  = $this->loadData('companies_bilans');
                 $this->companies_details = $this->loadData('companies_details');
                 $this->companies_ap      = $this->loadData('companies_actif_passif');
 
                 for ($i = 0; $i < 5; $i++) {
                     $this->companies_bilans->get($_POST['ca_id_' . $i], 'id_bilan');
-                    $this->companies_bilans->ca = str_replace(array(' ', ','), array('', '.'), $_POST['ca_' . $i]);
+                    $this->companies_bilans->ca = $this->cleanFormatedNumber($_POST['ca_' . $i]);
                     $this->companies_bilans->update();
 
                     $this->companies_bilans->get($_POST['resultat_brute_exploitation_id_' . $i], 'id_bilan');
-                    $this->companies_bilans->resultat_brute_exploitation = str_replace(array(' ', ','), array('', '.'), $_POST['resultat_brute_exploitation_' . $i]);
+                    $this->companies_bilans->resultat_brute_exploitation = $this->cleanFormatedNumber($_POST['resultat_brute_exploitation_' . $i]);
                     $this->companies_bilans->update();
 
                     $this->companies_bilans->get($_POST['resultat_exploitation_id_' . $i], 'id_bilan');
-                    $this->companies_bilans->resultat_exploitation = str_replace(array(' ', ','), array('', '.'), $_POST['resultat_exploitation_' . $i]);
+                    $this->companies_bilans->resultat_exploitation = $this->cleanFormatedNumber($_POST['resultat_exploitation_' . $i]);
                     $this->companies_bilans->update();
 
                     $this->companies_bilans->get($_POST['investissements_id_' . $i], 'id_bilan');
-                    $this->companies_bilans->investissements = str_replace(array(' ', ','), array('', '.'), $_POST['investissements_' . $i]);
+                    $this->companies_bilans->investissements = $this->cleanFormatedNumber($_POST['investissements_' . $i]);
                     $this->companies_bilans->update();
                 }
 
-                // On recup le projet
-                $this->projects->get($_POST['id_project'], 'id_project');
-                $this->projects->ca_declara_client                    = str_replace(array(' ', ','), array('', '.'), $_POST['ca_declara_client']);
-                $this->projects->resultat_exploitation_declara_client = str_replace(array(' ', ','), array('', '.'), $_POST['resultat_exploitation_declara_client']);
-                $this->projects->fonds_propres_declara_client         = str_replace(array(' ', ','), array('', '.'), $_POST['fonds_propres_declara_client']);
-                $this->projects->update();
-
-                // On recup le detail de l'entreprise
                 $this->companies_details->get($this->projects->id_company, 'id_company');
 
-                $old_date_dernier_bilan                                               = $this->companies_details->date_dernier_bilan;
-                $this->companies_details->date_dernier_bilan                          = $_POST['annee_etape4'] . '-' . $_POST['mois_etape4'] . '-' . $_POST['jour_etape4'];
-                $this->companies_details->encours_actuel_dette_fianciere              = $_POST['encours_actuel_dette_fianciere'];
-                $this->companies_details->remb_a_venir_cette_annee                    = $_POST['remb_a_venir_cette_annee'];
-                $this->companies_details->remb_a_venir_annee_prochaine                = $_POST['remb_a_venir_annee_prochaine'];
-                $this->companies_details->tresorie_dispo_actuellement                 = $_POST['tresorie_dispo_actuellement'];
-                $this->companies_details->autre_demandes_financements_prevues         = $_POST['autre_demandes_financements_prevues'];
-                $this->companies_details->precisions                                  = $_POST['precisions'];
-                $this->companies_details->decouverts_bancaires                        = $_POST['decouverts_bancaires'];
-                $this->companies_details->lignes_de_tresorerie                        = $_POST['lignes_de_tresorerie'];
-                $this->companies_details->affacturage                                 = $_POST['affacturage'];
-                $this->companies_details->escompte                                    = $_POST['escompte'];
-                $this->companies_details->financement_dailly                          = $_POST['financement_dailly'];
-                $this->companies_details->credit_de_tresorerie                        = $_POST['credit_de_tresorerie'];
-                $this->companies_details->credit_bancaire_investissements_materiels   = $_POST['credit_bancaire_investissements_materiels'];
-                $this->companies_details->credit_bancaire_investissements_immateriels = $_POST['credit_bancaire_investissements_immateriels'];
-                $this->companies_details->rachat_entreprise_ou_titres                 = $_POST['rachat_entreprise_ou_titres'];
-                $this->companies_details->credit_immobilier                           = $_POST['credit_immobilier'];
-                $this->companies_details->credit_bail_immobilier                      = $_POST['credit_bail_immobilier'];
-                $this->companies_details->credit_bail                                 = $_POST['credit_bail'];
-                $this->companies_details->location_avec_option_achat                  = $_POST['location_avec_option_achat'];
-                $this->companies_details->location_financiere                         = $_POST['location_financiere'];
-                $this->companies_details->location_longue_duree                       = $_POST['location_longue_duree'];
-                $this->companies_details->pret_oseo                                   = $_POST['pret_oseo'];
-                $this->companies_details->pret_participatif                           = $_POST['pret_participatif'];
-                $this->companies_details->update();
-
-                if ($old_date_dernier_bilan != '0000-00-00') {
-                    $dernierBilan = explode('-', $old_date_dernier_bilan);
+                if ($this->companies_details->date_dernier_bilan != '0000-00-00') {
+                    $dernierBilan = explode('-', $this->companies_details->date_dernier_bilan);
                     $dernierBilan = $dernierBilan[0];
                 } else {
                     $dernierBilan = date('Y');
                 }
 
-                // On recup les actif passif
                 $this->lCompanies_actif_passif = $this->companies_ap->select('id_company = "' . $this->projects->id_company . '" AND annee <= "' . $dernierBilan . '"', 'annee DESC');
+
                 if ($this->lCompanies_actif_passif != false) {
                     $i = 1;
                     foreach ($this->lCompanies_actif_passif as $ap) {
                         if ($i <= 3) {
                             $this->companies_ap->get($ap['id_actif_passif'], 'ordre = ' . $ap['ordre'] . ' AND id_actif_passif');
-
-                            $this->companies_ap->immobilisations_corporelles        = $_POST['immobilisations_corporelles_' . $ap['ordre']];
-                            $this->companies_ap->immobilisations_incorporelles      = $_POST['immobilisations_incorporelles_' . $ap['ordre']];
-                            $this->companies_ap->immobilisations_financieres        = $_POST['immobilisations_financieres_' . $ap['ordre']];
-                            $this->companies_ap->stocks                             = $_POST['stocks_' . $ap['ordre']];
-                            $this->companies_ap->creances_clients                   = $_POST['creances_clients_' . $ap['ordre']];
-                            $this->companies_ap->disponibilites                     = $_POST['disponibilites_' . $ap['ordre']];
-                            $this->companies_ap->valeurs_mobilieres_de_placement    = $_POST['valeurs_mobilieres_de_placement_' . $ap['ordre']];
-                            $this->companies_ap->capitaux_propres                   = $_POST['capitaux_propres_' . $ap['ordre']];
-                            $this->companies_ap->provisions_pour_risques_et_charges = $_POST['provisions_pour_risques_et_charges_' . $ap['ordre']];
-                            $this->companies_ap->amortissement_sur_immo             = $_POST['amortissement_sur_immo_' . $ap['ordre']];
-                            $this->companies_ap->dettes_financieres                 = $_POST['dettes_financieres_' . $ap['ordre']];
-                            $this->companies_ap->dettes_fournisseurs                = $_POST['dettes_fournisseurs_' . $ap['ordre']];
-                            $this->companies_ap->autres_dettes                      = $_POST['autres_dettes_' . $ap['ordre']];
-
+                            $this->companies_ap->immobilisations_corporelles        = $this->cleanFormatedNumber($_POST['immobilisations_corporelles_' . $ap['ordre']]);
+                            $this->companies_ap->immobilisations_incorporelles      = $this->cleanFormatedNumber($_POST['immobilisations_incorporelles_' . $ap['ordre']]);
+                            $this->companies_ap->immobilisations_financieres        = $this->cleanFormatedNumber($_POST['immobilisations_financieres_' . $ap['ordre']]);
+                            $this->companies_ap->stocks                             = $this->cleanFormatedNumber($_POST['stocks_' . $ap['ordre']]);
+                            $this->companies_ap->creances_clients                   = $this->cleanFormatedNumber($_POST['creances_clients_' . $ap['ordre']]);
+                            $this->companies_ap->disponibilites                     = $this->cleanFormatedNumber($_POST['disponibilites_' . $ap['ordre']]);
+                            $this->companies_ap->valeurs_mobilieres_de_placement    = $this->cleanFormatedNumber($_POST['valeurs_mobilieres_de_placement_' . $ap['ordre']]);
+                            $this->companies_ap->capitaux_propres                   = $this->cleanFormatedNumber($_POST['capitaux_propres_' . $ap['ordre']]);
+                            $this->companies_ap->provisions_pour_risques_et_charges = $this->cleanFormatedNumber($_POST['provisions_pour_risques_et_charges_' . $ap['ordre']]);
+                            $this->companies_ap->amortissement_sur_immo             = $this->cleanFormatedNumber($_POST['amortissement_sur_immo_' . $ap['ordre']]);
+                            $this->companies_ap->dettes_financieres                 = $this->cleanFormatedNumber($_POST['dettes_financieres_' . $ap['ordre']]);
+                            $this->companies_ap->dettes_fournisseurs                = $this->cleanFormatedNumber($_POST['dettes_fournisseurs_' . $ap['ordre']]);
+                            $this->companies_ap->autres_dettes                      = $this->cleanFormatedNumber($_POST['autres_dettes_' . $ap['ordre']]);
                             $this->companies_ap->update();
                         }
                         $i++;
                     }
                 }
-
-
             } elseif ($_POST['etape'] == 5) {
 
             } elseif ($_POST['etape'] == 6) {
                 $this->projects = $this->loadData('projects');
 
-                // On recup le projet
                 $this->projects->get($_POST['id_project'], 'id_project');
-
                 $this->projects->question1 = $_POST['question1'];
                 $this->projects->question2 = $_POST['question2'];
                 $this->projects->question3 = $_POST['question3'];
-
                 $this->projects->update();
             }
-
         }
+    }
 
+    private function cleanFormatedNumber($sFormatedNumber)
+    {
+        return str_replace(array(' ', ','), array('', '.'), $sFormatedNumber);
     }
 
     public function _create_client()
@@ -1001,10 +971,7 @@ class ajaxController extends bootstrap
                     $this->companies->id_client_owner = $this->clients->id_client;
                     $this->companies->email_facture   = $this->clients->email;
                     $this->companies->update();
-                    //}
                 }
-                //echo ($error == true?'nok':'ok');
-                //echo $this->clients->id_client;
                 echo json_encode(array('id_client' => $this->clients->id_client, 'error' => ($error == true ? 'nok' : 'ok')));
             } else {
                 echo json_encode(array('id_client' => '0', 'error' => 'nok'));
@@ -1012,25 +979,17 @@ class ajaxController extends bootstrap
         }
     }
 
-
     public function _valid_create()
     {
         $this->autoFireView = false;
 
-        $this->projects                = $this->loadData('projects');
-        $this->companies               = $this->loadData('companies');
-        $this->clients                 = $this->loadData('clients');
-        $this->projects_status_history = $this->loadData('projects_status_history');
+        $this->projects  = $this->loadData('projects');
+        $this->companies = $this->loadData('companies');
+        $this->clients   = $this->loadData('clients');
 
         if (isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
-
-            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 10, $this->projects->id_project);
-
-            //**********************************************//
-            //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION ***//
-            //**********************************************//
 
             $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
 
@@ -1073,43 +1032,6 @@ class ajaxController extends bootstrap
             $this->clients->password = md5($this->ficelle->generatePassword(8));
             $this->clients->status   = 1;
             $this->clients->update();
-
-            $this->users->get(1, 'default_analyst');
-            $this->projects->id_analyste = $this->users->id_user;
-            $this->projects->update();
-        }
-    }
-
-    public function _refeshEtape4()
-    {
-        $this->autoFireView = true;
-
-        $this->projects               = $this->loadData('projects');
-        $this->companies              = $this->loadData('companies');
-        $this->companies_bilans       = $this->loadData('companies_bilans');
-        $this->companies_details      = $this->loadData('companies_details');
-        $this->companies_actif_passif = $this->loadData('companies_actif_passif');
-        $this->clients                = $this->loadData('clients');
-
-        if (isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
-            $this->companies->get($this->projects->id_company, 'id_company');
-            $this->companies_details->get($this->projects->id_company, 'id_company');
-            $this->clients->get($this->companies->id_client_owner, 'id_client');
-
-            $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '"');
-
-            if ($this->lCompanies_actif_passif == false) {
-                for ($i = 1; $i <= 3; $i++) {
-                    $this->companies_actif_passif->ordre      = $i;
-                    $this->companies_actif_passif->id_company = $this->companies->id_company;
-                    $this->companies_actif_passif->create();
-                }
-
-                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
-                die;
-            }
-
-            $this->lbilans = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'date ASC');
         }
     }
 
@@ -2149,7 +2071,7 @@ class ajaxController extends bootstrap
                                 </tr>
                             </table>
                             <br /><br />
-                            <div id="valid_etape6">Données sauvegardées</div>';
+                            <div id="valid_etape6" class="valid_etape">Données sauvegardées</div>';
 
                     if ($this->current_projects_status->status == \projects_status::REVUE_ANALYSTE) {
                         $etape_6 .= '
@@ -2470,7 +2392,7 @@ class ajaxController extends bootstrap
                         </table>
 
                         <br /><br />
-                        <div id="valid_etape7">Données sauvegardées</div>
+                        <div id="valid_etape7" class="valid_etape">Données sauvegardées</div>
                         <div class="btnDroite">
                             <input type="button" onclick="valid_rejete_etape7(3,' . $this->projects->id_project . ')" class="btn"  value="Sauvegarder">
                         ';

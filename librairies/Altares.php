@@ -74,6 +74,11 @@ class Altares
         return $this->soapCall($this->oSettings->value, 'getDerniersBilans', array('siren' => $iSIREN, 'nbBilans' => $iSheetsCount));
     }
 
+    public function setCompanyData($iCompanyId)
+    {
+        // @todo
+    }
+
     /**
      * Make SOAP call to Altares WS
      * @param string $sWSDLUrl
