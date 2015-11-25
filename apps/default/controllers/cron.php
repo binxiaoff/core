@@ -7871,28 +7871,29 @@ class cronController extends bootstrap
         }
     }
 
-
-    public function zippage($id_project)
+    private function zippage($id_project)
     {
         $projects          = $this->loadData('projects');
         $companies         = $this->loadData('companies');
-        $companies_details = $this->loadData('companies_details');
+        $oAttachment       = $this->loadData('attachment');
+        $oAttachmentType   = $this->loadData('attachment_type');
 
         $projects->get($id_project, 'id_project');
         $companies->get($projects->id_company, 'id_company');
-        $companies_details->get($projects->id_company, 'id_company');
 
-        $ext_cni  = substr(strrchr($companies_details->fichier_cni_passeport, '.'), 1);
-        $ext_kbis = substr(strrchr($companies_details->fichier_extrait_kbis, '.'), 1);
+        /** @var attachment_helper $oAttachmentHelper */
+        $oAttachmentHelper = $this->loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->path));
+        $aAttachments      = $projects->getAttachments();
+        $path_cni          = $oAttachmentHelper->getFullPath(attachment::PROJECT, attachment_type::CNI_PASSPORTE_DIRIGEANT) . $aAttachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]['path'];
+        $path_kbis         = $oAttachmentHelper->getFullPath(attachment::PROJECT, attachment_type::KBIS) . $aAttachments[attachment_type::KBIS]['path'];
 
-        $path_cni  = $this->path . 'protected/companies/cni_passeport/' . $companies_details->fichier_cni_passeport;
-        $path_kbis = $this->path . 'protected/companies/extrait_kbis/' . $companies_details->fichier_extrait_kbis;
+        $ext_cni           = substr(strrchr($aAttachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]['path'], '.'), 1);
+        $ext_kbis          = substr(strrchr($aAttachments[attachment_type::KBIS]['path'], '.'), 1);
 
-        $new_nom_cni  = 'CNI-#' . $companies->siren . '.' . $ext_cni;
-        $new_nom_kbis = 'KBIS-#' . $companies->siren . '.' . $ext_kbis;
-
-        $path_nozip = $this->path . 'protected/sftp_groupama_nozip/';
-        $path       = $this->path . 'protected/sftp_groupama/';
+        $new_nom_cni       = 'CNI-#' . $companies->siren . '.' . $ext_cni;
+        $new_nom_kbis      = 'KBIS-#' . $companies->siren . '.' . $ext_kbis;
+        $path_nozip        = $this->path . 'protected/sftp_groupama_nozip/';
+        $path              = $this->path . 'protected/sftp_groupama/';
 
         $nom_dossier = $companies->siren;
 
