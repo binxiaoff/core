@@ -1060,6 +1060,14 @@ class dossiersController extends bootstrap
                                     $bank_unilend->montant        = $partUnliend * 100;
                                     $bank_unilend->create();
 
+                                    //Account Unilend - project commission
+                                    $oAccountUnilend = $this->loadData('platform_account_unilend');
+                                    $oAccountUnilend->id_transaction = $this->transactions->id_transaction;
+                                    $oAccountUnilend->id_project     = $this->projects->id_project;
+                                    $oAccountUnilend->amount         = $partUnliend * 100;
+                                    $oAccountUnilend->type           = platform_account_unilend::TYPE_COMMISSION_PROJECT;
+                                    $oAccountUnilend->create();
+
                                     // Motif mandat emprunteur
                                     $motif = $this->ficelle->motif_mandat($this->clients->prenom, $this->clients->nom, $this->projects->id_project);
 
@@ -2225,6 +2233,11 @@ class dossiersController extends bootstrap
                                     $_SESSION['freeow']['title']   = 'Remboursement preteur';
                                     $_SESSION['freeow']['message'] = "Aucun remboursement n'a &eacute;t&eacute; effectu&eacute; aux preteurs !";
                                 }
+                            }
+                            if (0 < $commission) {
+                                /** @var platform_account_unilend $oAccountUnilend */
+                                $oAccountUnilend = $this->loadData('platform_account_unilend');
+                                $oAccountUnilend->addDueDateCommssion($RembEmpr['id_echeancier_emprunteur']);
                             }
                         }
                     }

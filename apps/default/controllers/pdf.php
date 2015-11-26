@@ -79,31 +79,6 @@ class pdfController extends bootstrap
     }
 
     /**
-     * @param string $sPathPdf Pdf file's path
-     * @param bool|false $bCheckSign know if sign is necessary or not
-     * @param bool|false $bSign know if sign is ok or not
-     * @param bool|false $bIsPouvoir if we treat authority or not
-     * @return bool|string true if no universign or universign
-     */
-    private function CheckUniversign($sPathPdf, $bCheckSign = false, $bSign = false, $bIsPouvoir = false)
-    {
-        if (true === $bCheckSign && false === $bSign) {
-            if (
-                true === $bIsPouvoir
-                && file_exists($sPathPdf)
-                && filesize($sPathPdf) > 0
-                && date('Y-m-d', filemtime($sPathPdf)) != date('Y-m-d')
-            ) {
-                unlink($sPathPdf);
-                $this->oLogger->addRecord(ULogger::INFO, 'File : ' . $sPathPdf . ' deleting.', array(__FILE__ . ' on line ' . __LINE__));
-            }
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * @param string $sView name of view file
      */
     public function setDisplay($sView = '', $sContent = null)
@@ -251,10 +226,15 @@ class pdfController extends bootstrap
                     $oClientsMandats->id_mandat  = $oClientsMandats->create();
                 } else {
                     $oClientsMandats->get($aPendingMandates[0]['id_mandat'], 'id_mandat');
+
+                    if (false === file_exists($sPath . $aPendingMandates[0]['name'])) {
+                        $this->GenerateWarrantyHtml();
+                        $this->WritePdf($sPath . $aPendingMandates[0]['name'], 'warranty');
+                    }
                 }
             }
 
-            if (true === $this->CheckUniversign($sPath . $sFileName, true, $bSign)) {
+            if (false === $bSign) {
                 header('Location: ' . $this->url . '/universign/mandat/' . $oClientsMandats->id_mandat);
             } else { //Si Mandat Signé
                 $this->ReadPdf($sPath . $sFileName, $sNamePdfClient);
@@ -374,10 +354,18 @@ class pdfController extends bootstrap
                     }
 
                     // Si pouvoir signé
-                    $bSign = ($aProjectPouvoirToTreat['status'] > 0) ?: false;
+                    $bSign = ($aProjectPouvoirToTreat['status'] > 0) ? true : false;
+                    $bInstantCreate = false;
+
+                    if (false === file_exists($sPath . $aProjectPouvoirToTreat['name'])) {
+                        $this->GenerateAuthorityHtml();
+                        $this->WritePdf($sPath . $aProjectPouvoirToTreat['name'], 'authority');
+                        $bSign = false;
+                        $bInstantCreate = true;
+                    }
 
                     $this->oProjectsPouvoir->get($aProjectPouvoirToTreat['id_pouvoir'], 'id_pouvoir');
-                    $bInstantCreate = false;
+
                 } else { // Si pas de pouvoir on créer une ligne
                     $this->GenerateAuthorityHtml();
                     $this->WritePdf($sPath . $sFileName, 'authority');
@@ -390,11 +378,20 @@ class pdfController extends bootstrap
                     $bInstantCreate = true;
                 }
 
-                if (true === $this->CheckUniversign($sPath . $sFileName, true, $bSign, true)) {
+                if (false === $bSign) {
+                    if (file_exists($sPath . $sFileName) && filesize($sPath . $sFileName) > 0 && date('Y-m-d', filemtime($sPath . $sFileName)) != date('Y-m-d')) {
+                        unlink($sPath . $sFileName);
+                        $this->oLogger->addRecord(ULogger::INFO, 'File : ' . $sPath . $sFileName . ' deleting.', array(__FILE__ . ' on line ' . __LINE__));
+
+                        $this->GenerateAuthorityHtml();
+                        $this->WritePdf($sPath . $sFileName, 'authority');
+                        $bInstantCreate = true;
+                    }
                     $this->generateAuthorityUniversign($bInstantCreate);
                 } else { //Si pouvoir signé
                     $this->ReadPdf($sPath . $sFileName, $sNamePdfClient);
                 }
+
             } else {
                 header('Location: ' . $this->lurl);
                 die;

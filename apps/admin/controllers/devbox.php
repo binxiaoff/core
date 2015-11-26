@@ -1182,7 +1182,7 @@ class devboxController extends bootstrap
         $i = 0;
         while (($aRow = fgetcsv($rHandle, 0, "\t")) !== false) {
             $sInsee = $oVille->generateCodeInsee($aRow[5], $aRow[6]);
-            if ($aRow[0] === '3') {
+            if (in_array($aRow[0], array(3, 4))) {
                 if ($oVille->exist($sInsee, 'insee')) {
                     $oVille->bdd->query('UPDATE `villes` SET active = 0, ville = "' . $aRow[13] . '" WHERE insee = "' . $sInsee . '"');
                 } else {
@@ -1197,7 +1197,7 @@ class devboxController extends bootstrap
             }
             unset($aRow);
             $i++;
-            echo 'done: ' . $i . '/39806';
+            echo 'done: ' . $i . '/39806' . PHP_EOL;
         }
 
         fclose($rHandle);

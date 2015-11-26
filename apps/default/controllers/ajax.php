@@ -130,12 +130,13 @@ class ajaxController extends bootstrap
         $this->loans             = $this->loadData('loans');
         $this->lenders_accounts  = $this->loadData('lenders_accounts');
 
-        $where = '';
-        $ordre = $this->tabOrdreProject[$_POST['ordreProject']];
+        $where       = '';
+        $restriction = '';
+        $ordre       = $this->tabOrdreProject[$_POST['ordreProject']];
 
         $_SESSION['ordreProject'] = $_POST['ordreProject'];
 
-        if (isset($_POST['where']) && $_POST['where'] != '') {
+        if (false === empty($_POST['where']) && false === empty($_SESSION['tri']['taux'])) {
             $key = $_SESSION['tri']['taux'];
             $val = explode('-', $this->triPartxInt[$key - 1]);
 
@@ -149,15 +150,10 @@ class ajaxController extends bootstrap
         if (isset($_POST['type']) && $_POST['type'] != '') {
             $this->type = $_POST['type'];
 
-            if ($this->type == 1) {
-                // tout
-                $restriction = '';
-            } elseif ($this->type == 2) {
+            if ($this->type == 2) {
                 // favori
                 $listProjectFav = $this->favoris->select('id_client = ' . $this->clients->id_client);
 
-                // On initialise les variables
-                $restriction   = '';
                 $lesIdProjects = '';
                 $i             = 0;
 
@@ -172,7 +168,6 @@ class ajaxController extends bootstrap
                 }
 
             } elseif ($this->type == 3) {
-                $restriction   = '';
                 $lesIdProjects = '';
                 $i             = 0;
 
@@ -187,8 +182,6 @@ class ajaxController extends bootstrap
             } elseif ($this->type == 4) {
                 $restriction = ' AND p.date_fin <> "0000-00-00 00:00:00"';
             }
-        } else {
-            $restriction = '';
         }
 
         // statut
@@ -197,7 +190,8 @@ class ajaxController extends bootstrap
         // start
         // nb
         $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . $restriction . ' AND p.status = 0 AND p.display = 0', $ordre, $_POST['positionStart'], 10);
-        $affichage             = "";
+        $affichage             = '';
+
         foreach ($this->lProjetsFunding as $k => $pf) {
 
             $this->projects_status->getLastStatut($pf['id_project']);
@@ -331,7 +325,6 @@ class ajaxController extends bootstrap
             </tr>
             ";
         }
-
         $table = array('affichage' => $affichage, 'positionStart' => $this->lProjetsFunding[0]['positionStart']);
         echo json_encode($table);
 
@@ -495,7 +488,7 @@ class ajaxController extends bootstrap
         }
     }
 
-    function _get_cities()
+    public function _get_cities()
     {
         $this->autoFireView = false;
         $aCities = array();
@@ -508,16 +501,17 @@ class ajaxController extends bootstrap
                 $bBirthPlace = true;
             }
 
+            $sTerm = htmlspecialchars_decode($_GET['term'], ENT_QUOTES);
             if ($bBirthPlace) {
-                $aResults = $oVilles->lookupCities($_GET['term'], array('ville', 'cp'), true);
+                $aResults = $oVilles->lookupCities($sTerm, array('ville', 'cp'), true);
             } else {
-                $aResults = $oVilles->lookupCities($_GET['term']);
+                $aResults = $oVilles->lookupCities($sTerm);
             }
             if (false === empty($aResults)) {
                 foreach ($aResults as $aItem) {
                     if ($bBirthPlace) {
                         // unique insee code
-                        $aCities[$aItem['insee']] = array(
+                        $aCities[$aItem['insee'].'-'.$aItem['ville']] = array(
                             'label' => $aItem['ville'] . ' (' . $aItem['num_departement'] . ')',
                             'value' => $aItem['insee']
                         );
@@ -579,23 +573,17 @@ class ajaxController extends bootstrap
         $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
         $this->avgRate      = $this->bids->getAVG($this->projects->id_project, 'rate');
 
-        // moyenne pondéré
         $montantHaut = 0;
         $tauxBas     = 0;
         $montantBas  = 0;
         foreach ($this->bids->select('id_project = ' . $this->projects->id_project . ' AND status = 0') as $b) {
-            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-            $tauxBas += $b['rate'];
-            $montantBas += ($b['amount'] / 100);
+            $montantHaut += $b['rate'] * $b['amount'] / 100;
+            $tauxBas     += $b['rate'];
+            $montantBas  += $b['amount'] / 100;
         }
 
-        if ($montantHaut > 0 && $montantBas > 0) {
-            $this->avgRate = ($montantHaut / $montantBas);
-        } else {
-            $this->avgRate = 0;
-        }
-
-        $this->status = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
+        $this->avgRate = ($montantHaut > 0 && $montantBas > 0) ? $montantHaut / $montantBas : 0;
+        $this->status  = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
     }
 
     // Affichage du tableau d'offres en cours mobile
@@ -813,8 +801,10 @@ class ajaxController extends bootstrap
                 $this->email->addRecipient(trim($clients->email));
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
+            echo 'ok';
+        } else {
+            echo 'nok';
         }
-        echo 'nok';
     }
 
     public function _load_finances()
@@ -1593,89 +1583,6 @@ class ajaxController extends bootstrap
                 $this->sumRembParAn   = $this->echeanciers->getSumRembByYearCapital($this->lenders_accounts->id_lender_account, $this->debut, $this->fin);
                 $this->sumIntParAn    = $this->echeanciers->getSumIntByYear($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $this->debut, $this->fin);
                 $this->sumFiscalParAn = $this->echeanciers->getSumRevenuesFiscalesByYear($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $this->debut, $this->fin);
-            }
-        }
-    }
-
-    public function _syntheses_mouvements_old()
-    {
-        if ($this->clients->checkAccess() && isset($_POST['duree']) && in_array($_POST['duree'], array('mois', 'trimestres', 'annees')) || 5 == 5) {
-            $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
-
-            $this->echeanciers      = $this->loadData('echeanciers');
-            $this->lenders_accounts = $this->loadData('lenders_accounts');
-            $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-
-            $sumRembParMois             = $this->echeanciers->getSumRembByMonthsCapital($this->lenders_accounts->id_lender_account, date('Y')); // captial remboursé / mois
-            $sumIntbParMois             = $this->echeanciers->getSumIntByMonths($this->lenders_accounts->id_lender_account, date('Y')); // intérets brut / mois
-            $sumRevenuesfiscalesParMois = $this->echeanciers->getSumRevenuesFiscalesByMonths($this->lenders_accounts->id_lender_account, date('Y')); // revenues fiscales / mois
-
-            for ($i = 1; $i <= 12; $i++) {
-                $a                                    = $i;
-                $a                                    = ($i < 10 ? '0' . $a : $a);
-                $this->sumRembParMois[$i]             = number_format(($sumRembParMois[$a] != '' ? $sumRembParMois[$a] : 0), 2, '.', ''); // capital remboursé / mois
-                $this->sumIntbParMois[$i]             = number_format(($sumIntbParMois[$a] != '' ? $sumIntbParMois[$a] - $sumRevenuesfiscalesParMois[$a] : 0), 2, '.', ''); // interets net / mois
-                $this->sumRevenuesfiscalesParMois[$i] = number_format(($sumRevenuesfiscalesParMois[$a] != '' ? $sumRevenuesfiscalesParMois[$a] : 0), 2, '.', ''); // prelevements fiscaux
-            }
-
-            if ($_POST['duree'] == 'mois') {
-                $lesmois['01'] = '1';
-                $lesmois['02'] = '1';
-                $lesmois['03'] = '1';
-                $lesmois['04'] = '2';
-                $lesmois['05'] = '2';
-                $lesmois['06'] = '2';
-                $lesmois['07'] = '3';
-                $lesmois['08'] = '3';
-                $lesmois['09'] = '3';
-                $lesmois['10'] = '4';
-                $lesmois['11'] = '4';
-                $lesmois['12'] = '4';
-
-                if ($lesmois[date('m')] == 1) {
-                    $this->ordre[1] = 1;
-                    $this->ordre[2] = 2;
-                    $this->ordre[3] = 3;
-                    $this->ordre[4] = 4;
-                } elseif ($lesmois[date('m')] == 2) {
-                    $this->ordre[1] = 2;
-                    $this->ordre[2] = 3;
-                    $this->ordre[3] = 4;
-                    $this->ordre[4] = 1;
-                } elseif ($lesmois[date('m')] == 3) {
-                    $this->ordre[1] = 3;
-                    $this->ordre[2] = 4;
-                    $this->ordre[3] = 1;
-                    $this->ordre[4] = 2;
-                } elseif ($lesmois[date('m')] == 4) {
-                    $this->ordre[1] = 4;
-                    $this->ordre[2] = 1;
-                    $this->ordre[3] = 2;
-                    $this->ordre[4] = 3;
-                }
-            } elseif ($_POST['duree'] == 'trimestres') {
-                // remb
-                $this->sumRembPartrimestre[1] = $this->sumRembParMois[1] + $this->sumRembParMois[2] + $this->sumRembParMois[3] + $this->sumRembParMois[4];
-                $this->sumRembPartrimestre[2] = $this->sumRembParMois[5] + $this->sumRembParMois[6] + $this->sumRembParMois[7] + $this->sumRembParMois[8];
-                $this->sumRembPartrimestre[3] = $this->sumRembParMois[9] + $this->sumRembParMois[10] + $this->sumRembParMois[11] + $this->sumRembParMois[12];
-
-                // interets
-                $this->sumIntPartrimestre[1] = $this->sumIntbParMois[1] + $this->sumIntbParMois[2] + $this->sumIntbParMois[3] + $this->sumIntbParMois[4];
-                $this->sumIntPartrimestre[2] = $this->sumIntbParMois[5] + $this->sumIntbParMois[6] + $this->sumIntbParMois[7] + $this->sumIntbParMois[8];
-                $this->sumIntPartrimestre[3] = $this->sumIntbParMois[9] + $this->sumIntbParMois[10] + $this->sumIntbParMois[11] + $this->sumIntbParMois[12];
-
-                // fiscal
-                $this->sumRevenuesfiscalesPartrimestre[1] = $this->sumRevenuesfiscalesParMois[1] + $this->sumRevenuesfiscalesParMois[2] + $this->sumRevenuesfiscalesParMois[3] + $this->sumRevenuesfiscalesParMois[4];
-                $this->sumRevenuesfiscalesPartrimestre[2] = $this->sumRevenuesfiscalesParMois[5] + $this->sumRevenuesfiscalesParMois[6] + $this->sumRevenuesfiscalesParMois[7] + $this->sumRevenuesfiscalesParMois[8];
-                $this->sumRevenuesfiscalesPartrimestre[3] = $this->sumRevenuesfiscalesParMois[9] + $this->sumRevenuesfiscalesParMois[10] + $this->sumRevenuesfiscalesParMois[11] + $this->sumRevenuesfiscalesParMois[12];
-            } else {
-                $this->debut = date('Y') - 5;
-                $this->fin   = date('Y');
-
-                // par an
-                $this->sumRembParAn   = $this->echeanciers->getSumRembByYearCapital($this->lenders_accounts->id_lender_account, $this->debut, $this->fin);
-                $this->sumIntParAn    = $this->echeanciers->getSumIntByYear($this->lenders_accounts->id_lender_account, $this->debut, $this->fin);
-                $this->sumFiscalParAn = $this->echeanciers->getSumRevenuesFiscalesByYear($this->lenders_accounts->id_lender_account, $this->debut, $this->fin);
             }
         }
     }
