@@ -1324,8 +1324,6 @@ class dossiersController extends bootstrap
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->companies               = $this->loadData('companies');
         $this->companies_details       = $this->loadData('companies_details');
-        $this->companies_bilans        = $this->loadData('companies_bilans');
-        $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
         $this->projects                = $this->loadData('projects');
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
