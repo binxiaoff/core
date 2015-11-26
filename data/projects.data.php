@@ -664,4 +664,78 @@ class projects extends projects_crud
 
         return $fAvgRate;
     }
+
+    public function getLoansAndLendersForProject($iProjectId = null)
+    {
+
+        if ($iProjectId === null) {
+            $iProjectId = $this->id_project;
+        }
+
+        $sql = 'SELECT
+                        l.id_lender,
+                        c.nom,
+                        c.prenom,
+                        com.name,
+                        l.amount,
+                        l.added as date
+                    FROM
+                        `loans` l
+                        LEFT JOIN lenders_accounts la ON l.id_lender = la.id_lender_account
+                        LEFT JOIN clients c ON la.id_client_owner = c.id_client
+                        LEFT JOIN companies com ON la.id_company_owner = com.id_company
+                    WHERE
+                        id_project = ' . $iProjectId;
+
+        $result           = $this->bdd->query($sql);
+        $aLoansAndLenders = array();
+
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aLoansAndLenders[] = $record;
+        }
+
+        return $aLoansAndLenders;
+
+
+    }
+
+    public function getDuePaymentsAndLenders($iProjectId = null, $iOrder = null)
+    {
+
+        if ($iProjectId === null) {
+            $iProjectId = $this->id_project;
+        }
+
+        $sOrder = (isset($iOrder)) ? ' AND ordre = ' . $iOrder : null;
+
+        $sql = 'SELECT
+                    e.id_lender,
+                    c.nom,
+                    c.prenom,
+                    com.name,
+                    e.montant,
+                    e.capital,
+                    e.interets,
+                    e.date_echeance_emprunteur_reel as date
+                FROM
+                    `echeanciers` e
+                    LEFT JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
+                    LEFT JOIN clients c ON la.id_client_owner = c.id_client
+                    LEFT JOIN companies com ON la.id_company_owner = com.id_company
+                WHERE
+                    id_project = ' . $iProjectId . $sOrder;
+
+        $result                 = $this->bdd->query($sql);
+        $aDuePaymentsAndLenders = array();
+
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aDuePaymentsAndLenders[] = $record;
+        }
+
+        return $aDuePaymentsAndLenders;
+
+    }
+
+
+
 }
