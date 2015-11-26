@@ -1610,7 +1610,7 @@ class dossiersController extends bootstrap
 
             if (isset($this->params[1]) && $this->params[1] === 'altares') {
                 $oAltares = new Altares($this->bdd);
-                $oAltares->setCompanyData($this->projects->id_company);
+                $oAltares->setCompanyFinancial($this->projects->id_company);
 
                 header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
                 die;
