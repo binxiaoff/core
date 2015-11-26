@@ -156,43 +156,7 @@ class depot_de_dossierController extends bootstrap
         $this->projects->retour_altares = $oResult->myInfo->codeRetour;
         $this->projects->update();
 
-        $this->companies->altares_eligibility = $oResult->myInfo->eligibility;
-        $this->companies->altares_codeRetour  = $oResult->myInfo->codeRetour;
-        $this->companies->altares_motif       = $oResult->myInfo->motif;
-        $this->companies->phone               = isset($oResult->myInfo->siege->telephone) ? str_replace(' ', '', $oResult->myInfo->siege->telephone) : '';
-
-        if (isset($oResult->myInfo->identite) && is_object($oResult->myInfo->identite)) {
-            $this->companies->name          = $oResult->myInfo->identite->raisonSociale;
-            $this->companies->forme         = $oResult->myInfo->identite->formeJuridique;
-            $this->companies->capital       = $oResult->myInfo->identite->capital;
-            $this->companies->code_naf      = $oResult->myInfo->identite->naf5EntreCode;
-            $this->companies->libelle_naf   = $oResult->myInfo->identite->naf5EntreLibelle;
-            $this->companies->adresse1      = $oResult->myInfo->identite->rue;
-            $this->companies->city          = $oResult->myInfo->identite->ville;
-            $this->companies->zip           = $oResult->myInfo->identite->codePostal;
-            $this->companies->rcs           = $oResult->myInfo->identite->rcs;
-            $this->companies->siret         = $oResult->myInfo->identite->siret;
-            $this->companies->date_creation = substr($oResult->myInfo->identite->dateCreation, 0, 10);
-
-            $sLastAccountStatementDate = isset($oResult->myInfo->identite->dateDernierBilan) && strlen($oResult->myInfo->identite->dateDernierBilan) > 0 ? substr($oResult->myInfo->identite->dateDernierBilan, 0, 10) : (date('Y') - 1) . '-12-31';
-            $aLastAccountStatementDate = explode('-', $sLastAccountStatementDate);
-            $this->companies_details->date_dernier_bilan        = $sLastAccountStatementDate;
-            $this->companies_details->date_dernier_bilan_mois   = $aLastAccountStatementDate[1];
-            $this->companies_details->date_dernier_bilan_annee  = $aLastAccountStatementDate[0];
-            $this->companies_details->date_dernier_bilan_publie = $sLastAccountStatementDate;
-            $this->companies_details->update();
-        }
-
-        if (isset($oResult->myInfo->score) && is_object($oResult->myInfo->score)) {
-            $oScore = $oResult->myInfo->score;
-
-            $this->companies->altares_niveauRisque       = $oScore->niveauRisque;
-            $this->companies->altares_scoreVingt         = $oScore->scoreVingt;
-            $this->companies->altares_scoreSectorielCent = $oScore->scoreSectorielCent;
-            $this->companies->altares_dateValeur         = substr($oScore->dateValeur, 0, 10);
-        }
-
-        $this->companies->update();
+        $oAltares->setCompanyData($this->companies->id_company, $oResult->myInfo);
 
         switch ($oResult->myInfo->eligibility) {
             case 'Oui':

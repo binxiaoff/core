@@ -1569,21 +1569,6 @@ class dossiersController extends bootstrap
             $serialize = serialize(array('id_project' => $this->projects->id_project));
             $this->users_history->histo(7, 'dossier create', $_SESSION['user']['id_user'], $serialize);
 
-            $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '"', 'annee ASC');
-
-            if ($this->lCompanies_actif_passif == false) {
-                $date[1] = (date('Y') - 1);
-                $date[2] = (date('Y') - 2);
-                $date[3] = (date('Y') - 3);
-
-                for ($i = 1; $i <= 3; $i++) {
-                    $this->companies_actif_passif->annee      = $date[$i];
-                    $this->companies_actif_passif->ordre      = $i;
-                    $this->companies_actif_passif->id_company = $this->companies->id_company;
-                    $this->companies_actif_passif->create();
-                }
-            }
-
             header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
             die;
         } elseif (isset($this->params[0])) {
@@ -1597,6 +1582,14 @@ class dossiersController extends bootstrap
             $this->clients->get($this->companies->id_client_owner, 'id_client');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
+            if (isset($this->params[1]) && $this->params[1] === 'altares') {
+                $oAltares = new Altares($this->bdd);
+                $oAltares->setCompanyData($this->projects->id_company);
+
+                header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
+                die;
+            }
+
             $this->bHasAdvisor = false;
 
             if (
@@ -1606,14 +1599,6 @@ class dossiersController extends bootstrap
                 $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
                 $this->companies_prescripteurs->get($this->prescripteurs->id_entite, 'id_company');
                 $this->bHasAdvisor = true;
-            }
-
-            if (isset($this->params[1]) && $this->params[1] === 'altares') {
-                $oAltares = new Altares($this->bdd);
-                $oAltares->setCompanyFinancial($this->projects->id_company);
-
-                header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
-                die;
             }
         }
 
