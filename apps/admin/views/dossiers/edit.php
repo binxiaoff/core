@@ -787,7 +787,7 @@
                                 <td>
                                     CGV envoyées le <?= date('d/m/Y à H:i:s', strtotime($this->project_cgv->added)) ?>
                                     (<a href="<?= $this->furl . $this->project_cgv->getUrlPath() ?>" target="_blank">PDF</a>)
-                                    <?php if (in_array($this->project_cgv, array(project_cgv::STATUS_SIGN_UNIVERSIGN, project_cgv::STATUS_SIGN_FO))) : ?>
+                                    <?php if (in_array($this->project_cgv->status, array(project_cgv::STATUS_SIGN_UNIVERSIGN, project_cgv::STATUS_SIGN_FO))) : ?>
                                         <br/><strong>signées</strong> le <?= date('d/m/Y à H:i:s', strtotime($this->project_cgv->updated))  ?>
                                     <?php endif; ?>
                                 </td>

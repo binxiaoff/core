@@ -4004,27 +4004,17 @@ class cronController extends bootstrap
         if (true === $this->startCron('retraitUnilend', 5)) {
 
             $jour = date('d');
-
             $datesVirements = array(1, 15);
 
             if (in_array($jour, $datesVirements)) {
-
-                // chargement des datas
-                $virements    = $this->loadData('virements');
-                $bank_unilend = $this->loadData('bank_unilend');
-                $transactions = $this->loadData('transactions');
-
-                // 3%+tva  + les retraits Unilend
-                $comProjet = $bank_unilend->sumMontant('status IN(0,3) AND type IN(0,3) AND retrait_fiscale = 0');
-                // com sur remb
-                $comRemb = $bank_unilend->sumMontant('status = 1 AND type IN(1,2)');
-
-                $etatRemb = $bank_unilend->sumMontantEtat('status = 1 AND type IN(2)');
-
-                // On prend la com projet + la com sur les remb et on retire la partie pour l'etat
-                echo $total = $comRemb + $comProjet - $etatRemb;
+                $oAccountUnilend = $this->loadData('platform_account_unilend');
+                $total = $oAccountUnilend->getBalance();
 
                 if ($total > 0) {
+                    $virements    = $this->loadData('virements');
+                    $transactions = $this->loadData('transactions');
+                    $bank_unilend = $this->loadData('bank_unilend');
+
                     // On enregistre la transaction
                     $transactions->id_client        = 0;
                     $transactions->montant          = $total;
@@ -4055,6 +4045,12 @@ class cronController extends bootstrap
                     $bank_unilend->type                   = 3;
                     $bank_unilend->status                 = 3;
                     $bank_unilend->create();
+
+                    // add the withdraw unilend
+                    $oAccountUnilend->id_transaction    = $transactions->id_transaction;
+                    $oAccountUnilend->type              = platform_account_unilend::TYPE_WITHDRAW;
+                    $oAccountUnilend->amount            = -1 * $total;
+                    $oAccountUnilend->create();
                 }
             }
 
@@ -6094,7 +6090,7 @@ class cronController extends bootstrap
     }
 
     // Fonction qui crée les notification nouveaux projet pour les prêteurs (immediatement)(OK)
-    public function nouveau_projet($id_project)
+    private function nouveau_projet($id_project)
     {
         $this->clients                       = $this->loadData('clients');
         $this->notifications                 = $this->loadData('notifications');
@@ -6115,7 +6111,19 @@ class cronController extends bootstrap
         $this->projects->get($id_project, 'id_project');
         $this->companies->get($this->projects->id_company, 'id_company');
 
-        $lPreteurs = $this->clients->selectPreteursByStatus(60);
+        $varMail = array(
+            'surl'            => $this->surl,
+            'url'             => $this->furl,
+            'nom_entreprise'  => $this->companies->name,
+            'projet-p'        => $this->furl . '/projects/detail/' . $this->projects->slug,
+            'montant'         => $this->ficelle->formatNumber($this->projects->amount, 0),
+            'duree'           => $this->projects->period,
+            'gestion_alertes' => $this->lurl . '/profile',
+            'lien_fb'         => $lien_fb,
+            'lien_tw'         => $lien_tw
+        );
+
+        $lPreteurs = $this->clients->selectPreteursByStatus(60, 'c.status = 1');
 
         $oLogger->addRecord(ULogger::DEBUG, 'Lenders count: ' . count($lPreteurs));
 
@@ -6133,12 +6141,6 @@ class cronController extends bootstrap
             $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
 
             if ($this->clients_gestion_notifications->getNotif($preteur['id_client'], 1, 'immediatement') == true) {
-                $bReturn = $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-
-                if (false === $bReturn) {
-                    $oLogger->addRecord(ULogger::ALERT, 'Unable to get mail notification: ' . $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif);
-                }
-
                 $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                 $this->clients_gestion_mails_notif->update();
 
@@ -6148,19 +6150,9 @@ class cronController extends bootstrap
                 $id_client = str_pad($preteur['id_client'], 6, 0, STR_PAD_LEFT);
                 $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
 
-                $varMail = array(
-                    'surl'            => $this->surl,
-                    'url'             => $this->furl,
-                    'prenom_p'        => $preteur['prenom'],
-                    'nom_entreprise'  => $this->companies->name,
-                    'projet-p'        => $this->furl . '/projects/detail/' . $this->projects->slug,
-                    'montant'         => $this->ficelle->formatNumber($this->projects->amount, 0),
-                    'duree'           => $this->projects->period,
-                    'motif_virement'  => $motif,
-                    'gestion_alertes' => $this->lurl . '/profile',
-                    'lien_fb'         => $lien_fb,
-                    'lien_tw'         => $lien_tw
-                );
+                $varMail['prenom_p']        = $preteur['prenom'];
+                $varMail['motif_virement']  = $motif;
+
                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
@@ -6172,16 +6164,14 @@ class cronController extends bootstrap
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                if ($preteur['status'] == 1) {
-                    $oLogger->addRecord(ULogger::DEBUG, 'Email sent to: ' . $preteur['email']);
+                $oLogger->addRecord(ULogger::DEBUG, 'Email sent to: ' . $preteur['email']);
 
-                    if ($this->Config['env'] == 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteur['email'], $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($preteur['email']));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                if ($this->Config['env'] == 'prod') {
+                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteur['email'], $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $this->email->addRecipient(trim($preteur['email']));
+                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
             }
         }
@@ -7422,6 +7412,7 @@ class cronController extends bootstrap
             $projects_remb_log       = $this->loadData('projects_remb_log');
             $bank_unilend            = $this->loadData('bank_unilend');
             $projects_remb           = $this->loadData('projects_remb');
+            $oAccountUnilend         = $this->loadData('platform_account_unilend');
 
             $settingsDebutRembAuto = $this->loadData('settings');
             $settingsDebutRembAuto->get('Heure de début de traitement des remboursements auto prêteurs', 'type');
@@ -7532,6 +7523,8 @@ class cronController extends bootstrap
                             $bank_unilend->id_echeance_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur;
                             $bank_unilend->status                 = 1;
                             $bank_unilend->create();
+
+                            $oAccountUnilend->addDueDateCommssion($echeanciers_emprunteur->id_echeancier_emprunteur);
 
                             $this->mails_text->get('facture-emprunteur-remboursement', 'lang = "' . $this->language . '" AND type');
 
@@ -7878,28 +7871,29 @@ class cronController extends bootstrap
         }
     }
 
-
-    public function zippage($id_project)
+    private function zippage($id_project)
     {
         $projects          = $this->loadData('projects');
         $companies         = $this->loadData('companies');
-        $companies_details = $this->loadData('companies_details');
+        $oAttachment       = $this->loadData('attachment');
+        $oAttachmentType   = $this->loadData('attachment_type');
 
         $projects->get($id_project, 'id_project');
         $companies->get($projects->id_company, 'id_company');
-        $companies_details->get($projects->id_company, 'id_company');
 
-        $ext_cni  = substr(strrchr($companies_details->fichier_cni_passeport, '.'), 1);
-        $ext_kbis = substr(strrchr($companies_details->fichier_extrait_kbis, '.'), 1);
+        /** @var attachment_helper $oAttachmentHelper */
+        $oAttachmentHelper = $this->loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->path));
+        $aAttachments      = $projects->getAttachments();
+        $path_cni          = $oAttachmentHelper->getFullPath(attachment::PROJECT, attachment_type::CNI_PASSPORTE_DIRIGEANT) . $aAttachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]['path'];
+        $path_kbis         = $oAttachmentHelper->getFullPath(attachment::PROJECT, attachment_type::KBIS) . $aAttachments[attachment_type::KBIS]['path'];
 
-        $path_cni  = $this->path . 'protected/companies/cni_passeport/' . $companies_details->fichier_cni_passeport;
-        $path_kbis = $this->path . 'protected/companies/extrait_kbis/' . $companies_details->fichier_extrait_kbis;
+        $ext_cni           = substr(strrchr($aAttachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]['path'], '.'), 1);
+        $ext_kbis          = substr(strrchr($aAttachments[attachment_type::KBIS]['path'], '.'), 1);
 
-        $new_nom_cni  = 'CNI-#' . $companies->siren . '.' . $ext_cni;
-        $new_nom_kbis = 'KBIS-#' . $companies->siren . '.' . $ext_kbis;
-
-        $path_nozip = $this->path . 'protected/sftp_groupama_nozip/';
-        $path       = $this->path . 'protected/sftp_groupama/';
+        $new_nom_cni       = 'CNI-#' . $companies->siren . '.' . $ext_cni;
+        $new_nom_kbis      = 'KBIS-#' . $companies->siren . '.' . $ext_kbis;
+        $path_nozip        = $this->path . 'protected/sftp_groupama_nozip/';
+        $path              = $this->path . 'protected/sftp_groupama/';
 
         $nom_dossier = $companies->siren;
 
