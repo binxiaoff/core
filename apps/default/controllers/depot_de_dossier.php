@@ -488,9 +488,9 @@ class depot_de_dossierController extends bootstrap
             }
 
             $bUpdateDeclaration                   = false;
-            $_POST['fonds_propres']               = str_replace(array(' ', ','), array('', '.'), $_POST['fonds_propres']);
-            $_POST['resultat_brute_exploitation'] = str_replace(array(' ', ','), array('', '.'), $_POST['resultat_brute_exploitation']);
-            $_POST['ca']                          = str_replace(array(' ', ','), array('', '.'), $_POST['ca']);
+            $_POST['fonds_propres']               = $this->ficelle->cleanFormatedNumber($_POST['fonds_propres']);
+            $_POST['resultat_brute_exploitation'] = $this->ficelle->cleanFormatedNumber($_POST['resultat_brute_exploitation']);
+            $_POST['ca']                          = $this->ficelle->cleanFormatedNumber($_POST['ca']);
 
             if ($iAltaresCapitalStock != $_POST['fonds_propres']) {
                 $this->projects->fonds_propres_declara_client = $_POST['fonds_propres'];
