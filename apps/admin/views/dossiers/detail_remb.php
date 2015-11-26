@@ -70,7 +70,7 @@
             <td></td>
             <td></td>
             <th>Statut :</th>
-            <td><?= $this->projects_status->label ?></td>
+            <td><?= $this->current_projects_status->label ?></td>
         </tr>
         <tr>
             <th>Commission Unilend :</th>
@@ -155,7 +155,7 @@
     </div>
 
     <?php
-    if ($this->projects_status->status == 100) {
+    if ($this->current_projects_status->status == 100) {
         echo 'PROBLEME <-------';
     }
     ?>

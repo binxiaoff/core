@@ -12,7 +12,7 @@
                         <?php foreach ($this->dureePossible as $duree): ?>
                             <option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
                         <?php endforeach ?>
-                        <option<?= ($this->projects->period == 1000000 || $this->projects->period == 0 ? ' selected' : '') ?> value="0">Je ne sais pas</option>
+                        <option<?= (in_array($this->projects->period, array(0, 1000000)) ? ' selected' : '') ?> value="0">Je ne sais pas</option>
                     </select>
                 </td>
             </tr>

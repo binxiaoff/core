@@ -8,7 +8,7 @@
                     if ('ok' == value) {
                         $(".statut_" + fileType).html('Enregistré');
 
-                        <?php if (0 < $this->projects->period  && 1000000 > $this->projects->period && 35 == $this->current_projects_status->status) { ?>
+                        <?php if (in_array($this->projects->period, array(0, 1000000)) && $this->current_projects_status->status == \projects_status::PREP_FUNDING) { ?>
                         if (fileType == 'fichier_3' && $('#displayPeriodHS').css('display') == 'block') { // RIB
                             $("#status").css('display', 'block');
                             $("#msgProject").css('display', 'block');
@@ -31,11 +31,11 @@
             <table class="tablesorter">
                 <thead>
                     <tr>
-                        <th></th>
-                        <th width="200">Nom</th>
+                        <th width="20"></th>
+                        <th width="250">Nom</th>
                         <th>Fichier</th>
-                        <th>Statut</th>
-                        <th></th>
+                        <th width="100">Statut</th>
+                        <th width="300"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -58,23 +58,6 @@
                     <?php endforeach; ?>
                 </tbody>
             </table>
-            <?php if ($this->nb_lignes != ''): ?>
-                <table>
-                    <tr>
-                        <td id="pager">
-                            <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
-                            <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
-                            <input type="text" class="pagedisplay"/>
-                            <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
-                            <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
-                            <select class="pagesize">
-                                <option value="<?= $this->nb_lignes ?>"
-                                        selected="selected"><?= $this->nb_lignes ?></option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-            <?php endif; ?>
         <?php endif; ?>
         <br/>
 

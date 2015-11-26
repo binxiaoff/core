@@ -247,7 +247,7 @@ class depot_de_dossierController extends bootstrap
         $this->lienConditionsGenerales = $this->settings->value;
 
         $this->settings->get('Durée des prêts autorisées', 'type');
-        $this->dureePossible = empty($this->settings->value) ? array(24, 36, 48, 60) : explode(',', $this->settings->value);
+        $this->dureePossible = explode(',', $this->settings->value);
 
         $aForm = isset($_SESSION['forms']['depot-de-dossier-2']['values']) ? $_SESSION['forms']['depot-de-dossier-2']['values'] : array();
 

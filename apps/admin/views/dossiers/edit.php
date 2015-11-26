@@ -253,11 +253,11 @@
                                 <?php foreach($this->dureePossible as $duree): ?>
                                     <option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
                                 <?php endforeach ?>
-                                <option <?= ((int)$this->projects->period === 1000000 || (int)$this->projects->period === 0 ? 'selected' : '') ?> value="0">Je ne sais pas</option>
+                                <option<?= (in_array($this->projects->period, array(0, 1000000)) ? ' selected' : '') ?> value="0">Je ne sais pas</option>
                             </select>
                         </td>
                     </tr>
-                    <tr class="content_risk" <?= ($this->current_projects_status->status >= 35 ? '' : 'style="display:none"') ?>>
+                    <tr class="content_risk" <?= ($this->current_projects_status->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
                         <th><label for="risk">Niveau de risque* :</label></th>
                         <td>
                             <select name="risk" id="risk" class="select" style="width:160px;background-color:#AAACAC;">
@@ -436,8 +436,8 @@
                             } else {
                                 if (count($this->lProjects_status) > 0) {
                                     if (
-                                        (0 == $this->projects->period || 1000000 == $this->projects->period || empty($this->aAttachments[3]['path'])) // No RIB or no duration selected
-                                        && $this->current_projects_status->status == 35
+                                        (in_array($this->projects->period, array(0, 1000000)) || empty($this->aAttachments[3]['path'])) // No RIB or no duration selected
+                                        && $this->current_projects_status->status == \projects_status::PREP_FUNDING
                                     ) {
                                         $sDisplayPeriodHS    = 'block';
                                         $sDisplayStatus      = 'none';
