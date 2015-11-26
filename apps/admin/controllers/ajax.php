@@ -834,62 +834,6 @@ class ajaxController extends bootstrap
                 $this->companies_details->update();
             } elseif ($_POST['etape'] == 4.2) {
             } elseif ($_POST['etape'] == 4.3) {
-                $this->companies_bilans  = $this->loadData('companies_bilans');
-                $this->companies_details = $this->loadData('companies_details');
-                $this->companies_ap      = $this->loadData('companies_actif_passif');
-
-                for ($i = 0; $i < 5; $i++) {
-                    $this->companies_bilans->get($_POST['ca_id_' . $i], 'id_bilan');
-                    $this->companies_bilans->ca = $this->cleanFormatedNumber($_POST['ca_' . $i]);
-                    $this->companies_bilans->update();
-
-                    $this->companies_bilans->get($_POST['resultat_brute_exploitation_id_' . $i], 'id_bilan');
-                    $this->companies_bilans->resultat_brute_exploitation = $this->cleanFormatedNumber($_POST['resultat_brute_exploitation_' . $i]);
-                    $this->companies_bilans->update();
-
-                    $this->companies_bilans->get($_POST['resultat_exploitation_id_' . $i], 'id_bilan');
-                    $this->companies_bilans->resultat_exploitation = $this->cleanFormatedNumber($_POST['resultat_exploitation_' . $i]);
-                    $this->companies_bilans->update();
-
-                    $this->companies_bilans->get($_POST['investissements_id_' . $i], 'id_bilan');
-                    $this->companies_bilans->investissements = $this->cleanFormatedNumber($_POST['investissements_' . $i]);
-                    $this->companies_bilans->update();
-                }
-
-                $this->companies_details->get($this->projects->id_company, 'id_company');
-
-                if ($this->companies_details->date_dernier_bilan != '0000-00-00') {
-                    $dernierBilan = explode('-', $this->companies_details->date_dernier_bilan);
-                    $dernierBilan = $dernierBilan[0];
-                } else {
-                    $dernierBilan = date('Y');
-                }
-
-                $this->lCompanies_actif_passif = $this->companies_ap->select('id_company = "' . $this->projects->id_company . '" AND annee <= "' . $dernierBilan . '"', 'annee DESC');
-
-                if ($this->lCompanies_actif_passif != false) {
-                    $i = 1;
-                    foreach ($this->lCompanies_actif_passif as $ap) {
-                        if ($i <= 3) {
-                            $this->companies_ap->get($ap['id_actif_passif'], 'ordre = ' . $ap['ordre'] . ' AND id_actif_passif');
-                            $this->companies_ap->immobilisations_corporelles        = $this->cleanFormatedNumber($_POST['immobilisations_corporelles_' . $ap['ordre']]);
-                            $this->companies_ap->immobilisations_incorporelles      = $this->cleanFormatedNumber($_POST['immobilisations_incorporelles_' . $ap['ordre']]);
-                            $this->companies_ap->immobilisations_financieres        = $this->cleanFormatedNumber($_POST['immobilisations_financieres_' . $ap['ordre']]);
-                            $this->companies_ap->stocks                             = $this->cleanFormatedNumber($_POST['stocks_' . $ap['ordre']]);
-                            $this->companies_ap->creances_clients                   = $this->cleanFormatedNumber($_POST['creances_clients_' . $ap['ordre']]);
-                            $this->companies_ap->disponibilites                     = $this->cleanFormatedNumber($_POST['disponibilites_' . $ap['ordre']]);
-                            $this->companies_ap->valeurs_mobilieres_de_placement    = $this->cleanFormatedNumber($_POST['valeurs_mobilieres_de_placement_' . $ap['ordre']]);
-                            $this->companies_ap->capitaux_propres                   = $this->cleanFormatedNumber($_POST['capitaux_propres_' . $ap['ordre']]);
-                            $this->companies_ap->provisions_pour_risques_et_charges = $this->cleanFormatedNumber($_POST['provisions_pour_risques_et_charges_' . $ap['ordre']]);
-                            $this->companies_ap->amortissement_sur_immo             = $this->cleanFormatedNumber($_POST['amortissement_sur_immo_' . $ap['ordre']]);
-                            $this->companies_ap->dettes_financieres                 = $this->cleanFormatedNumber($_POST['dettes_financieres_' . $ap['ordre']]);
-                            $this->companies_ap->dettes_fournisseurs                = $this->cleanFormatedNumber($_POST['dettes_fournisseurs_' . $ap['ordre']]);
-                            $this->companies_ap->autres_dettes                      = $this->cleanFormatedNumber($_POST['autres_dettes_' . $ap['ordre']]);
-                            $this->companies_ap->update();
-                        }
-                        $i++;
-                    }
-                }
             } elseif ($_POST['etape'] == 5) {
             } elseif ($_POST['etape'] == 6) {
                 $this->projects = $this->loadData('projects');

@@ -89,22 +89,17 @@ class dossiersController extends bootstrap
         $this->clients_prescripteurs           = $this->loadData('clients');
         $this->companies_prescripteurs         = $this->loadData('companies');
 
-        // Id Status to block risk note and risk comments.
-        $aBlockRiskStatus = array(50, 60, 70, 80, 100, 110, 120, 130);
-
-        $this->settings->get('Durée des prêts autorisées', 'type');
-        $this->dureePossible = explode(',', $this->settings->value);
-        if (empty($this->settings->value)) {
-            $this->dureePossible = array(24, 36, 48, 60);
-        }
-
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            if (false === in_array($this->projects->period, $this->dureePossible)) {
+            // Id Status to block risk note and risk comments.
+            $aBlockRiskStatus = array(50, 60, 70, 80, 100, 110, 120, 130);
+
+            $this->settings->get('Durée des prêts autorisées', 'type');
+            $this->dureePossible = explode(',', $this->settings->value);
+
+            if (false === in_array($this->projects->period, array(0, 1000000)) && false === in_array($this->projects->period, $this->dureePossible)) {
                 array_push($this->dureePossible, $this->projects->period);
                 sort($this->dureePossible);
             }
-            $this->projects_notes->get($this->params[0], 'id_project');
-            $this->project_cgv->get($this->params[0], 'id_project');
 
             $this->settings->get('Liste deroulante secteurs', 'type');
             $this->lSecteurs = explode(';', $this->settings->value);
@@ -124,40 +119,27 @@ class dossiersController extends bootstrap
             $finFunding        = explode(':', $this->finFunding);
             $this->HfinFunding = $finFunding[0];
 
-            $this->current_projects_status->getLastStatut($this->projects->id_project);
-
             //Check if status is eligible for block the note and comments.
             $this->bReadonlyRiskNote = (in_array($this->current_projects_status->status, $aBlockRiskStatus)) ?: false;
 
-            // On recup l'entreprise
             $this->companies->get($this->projects->id_company, 'id_company');
-
-            // On recup le detail de l'entreprise
-            if (! $this->companies_details->get($this->projects->id_company, 'id_company')) {
-                $this->companies_details->id_company               = $this->projects->id_company;
-                $this->companies_details->date_dernier_bilan       = (date('Y') - 1) . '-12-31';
-                $this->companies_details->date_dernier_bilan_mois  = '12';
-                $this->companies_details->date_dernier_bilan_annee = (date('Y') - 1);
-                $this->companies_details->create();
-            }
-
             $this->clients->get($this->companies->id_client_owner, 'id_client');
             $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
+            $this->projects_notes->get($this->projects->id_project, 'id_project');
+            $this->project_cgv->get($this->projects->id_project, 'id_project');
+            $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
+            $this->current_projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
+            $this->projects_status->get($this->current_projects_status_history->id_project_status);
+            $this->current_projects_status->get($this->current_projects_status_history->id_project_status);
 
             $this->contact     = $this->clients;
             $this->bHasAdvisor = false;
 
-            if (
-                $this->projects->id_prescripteur > 0
-                && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')
-            ) {
+            if ($this->projects->id_prescripteur > 0 && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
                 $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
                 $this->companies_prescripteurs->get($this->prescripteurs->id_entite, 'id_company');
                 $this->bHasAdvisor = true;
             }
-
-            $this->aAnalysts     = $this->users->select('status = 1 AND id_user_type = 2');
-            $this->aSalesPersons = $this->users->select('status = 1 AND id_user_type = 3');
 
             if ($this->companies->status_adresse_correspondance == 1) {
                 $this->adresse = $this->companies->adresse1;
@@ -171,80 +153,35 @@ class dossiersController extends bootstrap
                 $this->phone   = $this->clients_adresses->telephone;
             }
 
-            if ($this->companies_details->date_dernier_bilan != '0000-00-00') {
-                $dernierBilan = explode('-', $this->companies_details->date_dernier_bilan);
-                $dernierBilan = $dernierBilan[0];
-            } else {
-                $dernierBilan = date('Y');
+            $this->aAnnualAccountsDates    = array();
+            $this->aAnalysts               = $this->users->select('status = 1 AND id_user_type = 2');
+            $this->aSalesPersons           = $this->users->select('status = 1 AND id_user_type = 3');
+            $this->aEmails                 = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'id_project_status_history DESC');
+            $this->lbilans                 = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC', 0, 3);
+            $sAnnualAccountsIds            = implode(', ', array_column($this->lbilans, 'id_bilan'));
+            $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
+            $this->lProjects_comments      = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added ASC', 0, 3);
+            $this->lProjects_status        = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
+
+            foreach ($this->lbilans as $aAnnualAccounts) {
+                $oEndDate   = new \DateTime($aAnnualAccounts['cloture_exercice_fiscal']);
+                $oStartDate = new \DateTime($aAnnualAccounts['cloture_exercice_fiscal']);
+                $oStartDate->sub(new \DateInterval('P' . $aAnnualAccounts['duree_exercice_fiscal'] . 'M'))->add(new \DateInterval('P1D'));
+                $this->aAnnualAccountsDates[$aAnnualAccounts['id_bilan']] = array(
+                    'start' => $oStartDate,
+                    'end'   => $oEndDate
+                );
             }
 
-            $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '" AND annee <= "' . $dernierBilan . '"', 'annee ASC');
-
-            // Debut mise a jour actif/passif //
-            // On verifie si on a bien les 3 dernieres années
-            $lesDates = array();
-            if (false ===  empty($this->lCompanies_actif_passif)) {
-                foreach ($this->lCompanies_actif_passif as $k => $cap) {
-                    $lesDates[$k] = $cap['annee'];
-                }
+            // @todo
+            if (! $this->companies_details->get($this->projects->id_company, 'id_company')) {
+                $this->companies_details->id_company               = $this->projects->id_company;
+                $this->companies_details->date_dernier_bilan       = (date('Y') - 1) . '-12-31';
+                $this->companies_details->date_dernier_bilan_mois  = '12';
+                $this->companies_details->date_dernier_bilan_annee = (date('Y') - 1);
+                $this->companies_details->create();
             }
 
-            if ($this->companies_details->date_dernier_bilan != '0000-00-00') {
-                $dernierBilan = explode('-', $this->companies_details->date_dernier_bilan);
-                $dernierBilan = $dernierBilan[0];
-                $date[1]      = $dernierBilan;
-                $date[2]      = ($dernierBilan - 1);
-                $date[3]      = ($dernierBilan - 2);
-            } else {
-                $date[1] = date('Y');
-                $date[2] = (date('Y') - 1);
-                $date[3] = (date('Y') - 2);
-            }
-            $dates_nok = false;
-
-            // Si existe pas on créer les champs
-            foreach ($date as $iOrder => $iYear) {
-                if (! in_array($iYear, $lesDates)) {
-                    $this->companies_actif_passif->annee      = $iYear;
-                    $this->companies_actif_passif->id_company = $this->companies->id_company;
-                    $this->companies_actif_passif->create();
-                    $dates_nok = true;
-                }
-            }
-
-            if ($this->lCompanies_actif_passif[0]['ordre'] != 1) {
-                $dates_nok = true;
-            }
-
-            // Récupération des infos pour le tableau de REMBOURSEMENT ANTICIPE - Tout se gère dans cette fonction
-            $this->recup_info_remboursement_anticipe($this->projects->id_project);
-            //END REMBOURSEMENT ANTICIPE
-
-            if ($dates_nok == true) {
-                // on relance la Liste des actif passif classé par date DESC
-                $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '"', 'annee ASC');
-
-                $i = 1;
-                // On parcoure les lignes
-                foreach ($this->lCompanies_actif_passif as $k => $cap) {
-                    $this->companies_actif_passif->get($this->companies->id_company, 'annee = "' . $cap['annee'] . '" AND id_company');
-                    if ($cap['annee'] <= $dernierBilan && $i <= 3) {
-                        // On met a jour l'ordre
-                        $this->companies_actif_passif->ordre = $i;
-                        $i++;
-                    } else {
-                        $this->companies_actif_passif->ordre = 0;
-                    }
-                    $this->companies_actif_passif->update();
-                }
-                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
-                die;
-            }
-
-            // fin mise a jour actif/passif //
-            $this->lProjects_comments = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added ASC');
-
-            /// date dernier bilan ///
             if ($this->companies_details->date_dernier_bilan == '0000-00-00') {
                 $this->date_dernier_bilan_jour  = '31';
                 $this->date_dernier_bilan_mois  = '12';
@@ -264,53 +201,7 @@ class dossiersController extends bootstrap
                 $anneeProjet = $dateDernierBilan[0];
             }
 
-            $ldateBilan[4] = $anneeProjet + 2;
-            $ldateBilan[3] = $anneeProjet + 1;
-            $ldateBilan[2] = $anneeProjet;
-            $ldateBilan[1] = $anneeProjet - 1;
-            $ldateBilan[0] = $anneeProjet - 2;
-
-            $ldateBilantrueYear[4] = $anneeProjet + 2;
-            $ldateBilantrueYear[3] = $anneeProjet + 1;
-            $ldateBilantrueYear[2] = $anneeProjet;
-            $ldateBilantrueYear[1] = $anneeProjet - 1;
-            $ldateBilantrueYear[0] = $anneeProjet - 2;
-
-            // liste des bilans
-            $this->lbilans = $this->companies_bilans->select('date BETWEEN "' . $ldateBilan[0] . '" AND "' . $ldateBilan[4] . '" AND id_company = ' . $this->companies->id_company, 'date ASC');
-
-            // On verifie si on est a jour sur les années //
-            // On recupe les années bilans qu'on a en bdd
-            $tableAnneesBilans = array();
-            foreach ($this->lbilans as $b) {
-                $tableAnneesBilans[$b['date']] = $b['date'];
-            }
-            // On parcour les années courrantes pour voir si on les a
-            $creationbilansmanquant = false;
-            foreach ($ldateBilantrueYear as $annee) {
-                // si existe pas on crée
-                if (! in_array($annee, $tableAnneesBilans)) {
-                    $this->companies_bilans->id_company                  = $this->companies->id_company;
-                    $this->companies_bilans->ca                          = '';
-                    $this->companies_bilans->resultat_exploitation       = '';
-                    $this->companies_bilans->resultat_brute_exploitation = '';
-                    $this->companies_bilans->investissements             = '';
-                    $this->companies_bilans->date                        = $annee;
-                    $this->companies_bilans->create();
-                    $creationbilansmanquant = true;
-                }
-            }
-            if ($creationbilansmanquant == true) {
-                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
-                die;
-            }
-
-            // liste les status
-            // les statuts dispo sont conditionnés par le statut courant
-            $this->projects_status->getLastStatut($this->projects->id_project);
-            $this->lProjects_status = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
-            $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
-            $this->current_projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
+            // @todo create empty annual accounts if missing recent ones
 
             $this->bCanEditStatus = false;
             if ($this->users->get($_SESSION['user']['id_user'], 'id_user')) {
@@ -331,7 +222,7 @@ class dossiersController extends bootstrap
                 $this->completude_wording[] = $aAttachment['label'];
             }
 
-            $this->aEmails = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'added DESC');
+            $this->recup_info_remboursement_anticipe($this->projects->id_project);
 
             if (isset($this->params[1]) && $this->params[1] == 'altares') {
                 if (empty($this->companies->siren)) {
@@ -1720,9 +1611,6 @@ class dossiersController extends bootstrap
 
         $this->settings->get('Durée des prêts autorisées', 'type');
         $this->dureePossible = explode(',', $this->settings->value);
-        if (empty($this->settings->value)) {
-            $this->dureePossible = array(24, 36, 48, 60);
-        }
     }
 
     public function _funding()
