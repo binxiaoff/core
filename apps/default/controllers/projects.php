@@ -182,6 +182,8 @@ class projectsController extends bootstrap
                 $this->page_attente = true;
             }
 
+            $this->soldeBid = $this->bids->getSoldeBid($this->projects->id_project);
+
             ////////////////////////
             // Formulaire de pret //
             ////////////////////////
@@ -217,7 +219,7 @@ class projectsController extends bootstrap
 
                 $fMaxCurrentRate = $this->bids->getProjectMaxRate($this->projects->id_project);
 
-                if ($_POST['taux_pret'] >= $fMaxCurrentRate) {
+                if ($this->soldeBid >= $this->projects->amount && $_POST['taux_pret'] >= $fMaxCurrentRate) {
                     $this->form_ok = false;
                 } elseif (!isset($_POST['montant_pret']) || $_POST['montant_pret'] == '' || $_POST['montant_pret'] == '0') {
                     $this->form_ok = false;
@@ -519,20 +521,12 @@ class projectsController extends bootstrap
             $this->anneeToday[2] = ($dateBilan - 1);
             $this->anneeToday[3] = ($dateBilan - 2);
 
-            // la sum des encheres
-            $this->soldeBid = $this->bids->getSoldeBid($this->projects->id_project);
-
-            // solde payé
-            $this->payer = $this->soldeBid;
-
-            // Reste a payer
-            $this->resteApayer = ($this->projects->amount - $this->soldeBid);
-
-            $this->pourcentage = ((1 - ($this->resteApayer / $this->projects->amount)) * 100);
-
-            $this->decimales = 0;
+            $this->payer                = $this->soldeBid;
+            $this->resteApayer          = ($this->projects->amount - $this->soldeBid);
+            $this->pourcentage          = ((1 - ($this->resteApayer / $this->projects->amount)) * 100);
+            $this->decimales            = 0;
             $this->decimalesPourcentage = 1;
-            $this->txLenderMax = '10.0';
+            $this->txLenderMax          = '10.0';
             if ($this->soldeBid >= $this->projects->amount) {
                 $this->payer = $this->projects->amount;
                 $this->resteApayer = 0;
