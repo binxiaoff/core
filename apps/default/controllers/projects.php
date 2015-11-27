@@ -502,6 +502,28 @@ class projectsController extends bootstrap
             $this->totalAnneePassif   = array();
             $this->listAP             = $this->companies_actif_passif->select('id_bilan IN (' . implode(', ', $this->aAnnualAccountsIds) . ')', 'FIELD(id_bilan, ' . implode(', ', $this->aAnnualAccountsIds) . ') ASC');
 
+            if (count($this->listAP) < count($this->aAnnualAccountsIds)) {
+                foreach (array_diff($this->aAnnualAccountsIds, array_column($this->listAP, 'id_bilan')) as $iAnnualAccountsId) {
+                    $oAssetsDebts                                     = new \companies_actif_passif($this->bdd);
+                    $oAssetsDebts->id_bilan                           = $iAnnualAccountsId;
+                    $oAssetsDebts->immobilisations_corporelles        = 0;
+                    $oAssetsDebts->immobilisations_incorporelles      = 0;
+                    $oAssetsDebts->immobilisations_financieres        = 0;
+                    $oAssetsDebts->stocks                             = 0;
+                    $oAssetsDebts->creances_clients                   = 0;
+                    $oAssetsDebts->disponibilites                     = 0;
+                    $oAssetsDebts->valeurs_mobilieres_de_placement    = 0;
+                    $oAssetsDebts->capitaux_propres                   = 0;
+                    $oAssetsDebts->provisions_pour_risques_et_charges = 0;
+                    $oAssetsDebts->amortissement_sur_immo             = 0;
+                    $oAssetsDebts->dettes_financieres                 = 0;
+                    $oAssetsDebts->dettes_fournisseurs                = 0;
+                    $oAssetsDebts->autres_dettes                      = 0;
+                    $oAssetsDebts->create();
+                }
+                $this->listAP = $this->companies_actif_passif->select('id_bilan IN (' . implode(', ', $this->aAnnualAccountsIds) . ')', 'FIELD(id_bilan, ' . implode(', ', $this->aAnnualAccountsIds) . ') ASC');
+            }
+
             foreach ($this->listAP as $ap) {
                 $this->totalAnneeActif[]  = $ap['immobilisations_corporelles'] + $ap['immobilisations_incorporelles'] + $ap['immobilisations_financieres'] + $ap['stocks'] + $ap['creances_clients'] + $ap['disponibilites'] + $ap['valeurs_mobilieres_de_placement'];
                 $this->totalAnneePassif[] = $ap['capitaux_propres'] + $ap['provisions_pour_risques_et_charges'] + $ap['dettes_financieres'] + $ap['dettes_fournisseurs'] + $ap['autres_dettes'] + $ap['amortissement_sur_immo'];

@@ -163,6 +163,28 @@ class dossiersController extends bootstrap
             $this->lProjects_comments      = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added ASC', 0, 3);
             $this->lProjects_status        = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
 
+            if (count($this->lCompanies_actif_passif) < count($this->lbilans)) {
+                foreach (array_diff(array_column($this->lbilans, 'id_bilan'), array_column($this->lCompanies_actif_passif, 'id_bilan')) as $iAnnualAccountsId) {
+                    $oAssetsDebts                                     = new \companies_actif_passif($this->bdd);
+                    $oAssetsDebts->id_bilan                           = $iAnnualAccountsId;
+                    $oAssetsDebts->immobilisations_corporelles        = 0;
+                    $oAssetsDebts->immobilisations_incorporelles      = 0;
+                    $oAssetsDebts->immobilisations_financieres        = 0;
+                    $oAssetsDebts->stocks                             = 0;
+                    $oAssetsDebts->creances_clients                   = 0;
+                    $oAssetsDebts->disponibilites                     = 0;
+                    $oAssetsDebts->valeurs_mobilieres_de_placement    = 0;
+                    $oAssetsDebts->capitaux_propres                   = 0;
+                    $oAssetsDebts->provisions_pour_risques_et_charges = 0;
+                    $oAssetsDebts->amortissement_sur_immo             = 0;
+                    $oAssetsDebts->dettes_financieres                 = 0;
+                    $oAssetsDebts->dettes_fournisseurs                = 0;
+                    $oAssetsDebts->autres_dettes                      = 0;
+                    $oAssetsDebts->create();
+                }
+                $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
+            }
+
             foreach ($this->lbilans as $aAnnualAccounts) {
                 $oEndDate   = new \DateTime($aAnnualAccounts['cloture_exercice_fiscal']);
                 $oStartDate = new \DateTime($aAnnualAccounts['cloture_exercice_fiscal']);
