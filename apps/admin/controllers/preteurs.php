@@ -78,57 +78,41 @@ class preteursController extends bootstrap
 
     public function _gestion()
     {
-//On appelle la fonction de chargement des données
         $this->loadGestionData();
 
-        // Partie delete
-        if (isset($this->params[0]) && $this->params[0] == 'delete') {
-            // client a delete
+        if (isset($this->params[0], $this->params[1]) && $this->params[0] == 'delete') {
             if ($this->clients->get($this->params[1], 'id_client') && $this->clients->status == 0) {
-                // on verif si y a des infos lender
-                if ($this->lenders_accounts->get($this->clients->id_client, 'id_client_owner')) ;
-                {
+                if ($this->lenders_accounts->get($this->clients->id_client, 'id_client_owner')) {
 
                 }
-                // on verif dans companie
+
                 if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
-                    // on verif les autres table comapnie
                     $companies_actif_passif = $this->loadData('companies_actif_passif');
                     $companies_bilans       = $this->loadData('companies_bilans');
                     $companies_details      = $this->loadData('companies_details');
 
-                    if ($companies_actif_passif->get($this->companies->id_company, 'id_company')) {
-                        // On supp
-                        $companies_actif_passif->delete($this->companies->id_company, 'id_company');
-                    }
-                    if ($companies_bilans->get($this->companies->id_company, 'id_company')) {
-                        // On supp
+                    while ($companies_bilans->get($this->companies->id_company . '" LIMIT "1', 'id_company')) {
+                        if ($companies_actif_passif->get($companies_bilans->id_bilan, 'id_bilan')) {
+                            $companies_actif_passif->delete($companies_bilans->id_bilan, 'id_bilan');
+                        }
                         $companies_bilans->delete($this->companies->id_company, 'id_company');
                     }
+
                     if ($companies_details->get($this->companies->id_company, 'id_company')) {
-                        // On supp
                         $companies_details->delete($this->companies->id_company, 'id_company');
                     }
-                    // On supp
-                    $this->companies->delete($this->clients->id_client, 'id_client_owner');
 
+                    $this->companies->delete($this->clients->id_client, 'id_client_owner');
                 }
 
-                // On supp
                 $this->lenders_accounts->delete($this->clients->id_client, 'id_client_owner');
 
-                // ON verif si il est dans adresses
-                if ($this->clients_adresses->get($this->clients->id_client, 'id_client')) ;
-                {
-                    // On supp
+                if ($this->clients_adresses->get($this->clients->id_client, 'id_client')) {
                     $this->clients_adresses->delete($this->clients->id_client, 'id_client');
                 }
 
-
-                // Histo user //
                 $serialize = serialize(array('id_client' => $this->clients->id_client));
                 $this->users_history->histo(2, 'delete preteur inactif', $_SESSION['user']['id_user'], $serialize);
-                ////////////////
 
                 $this->clients->delete($this->clients->id_client, 'id_client');
 
@@ -143,11 +127,9 @@ class preteursController extends bootstrap
 
             // Si on delete on met une session pour raffichier la liste avec les nonvalides
             $_SESSION['deletePreteur'] = 1;
-        } // si pas en mode suppression on vire la session
-        else {
+        } else {
             unset($_SESSION['deletePreteur']);
         }
-
 
         if (isset($_POST['form_search_preteur'])) {
             // check si on affcihe les preteurs non valides
@@ -1142,66 +1124,48 @@ class preteursController extends bootstrap
 
     public function _liste_preteurs_non_inscrits()
     {
-        //On appelle la fonction de chargement des donnÃ©es
         $this->loadGestionData();
 
-        // Partie delete
         if (isset($this->params[0]) && $this->params[0] == 'delete') {
-            // client a delete
             if ($this->clients->get($this->params[1], 'id_client') && $this->clients->status == 0) {
-                // on verif si y a des infos lender
-                if ($this->lenders_accounts->get($this->clients->id_client, 'id_client_owner')) ;
-                {
+                if ($this->lenders_accounts->get($this->clients->id_client, 'id_client_owner')) {
 
                 }
-                // on verif dans companie
+
                 if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
                     // on verif les autres table comapnie
                     $companies_actif_passif = $this->loadData('companies_actif_passif');
                     $companies_bilans       = $this->loadData('companies_bilans');
                     $companies_details      = $this->loadData('companies_details');
 
-                    if ($companies_actif_passif->get($this->companies->id_company, 'id_company')) {
-                        // On supp
-                        $companies_actif_passif->delete($this->companies->id_company, 'id_company');
-                    }
-                    if ($companies_bilans->get($this->companies->id_company, 'id_company')) {
-                        // On supp
+                    while ($companies_bilans->get($this->companies->id_company . '" LIMIT "1', 'id_company')) {
+                        if ($companies_actif_passif->get($companies_bilans->id_bilan, 'id_bilan')) {
+                            $companies_actif_passif->delete($companies_bilans->id_bilan, 'id_bilan');
+                        }
                         $companies_bilans->delete($this->companies->id_company, 'id_company');
                     }
+
                     if ($companies_details->get($this->companies->id_company, 'id_company')) {
-                        // On supp
                         $companies_details->delete($this->companies->id_company, 'id_company');
                     }
-                    // On supp
-                    $this->companies->delete($this->clients->id_client, 'id_client_owner');
 
+                    $this->companies->delete($this->clients->id_client, 'id_client_owner');
                 }
 
-                // On supp
                 $this->lenders_accounts->delete($this->clients->id_client, 'id_client_owner');
 
-                // ON verif si il est dans adresses
-                if ($this->clients_adresses->get($this->clients->id_client, 'id_client')) ;
-                {
-                    // On supp
+                if ($this->clients_adresses->get($this->clients->id_client, 'id_client')) {
                     $this->clients_adresses->delete($this->clients->id_client, 'id_client');
                 }
 
-
-                // Histo user //
                 $serialize = serialize(array('id_client' => $this->clients->id_client));
                 $this->users_history->histo(11, 'delete preteur inactif non inscrit', $_SESSION['user']['id_user'], $serialize);
-                ////////////////
 
                 $this->clients->delete($this->clients->id_client, 'id_client');
-
 
                 header('location:' . $this->lurl . '/preteurs/liste_preteurs_non_inscrits');
                 die;
             }
-
-
         }
 
         // non inscrit = 2
@@ -1244,16 +1208,13 @@ class preteursController extends bootstrap
     // Activation des comptes prêteurs
     public function _activation()
     {
-        //On appelle la fonction de chargement des donnÃ©es
         $this->loadGestionData();
 
-        // Partie delete
         if (isset($this->params[0]) && $this->params[0] == 'delete') {
             if ($this->clients->get($this->params[1], 'id_client')) {
                 $backup_delete = false;
 
                 if ($this->lenders_accounts->get($this->clients->id_client, 'id_client_owner'))  {
-                    // On verifie si on a deja une enchere d'effectué par ce compte
                     $nb = $this->bids->counter('id_lender_account = ' . $this->lenders_accounts->id_lender_account);
 
                     if ($nb > 0) {
@@ -1261,174 +1222,9 @@ class preteursController extends bootstrap
 
                         $backup_clients      = $this->loadData('backup_delete_clients');
                         $backup_clients_addr = $this->loadData('backup_delete_clients_adresses');
-                        $backup_compa_act_pa = $this->loadData('backup_delete_companies_actif_passif');
-                        $backup_companies    = $this->loadData('backup_delete_companies');
-                        $backup_comp_b       = $this->loadData('backup_delete_companies_bilans');
-                        $backup_comp_det     = $this->loadData('backup_delete_companies_details');
                         $backup_lenders      = $this->loadData('backup_delete_lenders_accounts');
                     }
                 }
-
-                if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
-                    $companies_actif_passif = $this->loadData('companies_actif_passif');
-                    $companies_bilans       = $this->loadData('companies_bilans');
-                    $companies_details      = $this->loadData('companies_details');
-
-                    $actif_passif = $companies_actif_passif->select('id_company = ' . $this->companies->id_company);
-
-                    if (count($actif_passif) > 0) {
-                        foreach ($actif_passif as $a) {
-                            if ($backup_delete == true) {
-                                $backup_compa_act_pa->id_actif_passif                    = $a['id_actif_passif'];
-                                $backup_compa_act_pa->id_company                         = $a['id_company'];
-                                $backup_compa_act_pa->ordre                              = $a['ordre'];
-                                $backup_compa_act_pa->annee                              = $a['annee'];
-                                $backup_compa_act_pa->immobilisations_corporelles        = $a['immobilisations_corporelles'];
-                                $backup_compa_act_pa->immobilisations_incorporelles      = $a['immobilisations_incorporelles'];
-                                $backup_compa_act_pa->immobilisations_financieres        = $a['immobilisations_financieres'];
-                                $backup_compa_act_pa->stocks                             = $a['stocks'];
-                                $backup_compa_act_pa->creances_clients                   = $a['creances_clients'];
-                                $backup_compa_act_pa->disponibilites                     = $a['disponibilites'];
-                                $backup_compa_act_pa->valeurs_mobilieres_de_placement    = $a['valeurs_mobilieres_de_placement'];
-                                $backup_compa_act_pa->capitaux_propres                   = $a['capitaux_propres'];
-                                $backup_compa_act_pa->provisions_pour_risques_et_charges = $a['provisions_pour_risques_et_charges'];
-                                $backup_compa_act_pa->amortissement_sur_immo             = $a['amortissement_sur_immo'];
-                                $backup_compa_act_pa->dettes_financieres                 = $a['dettes_financieres'];
-                                $backup_compa_act_pa->dettes_fournisseurs                = $a['dettes_fournisseurs'];
-                                $backup_compa_act_pa->autres_dettes                      = $a['autres_dettes'];
-                                $backup_compa_act_pa->added_backup                       = $a['added'];
-                                $backup_compa_act_pa->updated_backup                     = $a['updated'];
-                                $backup_compa_act_pa->create();
-                            }
-                            $companies_actif_passif->delete($backup_compa_act_pa->id_actif_passif, 'id_actif_passif');
-                        }
-                    }
-
-                    $comp_b = $companies_bilans->select('id_company = ' . $this->companies->id_company);
-
-                    if (count($comp_b) > 0) {
-                        foreach ($comp_b as $a) {
-                            if ($backup_delete == true) {
-                                $backup_comp_b->id_actif_passif             = $a['id_actif_passif'];
-                                $backup_comp_b->id_company                  = $a['id_company'];
-                                $backup_comp_b->ca                          = $a['ca'];
-                                $backup_comp_b->resultat_brute_exploitation = $a['resultat_brute_exploitation'];
-                                $backup_comp_b->resultat_exploitation       = $a['resultat_exploitation'];
-                                $backup_comp_b->investissements             = $a['investissements'];
-                                $backup_comp_b->date                        = $a['date'];
-                                $backup_comp_b->added_backup                = $a['added'];
-                                $backup_comp_b->updated                     = $a['updated'];
-                                $backup_comp_b->create();
-                            }
-                        }
-                        $companies_bilans->delete($this->companies->id_company, 'id_company');
-                    }
-
-                    if ($companies_details->get($this->companies->id_company, 'id_company')) {
-                        if ($backup_delete == true) {
-                            $backup_comp_det->id_company_detail                                  = $companies_details->id_company_detail;
-                            $backup_comp_det->id_company                                         = $companies_details->id_company;
-                            $backup_comp_det->date_dernier_bilan                                 = $companies_details->date_dernier_bilan;
-                            $backup_comp_det->date_dernier_bilan_mois                            = $companies_details->date_dernier_bilan_mois;
-                            $backup_comp_det->date_dernier_bilan_annee                           = $companies_details->date_dernier_bilan_annee;
-                            $backup_comp_det->encours_actuel_dette_fianciere                     = $companies_details->encours_actuel_dette_fianciere;
-                            $backup_comp_det->remb_a_venir_cette_annee                           = $companies_details->remb_a_venir_cette_annee;
-                            $backup_comp_det->remb_a_venir_annee_prochaine                       = $companies_details->remb_a_venir_annee_prochaine;
-                            $backup_comp_det->tresorie_dispo_actuellement                        = $companies_details->tresorie_dispo_actuellement;
-                            $backup_comp_det->autre_demandes_financements_prevues                = $companies_details->autre_demandes_financements_prevues;
-                            $backup_comp_det->precisions                                         = $companies_details->precisions;
-                            $backup_comp_det->decouverts_bancaires                               = $companies_details->decouverts_bancaires;
-                            $backup_comp_det->lignes_de_tresorerie                               = $companies_details->lignes_de_tresorerie;
-                            $backup_comp_det->affacturage                                        = $companies_details->affacturage;
-                            $backup_comp_det->escompte                                           = $companies_details->escompte;
-                            $backup_comp_det->financement_dailly                                 = $companies_details->financement_dailly;
-                            $backup_comp_det->credit_de_tresorerie                               = $companies_details->credit_de_tresorerie;
-                            $backup_comp_det->credit_bancaire_investissements_materiels          = $companies_details->credit_bancaire_investissements_materiels;
-                            $backup_comp_det->credit_bancaire_investissements_immateriels        = $companies_details->credit_bancaire_investissements_immateriels;
-                            $backup_comp_det->rachat_entreprise_ou_titres                        = $companies_details->rachat_entreprise_ou_titres;
-                            $backup_comp_det->credit_immobilier                                  = $companies_details->credit_immobilier;
-                            $backup_comp_det->credit_bail_immobilier                             = $companies_details->credit_bail_immobilier;
-                            $backup_comp_det->credit_bail                                        = $companies_details->credit_bail;
-                            $backup_comp_det->location_avec_option_achat                         = $companies_details->location_avec_option_achat;
-                            $backup_comp_det->location_financiere                                = $companies_details->location_financiere;
-                            $backup_comp_det->location_longue_duree                              = $companies_details->location_longue_duree;
-                            $backup_comp_det->pret_oseo                                          = $companies_details->pret_oseo;
-                            $backup_comp_det->pret_participatif                                  = $companies_details->pret_participatif;
-                            $backup_comp_det->fichier_extrait_kbis                               = $companies_details->fichier_extrait_kbis;
-                            $backup_comp_det->fichier_rib                                        = $companies_details->fichier_rib;
-                            $backup_comp_det->fichier_delegation_pouvoir                         = $companies_details->fichier_delegation_pouvoir;
-                            $backup_comp_det->fichier_logo_societe                               = $companies_details->fichier_logo_societe;
-                            $backup_comp_det->fichier_photo_dirigeant                            = $companies_details->fichier_photo_dirigeant;
-                            $backup_comp_det->fichier_dernier_bilan_certifie                     = $companies_details->fichier_dernier_bilan_certifie;
-                            $backup_comp_det->fichier_cni_passeport                              = $companies_details->fichier_cni_passeport;
-                            $backup_comp_det->fichier_derniere_liasse_fiscale                    = $companies_details->fichier_derniere_liasse_fiscale;
-                            $backup_comp_det->fichier_derniers_comptes_approuves                 = $companies_details->fichier_derniers_comptes_approuves;
-                            $backup_comp_det->fichier_derniers_comptes_consolides_groupe         = $companies_details->fichier_derniers_comptes_consolides_groupe;
-                            $backup_comp_det->fichier_annexes_rapport_special_commissaire_compte = $companies_details->fichier_annexes_rapport_special_commissaire_compte;
-                            $backup_comp_det->fichier_arret_comptable_recent                     = $companies_details->fichier_arret_comptable_recent;
-                            $backup_comp_det->fichier_budget_exercice_en_cours_a_venir           = $companies_details->fichier_budget_exercice_en_cours_a_venir;
-                            $backup_comp_det->fichier_notation_banque_france                     = $companies_details->fichier_notation_banque_france;
-                            $backup_comp_det->fichier_autre_1                                    = $companies_details->fichier_autre_1;
-                            $backup_comp_det->fichier_autre_2                                    = $companies_details->fichier_autre_2;
-                            $backup_comp_det->fichier_autre_3                                    = $companies_details->fichier_autre_3;
-                            $backup_comp_det->added_backup                                       = $companies_details->added;
-                            $backup_comp_det->updated_backup                                     = $companies_details->updated;
-                            $backup_comp_det->create();
-                        }
-                        $companies_details->delete($this->companies->id_company, 'id_company');
-                    }
-
-                    if ($backup_delete == true) {
-                        $backup_companies->id_company                          = $this->companies->id_company;
-                        $backup_companies->id_client_owner                     = $this->companies->id_client_owner;
-                        $backup_companies->id_partenaire                       = $this->companies->id_partenaire;
-                        $backup_companies->id_partenaire_subcode               = $this->companies->id_partenaire_subcode;
-                        $backup_companies->email_facture                       = $this->companies->email_facture;
-                        $backup_companies->name                                = $this->companies->name;
-                        $backup_companies->forme                               = $this->companies->forme;
-                        $backup_companies->siren                               = $this->companies->siren;
-                        $backup_companies->siret                               = $this->companies->siret;
-                        $backup_companies->iban                                = $this->companies->iban;
-                        $backup_companies->bic                                 = $this->companies->bic;
-                        $backup_companies->execices_comptables                 = $this->companies->execices_comptables;
-                        $backup_companies->rcs                                 = $this->companies->rcs;
-                        $backup_companies->tribunal_com                        = $this->companies->tribunal_com;
-                        $backup_companies->activite                            = $this->companies->activite;
-                        $backup_companies->lieu_exploi                         = $this->companies->lieu_exploi;
-                        $backup_companies->tva                                 = $this->companies->tva;
-                        $backup_companies->capital                             = $this->companies->capital;
-                        $backup_companies->date_creation                       = $this->companies->date_creation;
-                        $backup_companies->adresse1                            = $this->companies->adresse1;
-                        $backup_companies->adresse2                            = $this->companies->adresse2;
-                        $backup_companies->zip                                 = $this->companies->zip;
-                        $backup_companies->city                                = $this->companies->city;
-                        $backup_companies->id_pays                             = $this->companies->id_pays;
-                        $backup_companies->phone                               = $this->companies->phone;
-                        $backup_companies->status_adresse_correspondance       = $this->companies->status_adresse_correspondance;
-                        $backup_companies->status_client                       = $this->companies->status_client;
-                        $backup_companies->status_conseil_externe_entreprise   = $this->companies->status_conseil_externe_entreprise;
-                        $backup_companies->preciser_conseil_externe_entreprise = $this->companies->preciser_conseil_externe_entreprise;
-                        $backup_companies->civilite_dirigeant                  = $this->companies->civilite_dirigeant;
-                        $backup_companies->nom_dirigeant                       = $this->companies->nom_dirigeant;
-                        $backup_companies->prenom_dirigeant                    = $this->companies->prenom_dirigeant;
-                        $backup_companies->fonction_dirigeant                  = $this->companies->fonction_dirigeant;
-                        $backup_companies->email_dirigeant                     = $this->companies->email_dirigeant;
-                        $backup_companies->phone_dirigeant                     = $this->companies->phone_dirigeant;
-                        $backup_companies->sector                              = $this->companies->sector;
-                        $backup_companies->risk                                = $this->companies->risk;
-                        $backup_companies->altares_eligibility                 = $this->companies->altares_eligibility;
-                        $backup_companies->altares_dateValeur                  = $this->companies->altares_dateValeur;
-                        $backup_companies->altares_niveauRisque                = $this->companies->altares_niveauRisque;
-                        $backup_companies->altares_scoreVingt                  = $this->companies->altares_scoreVingt;
-                        $backup_companies->added_backup                        = $this->companies->added;
-                        $backup_companies->updated_backup                      = $this->companies->updated;
-                        $backup_companies->create();
-
-                    }
-                    $this->companies->delete($this->clients->id_client, 'id_client_owner');
-
-                }
-
 
                 if ($backup_delete == true) {
                     $attachment = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
@@ -1462,9 +1258,7 @@ class preteursController extends bootstrap
                 }
                 $this->lenders_accounts->delete($this->clients->id_client, 'id_client_owner');
 
-                // ON verif si il est dans adresses
-                if ($this->clients_adresses->get($this->clients->id_client, 'id_client')) ;
-                {
+                if ($this->clients_adresses->get($this->clients->id_client, 'id_client')) {
                     if ($backup_delete == true) {
                         $backup_clients_addr->id_adresse          = $this->clients_adresses->id_adresse;
                         $backup_clients_addr->id_client           = $this->clients_adresses->id_client;
@@ -1552,7 +1346,6 @@ class preteursController extends bootstrap
         }
 
         $this->lPreteurs = $this->clients->selectPreteursByStatus('10,20,30,40,50', '', 'added_status DESC');
-
     }
 
     public function _completude()
@@ -1586,7 +1379,6 @@ class preteursController extends bootstrap
 
         $this->clients->get($this->params[0], 'id_client');
         $this->lenders_accounts->get($this->params[0], 'id_client_owner');
-
     }
 
     public function _completude_preview_iframe()
@@ -2107,7 +1899,7 @@ class preteursController extends bootstrap
         //On appelle la fonction de chargement des données
         $this->loadGestionData();
 
-        // on charge des donnÃ©es supplementaires nécessaires pour la méthode
+        // on charge des données supplementaires nécessaires pour la méthode
         $this->projects_status         = $this->loadData('projects_status');
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
 

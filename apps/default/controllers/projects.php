@@ -484,60 +484,42 @@ class projectsController extends bootstrap
             // id_project avant et apres
             $this->positionProject = $this->projects->positionProject($this->projects->id_project, $this->tabProjectDisplay, $this->tabOrdreProject[$this->ordreProject]);
 
-            // favori
             if ($this->favoris->get($this->clients->id_client, 'id_project = ' . $this->projects->id_project . ' AND id_client')) {
                 $this->favori = 'active';
             } else {
                 $this->favori = '';
             }
 
-            $dateDernierBilan = explode('-', $this->companies_details->date_dernier_bilan);
-            $dateDernierBilan = $dateDernierBilan[0];
+            $this->lBilans            = array();
+            $this->aAnnualAccountsIds = array();
 
-            // Liste des actif passif
-            $this->listAP = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '" AND annee <= ' . $dateDernierBilan, 'annee DESC');
+            foreach ($this->companies_bilans->select('id_company = "' . $this->companies->id_company . '" AND cloture_exercice_fiscal <= "' . $this->companies_details->date_dernier_bilan . '"', 'cloture_exercice_fiscal DESC', 0, 3) as $aAnnualAccounts) {
+                $this->lBilans[]            = $aAnnualAccounts;
+                $this->aAnnualAccountsIds[] = $aAnnualAccounts['id_bilan'];
+            }
 
-            // Totaux actif/passif
-            $this->totalAnneeActif = array();
-            $this->totalAnneePassif = array();
-            $i = 1;
+            $this->totalAnneeActif    = array();
+            $this->totalAnneePassif   = array();
+            $this->listAP             = $this->companies_actif_passif->select('id_bilan IN (' . implode(', ', $this->aAnnualAccountsIds) . ')', 'FIELD(id_bilan, ' . implode(', ', $this->aAnnualAccountsIds) . ') ASC');
+
             foreach ($this->listAP as $ap) {
-                $this->totalAnneeActif[$i] = ($ap['immobilisations_corporelles'] + $ap['immobilisations_incorporelles'] + $ap['immobilisations_financieres'] + $ap['stocks'] + $ap['creances_clients'] + $ap['disponibilites'] + $ap['valeurs_mobilieres_de_placement']);
-                $this->totalAnneePassif[$i] = ($ap['capitaux_propres'] + $ap['provisions_pour_risques_et_charges'] + $ap['dettes_financieres'] + $ap['dettes_fournisseurs'] + $ap['autres_dettes'] + $ap['amortissement_sur_immo']);
-                $i++;
+                $this->totalAnneeActif[]  = $ap['immobilisations_corporelles'] + $ap['immobilisations_incorporelles'] + $ap['immobilisations_financieres'] + $ap['stocks'] + $ap['creances_clients'] + $ap['disponibilites'] + $ap['valeurs_mobilieres_de_placement'];
+                $this->totalAnneePassif[] = $ap['capitaux_propres'] + $ap['provisions_pour_risques_et_charges'] + $ap['dettes_financieres'] + $ap['dettes_fournisseurs'] + $ap['autres_dettes'] + $ap['amortissement_sur_immo'];
             }
 
-            // Bilans
-            $lBilans = $this->companies_bilans->select('id_company = "' . $this->companies->id_company . '" AND date <= ' . $dateDernierBilan, 'date DESC', 0, 3);
-            foreach ($lBilans as $b) {
-                $this->lBilans[$b['date']] = $b;
-            }
-
-            $dateBilan = $lBilans[0]['date'];
-
-            $this->anneeToday[1] = ($dateBilan);
-            $this->anneeToday[2] = ($dateBilan - 1);
-            $this->anneeToday[3] = ($dateBilan - 2);
-
-            // la sum des encheres
-            $this->soldeBid = $this->bids->getSoldeBid($this->projects->id_project);
-
-            // solde payé
-            $this->payer = $this->soldeBid;
-
-            // Reste a payer
-            $this->resteApayer = ($this->projects->amount - $this->soldeBid);
-
-            $this->pourcentage = ((1 - ($this->resteApayer / $this->projects->amount)) * 100);
-
-            $this->decimales = 0;
+            $this->decimales            = 0;
             $this->decimalesPourcentage = 1;
-            $this->txLenderMax = '10.0';
+            $this->txLenderMax          = '10.0';
+            $this->soldeBid             = $this->bids->getSoldeBid($this->projects->id_project);
+            $this->payer                = $this->soldeBid;
+            $this->resteApayer          = $this->projects->amount - $this->soldeBid;
+            $this->pourcentage          = (1 - $this->resteApayer / $this->projects->amount) * 100;
+
             if ($this->soldeBid >= $this->projects->amount) {
-                $this->payer = $this->projects->amount;
-                $this->resteApayer = 0;
-                $this->pourcentage = 100;
-                $this->decimales = 0;
+                $this->payer                = $this->projects->amount;
+                $this->resteApayer          = 0;
+                $this->pourcentage          = 100;
+                $this->decimales            = 0;
                 $this->decimalesPourcentage = 0;
 
                 $this->lEnchereRate = $this->bids->select('id_project = ' . $this->projects->id_project, 'rate ASC,added ASC');
@@ -558,19 +540,17 @@ class projectsController extends bootstrap
                 $this->avgAmount = 0;
             }
 
-            // moyenne pondéré
             $montantHaut = 0;
             $tauxBas = 0;
             $montantBas = 0;
-            // funding ko
 
-            if ($this->projects_status->status == 70) {
+            if ($this->projects_status->status == \projects_status::FUNDING_KO) {
                 foreach ($this->bids->select('id_project = ' . $this->projects->id_project) as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
                     $tauxBas += $b['rate'];
                 }
-            } elseif ($this->projects_status->status == 75) {// emprunt refusé
+            } elseif ($this->projects_status->status == \projects_status::PRET_REFUSE) {
                 foreach ($this->bids->select('id_project = ' . $this->projects->id_project . ' AND status = 1') as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
@@ -589,22 +569,18 @@ class projectsController extends bootstrap
                 $this->avgRate = 0;
             }
 
-            // status enchere
             $this->status = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
 
-            if ($this->lenders_accounts->id_lender_account != false) $this->bidsEncours = $this->bids->getBidsEncours($this->projects->id_project, $this->lenders_accounts->id_lender_account);
+            if ($this->lenders_accounts->id_lender_account != false) {
+                $this->bidsEncours = $this->bids->getBidsEncours($this->projects->id_project, $this->lenders_accounts->id_lender_account);
+                $this->lBids       = $this->bids->select('id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $this->projects->id_project . ' AND status = 0', 'added ASC');
+            }
 
-            // liste des bids du lender pour le projet
-            if ($this->lenders_accounts->id_lender_account != false) $this->lBids = $this->bids->select('id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $this->projects->id_project . ' AND status = 0', 'added ASC');
+            if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) {
+                if ($this->lenders_accounts->id_lender_account != false) {
+                    $this->bidsvalid = $this->loans->getBidsValid($this->projects->id_project, $this->lenders_accounts->id_lender_account);
+                }
 
-            ///////////////////////////////
-            // Si le projet est en fundé // ou remb
-            ///////////////////////////////
-            if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
-                // Retourne un tableau avec le nb d'encheres valides et le solde des encheres validées
-                if ($this->lenders_accounts->id_lender_account != false) $this->bidsvalid = $this->loans->getBidsValid($this->projects->id_project, $this->lenders_accounts->id_lender_account);
-
-                // Nb preteurs validés
                 $this->NbPreteurs = $this->loans->getNbPreteurs($this->projects->id_project);
 
                 $montantHaut = 0;
@@ -632,12 +608,11 @@ class projectsController extends bootstrap
                 }
                 $this->interDebutFin = $this->dates->dateDiff($date1, $date2);
 
-                // Si en remboursement
                 if ($this->lenders_accounts->id_lender_account != false) {
-                    $this->sumRemb = $this->echeanciers->sumARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 0');
-                    $this->sumRemb += $this->echeanciers->sumARembByProjectCapital($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 1'); // (add 17/07/2015)
-                    $this->sumRestanteARemb = $this->echeanciers->getSumRestanteARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project);
-                    $this->nbPeriod = $this->echeanciers->counterPeriodRestantes($this->lenders_accounts->id_lender_account, $this->projects->id_project);
+                    $this->sumRemb           = $this->echeanciers->sumARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 0');
+                    $this->sumRemb          += $this->echeanciers->sumARembByProjectCapital($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 1'); // (add 17/07/2015)
+                    $this->sumRestanteARemb  = $this->echeanciers->getSumRestanteARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project);
+                    $this->nbPeriod          = $this->echeanciers->counterPeriodRestantes($this->lenders_accounts->id_lender_account, $this->projects->id_project);
                 }
             }
         } else {

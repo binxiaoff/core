@@ -26,7 +26,7 @@ if ($heure_sans_minute == '00h00') {
     $heure_sans_minute = $HfinFunding[0] . 'h00';
 }
 
-if ($this->projects_status->status != 50 || $this->page_attente) {
+if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->page_attente) {
     $this->dateRest = $this->lng['preteur-projets']['termine'];
 } else {
     $this->heureFinFunding = $tab_heure_sans_minute[0] . ':' . $tab_heure_sans_minute[1];
@@ -85,27 +85,20 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
             <div class="content-col left">
                 <div class="project-c">
                     <div class="top clearfix">
-
                         <a <?= ($this->bIsConnected ? '' : 'style="visibility:hidden;"') ?> class="fav-btn right <?= $this->favori ?>" id="fav" onclick="favori(<?= $this->projects->id_project ?>, 'fav',<?= $this->clients->id_client ?>, 'detail');"><?= ($this->favori == 'active' ? $this->lng['preteur-projets']['retirer-de-mes-favoris'] : $this->lng['preteur-projets']['ajouter-a-mes-favoris']) ?>
-                            <i></i></a>
-
+                            <i></i>
+                        </a>
                         <p class="left multi-line">
                             <em><?= $this->projects->nature_project ?></em>
-                            <?
-                            // si projet pas terminé
-                            if ($this->projects_status->status == 50) {
-                                ?><strong class="green-span">
+                            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING): ?>
+                                <strong class="green-span">
                                 <i class="icon-clock-green"></i><?= $this->lng['preteur-projets']['reste'] ?>
-                                <span id="val"><?= $this->dateRest ?></span></strong>, <?
-                            } // sinon il est terminé
-                            else {
-                                ?><strong class="red-span"><span id="val"><?= $this->dateRest ?></span></strong><?
-                            }
-                            ?>
-
+                                <span id="val"><?= $this->dateRest ?></span></strong>,
+                            <?php else: ?>
+                                <strong class="red-span"><span id="val"><?= $this->dateRest ?></span></strong>
+                            <?php endif; ?>
                             <?= $this->lng['preteur-projets']['le'] ?> <?= strtolower($this->date_retrait) ?> <?= $this->lng['preteur-projets']['a'] ?> <?= $heure_sans_minute ?><?php /* ?><?=$this->heure_retrait?>h<?php */ ?>
                         </p>
-
                     </div>
                     <div class="main-project-info clearfix">
                         <?php if ($this->projects->photo_projet != '') { ?>
@@ -136,7 +129,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                                 <li>
                                     <span class="i-holder"><i class="icon-graph tooltip-anchor" data-placement="right" data-original-title="<?= $this->lng['preteur-projets']['info-taux-moyen'] ?>"></i></span>
                                     <?php if ($this->CountEnchere > 0) { ?>
-                                        <span><?= $this->ficelle->formatNumber(($this->projects_status->status == 60 || $this->projects_status->status >= 80) ? $this->AvgLoans : $this->avgRate, 1) . ' %' ?></span>
+                                        <span><?= $this->ficelle->formatNumber(($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) ? $this->AvgLoans : $this->avgRate, 1) . ' %' ?></span>
                                     <?php } else { ?>
                                         <span><?= $this->projects->target_rate . ($this->projects->target_rate == '-' ? '' : ' %') ?></span>
                                     <?php } ?>
@@ -146,7 +139,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                     </div>
                     <nav class="tabs-nav">
                         <ul>
-                            <?php if ($this->projects_status->status == 50) { ?>
+                            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) { ?>
                                 <li class="active"><a href="#"><?= $this->lng['preteur-projets']['carnet-dordres'] ?></a></li>
                                 <li><a href="#"><?= $this->lng['preteur-projets']['presentation'] ?></a></li>
                             <?php } else { ?>
@@ -154,7 +147,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                             <?php } ?>
                             <li><a href="#"><?= $this->lng['preteur-projets']['comptes'] ?></a></li>
                             <?php
-                            if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
+                            if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) {
                                 if (isset($_SESSION['client']) && $_SESSION['client']['status_pre_emp'] == 1) {
                                     ?>
                                     <li><a href="#"><?= $this->lng['preteur-projets']['suivi-projet'] ?></a></li>
@@ -165,14 +158,9 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                         </ul>
                     </nav>
                     <div class="tabs">
-                        <?
-                        // en funding
-                        if ($this->projects_status->status == 50) {
-                        ?>
+                        <?php if ($this->projects_status->status == \projects_status::EN_FUNDING): ?>
                         <div class="tab tc" id="bids">
-                            <?
-                            if (count($this->lEnchere) > 0) {
-                            ?>
+                            <?php if (count($this->lEnchere) > 0): ?>
                             <table class="table orders-table">
                                 <tr>
                                     <th width="125"><span id="triNum">N°<i class="icon-arrows"></i></span></th>
@@ -188,53 +176,49 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                                     </th>
                                     <th width="101">
                                         <span id="triStatuts"><?= $this->lng['preteur-projets']['statuts'] ?>
-                                            <i class="icon-arrows"></i></span></th>
+                                            <i class="icon-arrows"></i></span>
+                                    </th>
                                 </tr>
-                                <?
-                                foreach ($this->lEnchere as $key => $e) {
-                                if ($this->lenders_accounts->id_lender_account == $e['id_lender_account'])
-                                $vous = true;
-                                else
-                                $vous = false;
+                                <?php
+                                    foreach ($this->lEnchere as $key => $e) {
+                                        $vous = ($this->lenders_accounts->id_lender_account == $e['id_lender_account']);
 
-
-                                if ($this->CountEnchere >= 12) {
-                                if ($e['ordre'] <= 5 || $e['ordre'] > $this->CountEnchere - 5) {
-                                ?>
-                                <tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
-                                    <td><?= ($vous == true ? '<span class="enchereVous">' . $this->lng['preteur-projets']['vous'] . ' : &nbsp;&nbsp;&nbsp;' . $e['ordre'] . '</span>' : $e['ordre']) ?></td>
-                                    <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
-                                    <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
-                                    <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
-                                </tr><?
-                                }
-                                if ($e['ordre'] == 6) {
-                                ?>
-                                <tr>
-                                    <td colspan="4" class="nth-table-row displayAll" style="cursor:pointer;">...</td>
-                                </tr><?
-                                }
-                                } else {
-                                ?>
-                                <tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
-                                    <td><?= ($vous == true ? '<span class="enchereVous">' . $this->lng['preteur-projets']['vous'] . ' : &nbsp;&nbsp;&nbsp;' . $e['ordre'] . '</span>' : $e['ordre']) ?></td>
-                                    <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
-                                    <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
-                                    <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
-                                </tr><?
-                                }
-                                }
+                                        if ($this->CountEnchere >= 12) {
+                                            if ($e['ordre'] <= 5 || $e['ordre'] > $this->CountEnchere - 5) {
+                                                ?>
+                                                <tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
+                                                    <td><?= ($vous == true ? '<span class="enchereVous">' . $this->lng['preteur-projets']['vous'] . ' : &nbsp;&nbsp;&nbsp;' . $e['ordre'] . '</span>' : $e['ordre']) ?></td>
+                                                    <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
+                                                    <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
+                                                    <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
+                                                </tr>
+                                                <?php
+                                            }
+                                            if ($e['ordre'] == 6) {
+                                                ?>
+                                                <tr>
+                                                    <td colspan="4" class="nth-table-row displayAll" style="cursor:pointer;">...</td>
+                                                </tr>
+                                                <?php
+                                            }
+                                        } else {
+                                            ?>
+                                            <tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
+                                                <td><?= ($vous == true ? '<span class="enchereVous">' . $this->lng['preteur-projets']['vous'] . ' : &nbsp;&nbsp;&nbsp;' . $e['ordre'] . '</span>' : $e['ordre']) ?></td>
+                                                <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
+                                                <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
+                                                <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
+                                            </tr>
+                                            <?php
+                                        }
+                                    }
                                 ?>
                             </table>
-                            <?
-                            if ($this->CountEnchere >= 12) {
-                            ?>
-                            <a class="btn btn-large displayAll"><?= $this->lng['preteur-projets']['voir-tout-le-carnet-dordres'] ?></a><?
-                            } else {
-                            ?>
-                            <div class="displayAll"></div><?
-                            }
-                            ?>
+                            <?php if ($this->CountEnchere >= 12): ?>
+                                <a class="btn btn-large displayAll"><?= $this->lng['preteur-projets']['voir-tout-le-carnet-dordres'] ?></a>
+                            <?php else: ?>
+                                <div class="displayAll"></div>
+                            <?php endif; ?>
                             <script>
                                 $("#triNum").click(function () {
                                     $("#tri").html('ordre');
@@ -257,7 +241,6 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                                 });
 
                                 $(".displayAll").click(function () {
-
                                     var tri = $("#tri").html();
                                     var direction = $("#direction").html();
                                     $.post(add_url + '/ajax/displayAll', {
@@ -269,17 +252,13 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                                     });
                                 });
                             </script>
-                            <?
-                            } else {
-                            ?><p><?= $this->lng['preteur-projets']['aucun-enchere'] ?></p><?
-                            }
-                            ?>
+                            <?php else: ?>
+                                <p><?= $this->lng['preteur-projets']['aucun-enchere'] ?></p>
+                            <?php endif; ?>
                         </div>
                         <div id="tri" style="display:none;">ordre</div>
                         <div id="direction" style="display:none;">1</div>
-                        <?
-                        }
-                        ?>
+                        <?php endif; ?>
                         <div class="tab">
                             <article class="ex-article">
                                 <h3>
@@ -309,7 +288,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                             </article>
                         </div>
                         <div class="tab">
-                        <?php if (false === $this->bIsConnected) { ?>
+                        <?php if (false === $this->bIsConnected): ?>
                             <div>
                                 <?= $this->lng['preteur-projets']['contenu-comptes-financiers'] ?>
                             </div>
@@ -317,18 +296,17 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                             <div style="text-align:center;">
                                 <a target="_parent" href="<?= $this->lng['preteur-projets']['cta-lien-comptes-financiers'] ?>" class="btn btn-medium"><?= $this->lng['preteur-projets']['cta-comptes-financiers'] ?></a>
                             </div>
-                        <?php } else { ?>
+                        <?php else: ?>
                             <div class="statistic-tables year-nav clearfix">
                                 <ul class="right">
+                                    <?php for ($i = 0; $i < 3; $i++): ?>
                                     <li>
-                                        <div class="annee"><?= $this->anneeToday[1] ?></div>
+                                        <div class="annee">
+                                            <?= ucfirst(strftime('%b %Y', strtotime($this->lBilans[$i]['cloture_exercice_fiscal']))) ?><br/>
+                                            <?= str_replace('[DURATION]', $this->lBilans[$i]['duree_exercice_fiscal'], $this->lng['preteur-projets']['annual-accounts-duration-months']) ?>
+                                        </div>
                                     </li>
-                                    <li>
-                                        <div class="annee"><?= $this->anneeToday[2] ?></div>
-                                    </li>
-                                    <li>
-                                        <div class="annee"><?= $this->anneeToday[3] ?></div>
-                                    </li>
+                                    <?php endfor; ?>
                                 </ul>
                             </div>
                             <div class="statistic-table">
@@ -338,39 +316,30 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                                     </tr>
                                     <tr>
                                         <td class="intitule"><?= $this->lng['preteur-projets']['chiffe-daffaires'] ?></td>
-                                        <?php
-                                        for ($i = 1; $i <= 3; $i++) {
-                                            echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['ca'], 0) . ' €</td>';
-                                        }
-                                        ?>
+                                        <?php for ($i = 0; $i < 3; $i++): ?>
+                                            <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->lBilans[$i]['ca'], 0) ?>&nbsp;€</td>
+                                        <?php endfor; ?>
                                     </tr>
                                     <tr>
                                         <td class="intitule"><?= $this->lng['preteur-projets']['resultat-brut-dexploitation'] ?></td>
-                                        <?php
-                                        for ($i = 1; $i <= 3; $i++) {
-                                            echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['resultat_brute_exploitation'], 0) . ' €</td>';
-                                        }
-                                        ?>
+                                        <?php for ($i = 0; $i < 3; $i++): ?>
+                                            <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->lBilans[$i]['resultat_brute_exploitation'], 0) ?>&nbsp;€</td>
+                                        <?php endfor; ?>
                                     </tr>
                                     <tr>
                                         <td class="intitule"><?= $this->lng['preteur-projets']['resultat-dexploitation'] ?></td>
-                                        <?php
-                                        for ($i = 1; $i <= 3; $i++) {
-                                            echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['resultat_exploitation'], 0) . ' €</td>';
-                                        }
-                                        ?>
+                                        <?php for ($i = 0; $i < 3; $i++): ?>
+                                            <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->lBilans[$i]['resultat_exploitation'], 0) ?>&nbsp;€</td>
+                                        <?php endfor; ?>
                                     </tr>
                                     <tr>
                                         <td class="intitule"><?= $this->lng['preteur-projets']['investissements'] ?></td>
-                                        <?php
-                                        for ($i = 1; $i <= 3; $i++) {
-                                            echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['investissements'], 0) . ' €</td>';
-                                        }
-                                        ?>
+                                        <?php for ($i = 0; $i < 3; $i++): ?>
+                                            <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->lBilans[$i]['investissements'], 0) ?>&nbsp;€</td>
+                                        <?php endfor; ?>
                                     </tr>
                                 </table>
                             </div>
-
                             <div class="statistic-table">
                                 <table>
                                     <tr>
@@ -384,68 +353,52 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['immobilisations-corporelles'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_corporelles'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_corporelles'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['immobilisations-incorporelles'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_incorporelles'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_incorporelles'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['immobilisations-financieres'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_financieres'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_financieres'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['stocks'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['stocks'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['stocks'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['creances-clients'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['creances_clients'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['creances_clients'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['disponibilites'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['disponibilites'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['disponibilites'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['valeurs-mobilieres-de-placement'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['valeurs_mobilieres_de_placement'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['valeurs_mobilieres_de_placement'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
 
                                                 <tr class="total-row">
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['total-bilan-actifs'] ?></td>
-                                                    <?php
-                                                    for ($i = 1; $i <= 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->totalAnneeActif[$i], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->totalAnneeActif[$i], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                             </table>
                                         </td>
@@ -458,68 +411,54 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['capitaux-propres'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['capitaux_propres'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['capitaux_propres'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['provisions-pour-risques-charges'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['provisions_pour_risques_et_charges'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['provisions_pour_risques_et_charges'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['amortissement-sur-immo'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['amortissement_sur_immo'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['amortissement_sur_immo'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['dettes-financieres'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['dettes_financieres'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['dettes_financieres'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['dettes-fournisseurs'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['dettes_fournisseurs'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['dettes_fournisseurs'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['autres-dettes'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['autres_dettes'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['autres_dettes'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr class="total-row">
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['total-bilan-passifs'] ?></td>
-                                                    <?php
-                                                    for ($i = 1; $i <= 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->totalAnneePassif[$i], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->totalAnneePassif[$i], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                             </table>
                                         </td>
                                     </tr>
                                 </table>
                             </div>
-                        <?php } ?>
+                        <?php endif; ?>
                         </div>
-                        <?php if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) { ?>
+                        <?php if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT): ?>
                             <div class="tab">
                                 <div class="article">
                                     <p>
@@ -533,7 +472,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                                     </p>
                                 </div>
                             </div>
-                        <?php } ?>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -543,26 +482,26 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
         <div class="single-project-mobile">
             <h3><?= $this->projects->title ?></h3>
             <p><?= $this->projects->nature_project ?></p>
-            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) { ?>
+            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING): ?>
                 <strong class="green-span"><i class="icon-clock-green"></i><?= $this->lng['preteur-projets']['reste'] ?>
                 <span id="valM"><?= $this->dateRest ?></span></strong>,
-            <?php } else { ?>
+            <?php else: ?>
                 <strong class="red-span"><span id="valM"><?= $this->dateRest ?></span></strong>
-            <?php } ?>
+            <?php endif; ?>
             <?= $this->lng['preteur-projets']['le'] ?> <?= strtolower($this->date_retrait) ?> <?= $this->lng['preteur-projets']['a'] ?> <?= $heure_sans_minute ?><?php /* ?><?=$this->heure_retrait?>h<?php */ ?></p>
             <?php $this->fireView('../blocs/project-mobile-header'); ?>
             <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $this->projects->photo_projet ?>" alt="<?= $this->projects->photo_projet ?>">
-            <?php if ($this->bIsConnected && false === $this->page_attente && $this->clients_status->status == 60) { ?>
+            <?php if ($this->bIsConnected && false === $this->page_attente && $this->clients_status->status == 60): ?>
                 <div class="single-project-actions">
                     <a href="<?= $this->lurl . '/thickbox/pop_up_offer_mobile/' . $this->projects->id_project ?>" class="btn popup-link"><?= $this->lng['preteur-projets']['preter'] ?></a>
                 </div>
-            <?php } elseif (false === $this->bIsConnected) { ?>
+            <?php elseif (false === $this->bIsConnected): ?>
             <div class="single-project-actions">
                 <a target="_parent" class="btn login-toggle" id="seconnecter" style="width:210px; display:block;margin:auto; float: none;"><?= $this->lng['preteur-projets']['se-connecter'] ?></a>
                 <a href="<?= $this->lurl . '/' . $this->tree->getSlug(127, $this->language) ?>" target="_parent" class="btn sinscrire_cta" id="sinscrire" style=""><?= $this->lng['preteur-projets']['sinscrire'] ?></a>
             </div>
-            <?php } ?>
-            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) { ?>
+            <?php endif; ?>
+            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING): ?>
                 <article class="ex-article">
                     <h3><a href="#"><?= $this->lng['preteur-projets']['carnet-dordres'] ?></a><i class="icon-arrow-down up"></i></h3>
                     <div class="article-entry" style="display: none;">
@@ -571,7 +510,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                         <div id="direction_mobile" style="display:none;">1</div>
                     </div>
                 </article>
-            <?php } ?>
+            <?php endif; ?>
             <article class="ex-article">
                 <h3>
                     <a href="#"><?= $this->lng['preteur-projets']['presentation'] ?></a><i class="icon-arrow-down up"></i>
@@ -596,7 +535,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                 <div class="article-entry" style="display: none;">
                     <p>
                         <div class="tab">
-                        <?php if (false === $this->bIsConnected) { ?>
+                        <?php if (false === $this->bIsConnected): ?>
                             <div>
                                 <?= $this->lng['preteur-projets']['contenu-comptes-financiers'] ?>
                             </div>
@@ -604,49 +543,44 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                             <div style="text-align:center;">
                                 <a target="_parent" href="<?= $this->lng['preteur-projets']['cta-lien-comptes-financiers'] ?>" class="btn btn-medium"><?= $this->lng['preteur-projets']['cta-comptes-financiers'] ?></a>
                             </div>
-                        <?php } else { ?>
+                        <?php else: ?>
                             <div class="statistic-table">
                                 <table>
                                     <tr class="year-nav">
                                         <th></th>
-                                        <th><?= $this->anneeToday[1] ?></th>
-                                        <th><?= $this->anneeToday[2] ?></th>
-                                        <th><?= $this->anneeToday[3] ?></th>
+                                        <?php for ($i = 0; $i < 3; $i++): ?>
+                                            <th>
+                                                <?= ucfirst(strftime('%b %Y', strtotime($this->lBilans[$i]['cloture_exercice_fiscal']))) ?><br/>
+                                                <?= str_replace('[DURATION]', $this->lBilans[$i]['duree_exercice_fiscal'], $this->lng['preteur-projets']['annual-accounts-duration-months']) ?>
+                                            </th>
+                                        <?php endfor; ?>
                                     </tr>
                                     <tr>
                                         <th colspan="4" style="color:white;"><?= $this->lng['preteur-projets']['compte-de-resultats'] ?></th>
                                     </tr>
                                     <tr>
                                         <td class="intitule"><?= $this->lng['preteur-projets']['chiffe-daffaires'] ?></td>
-                                        <?php
-                                        for ($i = 1; $i <= 3; $i++) {
-                                            echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['ca'], 0) . ' €</td>';
-                                        }
-                                        ?>
+                                        <?php for ($i = 0; $i < 3; $i++): ?>
+                                            <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->lBilans[$i]['ca'], 0) ?>&nbsp;€</td>
+                                        <?php endfor; ?>
                                     </tr>
                                     <tr>
                                         <td class="intitule"><?= $this->lng['preteur-projets']['resultat-brut-dexploitation'] ?></td>
-                                        <?php
-                                        for ($i = 1; $i <= 3; $i++) {
-                                            echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['resultat_brute_exploitation'], 0) . ' €</td>';
-                                        }
-                                        ?>
+                                        <?php for ($i = 0; $i < 3; $i++): ?>
+                                            <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->lBilans[$i]['resultat_brute_exploitation'], 0) ?>&nbsp;€</td>
+                                        <?php endfor; ?>
                                     </tr>
                                     <tr>
                                         <td class="intitule"><?= $this->lng['preteur-projets']['resultat-dexploitation'] ?></td>
-                                        <?php
-                                        for ($i = 1; $i <= 3; $i++) {
-                                            echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['resultat_exploitation'], 0) . ' €</td>';
-                                        }
-                                        ?>
+                                        <?php for ($i = 0; $i < 3; $i++): ?>
+                                            <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->lBilans[$i]['resultat_exploitation'], 0) ?>&nbsp;€</td>
+                                        <?php endfor; ?>
                                     </tr>
                                     <tr>
                                         <td class="intitule"><?= $this->lng['preteur-projets']['investissements'] ?></td>
-                                        <?php
-                                        for ($i = 1; $i <= 3; $i++) {
-                                            echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['investissements'], 0) . ' €</td>';
-                                        }
-                                        ?>
+                                        <?php for ($i = 0; $i < 3; $i++): ?>
+                                            <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->lBilans[$i]['investissements'], 0) ?>&nbsp;€</td>
+                                        <?php endfor; ?>
                                     </tr>
                                     <tr>
                                         <th colspan="4"><?= $this->lng['preteur-projets']['bilan'] ?></th>
@@ -659,68 +593,52 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['immobilisations-corporelles'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_corporelles'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_corporelles'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['immobilisations-incorporelles'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_incorporelles'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_incorporelles'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['immobilisations-financieres'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_financieres'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_financieres'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['stocks'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['stocks'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['stocks'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['creances-clients'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['creances_clients'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['creances_clients'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['disponibilites'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['disponibilites'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['disponibilites'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['valeurs-mobilieres-de-placement'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['valeurs_mobilieres_de_placement'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['valeurs_mobilieres_de_placement'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
 
                                                 <tr class="total-row">
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['total-bilan-actifs'] ?></td>
-                                                    <?php
-                                                    for ($i = 1; $i <= 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->totalAnneeActif[$i], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->totalAnneeActif[$i], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                             </table>
                                         </td>
@@ -733,71 +651,57 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['capitaux-propres'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['capitaux_propres'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['capitaux_propres'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['provisions-pour-risques-charges'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['provisions_pour_risques_et_charges'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['provisions_pour_risques_et_charges'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['amortissement-sur-immo'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['amortissement_sur_immo'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['amortissement_sur_immo'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['dettes-financieres'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['dettes_financieres'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['dettes_financieres'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['dettes-fournisseurs'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['dettes_fournisseurs'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['dettes_fournisseurs'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['autres-dettes'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['autres_dettes'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['autres_dettes'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                                 <tr class="total-row">
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['total-bilan-passifs'] ?></td>
-                                                    <?php
-                                                    for ($i = 1; $i <= 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->totalAnneePassif[$i], 0) . ' €</td>';
-                                                    }
-                                                    ?>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->totalAnneePassif[$i], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
                                                 </tr>
                                             </table>
                                         </td>
                                     </tr>
                                 </table>
                             </div>
-                        <?php } ?>
+                        <?php endif; ?>
                         </div>
                     </p>
                 </div>
             </article>
-            <?php if (($this->projects_status->status == 60 || $this->projects_status->status >= 80) && isset($_SESSION['client']) && $_SESSION['client']['status_pre_emp'] == 1) { ?>
+            <?php if (($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) && isset($_SESSION['client']) && $_SESSION['client']['status_pre_emp'] == 1): ?>
                 <article class="ex-article">
                     <h3>
                         <a href="#"><?= $this->lng['preteur-projets']['suivi-projet'] ?></a><i class="icon-arrow-down up"></i>
@@ -819,7 +723,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                         </p>
                     </div>
                 </article>
-            <?php } ?>
+            <?php endif; ?>
         </div>
     </div>
 </div>
@@ -830,9 +734,9 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
     });
 
     $("#montant_p").blur(function () {
-        var montant = $("#montant_p").val();
-        var tx = $("#tx_p").val();
-        var form_ok = true;
+        var montant = $("#montant_p").val(),
+            tx = $("#tx_p").val(),
+            form_ok = true;
 
         if (tx == '-') {
             form_ok = false;
@@ -856,9 +760,9 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
     });
 
     $("#tx_p").change(function () {
-        var montant = $("#montant_p").val();
-        var tx = $("#tx_p").val();
-        var form_ok = true;
+        var montant = $("#montant_p").val(),
+            tx = $("#tx_p").val(),
+            form_ok = true;
 
         if (tx == '-') {
             form_ok = false;

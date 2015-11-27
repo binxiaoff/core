@@ -21,6 +21,7 @@ foreach ($aReplacements as &$sReplacement) {
     <p>
         <?= str_replace(array_keys($aReplacements), $aReplacements, $this->lng['preteur-projets']['projet-finance-mobile']) ?>
     </p>
+    <?php if (isset($this->bidsvalid['solde'])): ?>
     <p>
         <?= $this->lng['preteur-projets']['vous-lui-avez-prete'] ?>
         <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->bidsvalid['solde'], 0) ?> €</strong>
@@ -29,4 +30,5 @@ foreach ($aReplacements as &$sReplacement) {
             <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->AvgLoansPreteur, 1) ?> %</strong>
         <?php } ?>
     </p>
+    <?php endif; ?>
 </div>

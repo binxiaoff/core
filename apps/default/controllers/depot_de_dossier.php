@@ -412,13 +412,15 @@ class depot_de_dossierController extends bootstrap
         $this->iMinimumMonthlyPayment = round($oFinancial->PMT($aMinimumRateInterval[0] / 100 / 12, $this->projects->period, - $this->projects->amount) + $fCommission);
         $this->iMaximumMonthlyPayment = round($oFinancial->PMT($aMaximumRateInterval[1] / 100 / 12, $this->projects->period, - $this->projects->amount) + $fCommission);
 
-        // year considered for "latest liasse fiscal" necessary to get the information from bilans and actif_passif
-        $iLastAnnualAccountsYear  = date('Y') - 1;
-        $aAnnualAccounts          = $this->companies_bilans->select('id_company = ' . $this->companies->id_company . ' AND date = ' . $iLastAnnualAccountsYear);
-        $aAssetsDebts             = $this->companies_actif_passif->select('id_company = ' . $this->companies->id_company . ' AND annee = ' . $iLastAnnualAccountsYear);
-        $iAltaresCapitalStock     = $aAssetsDebts[0]['capitaux_propres'];
-        $iAltaresOperationIncomes = $aAnnualAccounts[0]['resultat_exploitation'];
-        $iAltaresRevenue          = $aAnnualAccounts[0]['ca'];
+        $aAnnualAccounts = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+
+        if (false === empty($aAnnualAccounts)) {
+            $this->companies_actif_passif->get($aAnnualAccounts[0]['id_bilan'], 'id_bilan');
+        }
+
+        $iAltaresCapitalStock     = empty($this->companies_actif_passif->capitaux_propres) ? 0 : $this->companies_actif_passif->capitaux_propres;
+        $iAltaresOperationIncomes = empty($aAnnualAccounts[0]['resultat_exploitation']) ? 0 : $aAnnualAccounts[0]['resultat_exploitation'];
+        $iAltaresRevenue          = empty($aAnnualAccounts[0]['ca']) ? 0 : $aAnnualAccounts[0]['ca'];
 
         $this->iCapitalStock     = isset($_SESSION['forms']['depot-de-dossier-3']['values']['fonds_propres']) ? $_SESSION['forms']['depot-de-dossier-3']['values']['fonds_propres'] : (empty($this->projects->fonds_propres_declara_client) ? $iAltaresCapitalStock : $this->projects->fonds_propres_declara_client);
         $this->iOperatingIncomes = isset($_SESSION['forms']['depot-de-dossier-3']['values']['resultat_brute_exploitation']) ? $_SESSION['forms']['depot-de-dossier-3']['values']['resultat_brute_exploitation'] : (empty($this->projects->resultat_exploitation_declara_client) ? $iAltaresOperationIncomes : $this->projects->resultat_exploitation_declara_client);
