@@ -1016,17 +1016,28 @@ class statsController extends bootstrap
             $csv .= ";";
             $csv .= " \n";
         }
-/*
+
         $sql = '
         SELECT
-            c.id_client,
-            c.prenom,
-            c.nom,
-            (SELECT SUM(e.interets) FROM echeanciers e WHERE LEFT(e.date_echeance_reel,4) = "' . $annee . '" AND IFNULL((SELECT lih.resident_etranger FROM lenders_imposition_history lih WHERE lih.added <= e.date_echeance_reel AND lih.id_lender = e.id_lender ORDER BY lih.added DESC LIMIT 1),0) = 0 AND e.id_lender = la.id_lender_account AND la.id_company_owner = 0) as interets_physique_resident
+          c.id_client,
+          c.prenom,
+          c.nom,
+          SUM(e.interets)
         FROM lenders_accounts la
-        LEFT JOIN clients c ON la.id_client_owner = c.id_client
-        WHERE (SELECT COUNT(lo.id_loan) FROM loans lo WHERE lo.id_lender = la.id_lender_account AND LEFT(lo.added,4) <= "' . $annee . '") > 0
-        ORDER BY c.id_client';
+          INNER JOIN clients c ON (la.id_client_owner = c.id_client)
+          LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
+        WHERE YEAR(e.date_echeance_reel) = 2015
+          AND e.status = 1
+          AND e.status_ra = 0
+          AND IFNULL(
+                  (
+                    SELECT lih.resident_etranger
+                    FROM lenders_imposition_history lih
+                    WHERE lih.added <= e.date_echeance_reel
+                    AND lih.id_lender = e.id_lender
+                    ORDER BY lih.added DESC LIMIT 1),0
+              ) = 0
+        GROUP BY c.id_client';
 
         $resultat = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($resultat)) {
@@ -1048,11 +1059,10 @@ class statsController extends bootstrap
                 $csv .= "EURO;";
                 $csv .= ";";
                 $csv .= ";";
-
                 $csv .= " \n";
             }
         }
-*/
+
         $titre = 'requete_revenus' . date('Ymd');
         header("Content-type: application/vnd.ms-excel");
         header("Content-disposition: attachment; filename=\"" . $titre . ".csv\"");
