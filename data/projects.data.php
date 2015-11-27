@@ -635,21 +635,21 @@ class projects extends projects_crud
 
 
         switch ($iProjectStatus) {
-            case projects_status::REMBOURSEMENT:
-            case projects_status::REMBOURSE:
-            case projects_status::PROBLEME:
-            case projects_status::RECOUVREMENT:
-            case projects_status::REMBOURSEMENT_ANTICIPE:
+            case \projects_status::REMBOURSEMENT:
+            case \projects_status::REMBOURSE:
+            case \projects_status::PROBLEME:
+            case \projects_status::RECOUVREMENT:
+            case \projects_status::REMBOURSEMENT_ANTICIPE:
                 foreach ($oLoans->select('id_project = ' . $iProjectId) as $aLoans) {
                     $iUpperValue += ($aLoans['rate'] * ($aLoans['amount'] / 100));
                     $iLowerValue += ($aLoans['amount'] / 100);
                 }
                 break;
-            case projects_status::FUNDE:
-            case projects_status::FUNDING_KO:
-            case projects_status::PRET_REFUSE:
-            case projects_status::EN_FUNDING:
-            case projects_status::DEFAUT:
+            case \projects_status::FUNDE:
+            case \projects_status::FUNDING_KO:
+            case \projects_status::PRET_REFUSE:
+            case \projects_status::EN_FUNDING:
+            case \projects_status::DEFAUT:
                 foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status = 1') as $aBids) {
                     $iUpperValue += ($aBids['rate'] * ($aBids['amount'] / 100));
                     $iLowerValue += ($aBids['amount'] / 100);
