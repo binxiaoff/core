@@ -1049,13 +1049,13 @@ class statsController extends bootstrap
             $cbene     = substr($motif, 0, 10);
 
 
-            if ($record[6] > 0) {
+            if ($record[3] > 0) {
                 // interets resident uniquement
                 $csv .= "1;";
                 $csv .= $cbene . ";";
                 $csv .= "66;";
                 $csv .= $date . ";";
-                $csv .= number_format(($record[6] / 100), 2, ',', '') . ";";
+                $csv .= number_format(($record[3] / 100), 2, ',', '') . ";";
                 $csv .= "EURO;";
                 $csv .= ";";
                 $csv .= ";";
