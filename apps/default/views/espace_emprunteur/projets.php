@@ -1,5 +1,5 @@
 <style>
-    table {
+    .table_projects table {
         table-layout: fixed;
         margin-bottom: 30px;
         width: 100%;
@@ -8,28 +8,28 @@
         border-radius: 3px;
     }
 
-    tr {
+    .table_projects tr {
         font-size: 13px;
     }
 
-    tr:nth-child(even) {
+    .table_projects tr:nth-child(even) {
         background-color: #f4f4f4;
     }
 
-    th {
+    .table_projects th {
         text-align: left;
         vertical-align: middle;
         padding: 5px;
     }
 
-    .table-head {
+    .table_projects thead {
         height: 40px;
         background: #b10366 none repeat scroll 0 0;
         color: #f4f4f4;
         padding: 4px;
     }
 
-    td {
+    .table_projects td {
         text-align: right;
     }
 
@@ -41,17 +41,19 @@
 
        <?php if (empty($this->projectsPreFunding) === false) { ?>
 
-            <table class="table">
-                <tbody>
-                <tr class="table-head">
+            <table class="table table_projects">
+                <thead>
+                <tr>
                     <th></th>
-                    <th width="40">ID</th>
-                    <th width="200">Nature</th>
-                    <th width="90">Montant & Durée</th>
-                    <th width="90">Date de clôture</th>
-                    <th width="90">Statut projet</th>
+                    <th width="40"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
+                    <th width="200"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
+                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
+                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-date-de-cloture'] ?></th>
+                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-status'] ?></th>
                     <th></th>
                 </tr>
+                </thead>
+                <tbody>
                 <?php foreach ($this->projectsPreFunding as $aProject) { ?>
                     <tr>
                         <td><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $aProject['photo_projet'] ?>"
@@ -70,19 +72,21 @@
 
 
         <?php if (empty($this->aProjectsFunding) === false) { ?>
-            <table class="table">
-                <tbody>
-                <tr class="table-head">
+            <table class="table table_projects">
+                <thead>
+                <tr>
                     <th></th>
-                    <th width="40">ID</th>
-                    <th width="200">Nature</th>
-                    <th width="90">Montant & Durée</th>
-                    <th width="90">Date de clôture prévue</th>
-                    <th width="90">% funding atteint</th>
-                    <th width="90">Taux moyen du projet à date</th>
+                    <th width="40"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
+                    <th width="200"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
+                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
+                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-date-de-cloture-prevue'] ?></th>
+                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-funding-atteint'] ?></th>
+                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-taux-moyen-a-date'] ?></th>
                     <th width="90"></th>
                     <th></th>
                 </tr>
+                </thead>
+                <tbody>
                 <?php foreach ($this->aProjectsFunding as $aProject) { ?>
                     <tr>
                         <td><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $aProject['photo_projet'] ?>"
@@ -91,12 +95,12 @@
                         <td><?= $aProject['nature_project'] ?></td>
                         <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> € <br> <?= $aProject['period'] ?> mois</td>
                         <td><?= $aProject['date_retrait'] ?></td>
-                        <td><?= $aProject['funding-progress'] ?> %</td>
-                        <td><?= $aProject['AverageIR'] ?> %</td>
+                        <td><?= $this->ficelle->formatNumber($aProject['funding-progress']) ?> %</td>
+                        <td><?= $this->ficelle->formatNumber($aProject['AverageIR']) ?> %</td>
                         <td>
-                            <?php if ($aProject['funding-progress'] == 100 && $aProject['date_retrait'] > date('Y-m-d H:i:s')) { ?>
+                            <?php if ($aProject['funding-progress'] >= 100 && $aProject['date_retrait_full'] <= date('Y-m-d H:i:s')) { ?>
                                 <a class="btn btn-info btn-small popup-link"
-                                   href="<?= $this->lurl ?>/thickbox/pop_up_anticipation/<?= $aProject['hash'] ?>">Arrêter</a>
+                                   href="<?= $this->lurl ?>/thickbox/pop_up_anticipation/<?= (empty($aProject['hash']) === false) ? $aProject['hash'] : $aProject['id_project'] ?>">Arrêter</a>
                             <?php }
                             ?>
                         </td>
@@ -113,19 +117,21 @@
 
         <?php if (empty($this->aProjectsPostFunding) === false) { ?>
             <table>
-                <tbody>
-                <tr class="table-head">
+                <thead>
+                <tr class="table table_projects">
                     <th></th>
-                    <th width="40">ID</th>
-                    <th width="200">Nature</th>
-                    <th width="90">Montant & Durée</th>
-                    <th width="90">Date de clôture</th>
-                    <th width="60">Mensualité</th>
-                    <th width="60">Taux moyen du projet</th>
-                    <th width="90">CRD à date</th>
-                    <th width="90">Date de la prochaine échéance</th>
+                    <th width="40"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
+                    <th width="200"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
+                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
+                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-date-de-cloture'] ?></th>
+                    <th width="60"><?= $this->lng['espace-emprunteur']['table-projets-mensualite'] ?></th>
+                    <th width="60"><?= $this->lng['espace-emprunteur']['table-projets-taux-moyen'] ?></th>
+                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-crd'] ?></th>
+                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-date-prochaine-echeance'] ?></th>
                     <th></th>
                 </tr>
+                </thead>
+                <tbody>
                 <?php foreach ($this->aProjectsPostFunding as $aProject) { ?>
                     <tr>
                         <td><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $aProject['photo_projet'] ?>"
@@ -145,6 +151,9 @@
                 </tbody>
             </table>
         <?php } ?>
-
+        &nbsp;
+        <div style="">
+            <a href="<?= $this->lurl ?>/espace_emprunteur/operations"><p><?= $this->lng['espace-emprunteur']['documents-dans-espace-dedie']?></p></a>
+        </div>
     </div>
 </div>
