@@ -44,7 +44,6 @@ class echeanciers extends echeanciers_crud
             $order = ' ORDER BY ' . $order;
         }
         $sql = 'SELECT * FROM `echeanciers`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
         $resultat = $this->bdd->query($sql);
         $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
@@ -1074,5 +1073,15 @@ class echeanciers extends echeanciers_crud
         $result = $this->bdd->query($sql);
         $sum    = (int)($this->bdd->result($result, 0, 0));
         return ($sum / 100);
+    }
+
+    public function getLastOrder($iProjectID, $sDate = 'NOW()', $sInterval = 3)
+    {
+        $sql = 'SELECT * FROM `echeanciers` WHERE id_project = '.$iProjectID.' AND DATE_ADD(date_echeance,INTERVAL '.$sInterval.' DAY) > '.$sDate.' GROUP BY id_project ORDER BY ordre ASC LIMIT 1';
+
+        $resultat = $this->bdd->query($sql);
+        $result = $this->bdd->fetch_assoc($resultat);
+
+        return $result;
     }
 }
