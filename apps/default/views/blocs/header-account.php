@@ -35,11 +35,12 @@ if ($this->bDisplayLender) {
         </div>
     </div><!-- /.login-panel -->
     <?php
-} elseif ($this->bDisplayBorrower) {?>
+} elseif ($this->bDisplayBorrower) {
+    ?>
     <div class="logedin-panel right">
         <a href="<?= $this->lurl ?>/espace_emprunteur/identite" class="header_account_name">
-            <strong><?= $this->lng['header']['siren'].$this->companies->siren ?></strong></a>
-            <strong><?= $this->companies->name ?></strong>
+            <strong><?= $this->lng['header']['siren'].$this->oCompanyDisplay->siren ?></strong></a>
+            <strong><?= $this->oCompanyDisplay->name ?></strong>
         <a href="<?= $this->lurl ?>/logout"><?= $this->lng['header']['deconnexion'] ?></a>
     </div><!-- /.login-panel -->
     <?
