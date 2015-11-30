@@ -207,12 +207,6 @@
                         <th><label for="photo_projet">Photo projet :</label></th>
                         <td><input type="file" name="photo_projet" id="photo_projet" /><br /><a target="_blank" href="<?= $this->surl ?>/images/dyn/projets/source/<?= $this->projects->photo_projet ?>"><?= $this->projects->photo_projet ?></a></td>
                     </tr>
-                    <tr>
-                        <th><label for="lien_video">Lien vidéo :</label></th>
-                        <td>
-                            <textarea class="textarea_lng" name="lien_video" id="lien_video" style="height: 100px;width: 427px;"><?= $this->projects->lien_video ?></textarea>
-                        </td>
-                    </tr>
                 </table>
                 <br><br>
                 <h2>Contact</h2>

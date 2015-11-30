@@ -345,7 +345,6 @@ class dossiersController extends bootstrap
                     $this->projects->target_rate    = '-';
                     $this->projects->id_analyste    = $_POST['analyste'];
                     $this->projects->id_commercial  = $_POST['commercial'];
-                    $this->projects->lien_video     = $_POST['lien_video'];
                     $this->projects->display        = $_POST['display_project'];
 
                     if ($this->current_projects_status->status >= \projects_status::PREP_FUNDING) {
