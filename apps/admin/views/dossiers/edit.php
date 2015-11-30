@@ -750,6 +750,28 @@
             margin-top: 15px;
         }
 
+        table.form .section-title th {
+            font-size: 14px;
+            text-align: center;
+        }
+
+        table.annual-accounts td:first-child {
+            text-align: left;
+        }
+
+        table.annual-accounts td:not(:first-child) {
+            text-align: right;
+        }
+
+        table.annual-accounts .sub-total td {
+            background-color: #d2d2d2;
+            font-weight: bold;
+        }
+
+        table.annual-accounts input[type=text] {
+            text-align: right;
+        }
+
         #tab_email_msg, .valid_etape {
             display: none;
             text-align: center;

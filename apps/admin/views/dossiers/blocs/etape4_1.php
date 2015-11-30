@@ -3,6 +3,9 @@
     <form method="post" name="dossier_etape4_1" id="dossier_etape4_1" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <div id="contenu_etape4_1">
             <table class="form" style="width: 100%;">
+                <tr class="section-title">
+                    <th colspan="4">Déclaration client</th>
+                </tr>
                 <tr>
                     <th><label for="ca_declara_client">Chiffe d'affaires declaré par client</label></th>
                     <td><input type="text" name="ca_declara_client" id="ca_declara_client" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->ca_declara_client, 0) ?>"/></td>
@@ -13,11 +16,9 @@
                     <th><label for="fonds_propres_declara_client">Fonds propres declarés par client</label></th>
                     <td colspan="3"><input type="text" name="fonds_propres_declara_client" id="fonds_propres_declara_client" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->fonds_propres_declara_client, 0) ?>"/></td>
                 </tr>
-            </table>
-
-            <br/><br/>
-
-            <table class="form" style="width: 100%;">
+                <tr class="section-title">
+                    <th colspan="4">Informations financières</th>
+                </tr>
                 <tr>
                     <th><label for="encours_actuel_dette_fianciere">Encours actuel de la dette financière :</label></th>
                     <td><input type="text" name="encours_actuel_dette_fianciere" id="encours_actuel_dette_fianciere" class="input_moy" value="<?= ($this->companies_details->encours_actuel_dette_fianciere != false ? number_format($this->companies_details->encours_actuel_dette_fianciere, 2, '.', '') : '') ?>"/> €</td>
@@ -31,16 +32,13 @@
                     <td><input type="text" name="tresorie_dispo_actuellement" id="tresorie_dispo_actuellement" class="input_moy" value="<?= ($this->companies_details->tresorie_dispo_actuellement != false ? number_format($this->companies_details->tresorie_dispo_actuellement, 2, '.', '') : '') ?>"/> €</td>
                 </tr>
                 <tr>
-                    <th><label for="autre_demandes_financements_prevues">Autres demandes de financements prévues<br /> (autres que celles que vous réalisez auprès d'Unilend) :</label></th>
+                    <th><label for="autre_demandes_financements_prevues">Autres demandes de financements prévues<br /> (autres que celles auprès d'Unilend) :</label></th>
                     <td colspan="3"><input type="text" name="autre_demandes_financements_prevues" id="autre_demandes_financements_prevues" class="input_moy" value="<?= ($this->companies_details->autre_demandes_financements_prevues != false ? number_format($this->companies_details->autre_demandes_financements_prevues, 2, '.', '') : '') ?>"/> €</td>
                 </tr>
                 <tr>
                     <th><label for="precisions">Vous souhaitez apporter des précisions <br /> pour nous aider à mieux vous comprendre ? :</label></th>
-                    <td colspan="3"><textarea style="width:350px;" name="precisions" id="precisions" class="textarea" /><?= $this->companies_details->precisions ?></textarea></td>
+                    <td colspan="3"><textarea style="width:735px;" name="precisions" id="precisions" class="textarea"><?= $this->companies_details->precisions ?></textarea></td>
                 </tr>
-            </table>
-
-            <table class="form" style="width: 100%;">
                 <tr>
                     <th><label for="decouverts_bancaires">Découverts bancaires :</label></th>
                     <td><input type="text" name="decouverts_bancaires" id="decouverts_bancaires" class="input_moy" value="<?= ($this->companies_details->decouverts_bancaires != false ? number_format($this->companies_details->decouverts_bancaires, 2, '.', '') : '') ?>"/> €</td>

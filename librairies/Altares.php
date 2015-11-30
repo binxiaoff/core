@@ -122,6 +122,62 @@ class Altares
         $this->setCompanyFinancial($iCompanyId, $oEligibilityInfo);
     }
 
+    public function setCompanyBalance($iCompanyId)
+    {
+        $oCompany = new \companies($this->oDatabase);
+        $oCompany->get($iCompanyId);
+
+        $oBalanceSheets = $this->getBalanceSheets($oCompany->siren);
+
+        if (isset($oBalanceSheets->myInfo->bilans) && is_array($oBalanceSheets->myInfo->bilans)) {
+            $oCompanyAssetsDebts    = new \companies_actif_passif($this->oDatabase);
+            $oCompanyBalance        = new \companies_balance($this->oDatabase);
+            $oCompaniesBalanceTypes = new \companies_balance_type($this->oDatabase);
+            $oCompanyAnnualAccounts = new \companies_bilans($this->oDatabase);
+
+            $aCodes = $oCompaniesBalanceTypes->getAllByCode();
+
+            foreach ($oBalanceSheets->myInfo->bilans as $oBalanceSheet) {
+                $aCompanyBalances = array();
+                $aAnnualAccounts  = $oCompanyAnnualAccounts->select('id_company = ' . $iCompanyId . ' AND cloture_exercice_fiscal = "' . $oBalanceSheet->dateClotureN . '"');
+
+                if (empty($aAnnualAccounts)) {
+                    $oCompanyAnnualAccounts->id_company              = $iCompanyId;
+                    $oCompanyAnnualAccounts->cloture_exercice_fiscal = $oBalanceSheet->dateClotureN;
+                    $oCompanyAnnualAccounts->duree_exercice_fiscal   = $oBalanceSheet->dureeN;
+//                    $oCompanyAnnualAccounts->ca                          = $aBalances['FL'];
+//                    $oCompanyAnnualAccounts->resultat_brute_exploitation = $aBalances['GG'] + $aBalances['GA'] + $aBalances['GB'] + $aBalances['GC'] + $aBalances['GD'] - $aBalances['FP'] - $aBalances['FQ'] + $aBalances['GE'];
+//                    $oCompanyAnnualAccounts->resultat_exploitation       = $aBalances['GG'];
+//                    $oCompanyAnnualAccounts->investissements             = $aBalances['0J'];
+                    $oCompanyAnnualAccounts->create();
+
+                    $oCompanyAssetsDebts->id_bilan = $oCompanyAnnualAccounts->id_bilan;
+                    $oCompanyAssetsDebts->create();
+                } else {
+                    $oCompanyAnnualAccounts->get($aAnnualAccounts[0]['id_bilan'], 'id_bilan');
+                    foreach ($oCompanyBalance->select('id_bilan = ' . $oCompanyAnnualAccounts->id_bilan) as $aBalance) {
+                        $aCompanyBalances[$aBalance['id_balance_type']] = $aBalance;
+                    }
+                }
+
+                foreach ($oBalanceSheet->posteList as $oBalance) {
+                    if (isset($aCodes[$oBalance->poste])) {
+                        if (false === isset($aCompanyBalances[$aCodes[$oBalance->poste]['id_balance_type']])) {
+                            $oCompanyBalance->id_bilan        = $oCompanyAnnualAccounts->id_bilan;
+                            $oCompanyBalance->id_balance_type = $aCodes[$oBalance->poste]['id_balance_type'];
+                            $oCompanyBalance->value           = $oBalance->valeur;
+                            $oCompanyBalance->create();
+                        } elseif ($aCompanyBalances[$aCodes[$oBalance->poste]['id_balance_type']]['value'] != $oBalance->valeur) {
+                            $oCompanyBalance->get($aCompanyBalances[$aCodes[$oBalance->poste]['id_balance_type']]['id_balance'], 'id_balance');
+                            $oCompanyBalance->value = $oBalance->valeur;
+                            $oCompanyBalance->update();
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Set financial data of the given company according to Altares response
      * @param integer $iCompanyId

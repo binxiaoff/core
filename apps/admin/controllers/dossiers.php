@@ -67,9 +67,11 @@ class dossiersController extends bootstrap
         $this->projects_notes                  = $this->loadData('projects_notes');
         $this->project_cgv                     = $this->loadData('project_cgv');
         $this->companies                       = $this->loadData('companies');
+        $this->companies_actif_passif          = $this->loadData('companies_actif_passif');
+        $this->companies_balance               = $this->loadData('companies_balance');
+        $this->companies_balance_type          = $this->loadData('companies_balance_type');
         $this->companies_bilans                = $this->loadData('companies_bilans');
         $this->companies_details               = $this->loadData('companies_details');
-        $this->companies_actif_passif          = $this->loadData('companies_actif_passif');
         $this->clients                         = $this->loadData('clients');
         $this->clients_adresses                = $this->loadData('clients_adresses');
         $this->projects_comments               = $this->loadData('projects_comments');
@@ -132,7 +134,6 @@ class dossiersController extends bootstrap
             $this->projects_status->get($this->current_projects_status_history->id_project_status);
             $this->current_projects_status->get($this->current_projects_status_history->id_project_status);
 
-            $this->contact     = $this->clients;
             $this->bHasAdvisor = false;
 
             if ($this->projects->id_prescripteur > 0 && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
@@ -157,11 +158,14 @@ class dossiersController extends bootstrap
             $this->aAnalysts               = $this->users->select('status = 1 AND id_user_type = 2');
             $this->aSalesPersons           = $this->users->select('status = 1 AND id_user_type = 3');
             $this->aEmails                 = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'id_project_status_history DESC');
-            $this->lbilans                 = $this->companies_bilans->select('id_company = "' . $this->companies->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->projects->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
-            $sAnnualAccountsIds            = implode(', ', array_column($this->lbilans, 'id_bilan'));
-            $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
             $this->lProjects_comments      = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added ASC', 0, 3);
             $this->lProjects_status        = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
+            $this->lbilans                 = $this->companies_bilans->select('id_company = "' . $this->companies->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->projects->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
+            $aAnnualAccountsIds            = array_column($this->lbilans, 'id_bilan');
+            $sAnnualAccountsIds            = implode(', ', $aAnnualAccountsIds);
+            $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
+            $this->aBalanceSheets          = $this->companies_balance->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
+            $this->aBalanceCodes           = $this->companies_balance_type->getAllByCode();
 
             if (count($this->lCompanies_actif_passif) < count($this->lbilans)) {
                 foreach (array_diff(array_column($this->lbilans, 'id_bilan'), array_column($this->lCompanies_actif_passif, 'id_bilan')) as $iAnnualAccountsId) {
@@ -198,7 +202,7 @@ class dossiersController extends bootstrap
             $this->bCanEditStatus = false;
             if ($this->users->get($_SESSION['user']['id_user'], 'id_user')) {
                 $this->loadData('users_types');
-                if (in_array($this->users->id_user_type, array(users_types::TYPE_ADMIN, users_types::TYPE_ANALYSTE, users_types::TYPE_COMMERCIAL))) {
+                if (in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_ANALYSTE, \users_types::TYPE_COMMERCIAL))) {
                     $this->bCanEditStatus = true;
                 }
             }
@@ -2389,7 +2393,10 @@ class dossiersController extends bootstrap
     }
 
     //utilisé pour récup les infos affichées dans le cadre
-    public function recup_info_remboursement_anticipe($id_project)
+    /**
+     * @todo Optimize: almost all loading time is here
+     */
+    private function recup_info_remboursement_anticipe($id_project)
     {
         // REMBOURSEMENT ANTICIPE
         // Recup du solde restant du de l'emprunteur
