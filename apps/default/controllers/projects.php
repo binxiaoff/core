@@ -493,7 +493,7 @@ class projectsController extends bootstrap
             $this->lBilans            = array();
             $this->aAnnualAccountsIds = array();
 
-            foreach ($this->companies_bilans->select('id_company = "' . $this->companies->id_company . '" AND cloture_exercice_fiscal <= "' . $this->companies_details->date_dernier_bilan . '"', 'cloture_exercice_fiscal DESC', 0, 3) as $aAnnualAccounts) {
+            foreach ($this->companies_bilans->select('id_company = "' . $this->companies->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->projects->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3) as $aAnnualAccounts) {
                 $this->lBilans[]            = $aAnnualAccounts;
                 $this->aAnnualAccountsIds[] = $aAnnualAccounts['id_bilan'];
             }

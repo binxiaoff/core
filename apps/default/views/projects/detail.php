@@ -302,7 +302,7 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                                     <?php for ($i = 0; $i < 3; $i++): ?>
                                     <li>
                                         <div class="annee">
-                                            <?= ucfirst(strftime('%b %Y', strtotime($this->lBilans[$i]['cloture_exercice_fiscal']))) ?><br/>
+                                            <?= ucfirst(strftime('%d/%m/%Y', strtotime($this->lBilans[$i]['cloture_exercice_fiscal']))) ?><br/>
                                             <?= str_replace('[DURATION]', $this->lBilans[$i]['duree_exercice_fiscal'], $this->lng['preteur-projets']['annual-accounts-duration-months']) ?>
                                         </div>
                                     </li>

@@ -154,7 +154,6 @@ class depot_de_dossierController extends bootstrap
         }
 
         $this->projects->retour_altares = $oResult->myInfo->codeRetour;
-        $this->projects->update();
 
         $oAltares->setCompanyData($this->companies->id_company, $oResult->myInfo);
 
@@ -165,6 +164,11 @@ class depot_de_dossierController extends bootstrap
                 $oCompanyCreationDate = new \DateTime($this->companies->date_creation);
                 $oInterval            = $oCompanyCreationDate->diff(new \DateTime());
 
+                $aAnnualAccounts = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+
+                $this->projects->id_dernier_bilan = $aAnnualAccounts[0]['id_bilan'];
+                $this->projects->update();
+
                 if ($oInterval->days < \projects::MINIMUM_CREATION_DAYS_PROSPECT) {
                     $this->redirect(self::PAGE_NAME_PROSPECT, \projects_status::PAS_3_BILANS);
                 }
@@ -173,9 +177,12 @@ class depot_de_dossierController extends bootstrap
                 break;
             case 'Non':
             default:
+                $this->projects->update();
+
                 if (in_array($oResult->myInfo->codeRetour, array(Altares::RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK, Altares::RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES))) {
                     $this->redirect(self::PAGE_NAME_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, $oResult->myInfo->motif);
                 }
+
                 $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE, $oResult->myInfo->motif);
                 break;
         }

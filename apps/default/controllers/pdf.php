@@ -495,18 +495,10 @@ class pdfController extends bootstrap
 
         $this->companies_actif_passif = $this->loadData('companies_actif_passif');
         $this->companies_bilans       = $this->loadData('companies_bilans');
-        $this->companies_details      = $this->loadData('companies_details');
         $this->echeanciers            = $this->loadData('echeanciers');
         $this->oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
         $this->oLendersAccounts       = $this->loadData('lenders_accounts');
         $this->oLoans                 = $this->loadData('loans');
-
-        $this->companies_details->get($this->companies->id_company, 'id_company');
-
-        $date_dernier_bilan             = explode('-', $this->companies_details->date_dernier_bilan);
-        $this->date_dernier_bilan_annee = $date_dernier_bilan[0];
-        $this->date_dernier_bilan_mois  = $date_dernier_bilan[1];
-        $this->date_dernier_bilan_jour  = $date_dernier_bilan[2];
 
         $this->montantPrete = $this->projects->amount;
 
@@ -521,7 +513,7 @@ class pdfController extends bootstrap
         $this->nbLoans          = $this->oLoans->counter('id_project = ' . $this->projects->id_project);
         $this->echeanceEmprun   = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project . ' AND ordre = 1');
         $this->rembByMonth      = $this->echeanciers->getMontantRembEmprunteur($this->echeanceEmprun[0]['montant'], $this->echeanceEmprun[0]['commission'], $this->echeanceEmprun[0]['tva']);
-        $this->rembByMonth      = ($this->rembByMonth / 100);
+        $this->rembByMonth      = $this->rembByMonth / 100;
         $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
         $this->lRemb            = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
 
@@ -530,13 +522,13 @@ class pdfController extends bootstrap
             $this->capital += $r['capital'];
         }
 
-        $aAnnualAccounts = $this->companies_bilans->select('id_company = ' . $this->companies->id_company . ' AND cloture_exercice_fiscal = "' . $this->companies_details->date_dernier_bilan . '"');
-
-        $this->l_AP        = $this->companies_actif_passif->select('id_bilan = ' . $aAnnualAccounts[0]['id_bilan']);
-        $this->totalActif  = ($this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement']);
-        $this->totalPassif = ($this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes']);
-        $this->lLenders    = $this->oLoans->select('id_project = ' . $this->projects->id_project, 'rate ASC');
-        $this->dateRemb    = date('d/m/Y');
+        $this->companies_bilans->get($this->projects->id_dernier_bilan, 'id_bilan');
+        $this->l_AP             = $this->companies_actif_passif->select('id_bilan = ' . $this->projects->id_dernier_bilan);
+        $this->totalActif       = ($this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement']);
+        $this->totalPassif      = ($this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes']);
+        $this->lLenders         = $this->oLoans->select('id_project = ' . $this->projects->id_project, 'rate ASC');
+        $this->dateRemb         = date('d/m/Y');
+        $this->dateDernierBilan = date('d/m/Y', strtotime($this->companies_bilans->cloture_exercice_fiscal)); // @todo Intl
 
         $this->setDisplay('pouvoir_html');
     }
@@ -569,15 +561,14 @@ class pdfController extends bootstrap
 
     private function GenerateContractHtml()
     {
-        $this->emprunteur                  = $this->loadData('clients');
-        $this->companiesEmprunteur         = $this->loadData('companies');
-        $this->companiesPreteur            = $this->loadData('companies');
-        $this->companies_actif_passif      = $this->loadData('companies_actif_passif');
-        $this->companies_bilans            = $this->loadData('companies_bilans');
-        $this->companies_detailsEmprunteur = $this->loadData('companies_details');
-        $this->echeanciers                 = $this->loadData('echeanciers');
-        $this->projects_status_history     = $this->loadData('projects_status_history');
-        $this->oProjectsPouvoir            = $this->loadData('projects_pouvoir');
+        $this->emprunteur              = $this->loadData('clients');
+        $this->companiesEmprunteur     = $this->loadData('companies');
+        $this->companiesPreteur        = $this->loadData('companies');
+        $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
+        $this->companies_bilans        = $this->loadData('companies_bilans');
+        $this->echeanciers             = $this->loadData('echeanciers');
+        $this->projects_status_history = $this->loadData('projects_status_history');
+        $this->oProjectsPouvoir        = $this->loadData('projects_pouvoir');
 
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
@@ -585,7 +576,6 @@ class pdfController extends bootstrap
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
             $this->projects->get($this->oLoans->id_project, 'id_project');
             $this->companiesEmprunteur->get($this->projects->id_company, 'id_company');
-            $this->companies_detailsEmprunteur->get($this->projects->id_company, 'id_company');
             $this->emprunteur->get($this->companiesEmprunteur->id_client_owner, 'id_client');
 
             // Si preteur morale
@@ -593,16 +583,12 @@ class pdfController extends bootstrap
                 $this->companiesPreteur->get($this->clients->id_client, 'id_client_owner');
             }
 
+            $this->companies_bilans->get($this->projects->id_dernier_bilan, 'id_bilan');
+
             $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
+            $this->dateDernierBilan = date('d/m/Y', strtotime($this->companies_bilans->cloture_exercice_fiscal)); // @todo Intl
 
-            $date_dernier_bilan             = explode('-', $this->companies_detailsEmprunteur->date_dernier_bilan);
-            $this->date_dernier_bilan_annee = $date_dernier_bilan[0];
-            $this->date_dernier_bilan_mois  = $date_dernier_bilan[1];
-            $this->date_dernier_bilan_jour  = $date_dernier_bilan[2];
-
-            $aAnnualAccounts = $this->companies_bilans->select('id_company = ' . $this->companiesEmprunteur->id_company . ' AND cloture_exercice_fiscal = "' . $this->companies_detailsEmprunteur->date_dernier_bilan . '"');
-
-            $this->l_AP        = $this->companies_actif_passif->select('id_bilan = ' . $aAnnualAccounts[0]['id_bilan']);
+            $this->l_AP        = $this->companies_actif_passif->select('id_bilan = ' . $this->projects->id_dernier_bilan);
             $this->totalActif  = ($this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement']);
             $this->totalPassif = ($this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes']);
             $this->lRemb       = $this->echeanciers->select('id_loan = ' . $this->oLoans->id_loan, 'ordre ASC');

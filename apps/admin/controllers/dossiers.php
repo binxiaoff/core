@@ -157,7 +157,7 @@ class dossiersController extends bootstrap
             $this->aAnalysts               = $this->users->select('status = 1 AND id_user_type = 2');
             $this->aSalesPersons           = $this->users->select('status = 1 AND id_user_type = 3');
             $this->aEmails                 = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'id_project_status_history DESC');
-            $this->lbilans                 = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC', 0, 3);
+            $this->lbilans                 = $this->companies_bilans->select('id_company = "' . $this->companies->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->projects->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
             $sAnnualAccountsIds            = implode(', ', array_column($this->lbilans, 'id_bilan'));
             $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
             $this->lProjects_comments      = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added ASC', 0, 3);
@@ -194,32 +194,6 @@ class dossiersController extends bootstrap
                     'end'   => $oEndDate
                 );
             }
-
-            // @todo
-            if (! $this->companies_details->get($this->projects->id_company, 'id_company')) {
-                $this->companies_details->id_company               = $this->projects->id_company;
-                $this->companies_details->date_dernier_bilan       = (date('Y') - 1) . '-12-31';
-                $this->companies_details->date_dernier_bilan_mois  = '12';
-                $this->companies_details->date_dernier_bilan_annee = (date('Y') - 1);
-                $this->companies_details->create();
-            }
-
-            if ($this->companies_details->date_dernier_bilan == '0000-00-00') {
-                $this->date_dernier_bilan_jour  = '31';
-                $this->date_dernier_bilan_mois  = '12';
-                $this->date_dernier_bilan_annee = (date('Y') - 1);
-
-                $this->companies_details->date_dernier_bilan       = (date('Y') - 1) . '-12-31';
-                $this->companies_details->date_dernier_bilan_mois  = '12';
-                $this->companies_details->date_dernier_bilan_annee = (date('Y') - 1);
-            } else {
-                $dateDernierBilan               = explode('-', $this->companies_details->date_dernier_bilan);
-                $this->date_dernier_bilan_jour  = $dateDernierBilan[2];
-                $this->date_dernier_bilan_mois  = $dateDernierBilan[1];
-                $this->date_dernier_bilan_annee = $dateDernierBilan[0];
-            }
-
-            // @todo create empty annual accounts if missing recent ones
 
             $this->bCanEditStatus = false;
             if ($this->users->get($_SESSION['user']['id_user'], 'id_user')) {
@@ -1375,17 +1349,7 @@ class dossiersController extends bootstrap
                 $this->companies->create();
 
                 $this->companies_details->id_company = $this->companies->id_company;
-                $this->companies_details->date_dernier_bilan       = (date('Y') - 1) . '-12-31';
-                $this->companies_details->date_dernier_bilan_mois  = '12';
-                $this->companies_details->date_dernier_bilan_annee = (date('Y') - 1);
                 $this->companies_details->create();
-
-                $tablAnneesBilans = array(date('Y') - 3, date('Y') - 2, date('Y') - 1, date('Y'), date('Y') + 1);
-                foreach ($tablAnneesBilans as $a) {
-                    $this->companies_bilans->id_company = $this->companies->id_company;
-                    $this->companies_bilans->date       = $a;
-                    $this->companies_bilans->create();
-                }
             }
 
             $this->projects->id_company = $this->companies->id_company;

@@ -283,15 +283,24 @@
                     </tr>
                     <tr>
                         <th><label for="rate">Score :</label></th>
-                        <td><?= $this->companies->altares_scoreVingt ?>/20</td>
+                        <td><strong><?= $this->companies->altares_scoreVingt ?></strong>/20</td>
                     </tr>
                     <tr>
                         <th><label for="rate">Score Sectoriel :</label></th>
-                        <td><?= $this->companies->altares_scoreSectorielCent/100*20 ?>/20</td>
+                        <td><strong><?= $this->companies->altares_scoreSectorielCent / 100 * 20 ?></strong>/20</td>
                     </tr>
                     <tr>
-                        <th><label for="rate">Date dernier bilan:</label></th>
-                        <td><?= $this->date_dernier_bilan_jour . '/' . $this->date_dernier_bilan_mois . '/' . $this->date_dernier_bilan_annee?></td>
+                        <th><label for="rate">Date dernier bilan :</label></th>
+                        <td>
+                            <?php if (empty($this->aAnnualAccountsDates)) { ?>
+                                -
+                            <?php
+                                } else {
+                                    $aAnnualAccountsDate = current($this->aAnnualAccountsDates);
+                                    echo $aAnnualAccountsDate['end']->format('d/m/Y');
+                                }
+                            ?>
+                        </td>
                     </tr>
                 </table>
                 <br><br>

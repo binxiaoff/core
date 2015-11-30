@@ -115,15 +115,6 @@ class Altares
             $oCompany->rcs           = $oEligibilityInfo->identite->rcs;
             $oCompany->siret         = $oEligibilityInfo->identite->siret;
             $oCompany->date_creation = substr($oEligibilityInfo->identite->dateCreation, 0, 10);
-
-            // @todo
-            $sLastAccountStatementDate                  = isset($oEligibilityInfo->identite->dateDernierBilan) && strlen($oEligibilityInfo->identite->dateDernierBilan) > 0 ? substr($oEligibilityInfo->identite->dateDernierBilan, 0, 10) : (date('Y') - 1) . '-12-31';
-            $aLastAccountStatementDate                  = explode('-', $sLastAccountStatementDate);
-            $oCompanyDetails->date_dernier_bilan        = $sLastAccountStatementDate;
-            $oCompanyDetails->date_dernier_bilan_mois   = $aLastAccountStatementDate[1];
-            $oCompanyDetails->date_dernier_bilan_annee  = $aLastAccountStatementDate[0];
-            $oCompanyDetails->date_dernier_bilan_publie = $sLastAccountStatementDate;
-            $oCompanyDetails->update();
         }
 
         $oCompany->update();

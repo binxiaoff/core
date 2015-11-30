@@ -4,37 +4,6 @@
         <div id="contenu_etape4_1">
             <table class="form" style="width: 100%;">
                 <tr>
-                    <th>Date du dernier bilan certifié :</th>
-                    <td>
-                        <select name="jour_etape4" id="jour_etape4" class="select">
-                            <?php for ($i = 1; $i <= 31; $i++): ?>
-                                <?php $numjour = (strlen($i) < 2) ? '0' . $i : $i; ?>
-                                <option<?= ($this->date_dernier_bilan_jour == $i ? ' selected' : '') ?> value="<?= $numjour ?>"><?= $i ?></option>
-                            <?php endfor; ?>
-                        </select>
-                        <select name="mois_etape4" id="mois_etape4" class="select">
-                            <?php
-                                foreach ($this->dates->tableauMois['fr'] as $k => $mois) {
-                                    $numMois = (strlen($k) < 2) ? '0' . $k : $k;
-                                    if ($k > 0) {
-                                        echo '<option' . ($this->date_dernier_bilan_mois == $numMois ? ' selected' : '') . ' value="' . $numMois . '">' . $mois . '</option>';
-                                    }
-                                }
-                            ?>
-                        </select>
-                        <select name="annee_etape4" id="annee_etape4" class="select">
-                            <?php for ($i = 2008; $i <= date('Y') + 1; $i++): ?>
-                                <option<?= ($this->date_dernier_bilan_annee == $i ? ' selected' : '') ?> value="<?= $i ?>"><?= $i ?></option>
-                            <?php endfor; ?>
-                        </select>
-                    </td>
-                </tr>
-            </table>
-
-            <br/><br/>
-
-            <table class="form" style="width: 100%;">
-                <tr>
                     <th><label for="ca_declara_client">Chiffe d'affaires declaré par client</label></th>
                     <td><input type="text" name="ca_declara_client" id="ca_declara_client" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->ca_declara_client, 0) ?>"/></td>
                     <th><label for="resultat_exploitation_declara_client">Résultat d'exploitation declaré par client</label></th>

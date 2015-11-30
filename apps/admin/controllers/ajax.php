@@ -807,7 +807,6 @@ class ajaxController extends bootstrap
                 $this->projects->update();
 
                 $this->companies_details->get($this->projects->id_company, 'id_company');
-                $this->companies_details->date_dernier_bilan                          = $_POST['annee_etape4'] . '-' . $_POST['mois_etape4'] . '-' . $_POST['jour_etape4'];
                 $this->companies_details->encours_actuel_dette_fianciere              = $this->ficelle->cleanFormatedNumber($_POST['encours_actuel_dette_fianciere']);
                 $this->companies_details->remb_a_venir_cette_annee                    = $this->ficelle->cleanFormatedNumber($_POST['remb_a_venir_cette_annee']);
                 $this->companies_details->remb_a_venir_annee_prochaine                = $this->ficelle->cleanFormatedNumber($_POST['remb_a_venir_annee_prochaine']);
