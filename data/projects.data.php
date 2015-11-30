@@ -625,7 +625,8 @@ class projects extends projects_crud
 
         if ($iProjectStatus === null) {
             $oProject_status = new \projects_status($this->bdd);
-            $iProjectStatus = $oProject_status->getLastStatut($this->id_project);
+            $oProject_status->getLastStatut($iProjectId);
+            $iProjectStatus = $oProject_status->status;
         }
 
         $iUpperValue = 0;
@@ -634,7 +635,8 @@ class projects extends projects_crud
         $oBids       = new \bids($this->bdd);
 
 
-        switch ($iProjectStatus) {
+        switch ((int) $iProjectStatus) {
+            case \projects_status::FUNDE:
             case \projects_status::REMBOURSEMENT:
             case \projects_status::REMBOURSE:
             case \projects_status::PROBLEME:
@@ -645,16 +647,25 @@ class projects extends projects_crud
                     $iLowerValue += ($aLoans['amount'] / 100);
                 }
                 break;
-            case \projects_status::FUNDE:
-            case \projects_status::FUNDING_KO:
-            case \projects_status::PRET_REFUSE:
             case \projects_status::EN_FUNDING:
-            case \projects_status::DEFAUT:
-                foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status = 1') as $aBids) {
+                foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status = 0') as $aBids) {
                     $iUpperValue += ($aBids['rate'] * ($aBids['amount'] / 100));
                     $iLowerValue += ($aBids['amount'] / 100);
                 }
                 break;
+            case \projects_status::FUNDING_KO:
+            foreach ($oBids->select('id_project = ' . $iProjectId) as $aBids) {
+                $iUpperValue += ($aBids['rate'] * ($aBids['amount'] / 100));
+                $iLowerValue += ($aBids['amount'] / 100);
+            }
+            break;
+            case \projects_status::PRET_REFUSE:
+            case \projects_status::DEFAUT:
+            foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status = 1') as $aBids) {
+                $iUpperValue += ($aBids['rate'] * ($aBids['amount'] / 100));
+                $iLowerValue += ($aBids['amount'] / 100);
+            }
+            break;
             default:
                 trigger_error('Unknown project status. Could not calculate amounts', E_USER_WARNING);
                 break;
