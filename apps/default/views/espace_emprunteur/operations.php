@@ -9,7 +9,7 @@
             </nav>
             <div class="tabs">
                 <div class="tab vos_operations">
-                    <?= $this->fireView('operations_emprunteur')?>
+                    <?= $this->fireView('operations_emprunteur') ?>
                 </div>
                 <div class="tab vos_documents">
                     <?= $this->fireView('documents') ?>
