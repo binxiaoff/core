@@ -1,4 +1,4 @@
-<div class="tab_title" id="title_etape4_4">Etape 4.4</div>
+<div class="tab_title" id="title_etape4_4">Etape 4.4 - Synthèse financière</div>
 <div class="tab_content" id="etape4_4">
     <form method="post" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <?php if (count($this->lbilans) > 0): ?>

@@ -1,4 +1,4 @@
-<div class="tab_title" id="title_etape4_2">Etape 4.2</div>
+<div class="tab_title" id="title_etape4_2">Etape 4.2 - Données bilancielles</div>
 <div class="tab_content" id="etape4_2">
     <?php /*
             <table class="tablesorter" style="text-align:center;">

@@ -1,4 +1,4 @@
-<div class="tab_title" id="title_etape4_1">Etape 4.1</div>
+<div class="tab_title" id="title_etape4_1">Etape 4.1 - Notation externe</div>
 <div class="tab_content" id="etape4_1">
     <form method="post" name="dossier_etape4_1" id="dossier_etape4_1" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <div id="contenu_etape4_1">
