@@ -101,7 +101,7 @@ class dossiersController extends bootstrap
                 sort($this->dureePossible);
             }
             $this->projects_notes->get($this->params[0], 'id_project');
-            $this->project_cgv->get($this->params[0], 'id_project');
+            //$this->project_cgv->get($this->params[0], 'id_project');
 
             $this->settings->get('Liste deroulante secteurs', 'type');
             $this->lSecteurs = explode(';', $this->settings->value);
@@ -3701,7 +3701,8 @@ class dossiersController extends bootstrap
         }
         $this->iClientId = $iClientId;
         $this->iProjectId = $oProjects->id_project;
-        $this->mails_text->get('depot-dossier-relance-status-20-1', 'lang = "' . $this->language . '" AND type');
+
+        $this->mails_text->get($this->selectEmailCompletude($oClients), 'lang = "' . $this->language . '" AND type');
     }
 
     public function _completude_preview_iframe()
@@ -3730,7 +3731,7 @@ class dossiersController extends bootstrap
             return;
         }
 
-        $this->mails_text->get('depot-dossier-relance-status-20-1', 'lang = "' . $this->language . '" AND type');
+        $this->mails_text->get($this->selectEmailCompletude($oClients), 'lang = "' . $this->language . '" AND type');
 
         $varMail = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
         $varMail['sujet'] = $this->mails_text->subject;
@@ -3769,7 +3770,7 @@ class dossiersController extends bootstrap
                 return;
             }
 
-            $this->mails_text->get('depot-dossier-relance-status-20-1', 'lang = "' . $this->language . '" AND type');
+            $this->mails_text->get($this->selectEmailCompletude($oClients), 'lang = "' . $this->language . '" AND type');
 
             $varMail = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
             $varMail['sujet'] = htmlentities($this->mails_text->subject, null, 'UTF-8');
@@ -3889,5 +3890,15 @@ class dossiersController extends bootstrap
         }
 
         return $this->attachmentHelper->remove($iAttachmentId);
+    }
+
+    private function selectEmailCompletude($oClients)
+    {
+        if (isset($oClients->secret_question) && isset($oClients->secret_reponse)) {
+            return 'depot-dossier-relance-status-20-1';
+
+        } else {
+            return 'depot-dossier-relance-status-20-1-avec-mdp';
+        }
     }
 }
