@@ -841,6 +841,26 @@ function generer_le_mdp(id_client) {
     });
 }
 
+function send_email_borrower_area(id_client, type) {
+
+    var val = {
+        id_client: id_client,
+        type: type
+    }
+
+    $.post(add_url + '/ajax/send_email_borrower_area', val).done(function (data) {
+        if (data != 'nok') {
+
+            $(".reponse_email").slideDown();
+
+            setTimeout(function () {
+                $(".reponse_email").slideUp();
+            }, 3000);
+        }
+    });
+
+}
+
 function loadDashYear(annee) {
     var val = {
         annee: annee
