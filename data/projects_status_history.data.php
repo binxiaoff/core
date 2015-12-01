@@ -119,7 +119,21 @@ class projects_status_history extends projects_status_history_crud
                     $oClients = new \clients($this->bdd);
                     $oClients->get($oCompanies->id_client_owner, 'id_client');
                     $oClients->sendEmailBorrower($oClients->id_client, 'ouverture-espace-emprunteur');
+                }
+                break;
+            case \projects_status::A_FUNDER:
+                $aExistingStatus = $this->select('id_project = '.$iProjectId.' AND id_project_status = '.projects_status::A_FUNDER);
 
+                if (empty($aExistingStatus)) {
+                    $oProjects =  new \projects($this->bdd);
+                    $oProjects->get($iProjectId, 'id_project');
+
+                    $oCompanies = new \companies($this->bdd);
+                    $oCompanies->get($oProjects->id_company, 'id_company');
+
+                    $oClients = new \clients($this->bdd);
+                    $oClients->get($oCompanies->id_client_owner, 'id_client');
+                    $oClients->sendEmailBorrower($oClients->id_client, 'ouverture-espace-emprunteur-plein');
                 }
                 break;
         }
