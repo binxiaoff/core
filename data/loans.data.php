@@ -28,300 +28,300 @@
 
 class loans extends loans_crud
 {
-
-	function loans($bdd,$params='')
+    public function __construct($bdd, $params = '')
     {
-        parent::loans($bdd,$params);
+        parent::loans($bdd, $params);
     }
 
-    function get($id,$field='id_loan')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
-        return parent::get($id,$field);
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
+        if ($order != '') {
+            $order = ' ORDER BY ' . $order;
+        }
+        $sql = 'SELECT * FROM `loans`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
     }
 
-    function update($cs='')
+    public function counter($where = '')
     {
-        parent::update($cs);
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
+
+        $sql = 'SELECT count(*) FROM `loans` ' . $where;
+
+        $result = $this->bdd->query($sql);
+        return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    function delete($id,$field='id_loan')
+    public function exist($id, $field = 'id_loan')
     {
-    	parent::delete($id,$field);
+        $sql    = 'SELECT * FROM `loans` WHERE ' . $field . '="' . $id . '"';
+        $result = $this->bdd->query($sql);
+        return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    function create($cs='')
+    public function getBidsValid($id_project, $id_lender)
     {
-        $id = parent::create($cs);
-        return $id;
+        $nbValid = $this->counter('id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = 0');
+
+        $sql = 'SELECT SUM(amount) as solde FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = 0';
+
+        $result = $this->bdd->query($sql);
+        $solde  = $this->bdd->result($result, 0, 'solde');
+        if ($solde == '') {
+            $solde = 0;
+        } else {
+            $solde = ($solde / 100);
+        }
+
+        return array('solde' => $solde, 'nbValid' => $nbValid);
     }
 
-	function select($where='',$order='',$start='',$nb='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
-		if($order != '')
-			$order = ' ORDER BY '.$order;
-		$sql = 'SELECT * FROM `loans`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+    public function getNbPreteurs($id_project)
+    {
+        $sql = 'SELECT count(DISTINCT id_lender) FROM `loans` WHERE id_project = ' . $id_project . ' AND status = 0';
 
-		$resultat = $this->bdd->query($sql);
-		$result = array();
-		while($record = $this->bdd->fetch_array($resultat))
-		{
-			$result[] = $record;
-		}
-		return $result;
-	}
+        $result = $this->bdd->query($sql);
+        return (int) $this->bdd->result($result, 0, 0);
+    }
 
-	function counter($where='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
+    public function getPreteurs($id_project)
+    {
+        $sql = 'SELECT DISTINCT id_lender FROM `loans` WHERE id_project = ' . $id_project . ' AND status = 0';
 
-		$sql='SELECT count(*) FROM `loans` '.$where;
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
 
-		$result = $this->bdd->query($sql);
-		return (int)($this->bdd->result($result,0,0));
-	}
+    public function getNbPprojet($id_lender)
+    {
+        $sql = 'SELECT count(DISTINCT id_project) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = 0';
 
-	function exist($id,$field='id_loan')
-	{
-		$sql = 'SELECT * FROM `loans` WHERE '.$field.'="'.$id.'"';
-		$result = $this->bdd->query($sql);
-		return ($this->bdd->fetch_array($result,0,0)>0);
-	}
+        $result = $this->bdd->query($sql);
+        return (int) ($this->bdd->result($result, 0, 0));
+    }
 
-	function getBidsValid($id_project,$id_lender)
-	{
-		$nbValid = $this->counter('id_project = '.$id_project.' AND id_lender = '.$id_lender.' AND status = 0');
+    // retourne la moyenne des prets validés d'un projet
+    public function getAvgLoans($id_project, $champ = 'amount')
+    {
+        $sql = 'SELECT AVG(' . $champ . ') as avg FROM loans WHERE id_project = ' . $id_project . ' AND status = 0';
 
-		$sql = 'SELECT SUM(amount) as solde FROM loans WHERE id_project = '.$id_project.' AND id_lender = '.$id_lender.' AND status = 0';
+        $result = $this->bdd->query($sql);
+        $avg    = $this->bdd->result($result, 0, 'avg');
+        if ($avg == '') {
+            $avg = 0;
+        }
 
-		$result = $this->bdd->query($sql);
-		$solde = $this->bdd->result($result, 0, 'solde');
-		if($solde == '') $solde = 0;
-		else $solde = ($solde/100);
+        return $avg;
+    }
 
-		return array('solde' => $solde,'nbValid' => $nbValid);
-	}
+    // retourne la moyenne des prets validés d'un preteur sur un projet
+    public function getAvgLoansPreteur($id_project, $id_lender, $champ = 'amount')
+    {
+        $sql = 'SELECT AVG(' . $champ . ') as avg FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = 0';
 
-	function getNbPreteurs($id_project)
-	{
-		$sql='SELECT count(DISTINCT id_lender) FROM `loans` WHERE id_project = '.$id_project.' AND status = 0';
+        $result = $this->bdd->query($sql);
+        $avg    = $this->bdd->result($result, 0, 'avg');
+        if ($avg == '') {
+            $avg = 0;
+        }
 
-		$result = $this->bdd->query($sql);
-		return (int)($this->bdd->result($result,0,0));
-	}
+        return $avg;
+    }
 
-	function getPreteurs($id_project)
-	{
-		$sql='SELECT DISTINCT id_lender FROM `loans` WHERE id_project = '.$id_project.' AND status = 0';
+    // retourne la moyenne des prets validés d'un preteur
+    public function getAvgPrets($id_lender)
+    {
+        $sql = 'SELECT AVG(rate) as avg FROM loans WHERE id_lender = ' . $id_lender . ' AND status = 0';
 
-		$resultat = $this->bdd->query($sql);
-		$result = array();
-		while($record = $this->bdd->fetch_array($resultat))
-		{
-			$result[] = $record;
-		}
-		return $result;
-	}
+        $result = $this->bdd->query($sql);
+        $avg    = $this->bdd->result($result, 0, 'avg');
+        if ($avg == '') {
+            $avg = 0;
+        }
 
-	function getNbPprojet($id_lender)
-	{
-		$sql='SELECT count(DISTINCT id_project) FROM `loans` WHERE id_lender = '.$id_lender.' AND status = 0';
+        return $avg;
+    }
 
-		$result = $this->bdd->query($sql);
-		return (int)($this->bdd->result($result,0,0));
-	}
+    // sum prêtée d'un lender
+    public function sumPrets($id_lender)
+    {
 
-	// retourne la moyenne des prets validés d'un projet
-	function getAvgLoans($id_project,$champ='amount')
-	{
-		$sql = 'SELECT AVG('.$champ.') as avg FROM loans WHERE id_project = '.$id_project.' AND status = 0';
+        $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = "0"';
 
-		$result = $this->bdd->query($sql);
-		$avg = $this->bdd->result($result, 0, 'avg');
-		if($avg == '') $avg = 0;
+        $result  = $this->bdd->query($sql);
+        $montant = (int) ($this->bdd->result($result, 0, 0));
+        if ($montant > 0) {
+            $montant = $montant / 100;
+        } else {
+            $montant = 0;
+        }
+        return $montant;
+    }
 
-		return $avg;
-	}
+    // sum prêtée d'un lender sur un mois
+    public function sumPretsByMonths($id_lender, $month, $year)
+    {
 
-	// retourne la moyenne des prets validés d'un preteur sur un projet
-	function getAvgLoansPreteur($id_project,$id_lender,$champ='amount')
-	{
-		$sql = 'SELECT AVG('.$champ.') as avg FROM loans WHERE id_project = '.$id_project.' AND id_lender = '.$id_lender.' AND status = 0';
+        $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = "0" AND LEFT(added,7) = "' . $year . '-' . $month . '"';
 
-		$result = $this->bdd->query($sql);
-		$avg = $this->bdd->result($result, 0, 'avg');
-		if($avg == '') $avg = 0;
+        $result  = $this->bdd->query($sql);
+        $montant = (int) ($this->bdd->result($result, 0, 0));
+        if ($montant > 0) {
+            $montant = $montant / 100;
+        } else {
+            $montant = 0;
+        }
+        return $montant;
+    }
 
-		return $avg;
-	}
+    // sum prêtée d'un du projet
+    public function sumPretsProjet($id_project)
+    {
 
-	// retourne la moyenne des prets validés d'un preteur
-	function getAvgPrets($id_lender)
-	{
-		$sql = 'SELECT AVG(rate) as avg FROM loans WHERE id_lender = '.$id_lender.' AND status = 0';
+        $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_project = ' . $id_project;
 
-		$result = $this->bdd->query($sql);
-		$avg = $this->bdd->result($result, 0, 'avg');
-		if($avg == '') $avg = 0;
+        $result  = $this->bdd->query($sql);
+        $montant = (int) ($this->bdd->result($result, 0, 0));
+        if ($montant > 0) {
+            $montant = $montant / 100;
+        } else {
+            $montant = 0;
+        }
+        return $montant;
+    }
 
-		return $avg;
-	}
+    public function sumPretsByProject($id_lender, $year, $order = '')
+    {
+        if ($order != '') {
+            $order = ' ORDER BY ' . $order;
+        }
 
-	// sum prêtée d'un lender
-	function sumPrets($id_lender)
-	{
+        $sql = 'SELECT SUM(amount) as montant,AVG(rate) as rate, id_project FROM `loans` WHERE id_lender = ' . $id_lender . ' AND YEAR(added) = ' . $year . ' AND status = 0 GROUP BY id_project' . $order;
 
-		$sql='SELECT SUM(amount) FROM `loans` WHERE id_lender = '.$id_lender.' AND status = "0"';
-
-		$result = $this->bdd->query($sql);
-		$montant = (int)($this->bdd->result($result,0,0));
-		if($montant > 0) $montant = $montant/100;
-		else $montant = 0;
-		return $montant;
-	}
-
-	// sum prêtée d'un lender sur un mois
-	function sumPretsByMonths($id_lender,$month,$year)
-	{
-
-		$sql='SELECT SUM(amount) FROM `loans` WHERE id_lender = '.$id_lender.' AND status = "0" AND LEFT(added,7) = "'.$year.'-'.$month.'"';
-
-		$result = $this->bdd->query($sql);
-		$montant = (int)($this->bdd->result($result,0,0));
-		if($montant > 0) $montant = $montant/100;
-		else $montant = 0;
-		return $montant;
-	}
-
-	// sum prêtée d'un du projet
-	function sumPretsProjet($id_project)
-	{
-
-		$sql='SELECT SUM(amount) FROM `loans` WHERE id_project = '.$id_project;
-
-		$result = $this->bdd->query($sql);
-		$montant = (int)($this->bdd->result($result,0,0));
-		if($montant > 0) $montant = $montant/100;
-		else $montant = 0;
-		return $montant;
-	}
-
-	function sumPretsByProject($id_lender,$year,$order='')
-	{
-		if($order != '')$order = ' ORDER BY '.$order;
-
-		$sql='SELECT SUM(amount) as montant,AVG(rate) as rate, id_project FROM `loans` WHERE id_lender = '.$id_lender.' AND YEAR(added) = '.$year.' AND status = 0 GROUP BY id_project'.$order;
-
-		$resultat = $this->bdd->query($sql);
-		$result = array();
-		while($record = $this->bdd->fetch_array($resultat))
-		{
-			$result[] = $record;
-		}
-		return $result;
-	}
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
 
 
-	function getSumPretsByMonths($id_lender,$year)
-	{
-		$sql = 'SELECT SUM(amount/100) AS montant, LEFT(added,7) AS date FROM loans WHERE YEAR(added) = '.$year.' AND id_lender = '.$id_lender.' AND status = 0 GROUP BY LEFT(added,7)';
-		$req = $this->bdd->query($sql);
-		$res = array();
-		while($rec = $this->bdd->fetch_array($req))
-        {
-			$d = explode('-',$rec['date']);
+    public function getSumPretsByMonths($id_lender, $year)
+    {
+        $sql = 'SELECT SUM(amount/100) AS montant, LEFT(added,7) AS date FROM loans WHERE YEAR(added) = ' . $year . ' AND id_lender = ' . $id_lender . ' AND status = 0 GROUP BY LEFT(added,7)';
+        $req = $this->bdd->query($sql);
+        $res = array();
+        while ($rec = $this->bdd->fetch_array($req)) {
+            $d          = explode('-', $rec['date']);
             $res[$d[1]] = $rec['montant'];
         }
-		return $res;
-	}
+        return $res;
+    }
 
-	function sumLoansbyDay($date)
-	{
+    public function sumLoansbyDay($date)
+    {
 
-		$sql='SELECT SUM(amount) FROM `loans` WHERE LEFT(added,10) = "'.$date.'" AND status = 0';
+        $sql = 'SELECT SUM(amount) FROM `loans` WHERE LEFT(added,10) = "' . $date . '" AND status = 0';
 
-		$result = $this->bdd->query($sql);
-		$montant = (int)($this->bdd->result($result,0,0));
-		return $montant/100;
-	}
+        $result  = $this->bdd->query($sql);
+        $montant = (int) ($this->bdd->result($result, 0, 0));
+        return $montant / 100;
+    }
 
-	function sum($where='',$champ)
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
+    public function sum($where = '', $champ)
+    {
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
 
-		$sql='SELECT SUM('.$champ.') FROM `loans` '.$where;
+        $sql = 'SELECT SUM(' . $champ . ') FROM `loans` ' . $where;
 
-		$result = $this->bdd->query($sql);
-		$return = (int)($this->bdd->result($result,0,0));
+        $result = $this->bdd->query($sql);
+        $return = (int) ($this->bdd->result($result, 0, 0));
 
-		return $return;
-	}
+        return $return;
+    }
 
-	// On recup les projet dont le preteur a un loan valide
-	function getProjectsPreteurLoans($id_lender)
-	{
+    // On recup les projet dont le preteur a un loan valide
+    public function getProjectsPreteurLoans($id_lender)
+    {
 
-		$sql='
-			SELECT
-				l.id_project,
-				p.title
-			FROM loans l
-			LEFT JOIN projects p ON l.id_project = p.id_project
-			WHERE id_lender = '.$id_lender.' AND l.status = 0
-			GROUP BY l.id_project
-			ORDER BY p.title ASC';
+        $sql = '
+            SELECT
+                l.id_project,
+                p.title
+            FROM loans l
+            LEFT JOIN projects p ON l.id_project = p.id_project
+            WHERE id_lender = ' . $id_lender . ' AND l.status = 0
+            GROUP BY l.id_project
+            ORDER BY p.title ASC';
 
-		$resultat = $this->bdd->query($sql);
-		$result = array();
-		while($record = $this->bdd->fetch_array($resultat))
-		{
-			$result[] = $record;
-		}
-		return $result;
-	}
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
 
-	// On recup la liste des loans d'un preteur en les regoupant par projet
-	function getSumLoansByProject($id_lender,$year='',$order='')
-	{
-		if($order == '') $order = 'l.added DESC';
+    // On recup la liste des loans d'un preteur en les regoupant par projet
+    public function getSumLoansByProject($id_lender, $year = '', $order = '')
+    {
+        if ($order == '') {
+            $order = 'l.added DESC';
+        }
 
-		if($year != '') $year = ' AND YEAR(l.added) = "'.$year.'"';
+        if ($year != '') {
+            $year = ' AND YEAR(l.added) = "' . $year . '"';
+        }
 
-		$sql='
-			SELECT
-				l.id_project,
-				p.title,
-				p.slug,
-				p.title as name,
-				c.city,
-				c.zip,
-				p.risk,
-				(SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as project_status,
-				(SELECT psh.added FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status_change,
-				SUM(ROUND(l.amount/100,2)) as amount,
-				ROUND(AVG(rate),2) as rate,
-				COUNT(l.id_loan) as nb_loan,
-				l.id_loan as id_loan_if_one_loan,
-				LEFT((SELECT e.date_echeance FROM echeanciers e WHERE e.id_loan = l.id_loan AND e.ordre = 1 ORDER BY e.date_echeance ASC LIMIT 1),10) as debut,
-				LEFT((SELECT e1.date_echeance FROM echeanciers e1 WHERE e1.id_loan = l.id_loan ORDER BY e1.date_echeance DESC LIMIT 1),10) as fin,
-				LEFT((SELECT e2.date_echeance FROM echeanciers e2 WHERE e2.id_loan = l.id_loan AND e2.status = 0 ORDER BY e2.date_echeance ASC LIMIT 1),10) as next_echeance,
-				SUM((SELECT ((ROUND(e3.montant/100,2))-(ROUND(e3.prelevements_obligatoires+e3.retenues_source+e3.csg+e3.prelevements_sociaux+e3.contributions_additionnelles+e3.prelevements_solidarite+e3.crds,2))) FROM echeanciers e3 WHERE e3.id_loan = l.id_loan AND e3.status = 0 ORDER BY e3.date_echeance ASC LIMIT 1)) as mensuel
-			FROM loans l
-			LEFT JOIN projects p ON l.id_project = p.id_project
-			LEFT JOIN companies c ON p.id_company = c.id_company
-			WHERE id_lender = '.$id_lender.' AND l.status = 0 '.$year.'
-			GROUP BY l.id_project
-			ORDER BY '.$order;
+        $sql = '
+            SELECT
+                l.id_project,
+                p.title,
+                p.slug,
+                p.title AS name,
+                c.city,
+                c.zip,
+                p.risk,
+                (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) AS project_status,
+                (SELECT psh.added FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) AS status_change,
+                SUM(ROUND(l.amount / 100, 2)) AS amount,
+                ROUND(AVG(rate), 2) AS rate,
+                COUNT(l.id_loan) AS nb_loan,
+                l.id_loan AS id_loan_if_one_loan,
+                DATE((SELECT MIN(e.date_echeance) FROM echeanciers e WHERE e.id_loan = l.id_loan AND e.ordre = 1)) AS debut,
+                DATE((SELECT MAX(e1.date_echeance) FROM echeanciers e1 WHERE e1.id_loan = l.id_loan)) AS fin,
+                DATE((SELECT MIN(e2.date_echeance) FROM echeanciers e2 WHERE e2.id_loan = l.id_loan AND e2.status = 0)) AS next_echeance,
+                SUM((SELECT (ROUND(e3.montant / 100, 2) - ROUND(e3.prelevements_obligatoires + e3.retenues_source + e3.csg + e3.prelevements_sociaux + e3.contributions_additionnelles + e3.prelevements_solidarite + e3.crds, 2)) FROM echeanciers e3 WHERE e3.id_loan = l.id_loan AND e3.status = 0 AND e3.date_echeance = (SELECT MIN(e4.date_echeance) FROM echeanciers e4 WHERE e4.id_loan = l.id_loan AND e4.status = 0) LIMIT 1)) AS mensuel
+            FROM loans l
+            LEFT JOIN projects p ON l.id_project = p.id_project
+            LEFT JOIN companies c ON p.id_company = c.id_company
+            WHERE id_lender = ' . $id_lender . ' AND l.status = 0 ' . $year . '
+            GROUP BY l.id_project
+            ORDER BY ' . $order;
 
-		$resultat = $this->bdd->query($sql);
-		$result = array();
-		while($record = $this->bdd->fetch_array($resultat))
-		{
-			$result[] = $record;
-		}
-		return $result;
-	}
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
 }
