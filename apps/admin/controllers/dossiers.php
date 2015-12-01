@@ -125,6 +125,7 @@ class dossiersController extends bootstrap
             $this->bReadonlyRiskNote = (in_array($this->current_projects_status->status, $aBlockRiskStatus)) ?: false;
 
             $this->companies->get($this->projects->id_company, 'id_company');
+            $this->companies_details->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
             $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
             $this->projects_notes->get($this->projects->id_project, 'id_project');
@@ -1245,9 +1246,7 @@ class dossiersController extends bootstrap
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
 
-        // Chargement des datas
-        $this->projects          = $this->loadData('projects');
-        $this->companies_details = $this->loadData('companies_details');
+        $this->projects = $this->loadData('projects');
 
         if (isset($_POST['send_etape5']) && isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             // Histo user //

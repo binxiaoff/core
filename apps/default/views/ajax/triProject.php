@@ -43,7 +43,6 @@
 
         // On recupere les info companies
         $this->companies->get($pf['id_company'], 'id_company');
-        $this->companies_details->get($pf['id_company'], 'id_company');
 
         $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $pf['date_retrait_full']);
         if ($inter['mois'] > 0) {

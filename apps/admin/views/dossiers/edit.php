@@ -98,7 +98,6 @@
     <h1>Detail dossier : <?= $this->projects->title ?></h1>
     <form method="post" name="dossier_resume" id="dossier_resume" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <div id="resume">
-            <h2>Resume & actions</h2>
             <div class="gauche">
                 <h2>Identité</h2>
                 <table class="form" style="width: 580px;">

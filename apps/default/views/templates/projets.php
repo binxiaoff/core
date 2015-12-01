@@ -71,7 +71,6 @@
 
                         // On recupere les info companies
                         $this->companies->get($pf['id_company'], 'id_company');
-                        $this->companies_details->get($pf['id_company'], 'id_company');
 
                         // date fin 21h a chaque fois
                         $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $pf['date_retrait_full']);
@@ -219,7 +218,6 @@
 
                 // On recupere les info companies
                 $this->companies->get($pf['id_company'], 'id_company');
-                $this->companies_details->get($pf['id_company'], 'id_company');
 
                 // date fin 21h a chaque fois
                 $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $pf['date_retrait_full']);

@@ -289,11 +289,10 @@ class rootController extends bootstrap
                 $this->settings->get('Heure fin periode funding', 'type');
                 $this->heureFinFunding = $this->settings->value;
 
-                $this->projects          = $this->loadData('projects');
-                $this->projects_status   = $this->loadData('projects_status');
-                $this->companies         = $this->loadData('companies');
-                $this->companies_details = $this->loadData('companies_details');
-                $this->favoris           = $this->loadData('favoris');
+                $this->projects        = $this->loadData('projects');
+                $this->projects_status = $this->loadData('projects_status');
+                $this->companies       = $this->loadData('companies');
+                $this->favoris         = $this->loadData('favoris');
 
                 // tri par taux
                 $this->settings->get('Tri par taux', 'type');
@@ -423,11 +422,10 @@ class rootController extends bootstrap
 
                 $this->loadCss('default/compteur_home/style');
 
-                $this->projects          = $this->loadData('projects');
-                $this->projects_status   = $this->loadData('projects_status');
-                $this->companies         = $this->loadData('companies');
-                $this->companies_details = $this->loadData('companies_details');
-                $this->bids              = $this->loadData('bids');
+                $this->projects        = $this->loadData('projects');
+                $this->projects_status = $this->loadData('projects_status');
+                $this->companies       = $this->loadData('companies');
+                $this->bids            = $this->loadData('bids');
 
                 $this->ficelle->source(isset($_GET['utm_source']) ? $_GET['utm_source'] : '', '', isset($_GET['utm_source2']) ? $_GET['utm_source2'] : '');
 
@@ -945,7 +943,6 @@ class rootController extends bootstrap
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->companies               = $this->loadData('companies');
-        $this->companies_details       = $this->loadData('companies_details');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->projects                = $this->loadData('projects');
 
@@ -1000,7 +997,6 @@ class rootController extends bootstrap
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->companies               = $this->loadData('companies');
-        $this->companies_details       = $this->loadData('companies_details');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->projects                = $this->loadData('projects');
 
@@ -1055,7 +1051,6 @@ class rootController extends bootstrap
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->companies               = $this->loadData('companies');
-        $this->companies_details       = $this->loadData('companies_details');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->projects                = $this->loadData('projects');
 

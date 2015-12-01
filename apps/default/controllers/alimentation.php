@@ -29,7 +29,6 @@ class alimentationController extends bootstrap
         require_once $this->path . 'protected/payline/include.php';
 
         $this->companies               = $this->loadData('companies');
-        $this->companies_details       = $this->loadData('companies_details');
         $this->lenders_accounts        = $this->loadData('lenders_accounts');
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
