@@ -969,25 +969,22 @@ class pdfController extends bootstrap
                 1614  => '27/05/2015',
                 3089  => '29/06/2015',
                 10971 => '06/08/2015',
-                970   => '30/09/2015'
+                970   => '30/09/2015',
+                7727  => '23/11/2015'
             );
 
-            if ($this->oLoans->id_project == 1614) {
-                //plus de mandataire dans le pdf, on l'aura que dans le mail (Note BT: 17793)
-                //$this->mandataires_var = "
-                //    Me ROUSSEL Bernard
-                //    <br />
-                //    850, rue Etienne Lenoir. Km Delta
-                //    <br />
-                //    30 900 Nîmes
-                //    ";
-
-
-                // Nature
-                $this->nature_var = "Liquidation judiciaire";
+            switch ($this->oLoans->id_project) {
+                case 1614:
+                    $this->nature_var = 'Liquidation judiciaire';
+                    break;
+                case 7727:
+                    $this->nature_var = 'Redressement judiciaire';
+                    break;
+                case 3089:
+                default:
+                    $this->nature_var = 'Procédure de sauvegarde';
+                    break;
             }
-            if ($this->oLoans->id_project == 3089)
-                $this->nature_var = "Procédure de sauvegarde";
 
             $this->echu         = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND LEFT(date_echeance,10) >= "2015-04-19" AND LEFT(date_echeance,10) <= "' . date('Y-m-d') . '" AND id_loan = ' . $this->oLoans->id_loan, 'montant');
             $this->echoir       = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND LEFT(date_echeance,10) > "' . date('Y-m-d') . '" AND id_loan = ' . $this->oLoans->id_loan, 'capital');

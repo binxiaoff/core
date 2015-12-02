@@ -1892,7 +1892,7 @@ class ajaxController extends bootstrap
             }
 
             $this->lSumLoans               = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, $annee, $arrayTri[$tri] . " " . $this->order);
-            $this->arrayDeclarationCreance = array(1456, 1009, 1614, 3089, 10971, 970);
+            $this->arrayDeclarationCreance = array(1456, 1009, 1614, 3089, 10971, 970, 7727);
         } else {
             echo 'nok';
             die;
