@@ -2977,4 +2977,28 @@ class ajaxController extends bootstrap
 
         echo $sResult;
     }
+
+    public function _send_email_borrower_area()
+    {
+        $this->autoFireView = false;
+
+        if (isset($_POST['id_client']) && isset($_POST['type'])) {
+
+            $oClients = $this->loadData('clients');
+            $oClients->get($_POST['id_client'], 'id_client');
+
+            switch ($_POST['type']) {
+                case 'open':
+                    $sTypeEmail = 'ouverture-espace-emprunteur';
+                    break;
+                case 'initialize':
+                    $sTypeEmail = 'mot-de-passe-oublie-emprunteur';
+                    break;
+            }
+
+            $oClients->sendEmailBorrower($oClients->id_client, $sTypeEmail);
+
+        }
+
+    }
 }
