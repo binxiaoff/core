@@ -39,22 +39,21 @@
 <div class="main">
     <div class="shell">
 
-       <?php if (empty($this->projectsPreFunding) === false) { ?>
+       <?php if (empty($this->aProjectsPreFunding) === false) { ?>
 
-            <table class="table table_projects">
+            <table class="table table_projects" style="table-layout: fixed;">
                 <thead>
                 <tr>
                     <th></th>
                     <th width="40"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
                     <th width="200"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
                     <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
-                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-date-de-cloture'] ?></th>
-                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-status'] ?></th>
+                    <th width="150"><?= $this->lng['espace-emprunteur']['table-projets-status'] ?></th>
                     <th></th>
                 </tr>
                 </thead>
                 <tbody>
-                <?php foreach ($this->projectsPreFunding as $aProject) { ?>
+                <?php foreach ($this->aProjectsPreFunding as $aProject) { ?>
                     <tr>
                         <td><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $aProject['photo_projet'] ?>"
                                  alt="<?= $aProject['photo_projet'] ?>" class="thumb"></td>
@@ -72,7 +71,7 @@
 
 
         <?php if (empty($this->aProjectsFunding) === false) { ?>
-            <table class="table table_projects">
+            <table class="table table_projects" style="table-layout: fixed;">
                 <thead>
                 <tr>
                     <th></th>
@@ -118,7 +117,7 @@
         <?php if (empty($this->aProjectsPostFunding) === false) { ?>
             <table>
                 <thead>
-                <tr class="table table_projects">
+                <tr class="table table_projects" style="table-layout: fixed;">
                     <th></th>
                     <th width="40"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
                     <th width="200"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
@@ -143,7 +142,7 @@
                         <td><?= $this->ficelle->formatNumber($aProject['MonthlyPayment']) ?> €</td>
                         <td><?= $aProject['AverageIR'] ?> %</td>
                         <td><?= $this->ficelle->formatNumber($aProject['RemainingDueCapital']) ?> €</td>
-                        <td><?= $aProject['DateNextMonthlyPayment'] ?></td>
+                        <td><?= ($aProject['RemainingDueCapital'] == 0) ? $this->lng['espace-emprunteur']['rembourse-integralement'] : $aProject['DateNextMonthlyPayment'] ?></td>
                         <td><a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">Voir le projet</a>
                         </td>
                     </tr>
