@@ -71,7 +71,7 @@ class factures extends factures_crud
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function fa()
+    public function selectEcheancesRembAndNoFacture()
     {
         $sql = '
             SELECT ee.id_project, p.slug, p.id_company, c.id_client_owner, cli.hash, ee.ordre
