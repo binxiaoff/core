@@ -797,40 +797,12 @@ class ajaxController extends bootstrap
                 $this->projects->comments             = $_POST['comments_etape3'];
                 $this->projects->update();
             } elseif ($_POST['etape'] == 4.1) {
-                $this->projects          = $this->loadData('projects');
-                $this->companies_details = $this->loadData('companies_details');
-
+                $this->projects = $this->loadData('projects');
                 $this->projects->get($_POST['id_project'], 'id_project');
                 $this->projects->ca_declara_client                    = $this->ficelle->cleanFormatedNumber($_POST['ca_declara_client']);
                 $this->projects->resultat_exploitation_declara_client = $this->ficelle->cleanFormatedNumber($_POST['resultat_exploitation_declara_client']);
                 $this->projects->fonds_propres_declara_client         = $this->ficelle->cleanFormatedNumber($_POST['fonds_propres_declara_client']);
                 $this->projects->update();
-
-                $this->companies_details->get($this->projects->id_company, 'id_company');
-                $this->companies_details->encours_actuel_dette_fianciere              = $this->ficelle->cleanFormatedNumber($_POST['encours_actuel_dette_fianciere']);
-                $this->companies_details->remb_a_venir_cette_annee                    = $this->ficelle->cleanFormatedNumber($_POST['remb_a_venir_cette_annee']);
-                $this->companies_details->remb_a_venir_annee_prochaine                = $this->ficelle->cleanFormatedNumber($_POST['remb_a_venir_annee_prochaine']);
-                $this->companies_details->tresorie_dispo_actuellement                 = $this->ficelle->cleanFormatedNumber($_POST['tresorie_dispo_actuellement']);
-                $this->companies_details->autre_demandes_financements_prevues         = $this->ficelle->cleanFormatedNumber($_POST['autre_demandes_financements_prevues']);
-                $this->companies_details->precisions                                  = $_POST['precisions'];
-                $this->companies_details->decouverts_bancaires                        = $this->ficelle->cleanFormatedNumber($_POST['decouverts_bancaires']);
-                $this->companies_details->lignes_de_tresorerie                        = $this->ficelle->cleanFormatedNumber($_POST['lignes_de_tresorerie']);
-                $this->companies_details->affacturage                                 = $this->ficelle->cleanFormatedNumber($_POST['affacturage']);
-                $this->companies_details->escompte                                    = $this->ficelle->cleanFormatedNumber($_POST['escompte']);
-                $this->companies_details->financement_dailly                          = $this->ficelle->cleanFormatedNumber($_POST['financement_dailly']);
-                $this->companies_details->credit_de_tresorerie                        = $this->ficelle->cleanFormatedNumber($_POST['credit_de_tresorerie']);
-                $this->companies_details->credit_bancaire_investissements_materiels   = $this->ficelle->cleanFormatedNumber($_POST['credit_bancaire_investissements_materiels']);
-                $this->companies_details->credit_bancaire_investissements_immateriels = $this->ficelle->cleanFormatedNumber($_POST['credit_bancaire_investissements_immateriels']);
-                $this->companies_details->rachat_entreprise_ou_titres                 = $this->ficelle->cleanFormatedNumber($_POST['rachat_entreprise_ou_titres']);
-                $this->companies_details->credit_immobilier                           = $this->ficelle->cleanFormatedNumber($_POST['credit_immobilier']);
-                $this->companies_details->credit_bail_immobilier                      = $this->ficelle->cleanFormatedNumber($_POST['credit_bail_immobilier']);
-                $this->companies_details->credit_bail                                 = $this->ficelle->cleanFormatedNumber($_POST['credit_bail']);
-                $this->companies_details->location_avec_option_achat                  = $this->ficelle->cleanFormatedNumber($_POST['location_avec_option_achat']);
-                $this->companies_details->location_financiere                         = $this->ficelle->cleanFormatedNumber($_POST['location_financiere']);
-                $this->companies_details->location_longue_duree                       = $this->ficelle->cleanFormatedNumber($_POST['location_longue_duree']);
-                $this->companies_details->pret_oseo                                   = $this->ficelle->cleanFormatedNumber($_POST['pret_oseo']);
-                $this->companies_details->pret_participatif                           = $this->ficelle->cleanFormatedNumber($_POST['pret_participatif']);
-                $this->companies_details->update();
             } elseif ($_POST['etape'] == 4.2) {
             } elseif ($_POST['etape'] == 4.3) {
             } elseif ($_POST['etape'] == 5) {

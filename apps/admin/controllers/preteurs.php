@@ -89,17 +89,12 @@ class preteursController extends bootstrap
                 if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
                     $companies_actif_passif = $this->loadData('companies_actif_passif');
                     $companies_bilans       = $this->loadData('companies_bilans');
-                    $companies_details      = $this->loadData('companies_details');
 
                     while ($companies_bilans->get($this->companies->id_company . '" LIMIT "1', 'id_company')) {
                         if ($companies_actif_passif->get($companies_bilans->id_bilan, 'id_bilan')) {
                             $companies_actif_passif->delete($companies_bilans->id_bilan, 'id_bilan');
                         }
                         $companies_bilans->delete($this->companies->id_company, 'id_company');
-                    }
-
-                    if ($companies_details->get($this->companies->id_company, 'id_company')) {
-                        $companies_details->delete($this->companies->id_company, 'id_company');
                     }
 
                     $this->companies->delete($this->clients->id_client, 'id_client_owner');
@@ -1136,17 +1131,12 @@ class preteursController extends bootstrap
                     // on verif les autres table comapnie
                     $companies_actif_passif = $this->loadData('companies_actif_passif');
                     $companies_bilans       = $this->loadData('companies_bilans');
-                    $companies_details      = $this->loadData('companies_details');
 
                     while ($companies_bilans->get($this->companies->id_company . '" LIMIT "1', 'id_company')) {
                         if ($companies_actif_passif->get($companies_bilans->id_bilan, 'id_bilan')) {
                             $companies_actif_passif->delete($companies_bilans->id_bilan, 'id_bilan');
                         }
                         $companies_bilans->delete($this->companies->id_company, 'id_company');
-                    }
-
-                    if ($companies_details->get($this->companies->id_company, 'id_company')) {
-                        $companies_details->delete($this->companies->id_company, 'id_company');
                     }
 
                     $this->companies->delete($this->clients->id_client, 'id_client_owner');

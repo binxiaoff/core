@@ -25,7 +25,6 @@ class depot_de_dossierController extends bootstrap
 
         $this->companies                     = $this->loadData('companies');
         $this->companies_bilans              = $this->loadData('companies_bilans');
-        $this->companies_details             = $this->loadData('companies_details');
         $this->companies_actif_passif        = $this->loadData('companies_actif_passif');
         $this->projects                      = $this->loadData('projects');
         $this->projects_status               = $this->loadData('projects_status');
@@ -101,9 +100,6 @@ class depot_de_dossierController extends bootstrap
         $this->companies->siren                         = $iSIREN;
         $this->companies->status_adresse_correspondance = '1';
         $this->companies->create();
-
-        $this->companies_details->id_company = $this->companies->id_company;
-        $this->companies_details->create();
 
         $this->projects->id_company                           = $this->companies->id_company;
         $this->projects->amount                               = $iAmount;
@@ -331,8 +327,6 @@ class depot_de_dossierController extends bootstrap
         $this->companies->name          = $_POST['raison_sociale'];
         $this->companies->email_facture = $_POST['email'];
         $this->companies->update();
-
-        $this->companies_details->update();
 
         if ('non' === $_POST['gerant']) {
             if (true === $this->clients_prescripteur->existEmail($_POST['email_prescripteur'])) { // Email does not exist in DB

@@ -71,7 +71,6 @@ class dossiersController extends bootstrap
         $this->companies_balance               = $this->loadData('companies_balance');
         $this->companies_balance_type          = $this->loadData('companies_balance_type');
         $this->companies_bilans                = $this->loadData('companies_bilans');
-        $this->companies_details               = $this->loadData('companies_details');
         $this->clients                         = $this->loadData('clients');
         $this->clients_adresses                = $this->loadData('clients_adresses');
         $this->projects_comments               = $this->loadData('projects_comments');
@@ -125,7 +124,6 @@ class dossiersController extends bootstrap
             $this->bReadonlyRiskNote = (in_array($this->current_projects_status->status, $aBlockRiskStatus)) ?: false;
 
             $this->companies->get($this->projects->id_company, 'id_company');
-            $this->companies_details->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
             $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
             $this->projects_notes->get($this->projects->id_project, 'id_project');
@@ -1321,7 +1319,6 @@ class dossiersController extends bootstrap
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->companies               = $this->loadData('companies');
-        $this->companies_details       = $this->loadData('companies_details');
         $this->projects                = $this->loadData('projects');
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
@@ -1349,9 +1346,6 @@ class dossiersController extends bootstrap
             if (false === $this->companies->get($this->clients->id_client, 'id_client_owner')) {
                 $this->companies->id_client_owner = $this->clients->id_client;
                 $this->companies->create();
-
-                $this->companies_details->id_company = $this->companies->id_company;
-                $this->companies_details->create();
             }
 
             $this->projects->id_company = $this->companies->id_company;
@@ -1372,7 +1366,6 @@ class dossiersController extends bootstrap
 
             $this->projects->get($this->params[0]);
             $this->companies->get($this->projects->id_company, 'id_company');
-            $this->companies_details->get($this->companies->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
