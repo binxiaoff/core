@@ -153,49 +153,65 @@ class dossiersController extends bootstrap
                 $this->phone   = $this->clients_adresses->telephone;
             }
 
-            $this->aAnnualAccountsDates    = array();
-            $this->aAnalysts               = $this->users->select('status = 1 AND id_user_type = 2');
-            $this->aSalesPersons           = $this->users->select('status = 1 AND id_user_type = 3');
-            $this->aEmails                 = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'id_project_status_history DESC');
-            $this->lProjects_comments      = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added ASC', 0, 3);
-            $this->lProjects_status        = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
-            $this->lbilans                 = $this->companies_bilans->select('id_company = "' . $this->companies->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->projects->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
-            $aAnnualAccountsIds            = array_column($this->lbilans, 'id_bilan');
-            $sAnnualAccountsIds            = implode(', ', $aAnnualAccountsIds);
-            $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
-            $this->aBalanceSheets          = $this->companies_balance->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
-            $this->aBalanceCodes           = $this->companies_balance_type->getAllByCode();
+            $this->aAnnualAccountsDates = array();
+            $this->aAnalysts            = $this->users->select('status = 1 AND id_user_type = 2');
+            $this->aSalesPersons        = $this->users->select('status = 1 AND id_user_type = 3');
+            $this->aEmails              = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'id_project_status_history DESC');
+            $this->lProjects_comments   = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added ASC', 0, 3);
+            $this->lProjects_status     = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
+            $this->aBalanceCodes        = $this->companies_balance_type->getAllByCode();
 
-            if (count($this->lCompanies_actif_passif) < count($this->lbilans)) {
-                foreach (array_diff(array_column($this->lbilans, 'id_bilan'), array_column($this->lCompanies_actif_passif, 'id_bilan')) as $iAnnualAccountsId) {
-                    $oAssetsDebts                                     = new \companies_actif_passif($this->bdd);
-                    $oAssetsDebts->id_bilan                           = $iAnnualAccountsId;
-                    $oAssetsDebts->immobilisations_corporelles        = 0;
-                    $oAssetsDebts->immobilisations_incorporelles      = 0;
-                    $oAssetsDebts->immobilisations_financieres        = 0;
-                    $oAssetsDebts->stocks                             = 0;
-                    $oAssetsDebts->creances_clients                   = 0;
-                    $oAssetsDebts->disponibilites                     = 0;
-                    $oAssetsDebts->valeurs_mobilieres_de_placement    = 0;
-                    $oAssetsDebts->capitaux_propres                   = 0;
-                    $oAssetsDebts->provisions_pour_risques_et_charges = 0;
-                    $oAssetsDebts->amortissement_sur_immo             = 0;
-                    $oAssetsDebts->dettes_financieres                 = 0;
-                    $oAssetsDebts->dettes_fournisseurs                = 0;
-                    $oAssetsDebts->autres_dettes                      = 0;
-                    $oAssetsDebts->create();
+            if (empty($this->projects->id_dernier_bilan)) {
+                $this->lbilans = $this->companies_bilans->select('id_company = "' . $this->companies->id_company . '"', 'cloture_exercice_fiscal DESC', 0, 3);
+
+                if (false === empty($this->lbilans)) {
+                    $this->projects->id_dernier_bilan = $this->lbilans[0]['id_bilan'];
+                    $this->projects->update();
                 }
-                $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
+            } else {
+                $this->lbilans = $this->companies_bilans->select('id_company = "' . $this->companies->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->projects->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
             }
 
-            foreach ($this->lbilans as $aAnnualAccounts) {
-                $oEndDate   = new \DateTime($aAnnualAccounts['cloture_exercice_fiscal']);
-                $oStartDate = new \DateTime($aAnnualAccounts['cloture_exercice_fiscal']);
-                $oStartDate->sub(new \DateInterval('P' . $aAnnualAccounts['duree_exercice_fiscal'] . 'M'))->add(new \DateInterval('P1D'));
-                $this->aAnnualAccountsDates[$aAnnualAccounts['id_bilan']] = array(
-                    'start' => $oStartDate,
-                    'end'   => $oEndDate
-                );
+            if (empty($this->lbilans)) {
+                $this->lCompanies_actif_passif = array();
+                $this->aBalanceSheets          = array();
+            } else {
+                $aAnnualAccountsIds            = array_column($this->lbilans, 'id_bilan');
+                $sAnnualAccountsIds            = implode(', ', $aAnnualAccountsIds);
+                $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
+                $this->aBalanceSheets          = $this->companies_balance->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
+
+                if (count($this->lCompanies_actif_passif) < count($this->lbilans)) {
+                    foreach (array_diff(array_column($this->lbilans, 'id_bilan'), array_column($this->lCompanies_actif_passif, 'id_bilan')) as $iAnnualAccountsId) {
+                        $oAssetsDebts                                     = new \companies_actif_passif($this->bdd);
+                        $oAssetsDebts->id_bilan                           = $iAnnualAccountsId;
+                        $oAssetsDebts->immobilisations_corporelles        = 0;
+                        $oAssetsDebts->immobilisations_incorporelles      = 0;
+                        $oAssetsDebts->immobilisations_financieres        = 0;
+                        $oAssetsDebts->stocks                             = 0;
+                        $oAssetsDebts->creances_clients                   = 0;
+                        $oAssetsDebts->disponibilites                     = 0;
+                        $oAssetsDebts->valeurs_mobilieres_de_placement    = 0;
+                        $oAssetsDebts->capitaux_propres                   = 0;
+                        $oAssetsDebts->provisions_pour_risques_et_charges = 0;
+                        $oAssetsDebts->amortissement_sur_immo             = 0;
+                        $oAssetsDebts->dettes_financieres                 = 0;
+                        $oAssetsDebts->dettes_fournisseurs                = 0;
+                        $oAssetsDebts->autres_dettes                      = 0;
+                        $oAssetsDebts->create();
+                    }
+                    $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
+                }
+
+                foreach ($this->lbilans as $aAnnualAccounts) {
+                    $oEndDate   = new \DateTime($aAnnualAccounts['cloture_exercice_fiscal']);
+                    $oStartDate = new \DateTime($aAnnualAccounts['cloture_exercice_fiscal']);
+                    $oStartDate->sub(new \DateInterval('P' . $aAnnualAccounts['duree_exercice_fiscal'] . 'M'))->add(new \DateInterval('P1D'));
+                    $this->aAnnualAccountsDates[$aAnnualAccounts['id_bilan']] = array(
+                        'start' => $oStartDate,
+                        'end'   => $oEndDate
+                    );
+                }
             }
 
             $this->bCanEditStatus = false;
@@ -205,8 +221,6 @@ class dossiersController extends bootstrap
                     $this->bCanEditStatus = true;
                 }
             }
-
-            //$this->displayRatioAndAnalyse();
 
             $this->attachment_type  = $this->loadData('attachment_type');
             $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects($this->language);
@@ -239,7 +253,7 @@ class dossiersController extends bootstrap
                             $_SESSION['freeow']['title']   = 'Données Altares';
                             $_SESSION['freeow']['message'] = 'Société non éligible';
                         } else {
-                            $oAltares->setCompanyFinancial($this->companies->id_company, $oResult->myInfo);
+                            $oAltares->setCompanyBalance($this->companies->id_company);
 
                             $_SESSION['freeow']['title']   = 'Données Altares';
                             $_SESSION['freeow']['message'] = 'Données Altares récupéré !';
@@ -298,7 +312,7 @@ class dossiersController extends bootstrap
                             $_SESSION['freeow']['message'] .= 'Erreur upload photo : taille max dépassée (' . $this->Config['images']['projets']['width'] . 'x' . $this->Config['images']['projets']['height'] . ')<br>';
                         } elseif ($this->upload->doUpload('photo_projet', '', true)) {
                             // Delete previous image of the name was different from the new one
-                            if (!empty($this->projects->photo_projet) && $this->projects->photo_projet != $this->upload->getName()) {
+                            if (! empty($this->projects->photo_projet) && $this->projects->photo_projet != $this->upload->getName()) {
                                 @unlink($this->path . 'public/default/images/dyn/projets/source/' . $this->projects->photo_projet);
                             }
                             $this->projects->photo_projet = $this->upload->getName();
@@ -365,11 +379,11 @@ class dossiersController extends bootstrap
 
                     if ($this->current_projects_status->status >= \projects_status::PREP_FUNDING) {
                         if (isset($_POST['date_publication']) && ! empty($_POST['date_publication'])) {
-                            $this->projects->date_publication = $this->dates->formatDateFrToMysql($_POST['date_publication']);
+                            $this->projects->date_publication      = $this->dates->formatDateFrToMysql($_POST['date_publication']);
                             $this->projects->date_publication_full = $this->projects->date_publication . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute'] . ':0';
                         }
-                        if (isset($_POST['date_retrait']) && !empty($_POST['date_retrait'])) {
-                            $this->projects->date_retrait = $this->dates->formatDateFrToMysql($_POST['date_retrait']);
+                        if (isset($_POST['date_retrait']) && ! empty($_POST['date_retrait'])) {
+                            $this->projects->date_retrait      = $this->dates->formatDateFrToMysql($_POST['date_retrait']);
                             $this->projects->date_retrait_full = $this->projects->date_retrait . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':0';
                         }
                     }
@@ -870,7 +884,7 @@ class dossiersController extends bootstrap
                                     $bank_unilend->montant        = $partUnliend * 100;
                                     $bank_unilend->create();
 
-                                    $oAccountUnilend = $this->loadData('platform_account_unilend');
+                                    $oAccountUnilend                 = $this->loadData('platform_account_unilend');
                                     $oAccountUnilend->id_transaction = $this->transactions->id_transaction;
                                     $oAccountUnilend->id_project     = $this->projects->id_project;
                                     $oAccountUnilend->amount         = $partUnliend * 100;
@@ -1155,54 +1169,13 @@ class dossiersController extends bootstrap
         }
     }
 
-    private function displayRatioAndAnalyse()
+    protected function sumBalances(array $aBalances, $aBalanceSheet)
     {
-        $aAssets         = array('AA', 'AB', 'AD', 'AF', 'AH', 'AJ', 'AL', 'AN', 'AP', 'AR', 'AT', 'AV', 'AX', 'CS', 'CU', 'BB', 'BD', 'BF', 'BH', 'BJ', 'BL', 'BN', 'BP', 'BR', 'BT', 'BV', 'BX', 'BZ', 'CB', 'CH', 'CF', 'CD', 'CJ', 'CW', 'CM', 'CN');
-        $aDebts          = array('DA', 'DL', 'DO', 'BK', 'CK', 'DR', 'DS', 'DT', 'DU', 'DV', 'DW', 'DX', 'DY', 'DZ', 'EA', 'EB', 'ED');
-        $aInfo           = array('EH', 'EI', 'HP', 'HQ', 'A1', '0J', 'VH', 'VI');
-        $aAnnualAccounts = array('FL', 'FM', 'FN', 'FO', 'FP', 'FQ', 'FS', 'FT', 'FU', 'FV', 'FW', 'FX', 'FY', 'FZ', 'GA', 'GB', 'GC', 'GD', 'GE', 'GG', 'GV', 'GU', 'GW', 'HB', 'HC', 'HF', 'HG', 'HN');
-
-        $aDisplayTypeBilan   = array(
-            'Assets'  => 'Assets',
-            'Debts' => 'Debts',
-            'Infos'  => 'Autres Infos',
-            'Result' => 'Compte de r&eacute;sultat'
-        );
-
-        $aDateBilan      = array();
-        $aDisplayBilan   = array();
-        $oAltares        = new Altares($this->bdd);
-        $oAltaresBalance = $oAltares->getBalanceSheets($this->companies->siren);
-
-        foreach ($oAltaresBalance->myInfo->bilans as $oBilans) {
-            $oDateCalculate = new DateTime($oBilans->dateClotureN);
-            $sDateEnd       = $oDateCalculate->format('d/m/Y');
-            $oDateCalculate->modify('-' . $oBilans->dureeN . ' month');
-            $aDateBilan[] = array(
-                'DateStart' => $oDateCalculate->format('d/m/Y'),
-                'DateEnd'   => $sDateEnd,
-                'Duration'  => $oBilans->dureeN,
-                'Year'      => substr($oBilans->dateClotureN, 0, 4)
-            );
-
-            foreach ($oBilans->posteList as $oDataBilan) {
-                if (array_key_exists('Altares_' . $oDataBilan->poste, $aTrad)) {
-                    $aDisplayBilan[substr($oBilans->dateClotureN, 0, 4)][$oDataBilan->poste] = array(
-                        'fValueLine' => $oDataBilan->valeur
-                    );
-                }
-            }
+        $fTotal = 0.0;
+        foreach ($aBalances as $sBalance) {
+            $fTotal += $aBalanceSheet[$this->aBalanceCodes[$sBalance]['id_balance_type']];
         }
-
-        $this->aDisplayRatioAndAnalyse = array(
-            'TypeBilan'   => $aDisplayTypeBilan,
-            'assets'      => $aAssets,
-            'debts'       => $aDebts,
-            'OrderInfos'  => $aInfo,
-            'OrderResult' => $aAnnualAccounts,
-            'DateBilan'   => $aDateBilan,
-            'Bilan'       => $aDisplayBilan
-        );
+        return $fTotal;
     }
 
     public function _changeClient()
@@ -1360,9 +1333,9 @@ class dossiersController extends bootstrap
             header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
             die;
         } elseif (isset($this->params[0])) {
-            $this->prescripteurs                   = $this->loadData('prescripteurs');
-            $this->clients_prescripteurs           = $this->loadData('clients');
-            $this->companies_prescripteurs         = $this->loadData('companies');
+            $this->prescripteurs           = $this->loadData('prescripteurs');
+            $this->clients_prescripteurs   = $this->loadData('clients');
+            $this->companies_prescripteurs = $this->loadData('companies');
 
             $this->projects->get($this->params[0]);
             $this->companies->get($this->projects->id_company, 'id_company');
@@ -1372,6 +1345,7 @@ class dossiersController extends bootstrap
             if (isset($this->params[1]) && $this->params[1] === 'altares') {
                 $oAltares = new Altares($this->bdd);
                 $oAltares->setCompanyData($this->projects->id_company);
+                $oAltares->setCompanyBalance($this->projects->id_company);
 
                 header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
                 die;
@@ -2534,7 +2508,7 @@ class dossiersController extends bootstrap
                 $this->settings->get('Lien conditions generales depot dossier', 'type');
                 $iTreeId = $this->settings->value;
 
-                if (!$iTreeId) {
+                if (! $iTreeId) {
                     $this->result = 'tree id invalid';
                     return;
                 }
@@ -2552,7 +2526,7 @@ class dossiersController extends bootstrap
             $this->settings->get('Lien conditions generales depot dossier', 'type');
             $iTreeId = $this->settings->value;
 
-            if (!$iTreeId) {
+            if (! $iTreeId) {
                 $this->result = 'tree id invalid';
                 return;
             }
@@ -2670,7 +2644,7 @@ class dossiersController extends bootstrap
             $this->error = 'no client email found';
             return;
         }
-        $this->iClientId = $iClientId;
+        $this->iClientId  = $iClientId;
         $this->iProjectId = $oProjects->id_project;
         $this->mails_text->get('depot-dossier-relance-status-20-1', 'lang = "' . $this->language . '" AND type');
     }
@@ -2703,9 +2677,9 @@ class dossiersController extends bootstrap
 
         $this->mails_text->get('depot-dossier-relance-status-20-1', 'lang = "' . $this->language . '" AND type');
 
-        $varMail = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
+        $varMail          = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
         $varMail['sujet'] = $this->mails_text->subject;
-        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+        $tabVars          = $this->tnmp->constructionVariablesServeur($varMail);
 
         echo strtr($this->mails_text->content, $tabVars);
     }
@@ -2742,9 +2716,9 @@ class dossiersController extends bootstrap
 
             $this->mails_text->get('depot-dossier-relance-status-20-1', 'lang = "' . $this->language . '" AND type');
 
-            $varMail = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
+            $varMail          = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
             $varMail['sujet'] = htmlentities($this->mails_text->subject, null, 'UTF-8');
-            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+            $tabVars          = $this->tnmp->constructionVariablesServeur($varMail);
 
             $sujetMail = utf8_decode(strtr($this->mails_text->subject, $tabVars));
             $texteMail = strtr($this->mails_text->content, $tabVars);
@@ -2755,7 +2729,7 @@ class dossiersController extends bootstrap
             $this->email->setSubject(stripslashes($sujetMail));
             $this->email->setHTMLBody(stripslashes($texteMail));
 
-            $sRecipientEmail  = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($oClients->email));
+            $sRecipientEmail = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($oClients->email));
 
             if ($this->Config['env'] === 'prod') {
                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipientEmail, $tabFiler);
