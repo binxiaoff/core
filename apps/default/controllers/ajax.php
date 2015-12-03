@@ -1928,4 +1928,88 @@ class ajaxController extends bootstrap
             $pays->update();
         }
     }
+
+    public function _operations_emprunteur()
+    {
+        $this->autoFireView = true;
+        $this->lng['espace-emprunteur'] = $this->ln->selectFront('espace-emprunteur', $this->language, $this->App);
+
+        $oClients   = $this->loadData('clients');
+        $oCompanies = $this->loadData('companies');
+        $oProjects  = $this->loadData('projects');
+
+        $oClients->get($this->clients->id_client);
+        $oCompanies->get($oClients->id_client, 'id_client_owner');
+
+        if (isset($_POST['id_last_action']) && in_array($_POST['id_last_action'], array('debut', 'fin', 'nbMois', 'annee'))){
+
+            switch ($_POST['id_last_action']) {
+                case 'debut':
+                case 'fin' :
+                    $oStartTime                 = DateTime::createFromFormat('j/m/Y', $_POST['debut']);
+                    $oEndTime                   = DateTime::createFromFormat('j/m/Y', $_POST['fin']);
+                    $_SESSION['id_last_action'] = $_POST['id_last_action'];
+                    break;
+                case 'nbMois':
+                    $oStartTime                 = new \datetime('NOW - ' . $_POST['nbMois'] . 'month');
+                    $oEndTime                   = new \datetime();
+                    $_SESSION['id_last_action'] = $_POST['id_last_action'];
+                    break;
+                case 'annee':
+                    $oStartTime = new \datetime();
+                    $oStartTime->setDate($_POST['annee'], '01', '01');
+                    $oEndTime = new \datetime();
+                    $oEndTime->setDate($_POST['annee'], '12', '31');
+                    $_SESSION['id_last_action'] = $_POST['id_last_action'];
+                    break;
+            }
+
+        } elseif (isset ($_SESSION['id_last_action'])) {
+
+            switch ($_SESSION['id_last_action']) {
+                case 'debut':
+                case 'fin' :
+                    $oStartTime = DateTime::createFromFormat('j/m/Y', $_POST['debut']);
+                    $oEndTime   = DateTime::createFromFormat('j/m/Y', $_POST['fin']);
+                    break;
+                case 'nbMois':
+                    $oStartTime = new \datetime('NOW - ' . $_POST['nbMois'] . 'month');
+                    $oEndTime   = new \datetime();
+                    break;
+                case 'annee':
+                    $oStartTime = new \datetime();
+                    $oStartTime->setDate($_POST['annee'], '01', '01');
+                    $oEndTime = new \datetime();
+                    $oEndTime->setDate($_POST['annee'], '12', '31');
+                    break;
+            }
+        } else {
+                $oStartTime = new \datetime('NOW - 1 month');
+                $oEndTime = new \datetime();
+        }
+
+
+        $sStartDateSQL = '"' . $oStartTime->format('Y-m-d') . ' 00:00:00"';
+        $sEndDateSQL   = '"' . $oEndTime->format('Y-m-d') . ' 23:59:59"';
+
+        if ($_POST['tri_projects'] == 0 ) {
+            $aClientsProjects = $oProjects->select('id_company = ' . $oCompanies->id_company);
+        } else {
+            $aClientsProjects = $oProjects->select('id_project =' . $_POST['tri_projects']);
+        }
+
+        foreach ($aClientsProjects as $project) {
+            $aClientProjectIDs[] = $project['id_project'];
+        }
+
+        $iTransaction = $_POST['tri_type_transac'];
+
+        $_SESSION['operations-filter'] = array('projects' =>$aClientProjectIDs, 'start' => $sStartDateSQL, 'end'=>$sEndDateSQL, 'transaction'=>$iTransaction);
+
+        $this->aBorrowerOperations = $oClients->getDataForBorrowerOperations($oClients->id_client, $aClientProjectIDs, $sStartDateSQL, $sEndDateSQL, $iTransaction);
+        $this->sDisplayDateTimeStart = $oStartTime->format('d/m/Y');
+        $this->sDisplayDateTimeEnd = $oEndTime->format('d/m/Y');
+
+    }
+
 }
