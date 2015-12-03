@@ -347,18 +347,8 @@ class bootstrap extends Controller
                 $this->getDataBorrower();
             }
 
-            if ($this->bIsLender ) {
+            if ($this->bIsLender) {
                 $this->getDataLender();
-            }
-
-            if (isset($_POST['acceder-espace-preteur'])) {
-                header('Location:' . $this->lurl . '/synthese');
-                die;
-            }
-
-            if (isset($_POST['acceder-espace-emprunteur'])) {
-                header('Location:' . $this->lurl . '/espace_emprunteur');
-                die;
             }
         }
 
@@ -666,22 +656,12 @@ class bootstrap extends Controller
     private function loginBorrower()
     {
         $this->bDisplayBorrower = true;
+        $this->companies->get($_SESSION['client']['id_client'], 'id_client_owner');
 
-        $this->settings->get('Lien conditions generales depot dossier', 'type');
-        $this->cguDepotDossier = $this->settings->value;
-
-        // Recuperation du contenu de la page
-        $contenu = $this->tree_elements->select('id_tree = "' . $this->cguDepotDossier . '" AND id_langue = "' . $this->language . '"');
-        foreach ($contenu as $elt) {
-            $this->elements->get($elt['id_element']);
-            $this->contentCGUDepotDossier[ $this->elements->slug ]    = $elt['value'];
-            $this->complementCGUDepotDossier[ $this->elements->slug ] = $elt['complement'];
-        }
-
-        $aAllCompanyProjects = $this->companies->getProjectsForCompany($this->company->id_company);
+        $aAllCompanyProjects = $this->companies->getProjectsForCompany($this->companies->id_company);
 
         if ((int)$aAllCompanyProjects[0]['project_status'] >= projects_status::A_TRAITER && (int)$aAllCompanyProjects[0]['project_status'] <= projects_status::PREP_FUNDING) {
-            header('Location:' . $this->url . 'depot_de_dossier/fichiers/' . $aAllCompanyProjects[0]['hash']);
+            header('Location:' . $this->url . '/depot_de_dossier/fichiers/' . $aAllCompanyProjects[0]['hash']);
             die;
         } else {
             header('Location:' . $this->lurl . '/espace_emprunteur');
@@ -739,11 +719,8 @@ class bootstrap extends Controller
     private function getDataBorrower()
     {
         $this->bDisplayBorrower = true;
-        $this->companies->get($this->clients->id_client, 'id_client_owner');
-
-        // Lien conditions generales depot dossier
-        $this->settings->get('Lien conditions generales depot dossier', 'type');
-        $this->cguDepotDossier = $this->settings->value;
+        $this->oCompanyDisplay = $this->loadData('companies');
+        $this->oCompanyDisplay->get($this->clients->id_client, 'id_client_owner');
 
     }
 
