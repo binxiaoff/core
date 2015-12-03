@@ -388,12 +388,8 @@ class emprunteursController extends bootstrap
                                 // On recup la companie
                                 $companie->get($project->id_company, 'id_company');
 
-                                // Recuperation du modele de mail
-                                $this->mails_text->get('changement-de-rib', 'lang = "' . $this->language . '" AND type');
-
                                 // emprunteur
                                 $e->get($companie->id_client_owner, 'id_client');
-
 
                                 $echeanciers_emprunteur->get($project->id_project, 'ordre = 1 AND id_project');
                                 $mensualite = $echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva;
@@ -407,6 +403,12 @@ class emprunteursController extends bootstrap
 
                                 $this->nextEcheance = $prelevements->select('status = 0 AND id_project = ' . $projects['id_project']);
 
+                                $this->settings->get('Facebook', 'type');
+                                $lien_fb = $this->settings->value;
+
+                                $this->settings->get('Twitter', 'type');
+                                $lien_tw = $this->settings->value;
+
                                 $varMail = array(
                                     'surl'                   => $surl,
                                     'url'                    => $url,
@@ -414,7 +416,6 @@ class emprunteursController extends bootstrap
                                     'nom_e'                  => $companie->name,
                                     'mensualite'             => $this->ficelle->formatNumber($mensualite),
                                     'montant'                => $this->ficelle->formatNumber($project->amount, 0),
-                                    'taux_moyen'             => $this->ficelle->formatNumber($taux_moyen),
                                     'link_compte_emprunteur' => $this->lurl . '/projects/detail/' . $project->id_project,
                                     'link_mandat'            => $link_mandat,
                                     'link_pouvoir'           => $link_pouvoir,
@@ -424,23 +425,23 @@ class emprunteursController extends bootstrap
                                     'date_echeance'          => date('d/m/Y', strtotime($this->nextEcheance[0]['date_echeance_emprunteur']))
                                 );
 
-                                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                                /** @var unilend_email $oUnilendEmail */
+                                $oUnilendEmail = $this->loadLib('unilend_email', array(
+                                    $this->loadData('mails_filer'),
+                                    $this->loadData('mails_text'),
+                                    $this->loadData('nmp'),
+                                    $this->loadData('nmp_desabo'),
+                                ));
 
-                                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                                $this->email = $this->loadLib('email');
-                                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                $this->email->setSubject(stripslashes($sujetMail));
-                                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                                if ($this->Config['env'] == 'prod') {
-                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $e->email, $tabFiler);
-                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else {
-                                    $this->email->addRecipient(trim($e->email));
-                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                try {
+                                    $oUnilendEmail->addAllMailVars($varMail);
+                                    $oUnilendEmail->wrapVariables();
+                                    $oUnilendEmail->setTemplate('changement-de-rib', $this->language);
+                                    $oUnilendEmail->addRecipient($e->email);
+                                    $oUnilendEmail->sendFromTemplate();
+                                } catch (\Exception $oException) {
+                                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                 }
                             }
                         }
