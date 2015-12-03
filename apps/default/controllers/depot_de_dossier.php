@@ -155,7 +155,7 @@ class depot_de_dossierController extends bootstrap
 
         switch ($oResult->myInfo->eligibility) {
             case 'Oui':
-                $oAltares->setCompanyFinancial($this->companies->id_company, $oResult->myInfo);
+                $oAltares->setCompanyBalance($this->companies->id_company);
 
                 $oCompanyCreationDate = new \DateTime($this->companies->date_creation);
                 $oInterval            = $oCompanyCreationDate->diff(new \DateTime());

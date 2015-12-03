@@ -84,9 +84,6 @@ class Altares
         $oCompany = new \companies($this->oDatabase);
         $oCompany->get($iCompanyId);
 
-        $oCompanyDetails = new \companies_details($this->oDatabase);
-        $oCompanyDetails->get($iCompanyId);
-
         if (is_null($oEligibilityInfo)) {
             $oEligibilityInfo = $this->getEligibility($oCompany->siren)->myInfo;
         }
@@ -181,19 +178,12 @@ class Altares
     /**
      * Set financial data of the given company according to Altares response
      * @param integer $iCompanyId
-     * @param \stdClass|null $oEligibilityInfo
+     * @param \stdClass $oEligibilityInfo
      */
-    public function setCompanyFinancial($iCompanyId, $oEligibilityInfo = null)
+    private function setCompanyFinancial($iCompanyId, $oEligibilityInfo)
     {
         $oCompanyAnnualAccounts = new \companies_bilans($this->oDatabase);
         $oCompanyAssetsDebts    = new \companies_actif_passif($this->oDatabase);
-
-        if (is_null($oEligibilityInfo)) {
-            $oCompany = new \companies($this->oDatabase);
-            $oCompany->get($iCompanyId);
-
-            $oEligibilityInfo = $this->getEligibility($oCompany->siren)->myInfo;
-        }
 
         if (isset($oEligibilityInfo->bilans) && is_array($oEligibilityInfo->bilans)) {
             $aAnnualAccounts = array();
