@@ -1,11 +1,11 @@
 <script type="text/javascript">
 	$(document).ready(function(){
-		$(".tablesorter").tablesorter({headers:{6:{sorter: false}}});	
+		$(".tablesorter").tablesorter({headers:{6:{sorter: false}}});
 		<?
 		if($this->nb_lignes != '')
 		{
 		?>
-			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});		
+			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});
 		<?
 		}
 		?>
@@ -37,7 +37,7 @@
         <li>Activation prêteurs</li>
     </ul>
     <h1>Activation prêteurs</h1>
-    
+
     <?
 	if(count($this->lPreteurs) > 0)
 	{
@@ -51,7 +51,7 @@
                     <th>Date création</th>
                     <th>Montant</th>
                     <th>Statut</th>
-                    <th>&nbsp;</th>  
+                    <th>&nbsp;</th>
                 </tr>
            	</thead>
             <tbody>
@@ -62,26 +62,25 @@
 				//print_r($c);
 				// Solde du compte preteur
 				$solde = $this->transactions->getSolde($c['id_client']);
-				
+
 				if($this->companies->get($c['id_client'],'id_client_owner')){
 					if($this->companies->status_client != 1)
 						$prenom = $this->companies->prenom_dirigeant.' '.$this->companies->nom_dirigeant;
-					else 
+					else
 						$prenom = $c['prenom'].' '.$c['nom'];
-					
+
 					$nom = $this->companies->name;
 				}
 				else{
 					$nom = $c['nom'];
 					$prenom = $c['prenom'];
 				}
-				
-				//$array_type_transfert = array(0 => 'Aucun',1 => 'Virement',2 => number_format($solde, 2, ',', ' ').'€')
+
 				if($c['type_transfert'] == 1) $val = 'Virement';
-				else $val = number_format($solde, 2, ',', ' ').' €'
-				
+				else $val = $this->ficelle->formatNumber($solde).' €'
+
 				?>
-                
+
             	<tr class="<?=($i%2 == 1?'':'odd')?> " >
                     <td align="center"><?=$c['id_client']?></td>
                     <td><?=$nom?></td>
@@ -93,16 +92,16 @@
                     <?
 					if(in_array($c['status_client'],array(10,40,50)))
 					{
-						?><a target="_blank" href="<?=$this->lurl?>/preteurs/edit_preteur/<?=$c['id_lender']?>" class="btn_link" style="padding: 3px;">Contrôler</a><?	
+						?><a href="<?=$this->lurl?>/preteurs/edit_preteur/<?=$c['id_lender']?>" class="btn_link" style="padding: 3px;">Contrôler</a><?
 					}
 					else
 					{
-						?><a target="_blank" href="<?=$this->lurl?>/preteurs/edit_preteur/<?=$c['id_lender']?>">Détails</a><?	
+						?><a href="<?=$this->lurl?>/preteurs/edit_preteur/<?=$c['id_lender']?>">Détails</a><?
 					}
 					?>
-                    
+
                     </td>
-                </tr>   
+                </tr>
             <?
 				$i++;
             }

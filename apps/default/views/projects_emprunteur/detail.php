@@ -43,7 +43,7 @@ else
 							</ul>
 						</nav><?php */?>
 					</div>
-                   
+
                    <?
 				if($this->upload_pouvoir == true)
 				{
@@ -57,7 +57,7 @@ else
 				<?
 				}
 				?>
-                    
+
 					<h2><?=$this->projects->title?></h2>
 					<div class="content-col left">
 						<div class="project-c">
@@ -76,16 +76,16 @@ else
 										?><strong class="red-span"><span id="val"><?=$this->dateRest?></span></strong><?
 									}
 									?>
-									
+
                                     <?=$this->lng['preteur-projets']['le']?> <?=$this->date_retrait?> <?=$this->lng['preteur-projets']['a']?> <?=$this->heure_retrait?>h</p>
-								
+
 							</div>
 							<div class="main-project-info clearfix">
 								<?
 								if($this->projects->photo_projet != '')
 								{
 									?><div class="img-holder borderless left">
-										<img src="<?=$this->photos->display($this->projects->photo_projet,'photos_projets','photo_projet_moy')?>"  alt="<?=$this->projects->photo_projet?>">
+										<img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $this->projects->photo_projet ?>" alt="<?=$this->projects->photo_projet?>">
 										<?
 										if($this->projects->lien_video != '')
 										{
@@ -108,13 +108,13 @@ else
 											<span class="i-holder"><i class="icon-gauge tooltip-anchor" data-placement="right" data-original-title="<?=$this->lng['preteur-projets']['info-note']?>"></i></span>
 											<div class="cadreEtoiles"><div class="etoile <?=$this->lNotes[$this->companies->risk]?>"></div></div>
 										</li>
-                                        
+
 										<li>
 											<span class="i-holder"><i class="icon-graph tooltip-anchor" data-placement="right" data-original-title="<?=$this->lng['preteur-projets']['info-taux-moyen']?>"></i></span>
 											<?
 											if($this->CountEnchere > 0)
 											{
-												?><span><?=number_format(($this->projects_status->status==60||$this->projects_status->status==80)?$this->AvgLoans:$this->avgRate, 1, ',', ' ').' %'?></span><?
+												?><span><?=$this->ficelle->formatNumber(($this->projects_status->status==60||$this->projects_status->status==80)?$this->AvgLoans:$this->avgRate, 1).' %'?></span><?
 											}
 											else
 											{
@@ -158,11 +158,11 @@ else
 													<th width="125"><span id="triNum">N°<i class="icon-arrows"></i></span></th>
 													<th width="180">
 														<span id="triTx"><?=$this->lng['preteur-projets']['taux-dinteret']?> <i class="icon-arrows"></i></span>
-														<small><?=$this->lng['preteur-projets']['taux-moyen']?> : <?=number_format($this->avgRate, 1, ',', ' ')?> %</small>
+														<small><?=$this->lng['preteur-projets']['taux-moyen']?> : <?=$this->ficelle->formatNumber($this->avgRate, 1)?> %</small>
 													</th>
 													<th width="214">
 														<span id="triAmount"><?=$this->lng['preteur-projets']['montant']?> <i class="icon-arrows"></i></span>
-														<small><?=$this->lng['preteur-projets']['montant-moyen']?> : <?=number_format($this->avgAmount/100, 2, ',', ' ')?> €</small>
+														<small><?=$this->lng['preteur-projets']['montant-moyen']?> : <?=$this->ficelle->formatNumber($this->avgAmount/100)?> €</small>
 													</th>
 													<th width="101"><span id="triStatuts"><?=$this->lng['preteur-projets']['statuts']?> <i class="icon-arrows"></i></span></th>
 												</tr>
@@ -171,15 +171,15 @@ else
 												{
 													if($this->lenders_accounts->id_lender_account == $e['id_lender_account'])$vous = true;
 													else $vous = false;
-													
+
 													if($this->CountEnchere >= 12)
 													{
 														if($e['ordre'] <= 5 || $e['ordre'] > $this->CountEnchere-5)
 														{
 															?><tr <?=($vous==true?' class="enchereVousColor"':'')?>>
 																<td><?=($vous==true?'<span class="enchereVous">'.$this->lng['preteur-projets']['vous'].' : &nbsp;&nbsp;&nbsp;'.$e['ordre'].'</span>':$e['ordre'])?></td>
-																<td><?=number_format($e['rate'], 1, ',', ' ')?> %</td>
-																<td><?=number_format($e['amount']/100, 0, ',', ' ')?> €</td>
+																<td><?=$this->ficelle->formatNumber($e['rate'], 1)?> %</td>
+																<td><?=$this->ficelle->formatNumber($e['amount']/100, 0)?> €</td>
 																<td class="<?=($e['status']==1?'green-span':($e['status']==2?'red-span':''))?>"><?=$this->status[$e['status']]?></td>
 															</tr><?
 														}
@@ -187,18 +187,18 @@ else
 														{
 															?><tr><td colspan="4" class="nth-table-row">...</td></tr><?
 														}
-														
+
 													}
 													else
 													{
 														?><tr <?=($vous==true?' class="enchereVousColor"':'')?>>
 															<td><?=($vous==true?'<span class="enchereVous">'.$this->lng['preteur-projets']['vous'].' : &nbsp;&nbsp;&nbsp;'.$e['ordre'].'</span>':$e['ordre'])?></td>
-															<td><?=number_format($e['rate'], 1, ',', ' ')?> %</td>
-															<td><?=number_format($e['amount']/100, 0, ',', ' ')?> €</td>
+															<td><?=$this->ficelle->formatNumber($e['rate'], 1)?> %</td>
+															<td><?=$this->ficelle->formatNumber($e['amount']/100, 0)?> €</td>
 															<td class="<?=($e['status']==1?'green-span':($e['status']==2?'red-span':''))?>"><?=$this->status[$e['status']]?></td>
-														</tr><?	
+														</tr><?
 													}
-													
+
 												}
 												?>
 											</table>
@@ -215,24 +215,24 @@ else
 													$("#tri").html('ordre');
 													$("#displayAll").click();
 												});
-												
+
 												$("#triTx").click(function() {
 													$("#tri").html('rate');
 													$("#displayAll").click();
 												});
-												
+
 												$("#triAmount").click(function() {
 													$("#tri").html('amount');
 													$("#displayAll").click();
 												});
-												
+
 												$("#triStatuts").click(function() {
 													$("#tri").html('status');
 													$("#displayAll").click();
 												});
-												
+
 												$("#displayAll").click(function() {
-													
+
 													var tri = $("#tri").html();
 													var direction = $("#direction").html();
 													$.post(add_url + '/ajax/displayAll', {id: <?=$this->projects->id_project?>,tri:tri,direction:direction}).done(function(data) {
@@ -293,7 +293,7 @@ else
                                                 <?
 												for($i=1;$i<=3;$i++)
 												{
-													echo '<td class="sameSize" style="text-align:right;">'.number_format($this->lBilans[$this->anneeToday[$i]]['ca'], 0, ',', ' ').' €</td>';
+													echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['ca'], 0).' €</td>';
 												}
 												?>
 											</tr>
@@ -302,7 +302,7 @@ else
 												<?
 												for($i=1;$i<=3;$i++)
 												{
-													echo '<td class="sameSize" style="text-align:right;">'.number_format($this->lBilans[$this->anneeToday[$i]]['resultat_brute_exploitation'], 0, ',', ' ').' €</td>';
+													echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['resultat_brute_exploitation'], 0).' €</td>';
 												}
 												?>
 											</tr>
@@ -311,7 +311,7 @@ else
 												<?
 												for($i=1;$i<=3;$i++)
 												{
-													echo '<td class="sameSize" style="text-align:right;">'.number_format($this->lBilans[$this->anneeToday[$i]]['resultat_exploitation'], 0, ',', ' ').' €</td>';
+													echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['resultat_exploitation'], 0).' €</td>';
 												}
 												?>
 											</tr>
@@ -320,7 +320,7 @@ else
 												<?
 												for($i=1;$i<=3;$i++)
 												{
-													echo '<td class="sameSize" style="text-align:right;">'.number_format($this->lBilans[$this->anneeToday[$i]]['investissements'], 0, ',', ' ').' €</td>';
+													echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->lBilans[$this->anneeToday[$i]]['investissements'], 0).' €</td>';
 												}
 												?>
 											</tr>
@@ -341,7 +341,7 @@ else
                                                             <?
 															for($i=0;$i<3;$i++)
 															{
-                                                            	echo '<td class="sameSize" style="text-align:right;">'.number_format($this->listAP[$i]['immobilisations_corporelles'], 0, ',', ' ').' €</td>';
+                                                            	echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->listAP[$i]['immobilisations_corporelles'], 0).' €</td>';
 															}
 															?>
 														</tr>
@@ -350,7 +350,7 @@ else
 															<?
 															for($i=0;$i<3;$i++)
 															{
-                                                            	echo '<td class="sameSize" style="text-align:right;">'.number_format($this->listAP[$i]['immobilisations_incorporelles'], 0, ',', ' ').' €</td>';
+                                                            	echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->listAP[$i]['immobilisations_incorporelles'], 0).' €</td>';
 															}
 															?>
 														</tr>
@@ -359,7 +359,7 @@ else
 															<?
 															for($i=0;$i<3;$i++)
 															{
-                                                            	echo '<td class="sameSize" style="text-align:right;">'.number_format($this->listAP[$i]['immobilisations_financieres'], 0, ',', ' ').' €</td>';
+                                                            	echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->listAP[$i]['immobilisations_financieres'], 0).' €</td>';
 															}
 															?>
 														</tr>
@@ -368,7 +368,7 @@ else
 															<?
 															for($i=0;$i<3;$i++)
 															{
-                                                            	echo '<td class="sameSize" style="text-align:right;">'.number_format($this->listAP[$i]['stocks'], 0, ',', ' ').' €</td>';
+                                                            	echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->listAP[$i]['stocks'], 0).' €</td>';
 															}
 															?>
 														</tr>
@@ -377,7 +377,7 @@ else
 															<?
 															for($i=0;$i<3;$i++)
 															{
-                                                            	echo '<td class="sameSize" style="text-align:right;">'.number_format($this->listAP[$i]['creances_clients'], 0, ',', ' ').' €</td>';
+                                                            	echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->listAP[$i]['creances_clients'], 0).' €</td>';
 															}
 															?>
 														</tr>
@@ -386,7 +386,7 @@ else
 															<?
 															for($i=0;$i<3;$i++)
 															{
-                                                            	echo '<td class="sameSize" style="text-align:right;">'.number_format($this->listAP[$i]['disponibilites'], 0, ',', ' ').' €</td>';
+                                                            	echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->listAP[$i]['disponibilites'], 0).' €</td>';
 															}
 															?>
 														</tr>
@@ -395,17 +395,17 @@ else
 															<?
 															for($i=0;$i<3;$i++)
 															{
-                                                            	echo '<td class="sameSize" style="text-align:right;">'.number_format($this->listAP[$i]['valeurs_mobilieres_de_placement'], 0, ',', ' ').' €</td>';
+                                                            	echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->listAP[$i]['valeurs_mobilieres_de_placement'], 0).' €</td>';
 															}
 															?>
 														</tr>
-														
+
 														<tr class="total-row">
 															<td class="intitule"><?=$this->lng['preteur-projets']['total-bilan-actifs']?></td>
 															<?
 															for($i=1;$i<=3;$i++)
 															{
-                                                            	echo '<td class="sameSize" style="text-align:right;">'.number_format($this->totalAnneeActif[$i], 0, ',', ' ').' €</td>';
+                                                            	echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->totalAnneeActif[$i], 0).' €</td>';
 															}
 															?>
 														</tr>
@@ -421,7 +421,7 @@ else
 															<?
 															for($i=0;$i<3;$i++)
 															{
-                                                            	echo '<td class="sameSize" style="text-align:right;">'.number_format($this->listAP[$i]['capitaux_propres'], 0, ',', ' ').' €</td>';
+                                                            	echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->listAP[$i]['capitaux_propres'], 0).' €</td>';
 															}
 															?>
 														</tr>
@@ -430,7 +430,7 @@ else
 															<?
 															for($i=0;$i<3;$i++)
 															{
-                                                            	echo '<td class="sameSize" style="text-align:right;">'.number_format($this->listAP[$i]['provisions_pour_risques_et_charges'], 0, ',', ' ').' €</td>';
+                                                            	echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->listAP[$i]['provisions_pour_risques_et_charges'], 0).' €</td>';
 															}
 															?>
 														</tr>
@@ -439,7 +439,7 @@ else
 															<?
 															for($i=0;$i<3;$i++)
 															{
-                                                            	echo '<td class="sameSize" style="text-align:right;">'.number_format($this->listAP[$i]['amortissement_sur_immo'], 0, ',', ' ').' €</td>';
+                                                            	echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->listAP[$i]['amortissement_sur_immo'], 0).' €</td>';
 															}
 															?>
 														</tr>
@@ -448,7 +448,7 @@ else
 															<?
 															for($i=0;$i<3;$i++)
 															{
-                                                            	echo '<td class="sameSize" style="text-align:right;">'.number_format($this->listAP[$i]['dettes_financieres'], 0, ',', ' ').' €</td>';
+                                                            	echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->listAP[$i]['dettes_financieres'], 0).' €</td>';
 															}
 															?>
 														</tr>
@@ -457,7 +457,7 @@ else
 															<?
 															for($i=0;$i<3;$i++)
 															{
-                                                            	echo '<td class="sameSize" style="text-align:right;">'.number_format($this->listAP[$i]['dettes_fournisseurs'], 0, ',', ' ').' €</td>';
+                                                            	echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->listAP[$i]['dettes_fournisseurs'], 0).' €</td>';
 															}
 															?>
 														</tr>
@@ -466,7 +466,7 @@ else
 															<?
 															for($i=0;$i<3;$i++)
 															{
-                                                            	echo '<td class="sameSize" style="text-align:right;">'.number_format($this->listAP[$i]['autres_dettes'], 0, ',', ' ').' €</td>';
+                                                            	echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->listAP[$i]['autres_dettes'], 0).' €</td>';
 															}
 															?>
 														</tr>
@@ -475,7 +475,7 @@ else
 															<?
 															for($i=1;$i<=3;$i++)
 															{
-                                                            	echo '<td class="sameSize" style="text-align:right;">'.number_format($this->totalAnneePassif[$i], 0, ',', ' ').' €</td>';
+                                                            	echo '<td class="sameSize" style="text-align:right;">'.$this->ficelle->formatNumber($this->totalAnneePassif[$i], 0).' €</td>';
 															}
 															?>
 														</tr>
@@ -483,13 +483,13 @@ else
 												</td>
 											</tr>
 										</table>
-											
+
 									</div>
 
-									
+
 
 								</div><!-- /.tab -->
-								
+
 							</div>
 						</div>
 					</div>
@@ -505,8 +505,8 @@ else
 								</div>
 								<div class="widget-body">
 									<div class="article">
-										<p><?=$this->lng['preteur-projets']['ce-projet-est-integralement-finance-par']?> <strong class="pinky-span"> <?=number_format($this->NbPreteurs,0, ',', ' ')?> <?=$this->lng['preteur-projets']['preteur']?><?=($this->NbPreteurs>1?'s':'')?></strong> <br /><?=$this->lng['preteur-projets']['au-taux-de']?><strong class="pinky-span"> <?=number_format($this->AvgLoans,1, ',', ' ')?> %</strong> <br /><?=$this->lng['preteur-projets']['en']?> <?=($this->interDebutFin['day']>0?$this->interDebutFin['day'].' jours ':'')?><?=($this->interDebutFin['hour']>0?$this->interDebutFin['hour'].' heures ':'')?> <?=$this->lng['preteur-projets']['et']?> <?=$this->interDebutFin['minute']?> <?=$this->lng['preteur-projets']['minutes']?></p>
-										
+										<p><?=$this->lng['preteur-projets']['ce-projet-est-integralement-finance-par']?> <strong class="pinky-span"> <?=$this->ficelle->formatNumber($this->NbPreteurs,0, ',', ' ')?> <?=$this->lng['preteur-projets']['preteur']?><?=($this->NbPreteurs>1?'s':'')?></strong> <br /><?=$this->lng['preteur-projets']['au-taux-de']?><strong class="pinky-span"> <?=number_format($this->AvgLoans, 1)?> %</strong> <br /><?=$this->lng['preteur-projets']['en']?> <?=($this->interDebutFin['day']>0?$this->interDebutFin['day'].' jours ':'')?><?=($this->interDebutFin['hour']>0?$this->interDebutFin['hour'].' heures ':'')?> <?=$this->lng['preteur-projets']['et']?> <?=$this->interDebutFin['minute']?> <?=$this->lng['preteur-projets']['minutes']?></p>
+
 									</div>
                                     <div class="widget-cat">
                                         <a style="display:block;" class="btn darker popup-link"  href="<?=$this->lurl?>/thickbox/pop_up_modifier/<?=$this->projects->id_project?>">Modifier</a>
@@ -523,13 +523,13 @@ else
 									}*/
 									?>
 								</div>
-                                
+
 							</aside>
 						</div>
 						<?
                     }
-					
-					
+
+
 					// Funding KO
 					elseif($this->projects_status->status == 70)
 					{
@@ -541,7 +541,7 @@ else
 								</div>
 								<div class="widget-body">
 									<div class="article">
-										
+
 										<p>Merci à tous</p>
 									</div>
                                     <div class="widget-cat">
@@ -562,7 +562,7 @@ else
 									</div>
 									<div class="widget-body">
 										<div class="article">
-											
+
 											<p><?=$this->lng['preteur-projets']['projet-pret-rejete']?></p>
 										</div>
 									</div>
@@ -581,7 +581,7 @@ else
 								</div>
 								<div class="widget-body">
 									<div class="article">
-										
+
 										<p>Merci à tous</p>
 									</div>
                                     <div class="widget-cat">
@@ -600,18 +600,18 @@ else
 							<aside class="widget widget-price">
 								<div class="widget-top">
 									<i class="icon-pig"></i>
-									<?=number_format($this->projects->amount, 0, ',', ' ')?> €
+									<?=$this->ficelle->formatNumber($this->projects->amount, 0)?> €
 								</div>
 								<div class="widget-body">
                                     <div class="widget-cat progress-cat clearfix">
                                         <div class="prices clearfix">
                                             <span class="price less">
-                                                <strong><?=number_format($this->payer,$this->decimales, ',', ' ')?> €</strong>
+                                                <strong><?= $this->ficelle->formatNumber($this->payer, $this->decimales) ?> €</strong>
                                                 <?=$this->lng['preteur-projets']['de-pretes']?>
                                             </span>
                                             <i class="icon-arrow-gt"></i>
                                             <span class="price">
-                                                <strong><?=number_format($this->resteApayer,$this->decimales, ',', ' ')?> €</strong>
+                                                <strong><?= $this->ficelle->formatNumber($this->resteApayer, $this->decimales) ?> €</strong>
                                                 <?=$this->lng['preteur-projets']['restent-a-preter']?>
                                             </span>
                                         </div>
@@ -620,7 +620,7 @@ else
                                             <div><span></span></div>
                                         </div>
                                     </div>
-                                    
+
                                     <?php /*?><div class="widget-cat">
                                         <p>Le solde du projet a été atteint. Voulez vous terminer la periode de funding ?</p>
                                         <br />
@@ -642,5 +642,5 @@ else
 				</div>
 			</div>
 		</div>
-		
+
 <!--#include virtual="ssi-footer.shtml"  -->

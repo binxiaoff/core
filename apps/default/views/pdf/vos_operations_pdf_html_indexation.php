@@ -1,85 +1,30 @@
-
-<style type="text/css">
-.iconplusmoins{color:white;font-size:18px;cursor:default;vertical-align: middle;}
-
-
-.vos_operations{font-size:13px;width:960px;margin:auto;}
-.vos_operations td{padding:5px;}
-.vos_operations tr.content_transact td{height: 0px;padding: 0px;}
-
-table.vos_operations th#order_projects{text-align:left;}
-
-.vos_operations tr.transact{cursor:pointer;}
-.vos_operations tr.content_transact .div_content_transact{display:inline-block;width:100%;}
-
-.vos_operations tr.content_transact td .soustable{border-bottom:1px solid #b10366;margin-top: 10px;padding-bottom: 10px;}
-.vos_operations tr.content_transact td .soustable tr td{padding:0px;height: 15px;}
-.vos_operations tr.content_transact td .soustable tr td.chiffres{text-align:right;}
-.vos_operations tr.content_transact td .soustable tr td.detail_remb{padding-left:5px;vertical-align:top;}
-
-.vos_operations tr:nth-child(even) td{background-color:white;}
-.vos_operations tr:hover td{background-color:white;}
-.vos_operations tr.odd td{background:#fafafa;}
-.vos_operations .icon-arrows{cursor:pointer;}
-.vos_operations .companieleft{text-align:left;}
-.soustable .detail_left{text-align:left;}
-.vos_operations_ligne{display:inline-block;vertical-align: top;}
-
-.vos_operations .print{margin-top: 3px;}
-.vos_operations .xls{margin-top: 6px;}
-
-.load_table_vos_operations{
-	background: none repeat scroll 0 0 white;
-    border: 1px solid #b10366;
-    border-radius: 5px;
-    display: none;
-    height: 50px;
-    left: 48%;
-    margin: 65px auto auto;
-    padding: 5px;
-    position: absolute;
-    text-align: center;
-    width: 100px;}
-	
-	
-.pdfHeader,.pdfFooter{width:960px;margin:auto;}
-.pdfFooter{font-size:13px;}
-
-.table th:first-child.pdfSolde{color:white;padding-left: 5px;border-radius: 0;font-size: 17px;}
-
-.th-wrap{color:white;}
-
-
-
-
-.vos_operations .th-wrap {
-text-align: center;
-/*width: 100px;*/
-font-size: 12px;
-}
-
-.soustable tr td{padding-top: 5px !important; padding-bottom: 5px !important;}
-
-.title-ope{margin-top:25px;}
-
-</style>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html lang="en-US" xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
+<head>
+    <title>Vos operations indexation</title>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="<?=$this->surl?>/styles/default/style.css" type="text/css" media="all" />
+    <link rel="stylesheet" href="<?=$this->surl?>/styles/default/style-edit.css" type="text/css" media="all" />
+    <link rel="stylesheet" href="<?=$this->surl?>/styles/default/pdf/styleOperations.css" type="text/css" media="all" />
+</head>
+<body>
 
 <div class="pdfHeader">
-<img src="<?=$this->surl?>/styles/default/images/logo.png" />
+    <div class="logo"></div>
 <br /><br />
-<div style="float:left;">
+<div style="float: left;">
 <b>Unilend – Société Française pour le financement des PME</b><br />
 6 Rue du général Clergerie<br />
 75116 Paris
 </div>
 
-<div style="float:right;text-align:right;">
+<div style="float: left;padding:0 0 0 300px;">
 <b><?=$this->lng['preteur-operations-pdf']['paris-le']?> <?=(date('d/m/Y'))?></b>
 <br /><br /><br />
 <?
-if($this->lenders_accounts->id_company != 0){
-	
-	$this->companies->get($this->lenders_accounts->id_company,'id_company');
+if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0){
+
+	$this->companies->get($this->oLendersAccounts->id_company,'id_company');
 	?>
 	<b><?=$this->companies->name?></b><br />
     <?=$this->companies->adresse1?><br />
@@ -99,9 +44,9 @@ else{
 <div style="clear:both;"></div>
 <br />
 <b><?=$this->lng['preteur-operations-pdf']['objet-releve-doperations-de-votre-compte-unilend-n']?><?=$this->clients->id_client?></b><br />
-<?=$this->lng['preteur-operations-pdf']['titulaire']?> <?=($this->lenders_accounts->id_company != 0?$this->companies->name:$this->clients->prenom.' '.$this->clients->nom)?><br />
+<?=$this->lng['preteur-operations-pdf']['titulaire']?> <?=(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0?$this->companies->name:$this->clients->prenom.' '.$this->clients->nom)?><br />
 <?
-if($this->lenders_accounts->id_company != 0){
+if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0){
 	?><?=$this->lng['preteur-operations-pdf']['Representant-legal']?> <?=$this->clients->civilite.' '.$this->clients->prenom.' '.$this->clients->nom?><br /><?
 }
 ?>
@@ -115,265 +60,219 @@ if($this->lenders_accounts->id_company != 0){
             <div class="th-wrap" style='top:-3px;width: 130px;'>
                 <i title="<?=$this->lng['preteur-operations-pdf']['info-titre-operation']?>" class="tooltip-anchor icon-double"></i>
                 <div class="title-ope"><?=$this->lng['preteur-operations-pdf']['operations']?>&nbsp;<i class="icon-arrows"></i></div>
-            </div>                
+            </div>
         </th>
-        
+
         <th width="200px" id="order_bdc" align="left" class="col1" style=" padding-left: 0px;">
                 <div class="th-wrap" style='top:-3px;width: 200px;'>
                 	<i title="<?=$this->lng['preteur-operations-pdf']['info-titre-bon-caisse']?>" class="tooltip-anchor icon-bdc"></i>
 					<div class="title-ope"><?=$this->lng['preteur-operations-pdf']['bdc']?>&nbsp;<i class="icon-arrows"></i></div>
-                </div>                
-            </th>    
-       
+                </div>
+            </th>
+
         <th width="150px" id="order_projects" align="center">
             <div class="th-wrap">
                 <i title="" class="icon-person tooltip-anchor" style="margin-left:-15px;" data-original-title="<?=$this->lng['preteur-operations-pdf']['info-titre-projets']?>"></i>
                 <div class="title-ope"><?=$this->lng['preteur-operations-pdf']['projets']?>&nbsp;<i class="icon-arrows"></i></div>
-            </div>            
-            
+            </div>
+
         </th>
         <th width="140px" id="order_date">
             <div class="th-wrap">
                 <i title="" class="icon-calendar tooltip-anchor" data-original-title="<?=$this->lng['preteur-operations-pdf']['info-titre-date-operation']?>"></i>
                 <div class="title-ope"><?=$this->lng['preteur-operations-pdf']['date-de-loperation']?>&nbsp;<i class="icon-arrows"></i></div>
             </div>
-        
+
         </th>
-        <?php /*?><th width="80">
-            <div class="th-wrap"><i title="" class="tooltip-anchor"><span class="iconplusmoins">+</span></i></div>
-        </th>
-        <th width="51">
-            <div class="th-wrap"><i title="" class="tooltip-anchor"><span class="iconplusmoins">-</span></i></div>
-        </th><?php */?>
          <th width="180px" id="order_montant" >
             <div class="th-wrap"  style="top:-2px;">
                 <i title="" class="icon-euro tooltip-anchor" data-original-title="<?=$this->lng['preteur-operations-pdf']['info-titre-montant-operation']?>"></i>
                 <div class="title-ope"><?=$this->lng['preteur-operations-pdf']['montant-de-loperation']?>&nbsp;<i class="icon-arrows"></i></div>
             </div>
-            
+
         </th>
         <th width="140px">
             <div class="th-wrap" >
                 <i title="" class="icon-bank tooltip-anchor" data-original-title="<?=$this->lng['preteur-operations-pdf']['info-titre-solde-compte']?>"></i>
                 <div class="title-ope"><?=$this->lng['preteur-operations-pdf']['solde-du-compte']?></div>
             </div>
-            
+
         </th>
     </tr>
-    
+
     <?
     $i=1;
 	$asterix_on = false;
-    foreach($this->lTrans as $t)
-	{
-		
-		$t['solde'] = ($t['solde']/100);
-		$t['montant_prelevement'] = ($t['montant_prelevement']/100);
-        
-        if($t['montant_operation'] > 0){
-			$plus = '<b style="color:#40b34f;">+</b>';
-			$moins = '';
-			$couleur = 'style="color:#40b34f;"';
-		}
-		else{
-			$plus = '';
-			$moins = '<b style="color:red;">-</b>';	
-			$couleur = 'style="color:red;"';
-		}
+    if(isset($this->lTrans)) {
+        foreach ($this->lTrans as $t) {
 
-        if($t['solde'] > 0)
-		{
-			$solde = $t['solde'];
-		}
-		
-        // Remb preteur
-        if($t['type_transaction'] == 5 || $t['type_transaction'] == 23){
-            
-			// Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
-			$t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['remboursement'];
-			
-            $this->echeanciers->get($t['id_echeancier'],'id_echeancier');
-           // $this->projects->get($this->echeanciers->id_project,'id_project');
-            //$this->companies->get($this->projects->id_company,'id_company');
-            
-            $retenuesfiscals = $this->echeanciers->prelevements_obligatoires+$this->echeanciers->retenues_source+$this->echeanciers->csg+$this->echeanciers->prelevements_sociaux+$this->echeanciers->contributions_additionnelles+$this->echeanciers->prelevements_solidarite+$this->echeanciers->crds;
-            
-			// si on est dans le cas d'un RA on change quelques montant
-			/*if($t['type_transaction'] == 23)
-			{
-				// pas lié à une echeance donc on assigne les montants manuellement
-				$this->echeanciers->interets = $this->echeanciers->interets = 0;
-				$this->echeanciers->capital = $t['montant']; 
-			}*/
-			
-            ?>
-            <!-- debut transasction remb -->
-            <tr class="transact remb_<?=$t['id_transaction']?> <?=($i%2 == 1?'':'odd')?>">
-                <td><?=$t['libelle_operation']?></td>
-                <td><?=$t['bdc']?></td>
-                <td class="companieleft"><?=$t['libelle_projet']?></td>
-                <td><?=$this->dates->formatDate($t['date_operation'],'d-m-Y')?></td>
-                <?php /*?><td><?=$plus?></td>
-                <td><?=$moins?></td><?php */?>
-                <td <?=$couleur?>><?=number_format($t['montant_operation']/100, 2, ',', ' ')?> €</td>
-                <td><?=number_format($t['solde'], 2, ',', ' ')?> €</td>
-            </tr>
-            <tr class="content_transact <?=($i%2 == 1?'':'odd')?>" height="0">
-                    <?php /*?><tr<?=($i%2 == 1?'':' class="odd"')?>><?php */?>
+            $t['solde']               = ($t['solde'] / 100);
+            $t['montant_prelevement'] = ($t['montant_prelevement'] / 100);
+
+            if ($t['montant_operation'] > 0) {
+                $plus    = '<b style="color:#40b34f;">+</b>';
+                $moins   = '';
+                $couleur = 'style="color:#40b34f;"';
+            } else {
+                $plus    = '';
+                $moins   = '<b style="color:red;">-</b>';
+                $couleur = 'style="color:red;"';
+            }
+
+            if ($t['solde'] > 0) {
+                $solde = $t['solde'];
+            }
+
+            // Remb preteur
+            if ($t['type_transaction'] == 5 || $t['type_transaction'] == 23) {
+
+                $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
+                $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
+
+                ?>
+                <!-- debut transasction remb -->
+                <tr class="transact remb_<?= $t['id_transaction'] ?> <?= ($i % 2 == 1 ? '' : 'odd') ?>">
+                    <td><?= $t['libelle_operation'] ?></td>
+                    <td><?= $t['bdc'] ?></td>
+                    <td class="companieleft"><?= $t['libelle_projet'] ?></td>
+                    <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
+                    <td <?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?> €</td>
+                    <td><?= $this->ficelle->formatNumber($t['solde']) ?> €</td>
+                </tr>
+                <tr class="content_transact <?= ($i % 2 == 1 ? '' : 'odd') ?>" height="0">
                     <td colspan="7">
-                        <div class="div_content_transact content_remb_<?=$t['id_transaction']?>" style="display:inline-block;">
-                        <table class="soustable" width="100%" >
-                            <tbody>
-                           	<?php /*?><tr>
-                                <td colspan="4">&nbsp;</td>
-                            </tr><?php */?>
-                            <tr>
-                                <td width="146px" class="detail_remb"><?=$this->lng['preteur-operations-vos-operations']['voici-le-detail-de-votre-remboursement']?></td>
-                                <td width="145px" class="detail_left"><?=$this->lng['preteur-operations-vos-operations']['capital-rembourse']?></td>
-                                <td width="100px" class="chiffres" style="padding-bottom:8px; color:#40b34f;"><?=number_format(($t['montant_capital']/100), 2, ',', ' ')?> €</td>
-                                <td width="107px">&nbsp;</td>
-                            </tr>
-                            <tr>
-                                <td></td>
-                                <td class="detail_left"><?=$this->lng['preteur-operations-vos-operations']['interets-recus']?></td>
-                                <td class="chiffres" style="color:#40b34f;"><?=number_format(($t['montant_interet']/100), 2, ',', ' ')?> €</td>
-                                <td>&nbsp;</td>
-                            </tr>
-                            <tr>
-                                <td></td>
-                                <td class="detail_left"><?=$t['libelle_prelevement']?></td>
-                                <td class="chiffres" style="color:red;">-<?=number_format($t['montant_prelevement'], 2, ',', ' ')?> €</td>
-                                <td>&nbsp;</td>
-                            </tr>
-                            <tr>
-                                <td colspan="4" style=" height:4px;"></td>
-                            </tr>                            
-                            </tbody>
-                        </table>
+                        <div class="div_content_transact content_remb_<?= $t['id_transaction'] ?>">
+                            <table class="soustable" width="100%">
+                                <tbody>
+                                <tr>
+                                    <td width="146px"
+                                        class="detail_remb"><?= $this->lng['preteur-operations-vos-operations']['voici-le-detail-de-votre-remboursement'] ?></td>
+                                    <td width="145px"
+                                        class="detail_left"><?= $this->lng['preteur-operations-vos-operations']['capital-rembourse'] ?></td>
+                                    <td width="100px" class="chiffres"
+                                        style="padding-bottom:8px; color:#40b34f;"><?= $this->ficelle->formatNumber(($t['montant_capital'] / 100)) ?>
+                                        €
+                                    </td>
+                                    <td width="107px">&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td class="detail_left"><?= $this->lng['preteur-operations-vos-operations']['interets-recus'] ?></td>
+                                    <td class="chiffres"
+                                        style="color:#40b34f;"><?= $this->ficelle->formatNumber(($t['montant_interet'] / 100)) ?>
+                                        €
+                                    </td>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td class="detail_left"><?= $t['libelle_prelevement'] ?></td>
+                                    <td class="chiffres" style="color:red;">
+                                        -<?= $this->ficelle->formatNumber($t['montant_prelevement']) ?> €
+                                    </td>
+                                    <td>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" style=" height:4px;"></td>
+                                </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </td>
                 </tr>
-            <!-- fin transasction remb --> 
-        <?
-        $i++;
-        }
-        elseif(in_array($t['type_transaction'],array(8,1,3,4,16,17,19,20))){
-            
-			
-			// Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
-			switch($t['type_transaction'])
-			{
-				case 8:
-					$t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['retrait-dargents'];
-				break;
-				case 1:
-					$t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
-				break;
-				case 3:
-					$t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
-				break;
-				case 4:
-					$t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
-				break;
-				case 16:
-					$t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'];
-				break;
-				case 17:
-					$t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['retrait-offre'];
-				break;
-				case 19:
-					$t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-filleul'];
-				break;
-				case 20:
-					$t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-parrain'];
-				break;
-			}
-			
-			// ajout KLE 03/03/15 , pour un client à a du lui faire un retrait positif car :
-			/*
-			
-			Dans le fichier BNP Paribas, nous constatons en date du 25/02/2015 un rejet de virement de EUR 350,00 avec le libellé Christophe Voliotis au motif suivant « Compte clos ».
-			
-			Rep : 
-			-	La régularisation devra s’effectuer en date du jour (et non pas en corrigeant la ligne correspondant à la date où avait été demandé ce virement).
-			
-			*/
-			
-			$type = "";				
-			if($t['type_transaction'] == 8 && $t['montant'] > 0)
-			{
-				$type = "Annulation retrait des fonds - compte bancaire clos";
-			}
-			else
-			{
-				$type = $t['libelle_operation'];					
-			}
-			?>
-			
-            <tr <?=($i%2 == 1?'':'class="odd"')?>>
-                <td><?=$type?></td>
-                <td></td>
-                <td></td>
-                <td><?=$this->dates->formatDate($t['date_operation'],'d-m-Y')?></td>
-                <?php /*?><td><?=$plus?></td>
-                <td><?=$moins?></td><?php */?>
-                <td <?=$couleur?>><?=number_format($t['montant_operation']/100, 2, ',', ' ')?> €</td>
-                <td><?=number_format($t['solde'], 2, ',', ' ')?> €</td>
-            </tr>
-            <?
-            $i++;
-        }
-        elseif(in_array($t['type_transaction'],array(2)))
-		{
-            
-            /*if($t['id_bid_remb'] != 0){
-				$this->bids->get($t['id_bid_remb'],'id_bid');
-				$id_loan = '';
-			}
-			else{
-				$this->wallets_lines->get($t['id_transaction'],'id_transaction');
-				$this->bids->get($this->wallets_lines->id_wallet_line,'id_lender_wallet_line');
-				
-				if($this->loans->get($this->bids->id_bid,'status = 0 AND id_bid')){
-					$id_loan = ' - '.$this->loans->id_loan;
-				}
-				else $id_loan = '';
-			}*/
-			
-			$bdc = $t['bdc'];
-			if($t['bdc'] == 0)
-			{
-				$bdc = "";
-			}			
-			
-			//asterix pour les offres acceptees
-			$asterix = "";
-			$offre_accepte = false;
-			if($t['libelle_operation'] == $this->lng['preteur-operations-vos-operations']['offre-acceptee'])
-			{
-				$asterix = " *";
-				$offre_accepte = true;
-				$asterix_on = true;
-			}
-			
-			
-            
-            ?>
-            <tr <?=($i%2 == 1?'':'class="odd"')?>>
-                <td><?=$t['libelle_operation']?></td>
-                <td><?=$bdc?></td>
-                <td class="companieleft"><?=$t['libelle_projet']?></td>
-                <td><?=$this->dates->formatDate($t['date_operation'],'d-m-Y')?></td>
-                <?php /*?><td><?=$plus?></td>
-                <td><?=$moins?></td><?php */?>
-                <td <?=(!$offre_accepte?$couleur:'')?>><?=number_format($t['montant_operation']/100, 2, ',', ' ').' €'?></td>
-                <td><?=number_format($t['solde'], 2, ',', ' ')?> €<?=$asterix?></td>
-            </tr>
-            <?
-            $i++;
+                <!-- fin transasction remb -->
+                <?
+                $i++;
+            } elseif (in_array($t['type_transaction'], array(8, 1, 3, 4, 16, 17, 19, 20))) {
+
+
+                // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
+                switch ($t['type_transaction']) {
+                    case 8:
+                        $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['retrait-dargents'];
+                        break;
+                    case 1:
+                        $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
+                        break;
+                    case 3:
+                        $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
+                        break;
+                    case 4:
+                        $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
+                        break;
+                    case 16:
+                        $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'];
+                        break;
+                    case 17:
+                        $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['retrait-offre'];
+                        break;
+                    case 19:
+                        $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-filleul'];
+                        break;
+                    case 20:
+                        $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-parrain'];
+                        break;
+                }
+
+                // ajout KLE 03/03/15 , pour un client à a du lui faire un retrait positif car :
+                /*
+
+                Dans le fichier BNP Paribas, nous constatons en date du 25/02/2015 un rejet de virement de EUR 350,00 avec le libellé Christophe Voliotis au motif suivant « Compte clos ».
+
+                Rep :
+                -	La régularisation devra s’effectuer en date du jour (et non pas en corrigeant la ligne correspondant à la date où avait été demandé ce virement).
+
+                */
+
+                $type = "";
+                if ($t['type_transaction'] == 8 && $t['montant'] > 0) {
+                    $type = "Annulation retrait des fonds - compte bancaire clos";
+                } else {
+                    $type = $t['libelle_operation'];
+                }
+                ?>
+
+                <tr <?= ($i % 2 == 1 ? '' : 'class="odd"') ?>>
+                    <td><?= $type ?></td>
+                    <td></td>
+                    <td></td>
+                    <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
+                    <td <?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?> €</td>
+                    <td><?= $this->ficelle->formatNumber($t['solde']) ?> €</td>
+                </tr>
+                <?
+                $i++;
+            } elseif (in_array($t['type_transaction'], array(2))) {
+                $bdc = $t['bdc'];
+                if ($t['bdc'] == 0) {
+                    $bdc = "";
+                }
+
+                //asterix pour les offres acceptees
+                $asterix       = "";
+                $offre_accepte = false;
+                if ($t['libelle_operation'] == $this->lng['preteur-operations-vos-operations']['offre-acceptee']) {
+                    $asterix       = " *";
+                    $offre_accepte = true;
+                    $asterix_on    = true;
+                }
+
+
+                ?>
+                <tr <?= ($i % 2 == 1 ? '' : 'class="odd"') ?>>
+                    <td><?= $t['libelle_operation'] ?></td>
+                    <td><?= $bdc ?></td>
+                    <td class="companieleft"><?= $t['libelle_projet'] ?></td>
+                    <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
+                    <td <?= (!$offre_accepte ? $couleur : '') ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) . ' €' ?></td>
+                    <td><?= $this->ficelle->formatNumber($t['solde']) ?> €<?= $asterix ?></td>
+                </tr>
+                <?
+                $i++;
+            }
         }
     }
-	
+
 	$soldetotal = $this->transactions->getSoldeDateLimite($t['id_client'],$this->date_fin);
     ?>
     <tr>
@@ -389,15 +288,12 @@ if($this->lenders_accounts->id_company != 0){
     	<th colspan="2" class="pdfSolde"><?=$this->lng['preteur-operations-pdf']['solde-de-votre-compte']?></th>
    		<td style="font-size: 17px;font-weight:bold;"><?=date('d-m-Y',strtotime($this->date_fin))?></td>
         <td></td>
-        <?php /*?><td></td>
-        <td></td><?php */?>
-    	<td style="font-size: 17px;font-weight:bold;"><?=number_format($soldetotal, 2, ',', ' ')?> €</td>
+    	<td style="font-size: 17px;font-weight:bold;"><?=$this->ficelle->formatNumber($soldetotal)?> €</td>
     </tr>
 </table>
 
 <?php
-if($asterix_on)
-{
+if($asterix_on) {
 	?>
 	<div style="padding-left: 10px;">* <?=$this->lng['preteur-operations-vos-operations']['offre-acceptee-asterix-pdf']?></div>
     <?
@@ -416,28 +312,28 @@ if($asterix_on)
 
  <script type="text/javascript">
 	$("#order_operations,#order_projects,#order_date").click(function() {
-		
+
 		if($(this).attr('id') == 'order_operations'){
 			var type = 'order_operations';
-			
+
 			if($("#order_operations.asc").length){ var order = 'desc';}
 			else{ var order = 'asc'; }
 		}
 		else if($(this).attr('id') == 'order_projects'){
 			var type = 'order_projects';
-			
+
 			if($("#order_projects.asc").length){ var order = 'desc';}
 			else{ var order = 'asc'; }
 		}
 		else if($(this).attr('id') == 'order_date'){
 			var type = 'order_date';
-			
+
 			if($("#order_date.asc").length){ var order = 'desc'; }
 			else{ var order = 'asc'; }
 		}
-		
+
 		$(".load_table_vos_operations").fadeIn();
-		
+
 		var val = {
 			debut 				: $("#debut").val(),
 			fin 				: $("#fin").val(),
@@ -449,7 +345,7 @@ if($asterix_on)
 			order 				: order,
 			type 				: type
 		}
-		
+
 		$.post(add_url+"/ajax/vos_operations",val).done(function( data ) {
 
 			$(".content_table_vos_operations").html(data);

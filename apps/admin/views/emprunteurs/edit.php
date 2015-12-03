@@ -3,8 +3,7 @@
         $(".listeProjets").tablesorter({headers: {4: {sorter: false}, 5: {sorter: false}}});
         $(".mandats").tablesorter({headers: {}});
 <?
-if ($this->nb_lignes != '')
-{
+if ($this->nb_lignes != '') {
     ?>
             $(".listeProjets").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
             $(".mandats").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
@@ -13,8 +12,7 @@ if ($this->nb_lignes != '')
 ?>
     });
 <?
-if (isset($_SESSION['freeow']))
-{
+if (isset($_SESSION['freeow'])) {
     ?>
         $(document).ready(function () {
             var title, message, opts, container;
@@ -43,8 +41,7 @@ if (isset($_SESSION['freeow']))
     <h1>Detail emprunteur : <?= $this->clients->nom . ' ' . $this->clients->prenom ?></h1>
 
     <?
-    if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '')
-    {
+    if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '') {
         ?>
         <p style="color:#c84747;text-align:center;font-size:14px;font-weight:bold;"><?= $_SESSION['error_email_exist'] ?></p>
         <?
@@ -52,8 +49,8 @@ if (isset($_SESSION['freeow']))
     }
     ?>
 
-    <form method="post" name="edit_emprunteur" id="edit_emprunteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/emprunteurs/edit/<?= $this->clients->id_client ?>" target="_parent">           
-        <table class="formColor" style="width: 775px;margin:auto;">            	
+    <form method="post" name="edit_emprunteur" id="edit_emprunteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/emprunteurs/edit/<?= $this->clients->id_client ?>" target="_parent">
+        <table class="formColor" style="width: 775px;margin:auto;">
             <tr>
                 <th><label for="nom">Nom :</label></th>
                 <td><input type="text" name="nom" id="nom" class="input_large" value="<?= $this->clients->nom ?>"/></td>
@@ -75,8 +72,7 @@ if (isset($_SESSION['freeow']))
                 <td>
                     <select name="secteur" id="secteur" class="select">
                         <?
-                        foreach ($this->lSecteurs as $k => $s)
-                        {
+                        foreach ($this->lSecteurs as $k => $s) {
                             ?><option <?= ($this->companies->sector == $k + 1 ? 'selected' : '') ?> value="<?= $k + 1 ?>"><?= $s ?></option><?
                         }
                         ?>
@@ -95,7 +91,6 @@ if (isset($_SESSION['freeow']))
                 <th><label for="ville">Ville :</label></th>
                 <td><input type="text" name="ville" id="ville" class="input_large" value="<?= $this->clients_adresses->ville ?>"/></td>
             </tr>
-
             <tr>
                 <th><label for="iban">IBAN :</label></th>
                 <td colspan="3">
@@ -125,28 +120,25 @@ if (isset($_SESSION['freeow']))
                 <th><label for="bic">BIC :</label></th>
                 <td colspan="3"><input type="text" name="bic" id="bic" style="width: 620px;" class="input_big" value="<?= $this->companies->bic ?>" onKeyUp="verif(this.id, 1);"/></td>
             </tr>
-
             <tr>
-
-                <th><label for="email_facture">Email de facturation :</label></th>
+               	<th><label for="email_facture">Email de facturation :</label></th>
                 <td><input type="text" name="email_facture" id="email_facture" class="input_large" value="<?= $this->companies->email_facture ?>"/></td>
 
                 <th></th>
                 <td><input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp2" name="generer_mdp2" value="Générer mdp" class="btn" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/><span style="margin-left:5px;color:green; display:none;" class="reponse" >mdp généré</span></td>
-
-
             </tr>
-
             <tr>
                 <th><label for="cni_passeport">CNI/Passeport :</label></th>
                 <td>
                     <?= $this->clients->cni_passeport ?><br>
-                    <input type="file" name="cni_passeport" id="cni_passeport" value="<?= $this->clients->cni_passeport ?>"/></td>
+                    <input type="file" name="cni_passeport" id="cni_passeport" value="<?= $this->clients->cni_passeport ?>"/>
+                </td>
 
                 <th><label for="signature">Signature :</label></th>
                 <td>
                     <?= $this->clients->signature ?><br>
-                    <input type="file" name="signature" id="signature" value="<?= $this->ville ?>"/></td>
+                    <input type="file" name="signature" id="signature" value="<?= $this->clients->signature ?>"/>
+                </td>
             </tr>
             <?php /* ?><tr>
               <th><label for="mandat">Mandat :</label></th>
@@ -190,25 +182,23 @@ if (isset($_SESSION['freeow']))
 
     <h2>Liste des projets</h2>
     <?
-    if (count($this->lprojects) > 0)
-    {
+    if (count($this->lprojects) > 0) {
         ?>
         <table class="tablesorter listeProjets">
             <thead>
-                <tr>  
+                <tr>
                     <th>ID</th>
                     <th>Projet</th>
                     <th>statut</th>
                     <th>Montant</th>
                     <th>PDF</th>
-                    <th>&nbsp;</th>  
+                    <th>&nbsp;</th>
                 </tr>
             </thead>
             <tbody>
                 <?
                 $i = 1;
-                foreach ($this->lprojects as $p)
-                {
+                foreach ($this->lprojects as $p) {
 
 
                     // on recupe le nom du statut
@@ -218,16 +208,14 @@ if (isset($_SESSION['freeow']))
                         <td><?= $p['id_project'] ?></td>
                         <td><?= $p['title'] ?></td>
                         <td><?= $this->projects_status->label ?></td>
-                        <td><?= number_format($p['amount'], 2, ',', ' ') ?> €</td>
+                        <td><?= $this->ficelle->formatNumber($p['amount']) ?> €</td>
                         <td>
                             <?
-                            if ($this->projects_pouvoir->get($p['id_project'], 'id_project'))
-                            {
+                            if ($this->projects_pouvoir->get($p['id_project'], 'id_project')) {
                                 ?><a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>">POUVOIR</a><?
                             }
                             echo '&nbsp;&nbsp;';
-                            if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $p['id_project'] . ' AND id_client'))
-                            {
+                            if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $p['id_project'] . ' AND id_client')) {
                                 ?><a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>">MANDAT</a><?
                             }
                             ?>
@@ -237,7 +225,7 @@ if (isset($_SESSION['freeow']))
                                 <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Détails" />
                             </a>
                         </td>
-                    </tr>   
+                    </tr>
                     <?
                     $i++;
                 }
@@ -245,8 +233,7 @@ if (isset($_SESSION['freeow']))
             </tbody>
         </table>
         <?
-        if ($this->nb_lignes != '')
-        {
+        if ($this->nb_lignes != '') {
             ?>
             <table>
                 <tr>
@@ -272,41 +259,51 @@ if (isset($_SESSION['freeow']))
 
     function RIBediting()
     {
-        var iban = document.getElementById('iban1').value + document.getElementById('iban2').value + document.getElementById('iban3').value + document.getElementById('iban4').value + document.getElementById('iban5').value + document.getElementById('iban6').value + document.getElementById('iban7').value;
+
+        var iban = $('#iban1').val() + $('#iban2').val() + $('#iban3').val() +$('#iban4').val() + $('#iban5').val() + $('#iban6').val() + $('#iban7').val(),
+            bic = $('#bic').val();
 
         // si vide on ne tient pas compte
         if (iban != "")
         {
-            if (iban == "<?= $this->companies->iban ?>" && document.getElementById('bic').value == "<?= $this->companies->bic ?>")
-                return true;
-            
-            
-            List_compagnie_meme_iban = CheckIfIbanExistDeja(iban, <?= $this->clients->id_client ?>);
-            
-            if (List_compagnie_meme_iban != "none")
-            {               
-                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIB_iban_existant/'+List_compagnie_meme_iban});
-                return false;
-            }    
-                
-                
-            if (<?= count($this->loadData('prelevements')->select('status = 0 AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0)
+            if (validateIban(iban) == false && iban != "")
             {
-                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox_no_prelev/<?= $this->clients->id_client ?>'});
+                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/error_iban_lightbox/'});
                 return false;
             }
-            else if (<?= count($this->loadData('prelevements')->select('date_echeance_emprunteur > CURRENT_DATE AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0)
-            {
-                return true;
+            else if (check_bic(bic) == false){
+                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/error_bic_lightbox/'});
+                return false;
             }
-            
-            
-            
+            else{
+                // si on a deja les memes infos deja 'enregistré on valide
+                if (iban == "<?= $this->companies->iban ?>" && bic == "<?= $this->companies->bic ?>") {
+                    return true;
+                }
 
-            $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox/<?= $this->clients->id_client ?>'});
-                return false;
+                List_compagnie_meme_iban = CheckIfIbanExistDeja(iban, bic, <?= $this->clients->id_client ?>);
+
+                if (List_compagnie_meme_iban != "none")
+                {
+                    $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIB_iban_existant/'+List_compagnie_meme_iban});
+                    return false;
+                }
+
+                if (<?= count($this->loadData('prelevements')->select('status = 0 AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0)
+                {
+                    $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox_no_prelev/<?= $this->clients->id_client ?>'});
+                    return false;
+                }
+                else if (<?= count($this->loadData('prelevements')->select('date_echeance_emprunteur > CURRENT_DATE AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0)
+                {
+                    return true;
+                }
+
+                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox/<?= $this->clients->id_client ?>'});
+                    return false;
+            }
         }
-        else 
+        else
         {
             return true;
         }
@@ -331,6 +328,8 @@ if (isset($_SESSION['freeow']))
         // IBAN
         if (champ == 2)
         {
+             var iban = $('#iban1').val() + $('#iban2').val() + $('#iban3').val() +$('#iban4').val() + $('#iban5').val() + $('#iban6').val() + $('#iban7').val();
+
             if (validateIban($("#" + id).val()) == false)
                     //if($("#"+id).val().length != 27)
                     {
@@ -344,8 +343,7 @@ if (isset($_SESSION['freeow']))
 
     $("#edit_emprunteur").submit(function (event) {
         var form_ok = true;
-        
-        
+
         if (check_bic($("#bic").val()) == false && $("#bic").val() != "")
         //if($("#bic").val().length < 8 || $("#bic").val().length > 11)
         {

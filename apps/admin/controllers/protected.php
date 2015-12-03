@@ -78,9 +78,9 @@ class protectedController extends bootstrap
 	
 	function _autres()
 	{
-		if(file_exists($this->path.'protected/companies/autres/'.$this->params[0]))
+		if(file_exists($this->path.'protected/projects/autres/'.$this->params[0]))
 		{
-			$url = ($this->path.'protected/companies/autres/'.$this->params[0]);
+			$url = ($this->path.'protected/projects/autres/'.$this->params[0]);
 			
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
@@ -97,9 +97,9 @@ class protectedController extends bootstrap
 	
 	function _delegation_pouvoir()
 	{
-		if(file_exists($this->path.'protected/companies/delegation_pouvoir/'.$this->params[0]))
+		if(file_exists($this->path.'protected/projects/delegation_pouvoir/'.$this->params[0]))
 		{
-			$url = ($this->path.'protected/companies/delegation_pouvoir/'.$this->params[0]);
+			$url = ($this->path.'protected/projects/delegation_pouvoir/'.$this->params[0]);
 			
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
@@ -116,9 +116,9 @@ class protectedController extends bootstrap
 	
 	function _dernier_bilan_certifie()
 	{
-		if(file_exists($this->path.'protected/companies/dernier_bilan_certifie/'.$this->params[0]))
+		if(file_exists($this->path.'protected/projects/dernier_bilan_certifie/'.$this->params[0]))
 		{
-			$url = ($this->path.'protected/companies/dernier_bilan_certifie/'.$this->params[0]);
+			$url = ($this->path.'protected/projects/dernier_bilan_certifie/'.$this->params[0]);
 			
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
@@ -135,9 +135,9 @@ class protectedController extends bootstrap
 	
 	function _extrait_kbis()
 	{
-		if(file_exists($this->path.'protected/companies/extrait_kbis/'.$this->params[0]))
+		if(file_exists($this->path.'protected/projects/extrait_kbis/'.$this->params[0]))
 		{
-			$url = ($this->path.'protected/companies/extrait_kbis/'.$this->params[0]);
+			$url = ($this->path.'protected/projects/extrait_kbis/'.$this->params[0]);
 			
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
@@ -154,9 +154,9 @@ class protectedController extends bootstrap
 	
 	function _logo()
 	{
-		if(file_exists($this->path.'protected/companies/logo/'.$this->params[0]))
+		if(file_exists($this->path.'protected/projects/logo/'.$this->params[0]))
 		{
-			$url = ($this->path.'protected/companies/logo/'.$this->params[0]);
+			$url = ($this->path.'protected/projects/logo/'.$this->params[0]);
 			
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
@@ -173,9 +173,9 @@ class protectedController extends bootstrap
 	
 	function _photo_dirigeant()
 	{
-		if(file_exists($this->path.'protected/companies/photo_dirigeant/'.$this->params[0]))
+		if(file_exists($this->path.'protected/projects/photo_dirigeant/'.$this->params[0]))
 		{
-			$url = ($this->path.'protected/companies/photo_dirigeant/'.$this->params[0]);
+			$url = ($this->path.'protected/projects/photo_dirigeant/'.$this->params[0]);
 			
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
@@ -192,9 +192,9 @@ class protectedController extends bootstrap
 	
 	function _rib()
 	{
-		if(file_exists($this->path.'protected/companies/rib/'.$this->params[0]))
+		if(file_exists($this->path.'protected/projects/rib/'.$this->params[0]))
 		{
-			$url = ($this->path.'protected/companies/rib/'.$this->params[0]);
+			$url = ($this->path.'protected/projects/rib/'.$this->params[0]);
 			
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
@@ -211,9 +211,9 @@ class protectedController extends bootstrap
 	
 	function _annexes_rapport_special_commissaire_compte()
 	{
-		if(file_exists($this->path.'protected/companies/annexes_rapport_special_commissaire_compte/'.$this->params[0]))
+		if(file_exists($this->path.'protected/projects/annexes_rapport_special_commissaire_compte/'.$this->params[0]))
 		{
-			$url = ($this->path.'protected/companies/annexes_rapport_special_commissaire_compte/'.$this->params[0]);
+			$url = ($this->path.'protected/projects/annexes_rapport_special_commissaire_compte/'.$this->params[0]);
 			
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
@@ -229,9 +229,9 @@ class protectedController extends bootstrap
 	}
 	function _arret_comptable_recent()
 	{
-		if(file_exists($this->path.'protected/companies/arret_comptable_recent/'.$this->params[0]))
+		if(file_exists($this->path.'protected/projects/arret_comptable_recent/'.$this->params[0]))
 		{
-			$url = ($this->path.'protected/companies/arret_comptable_recent/'.$this->params[0]);
+			$url = ($this->path.'protected/projects/arret_comptable_recent/'.$this->params[0]);
 			
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
@@ -247,9 +247,9 @@ class protectedController extends bootstrap
 	}
 	function _budget_exercice_en_cours_a_venir()
 	{
-		if(file_exists($this->path.'protected/companies/budget_exercice_en_cours_a_venir/'.$this->params[0]))
+		if(file_exists($this->path.'protected/projects/budget_exercice_en_cours_a_venir/'.$this->params[0]))
 		{
-			$url = ($this->path.'protected/companies/budget_exercice_en_cours_a_venir/'.$this->params[0]);
+			$url = ($this->path.'protected/projects/budget_exercice_en_cours_a_venir/'.$this->params[0]);
 			
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
@@ -265,9 +265,9 @@ class protectedController extends bootstrap
 	}
 	function _cni_passeport_emprunteur()
 	{
-		if(file_exists($this->path.'protected/companies/cni_passeport/'.$this->params[0]))
+		if(file_exists($this->path.'protected/projects/cni_passeport/'.$this->params[0]))
 		{
-			$url = ($this->path.'protected/companies/cni_passeport/'.$this->params[0]);
+			$url = ($this->path.'protected/projects/cni_passeport/'.$this->params[0]);
 			
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
@@ -283,9 +283,9 @@ class protectedController extends bootstrap
 	}
 	function _derniere_liasse_fiscale()
 	{
-		if(file_exists($this->path.'protected/companies/derniere_liasse_fiscale/'.$this->params[0]))
+		if(file_exists($this->path.'protected/projects/derniere_liasse_fiscale/'.$this->params[0]))
 		{
-			$url = ($this->path.'protected/companies/derniere_liasse_fiscale/'.$this->params[0]);
+			$url = ($this->path.'protected/projects/derniere_liasse_fiscale/'.$this->params[0]);
 			
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
@@ -301,9 +301,9 @@ class protectedController extends bootstrap
 	}
 	function _derniers_comptes_approuves()
 	{
-		if(file_exists($this->path.'protected/companies/derniers_comptes_approuves/'.$this->params[0]))
+		if(file_exists($this->path.'protected/projects/derniers_comptes_approuves/'.$this->params[0]))
 		{
-			$url = ($this->path.'protected/companies/derniers_comptes_approuves/'.$this->params[0]);
+			$url = ($this->path.'protected/projects/derniers_comptes_approuves/'.$this->params[0]);
 			
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
@@ -319,17 +319,16 @@ class protectedController extends bootstrap
 	}
 	function _derniers_comptes_consolides_groupe()
 	{
-		if(file_exists($this->path.'protected/companies/derniers_comptes_consolides_groupe/'.$this->params[0]))
+		if(file_exists($this->path.'protected/projects/derniers_comptes_consolides_groupe/'.$this->params[0]))
 		{
-			$url = ($this->path.'protected/companies/derniers_comptes_consolides_groupe/'.$this->params[0]);
+			$url = ($this->path.'protected/projects/derniers_comptes_consolides_groupe/'.$this->params[0]);
 			
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
 			header('Content-Disposition: attachment; filename="'.basename($url).'";');
 			@readfile($url);
 			die();		
-		}
-		else
+		} else
 		{
 			header('location:'.$this->lurl);
 			die;
@@ -337,9 +336,9 @@ class protectedController extends bootstrap
 	}
 	function _notation_banque_france()
 	{
-		if(file_exists($this->path.'protected/companies/notation_banque_france/'.$this->params[0]))
+		if(file_exists($this->path.'protected/projects/notation_banque_france/'.$this->params[0]))
 		{
-			$url = ($this->path.'protected/companies/notation_banque_france/'.$this->params[0]);
+			$url = ($this->path.'protected/projects/notation_banque_france/'.$this->params[0]);
 			
 			header('Content-Description: File Transfer');
 			header('Content-Type: application/octet-stream');
@@ -375,7 +374,26 @@ class protectedController extends bootstrap
 			die;
 		}
 	}
-	
+
+	function _cni_passeport_verso_lender()
+	{
+		if(file_exists($this->path.'protected/lenders/cni_passeport_verso/'.$this->params[0]))
+		{
+			$url = ($this->path.'protected/lenders/cni_passeport_verso/'.$this->params[0]);
+
+			header('Content-Description: File Transfer');
+			header('Content-Type: application/octet-stream');
+			header('Content-Disposition: attachment; filename="'.basename($url).'";');
+			@readfile($url);
+			die();
+		}
+		else
+		{
+			header('location:'.$this->lurl);
+			die;
+		}
+	}
+
 	function _document_fiscal_preteur()
 	{
 		
@@ -426,6 +444,120 @@ class protectedController extends bootstrap
 			header('Content-Disposition: attachment; filename="'.basename($url).'";');
 			@readfile($url);
 			die();		
+		}
+		else
+		{
+			header('location:'.$this->lurl);
+			die;
+		}
+	}
+
+	function _autre2_lender()
+	{
+		if(file_exists($this->path.'protected/lenders/autre2/'.$this->params[0]))
+		{
+			$url = ($this->path.'protected/lenders/autre2/'.$this->params[0]);
+
+			header('Content-Description: File Transfer');
+			header('Content-Type: application/octet-stream');
+			header('Content-Disposition: attachment; filename="'.basename($url).'";');
+			@readfile($url);
+			die();
+		}
+		else
+		{
+			header('location:'.$this->lurl);
+			die;
+		}
+	}
+
+	function _autre3_lender()
+	{
+		if(file_exists($this->path.'protected/lenders/autre3/'.$this->params[0]))
+		{
+			$url = ($this->path.'protected/lenders/autre3/'.$this->params[0]);
+
+			header('Content-Description: File Transfer');
+			header('Content-Type: application/octet-stream');
+			header('Content-Disposition: attachment; filename="'.basename($url).'";');
+			@readfile($url);
+			die();
+		}
+		else
+		{
+			header('location:'.$this->lurl);
+			die;
+		}
+	}
+
+	function _dispense_prelevement_2014_lender()
+	{
+		if(file_exists($this->path.'protected/lenders/dispense_prelevement_2014/'.$this->params[0]))
+		{
+			$url = ($this->path.'protected/lenders/dispense_prelevement_2014/'.$this->params[0]);
+
+			header('Content-Description: File Transfer');
+			header('Content-Type: application/octet-stream');
+			header('Content-Disposition: attachment; filename="'.basename($url).'";');
+			@readfile($url);
+			die();
+		}
+		else
+		{
+			header('location:'.$this->lurl);
+			die;
+		}
+	}
+
+	function _dispense_prelevement_2015_lender()
+	{
+		if(file_exists($this->path.'protected/lenders/dispense_prelevement_2015/'.$this->params[0]))
+		{
+			$url = ($this->path.'protected/lenders/dispense_prelevement_2015/'.$this->params[0]);
+
+			header('Content-Description: File Transfer');
+			header('Content-Type: application/octet-stream');
+			header('Content-Disposition: attachment; filename="'.basename($url).'";');
+			@readfile($url);
+			die();
+		}
+		else
+		{
+			header('location:'.$this->lurl);
+			die;
+		}
+	}
+
+	function _dispense_prelevement_2016_lender()
+	{
+		if(file_exists($this->path.'protected/lenders/dispense_prelevement_2016/'.$this->params[0]))
+		{
+			$url = ($this->path.'protected/lenders/dispense_prelevement_2016/'.$this->params[0]);
+
+			header('Content-Description: File Transfer');
+			header('Content-Type: application/octet-stream');
+			header('Content-Disposition: attachment; filename="'.basename($url).'";');
+			@readfile($url);
+			die();
+		}
+		else
+		{
+			header('location:'.$this->lurl);
+			die;
+		}
+	}
+
+	function _dispense_prelevement_2017_lender()
+	{
+		if(file_exists($this->path.'protected/lenders/dispense_prelevement_2017/'.$this->params[0]))
+		{
+			$url = ($this->path.'protected/lenders/dispense_prelevement_2017/'.$this->params[0]);
+
+			header('Content-Description: File Transfer');
+			header('Content-Type: application/octet-stream');
+			header('Content-Disposition: attachment; filename="'.basename($url).'";');
+			@readfile($url);
+			die();
 		}
 		else
 		{
@@ -509,7 +641,64 @@ class protectedController extends bootstrap
 			die;
 		}
 	}
-	
+
+	function _attestation_hebergement_tiers_lender()
+	{
+		if(file_exists($this->path.'protected/lenders/attestation_hebergement_tiers/'.$this->params[0]))
+		{
+			$url = ($this->path.'protected/lenders/attestation_hebergement_tiers/'.$this->params[0]);
+
+			header('Content-Description: File Transfer');
+			header('Content-Type: application/octet-stream');
+			header('Content-Disposition: attachment; filename="'.basename($url).'";');
+			@readfile($url);
+			die();
+		}
+		else
+		{
+			header('location:'.$this->lurl);
+			die;
+		}
+	}
+
+	function _cni_passport_tiers_hebergeant_lender()
+	{
+		if(file_exists($this->path.'protected/lenders/cni_passport_tiers_hebergeant/'.$this->params[0]))
+		{
+			$url = ($this->path.'protected/lenders/cni_passport_tiers_hebergeant/'.$this->params[0]);
+
+			header('Content-Description: File Transfer');
+			header('Content-Type: application/octet-stream');
+			header('Content-Disposition: attachment; filename="'.basename($url).'";');
+			@readfile($url);
+			die();
+		}
+		else
+		{
+			header('location:'.$this->lurl);
+			die;
+		}
+	}
+
+	function _cni_passport_dirigeant_lender()
+	{
+		if(file_exists($this->path.'protected/lenders/cni_passport_dirigeant/'.$this->params[0]))
+		{
+			$url = ($this->path.'protected/lenders/cni_passport_dirigeant/'.$this->params[0]);
+
+			header('Content-Description: File Transfer');
+			header('Content-Type: application/octet-stream');
+			header('Content-Disposition: attachment; filename="'.basename($url).'";');
+			@readfile($url);
+			die();
+		}
+		else
+		{
+			header('location:'.$this->lurl);
+			die;
+		}
+	}
+
 	function _statuts_lender()
 	{
 		if(file_exists($this->path.'protected/lenders/statuts/'.$this->params[0]))

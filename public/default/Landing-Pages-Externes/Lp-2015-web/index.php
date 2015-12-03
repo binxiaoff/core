@@ -1,3 +1,4 @@
+<?php $url_site = 'https://' . $_SERVER['HTTP_HOST']; ?>
 <!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="lt-ie9 lt-ie8 lt-ie7" lang="fr"> <![endif]-->
 <!--[if IE 7]>         <html class="lt-ie9 lt-ie8" lang="fr"> <![endif]-->
@@ -5,42 +6,35 @@
 <!--[if gt IE 8]><!--> <html lang="fr"> <!--<![endif]-->
 <head>
     <title>Unilend : les particuliers prêtent aux entreprises françaises</title>
-	<meta charset="utf-8">
+    <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-
-	<meta name="Author" content="dynamic creative - Agence créative pas NET, mais WEB énormément" />
-	<meta name="description" content="Sur Unilend, tout le monde peut prêter aux entreprises françaises et recevoir des intérêts." />
-	<meta name="keywords" content="Financement entreprise, prêt à des entreprises, investissement direct, peer-to-peer lending, crowdfunding" />
+    <meta name="Author" content="dynamic creative - Agence créative pas NET, mais WEB énormément" />
+    <meta name="description" content="Sur Unilend, tout le monde peut prêter aux entreprises françaises et recevoir des intérêts." />
+    <meta name="keywords" content="Financement entreprise, prêt à des entreprises, investissement direct, peer-to-peer lending, crowdfunding" />
     <meta name="viewport" content="initial-scale = 1.0,maximum-scale = 1.0" />
     <meta name="apple-mobile-web-app-capable" content="yes">
-
 	<link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
     <link href="css/font.css" type="text/css" rel="stylesheet" media="all">
-  	<link href="css/base.css" type="text/css" rel="stylesheet" media="all">
-	<link href="css/global.css" type="text/css" rel="stylesheet" media="all">
+    <link href="css/base.css" type="text/css" rel="stylesheet" media="all">
+    <link href="css/global.css" type="text/css" rel="stylesheet" media="all">
     <link href="css/responsive.css" type="text/css" rel="stylesheet" media="all">
     <link href="css/jquery.c2selectbox.css" type="text/css" rel="stylesheet" media="all" />
     <link href="css/bootstrap.css" type="text/css" rel="stylesheet" media="all" />
     <link rel="stylesheet" href="css/jquery.nouislider.css" />
-
-	<!--[if IE]><script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
-    
-    
-    
+    <!--[if IE]><script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 </head>
-
 <body>
-    
     <!-- Google Tag Manager -->
-<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-'//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','GTM-MB66VL');</script>
-<!-- End Google Tag Manager -->
-    
+    <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-MB66VL');</script>
+    <!-- End Google Tag Manager -->
+
     <?php
 
     if(!empty($_GET["utm_source"])) $source = $_GET["utm_source"];
@@ -55,28 +49,21 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     else $email = "";
     if(!empty($_GET["civilite"])) $civilite = $_GET["civilite"];
     else $civilite = "";
-	
-	//$source3 = str_replace('/','',$_SERVER['REQUEST_URI']);
-	$slug_origine = "Lp-2015-web";
-	
-	
-	//$url = 'http://unilend.demo2.equinoa.net'; 	// Demo
-	$url = 'https://www.unilend.fr'; 			// Prod
-	
-	$page = (isset($_GET['page']) && $_GET['page'] == 'lexpress'?$_GET['page']:'');
-	
-	if($page == 'lexpress'){
-		
-		$slug_origine = 'Lp-2015-web_lexpress';	
-	}
-	
+
+    $slug_origine = 'Lp-2015-web';
+    $page         = (isset($_GET['page']) && $_GET['page'] == 'lexpress' ? $_GET['page'] : '');
+
+    if ($page == 'lexpress') {
+        $slug_origine = 'Lp-2015-web_lexpress';
+    }
+
     ?>
     <div id="form">
         <section class="wrapper">
             <form action="#" method="post" id="form_inscription" class="etape1" novalidate>
-				<div class="form_promo border10">
-					<a href="#bloc_mentions" class="macaron"><span>20 €</span> <b>OFFERTS</b> pour prêter !</a>
-				</div>
+                <div class="form_promo border10">
+                    <a href="#bloc_mentions" class="macaron"><span>20 €</span> <b>OFFERTS</b> pour prêter !</a>
+                </div>
                 <div id="form_header">
                     <h1>Inscrivez-vous</h1>
                     <h2>Et découvrez Unilend</h2>
@@ -100,8 +87,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <input type="text" id="inscription_question" name="question" placeholder="Choisissez une question secrète" maxlength="255">
                     <input type="text" id="inscription_reponse" name="reponse" placeholder="Choisissez une réponse" maxlength="255">
                     <input type="text" id="inscription_adresse_fiscale" name="adresse_fiscale" placeholder="Adresse*" maxlength="255">
-                    <input type="text" id="inscription_ville_fiscale" name="ville_fiscale" placeholder="Ville*" maxlength="255">
-                    <input type="text" id="inscription_cp_fiscale" name="cp_fiscale" placeholder="Code postal*" maxlength="5">
+                    <input type="text" id="inscription_cp_fiscale" name="cp_fiscale" placeholder="Code postal*" maxlength="5" data-autocomplete="post_code">
+                    <input type="text" id="inscription_ville_fiscale" name="ville_fiscale" placeholder="Ville*" maxlength="255" data-autocomplete="city">
                     <select id="inscription_id_pays_fiscale" name="id_pays_fiscale" class="custom-select">
                         <option value="">Pays*</option>
                         <option value="1">France </option>
@@ -246,6 +233,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <option value="140">Pérou    </option>
                         <option value="141">Philippines    </option>
                         <option value="142">Pologne    </option>
+                        <option value="195">Polynésie française</option>
                         <option value="143">Portugal    </option>
                         <option value="144">Qatar    </option>
                         <option value="145">Russie    </option>
@@ -304,8 +292,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     </div>
                     <div id="inscription_correspondance">
                         <input type="text" id="inscription_adresse_correspondance" name="adresse" placeholder="Adresse" maxlength="255">
-                        <input type="text" id="inscription_ville_correspondance" name="ville" placeholder="Ville" maxlength="255">
-                        <input type="text" id="inscription_cp_correspondance" name="cp" placeholder="Code postal" maxlength="5">
+                        <input type="text" id="inscription_cp_correspondance" name="cp" placeholder="Code postal" maxlength="5" data-autocomplete="post_code">
+                        <input type="text" id="inscription_ville_correspondance" name="ville" placeholder="Ville" maxlength="255" data-autocomplete="city">
                         <select id="inscription_id_pays_correspondance" name="id_pays" class="custom-select">
                             <option value="">Pays</option>
                             <option value="1">France </option>
@@ -450,6 +438,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                             <option value="140">Pérou    </option>
                             <option value="141">Philippines    </option>
                             <option value="142">Pologne    </option>
+                            <option value="195">Polynésie française</option>
                             <option value="143">Portugal    </option>
                             <option value="144">Qatar    </option>
                             <option value="145">Russie    </option>
@@ -546,7 +535,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <div class="clear"></div>
                     <input type="text" id="inscription_date_naissance" name="date_naissance" placeholder="Date de naissance (jj/mm/aaaa)*" maxlength="10">
                     <p id="errorAge"></p>
-                    <input type="text" id="inscription_commune_naissance" name="commune_naissance" placeholder="Commune de naissance*" maxlength="255">
+                    <input type="text" id="inscription_commune_naissance" name="commune_naissance" placeholder="Commune de naissance*" maxlength="255" data-autocomplete="birth_city"/>
+                    <input type="hidden" name="insee_birth" class="insee_birth" id="insee_birth">
                     <select id="inscription_id_pays_naissance" name="id_pays_naissance" class="custom-select">
                         <option value="">Pays de naissance*</option>
                         <option value="1">France </option>
@@ -691,6 +681,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <option value="140">Pérou    </option>
                         <option value="141">Philippines    </option>
                         <option value="142">Pologne    </option>
+                        <option value="195">Polynésie française</option>
                         <option value="143">Portugal    </option>
                         <option value="144">Qatar    </option>
                         <option value="145">Russie    </option>
@@ -760,41 +751,26 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             </form>
         </section>
     </div>
-    <!--<div class="macaron">
-    	<div class="wrapper">
-    		<a href="#bloc_mentions"><img src="img/macaron"/></a>
-    	</div>
-    </div>-->
     <div id="home" class="wrapper100">
         <section class="wrapper">
-        	<div class="logo disp_0">
-        		<div class="disp_1">
-        			<a href="#" id="logo"><!--<img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60">--></a>
-        		</div>
-        		<div class="disp_2 t_right">
-        			<div class="">
-        				<!--<img src="img/partner.png"/>-->
-        			</div>
-        		</div>
-        	</div>
-            
+            <div class="logo disp_0">
+                <div class="disp_1">
+                    <a href="#" id="logo"><!--<img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60">--></a>
+                </div>
+            </div>
             <h1>Prêtez directement aux entreprises</h1>
-			<h2>Recevez chaque mois vos intérêts</h2>
-			<div class="w_1 bloc_mac">
-				<div class="center">
-					<a href="#bloc_mentions" class="macaron"><img src="img/macaron.png"/></a>
-				</div>
-				<!--<div class="disp_4">
-					<h2 class="titre_1">Recevez chaque mois vos intérêts</h2>
-				</div>-->
-			</div>
-            
+            <h2>Recevez chaque mois vos intérêts</h2>
+            <div class="w_1 bloc_mac">
+                <div class="center">
+                    <a href="#bloc_mentions" class="macaron"><img src="img/macaron.png"/></a>
+                </div>
+            </div>
             <ul>
                 <li>
                     <h3><span>1</span> Choisissez</h3>
                     <p>
                         Sélectionnez les entreprises auxquelles vous souhaitez prêter.<br/>
-                        Leur capacité de remboursement a été soigneusement étudiée. 
+                        Leur capacité de remboursement a été soigneusement étudiée.
                     </p>
                 </li>
                 <li>
@@ -812,17 +788,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     </p>
                 </li>
             </ul>
-			<div class="conditions" id="bloc_mentions">Conditions de l'offre</div>
+            <div class="conditions" id="bloc_mentions">Conditions de l'offre</div>
             <div class="mentions">
-            	Offre valable jusqu’au 31/07/2015 réservée aux personnes physiques, capables, majeures.
-
-L’offre est réservée aux nouveaux inscrits dont l’inscription est validée par Unilend. Seules les personnes physiques de nationalité française, ou possédant une nationalité d’un pays de l’Espace Economique Européen, et disposant d’un compte bancaire en euros en France pourront bénéficier de l’offre.
-
-Les 20 € seront versés sur le compte Unilend du client dans le mois suivant la validation du compte et ne pourront servir qu’à prêter sur Unilend. Le client pourra prêter cette somme à l’entreprise de son choix parmi les entreprises présentées sur le site et ce dans un délai de 3 mois suivant la validation de son inscription. En cas de non utilisation de cette somme dans ce délai pour un prêt, Unilend se réserve le droit de reprendre ce montant non utilisé.
-
-Une seule prime de 20 € par personne et par compte Unilend est octroyée. Offre non cumulable avec toute offre commerciale ou de parrainage en cours. Cette offre est régie par la loi française.
-
-Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à tester !
+                Offre valable jusqu’au 30/11/2015 réservée aux personnes physiques, capables, majeures.
+                L’offre est réservée aux nouveaux inscrits dont l’inscription est validée par Unilend. Seules les personnes physiques de nationalité française, ou possédant une nationalité d’un pays de l’Espace Economique Européen, et disposant d’un compte bancaire en euros en France pourront bénéficier de l’offre.
+                Les 20 € seront versés sur le compte Unilend du client dans le mois suivant la validation du compte et ne pourront servir qu’à prêter sur Unilend. Le client pourra prêter cette somme à l’entreprise de son choix parmi les entreprises présentées sur le site et ce dans un délai de 3 mois suivant la validation de son inscription. En cas de non utilisation de cette somme dans ce délai pour un prêt, Unilend se réserve le droit de reprendre ce montant non utilisé.
+                Une seule prime de 20 € par personne et par compte Unilend est octroyée. Offre non cumulable avec toute offre commerciale ou de parrainage en cours. Cette offre est régie par la loi française.
+                Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à tester !
             </div>
             <div class="scroll2"><a href="#pourquoi_unilend"></a></div>
         </section>
@@ -871,10 +843,9 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                 <div>
                     <button id="slide_prec"></button>
                     <div>
-                        
                         <div>
                             <div>
-                                <img src="img/Giglam.jpeg" alt="Vision du Ciel" width="160" height="120">
+                                <img src="img/Giglam.jpeg" alt="Giglam" width="160" height="120">
                                 <p>Giglam Conseils</p>
                             </div>
                             <div>
@@ -898,252 +869,21 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                 <p>SNRI</p>
                             </div>
                         </div>
-                        
                     </div>
                     <button id="slide_suiv"></button>
                 </div>
             </div>
             <div class="clear"></div>
             <p class="fleche">Choisissez vos projets. Pour les découvrir, inscrivez-vous</p>
-            <div class="scroll2"><a href="#simulez_vos_interets"></a></div>
-        </section>
-    </div><!-- projet_analyse -->
-
-    <div id="simulez_vos_interets" class="wrapper100">
-        <section class="wrapper">
-            <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60"></a>
-            <h1>Simulez <span>vos intérêts</span></h1>
-
-            <section id="pret">
-                <h1>Vous prêtez</h1>
-                <div id="pret_left">
-                    <div>
-                        <p>La somme de</p>
-                        <input type="text" id="pret_somme" name="pret_somme" placeholder="ex: 1 000">
-                        <div class="clear"></div>
-                    </div>
-                    <div>
-                        <p>Au taux de</p>
-                        <select name="pret_taux" id="pret_taux" class="custom-select">
-                            <option value="">10,0 %</option>
-                            <option selected value="0.100">10,0 %</option>
-                            <option value="0.099">9,9 %</option>
-                            <option value="0.098">9,8 %</option>
-                            <option value="0.097">9,7 %</option>
-                            <option value="0.096">9,6 %</option>
-                            <option value="0.095">9,5 %</option>
-                            <option value="0.094">9,4 %</option>
-                            <option value="0.093">9,3 %</option>
-                            <option value="0.092">9,2 %</option>
-                            <option value="0.091">9,1 %</option>
-                            <option value="0.090">9,0 %</option>
-                            <option value="0.089">8,9 %</option>
-                            <option value="0.088">8,8 %</option>
-                            <option value="0.087">8,7 %</option>
-                            <option value="0.086">8,6 %</option>
-                            <option value="0.085">8,5 %</option>
-                            <option value="0.084">8,4 %</option>
-                            <option value="0.083">8,3 %</option>
-                            <option value="0.082">8,2 %</option>
-                            <option value="0.081">8,1 %</option>
-                            <option value="0.080">8,0 %</option>
-                            <option value="0.079">7,9 %</option>
-                            <option value="0.078">7,8 %</option>
-                            <option value="0.077">7,7 %</option>
-                            <option value="0.076">7,6 %</option>
-                            <option value="0.075">7,5 %</option>
-                            <option value="0.074">7,4 %</option>
-                            <option value="0.073">7,3 %</option>
-                            <option value="0.072">7,2 %</option>
-                            <option value="0.071">7,1 %</option>
-                            <option value="0.070">7,0 %</option>
-                            <option value="0.069">6,9 %</option>
-                            <option value="0.068">6,8 %</option>
-                            <option value="0.067">6,7 %</option>
-                            <option value="0.066">6,6 %</option>
-                            <option value="0.065">6,5 %</option>
-                            <option value="0.064">6,4 %</option>
-                            <option value="0.063">6,3 %</option>
-                            <option value="0.062">6,2 %</option>
-                            <option value="0.061">6,1 %</option>
-                            <option value="0.060">6,0 %</option>
-                            <option value="0.059">5,9 %</option>
-                            <option value="0.058">5,8 %</option>
-                            <option value="0.057">5,7 %</option>
-                            <option value="0.056">5,6 %</option>
-                            <option value="0.055">5,5 %</option>
-                            <option value="0.054">5,4 %</option>
-                            <option value="0.053">5,3 %</option>
-                            <option value="0.055">5,2 %</option>
-                            <option value="0.051">5,1 %</option>
-                            <option value="0.050">5,0 %</option>
-                            <option value="0.049">4,9 %</option>
-                            <option value="0.048">4,8 %</option>
-                            <option value="0.047">4,7 %</option>
-                            <option value="0.046">4,6 %</option>
-                            <option value="0.048">4,5 %</option>
-                            <option value="0.044">4,4 %</option>
-                            <option value="0.043">4,3 %</option>
-                            <option value="0.042">4,2 %</option>
-                            <option value="0.041">4,1 %</option>
-                            <option value="0.040">4,0 %</option>
-                        </select>
-                        <div class="clear"></div>
-                    </div>
-                </div>
-                <div id="pret_right">
-                    <p>Durée du prêt</p>
-                    <div id="dc_slider-step"></div>
-                    <ul>
-                        <li>
-                            <p>24</p>
-                            <p>mois</p>
-                        </li>
-                        <li>
-                            <p>36</p>
-                            <p>mois</p>
-                        </li>
-                        <li>
-                            <p>48</p>
-                            <p>mois</p>
-                        </li>
-                        <li>
-                            <p>60</p>
-                            <p>mois</p>
-                        </li>
-                    </ul>
-                    <div class="clear"></div>
-                </div>
-                <div class="clear"></div>
-                <button id="simuler">Simuler</button>
-                <p id="erreur_simulation"></p>
-            </section>
-
-            <section id="recu">
-                <div>
-                    <h1>Vous recevez</h1>
-                    <div id="recu_left">
-                        <div>
-                            <p>La somme de</p>
-                            <p id="recu_somme">1 000</p>
-                            <div class="clear"></div>
-                        </div>
-                    </div>
-                    <div id="recu_right">
-                        <p>
-                            soit <span>25,36</span> €<br/>
-                            pendant <span>48</span> mois
-                        </p>
-                    </div>
-                    <div class="clear"></div>
-                    <div id="recu_result">
-                        <p>
-                            Soit <span><span>217,40</span> €</span><br/>
-                            <span>d'intérêts bruts</span>
-                        </p>
-                        <p>=</p>
-                        <p>
-                            <span>21,74</span><br/>
-                            du montant prêté
-                        </p>
-                        <div class="clear"></div>
-                    </div>
-                </div>
-            </section>
-
-            <p class="fleche">Inscrivez-vous et commencez à prêter en quelques clics</p>
-            <div class="scroll2"><a href="#chiffres"></a></div>
-        </section>
-    </div><!-- simulez_vos_interets -->
-
-    <!--<div id="chiffres" class="wrapper100 bg_gris">
-        <section class="wrapper">
-            <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60"></a>
-            <h1>Unilend <span>en chiffres</span></h1>
-            <p>Depuis le lancement d’Unilend jusqu’à fin octobre 2014</p>
-            <div id="chiffres_left">
-                <ul>
-                    <li>
-                        <p>67</p>
-                        <p>Projets<br/>financés</p>
-                    </li>
-                    <li>
-                        Record de financement<br/>d'un projet :
-                        <p>312 €/min</p>
-                    </li>
-                    <li>
-                        Record du dossier<br/>100% financé :
-                        <p>45 min</p>
-                    </li>
-                </ul>
-            </div>
-            <div id="chiffres_right">
-                <ul>
-                    <li>
-                        <p id="tooltip1" data-toggle="tooltip" data-placement="top" title="Montants prêtés par la communauté Unilend aux entreprises françaises">Montants prêtés</p>
-                        <div class="chiffres">
-                            <p class="m5">5</p>
-                            <p>4</p>
-                            <p>7</p>
-                            <p class="m5">0</p>
-                            <p>1</p>
-                            <p>5</p>
-                            <p>0</p>
-                            <div class="clear"></div>
-                        </div>
-                        <div class="clear"></div>
-                    </li>
-                    <li>
-                        <p id="tooltip2" data-toggle="tooltip" data-placement="top" title="Cumul des versements (capital et intérêts bruts) remboursés aux prêteurs">Remboursements<br/>aux prêteurs</p>
-                        <div class="chiffres">
-                            <p>4</p>
-                            <p>9</p>
-                            <p class="m5">8</p>
-                            <p>1</p>
-                            <p>8</p>
-                            <p>8</p>
-                            <div class="clear"></div>
-                        </div>
-                        <div class="clear"></div>
-                    </li>
-                    <li>
-                        <p id="tooltip3" data-toggle="tooltip" data-placement="top" title="Cumul des intérêts bruts reversés aux prêteurs">Intérêts bruts<br/>reversés aux prêteurs</p>
-                        <div class="chiffres">
-                            <p>1</p>
-                            <p>4</p>
-                            <p class="m5">9</p>
-                            <p>3</p>
-                            <p>6</p>
-                            <p>1</p>
-                            <div class="clear"></div>
-                        </div>
-                        <div class="clear"></div>
-                    </li>
-                </ul>
-            </div>
-            <div class="clear"></div>
-            <p class="fleche">Inscrivez-vous et prêtez à partir de 20 € jusqu’à 1 000 000 €</p>
             <div class="scroll2"><a href="#presse"></a></div>
         </section>
-    </div> chiffres -->
+    </div><!-- projet_analyse -->
 
     <div id="presse" class="wrapper100">
         <section class="wrapper">
             <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60"></a>
             <h1>La presse parle <span>d'Unilend</span></h1>
             <img id="presse_logos" src="img/presse.jpg" alt="BFM Business - Le Monde - Capital - Le Point - Le Nouvel Observateur - L'Express - Oiuest France - 01net. - Le Figaro Economie" width="354" height="199">
-            <!-- <a id="video" href="http://video.lefigaro.fr/figaro/video/unilend-est-une-alternative-aux-banques-nicolas-lesur-dans-gmb/3026157026001/" target="_blank"><img src="img/video.jpg" alt="Vidéo - Le Figaro - Unilend est une alternative aux banques" width="354" height="200"></a> -->
-            <!-- <object id="flashObj" width="354" height="200" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" codebase="http://download.macromedia.com/pub/shockwave/cabs/flash/swflash.cab#version=9,0,47,0">
-                <param name="movie" value="http://c.brightcove.com/services/viewer/federated_f9?isVid=1&isUI=1" />
-                <param name="bgcolor" value="#FFFFFF" />
-                <param name="flashVars" value="videoId=3026157026001&playerID=1330248265001&playerKey=AQ~~,AAAAjgltpmk~,3G6d8W41NOQ19IiTezZ7ZLKgEaJIflU4&domain=embed&dynamicStreaming=true" />
-                <param name="base" value="http://admin.brightcove.com" />
-                <param name="seamlesstabbing" value="false" />
-                <param name="allowFullScreen" value="true" />
-                <param name="swLiveConnect" value="true" />
-                <param name="allowScriptAccess" value="always" />
-                <embed src="http://c.brightcove.com/services/viewer/federated_f9?isVid=1&isUI=1" bgcolor="#FFFFFF" flashVars="playerSrcId=BCLeFigaro&widgetId=VP0&useRefId=undefined&videoId=3026157026001&playerID=1330248265001&playerKey=AQ~~,AAAAjgltpmk~,3G6d8W41NOQ19IiTezZ7ZLKgEaJIflU4&domain=embed&dynamicStreaming=true" base="http://admin.brightcove.com" name="flashObj" width="354" height="200" seamlesstabbing="false" type="application/x-shockwave-flash" allowFullScreen="true" allowScriptAccess="always" swLiveConnect="true" pluginspage="http://www.macromedia.com/shockwave/download/index.cgi?P1_Prod_Version=ShockwaveFlash"></embed>
-            </object> -->
             <div class="clear"></div>
             <div class="presse_liste">
                 <section>
@@ -1203,12 +943,13 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                 <li>Aux entreprises d'emprunter directement et simplement auprès du grand public</li>
                 <li>Aux épargnants de prêter de l'argent directement aux entreprises en recevant des intérêts.</li>
             </ul>
-            <p><span>Unilend</span> est édité par la Société française pour le financement des PME, SAS au capital de 515 350 euros - RCS Paris 790 766 034, agent prestataire de services de paiement mandaté par la SFPMEI et enregistré auprès de l'Autorité de contrôle prudentiel et de résolution (ACPR) sous le numéro 790 766 034.             
+            <p><span>Unilend</span> est édité par la Société française pour le financement des PME, SAS au capital de 515 350 euros - RCS Paris 790 766 034, agent prestataire de services de paiement mandaté par la SFPMEI et enregistré auprès de l'Autorité de contrôle prudentiel et de résolution (ACPR) sous le numéro 790 766 034.
             </p>
-			<br/>
-			<p class="cadre_1">
-			<strong>Prêter présente un risque de non-remboursement : répartissez bien vos prêts et ne prêtez que de l'argent dont vous n'avez pas besoin immédiatement.</strong>
-			</p>
+            <br/>
+            <br/>
+            <p class="cadre_1">
+            <strong>Prêter présente un risque de non-remboursement : répartissez bien vos prêts et ne prêtez que de l'argent dont vous n'avez pas besoin immédiatement.</strong>
+            </p>
             <h2>Nos partenaires</h2>
             <div>
                 <ul class="bloc_inline">
@@ -1223,7 +964,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
         </section>
     </div><!-- qui_sommes_nous -->
 
-    <button id="scrollUp"></button>  
+    <button id="scrollUp"></button>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <!-- // <script src="js/jquery-1.9.1.min.js"></script> -->
@@ -1236,32 +977,29 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
     <script src="js/jquery.touchSwipe.min.js" type="text/javascript"></script>
     <script src="//crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/md5.js"></script>
     <script src="js/global.js" type="text/javascript"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
     <script>
         $(function () {
-			// promo mentions
-			$('.macaron').click(function () { 
-				if (!$('.mentions').is(':visible')) $(".mentions").slideToggle( 300, function() {});
-	        });
-			$('.conditions').click(function () {
-				$(".mentions").slideToggle( 300, function() {
-				//
-				});
-			});
-			$('.mentions').click(function () {
-				$(".mentions").slideToggle( 300, function() {
-				//
-				});
-			});
-			//
-			$('a[href^="#bloc_mentions"]').click(function(){ // console.log("test")
-				var id = $(this).attr("href");
-				var offset = $(id).offset().top
-				$('html, body').animate({scrollTop: offset}, 'slow');
-				//return false; 
-			});
-			//
+            $('.macaron').click(function () {
+                if (!$('.mentions').is(':visible')) $(".mentions").slideToggle( 300, function() {});
+            });
+            $('.conditions').click(function () {
+                $(".mentions").slideToggle( 300, function() {
+                //
+                });
+            });
+            $('.mentions').click(function () {
+                $(".mentions").slideToggle( 300, function() {
+                //
+                });
+            });
             $('input').keydown(function(){
                 $(this).removeClass('error');
+            });
+            $('a[href^="#bloc_mentions"]').click(function(){
+                var id = $(this).attr("href");
+                var offset = $(id).offset().top
+                $('html, body').animate({scrollTop: offset}, 'slow');
             });
             $('#inscription_date_naissance').keydown(function(){
                 $('#errorAge').html('');
@@ -1291,15 +1029,10 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
             $('#form_inscription').submit(function(event) {
                 event.preventDefault();
 
-                /*$('html, body').animate({
-                    scrollTop: 0
-                }, 1000, 'swing');*/
-
                 var inscription_civilite = $('#inscription_civilite').val();
                 var inscription_nom = $.trim($('#inscription_nom').val());
                 var inscription_prenom = $.trim($('#inscription_prenom').val());
                 var inscription_email = $.trim($('#inscription_email').val());
-
                 var inscription_mdp = $.trim($('#inscription_mdp').val());
                 var inscription_mdp2 = $.trim($('#inscription_mdp2').val());
                 var inscription_question = $.trim($('#inscription_question').val());
@@ -1308,7 +1041,6 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                 var inscription_ville_fiscale = $.trim($('#inscription_ville_fiscale').val());
                 var inscription_cp_fiscale = $.trim($('#inscription_cp_fiscale').val());
                 var inscription_id_pays_fiscale = $('#inscription_id_pays_fiscale').val();
-                // var inscription_check_adresse = $('#inscription_check_adresse').val();
                 var inscription_adresse_correspondance = $.trim($('#inscription_adresse_correspondance').val());
                 var inscription_ville_correspondance = $.trim($('#inscription_ville_correspondance').val());
                 var inscription_cp_correspondance = $.trim($('#inscription_cp_correspondance').val());
@@ -1318,57 +1050,50 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                 var inscription_date_naissance = $('#inscription_date_naissance').val();
                 var inscription_commune_naissance = $.trim($('#inscription_commune_naissance').val());
                 var inscription_id_pays_naissance = $('#inscription_id_pays_naissance').val();
+                var insee_birth = $('#insee_birth').val();
                 var inscription_cgv = $('#inscription_cgv');
                 var utm_source = '<?php echo $source; ?>';
                 var utm_source2 = '<?php echo $source2; ?>';
-				var slug_origine = '<?php echo $slug_origine; ?>';
+                var slug_origine = '<?php echo $slug_origine; ?>';
 
-                if($('#form_inscription').hasClass('etape1')) {
-
+                if ($('#form_inscription').hasClass('etape1')) {
                     var erreur = 0;
 
                     if(!inscription_civilite) {
                         $('#inscription_civilite').next('.c2-sb-wrap').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_nom) {
                         $('#inscription_nom').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_prenom) {
                         $('#inscription_prenom').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_email) {
                         $('#inscription_email').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if (!validateEmail(inscription_email)) {
                         $('#inscription_email').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
-                    if (erreur == 1) { 
-                        // ajout du scroll uniquement si erreur
+                    if (erreur == 1) {
                         $('html, body').animate({
-                    scrollTop: 0
-                }, 1000, 'swing');
-                        
+                            scrollTop: 0
+                        }, 1000, 'swing');
+
                         if($('#form_header').hasClass('formlight')) {
                             if( $('#form_inscription').prop('scrollHeight') + $('.form_content').prop('scrollHeight') > $(window).height()) {
                                 $('.form_content.etape1').stop().animate({ scrollTop: $('.error:visible:first').position().top + 120}, 700, 'swing');
-                                // $('.form_content.etape1').stop().animate({ scrollTop: $('.form_content.etape1').offset().top - 108 }, 700, 'swing');
                             }
                         }
-                        return false; 
-                    }
-                    else {
-
-                        // AJAX
-
+                        return false;
+                    } else {
                         var key = 'unilend';
                         var hash = CryptoJS.MD5(key);
                         var time = $.now();
-
                         var token = $.base64.btoa(hash+'-'+time);
                         var localdate = new Date();
                         var mois = localdate.getMonth()+1;
@@ -1381,7 +1106,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                         if(heure<10) { heure = '0'+heure; }
                         if(minutes<10) { minutes = '0'+minutes; }
                         if(secondes<10) { secondes = '0'+secondes; }
-                                            
+
                         var date = localdate.getFullYear() + '-' + mois + '-' + jour + ' ' + heure + ':' + minutes + ':' + secondes;
                         email = inscription_email;
                         nom = inscription_nom;
@@ -1392,16 +1117,12 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
 
                         $.ajax({
                             type: "POST",
-                            url: "https://www.unilend.fr/collect/prospect",
+                            url: "<?= $url_site ?>/collect/prospect",
                             data: DATA,
                             success: function(data){
                                 var parsedDate = jQuery.parseJSON(data);
-                                
-                               
-                                
+
                                 if(parsedDate.reponse == 'OK') {
-                                    
-                                    
                                     $('#form_inscription').removeClass('etape1');
                                     $('#form_inscription').addClass('etape2');
 
@@ -1415,7 +1136,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                     });
 
                                     $('#form_inscription > .form_content.etape1').fadeOut('fast', function() {
-                                        if ($( window ).width() >= 960) { 
+                                        if ($( window ).width() >= 960) {
                                             $('#form').css({position:'relative'});
                                             $('#form > .wrapper').addClass('etape2');
                                         }
@@ -1424,25 +1145,16 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                             $('#form > .wrapper').addClass('etape2');
                                             $('#form_inscription.etape2').css({bottom:"auto",top:"0"});
                                         }
-										
-										var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
-										
-										var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
-										
 
-										$("#tracking").html(tracking1+tracking2);
-										
-										
-                                       /* $("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');*/
+                                        var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
+                                        var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
+
+                                        $("#tracking").html(tracking1+tracking2);
+
                                         $('#form_inscription > .form_content.etape2').fadeIn();
                                     });
                                 }
                                 else {
-                                    var key = 'unilend';
-                                    var hash = CryptoJS.MD5(key);
-                                    var time = $.now();
-                                    var token = $.base64.btoa(hash+'-'+time);
-
                                     $.each( parsedDate.reponse, function( index, value ){
                                         var intituleErreur = value.erreur;
 
@@ -1455,7 +1167,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                         if(intituleErreur == "Email" || intituleErreur == "Format email") {
                                             $('#inscription_email').addClass('error');
                                         }
-                                        if(intituleErreur == "Email existant") {
+                                        if(intituleErreur == "Email existant" && parsedDate.reponse.length > 1) {
                                             $('#inscription_email').addClass('error');
                                         }
                                         else {
@@ -1468,7 +1180,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                             });
 
                                             $('#form_inscription > .form_content.etape1').fadeOut('fast', function() {
-                                                if ($( window ).width() >= 960) { 
+                                                if ($( window ).width() >= 960) {
                                                     $('#form').css({position:'relative'});
                                                     $('#form > .wrapper').addClass('etape2');
                                                 }
@@ -1477,16 +1189,12 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                                     $('#form > .wrapper').addClass('etape2');
                                                     $('#form_inscription.etape2').css({bottom:"auto",top:"0"});
                                                 }
-                                                
-												var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
-										
-												var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
-										
-												var tracking3 = '<iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track='+parsedDate.uniqueid+'" [^] width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>';
-										
-												$("#tracking").html(tracking1+tracking2+tracking3);
-												
-												/*$("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');*/
+
+                                                var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
+                                                var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
+
+                                                $("#tracking").html(tracking1+tracking2);
+
                                                 $('#form_inscription > .form_content.etape2').fadeIn();
                                             });
                                         }
@@ -1498,11 +1206,8 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                     }
                 }
                 else if($('#form_inscription').hasClass('etape2')) {
-
                     var idSubmit = $("button[type=submit].clicked").attr("id");
-
                     var erreur = 0;
-
                     var localdate = new Date();
                     var annee = localdate.getFullYear();
                     var mois = localdate.getMonth()+1;
@@ -1519,95 +1224,92 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
 
                     if(!inscription_mdp) {
                         $('#inscription_mdp').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(inscription_mdp.length < 6) {
                         $('#inscription_mdp').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(inscription_mdp.replace(/[^A-Z]/g, "").length == 0) {
                         $('#inscription_mdp').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_mdp2) {
                         $('#inscription_mdp2').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(inscription_mdp2 != inscription_mdp) {
                         $('#inscription_mdp2').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_adresse_fiscale) {
                         $('#inscription_adresse_fiscale').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_ville_fiscale) {
                         $('#inscription_ville_fiscale').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_cp_fiscale) {
                         $('#inscription_cp_fiscale').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
-                    if(!$.isNumeric(inscription_cp_fiscale)) {
-                        $('#inscription_cp_fiscale').addClass('error');
-                        var erreur = 1;
+                    if (controlePostCodeCity($('#inscription_cp_fiscale'), $('#inscription_ville_fiscale'), $('#inscription_id_pays_fiscale'), false) == false) {
+                        erreur = 1;
                     }
                     if(!inscription_id_pays_fiscale) {
                         $('#inscription_id_pays_fiscale').next('.c2-sb-wrap').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
-                    if(!inscription_adresse_correspondance && !inscription_ville_correspondance && !inscription_cp_correspondance && !inscription_id_pays_correspondance) {
+                    if ($('#inscription_check_adresse').is(':checked')) {
                         inscription_adresse_correspondance = '';
                         inscription_ville_correspondance = '';
                         inscription_cp_correspondance = '';
                         inscription_id_pays_correspondance = '';
-                    }
-                    else {
+                    } else {
                         if (!inscription_adresse_correspondance) {
                             $('#inscription_adresse_correspondance').addClass('error');
-                            var erreur = 1;
+                            erreur = 1;
                         }
                         if(!inscription_ville_correspondance) {
                             $('#inscription_ville_correspondance').addClass('error');
-                            var erreur = 1;
+                            erreur = 1;
                         }
                         if(!inscription_cp_correspondance) {
                             $('#inscription_cp_correspondance').addClass('error');
-                            var erreur = 1;
+                            erreur = 1;
                         }
-                        if(!$.isNumeric(inscription_cp_correspondance)) {
-                            $('#inscription_cp_correspondance').addClass('error');
-                            var erreur = 1;
+                        if (controlePostCodeCity($('#inscription_cp_correspondance'), $('#inscription_ville_correspondance'), $('#inscription_id_pays_correspondance'), false) == false) {
+                            erreur = 1;
                         }
                         if(!inscription_id_pays_correspondance) {
                             $('#inscription_id_pays_correspondance').next('.c2-sb-wrap').addClass('error');
-                            var erreur = 1;
+                            erreur = 1;
                         }
                     }
                     if(!inscription_telephone) {
                         $('#inscription_telephone').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(inscription_telephone.length != 10 || !$.isNumeric(inscription_telephone)) {
                         $('#inscription_telephone').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_id_nationalite) {
                         $('#inscription_id_nationalite').next('.c2-sb-wrap').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     var verif_date = 0;
                     if(!inscription_date_naissance) {
                         $('#inscription_date_naissance').addClass('error');
-                        var erreur = 1;
-                        var verif_date = 1;
+                        erreur = 1;
+                        verif_date = 1;
                     }
                     if (!validateDate(inscription_date_naissance)) {
                         $('#inscription_date_naissance').addClass('error');
                         if(verif_date == 0) { $('#errorAge').html('La date doit être au format jj/mm/aaaa'); }
-                        var erreur = 1;
-                        var verif_date = 1;
+                        erreur = 1;
+                        verif_date = 1;
                     }
                     var date_naissance = inscription_date_naissance;
                     var split_date = date_naissance.split('/');
@@ -1615,20 +1317,20 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                     if(split_date[2] > annee) {
                         $('#inscription_date_naissance').addClass('error');
                         if(verif_date == 0) { $('#errorAge').html('Année invalide'); }
-                        var erreur = 1;
-                        var verif_date = 1;
+                        erreur = 1;
+                        verif_date = 1;
                     }
                     if(split_date[1] > 12) {
                         $('#inscription_date_naissance').addClass('error');
                         if(verif_date == 0) { $('#errorAge').html('Mois invalide'); }
-                        var erreur = 1;
-                        var verif_date = 1;
+                        erreur = 1;
+                        verif_date = 1;
                     }
                     if(split_date[0] > 31) {
                         $('#inscription_date_naissance').addClass('error');
                         if(verif_date == 0) { $('#errorAge').html('Jours invalide'); }
-                        var erreur = 1;
-                        var verif_date = 1;
+                        erreur = 1;
+                        verif_date = 1;
                     }
 
                     var majeur = 0;
@@ -1647,103 +1349,100 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                     if(majeur == 0 && verif_date == 0) {
                         $('#inscription_date_naissance').addClass('error');
                         $('#errorAge').html('Vous devez être majeur');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_commune_naissance) {
                         $('#inscription_commune_naissance').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
+                    }
+                    if ("1" == inscription_id_pays_naissance && !insee_birth) {
+                        $('#inscription_commune_naissance').addClass('error');
+                        erreur = 1;
                     }
                     if(!inscription_id_pays_naissance) {
                         $('#inscription_id_pays_naissance').next('.c2-sb-wrap').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
                     if(!inscription_cgv.is(":checked")) {
                         $('#inscription_cgv').parent().find('label').addClass('error');
-                        var erreur = 1;
+                        erreur = 1;
                     }
-                    // if(erreur == 1) { return false; }
-                    if (erreur == 1) { 
-                        // ajout du scroll uniquement si erreur
+                    if (erreur == 1) {
                         $('html, body').animate({
-                    scrollTop: 0
-                }, 1000, 'swing');
-                        if($('#form_header').hasClass('formlight')) {
+                            scrollTop: 0
+                        }, 1000, 'swing');
+
+                        if ($('#form_header').hasClass('formlight')) {
                             if( $('#form_inscription').prop('scrollHeight') + $('.form_content').prop('scrollHeight') > $(window).height()) {
                                 $('html, body').stop().animate({ scrollTop: $('.error:visible:first').offset().top - 20}, 700, 'swing');
                             }
                         }
-                        return false; 
+                        return false;
                     }
                     else {
-
                         // AJAX
-
                         var key = 'unilend';
                         var hash = CryptoJS.MD5(key);
                         var time = $.now();
                         var token = $.base64.btoa(hash+'-'+time);
-                                            
-                        var date = annee + '-' + mois + '-' + jour + ' ' + heure + ':' + minutes + ':' + secondes;
-                        email = inscription_email;
-                        nom = inscription_nom;
-                        prenom = inscription_prenom;
-                        civilite = inscription_civilite;
-                        var password = CryptoJS.MD5(inscription_mdp);
-                        var question = inscription_question;
-                        var reponse = inscription_reponse;
-                        var adresse_fiscale = inscription_adresse_fiscale;
-                        var ville_fiscale = inscription_ville_fiscale;
-                        var cp_fiscale = inscription_cp_fiscale;
-                        var id_pays_fiscale = inscription_id_pays_fiscale;
-                        var adresse = inscription_adresse_correspondance;
-                        var ville = inscription_ville_correspondance;
-                        var cp = inscription_cp_correspondance;
-                        var id_pays = inscription_id_pays_correspondance;
-                        var telephone = inscription_telephone;
-                        var id_nationalite = inscription_id_nationalite;
-                        var new_date_naissance = split_date[2] + '-' + split_date[1] + '-' + split_date[0];
-                        var commune_naissance = inscription_commune_naissance;
-                        var id_pays_naissance = inscription_id_pays_naissance;
-                        var signature_cgv = 1;
-                        var forme_preteur = 1;
-
-                        var DATA = '&token=' + token + '&utm_source=' + utm_source + '&utm_source2=' + utm_source2 + '&slug_origine=' + slug_origine + '&date=' + date + '&email=' + email + '&nom=' + nom + '&prenom=' + prenom + '&civilite=' + civilite + '&password=' + password + '&question=' + question + '&reponse=' + reponse + '&adresse_fiscale=' + adresse_fiscale + '&ville_fiscale=' + ville_fiscale + '&cp_fiscale=' + cp_fiscale + '&id_pays_fiscale=' + id_pays_fiscale + '&adresse=' + adresse + '&ville=' + ville + '&cp=' + cp + '&id_pays=' + id_pays + '&telephone=' + telephone + '&id_nationalite=' + id_nationalite + '&date_naissance=' + new_date_naissance + '&commune_naissance=' + commune_naissance + '&id_pays_naissance=' + id_pays_naissance + '&signature_cgv=' + signature_cgv + '&forme_preteur=' + forme_preteur;
-
+                        var passwordMd5 = CryptoJS.MD5(inscription_mdp);
                         $.ajax({
                             type: "POST",
-                            url: "https://www.unilend.fr/collect/inscription",
-                            data: DATA,
+                            url: "<?= $url_site ?>/collect/inscription",
+                            data: 'token=' + token
+                            + '&utm_source=' + utm_source
+                            + '&utm_source2=' + utm_source2
+                            + '&slug_origine=' + slug_origine
+                            + '&date=' + annee + '-' + mois + '-' + jour + ' ' + heure + ':' + minutes + ':' + secondes
+                            + '&email=' + inscription_email
+                            + '&nom=' + inscription_nom
+                            + '&prenom=' + inscription_prenom
+                            + '&civilite=' + inscription_civilite
+                            + '&password=' + passwordMd5
+                            + '&question=' + inscription_question
+                            + '&reponse=' + inscription_reponse
+                            + '&adresse_fiscale=' + inscription_adresse_fiscale
+                            + '&ville_fiscale=' + inscription_ville_fiscale
+                            + '&cp_fiscale=' + inscription_cp_fiscale
+                            + '&id_pays_fiscale=' + inscription_id_pays_fiscale
+                            + '&adresse=' + inscription_adresse_correspondance
+                            + '&ville=' + inscription_ville_correspondance
+                            + '&cp=' + inscription_cp_correspondance
+                            + '&id_pays=' + inscription_id_pays_correspondance
+                            + '&telephone=' + inscription_telephone
+                            + '&id_nationalite=' + inscription_id_nationalite
+                            + '&date_naissance=' + split_date[2] + '-' + split_date[1] + '-' + split_date[0]
+                            + '&commune_naissance=' + inscription_commune_naissance
+                            + '&id_pays_naissance=' + inscription_id_pays_naissance
+                            + '&insee_birth=' + insee_birth
+                            + '&signature_cgv=' + 1
+                            + '&forme_preteur=' + 1,
                             success: function(data){
                                 var parsedDate = jQuery.parseJSON(data);
 
-
-                                if(parsedDate.reponse == 'OK') {
+                                if (parsedDate.reponse == 'OK') {
                                     var url = parsedDate.URL;
-                                    // ajout code google tag manager (push email pour tracking Lead);
-                                    
-                                    dataLayer.push({
-                                            'email_lead':email,
-                                            'source1_lead':utm_source,
-											'source2_lead':utm_source2,
-                                            'event':'signupPreteurStep2OK'});
-                                    console.log('email_lead:'+email+' source1_lead:'+utm_source+' source2_lead:'+utm_source2+' event:signupPreteurStep2OK');
-                                    
-                                    setTimeout(function(){
-                                    
-                                        if(idSubmit == "inscription_submit2") { $(location).attr('href', url); }
-                                        else if(idSubmit == "voir_projets") { $(location).attr('href',    'https://www.unilend.fr/projets-a-financer'); }
-                                        },3000);return false;
+                                    var uniqueid = parsedDate.uniqueid;
+
+                                    if (idSubmit == "inscription_submit2") {
+                                        // add kle tracking 19/02/15
+                                        var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=14&uniqueid='+uniqueid+'"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
+
+                                        $("#tracking").html(tracking2);
+                                        //end tracking
+
+                                        $(location).attr('href', url);
+                                    } else if(idSubmit == "voir_projets") {
+                                        var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=13&uniqueid='+uniqueid+'"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
+
+                                        $("#tracking").html(tracking2);
+
+                                        $(location).attr('href', 'https://www.unilend.fr/projets-a-financer');
+                                    }
                                 }
                                 else {
-                                    var key = 'unilend';
-                                    var hash = CryptoJS.MD5(key);
-                                    var time = $.now();
-                                    var token = $.base64.btoa(hash+'-'+time);
-
                                     $.each( parsedDate.reponse, function( index, value ){
                                         var intituleErreur = value.erreur;
-
-                                        // console.log(intituleErreur);
 
                                         if(intituleErreur == "Mot de passe") {
                                             $('#inscription_mdp').addClass('error');
@@ -1800,36 +1499,106 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                 }
                             }
                         });
-
                         return false;
                     }
                 }
                 else {
                     return false;
                 }
+            });
+            initAutocompleteCity();
+        });
 
+        function validateEmail(emailAddress) {
+            var emailRegex = new RegExp(/^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/);
+            var valid = emailRegex.test(emailAddress);
+            if (!valid) {
+                return false;
+            } else
+                return true;
+        }
 
+        function validateDate(date) {
+            var dateRegex = new RegExp(/^([0-9]{2}[\/][0-9]{2}[\/][0-9]{4})$/);
+            var valid = dateRegex.test(date);
+            if (!valid) {
+                return false;
+            } else
+                return true;
+        }
+
+        function initAutocompleteCity()
+        {
+            $('[data-autocomplete]').each(function()
+            {
+                if($(this).data('autocomplete') == 'city' || $(this).data('autocomplete') == 'post_code' || $(this).data('autocomplete') == 'birth_city') {
+                    var getBirthPlace= '';
+                    if ($(this).data('autocomplete') == 'birth_city') {
+                        getBirthPlace = 'birthplace';
+                    }
+                    $(this).autocomplete({
+                        source: '<?= $url_site ?>/ajax/get_cities/' + getBirthPlace + '/',
+                        minLength: 3,
+                        search: function( event, ui ) {
+                            if ($(this).data('autocomplete') == 'birth_city') {
+                                $("#insee_birth").val('');
+                            }
+                            $(this).removeClass('error');
+                        },
+                        select: function( event, ui ) {
+                            event.preventDefault();
+
+                            var myRegexp = /(.+)\s\((.+)\)/;
+                            var match = myRegexp.exec(ui.item.label);
+
+                            if(match != null) {
+                                switch ($(this).data('autocomplete')) {
+                                    case 'birth_city' :
+                                        $(this).val(match[1]).removeClass('error');
+                                        $("#insee_birth").val(ui.item.value);
+                                        break;
+                                    case 'city' :
+                                        $(this).val(match[1]).removeClass('error');
+                                        $(this).siblings("[data-autocomplete='post_code']")
+                                            .val( match[2])
+                                            .removeClass('error');
+                                        break;
+                                    case 'post_code' :
+                                        $(this).val( match[2]).removeClass('error');
+                                        $(this).siblings("[data-autocomplete='city']")
+                                            .val(match[1])
+                                            .removeClass('error');
+                                        break;
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        }
+
+        function controlePostCodeCity(elmCp, elmCity, elmCountry, async)
+        {
+            async = typeof async !== 'undefined' ? async : true;
+            var result = false;
+            $.ajax({
+                url: '<?= $url_site ?>/ajax/checkPostCodeCity/' + elmCp.val() + '/' + elmCity.val() + '/' + elmCountry.val(),
+                method: 'GET',
+                async: async
+            }).done(function(data){
+                if (data == 'ok') {
+                    elmCp.removeClass('error');
+                    elmCity.removeClass('error');
+                    result = true;
+                } else {
+                    elmCp.addClass('error');
+                    elmCity.addClass('error');
+                    result = false;
+                }
             });
 
-            function validateEmail(emailAddress) {
-                var emailRegex = new RegExp(/^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/);
-                var valid = emailRegex.test(emailAddress);
-                if (!valid) {
-                    return false;
-                } else
-                    return true;
-            }
-
-            function validateDate(date) {
-                var dateRegex = new RegExp(/^([0-9]{2}[\/][0-9]{2}[\/][0-9]{4})$/);
-                var valid = dateRegex.test(date);
-                if (!valid) {
-                    return false;
-                } else
-                    return true;
-            }
-        });
+            return result;
+        }
     </script>
-
-	</body>
+    </body>
 </html>

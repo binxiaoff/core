@@ -7,7 +7,7 @@
            	<option value="<?=date('Y')?>"><?=$this->lng['profile']['annee']?> <?=date('Y')?></option>
 			<?
 			for($i=date('Y');$i>=2009;$i--){
-				?><option value="<?=$i?>"><?=$this->lng['profile']['annee']?> <?=$i?></option><?	
+				?><option value="<?=$i?>"><?=$this->lng['profile']['annee']?> <?=$i?></option><?
 			}
 			?>
         </select>
@@ -43,19 +43,19 @@
             <div class="th-wrap"><i title="<?=$this->lng['profile']['info-9']?>" class="icon-arrow-next tooltip-anchor"></i></div>
         </th>
     </tr>
-	
+
     <?
-	
+
 	if($this->lLoans != false)
 	{
 		foreach($this->lLoans as $k => $l)
 		{
 			$this->projects->get($l['id_project'],'id_project');
 			$this->companies->get($this->projects->id_company,'id_company');
-			
-			
+
+
 			$this->projects_status->getLastStatut($l['id_project']);
-			
+
 			//echo $this->projects_status->status;
 			//$SumAremb = $this->echeanciers->getSumArembByProject($this->lenders_accounts->id_lender_account,$l['id_project']);
 			//$SumAremb = $this->echeanciers->select('id_loan = '.$l['id_loan'].' AND ordre = 1');
@@ -63,14 +63,14 @@
 			/*echo '<pre>';
 			print_r($SumAremb);
 			echo '</pre>';*/
-			
-			
+
+
 			$fiscal = $SumAremb[0]['prelevements_obligatoires']+$SumAremb[0]['retenues_source']+$SumAremb[0]['csg']+$SumAremb[0]['prelevements_sociaux']+$SumAremb[0]['contributions_additionnelles']+$SumAremb[0]['prelevements_solidarite']+$SumAremb[0]['crds'];
-			
+
 			/*echo 'Montant : '.$SumAremb[0]['montant'].'<br>';
 			echo 'fiscale : '.$fiscal.'<br>';
 			echo (($SumAremb[0]['montant']/100)-$fiscal).'<br>';*/
-			
+
 			?>
 			<tr>
 				<td>
@@ -81,10 +81,10 @@
 				</td>
 				<td><?=$this->dates->formatDate($this->projects->date_fin,'d-m-Y')?></td>
 				<td><div class="cadreEtoiles"><div class="etoile <?=$this->lNotes[$this->projects->risk]?>"></div></div></td>
-				<td style="white-space: nowrap;"><?=number_format($l['amount']/100, 2, ',', ' ')?> €</td>
+				<td style="white-space: nowrap;"><?=$this->ficelle->formatNumber($l['amount']/100)?> €</td>
 				<td><?=$this->dates->formatDate($SumAremb[0]['date_echeance'],'d-m-Y')?></td>
-				<td style="white-space: nowrap;"><?=number_format($l['rate'], 2, ',', ' ')?> %</td>
-				<td><?=number_format(($SumAremb[0]['montant']/100)-$fiscal, 2, ',', ' ')?> <?=$this->lng['profile']['euros-par-mois']?></td>
+				<td style="white-space: nowrap;"><?=$this->ficelle->formatNumber($l['rate'])?> %</td>
+				<td><?=$this->ficelle->formatNumber(($SumAremb[0]['montant']/100)-$fiscal)?> <?=$this->lng['profile']['euros-par-mois']?></td>
 				<td>
 					<?
                     if($this->projects_status->status >=80)
@@ -95,7 +95,7 @@
                 </td>
                 <?
 				//if($_SERVER['REMOTE_ADDR'] != '93.26.42.99'){
-				
+
 					// smock-it
 					if($this->projects->id_project == 1456){
 					?>
@@ -105,7 +105,7 @@
 					else{
 						?>
 						<td><a href="<?=$this->lurl?>/projects/detail/<?=$this->projects->slug?>" class="btn btn-info btn-small"><?=$this->lng['profile']['details']?></a></td>
-						<?	
+						<?
 					}
 				/*}
 				else{
@@ -114,7 +114,7 @@
 					<?
 				}*/
 				?>
-				
+
 			</tr>
 			<?
 		}
@@ -130,7 +130,7 @@
             <option value="<?=date('Y')?>"><?=$this->lng['profile']['annee']?> <?=date('Y')?></option>
 			<?
             for($i=date('Y');$i>=2009;$i--){
-                ?><option value="<?=$i?>"><?=$this->lng['profile']['annee']?> <?=$i?></option><?	
+                ?><option value="<?=$i?>"><?=$this->lng['profile']['annee']?> <?=$i?></option><?
             }
             ?>
         </select>
@@ -154,46 +154,46 @@
 	{
 		foreach($this->lTrans as $t)
 		{
-			
+
 			if($t['type_transaction'] == 5)
 			{
 				$this->echeanciers->get($t['id_echeancier'],'id_echeancier');
 				$this->projects->get($this->echeanciers->id_project,'id_project');
 				$this->companies->get($this->projects->id_company,'id_company');
 			}
-			
-			
-			
+
+
+
 			// ajout KLE 03/03/15 , pour un client à a du lui faire un retrait positif car :
 			/*
-			
+
 			Dans le fichier BNP Paribas, nous constatons en date du 25/02/2015 un rejet de virement de EUR 350,00 avec le libellé Christophe Voliotis au motif suivant « Compte clos ».
-			
-			Rep : 
+
+			Rep :
 			-	La régularisation devra s’effectuer en date du jour (et non pas en corrigeant la ligne correspondant à la date où avait été demandé ce virement).
-			
+
 			*/
-			
-			$type = "";				
+
+			$type = "";
 			if($t['type_transaction'] == 8 && $t['montant'] > 0)
 			{
 				$type = "Annulation retrait des fonds - compte bancaire clos";
 			}
 			else
 			{
-				$type = $this->lesStatuts[$t['type_transaction']].($t['type_transaction'] == 5?' - '.$this->companies->name:'');					
+				$type = $this->lesStatuts[$t['type_transaction']].($t['type_transaction'] == 5?' - '.$this->companies->name:'');
 			}
-			
-			
+
+
 			?>
 			<tr>
 				<td><?=$type?></td>
 				<td><?=$this->dates->formatDate($t['date_transaction'],'d-m-Y')?></td>
-				<td><?=number_format($t['montant']/100, 2, ',', ' ')?> €</td>
+				<td><?=$this->ficelle->formatNumber($t['montant']/100)?> €</td>
 			</tr>
 			<?
 		}
 	}
 	?>
-    
+
 </table><!-- /.table -->

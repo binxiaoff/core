@@ -1,15 +1,15 @@
 <script type="text/javascript">
 	$(document).ready(function(){
-		$(".tablesorter").tablesorter({headers:{7:{sorter: false}}});	
+		$(".tablesorter").tablesorter({headers:{7:{sorter: false}}});
 		<?
 		if($this->nb_lignes != '')
 		{
 		?>
-			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});		
+			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});
 		<?
 		}
 		?>
-		
+
 		$("#Reset").click(function() {
 			$("#siret").val('');
 			$("#nom").val('');
@@ -17,9 +17,9 @@
 			$("#prenom").val('');
 			$("#email").val('');
 			$('#status option[value="choisir"]').attr('selected', true);
-			
+
 		});
-		
+
 	});
 	<?
 	if(isset($_SESSION['freeow']))
@@ -50,11 +50,11 @@
 	}
 	else
 	{
-		?><h1>Liste des <?=count($this->lClients)?> derniers emprunteurs</h1><?
+		?><h1>Liste des <?= (isset($this->lClients)) ? count($this->lClients) : 0 ?> derniers emprunteurs</h1><?
 	}
-	?>	
+	?>
     <div class="btnDroite"><a href="<?=$this->lurl?>/emprunteurs/add_client" class="btn_link thickbox">Ajouter un emprunteur</a></div>
-    
+
     <style>
 	table.formColor{width:697px;}
 	.select{width:251px;}
@@ -65,15 +65,15 @@
             <table class="formColor">
                 <tr>
                     <th><label for="siret">SIREN :</label></th>
-                    <td><input type="text" name="siret" id="siret" class="input_large" value="<?=$_POST['siret']?>"/></td>
+                    <td><input type="text" name="siret" id="siret" class="input_large" value="<?=(isset($_POST['siret'])) ? $_POST['siret'] : ''?>"/></td>
                     <th><label for="societe">Raison sociale :</label></th>
-                    <td><input type="text" name="societe" id="societe" class="input_large" value="<?=$_POST['societe']?>"/></td>
+                    <td><input type="text" name="societe" id="societe" class="input_large" value="<?=(isset($_POST['societe'])) ? $_POST['societe'] : ''?>"/></td>
                 </tr>
                 <tr>
                     <th><label for="nom">Nom :</label></th>
-                    <td><input type="text" name="nom" id="nom" class="input_large" value="<?=$_POST['nom']?>"/></td>
+                    <td><input type="text" name="nom" id="nom" class="input_large" value="<?=(isset($_POST['nom'])) ? $_POST['nom'] : ''?>"/></td>
                     <th><label for="prenom">Prénom :</label></th>
-                    <td><input type="text" name="prenom" id="prenom" class="input_large" value="<?=$_POST['prenom']?>"/></td>
+                    <td><input type="text" name="prenom" id="prenom" class="input_large" value="<?=(isset($_POST['prenom'])) ? $_POST['prenom'] : ''?>"/></td>
                 </tr>
                 <tr>
                     <th><label for="statut">Statut :</label></th>
@@ -83,10 +83,10 @@
                         	<option <?=(isset($_POST['status']) && $_POST['status'] == '1'?'selected':'')?> value="1">Validé</option>
                             <option <?=(isset($_POST['status']) && $_POST['status'] == '0'?'selected':'')?> value="0">Non validé</option>
                         </select>
-                    	
+
                     </td>
                     <th><label for="email">Email :</label></th>
-                    <td><input type="text" name="email" id="email" class="input_large" value="<?=$_POST['email']?>"/></td>
+                    <td><input type="text" name="email" id="email" class="input_large" value="<?=(isset($_POST['email'])) ? $_POST['email'] : ''?>"/></td>
                 </tr>
                 <tr>
                 	<th colspan="4" style="text-align:center;">
@@ -99,14 +99,14 @@
         </fieldset>
     </form>
     </div>
-    
+
     <?
-	if(count($this->lClients) > 0)
+	if(isset($this->lClients) && count($this->lClients) > 0)
 	{
 	?>
     	<table class="tablesorter">
         	<thead>
-                <tr>  
+                <tr>
                     <th>ID</th>
                     <th>Nom</th>
                     <th>Prénom</th>
@@ -114,14 +114,14 @@
                     <th>Société</th>
                   	<th>Statut</th>
                     <th>Montant (ca)</th>
-                    <th>&nbsp;</th>  
+                    <th>&nbsp;</th>
                 </tr>
            	</thead>
             <tbody>
             <?
 			$i = 1;
 			foreach($this->lClients as $c)
-			{	
+			{
 			?>
             	<tr<?=($i%2 == 1?'':' class="odd"')?> id="emprunteur<?=$c['id_client']?>">
                     <td><?=$c['id_client']?></td>
@@ -130,7 +130,7 @@
                     <td><?=$c['email']?></td>
                     <td><?=$c['name']?></td>
                     <td><?=($c['status']==0?'Refusé':'Validé')?></td>
-                    <td><?=number_format($this->clients->totalmontantEmprunt($c['id_client']),2,',',' ')?></td>
+                    <td><?=$this->ficelle->formatNumber($this->clients->totalmontantEmprunt($c['id_client']))?></td>
                     <td align="center">
                         <a href="<?=$this->lurl?>/emprunteurs/edit/<?=$c['id_client']?>">
                             <img src="<?=$this->surl?>/images/admin/edit.png" alt="Modifier <?=$c['nom'].' '.$c['prenom']?>" />
@@ -141,7 +141,7 @@
 						});
 						</script>
                   	</td>
-                </tr>   
+                </tr>
             <?
 				$i++;
             }

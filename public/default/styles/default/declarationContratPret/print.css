@@ -37,15 +37,18 @@ textarea { overflow:auto; resize:none; }
 
 
 /* === Common Styles === */
-body { 
+body {
     /*font-size:9px; */
-	font-size:14px; 
-    line-height:1.3; 
-    font-family:Arial, sans-serif; 
-    color:#231f20; 
-    background:#fff; 
+	font-size:14px;
+    line-height:1.3;
+    font-family:Arial, sans-serif;
+    color:#231f20;
+    background:#fff;
     text-align: justify;
 }
+
+.logocerfa { background:url(images/cerfa.png) no-repeat 0 0; width:41px; height:21px; }
+.logorep { background:url(images/logo.png) no-repeat 0 0; width:87px; height:51px; }
 
 a { color:#b10366; text-decoration:none; cursor:pointer; }
 a:hover { text-decoration:underline; }
@@ -144,4 +147,6 @@ fieldset { border:0 none; }
 .document .signiture .editable { border-bottom: dotted 1px #231f20; display: inline-block; }
 .document .signiture .city { width: 160px; padding: 0 4px;}
 .document .signiture .date { width: 90px; padding: 0 4px;}
+.document .signiture .footLogo {display: inline-block; background:url(../images/logo.png) no-repeat 0 0; width:252px; height:61px; margin-top:10px; }
+.document .logoministere { background:url(images/bottom-logo.png) no-repeat 0 0; width:113px; height:38px; margin-left:40%; margin-top: 10px }
 .document .doc-foot { text-align: center; }

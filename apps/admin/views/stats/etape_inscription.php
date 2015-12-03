@@ -112,30 +112,7 @@
                     <td><?=$u['email']?></td>
                     <td><?=$u['telephone'].' '.$u['mobile']?></td>
                     <td><?=$this->dates->formatDate($u['added'],'d/m/Y')?></td>
-                    <td>
-						<?php
-                    	if($u['etape_inscription_preteur'] == 3)
-						{
-							// On va récupérer le type de paiement
-							$this->lenders_accounts = $this->loadData('lenders_accounts');
-							$this->lenders_accounts->get($u['id_client'],'id_client_owner');
-							
-							if($this->lenders_accounts->type_transfert == 1)
-							{
-								$type = "Virement";
-							}
-							else
-							{
-								$type = "CB";
-							}
-							
-							echo "3 - ".$type;
-						}
-						else
-						{
-							echo $u['etape_inscription_preteur'];
-						}?>
-					</td>
+                    <td><?=$u['etape_inscription_preteur2'];?></td>
                     <td><?=$u['source']?></td>
                     <td><?=$u['source2']?></td>
                     <td><?=$u['slug_origine']?></td>

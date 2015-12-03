@@ -76,14 +76,14 @@ if (isset($_SESSION['freeow'])) {
         ?>
         <table class="tablesorter">
             <thead>
-                <tr>  
+                <tr>
                     <th>ID</th>
                     <th>motif</th>
                     <th>montant</th>
                     <th>Statut</th>
                     <th>id projet</th>
                     <th>Date</th>
-                    <th>&nbsp;</th>  
+                    <th>&nbsp;</th>
                 </tr>
             </thead>
             <tbody>
@@ -110,12 +110,12 @@ if (isset($_SESSION['freeow'])) {
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> >
                         <td><?= $v['id_reception'] ?></td>
                         <td><?= $v['motif'] ?></td>
-                        <td><?= number_format($v['montant'] / 100, 2, ',', ' ') ?></td>
+                        <td><?= $this->ficelle->formatNumber($v['montant'] / 100) ?></td>
 
                         <td class="statut_virement_<?= $v['id_reception'] ?>" >
                             <?php /* ?><?=($v['id_client'] != 0?'Attribué':$this->statusVirement[$v['status_virement']])?><?php */ ?>
                             <?= $this->statusVirement[$v['status_bo']] ?>
-                            <?= $infos ?>          
+                            <?= $infos ?>
                         </td>
 
 
@@ -135,7 +135,7 @@ if (isset($_SESSION['freeow'])) {
                                 <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Ligne" />
                             </a>
                         </td>
-                    </tr>   
+                    </tr>
                     <?
                     $i++;
                 }

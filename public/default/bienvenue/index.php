@@ -47,10 +47,10 @@ die;
     else $email = "";
     if(!empty($_GET["civilite"])) $civilite = $_GET["civilite"];
     else $civilite = "";
-	
+
 	//$source3 = str_replace('/','',$_SERVER['REQUEST_URI']);
 	$slug_origine = "bienvenue";
-	
+
 	//$url = 'http://unilend.demo2.equinoa.net'; 	// Demo
 	$url = 'https://www.unilend.fr'; 			// Prod
 
@@ -761,7 +761,7 @@ die;
         			<a href="#" id="logo"><!--<img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60">--></a>
         		</div>
         	</div>
-            
+
             <h1>Prêtez directement aux entreprises</h1>
 			<h2>Recevez chaque mois vos intérêts</h2>
 			<div class="w_1 bloc_mac">
@@ -769,13 +769,13 @@ die;
 					<a href="#bloc_mentions" class="macaron"><img src="img/macaron.png"/></a>
 				</div>
 			</div>
-            
+
             <ul>
                 <li>
                     <h3><span>1</span> Choisissez</h3>
                     <p>
                         Sélectionnez les entreprises auxquelles vous souhaitez prêter.<br/>
-                        Leur capacité de remboursement a été soigneusement étudiée. 
+                        Leur capacité de remboursement a été soigneusement étudiée.
                     </p>
                 </li>
                 <li>
@@ -852,11 +852,11 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                 <div>
                     <button id="slide_prec"></button>
                     <div>
-                        
+
                         <div>
                             <div>
-                                <img src="img/vision.jpg" alt="Vision du Ciel" width="160" height="120">
-                                <p>Vision du Ciel</p>
+                                <img src="img/Giglam.jpeg" alt="Giglam" width="160" height="120">
+                                <p>Giglam Conseils</p>
                             </div>
                             <div>
                                 <img src="img/hmbc.png" alt="HMBC" width="160" height="120">
@@ -879,7 +879,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                 <p>SNRI</p>
                             </div>
                         </div>
-                        
+
                     </div>
                     <button id="slide_suiv"></button>
                 </div>
@@ -1042,7 +1042,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
             <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60"></a>
             <h1>La presse parle <span>d'Unilend</span></h1>
             <img id="presse_logos" src="img/presse.jpg" alt="BFM Business - Le Monde - Capital - Le Point - Le Nouvel Observateur - L'Express - Oiuest France - 01net. - Le Figaro Economie" width="354" height="199">
-            
+
             <div class="clear"></div>
             <div class="presse_liste">
                 <section>
@@ -1123,7 +1123,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
         </section>
     </div><!-- qui_sommes_nous -->
 
-    <button id="scrollUp"></button>  
+    <button id="scrollUp"></button>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
     <!-- // <script src="js/jquery-1.9.1.min.js"></script> -->
@@ -1140,7 +1140,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
         $(function () {
             $('#inscription_utm_source3_autre').hide();
 			// promo mentions
-			$('.macaron').click(function () { 
+			$('.macaron').click(function () {
 				if (!$('.mentions').is(':visible')) $(".mentions").slideToggle( 300, function() {});
 	        });
 			$('.conditions').click(function () {
@@ -1161,7 +1161,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
 				var id = $(this).attr("href");
 				var offset = $(id).offset().top
 				$('html, body').animate({scrollTop: offset}, 'slow');
-				//return false; 
+				//return false;
 			});
 			//
             $('#inscription_date_naissance').keydown(function(){
@@ -1275,7 +1275,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                         if(heure<10) { heure = '0'+heure; }
                         if(minutes<10) { minutes = '0'+minutes; }
                         if(secondes<10) { secondes = '0'+secondes; }
-                                            
+
                         var date = localdate.getFullYear() + '-' + mois + '-' + jour + ' ' + heure + ':' + minutes + ':' + secondes;
                         email = inscription_email;
                         nom = inscription_nom;
@@ -1292,7 +1292,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                 var parsedDate = jQuery.parseJSON(data);
 
                                 if(parsedDate.reponse == 'OK') {
-                                    if(utm_source3) { 
+                                    if(utm_source3) {
                                         var source3 = $('#inscription_utm_source3 option:selected').text();
                                         set_source3(email, source3, utm_source3_autre);
                                     }
@@ -1312,15 +1312,15 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                     $('#form_inscription > .form_content.etape1').fadeOut('fast', function() {
                                         $('#form').css('position','relative');
                                         $('#form > .wrapper').addClass('etape2');
-										
-										
+
+
 										var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
-										
+
 										var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
-										
+
 
 										$("#tracking").html(tracking1+tracking2);
-										
+
                                         /*$("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');*/
                                         $('#form_inscription > .form_content.etape2').fadeIn();
                                     });
@@ -1358,14 +1358,14 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                                             $('#form_inscription > .form_content.etape1').fadeOut('fast', function() {
                                                 $('#form').css('position','relative');
                                                 $('#form > .wrapper').addClass('etape2');
-												
-												
+
+
 												var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
-										
+
 												var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
-										
+
 												$("#tracking").html(tracking1+tracking2);
-												
+
                                                /* $("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');*/
                                                 $('#form_inscription > .form_content.etape2').fadeIn();
                                             });
@@ -1550,7 +1550,7 @@ Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à
                         var hash = CryptoJS.MD5(key);
                         var time = $.now();
                         var token = $.base64.btoa(hash+'-'+time);
-                                            
+
                         var date = annee + '-' + mois + '-' + jour + ' ' + heure + ':' + minutes + ':' + secondes;
                         email = inscription_email;
                         nom = inscription_nom;

@@ -3,7 +3,6 @@
 <head>
 	<title>UNILEND</title>
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-	<link rel="shortcut icon" href="<?=$this->surl?>/styles/default/pdf_facture/images/favicon.ico" />
 	<link rel="stylesheet" href="<?=$this->surl?>/styles/default/pdf_facture/style.css" type="text/css" media="all" />
 </head>
 <body>
@@ -37,15 +36,15 @@
 				<ul>
 					<li>
 						<span><?=$this->lng['pdf-facture']['commission-de-3-h.t.']?> :</span>
-						<span><?=number_format($this->ht, 2, ',', ' ')?> €</span>
+						<span><?=$this->ficelle->formatNumber($this->ht)?> €</span>
 					</li>
 					<li>
-						<span><?=$this->lng['pdf-facture']['tva']?>	(<?=number_format(($this->tva*100), 2, ',', ' ')?>%)	:</span>
-						<span><?=number_format($this->taxes, 2, ',', ' ')?> €</span>
+						<span><?=$this->lng['pdf-facture']['tva']?>	(<?=$this->ficelle->formatNumber(($this->tva*100))?>%)	:</span>
+						<span><?=$this->ficelle->formatNumber($this->taxes)?> €</span>
 					</li>
 					<li class="total">
 						<span><?=$this->lng['pdf-facture']['total-ttc']?> :</span>
-						<span><?=number_format($this->ttc, 2, ',', ' ')?> €</span>
+						<span><?=$this->ficelle->formatNumber($this->ttc)?> €</span>
 					</li>
 					<li>
 						<span>&nbsp;</span>
@@ -67,12 +66,12 @@
 				</div><!-- /.info-head -->
 
 				<div class="info-body">
-					<p><?=$this->lng['pdf-facture']['taux-de-tva-applicable']?>	: <?=number_format(($this->tva*100), 2, ',', ' ')?>%.</p>
+					<p><?=$this->lng['pdf-facture']['taux-de-tva-applicable']?>	: <?=$this->ficelle->formatNumber(($this->tva*100))?>%.</p>
 					<p><?=$this->lng['pdf-facture']['en-cas-de-non-paiement']?></p>
 				</div><!-- /.info-body -->
 			</div><!-- /.info-block -->
 
-			
+
 		</div><!-- /.main -->
 	</div><!-- /.container -->
 </body>

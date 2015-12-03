@@ -1,4 +1,3 @@
-
 <table class="table" id="table_tri">
 <tr>
     <th width="350">
@@ -27,29 +26,29 @@
 foreach($this->lProjetsFunding as $pf)
 {
 	$this->projects_status->getLastStatut($pf['id_project']);
-	
+
 	// On recupere les info companies
 	$this->companies->get($pf['id_company'],'id_company');
 	$this->companies_details->get($pf['id_company'],'id_company');
-	
+
 	$inter = $this->dates->intervalDates(date('Y-m-d h:i:s'),$pf['date_retrait_full']);
 	if($inter['mois']>0) $dateRest = $inter['mois'].' '.$this->lng['preteur-projets']['mois'];
 	else $dateRest = '';
-	
+
 	// dates pour le js
 	$mois_jour = $this->dates->formatDate($pf['date_retrait'],'F d');
 	$annee = $this->dates->formatDate($pf['date_retrait'],'Y');
-	
+
 	// favori
 	if($this->favoris->get($this->clients->id_client,'id_project = '.$pf['id_project'].' AND id_client'))
 		$favori = 'active';
 	else
 		$favori = '';
-	
-	
+
+
 	$CountEnchere = $this->bids->counter('id_project = '.$pf['id_project']);
 	//$avgRate = $this->bids->getAVG($pf['id_project'],'rate');
-	
+
 	// moyenne pondéré
 	$montantHaut = 0;
 	$montantBas = 0;
@@ -69,7 +68,7 @@ foreach($this->lProjetsFunding as $pf)
 		{
 			$montantHaut += ($b['rate']*($b['amount']/100));
 			$montantBas += ($b['amount']/100);
-		}	
+		}
 	}
 	// emprun refusé
 	elseif($this->projects_status->status==75)
@@ -78,7 +77,7 @@ foreach($this->lProjetsFunding as $pf)
 		{
 			$montantHaut += ($b['rate']*($b['amount']/100));
 			$montantBas += ($b['amount']/100);
-		}	
+		}
 	}
 	else
 	{
@@ -87,14 +86,14 @@ foreach($this->lProjetsFunding as $pf)
 			$montantHaut += ($b['rate']*($b['amount']/100));
 			$montantBas += ($b['amount']/100);
 		}
-		
+
 	}
 	if($montantHaut>0 && $montantBas >0)
 	$avgRate = ($montantHaut/$montantBas);
 	else $avgRate = 0;
-	
+
 	?>
-	
+
 	<tr class="unProjet" id="project<?=$pf['id_project']?>">
 		<td>
         	<?
@@ -107,7 +106,7 @@ foreach($this->lProjetsFunding as $pf)
 				$tab_date_retrait = explode(' ',$pf['date_retrait_full']);
 				$tab_date_retrait = explode(':',$tab_date_retrait[1]);
 				$heure_retrait = $tab_date_retrait[0].':'.$tab_date_retrait[1];
-				
+
 				?>
 				<script>
 					var cible<?=$pf['id_project']?> = new Date('<?=$mois_jour?>, <?=$annee?> <?=$heure_retrait?>');
@@ -116,17 +115,17 @@ foreach($this->lProjetsFunding as $pf)
 				</script>
 				<?
 			}
-			
+
 			if($pf['photo_projet'] != '')
 			{
-				?><a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>"><img src="<?=$this->photos->display($pf['photo_projet'],'photos_projets','photo_projet_min')?>" alt="<?=$pf['photo_projet']?>" class="thumb"></a><?
+				?><a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>"><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $pf['photo_projet'] ?>" alt="<?=$pf['photo_projet']?>" class="thumb"></a><?
 			}
 			?>
 			<div class="description">
             	<?
 				if($_SESSION['page_projet'] == 'projets_fo')
 				{
-					?><h5><a href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>"><?=$pf['title']?></a></h5><?	
+					?><h5><a href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>"><?=$pf['title']?></a></h5><?
 				}
 				else
 				{
@@ -144,7 +143,7 @@ foreach($this->lProjetsFunding as $pf)
         </td>
 		<td style="white-space:nowrap;">
 			<a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>">
-				<?=number_format($pf['amount'], 0, ',', ' ')?>€
+				<?=$this->ficelle->formatNumber($pf['amount'], 0)?>€
             </a>
         </td>
 		<td style="white-space:nowrap;">
@@ -152,13 +151,13 @@ foreach($this->lProjetsFunding as $pf)
 				<?=($pf['period']==1000000?$this->lng['preteur-projets']['je-ne-sais-pas']:$pf['period'].' '.$this->lng['preteur-projets']['mois'])?>
             </a>
         </td>
-        
+
         <td>
             <a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>">
 				<?
                 if($CountEnchere>0)
                 {
-                    ?><?=number_format($avgRate, 1, ',', ' ')?>%<?
+                    ?><?=$this->ficelle->formatNumber($avgRate, 1)?>%<?
                 }
                 else
                 {
@@ -168,7 +167,7 @@ foreach($this->lProjetsFunding as $pf)
             </a>
         </td>
 		<td>
-            <a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>">	
+            <a class="lien" href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>">
             	<strong id="val<?=$pf['id_project']?>"><?=$dateRest?></strong>
             </a>
         </td>
@@ -188,9 +187,9 @@ foreach($this->lProjetsFunding as $pf)
 			else
 			{
 			?>
-        
+
 			<a href="<?=$this->lurl?>/projects/detail/<?=$pf['slug']?>" class="btn btn-info btn-small multi grise1 btn-grise"><?=$this->lng['preteur-projets']['voir-le-projet']?></a>
-			
+
             <?
 			}*/
 			if(isset($_SESSION['client']))
