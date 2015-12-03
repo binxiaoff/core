@@ -1,4 +1,5 @@
 <?php
+use Unilend\librairies\ULogger;
 
 // Controller de developpement, aucun accès client autorisé, fonctions en BETA
 class devboxController extends bootstrap

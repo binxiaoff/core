@@ -1,4 +1,5 @@
 <?php
+use Unilend\librairies\ULogger;
 
 class usersController extends bootstrap
 {
