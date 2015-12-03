@@ -32,21 +32,19 @@
     <div id="edit_projects_tab_email">
         <h2>Configuration d'envoi d'Email</h2>
         <input type="checkbox" name="stop_relances" id="stop_relances" value="1" <?= $this->projects->stop_relances == 1 ? 'checked':'' ?>/> <label for="stop_relances">Arrêt des relances</label>
-        <br/>
-        <br/>
+        <br/><br/>
         <a href="#" class="btn_link" id="save_projects_tab_email" data-project-id="<?= $this->projects->id_project ?>">Sauvegarder</a>
     </div>
-    <br />
+    <br/>
     <div id="tab_email_msg">Données sauvegardées</div>
-    <br />
+    <br/>
     <div id="send_cgv">
         <h2>Envoi des CGV</h2>
         <a href="<?= $this->lurl ?>/dossiers/send_cgv_ajax/<?= $this->projects->id_project ?>" class="btn_link thickbox cboxElement">Envoyer</a>
     </div>
 
     <?php if (in_array($this->current_projects_status->status, array(\projects_status::EN_ATTENTE_PIECES, \projects_status::ATTENTE_ANALYSTE, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING))): ?>
-        <br />
-        <br />
+        <br/><br/>
         <div id="send_completeness">
             <h2>Complétude - Personnalisation du message</h2>
             <div class="liwording">

@@ -2,11 +2,10 @@
 <div class="tab_content" id="etape4_4">
     <form method="post" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <?php if (count($this->lbilans) > 0): ?>
-            <h2>Compte de résultat</h2>
             <table class="tablesorter" style="text-align:center;">
                 <thead>
                 <tr>
-                    <th></th>
+                    <th>Compte de résultat</th>
                     <?php foreach ($this->aAnnualAccountsDates as $aAnnualAccountsDate): ?>
                         <th width="250"><?= $aAnnualAccountsDate['start']->format('d/m/Y') ?> au <?= $aAnnualAccountsDate['end']->format('d/m/Y') ?></th>
                     <?php endforeach; ?>
@@ -40,7 +39,6 @@
                 </tbody>
             </table>
             <br/>
-            <h2>Actif</h2>
             <?php
 
             $aAssets = array(
@@ -57,7 +55,7 @@
             <table class="tablesorter actif_passif" style="text-align:center;">
                 <thead>
                 <tr>
-                    <th></th>
+                    <th>Actif</th>
                     <?php foreach ($this->aAnnualAccountsDates as $aAnnualAccountsDate): ?>
                         <th width="250"><?= $aAnnualAccountsDate['start']->format('d/m/Y') ?> au <?= $aAnnualAccountsDate['end']->format('d/m/Y') ?></th>
                     <?php endforeach; ?>
@@ -87,7 +85,6 @@
                 </tbody>
             </table>
             <br/>
-            <h2>Passif</h2>
             <?php
 
             $aDebts = array(
@@ -103,7 +100,7 @@
             <table class="tablesorter actif_passif" style="text-align:center;">
                 <thead>
                 <tr>
-                    <th></th>
+                    <th>Passif</th>
                     <?php foreach ($this->aAnnualAccountsDates as $aAnnualAccountsDate): ?>
                         <th width="250"><?= $aAnnualAccountsDate['start']->format('d/m/Y') ?> au <?= $aAnnualAccountsDate['end']->format('d/m/Y') ?></th>
                     <?php endforeach; ?>

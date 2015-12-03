@@ -59,12 +59,11 @@
                 </tbody>
             </table>
         <?php endif; ?>
-        <br/>
-
-        <div id="valid_etape5" class="valid_etape">Données sauvegardées</div>
-        <br/><br/>
-        <input type="hidden" name="send_etape5"/>
-        <div class="btnDroite"><input type="submit" class="btn_link" value="Sauvegarder"></div>
+        <div id="valid_etape5" class="valid_etape"><br/>Données sauvegardées</div>
+        <div class="btnDroite">
+            <input type="hidden" name="send_etape5"/>
+            <input type="submit" class="btn_link" value="Sauvegarder">
+        </div>
     </form>
     <div style="display:none;">
         <iframe id="upload_target" name="upload_target" src="#"></iframe>

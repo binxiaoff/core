@@ -18,10 +18,7 @@
                 </tr>
             </table>
         </div>
-
-        <br/><br/>
-
-        <div id="valid_etape4_1" class="valid_etape">Données sauvegardées</div>
+        <div id="valid_etape4_1" class="valid_etape"><br/>Données sauvegardées</div>
         <div class="btnDroite">
             <input type="button" class="btn_link" value="Sauvegarder" onclick="valid_etape4_1(<?= $this->projects->id_project ?>)">
         </div>

@@ -16,6 +16,68 @@
         font-size: 17px;
         font-weight: bold;
     }
+
+    .tab_content {
+        border: 2px solid #B10366;
+        /*display: none;*/
+        padding: 10px;
+    }
+
+    .tab_content .btnDroite {
+        margin: 10px 0 0 0;
+    }
+
+    .tab_title {
+        cursor: pointer;
+        text-align: center;
+        background-color: #B10366;
+        color: white;
+        padding: 5px;
+        font-size: 16px;
+        font-weight: bold;
+        margin-top: 15px;
+    }
+
+    table.form .section-title th {
+        font-size: 14px;
+        text-align: center;
+    }
+
+    table.annual-accounts td:first-child {
+        text-align: left;
+    }
+
+    table.annual-accounts td:not(:first-child) {
+        text-align: right;
+    }
+
+    table.annual-accounts .sub-total td {
+        background-color: #d2d2d2;
+        font-weight: bold;
+    }
+
+    table.annual-accounts input[type=text] {
+        text-align: right;
+    }
+
+    #tab_email_msg, .valid_etape {
+        display: none;
+        text-align: center;
+        font-size: 16px;
+        font-weight: bold;
+        color: #009933;
+    }
+
+    .block_cache {
+        background-color: black;
+        height: 80px;
+        left: 0;
+        margin-top: 4px;
+        opacity: 0.50;
+        position: absolute;
+        width: 550px;
+        z-index: 999;
+    }
 </style>
 <script type="text/javascript">
     $(function () {
@@ -671,16 +733,15 @@
         </div>
     </form>
     <hr style="border: 2px solid #B10366;">
-    <br><br>
+
+    <br/><br/>
 
     <h2>Mémos</h2>
     <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/addMemo/<?= $this->projects->id_project ?>" class="btn_link thickbox">Ajouter un mémo</a></div>
     <br/><br/><br/>
     <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>/altares" class="btn_link">Générer les données Altares</a></div>
     <div id="table_memo">
-        <?php
-        if (count($this->lProjects_comments) > 0) {
-            ?>
+        <?php if (count($this->lProjects_comments) > 0): ?>
             <table class="tablesorter">
                 <thead>
                 <tr>
@@ -708,88 +769,10 @@
                 ?>
                 </tbody>
             </table>
-            <?php
-            if ($this->nb_lignes != '') {
-                ?>
-                <table>
-                    <tr>
-                        <td id="pager">
-                            <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
-                            <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
-                            <input type="text" class="pagedisplay"/>
-                            <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
-                            <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
-                            <select class="pagesize">
-                                <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-                <?php
-            }
-        }
-        ?>
+        <?php endif; ?>
     </div>
-    <br>
-    <style type="text/css">
-        .tab_content {
-            border: 2px solid #B10366;
-            display: none;
-            padding: 10px;
-        }
 
-        .tab_title {
-            cursor: pointer;
-            text-align: center;
-            background-color: #B10366;
-            color: white;
-            padding: 5px;
-            font-size: 16px;
-            font-weight: bold;
-            margin-top: 15px;
-        }
-
-        table.form .section-title th {
-            font-size: 14px;
-            text-align: center;
-        }
-
-        table.annual-accounts td:first-child {
-            text-align: left;
-        }
-
-        table.annual-accounts td:not(:first-child) {
-            text-align: right;
-        }
-
-        table.annual-accounts .sub-total td {
-            background-color: #d2d2d2;
-            font-weight: bold;
-        }
-
-        table.annual-accounts input[type=text] {
-            text-align: right;
-        }
-
-        #tab_email_msg, .valid_etape {
-            display: none;
-            text-align: center;
-            font-size: 16px;
-            font-weight: bold;
-            color: #009933;
-        }
-
-        .block_cache {
-            background-color: black;
-            height: 80px;
-            left: 0;
-            margin-top: 4px;
-            opacity: 0.50;
-            position: absolute;
-            width: 550px;
-            z-index: 999;
-        }
-    </style>
+    <br/><br/>
 
     <div id="lesEtapes">
         <?php $this->fireView('blocs/email'); ?>
