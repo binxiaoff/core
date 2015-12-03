@@ -1423,7 +1423,6 @@ class dossiersController extends bootstrap
                                     $oUnilendEmail->addRecipient($laCompanie->email_facture);
                                     if ($this->Config['env'] == 'prod') {
                                         $oUnilendEmail->addBCCRecipient('nicolas.lesur@unilend.fr');
-                                        $oUnilendEmail->addBCCRecipient('d.nandji@equinoa.com');
                                     }
                                     $oUnilendEmail->sendFromTemplate();
                                 } catch (\Exception $oException) {
@@ -2888,7 +2887,6 @@ class dossiersController extends bootstrap
                                     $oUnilendEmail->addRecipient($companies->email_facture);
                                     if ($this->Config['env'] == 'prod') {
                                         $oUnilendEmail->addBCCRecipient('nicolas.lesur@unilend.fr');
-                                        $oUnilendEmail->addBCCRecipient('d.nandji@equinoa.com');
                                     }
                                     $oUnilendEmail->sendFromTemplate();
                                 } catch (\Exception $oException) {

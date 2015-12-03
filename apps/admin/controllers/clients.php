@@ -274,34 +274,30 @@ class clientsController extends bootstrap
                 $this->mails_text->get('admin-confirmation-inscription-client', 'lang = "' . $this->language . '" AND type');
 
                 // Variables du mailing
-                $cms      = $this->cms;
-                $surl     = $this->surl;
-                $url      = $this->urlfront . '/' . $this->language;
-                $prenom   = trim($_POST['prenom']);
-                $email    = trim($_POST['email']);
-                $password = $this->new_password;
+                $aVarEmail = array (
+                    '$cms'      => $this->cms,
+                    '$surl'     => $this->surl,
+                    '$url'      => $this->urlfront . '/' . $this->language,
+                    '$prenom'   => trim($_POST['prenom']),
+                    '$email'    => trim($_POST['email']),
+                    '$password' => $this->new_password,
+                );
 
-                // Attribution des donn�es aux variables
-                $sujetMail = $this->mails_text->subject;
-                eval("\$sujetMail = \"$sujetMail\";");
+                /** @var unilend_email $oUnilendEmail */
+                $oUnilendEmail = $this->loadLib('unilend_email', array(
+                    $this->loadData('mails_filer'),
+                    $this->loadData('mails_text')
+                ));
 
-                $texteMail = $this->mails_text->content;
-                eval("\$texteMail = \"$texteMail\";");
-
-                $exp_name = $this->mails_text->exp_name;
-                eval("\$exp_name = \"$exp_name\";");
-
-                // Nettoyage de printemps
-                $sujetMail = strtr($sujetMail, '�����������������������������������������������������', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                $exp_name  = strtr($exp_name, '�����������������������������������������������������', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                // Envoi du mail
-                $this->email = $this->loadLib('email', array());
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->addRecipient(trim($_POST['email']));
-                $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-                $this->email->setHTMLBody($texteMail);
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                try {
+                    $oUnilendEmail->addAllMailVars($aVarEmail);
+                    $oUnilendEmail->setTemplate('admin-confirmation-inscription-client', $this->language);
+                    $oUnilendEmail->addRecipient($_POST['email']);
+                    $oUnilendEmail->sendDirectly();
+                } catch (\Exception $oException) {
+                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                }
 
                 // Mise en session du message
                 $_SESSION['freeow']['title']   = 'Ajout d\'un client';

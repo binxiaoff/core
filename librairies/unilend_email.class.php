@@ -51,54 +51,11 @@ class unilend_email
     }
 
     /**
-     * @param $mRecipient
-     * @param $sMailType
-     * @param $sLanguage
-     *
-     * @throws \Exception
+     * @throws Exception
      */
     public function sendFromTemplate()
     {
-        if (empty($this->aRecipient)) {
-            throw new \Exception('No recipient');
-        }
-
-        $sMailSubject = strtr(utf8_decode($this->oMailText->subject), $this->aMailVar);
-        $sMailContent = strtr(utf8_decode($this->oMailText->content), $this->aMailVar);
-        $sMailFrom  = strtr(utf8_decode($this->oMailText->exp_name), $this->aMailVar);
-
-        $oEmail = new Email();
-
-        if (ENVIRONMENT !== 'prod') {
-            // @todo once mailcatcher is installed on every dev/demo, email domain check may be deleted (not subject prefixing)
-            foreach ($this->aRecipient as $iIndex => $sRecipient) {
-                if (1 !== preg_match('/@unilend.fr$/', $sRecipient)) {
-                    unset($this->aRecipient[$iIndex]);
-                }
-            }
-
-            if (empty($this->aRecipient)) {
-                $this->aRecipient[] = 'test-' . ENVIRONMENT . '@unilend.fr';
-            }
-
-            $sMailSubject = '[' . ENVIRONMENT . '] ' . $sMailSubject;
-        }
-
-        foreach ($this->aRecipient as $sRecipient) {
-            $oEmail->addRecipient(trim($sRecipient));
-        }
-
-        foreach ($this->aCCRecipient as $sRecipient) {
-            $oEmail->addCCRecipient(trim($sRecipient));
-        }
-
-        foreach ($this->aBCCRecipient as $sRecipient) {
-            $oEmail->addBCCRecipient(trim($sRecipient));
-        }
-
-        $oEmail->setFrom($this->oMailText->exp_email, $sMailFrom);
-        $oEmail->setSubject(stripslashes($sMailSubject));
-        $oEmail->setHTMLBody(stripslashes($sMailContent));
+        $oEmail = $this->prepareEmailFromTemplate();
 
         $aParams = array(
             'mails_filer' => $this->oMailFiler,
@@ -115,6 +72,18 @@ class unilend_email
             Mailer::setTransport('mail', $aParams);
         }
 
+        Mailer::send($oEmail);
+    }
+
+    public function sendDirectly()
+    {
+        $oEmail = $this->prepareEmailFromTemplate();
+
+        $aParams = array(
+            'mails_filer' => $this->oMailFiler,
+            'mails_text' => $this->oMailText
+        );
+        Mailer::setTransport('mail', $aParams);
         Mailer::send($oEmail);
     }
 
@@ -162,7 +131,57 @@ class unilend_email
     public function setTemplate($sMailType, $sLanguage)
     {
         if (false === $this->oMailText->get($sMailType, 'lang = "' . $sLanguage . '" AND type')) {
-            throw new \Exception('Mail template ' . $sMailType . 'not found.');
+            throw new \Exception('The mail template ' . $sMailType . 'is not found.');
         }
+    }
+
+    private function prepareEmailFromTemplate()
+    {
+        if (!$this->oMailText->id_textemail) {
+            throw new \Exception('The mail template is not defined.');
+        }
+
+        if (empty($this->aRecipient)) {
+            throw new \Exception('No recipient');
+        }
+
+        $sMailSubject = strtr($this->oMailText->subject, $this->aMailVar);
+        $sMailContent = strtr($this->oMailText->content, $this->aMailVar);
+        $sMailFrom    = strtr($this->oMailText->exp_name, $this->aMailVar);
+
+        $oEmail = new Email();
+
+        if (ENVIRONMENT !== 'prod') {
+            // @todo once mailcatcher is installed on every dev/demo, email domain check may be deleted (not subject prefixing)
+            foreach ($this->aRecipient as $iIndex => $sRecipient) {
+                if (1 !== preg_match('/@unilend.fr$/', $sRecipient)) {
+                    unset($this->aRecipient[$iIndex]);
+                }
+            }
+
+            if (empty($this->aRecipient)) {
+                $this->aRecipient[] = 'test-' . ENVIRONMENT . '@unilend.fr';
+            }
+
+            $sMailSubject = '[' . ENVIRONMENT . '] ' . $sMailSubject;
+        }
+
+        foreach ($this->aRecipient as $sRecipient) {
+            $oEmail->addRecipient(trim($sRecipient));
+        }
+
+        foreach ($this->aCCRecipient as $sRecipient) {
+            $oEmail->addCCRecipient(trim($sRecipient));
+        }
+
+        foreach ($this->aBCCRecipient as $sRecipient) {
+            $oEmail->addBCCRecipient(trim($sRecipient));
+        }
+
+        $oEmail->setFrom($this->oMailText->exp_email, $sMailFrom);
+        $oEmail->setSubject(stripslashes($sMailSubject));
+        $oEmail->setHTMLBody(stripslashes($sMailContent));
+
+        return $oEmail;
     }
 }

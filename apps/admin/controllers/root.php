@@ -2,16 +2,14 @@
 
 class rootController extends bootstrap
 {
-    var $Command;
-
-    function rootController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
         $this->catchAll = true;
     }
 
-    function _login()
+    public function _login()
     {
         // On masque le header et le footer
         $this->autoFireHead   = false;
@@ -44,33 +42,29 @@ class rootController extends bootstrap
 
                 // Recuperation du modele de mail
                 $this->mails_text->get('admin-nouveau-mot-de-passe', 'lang = "' . $this->language . '" AND type');
+                $aVarEmail = array(
+                    '$cms' => $this->cms,
+                    '$surl' => $this->surl,
+                    '$url' => $this->lurl,
+                    '$email' => trim($_POST['email']),
+                    '$password' => $this->new_password,
+                );
 
-                $cms      = $this->cms;
-                $surl     = $this->surl;
-                $url      = $this->lurl;
-                $email    = trim($_POST['email']);
-                $password = $this->new_password;
+                /** @var unilend_email $oUnilendEmail */
+                $oUnilendEmail = $this->loadLib('unilend_email', array(
+                    $this->loadData('mails_filer'),
+                    $this->loadData('mails_text')
+                ));
 
-                $sujetMail = $this->mails_text->subject;
-                eval("\$sujetMail = \"$sujetMail\";");
-
-                $texteMail = $this->mails_text->content;
-                eval("\$texteMail = \"$texteMail\";");
-
-                $exp_name = $this->mails_text->exp_name;
-                eval("\$exp_name = \"$exp_name\";");
-
-                // Nettoyage de printemps
-                $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->addRecipient(trim($_POST['email']));
-                $this->email->addBCCRecipient('j.dehais@equinoa.fr');
-                $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-                $this->email->setHTMLBody($texteMail);
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                try {
+                    $oUnilendEmail->addAllMailVars($aVarEmail);
+                    $oUnilendEmail->setTemplate('admin-nouveau-mot-de-passe', $this->language);
+                    $oUnilendEmail->addRecipient($_POST['email']);
+                    $oUnilendEmail->sendDirectly();
+                } catch (\Exception $oException) {
+                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                }
 
                 // Mise en session du message
                 $_SESSION['msgErreur']   = 'newPassword';
@@ -90,7 +84,7 @@ class rootController extends bootstrap
         }
     }
 
-    function _logout()
+    public function _logout()
     {
         // On place le redirect sur la home
         $_SESSION['request_url'] = $this->lurl;
@@ -98,7 +92,7 @@ class rootController extends bootstrap
         $this->users->handleLogout();
     }
 
-    function _sitemap()
+    public function _sitemap()
     {
         // Controle d'acces à la rubrique
         $this->users->checkAccess('edition');
@@ -119,7 +113,7 @@ class rootController extends bootstrap
         // Regarde si le fichier est accessible en écriture
         if (is_writable($fichier)) {
             // Ecriture echec
-            if (fwrite($handle, $sitemap) === FALSE) {
+            if (fwrite($handle, $sitemap) === false) {
                 $_SESSION['freeow']['message'] = 'Impossible d\'écrire dans le fichier : ' . $fichier;
                 exit;
             }
@@ -137,7 +131,7 @@ class rootController extends bootstrap
         die;
     }
 
-    function _indexation()
+    public function _indexation()
     {
         // Controle d'acces à la rubrique
         $this->users->checkAccess('edition');
@@ -157,7 +151,7 @@ class rootController extends bootstrap
         die;
     }
 
-    function _default()
+    public function _default()
     {
         // Check de la plateforme
         if ($this->cms == 'iZinoa') {
@@ -245,8 +239,7 @@ class rootController extends bootstrap
         $nbProjetValid = 0;
         foreach ($lProjects as $p) {
             $this->projects_status->getLastStatutByMonth($p['id_project'], $this->month, $this->year);
-            if ($this->projects_status->status > 30) // a partir de a funder
-            {
+            if ($this->projects_status->status > 30) {// a partir de a funder
                 $nbProjetValid += 1;
             }
 
@@ -266,8 +259,11 @@ class rootController extends bootstrap
         $TotalrembPreteur = $this->transactions->sumByMonth(5, $this->month, $this->year);
 
         // tauxRepret
-        if ($TotalRetrait > 0 && $TotalrembPreteur > 0) $this->tauxRepret = ($TotalRetrait / $TotalrembPreteur) * 100;
-        else $this->tauxRepret = 0;
+        if ($TotalRetrait > 0 && $TotalrembPreteur > 0) {
+            $this->tauxRepret = ($TotalRetrait / $TotalrembPreteur) * 100;
+        } else {
+            $this->tauxRepret = 0;
+        }
 
         // sum Remb par emprunteur
         $lSumRemb = $this->echeanciers->getSumRembEmpruntByMonths('', '', '0', $this->month, $this->year);
@@ -284,8 +280,11 @@ class rootController extends bootstrap
         // fonds dispo
         $dispo = $this->transactions->getDispo($this->month, $this->year);
 
-        if ($TotalRetrait > 0) $this->tauxAttrition = ($TotalRetrait / ($capital + $dispo + $sumGel)) * 100;
-        else $this->tauxAttrition = 0;
+        if ($TotalRetrait > 0) {
+            $this->tauxAttrition = ($TotalRetrait / ($capital + $dispo + $sumGel)) * 100;
+        } else {
+            $this->tauxAttrition = 0;
+        }
 
         /////////////////////
 
@@ -308,7 +307,7 @@ class rootController extends bootstrap
         //$this->lCommandes = $this->transactions->select('etat < 3 AND status = 1','etat ASC,date_transaction DESC LIMIT 10');
     }
 
-    function _edit_password()
+    public function _edit_password()
     {
         // On masque le header et le footer
         $this->autoFireHead   = false;
@@ -330,7 +329,6 @@ class rootController extends bootstrap
         }
 
         if (isset($_POST['form_edit_pass_user'])) {
-
             // on check si le user qui post est le même que celui qu'on a en session, sinon on bloque tout
             if ($_POST['id_user'] == $_SESSION['user']['id_user']) {
                 // Recuperation des infos de la personne
@@ -363,39 +361,34 @@ class rootController extends bootstrap
                                 // Recuperation du modele de mail
                                 $this->mails_text->get('admin-nouveau-mot-de-passe', 'lang = "' . $this->language . '" AND type');
 
-                                $cms      = $this->cms;
-                                $surl     = $this->surl;
-                                $url      = $this->lurl;
-                                $email    = trim($this->users->email);
-                                $password = $_POST['new_pass'];
+                                $aVarEmail = array(
+                                    '$cms'     => $this->cms,
+                                    '$surl'     => $this->surl,
+                                    '$url'      => $this->lurl,
+                                    '$email'    => trim($this->users->email),
+                                    '$password' => $_POST['new_pass'],
+                                );
+                                /** @var unilend_email $oUnilendEmail */
+                                $oUnilendEmail = $this->loadLib('unilend_email', array(
+                                    $this->loadData('mails_filer'),
+                                    $this->loadData('mails_text')
+                                ));
 
-                                $sujetMail = $this->mails_text->subject;
-                                eval("\$sujetMail = \"$sujetMail\";");
-
-                                $texteMail = $this->mails_text->content;
-                                eval("\$texteMail = \"$texteMail\";");
-
-                                $exp_name = $this->mails_text->exp_name;
-                                eval("\$exp_name = \"$exp_name\";");
-
-                                // Nettoyage de printemps
-                                $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                                $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                                $this->email = $this->loadLib('email');
-                                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                $this->email->addRecipient(trim($this->users->email));
-                                // ajout du tracking
-                                $this->settings->get('alias_tracking_log', 'type');
-                                $this->alias_tracking_log = $this->settings->value;
-                                if ($this->alias_tracking_log != "") {
-                                    $this->email->addBCCRecipient($this->alias_tracking_log);
+                                try {
+                                    $oUnilendEmail->addAllMailVars($aVarEmail);
+                                    $oUnilendEmail->setTemplate('admin-nouveau-mot-de-passe', $this->language);
+                                    $oUnilendEmail->addRecipient($_POST['email']);
+                                    // ajout du tracking
+                                    $this->settings->get('alias_tracking_log', 'type');
+                                    $this->alias_tracking_log = $this->settings->value;
+                                    if ($this->alias_tracking_log != "") {
+                                        $oUnilendEmail->addBCCRecipient($this->alias_tracking_log);
+                                    }
+                                    $oUnilendEmail->sendDirectly();
+                                } catch (\Exception $oException) {
+                                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                 }
-                                $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-                                $this->email->setHTMLBody($texteMail);
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-
-
                                 // On enregistre la modif du mot de passe
                                 $this->loggin_connection_admin                 = $this->loadData('loggin_connection_admin');
                                 $this->loggin_connection_admin->id_user        = $this->users->id_user;
@@ -438,7 +431,7 @@ class rootController extends bootstrap
         }
     }
 
-    function _captcha()
+    public function _captcha()
     {
         $_SESSION['request_url'] = '/';
 
