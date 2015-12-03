@@ -825,7 +825,7 @@ class projectsController extends bootstrap
                                     $this->nbPeriod = $this->echeanciers->counterPeriodRestantes($this->lenders_accounts->id_lender_account,$this->projects->id_project);
                                     
                                     if($this->bidsvalid['solde'] > 0){
-                                        $this->lhistoStatus = $this->projects_status_history->selectHisto($this->projects->id_project,array(10,11,25,26,27,28));
+                                        $this->lhistoStatus = $this->projects_status_history->selectHisto($this->projects->id_project,array(9,10,11,25,26,27,28));
                                     }
 				}
 				//}

@@ -29,6 +29,9 @@ data/crud/*
 ###Vagrant###
 vagrant/.vagrant/
 
+# Composer
+/vendor/
+
 #sauf
 !public/default/styles/default/*
 !public/default/scripts/default/*

@@ -472,10 +472,19 @@ if (isset($_SESSION['freeow'])) {
                         </td>	
                     </tr>  
                 </table>
-
+                <a href="<?= $this->lurl ?>/thickbox/popup_confirmation_send_email/<?= $this->projects->id_project ?>" class="thickbox confirmation_send_email"></a>
+                <input type="hidden" name="check_confirmation_send_email" id="check_confirmation_send_email" value="0">
                 <table class="hidden_table bloc_mail_preteur">
                     <tr>
-                        <th>Envoyer l'email d'information aux prêteurs :</th>
+                        <th><label for="nature_project"><i>Email d'information aux prêteurs :</i></label></th>
+                    </tr>
+                    <tr>
+                        <td><textarea class="textarea_lng" name="area_probleme" id="area_probleme" style="height: 100px;width: 420px;"></textarea></td>
+                    </tr>
+                    <tr>   
+                        <th><i>Envoyer l'email d'information aux prêteurs :</i></th>                                
+                    </tr>
+                    <tr>  
                         <td>
                             <input type="radio" name="mail_a_envoyer_preteur_probleme" id="oui_envoyer_mail" value="0" />
                             <label for="oui_envoyer_mail">Oui</label>
@@ -499,7 +508,7 @@ if (isset($_SESSION['freeow'])) {
                     <tr>
                         <td>
                             <input type="radio" name="mail_a_envoyer_preteur_problemeX" id="oui_envoyer_mail_problemeX" value="0" />
-                            <label for="oui_envoyer_mail">Oui</label>
+                            <label for="oui_envoyer_mail_problemeX">Oui</label>
                             <input type="radio" name="mail_a_envoyer_preteur_problemeX" id="non_envoyer_mail_problemeX" value="1" checked/>
                             <label for="non_envoyer_mail">Non</label>
                             <br><br>
@@ -2470,8 +2479,47 @@ for ($i = 1; $i <= 7; $i++) {
     $("#dossier_resume").submit(function (event) {
 
         if ($("#statut_encours").val() == '0') {
-            $("#statut_encours").val('1');
-            $(".submitdossier").remove();
+            
+            var check_ok = true;
+            
+            if($('input[name=mail_a_envoyer_preteur_probleme]:checked', '#dossier_resume').val() == '0'){
+               
+                check_ok = false;
+            }
+            else if($('input[name=mail_a_envoyer_preteur_problemeX]:checked', '#dossier_resume').val() == '0'){
+               
+                check_ok = false;
+            }
+            else if($('input[name=mail_a_envoyer_preteur_probleme_recouvrement]:checked', '#dossier_resume').val() == '0'){
+               
+                check_ok = false;
+            }
+            else if($('input[name=mail_a_envoyer_preteur_ps]:checked', '#dossier_resume').val() == '0'){
+               
+                check_ok = false;
+            }
+            else if($('input[name=mail_a_envoyer_preteur_rj]:checked', '#dossier_resume').val() == '0'){
+               
+                check_ok = false;
+            }
+            else if($('input[name=mail_a_envoyer_preteur_lj]:checked', '#dossier_resume').val() == '0'){
+               
+                check_ok = false;
+            }
+            else if($('input[name=mail_a_envoyer_preteur_default]:checked', '#dossier_resume').val() == '0'){
+               
+                check_ok = false;
+            }
+            // On a un envoi de mail selected qu'on doit confirmer
+            if(check_ok == false && $('#check_confirmation_send_email').val() == '0'){
+                $(".confirmation_send_email").click();
+                event.preventDefault();
+            }
+            // On peut valider
+            else{
+                $("#statut_encours").val('1');
+                $(".submitdossier").remove();
+            }
         }
         else {
             event.preventDefault();

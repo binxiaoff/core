@@ -53,4 +53,8 @@ class thickboxController extends bootstrap
 		$this->minute_date_retrait = $heure_min[1];
 		
 	}
+        
+        function _popup_confirmation_send_email(){
+            
+        }
 }

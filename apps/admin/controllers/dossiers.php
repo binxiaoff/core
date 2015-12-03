@@ -1004,10 +1004,17 @@ class dossiersController extends bootstrap {
                             //on desactive le remboursement automatique (CDC Statut emprunteur)                            
                             $this->projects->remb_auto = 1; // remb auto à non
                             $this->projects->update();
-
+                            
                             // on récupère la variable pour savoir si on envoi le mail au preteur ou non
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_probleme'];
+                            $contenu_a_ajouter_mail = $_POST['area_probleme'];
 
+                            // on enregsitre le contenu
+                            $projects_status_history_informations = $this->loadData('projects_status_history_informations');
+                            $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                            $projects_status_history_informations->information = $contenu_a_ajouter_mail;
+                            $projects_status_history_informations->create();
+                           
                             // ENVOI MAIL PRETEUR
                             // FB
                             $this->settings->get('Facebook', 'type');
@@ -1058,6 +1065,7 @@ class dossiersController extends bootstrap {
                                 'bic_sfpmei' => $bic_sfpmei,
                                 'iban_sfpmei' => $iban_sfpmei,
                                 'tel_emprunteur' => $tel_emprunteur,
+                                'contenu_mail' => $contenu_a_ajouter_mail,
                                 'lien_fb' => $lien_fb,
                                 'lien_tw' => $lien_tw);
 
