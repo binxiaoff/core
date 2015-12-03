@@ -1,4 +1,5 @@
 <?php
+use Unilend\librairies\ULogger;
 
 class rootController extends bootstrap
 {
@@ -1403,38 +1404,27 @@ class rootController extends bootstrap
                 'lien_tw'  => $lien_tw
             );
 
-            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+            /** @var unilend_email $oUnilendEmail */
+            $oUnilendEmail = $this->loadLib('unilend_email', array(
+                $this->loadData('mails_filer'),
+                $this->loadData('mails_text'),
+                $this->loadData('nmp'),
+                $this->loadData('nmp_desabo'),
+            ));
 
-            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-            $this->email = $this->loadLib('email');
-            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-            $this->email->setSubject(stripslashes($sujetMail));
-            $this->email->setHTMLBody(stripslashes($texteMail));
-
-            if ($this->Config['env'] == 'prod') {
-                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $_POST['email'], $tabFiler);
-                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-            } else {
-                $this->email->addRecipient(trim($_POST['email']));
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            try {
+                $oUnilendEmail->addAllMailVars($varMail);
+                $oUnilendEmail->setTemplate('demande-de-contact', $this->language);
+                $oUnilendEmail->addRecipient($_POST['email']);
+                $oUnilendEmail->sendFromTemplate();
+            } catch (\Exception $oException) {
+                $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
             }
 
             //***************************************//
             //*** ENVOI DU MAIL CONTACT A UNILEND ***//
             //***************************************//
-
-            // Recuperation du modele de mail
-            $this->mails_text->get('notification-demande-de-contact', 'lang = "' . $this->language . '" AND type');
-
-            $surl   = $this->surl;
-            $url    = $this->lurl;
-            $email  = $this->demande_contact->email;
-            $nom    = utf8_decode($this->demande_contact->nom);
-            $prenom = utf8_decode($this->demande_contact->prenom);
-            $objet  = ($objets[$this->demande_contact->demande]);
 
             $this->demande_contact->preciser  = $_POST['preciser'];
             $this->demande_contact->nom       = $this->ficelle->majNom($_POST['nom']);
@@ -1457,28 +1447,23 @@ class rootController extends bootstrap
             $infos .= '<li>Message : ' . utf8_decode($this->demande_contact->message) . '</li>';
             $infos .= '</ul>';
 
-            $sujetMail = $this->mails_text->subject;
-            eval("\$sujetMail = \"$sujetMail\";");
+            /** @var unilend_email $oUnilendEmail */
+            $oUnilendEmail = $this->loadLib('unilend_email', array(
+                $this->loadData('mails_filer'),
+                $this->loadData('mails_text')
+            ));
 
-            $texteMail = $this->mails_text->content;
-            eval("\$texteMail = \"$texteMail\";");
-
-            $exp_name = $this->mails_text->exp_name;
-            eval("\$exp_name = \"$exp_name\";");
-
-            $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-            $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-            $this->email = $this->loadLib('email');
-            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-            $this->email->addRecipient(trim($destinataire));
-            $this->email->setReplyTo(utf8_decode($this->demande_contact->email),
-                utf8_decode($this->demande_contact->nom) . ' ' . utf8_decode($this->demande_contact->prenom));
-
-            $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-            $this->email->setHTMLBody($texteMail);
-
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            try {
+                $oUnilendEmail->addMailVar('$surl', $this->surl);
+                $oUnilendEmail->addMailVar('$infos', $infos);
+                $oUnilendEmail->setTemplate('notification-demande-de-contact', $this->language);
+                $oUnilendEmail->addRecipient($destinataire);
+                $oUnilendEmail->setReplyTo($this->demande_contact->email, $this->demande_contact->nom . ' ' . $this->demande_contact->prenom);
+                $oUnilendEmail->sendDirectly();
+            } catch (\Exception $oException) {
+                $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+            }
 
             $this->demande_contact->demande   = '';
             $this->demande_contact->preciser  = '';

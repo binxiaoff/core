@@ -603,7 +603,6 @@ class ajaxController extends bootstrap
 
                 try {
                     $oUnilendEmail->addAllMailVars($varMail);
-                    $oUnilendEmail->wrapVariables();
                     $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
                     $oUnilendEmail->addRecipient($this->clients->email);
                     $oUnilendEmail->sendFromTemplate();
@@ -1050,7 +1049,6 @@ class ajaxController extends bootstrap
 
             try {
                 $oUnilendEmail->addAllMailVars($varMail);
-                $oUnilendEmail->wrapVariables();
                 $oUnilendEmail->setTemplate('confirmation-depot-de-dossier', $this->language);
                 $oUnilendEmail->addRecipient($this->clients->email);
                 $oUnilendEmail->sendFromTemplate();
@@ -1143,7 +1141,6 @@ class ajaxController extends bootstrap
 
             try {
                 $oUnilendEmail->addAllMailVars($varMail);
-                $oUnilendEmail->wrapVariables();
                 $oUnilendEmail->setTemplate('mot-de-passe-oublie', $this->language);
                 $oUnilendEmail->addRecipient($clients->email);
                 $oUnilendEmail->sendFromTemplate();
@@ -1205,7 +1202,6 @@ class ajaxController extends bootstrap
 
             try {
                 $oUnilendEmail->addAllMailVars($varMail);
-                $oUnilendEmail->wrapVariables();
                 $oUnilendEmail->setTemplate('generation-mot-de-passe', $this->language);
                 $oUnilendEmail->addRecipient($this->clients->email);
                 $oUnilendEmail->sendFromTemplate();
@@ -1534,7 +1530,6 @@ class ajaxController extends bootstrap
 
                 try {
                     $oUnilendEmail->addAllMailVars($varMail);
-                    $oUnilendEmail->wrapVariables();
                     $oUnilendEmail->setTemplate('preteur-alimentation-manu', $this->language);
                     $oUnilendEmail->addRecipient($preteurs->email);
                     $oUnilendEmail->sendFromTemplate();
@@ -2214,7 +2209,6 @@ class ajaxController extends bootstrap
 
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
-                        $oUnilendEmail->wrapVariables();
                         $oUnilendEmail->setTemplate('emprunteur-dossier-rejete', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -2358,7 +2352,6 @@ class ajaxController extends bootstrap
 
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
-                        $oUnilendEmail->wrapVariables();
                         $oUnilendEmail->setTemplate('emprunteur-dossier-rejete', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -2700,7 +2693,6 @@ class ajaxController extends bootstrap
                     ));
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
-                        $oUnilendEmail->wrapVariables();
                         $oUnilendEmail->setTemplate('emprunteur-dossier-rejete', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();

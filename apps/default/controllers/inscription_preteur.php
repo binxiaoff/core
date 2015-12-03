@@ -1,15 +1,14 @@
 <?php
+use Unilend\librairies\ULogger;
 
 class inscription_preteurController extends bootstrap
 {
-    var $Command;
-
     /**
      * @var attachment_helper
      */
     private $attachmentHelper;
 
-    function inscription_preteurController($command,$config,$app)
+    function __construct($command,$config,$app)
     {
         parent::__construct($command,$config,$app);
 
@@ -570,10 +569,6 @@ class inscription_preteurController extends bootstrap
                         //******************************************************//
                         //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION PRETEUR ***//
                         //******************************************************//
-
-                        // Recuperation du modele de mail
-                        $this->mails_text->get('confirmation-inscription-preteur','lang = "'.$this->language.'" AND type');
-
                         // Variables du mailing
                         $surl = $this->surl;
                         $url = $this->lurl;
@@ -597,29 +592,22 @@ class inscription_preteurController extends bootstrap
                                 'lien_fb' => $lien_fb,
                                 'lien_tw' => $lien_tw);
 
-                        // Construction du tableau avec les balises EMV
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                        /** @var unilend_email $oUnilendEmail */
+                        $oUnilendEmail = $this->loadLib('unilend_email', array(
+                            $this->loadData('mails_filer'),
+                            $this->loadData('mails_text'),
+                            $this->loadData('nmp'),
+                            $this->loadData('nmp_desabo'),
+                        ));
 
-                        // Attribution des données aux variables
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
-                        $exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
-
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email',array());
-                        $this->email->setFrom($this->mails_text->exp_email,$exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        if($this->Config['env'] == 'prod') // nmp
-                        {
-                            Mailer::sendNMP($this->email,$this->mails_filer,$this->mails_text->id_textemail,$this->clients->email,$tabFiler);
-
-                            // Injection du mail NMP dans la queue
-                            $this->tnmp->sendMailNMP($tabFiler,$varMail,$this->mails_text->nmp_secure,$this->mails_text->id_nmp,$this->mails_text->nmp_unique,$this->mails_text->mode);
-                        } else {
-                            $this->email->addRecipient(trim($this->clients->email));
-                            Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);
+                        try {
+                            $oUnilendEmail->addAllMailVars($varMail);
+                            $oUnilendEmail->setTemplate('confirmation-inscription-preteur', $this->language);
+                            $oUnilendEmail->addRecipient($this->clients->email);
+                            $oUnilendEmail->sendFromTemplate();
+                        } catch (\Exception $oException) {
+                            $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                            $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                         }
                         // fin mail
 
@@ -1060,10 +1048,6 @@ class inscription_preteurController extends bootstrap
                         //******************************************************//
                         //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION PRETEUR ***//
                         //******************************************************//
-
-                        // Recuperation du modele de mail
-                        $this->mails_text->get('confirmation-inscription-preteur','lang = "'.$this->language.'" AND type');
-
                         // Variables du mailing
                         $surl = $this->surl;
                         $url = $this->lurl;
@@ -1087,33 +1071,23 @@ class inscription_preteurController extends bootstrap
                                 'lien_fb' => $lien_fb,
                                 'lien_tw' => $lien_tw);
 
-                        // Construction du tableau avec les balises EMV
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                        /** @var unilend_email $oUnilendEmail */
+                        $oUnilendEmail = $this->loadLib('unilend_email', array(
+                            $this->loadData('mails_filer'),
+                            $this->loadData('mails_text'),
+                            $this->loadData('nmp'),
+                            $this->loadData('nmp_desabo'),
+                        ));
 
-                        // Attribution des données aux variables
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
-                        $exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
-
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email',array());
-                        $this->email->setFrom($this->mails_text->exp_email,$exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        if($this->Config['env'] == 'prod') // nmp
-                        {
-                            Mailer::sendNMP($this->email,$this->mails_filer,$this->mails_text->id_textemail,$this->clients->email,$tabFiler);
-
-                            // Injection du mail NMP dans la queue
-                            $this->tnmp->sendMailNMP($tabFiler,$varMail,$this->mails_text->nmp_secure,$this->mails_text->id_nmp,$this->mails_text->nmp_unique,$this->mails_text->mode);
-                        } else {
-                            $this->email->addRecipient(trim($this->clients->email));
-                            Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);
+                        try {
+                            $oUnilendEmail->addAllMailVars($varMail);
+                            $oUnilendEmail->setTemplate('confirmation-inscription-preteur', $this->language);
+                            $oUnilendEmail->addRecipient($this->clients->email);
+                            $oUnilendEmail->sendFromTemplate();
+                        } catch (\Exception $oException) {
+                            $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                            $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                         }
-                        // fin mail
-
-                        ///////////////////////////////
 
                         // parametres pour valider le compte //
 
@@ -1875,9 +1849,6 @@ class inscription_preteurController extends bootstrap
                 //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION PRETEUR ***//
                 //******************************************************//
 
-                // Recuperation du modele de mail
-                $this->mails_text->get('confirmation-inscription-preteur-etape-3','lang = "'.$this->language.'" AND type');
-
                 // Variables du mailing
                 $surl = $this->surl;
                 $url = $this->lurl;
@@ -1901,32 +1872,23 @@ class inscription_preteurController extends bootstrap
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw);
 
-                // Construction du tableau avec les balises EMV
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                //** @var unilend_email $oUnilendEmail */
+                $oUnilendEmail = $this->loadLib('unilend_email', array(
+                    $this->loadData('mails_filer'),
+                    $this->loadData('mails_text'),
+                    $this->loadData('nmp'),
+                    $this->loadData('nmp_desabo'),
+                ));
 
-                // Attribution des données aux variables
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
-                $exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
-
-                // Envoi du mail
-                $this->email = $this->loadLib('email',array());
-                $this->email->setFrom($this->mails_text->exp_email,$exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                if($this->Config['env'] == 'prod') // nmp
-                {
-                    Mailer::sendNMP($this->email,$this->mails_filer,$this->mails_text->id_textemail,$this->clients->email,$tabFiler);
-
-                    // Injection du mail NMP dans la queue
-                    $this->tnmp->sendMailNMP($tabFiler,$varMail,$this->mails_text->nmp_secure,$this->mails_text->id_nmp,$this->mails_text->nmp_unique,$this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient(trim($this->clients->email));
-                    Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);
+                try {
+                    $oUnilendEmail->addAllMailVars($varMail);
+                    $oUnilendEmail->setTemplate('confirmation-inscription-preteur-etape-3', $this->language);
+                    $oUnilendEmail->addRecipient($this->clients->email);
+                    $oUnilendEmail->sendFromTemplate();
+                } catch (\Exception $oException) {
+                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                 }
-                // fin mail
-
                 header('location:'.$this->lurl.'/inscription_preteur/confirmation/'.$this->clients->hash.'/v/');
                 die;
             }
@@ -2134,11 +2096,6 @@ class inscription_preteurController extends bootstrap
                         //******************************************************//
                         //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION PRETEUR ***//
                         //******************************************************//
-
-                        // Recuperation du modele de mail
-                        $this->mails_text->get('confirmation-inscription-preteur-etape-3','lang = "'.$this->language.'" AND type');
-
-
                         // Motif virement
                         $p = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))),0,1);
                         $nom = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
@@ -2168,31 +2125,23 @@ class inscription_preteurController extends bootstrap
                                 'lien_fb' => $lien_fb,
                                 'lien_tw' => $lien_tw);
 
-                        // Construction du tableau avec les balises EMV
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                        /** @var unilend_email $oUnilendEmail */
+                        $oUnilendEmail = $this->loadLib('unilend_email', array(
+                            $this->loadData('mails_filer'),
+                            $this->loadData('mails_text'),
+                            $this->loadData('nmp'),
+                            $this->loadData('nmp_desabo'),
+                        ));
 
-                        // Attribution des données aux variables
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject),$tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
-                        $exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
-
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email',array());
-                        $this->email->setFrom($this->mails_text->exp_email,$exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        if($this->Config['env'] == 'prod') // nmp
-                        {
-                            Mailer::sendNMP($this->email,$this->mails_filer,$this->mails_text->id_textemail,$this->clients->email,$tabFiler);
-
-                            // Injection du mail NMP dans la queue
-                            $this->tnmp->sendMailNMP($tabFiler,$varMail,$this->mails_text->nmp_secure,$this->mails_text->id_nmp,$this->mails_text->nmp_unique,$this->mails_text->mode);
-                        } else {
-                            $this->email->addRecipient(trim($this->clients->email));
-                            Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);
+                        try {
+                            $oUnilendEmail->addAllMailVars($varMail);
+                            $oUnilendEmail->setTemplate('confirmation-inscription-preteur-etape-3', $this->language);
+                            $oUnilendEmail->addRecipient($this->clients->email);
+                            $oUnilendEmail->sendFromTemplate();
+                        } catch (\Exception $oException) {
+                            $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                            $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                         }
-                        // fin mail
 
                         /// email inscription preteur ///
 

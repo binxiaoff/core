@@ -609,8 +609,6 @@ class depot_de_dossierController extends bootstrap
 
                 $this->redirect(self::PAGE_NAME_FILES);
             } else {
-                $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
-
                 $this->settings->get('Facebook', 'type');
                 $sFacebookURL = $this->settings->value;
 
@@ -628,20 +626,25 @@ class depot_de_dossierController extends bootstrap
                     'url'                  => $this->url,
                 );
 
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
-                $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
-                $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $this->tnmp->constructionVariablesServeur($aVariables))));
-
                 $sRecipient = empty($this->clients_prescripteur->id_client) ? $this->clients->email : $this->clients_prescripteur->email;
                 $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
 
-                if ($this->Config['env'] == 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipient, $aNMPResponse);
-                    $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient($sRecipient);
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                /** @var unilend_email $oUnilendEmail */
+                $oUnilendEmail = $this->loadLib('unilend_email', array(
+                    $this->loadData('mails_filer'),
+                    $this->loadData('mails_text'),
+                    $this->loadData('nmp'),
+                    $this->loadData('nmp_desabo'),
+                ));
+
+                try {
+                    $oUnilendEmail->addAllMailVars($aVariables);
+                    $oUnilendEmail->setTemplate('confirmation-depot-de-dossier', $this->language);
+                    $oUnilendEmail->addRecipient($sRecipient);
+                    $oUnilendEmail->sendFromTemplate();
+                } catch (\Exception $oException) {
+                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                 }
 
                 $this->clients->status = 1;

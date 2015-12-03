@@ -1053,7 +1053,6 @@ class devboxController extends bootstrap
 
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
-                        $oUnilendEmail->wrapVariables();
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
                     } catch (\Exception $oException) {

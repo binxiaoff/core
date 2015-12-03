@@ -1,4 +1,5 @@
 <?php
+use Unilend\librairies\ULogger;
 
 class devboxController extends bootstrap
 {
@@ -130,14 +131,10 @@ class devboxController extends bootstrap
                     //********************************//
                     //*** ENVOI DU MAIL FACTURE ER ***//
                     //********************************//
-                    // Recuperation du modele de mail
-                    $this->mails_text->get('facture-emprunteur-remboursement', 'lang = "' . $this->language . '" AND type');
-
 
                     // FB
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
-
 
                     // Twitter
                     $this->settings->get('Twitter', 'type');
@@ -159,31 +156,23 @@ class devboxController extends bootstrap
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw);
 
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    if ($this->Config['env'] == 'prod')
-                    {
-                        //$this->email->addBCCRecipient('nicolas.lesur@unilend.fr');
-                        //$this->email->addBCCRecipient('d.nandji@equinoa.com');
+                    /** @var unilend_email $oUnilendEmail */
+                    $oUnilendEmail = $this->loadLib('unilend_email', array(
+                        $this->loadData('mails_filer'),
+                        $this->loadData('mails_text'),
+                        $this->loadData('nmp'),
+                        $this->loadData('nmp_desabo'),
+                    ));
+
+                    try {
+                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->setTemplate('facture-emprunteur-remboursement', $this->language);
+                        $oUnilendEmail->addRecipient($companies->email_facture);
+                        $oUnilendEmail->sendFromTemplate();
+                    } catch (\Exception $oException) {
+                        $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                        $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->Config['env'] === 'prod') {
-
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($companies->email_facture), $tabFiler);
-                        //Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim("k.levezier@equinoa.com"), $tabFiler);
-                        // Injection du mail NMP dans la queue
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($companies->email_facture));
-                        //Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
-
                 }
             }
 

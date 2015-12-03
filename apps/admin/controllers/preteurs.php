@@ -479,7 +479,6 @@ class preteursController extends bootstrap
 
             try {
                 $oUnilendEmail->addAllMailVars($varMail);
-                $oUnilendEmail->wrapVariables();
                 $oUnilendEmail->setTemplate('completude', $this->language);
                 $oUnilendEmail->addRecipient($this->clients->email);
                 $oUnilendEmail->sendFromTemplate();
@@ -800,7 +799,6 @@ class preteursController extends bootstrap
 
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
-                        $oUnilendEmail->wrapVariables();
                         $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -1105,7 +1103,6 @@ class preteursController extends bootstrap
 
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
-                        $oUnilendEmail->wrapVariables();
                         $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -1883,7 +1880,6 @@ class preteursController extends bootstrap
 
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
-                        $oUnilendEmail->wrapVariables();
                         $oUnilendEmail->setTemplate('offre-de-bienvenue', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -2003,7 +1999,6 @@ class preteursController extends bootstrap
 
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
-                        $oUnilendEmail->wrapVariables();
                         $oUnilendEmail->setTemplate('offre-de-bienvenue', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();

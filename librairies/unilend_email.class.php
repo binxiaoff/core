@@ -31,6 +31,8 @@ class unilend_email
 
     private $aBCCRecipient = array();
 
+    private $aReplyTo = array();
+
     /**
      * unilend_email constructor.
      *
@@ -105,7 +107,7 @@ class unilend_email
      * @param $sPrefix
      * @param $sSuffix
      */
-    public function wrapVariables($sPrefix = '[EMV DYN]', $sSuffix = '[EMV /DYN]')
+    private function wrapVariables($sPrefix = '[EMV DYN]', $sSuffix = '[EMV /DYN]')
     {
         foreach ($this->aMailVar as $key => $value) {
             $this->aMailVar[$sPrefix . $key . $sSuffix] = $value;
@@ -128,6 +130,11 @@ class unilend_email
         $this->aBCCRecipient[] = trim($sRecipient);
     }
 
+    public function setReplyTo($sReplyTo)
+    {
+        $this->aReplyTo[] = trim($sReplyTo);
+    }
+
     public function setTemplate($sMailType, $sLanguage)
     {
         if (false === $this->oMailText->get($sMailType, 'lang = "' . $sLanguage . '" AND type')) {
@@ -145,13 +152,9 @@ class unilend_email
             throw new \Exception('No recipient');
         }
 
-        $sMailSubject = strtr($this->oMailText->subject, $this->aMailVar);
-        $sMailContent = strtr($this->oMailText->content, $this->aMailVar);
-        $sMailFrom    = strtr($this->oMailText->exp_name, $this->aMailVar);
-
-        $oEmail = new Email();
-
         if (ENVIRONMENT !== 'prod') {
+            $this->wrapVariables();
+
             // @todo once mailcatcher is installed on every dev/demo, email domain check may be deleted (not subject prefixing)
             foreach ($this->aRecipient as $iIndex => $sRecipient) {
                 if (1 !== preg_match('/@unilend.fr$/', $sRecipient)) {
@@ -163,24 +166,33 @@ class unilend_email
                 $this->aRecipient[] = 'test-' . ENVIRONMENT . '@unilend.fr';
             }
 
-            $sMailSubject = '[' . ENVIRONMENT . '] ' . $sMailSubject;
+            $this->oMailText->subject = '[' . ENVIRONMENT . '] ' . $this->oMailText->subject;
         }
 
-        foreach ($this->aRecipient as $sRecipient) {
-            $oEmail->addRecipient(trim($sRecipient));
-        }
+        $sMailSubject = strtr($this->oMailText->subject, $this->aMailVar);
+        $sMailContent = strtr($this->oMailText->content, $this->aMailVar);
+        $sMailFrom    = strtr($this->oMailText->exp_name, $this->aMailVar);
 
-        foreach ($this->aCCRecipient as $sRecipient) {
-            $oEmail->addCCRecipient(trim($sRecipient));
-        }
-
-        foreach ($this->aBCCRecipient as $sRecipient) {
-            $oEmail->addBCCRecipient(trim($sRecipient));
-        }
-
+        $oEmail = new Email();
         $oEmail->setFrom($this->oMailText->exp_email, $sMailFrom);
         $oEmail->setSubject(stripslashes($sMailSubject));
         $oEmail->setHTMLBody(stripslashes($sMailContent));
+
+        foreach ($this->aRecipient as $sRecipient) {
+            $oEmail->addRecipient($sRecipient);
+        }
+
+        foreach ($this->aCCRecipient as $sRecipient) {
+            $oEmail->addCCRecipient($sRecipient);
+        }
+
+        foreach ($this->aBCCRecipient as $sRecipient) {
+            $oEmail->addBCCRecipient($sRecipient);
+        }
+
+        foreach ($this->aReplyTo as $sReplyTo) {
+            $oEmail->setReplyTo($sReplyTo);
+        }
 
         return $oEmail;
     }

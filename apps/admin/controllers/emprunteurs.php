@@ -436,7 +436,6 @@ class emprunteursController extends bootstrap
 
                                 try {
                                     $oUnilendEmail->addAllMailVars($varMail);
-                                    $oUnilendEmail->wrapVariables();
                                     $oUnilendEmail->setTemplate('changement-de-rib', $this->language);
                                     $oUnilendEmail->addRecipient($e->email);
                                     $oUnilendEmail->sendFromTemplate();
