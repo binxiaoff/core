@@ -42,6 +42,9 @@
             <div class="row row-btn" style="float:right; margin-bottom: 30px;">
                 <a class="btn btn-info btn-small popup-link"
                    href="<?= $this->lurl ?>/thickbox/pop_up_nouveau_projet"><?= $this->lng['espace-emprunteur']['nouvelle-demande'] ?></a>
+                <?php if (isset($_SESSION['forms']['nouvelle-demande']['errors'])) : ?>
+                    <div class="row error_login" style="margin-right: 50px;"><?= $this->lng['espace-emprunteur']['nouvelle-demande-non-abouti'] ?></div>
+                <?php endif;?>
             </div>
 
         <?php endif; ?>
