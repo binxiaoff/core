@@ -29,7 +29,7 @@
 class transactions extends transactions_crud
 {
 
-    public function __transactions($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::transactions($bdd, $params);
     }
@@ -184,21 +184,6 @@ class transactions extends transactions_crud
         return $res;
     }
 
-    /*
-
-    function recupCAByMonthForAYearType($year,$id_type=0)
-    {
-        $sql = 'SELECT SUM(montant/100) AS montant, LEFT(date_transaction,7) AS date FROM transactions WHERE status = 1 AND etat != 3 AND id_partenaire IN (SELECT id_partenaire FROM partenaires WHERE id_type  = "'.$id_type.'") AND date_transaction LIKE "'.$year.'%" GROUP BY LEFT(date_transaction,7)';
-        $req = $this->bdd->query($sql);
-        $res = array();
-        while($rec = $this->bdd->fetch_array($req))
-        {
-            $d = explode('-',$rec['date']);
-            $res[$d[1]] = $rec['montant'];
-        }
-        return $res;
-    }
-    */
 
     /**
      * Optimisation dashboard / David Raux
@@ -297,22 +282,6 @@ class transactions extends transactions_crud
 
         return $result;
     }
-
-
-    /* useless
-
-    function recupHitProduits($limit)
-    {
-        $sql = 'SELECT reference as Reference, nom as Nom, sum(quantite) as NbVentes, round(sum(`prix_ht`*quantite),2) as CAht FROM `transactions_produits` join transactions on transactions.id_transaction = transactions_produits.id_transaction where transactions.status=1 and transactions.etat < 3 group by reference order by CAht desc limit '.$limit;
-
-        $resultat = $this->bdd->query($sql);
-        $result = array();
-        while($record = $this->bdd->fetch_array($resultat))
-        {
-            $result[] = $record;
-        }
-        return $result;
-    }*/
 
 
     public function sum($where = '', $champ)
