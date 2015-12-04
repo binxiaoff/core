@@ -1038,7 +1038,8 @@ class clients extends clients_crud
         $sql = 'SELECT
                     `id_project`,
                     -SUM(`capital` + `interets`)/100 AS montant,
-                    `date_echeance_reel` AS date
+                    `date_echeance_reel` AS date,
+                    `ordre`
                 FROM
                     `echeanciers`
                 WHERE
