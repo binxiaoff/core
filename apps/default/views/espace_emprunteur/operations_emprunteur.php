@@ -1,5 +1,4 @@
 <style type="text/css">
-
     .vos_operations {
         font-size: 13px;
     }
@@ -106,7 +105,7 @@
         width: 40px;
     }
 
-    .table-filter .period .c2-sb-wrap {
+    .table-filter .period {
         z-index: 10;
     }
 
@@ -161,12 +160,9 @@
                     <div class="vos_operations_ligne div_annee">
                         <select name="annee" id="annee" class="custom-select field-hundred">
                             <option value="<?= date('Y') ?>"><?= date('Y') ?></option>
-                            <?
-                            for ($i = date('Y'); $i >= 2013; $i--) {
-                                ?>
-                                <option value="<?= $i ?>"><?= $i ?></option><?
-                            }
-                            ?>
+                            <?php for ($i = date('Y'); $i >= 2013; $i--) : ?>
+                                <option value="<?= $i ?>"><?= $i ?></option>
+                            <?php endfor; ?>
                         </select>
                     </div>
                 </td>
@@ -214,7 +210,7 @@
         <div class="vos_operations_ligne">
             <select name="tri_type_transac" id="tri_type_transac" class="custom-select field-mini" style="width: 200px;">
                 <option value="0"><?= $this->lng['espace-emprunteur']['tri-operation'] ?></option>
-                <option value="0"><?= $this->lng['espace-emprunteur']['tri-toutes'] ?></option>
+                <option value="99"><?= $this->lng['espace-emprunteur']['tri-toutes'] ?></option>
                 <option value="<?= \clients::COMMISSION_MENSUELLE ?>"><?= $this->lng['espace-emprunteur']['operations-type-commission-mensuelle'] ?></option>
                 <option value="<?= \clients::AFF_MENSUALITE_PRETEURS ?>"><?= $this->lng['espace-emprunteur']['operations-type-affectation-preteurs'] ?></option>
                 <option value="<?= \clients::PRLV_MENSUALITE ?>"><?= $this->lng['espace-emprunteur']['operations-type-prelevement-mensualite'] ?></option>
@@ -229,14 +225,10 @@
         <div class="vos_operations_ligne">
             <select name="tri_projects" id="tri_projects" class="custom-select field-mini">
                 <option value="0"><?= $this->lng['espace-emprunteur']['trier-projet'] ?></option>
-                <option value="0"><?= $this->lng['espace-emprunteur']['trier-tous'] ?></option>
-                <?
-                foreach ($this->aClientsProjects as $aProject) {
-                    ?>
-                    <option
-                    value="<?= $aProject['id_project'] ?>"><?= $aProject['id_project'] . ' ' . $aProject['title'] ?></option><?
-                }
-                ?>
+                <option value="99"><?= $this->lng['espace-emprunteur']['trier-tous'] ?></option>
+                <?php  foreach ($this->aClientsProjects as $aProject) : ?>
+                    <option value="<?= $aProject['id_project'] ?>"><?= $aProject['id_project'] . ' ' . $aProject['title'] ?></option>
+                <?php endforeach; ?>
             </select>
         </div>
     </div>
