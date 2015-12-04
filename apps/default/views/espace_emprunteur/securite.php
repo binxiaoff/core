@@ -53,9 +53,6 @@ if ($this->bLinkExpired === true) : ?>
             $('#pass').keyup(function () {
                 controleMdp($(this).val(), 'pass');
             });
-            $('#pass').blur(function () {
-                controleMdp($(this).val(), 'pass');
-            });
             $('#pass2').bind('paste', function (e) {
                 e.preventDefault();
             });
