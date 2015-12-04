@@ -923,7 +923,7 @@ class clients extends clients_crud
                 }
 
             } else {
-                return $aFirstArray['date'] > $aSecondArray['date'];
+                return $aFirstArray['date'] < $aSecondArray['date'];
             }
         });
 
