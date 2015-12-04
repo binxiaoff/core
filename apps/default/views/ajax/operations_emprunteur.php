@@ -13,7 +13,7 @@ foreach ($this->aBorrowerOperations as $aOperation) {
         <td><?= $this->ficelle->formatnumber($aOperation['montant']) ?> &euro;</td>
         <?php if ($aOperation['type'] === 'affectation-preteurs'): ?>
             <td>
-                <a href="<?= $this->lurl ?>/espace_emprunteur/getCSVWithLenderDetails/e/<?= $aOperation['id_project'] ?>">
+                <a href="<?= $this->lurl ?>/espace_emprunteur/getCSVWithLenderDetails/e/<?= $aOperation['id_project'].'/'.$aOperation['ordre'] ?>">
                     <img class="xls small" src="<?= $this->surl ?>/images/default/xls_hd.png"/>
                 </a>
             </td>
