@@ -56,7 +56,6 @@
                 <table class="table table_projects" style="table-layout: fixed;">
                     <thead>
                     <tr>
-                        <th></th>
                         <th width="40"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
                         <th width="160"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
                         <th width="100"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
@@ -67,8 +66,6 @@
                     <tbody>
                     <?php foreach ($this->aProjectsPreFunding as $aProject) : ?>
                         <tr>
-                            <td><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $aProject['photo_projet'] ?>"
-                                     alt="<?= $aProject['photo_projet'] ?>" class="thumb"></td>
                             <td><?= $aProject['id_project'] ?></td>
                             <td><?= $aProject['nature_project'] ?></td>
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> € /  <?= $aProject['period'] ?>
@@ -91,7 +88,6 @@
                 <table class="table table_projects" style="table-layout: fixed;">
                     <thead>
                     <tr>
-                        <th></th>
                         <th width="40"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
                         <th width="160"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
                         <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
@@ -105,8 +101,6 @@
                     <tbody>
                     <?php foreach ($this->aProjectsFunding as $aProject) : ?>
                         <tr>
-                            <td><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $aProject['photo_projet'] ?>"
-                                     alt="<?= $aProject['photo_projet'] ?>" class="thumb"></td>
                             <td><?= $aProject['id_project'] ?></td>
                             <td><?= $aProject['nature_project'] ?></td>
                             <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> €
@@ -134,7 +128,6 @@
                 <table class="table table_projects" style="table-layout: fixed;">
                     <thead>
                     <tr class="table table_projects" style="table-layout: fixed;">
-                        <th></th>
                         <th width="40"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
                         <th width="160"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
                         <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
@@ -149,8 +142,6 @@
                     <tbody>
                     <?php foreach ($this->aProjectsPostFunding as $aProject) : ?>
                         <tr>
-                            <td><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $aProject['photo_projet'] ?>"
-                                     alt="<?= $aProject['photo_projet'] ?>" class="thumb"></td>
                             <td><?= $aProject['id_project'] ?></td>
                             <td><?= $aProject['nature_project'] ?></td>
                             <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> €
