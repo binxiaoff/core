@@ -32,127 +32,145 @@
     .table_projects td {
         text-align: right;
     }
-
-
 </style>
 
 <div class="main">
     <div class="shell">
 
-       <?php if (empty($this->aProjectsPreFunding) === false) { ?>
+        <?php if (empty($this->aProjectsPostFunding) === false) : ?>
 
-            <table class="table table_projects" style="table-layout: fixed;">
-                <thead>
-                <tr>
-                    <th></th>
-                    <th width="40"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
-                    <th width="200"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
-                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
-                    <th width="150"><?= $this->lng['espace-emprunteur']['table-projets-status'] ?></th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php foreach ($this->aProjectsPreFunding as $aProject) { ?>
+            <div class="row row-btn" style="float:right; margin-bottom: 30px;">
+                <a class="btn btn-info btn-small popup-link"
+                   href="<?= $this->lurl ?>/thickbox/pop_up_nouveau_projet"><?= $this->lng['espace-emprunteur']['nouvelle-demande'] ?></a>
+            </div>
+
+        <?php endif; ?>
+
+        <div>
+
+            <?php if (empty($this->aProjectsPreFunding) === false) : ?>
+
+                <table class="table table_projects" style="table-layout: fixed;">
+                    <thead>
                     <tr>
-                        <td><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $aProject['photo_projet'] ?>"
-                                 alt="<?= $aProject['photo_projet'] ?>" class="thumb"></td>
-                        <td><?= $aProject['id_project'] ?></td>
-                        <td><?= $aProject['nature_project'] ?></td>
-                        <td><?= $this->ficelle->formatNumber($aProject['amount'],0) ?> € <br> <?= $aProject['period'] ?> mois</td>
-                        <td><?= $this->lng['espace-emprunteur'][$aProject['project_status_label']] ?></td>
-                        <td><a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">Voir le projet</a>
-                        </td>
+                        <th></th>
+                        <th width="40"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
+                        <th width="160"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
+                        <th width="100"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
+                        <th width="150"><?= $this->lng['espace-emprunteur']['table-projets-status'] ?></th>
+                        <th></th>
                     </tr>
-                <?php } ?>
-                </tbody>
-            </table>
-        <?php } ?>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($this->aProjectsPreFunding as $aProject) : ?>
+                        <tr>
+                            <td><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $aProject['photo_projet'] ?>"
+                                     alt="<?= $aProject['photo_projet'] ?>" class="thumb"></td>
+                            <td><?= $aProject['id_project'] ?></td>
+                            <td><?= $aProject['nature_project'] ?></td>
+                            <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> € /  <?= $aProject['period'] ?>
+                                <?= $this->lng['espace-emprunteur']['mois'] ?></td>
+                            <td><?= $this->lng['espace-emprunteur'][ $aProject['project_status_label'] ] ?></td>
+                            <?php if ($aProject['project_status_label'] === 'en-attente-de-pieces' ): ?>
+                            <td>
+                                <a href="<?= $this->url . '/depot_de_dossier/fichiers/' . $aProject['hash'] ?>">
+                                    <?= $this->lng['espace-emprunteur']['deposer-des-pieces'] ?></a>
+                            </td>
+                            <?php endif; ?>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+                &nbsp;
+            <?php endif ?>
 
-
-        <?php if (empty($this->aProjectsFunding) === false) { ?>
-            <table class="table table_projects" style="table-layout: fixed;">
-                <thead>
-                <tr>
-                    <th></th>
-                    <th width="40"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
-                    <th width="200"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
-                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
-                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-date-de-cloture-prevue'] ?></th>
-                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-funding-atteint'] ?></th>
-                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-taux-moyen-a-date'] ?></th>
-                    <th width="90"></th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php foreach ($this->aProjectsFunding as $aProject) { ?>
+            <?php if (empty($this->aProjectsFunding) === false) : ?>
+                <table class="table table_projects" style="table-layout: fixed;">
+                    <thead>
                     <tr>
-                        <td><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $aProject['photo_projet'] ?>"
-                                 alt="<?= $aProject['photo_projet'] ?>" class="thumb"></td>
-                        <td><?= $aProject['id_project'] ?></td>
-                        <td><?= $aProject['nature_project'] ?></td>
-                        <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> € <br> <?= $aProject['period'] ?> mois</td>
-                        <td><?= $aProject['date_retrait'] ?></td>
-                        <td><?= $this->ficelle->formatNumber($aProject['funding-progress']) ?> %</td>
-                        <td><?= $this->ficelle->formatNumber($aProject['AverageIR']) ?> %</td>
-                        <td>
-                            <?php if ($aProject['funding-progress'] >= 100 && $aProject['date_retrait_full'] <= date('Y-m-d H:i:s')) { ?>
-                                <a class="btn btn-info btn-small popup-link"
-                                   href="<?= $this->lurl ?>/thickbox/pop_up_anticipation/<?= (empty($aProject['hash']) === false) ? $aProject['hash'] : $aProject['id_project'] ?>">Arrêter</a>
-                            <?php }
-                            ?>
-                        </td>
-                        <td><a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">Voir le projet</a>
-                        </td>
+                        <th></th>
+                        <th width="40"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
+                        <th width="160"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
+                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
+                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-date-de-cloture-prevue'] ?></th>
+                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-funding-atteint'] ?></th>
+                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-taux-moyen-a-date'] ?></th>
+                        <th width="90"></th>
+                        <th></th>
                     </tr>
-                    <?php
-                } ?>
-                </tbody>
-            </table>
-            <?php
-        }
-        ?>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($this->aProjectsFunding as $aProject) : ?>
+                        <tr>
+                            <td><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $aProject['photo_projet'] ?>"
+                                     alt="<?= $aProject['photo_projet'] ?>" class="thumb"></td>
+                            <td><?= $aProject['id_project'] ?></td>
+                            <td><?= $aProject['nature_project'] ?></td>
+                            <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> €
+                                <br> <?= $aProject['period'] ?> <?= $this->lng['espace-emprunteur']['mois'] ?></td>
+                            <td><?= str_replace('-', '/', $aProject['date_retrait']) ?></td>
+                            <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['funding-progress']) ?> %</td>
+                            <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['AverageIR']) ?> %</td>
+                            <td style="white-space: nowrap;">
+                                <?php if ($aProject['funding-progress'] >= 100 && $aProject['date_retrait_full'] <= date('Y-m-d H:i:s')) : ?>
+                                    <a class="btn btn-info btn-small popup-link"
+                                       href="<?= $this->lurl ?>/thickbox/pop_up_anticipation/<?= (empty($aProject['hash']) === false) ? $aProject['hash'] : $aProject['id_project'] ?>"><?= $this->lng['espace-emprunteur']['bouton-arret-funding'] ?></a>
+                                <?php endif ?>
+                            </td>
+                            <td>
+                                <a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>"><?= $this->lng['espace-emprunteur']['voir-le-projet'] ?></a>
+                            </td>
+                        </tr>
+                    <?php endforeach ?>
+                    </tbody>
+                </table>
+                &nbsp;
+            <?php endif ?>
 
-        <?php if (empty($this->aProjectsPostFunding) === false) { ?>
-            <table>
-                <thead>
-                <tr class="table table_projects" style="table-layout: fixed;">
-                    <th></th>
-                    <th width="40"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
-                    <th width="200"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
-                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
-                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-date-de-cloture'] ?></th>
-                    <th width="60"><?= $this->lng['espace-emprunteur']['table-projets-mensualite'] ?></th>
-                    <th width="60"><?= $this->lng['espace-emprunteur']['table-projets-taux-moyen'] ?></th>
-                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-crd'] ?></th>
-                    <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-date-prochaine-echeance'] ?></th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <?php foreach ($this->aProjectsPostFunding as $aProject) { ?>
-                    <tr>
-                        <td><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $aProject['photo_projet'] ?>"
-                                 alt="<?= $aProject['photo_projet'] ?>" class="thumb"></td>
-                        <td><?= $aProject['id_project'] ?></td>
-                        <td><?= $aProject['nature_project'] ?></td>
-                        <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> € <br> <?= $aProject['period'] ?> mois</td>
-                        <td><?= $aProject['date_retrait'] ?></td>
-                        <td><?= $this->ficelle->formatNumber($aProject['MonthlyPayment']) ?> €</td>
-                        <td><?= $aProject['AverageIR'] ?> %</td>
-                        <td><?= $this->ficelle->formatNumber($aProject['RemainingDueCapital']) ?> €</td>
-                        <td><?= ($aProject['RemainingDueCapital'] == 0) ? $this->lng['espace-emprunteur']['rembourse-integralement'] : $aProject['DateNextMonthlyPayment'] ?></td>
-                        <td><a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">Voir le projet</a>
-                        </td>
+            <?php if (empty($this->aProjectsPostFunding) === false) : ?>
+                <table class="table table_projects" style="table-layout: fixed;">
+                    <thead>
+                    <tr class="table table_projects" style="table-layout: fixed;">
+                        <th></th>
+                        <th width="40"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
+                        <th width="160"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
+                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
+                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-date-de-cloture'] ?></th>
+                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-mensualite'] ?></th>
+                        <th width="60"><?= $this->lng['espace-emprunteur']['table-projets-taux-moyen'] ?></th>
+                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-crd'] ?></th>
+                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-date-prochaine-echeance'] ?></th>
+                        <th></th>
                     </tr>
-                <?php } ?>
-                </tbody>
-            </table>
-        <?php } ?>
-        &nbsp;
-        <div style="">
-            <a href="<?= $this->lurl ?>/espace_emprunteur/operations"><p><?= $this->lng['espace-emprunteur']['documents-dans-espace-dedie']?></p></a>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($this->aProjectsPostFunding as $aProject) : ?>
+                        <tr>
+                            <td><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $aProject['photo_projet'] ?>"
+                                     alt="<?= $aProject['photo_projet'] ?>" class="thumb"></td>
+                            <td><?= $aProject['id_project'] ?></td>
+                            <td><?= $aProject['nature_project'] ?></td>
+                            <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> €
+                                <br> <?= $aProject['period'] ?> <?= $this->lng['espace-emprunteur']['mois'] ?></td>
+                            <td><?= str_replace('-', '/', $aProject['date_retrait']) ?></td>
+                            <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['MonthlyPayment']) ?> €</td>
+                            <td style="white-space: nowrap;"><?= $aProject['AverageIR'] ?> %</td>
+                            <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['RemainingDueCapital']) ?> €</td>
+                            <td><?= ($aProject['RemainingDueCapital'] == 0) ? $this->lng['espace-emprunteur']['rembourse-integralement'] : $aProject['DateNextMonthlyPayment'] ?></td>
+                            <td>
+                                <a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>"><?= $this->lng['espace-emprunteur']['voir-le-projet'] ?></a>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
+            &nbsp;
+            <div>
+                <a href="<?= $this->lurl ?>/espace_emprunteur/operations">
+                    <p><?= $this->lng['espace-emprunteur']['documents-dans-espace-dedie'] ?></p></a>
+            </div>
         </div>
     </div>
 </div>
+<div style="clear: both"></div>
