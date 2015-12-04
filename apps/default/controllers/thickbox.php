@@ -301,8 +301,33 @@ class thickboxController extends bootstrap
     public function _pop_up_anticipation()
     {
         $this->lng['espace-emprunteur'] = $this->ln->selectFront('espace-emprunteur', $this->language, $this->App);
-        $this->projects->get($this->params[0]);
-        $this->fIR = round($this->projects->calculateAvgInterestRate($this->projects->id_project), 2);
+
+        $this->projects = $this->loadData('projects');
+
+        if (is_numeric($this->params[0])) {
+            $this->projects->get($this->params[0], 'id_project');
+        } else {
+            $this->projects->get($this->params[0], 'hash');
+        }
+
+        $fIR       = $this->projects->calculateAvgInterestRate($oProjects->id_project);
+        $this->fIR = (is_null($fIR) === false) ? $fIR : 0;
+
+    }
+
+    public function _pop_up_nouveau_projet()
+    {
+        $this->settings->get('Durée des prêts autorisées', 'type');
+        $this->dureePossible = empty($this->settings->value) ? array(24, 36, 48, 60) : explode(',', $this->settings->value);
+
+        $this->settings->get('Somme à emprunter min', 'type');
+        $this->sommeMin = $this->settings->value;
+
+        $this->settings->get('Somme à emprunter max', 'type');
+        $this->sommeMax = $this->settings->value;
+
+        $this->lng['espace-emprunteur'] = $this->ln->selectFront('espace-emprunteur', $this->language, $this->App);
+
     }
 
 }
