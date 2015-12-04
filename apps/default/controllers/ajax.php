@@ -1992,7 +1992,7 @@ class ajaxController extends bootstrap
         $sStartDateSQL = '"' . $oStartTime->format('Y-m-d') . ' 00:00:00"';
         $sEndDateSQL   = '"' . $oEndTime->format('Y-m-d') . ' 23:59:59"';
 
-        if ($_POST['tri_projects'] == 0 ) {
+        if ($_POST['tri_projects'] == 0 || $_POST['tri_projects'] == 99 ) {
             $aClientsProjects = $oProjects->select('id_company = ' . $oCompanies->id_company);
         } else {
             $aClientsProjects = $oProjects->select('id_project =' . $_POST['tri_projects']);
@@ -2002,7 +2002,7 @@ class ajaxController extends bootstrap
             $aClientProjectIDs[] = $project['id_project'];
         }
 
-        $iTransaction = $_POST['tri_type_transac'];
+        $iTransaction = ($_POST['tri_type_transac'] == 99 ) ? null :  $_POST['tri_type_transac'];
 
         $_SESSION['operations-filter'] = array('projects' =>$aClientProjectIDs, 'start' => $sStartDateSQL, 'end'=>$sEndDateSQL, 'transaction'=>$iTransaction);
 
