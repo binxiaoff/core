@@ -807,7 +807,7 @@ class statsController extends bootstrap
 
                 $this->clients->get($e['id_client'], 'id_client');
                 $codeComNaissance = $this->clients->insee_birth == '' ? '00000' : $this->clients->insee_birth;
-                $depNaiss = substr($codeComNaissance, 0, 2) !== '97' ? substr($codeComNaissance, 0, 2) : substr($codeComNaissance, 0, 3);
+                $depNaiss = substr($codeComNaissance, 0, 2);
             } // fin particulier
 
             $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($e['prenom']))), 0, 1);
