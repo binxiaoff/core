@@ -916,6 +916,12 @@ class clients extends clients_crud
                     return 1;
                 }
 
+                if ($aFirstArray['type'] == 'financement') {
+                    return -1;
+                } elseif ($aFirstArray['type'] == 'virement') {
+                    return 1;
+                }
+
             } else {
                 return $aFirstArray['date'] > $aSecondArray['date'];
             }
