@@ -329,29 +329,43 @@ class espace_emprunteurController extends Bootstrap
 
         if (isset($_POST['valider_demande_projet'])) {
 
-            $oClients = $this->loadData('clients');
-            $oClients->get($_SESSION['client']['id_client']);
+            if (empty($_POST['montant'])) {
+                $_SESSION['forms']['nouvelle-demande']['errors']['montant'] = true;
+            }
+            if (empty($_POST['duree'])) {
+                $_SESSION['forms']['nouvelle-demande']['errors']['duree'] = true;
+            }
+            if (empty($_POST['montant'])) {
+                $_SESSION['forms']['nouvelle-demande']['errors']['commentaires'] = true;
+            }
 
-            $oCompanies = $this->loadData('companies');
-            $oCompanies->get($oClients->id_client, 'id_client_owner');
+            if (empty ($_SESSION['forms']['nouvelle-demande']['errors'])) {
 
-            $oProject = $this->loadData('projects');
+                $oClients = $this->loadData('clients');
+                $oClients->get($_SESSION['client']['id_client']);
 
-            $oProject->id_company                           = $oCompanies->id_company;
-            $oProject->amount                               = str_replace(array(',', ' '), array('.', ''), $_POST['montant']);
-            $oProject->ca_declara_client                    = 0;
-            $oProject->resultat_exploitation_declara_client = 0;
-            $oProject->fonds_propres_declara_client         = 0;
-            $oProject->comments                             = $_POST['commentaires'];
-            $oProject->period                               = $_POST['duree'];
-            $oProject->create();
+                $oCompanies = $this->loadData('companies');
+                $oCompanies->get($oClients->id_client, 'id_client_owner');
 
-            $oProjectsStatusHistory = $this->loadData('projects_status_history');
+                $oProject = $this->loadData('projects');
 
-            $oProjectsStatusHistory->addStatus(-2, \projects_status::A_TRAITER, $oProject->id_project);
+                $oProject->id_company                           = $oCompanies->id_company;
+                $oProject->amount                               = str_replace(array(',', ' '), array('.', ''), $_POST['montant']);
+                $oProject->ca_declara_client                    = 0;
+                $oProject->resultat_exploitation_declara_client = 0;
+                $oProject->fonds_propres_declara_client         = 0;
+                $oProject->comments                             = $_POST['commentaires'];
+                $oProject->period                               = $_POST['duree'];
+                $oProject->create();
 
-            header('Location:' . $this->lurl . '/espace_emprunteur/projets');
-            die;
+                $oProjectsStatusHistory = $this->loadData('projects_status_history');
+                $oProjectsStatusHistory->addStatus(-2, \projects_status::A_TRAITER, $oProject->id_project);
+
+                unset($_SESSION['forms']['nouvelle-demande']['errors']);
+
+                header('Location:' . $this->lurl . '/espace_emprunteur/projets');
+                die;
+            }
         }
     }
 
