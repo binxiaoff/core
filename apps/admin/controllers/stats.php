@@ -807,7 +807,7 @@ class statsController extends bootstrap
 
                 $this->clients->get($e['id_client'], 'id_client');
                 $codeComNaissance = $this->clients->insee_birth == '' ? '00000' : $this->clients->insee_birth;
-                $depNaiss = substr($codeComNaissance, 0, 2) !== '97' ? substr($codeComNaissance, 0, 2) : substr($codeComNaissance, 0, 3);
+                $depNaiss = substr($codeComNaissance, 0, 2);
             } // fin particulier
 
             $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($e['prenom']))), 0, 1);
@@ -897,7 +897,7 @@ class statsController extends bootstrap
               FROM lenders_accounts la
                 INNER JOIN clients c ON (la.id_client_owner = c.id_client)
                 LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
-              WHERE YEAR(e.date_echeance_reel) = 2015
+              WHERE YEAR(e.date_echeance_reel) = ' . $annee . '
                 AND e.status = 1
                 AND e.status_ra = 0
               GROUP BY c.id_client';
@@ -958,7 +958,7 @@ class statsController extends bootstrap
               FROM lenders_accounts la
                 INNER JOIN clients c ON (la.id_client_owner = c.id_client)
                 LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
-              WHERE YEAR(e.date_echeance_reel) = 2015
+              WHERE YEAR(e.date_echeance_reel) = ' . $annee . '
                 AND e.status = 1
               GROUP BY c.id_client';
         $resultat = $this->bdd->query($sql);
@@ -990,7 +990,7 @@ class statsController extends bootstrap
                 INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
               WHERE ps.status = 80
               GROUP BY psh.id_project
-              HAVING YEAR(first_added) = 2015
+              HAVING YEAR(first_added) = ' . $annee . '
             ) p ON p.id_project = lo.id_project
             INNER JOIN lenders_accounts la ON la.id_lender_account = lo.id_lender
             INNER JOIN clients c ON la.id_client_owner = c.id_client
@@ -1026,9 +1026,10 @@ class statsController extends bootstrap
         FROM lenders_accounts la
           INNER JOIN clients c ON (la.id_client_owner = c.id_client)
           LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
-        WHERE YEAR(e.date_echeance_reel) = 2015
+        WHERE YEAR(e.date_echeance_reel) = ' . $annee . '
           AND e.status = 1
           AND e.status_ra = 0
+          AND c.type = 1
           AND IFNULL(
                   (
                     SELECT lih.resident_etranger
