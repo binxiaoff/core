@@ -1,7 +1,7 @@
 <?php $iLastAnnualAccountsId = end(array_keys($this->aBalanceSheets)); ?>
 <div class="tab_title" id="title_etape4_2">Etape 4.2 - Bilans</div>
 <div class="tab_content" id="etape4_2">
-    <form action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post">
+    <form id="dossier_etape4_2" action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post" onsubmit="return valid_etape4_2(<?= $this->projects->id_project ?>);">
         <table class="tablesorter annual-accounts" style="text-align:center;">
             <thead>
                 <tr>
@@ -2194,6 +2194,7 @@
                 </tr>
             </tbody>
         </table>
+        <div id="valid_etape4_2" class="valid_etape"><br/>Données sauvegardées</div>
         <div class="btnDroite">
             <input type="submit" class="btn_link" value="Sauvegarder">
         </div>

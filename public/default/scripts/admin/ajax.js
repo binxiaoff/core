@@ -627,27 +627,26 @@ function valid_etape3(id_project) {
 }
 
 function valid_etape4_1(id_project) {
-    var val = 'id_project=' + id_project + '&etape=4_1&' + $('#dossier_etape4_1').serialize();
+    var val = 'id_project=' + id_project + '&etape=4.1&' + $('#dossier_etape4_1').serialize();
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
         $("#valid_etape4_1").slideDown();
 
         setTimeout(function () {
             $("#valid_etape4_1").slideUp();
         }, 3000);
-
     });
 }
 
-function valid_etape4_3(id_project) {
-    var val = 'id_project=' + id_project + '&etape=4_3&' + $('#dossier_etape4_3').serialize();
-
+function valid_etape4_2(id_project) {
+    var val = 'id_project=' + id_project + '&etape=4.2&' + $('#dossier_etape4_2').serialize();
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
-        $("#valid_etape4_3").slideDown();
+        $("#valid_etape4_2").slideDown();
 
         setTimeout(function () {
-            $("#valid_etape4_3").slideUp();
+            $("#valid_etape4_2").slideUp();
         }, 3000);
     });
+    return false;
 }
 
 function valid_etape6(id_project) {

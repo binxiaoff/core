@@ -162,14 +162,14 @@ class dossiersController extends bootstrap
             $this->aBalanceCodes        = $this->companies_balance_type->getAllByCode();
 
             if (empty($this->projects->id_dernier_bilan)) {
-                $this->lbilans = $this->companies_bilans->select('id_company = "' . $this->companies->id_company . '"', 'cloture_exercice_fiscal DESC', 0, 3);
+                $this->lbilans = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC', 0, 3);
 
                 if (false === empty($this->lbilans)) {
                     $this->projects->id_dernier_bilan = $this->lbilans[0]['id_bilan'];
                     $this->projects->update();
                 }
             } else {
-                $this->lbilans = $this->companies_bilans->select('id_company = "' . $this->companies->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->projects->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
+                $this->lbilans = $this->companies_bilans->select('id_company = ' . $this->companies->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->projects->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
             }
 
             if (empty($this->lbilans)) {
