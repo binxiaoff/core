@@ -125,11 +125,11 @@ if (isset($_SESSION['freeow'])) {
                 <td><input type="text" name="email_facture" id="email_facture" class="input_large" value="<?= $this->companies->email_facture ?>"/></td>
 
                 <th></th>
-                <td><input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp2" name="generer_mdp2" value="Générer mdp" class="btn" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/><span style="margin-left:5px;color:green; display:none;" class="reponse" >mdp généré</span></td>
+                <td></td>
             </tr>
             <tr>
                 <th></th>
-                <td><input style="font-size: 11px; height: 25px;" type="button" id="initialiser_espace_emprunteur" name="initialiser_espace_emprunteur" value="Initialiser Espace Emprunteur" class="btn" onclick="send_email_borrower_area('<?= $this->clients->id_client ?>', 'initialize')"/></td>
+                <td><input style="font-size: 11px; height: 25px;" type="button" id="initialiser_espace_emprunteur" name="initialiser_espace_emprunteur" value="Reinitialiser Espace Emprunteur" class="btn" onclick="send_email_borrower_area('<?= $this->clients->id_client ?>', 'initialize')"/></td>
                 <?php if (empty($this->clients->secrete_question) && empty($this->clients->secrete_reponse)): ?>
                 <td colspan="2"><input style="font-size: 11px; height: 25px;" type="button" id="ouvrir_espace_emprunteur" name="ouvrir_espace_emprunteur" value="Envoyer Email Ouverture Espace Emprunteur" class="btn" onclick="send_email_borrower_area('<?= $this->clients->id_client ?>', 'open')"/></td>
                 <?php endif ?>
