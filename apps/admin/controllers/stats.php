@@ -964,6 +964,13 @@ class statsController extends bootstrap
         $resultat = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($resultat)) {
+            // cbéné
+            $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($record[1]))), 0, 1);
+            $nom       = $this->ficelle->stripAccents(utf8_decode(trim($record[2])));
+            $id_client = $record[0];
+            $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+            $cbene     = substr($motif, 0, 10);
+
             // Capitaux
             $csv .= "1;";
             $csv .= $cbene . ";";
