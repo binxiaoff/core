@@ -114,11 +114,6 @@ class thickboxController extends bootstrap
         }
     }
 
-    public function _pop_up_upload_pouvoir()
-    {
-        //Recuperation des element de traductions
-        $this->lng['emprunteur-projects'] = $this->ln->selectFront('emprunteur-projects', $this->language, $this->App);
-    }
 
     public function _pop_up_fast_pret()
     {
