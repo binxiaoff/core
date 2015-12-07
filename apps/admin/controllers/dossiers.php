@@ -74,7 +74,7 @@ class dossiersController extends bootstrap
         $this->current_projects_status         = $this->loadData('projects_status');
         $this->projects_status_history         = $this->loadData('projects_status_history');
         $this->current_projects_status_history = $this->loadData('projects_status_history');
-        $this->projects_last_status_history    = $this->loadData('projects_status_history');
+        $this->projects_last_status_history    = $this->loadData('projects_last_status_history');
         $this->loans                           = $this->loadData('loans');
         $this->projects_pouvoir                = $this->loadData('projects_pouvoir');
         $this->lenders_accounts                = $this->loadData('lenders_accounts');
