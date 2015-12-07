@@ -8,6 +8,10 @@
 </script>
 <div class="tab_title" id="title_etape4_2">Etape 4.2 - Bilans</div>
 <div class="tab_content" id="etape4_2">
+    <form action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post">
+        <input type="hidden" name="add_annual_accounts" value="1"/>
+        <input type="submit" class="btn_link" value="Ajouter un bilan" style="float:right"/>
+    </form>
     <form id="last_annual_accounts_form" action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post">
         <h2>Dernier bilan</h2>
         <select id="last_annual_accounts" name="last_annual_accounts">
@@ -926,9 +930,9 @@
             <thead>
                 <tr>
                     <th colspan="2">Passif</th>
-                    <?php foreach ($this->aAnnualAccountsDates as $iIndex => $aAnnualAccountsDate): ?>
-                        <th width="200"><?= $aAnnualAccountsDate['start']->format('d/m/Y') ?> au <?= $aAnnualAccountsDate['end']->format('d/m/Y') ?></th>
-                        <?php if ($iIndex != $iLastAnnualAccountsId) { ?><th width="50"></th><?php } ?>
+                    <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
+                        <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
+                        <?php if ($aAnnualAccounts['id_bilan'] != $iLastAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                     <?php endforeach; ?>
                 </tr>
             </thead>
@@ -1407,9 +1411,9 @@
             <thead>
                 <tr>
                     <th colspan="2">Autres infos</th>
-                    <?php foreach ($this->aAnnualAccountsDates as $iIndex => $aAnnualAccountsDate): ?>
-                        <th width="200"><?= $aAnnualAccountsDate['start']->format('d/m/Y') ?> au <?= $aAnnualAccountsDate['end']->format('d/m/Y') ?></th>
-                        <?php if ($iIndex != $iLastAnnualAccountsId) { ?><th width="50"></th><?php } ?>
+                    <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
+                        <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
+                        <?php if ($aAnnualAccounts['id_bilan'] != $iLastAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                     <?php endforeach; ?>
                 </tr>
             </thead>
@@ -1561,9 +1565,9 @@
             <thead>
                 <tr>
                     <th colspan="2">Compte de résultat</th>
-                    <?php foreach ($this->aAnnualAccountsDates as $iIndex => $aAnnualAccountsDate): ?>
-                        <th width="200"><?= $aAnnualAccountsDate['start']->format('d/m/Y') ?> au <?= $aAnnualAccountsDate['end']->format('d/m/Y') ?></th>
-                        <?php if ($iIndex != $iLastAnnualAccountsId) { ?><th width="50"></th><?php } ?>
+                    <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
+                        <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
+                        <?php if ($aAnnualAccounts['id_bilan'] != $iLastAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                     <?php endforeach; ?>
                 </tr>
             </thead>

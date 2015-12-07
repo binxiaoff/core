@@ -240,6 +240,29 @@ class dossiersController extends bootstrap
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
+            } elseif (isset($_POST['add_annual_accounts'])) {
+                $aLastAnnualAccounts                                 = current($this->aAllAnnualAccounts);
+                $oClosingDate = new \DateTime($aLastAnnualAccounts['cloture_exercice_fiscal']);
+                $this->companies_bilans->id_company                  = $this->projects->id_company;
+                $this->companies_bilans->cloture_exercice_fiscal     = $oClosingDate->add(new \DateInterval('P12M'))->format('Y-m-d');
+                $this->companies_bilans->duree_exercice_fiscal       = 12;
+                $this->companies_bilans->ca                          = 0;
+                $this->companies_bilans->resultat_brute_exploitation = 0;
+                $this->companies_bilans->resultat_exploitation       = 0;
+                $this->companies_bilans->investissements             = 0;
+                $this->companies_bilans->create();
+
+                $this->companies_actif_passif->id_bilan = $this->companies_bilans->id_bilan;
+                $this->companies_actif_passif->create();
+
+                $this->companies_balance->id_bilan = $this->companies_bilans->id_bilan;
+                $this->companies_balance->create();
+
+                $this->projects->id_dernier_bilan = $this->companies_bilans->id_bilan;
+                $this->projects->update();
+
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                die;
             } elseif (isset($this->params[1]) && $this->params[1] == 'altares') {
                 if (false === empty($this->companies->siren)) {
                     $oAltares = new Altares($this->bdd);

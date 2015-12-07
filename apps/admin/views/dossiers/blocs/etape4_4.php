@@ -13,7 +13,7 @@
                 </thead>
                 <tbody>
                 <tr>
-                    <td>Chiffe d'affaires</td>
+                    <td>Chiffre d'affaires</td>
                     <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
                         <td class="grisfonceBG"><?= empty($aAnnualAccounts['ca']) ? '-' : $this->ficelle->formatNumber($aAnnualAccounts['ca'], 0) . ' €' ?></td>
                     <?php endforeach; ?>
