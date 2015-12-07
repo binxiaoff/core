@@ -4902,7 +4902,6 @@ class cronController extends bootstrap
                             'url'                    => $this->lurl,
                             'prenom_e'               => utf8_decode($this->emprunteur->prenom),
                             'taux_moyen'             => $taux_moyen,
-                            'link_compte_emprunteur' => $this->lurl . '/synthese_emprunteur',
                             'temps_restant'          => $tempsRest,
                             'projet'                 => $p['title'],
                             'lien_fb'                => $lien_fb,
