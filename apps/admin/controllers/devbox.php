@@ -1495,6 +1495,7 @@ class devboxController extends bootstrap
 
         while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
             $aRow = array_map('trim', $aRow);
+            $aRow = array_map(array($oClient->bdd, 'escape_string'), $aRow);
 
             preg_match('/^\d+/s', $aRow[0], $matches);
             if (false === isset($matches[0])) {
@@ -1511,6 +1512,7 @@ class devboxController extends bootstrap
         }
 
         fclose($rHandle);
+        echo 'done';
     }
 
     public function _importFiscalCity()
@@ -1531,9 +1533,8 @@ class devboxController extends bootstrap
 
         while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
             $aRow = array_map('trim', $aRow);
-            if ('99' === substr($aRow[2], 0, 2)) {
-                continue;
-            }
+            $aRow = array_map(array($oClient->bdd, 'escape_string'), $aRow);
+
             preg_match('/^\d+/s', $aRow[0], $matches);
             if (false === isset($matches[0])) {
                 continue;
@@ -1541,10 +1542,14 @@ class devboxController extends bootstrap
             $iClientId = (int) $matches[0];
 
             if (empty($aRow[1])) { // company
+                if ('99' === substr($aRow[2], 0, 2)) {
+                    continue;
+                }
                 $sql = "UPDATE companies SET zip = '{$aRow[2]}', city = '{$aRow[3]}' WHERE id_client_owner = {$iClientId}";
             } else {
                 $sFieldPostCode = 'cp';
-                $sFieldCity = 'ville';
+                $sFieldCity     = 'ville';
+                $sFieldCountry  = 'id_pays';
 
                 $sql = "SELECT meme_adresse_fiscal FROM clients_adresses WHERE id_client = {$iClientId}";
                 $oQuery = $oClient->bdd->query($sql);
@@ -1553,14 +1558,33 @@ class devboxController extends bootstrap
                 if($aClient[meme_adresse_fiscal] === '0') {
                     $sFieldPostCode = 'cp_fiscal';
                     $sFieldCity     = 'ville_fiscal';
+                    $sFieldCountry  = 'id_pays_fiscal';
                 }
 
-                $sql = "UPDATE clients_adresses SET $sFieldPostCode = '{$aRow[2]}', $sFieldCity = '{$aRow[3]}' WHERE id_client = {$iClientId}";
+
+                if ('99' === substr($aRow[2], 0, 2)) {
+                    $sql = "SELECT id_pays_fiscal FROM clients_adresses WHERE id_client = {$iClientId}";
+                    $oQuery = $oClient->bdd->query($sql);
+                    $aClient = $this->bdd->fetch_array($oQuery);
+
+                    if(isset($aClient[id_pays_fiscal]) && false === empty($aClient[id_pays_fiscal]) &&  $aClient[id_pays_fiscal] <= 1) {
+                        $sql = "SELECT p.id_pays FROM pays_v2 p INNER JOIN insee_pays ip ON ip.CODEISO2 = p.iso WHERE ip.COG = {$aRow[2]}";
+                        $oQuery = $oClient->bdd->query($sql);
+                        $aClient = $this->bdd->fetch_array($oQuery);
+
+                        if(isset($aClient[id_pays]) && false === empty($aClient[id_pays])) {
+                            $sql = "UPDATE clients_adresses SET $sFieldCountry = '{$aClient[id_pays]}' WHERE id_client = {$iClientId}";
+                        }
+                    }
+                } else {
+                    $sql = "UPDATE clients_adresses SET $sFieldPostCode = '{$aRow[2]}', $sFieldCity = '{$aRow[3]}' WHERE id_client = {$iClientId}";
+                }
             }
             $oClient->bdd->query($sql);
             unset($aRow);
         }
 
         fclose($rHandle);
+        echo 'done';
     }
 }
