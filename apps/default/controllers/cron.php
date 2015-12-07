@@ -2893,53 +2893,35 @@ class cronController extends bootstrap
     {
         if (true === $this->startCron('etat_quotidien', 10)) {
 
-            $jour = date('d');
+            if (isset($this->params[0])) {
+                $iTimeStamp = strtotime($this->params[0]);
+                if(false === $iTimeStamp) {
+                    $this->stopCron();
+                    return;
+                }
+            } else {
+                $iTimeStamp = time();
+            }
+
+            $jour = date('d', $iTimeStamp);
 
             // si on veut mettre a jour une date on met le jour ici mais attention ca va sauvegarder enbdd et sur l'etat quotidien fait ce matin a 1h du mat
             if ($jour == 1) {
                 // On recup le nombre de jour dans le mois
-                $mois = mktime(0, 0, 0, date('m') - 1, 1, date('Y'));
-
-                //$mois = mktime( 0, 0, 0, 9, $num,date('Y'));
-                //$jour = $num;
-
-                $nbJours = date("t", $mois);
-
-                $leMois = date('m', $mois);
-                $lannee = date('Y', $mois);
-                $leJour = $nbJours;
-
-                // affiche les données avant cette date
-                $InfeA = mktime(0, 0, 0, date('m'), 1, date('Y'));
-                //$InfeA = mktime( 0, 0, 0, 9, $num,date('Y'));
-
-                $lanneeLemois = $lannee . '-' . $leMois;
-
-                // affichage de la date du fichier
-                $laDate = $jour . '-' . date('m') . '-' . date('Y');
-                //$laDate = $jour.'-09-'.$lannee;
-
-                $lemoisLannee2 = $leMois . '/' . $lannee;
+                $mois = mktime(0, 0, 0, date('m', $iTimeStamp) - 1, 1, date('Y', $iTimeStamp));
             } else {
                 // On recup le nombre de jour dans le mois
-                $mois    = mktime(0, 0, 0, date('m'), 1, date('Y'));
-                $nbJours = date("t", $mois);
-
-                $leMois = date('m');
-                $lannee = date('Y');
-                $leJour = $nbJours;
-
-                $InfeA = mktime(0, 0, 0, date('m'), date('d'), date('Y'));
-
-                // pour regeneration à la mano
-                //$InfeA = mktime( 0, 0, 0, 07, 26,2015);
-
-                $lanneeLemois = date('Y-m');
-
-                $laDate = date('d-m-Y');
-
-                $lemoisLannee2 = date('m/Y');
+                $mois = mktime(0, 0, 0, date('m', $iTimeStamp), 1, date('Y', $iTimeStamp));
             }
+
+            $nbJours = date("t", $mois);
+            $leMois  = date('m', $mois);
+            $lannee  = date('Y', $mois);
+            //$leJour = $nbJours;
+            $InfeA         = mktime(0, 0, 0, date('m', $iTimeStamp), date('d', $iTimeStamp), date('Y', $iTimeStamp));
+            $lanneeLemois  = date('Y-m', $mois);
+            $laDate        = date('d-m-Y', $iTimeStamp);
+            $lemoisLannee2 = date('m/Y', $mois);
 
             // chargement des datas
             $transac                = $this->loadData('transactions');
@@ -3936,14 +3918,13 @@ class cronController extends bootstrap
                 echo($tableau);
             }
             // si on met un param on peut regarder sans enregister de fichier ou d'envoie de mail
-            if (isset($this->params[0])) {
+            if (isset($this->params[0]) && false === strtotime($this->params[0])
+            || isset($this->params[1])) {
                 $this->stopCron();
                 die;
             }
 
-            $filename = 'Unilend_etat_' . date('Ymd');
-            //$filename = 'Unilend_etat_'.$ladatedetest;
-            //$filename = 'Unilend_etat_20150726';
+            $filename = 'Unilend_etat_' . date('Ymd', $iTimeStamp);
 
             if ($this->Config['env'] == 'prod') {
                 $connection = ssh2_connect('ssh.reagi.com', 22);
