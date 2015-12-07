@@ -238,9 +238,7 @@ class espace_emprunteurController extends Bootstrap
 
     public function _operations()
     {
-        $this->aClientsProjects = $this->projects->select('id_company = ' . $this->companies->id_company);
-
-        $this->documents();
+        $this->aClientsProjects = $this->getProjectsPostFunding();
 
         $oDateTimeStart              = new \datetime('NOW - 1 month');
         $this->sDisplayDateTimeStart = $oDateTimeStart->format('d/m/Y');
@@ -248,6 +246,7 @@ class espace_emprunteurController extends Bootstrap
         $oDateTimeEnd              = new \datetime('NOW');
         $this->sDisplayDateTimeEnd = $oDateTimeEnd->format('d/m/Y');
 
+        $this->documents();
 
     }
 
@@ -329,6 +328,8 @@ class espace_emprunteurController extends Bootstrap
 
         if (isset($_POST['valider_demande_projet'])) {
 
+            unset($_SESSION['forms']['nouvelle-demande']);
+
             if (empty($_POST['montant'])) {
                 $_SESSION['forms']['nouvelle-demande']['errors']['montant'] = true;
             }
@@ -339,7 +340,7 @@ class espace_emprunteurController extends Bootstrap
                 $_SESSION['forms']['nouvelle-demande']['errors']['commentaires'] = true;
             }
 
-            if (empty ($_SESSION['forms']['nouvelle-demande']['errors'])) {
+            if (empty($_SESSION['forms']['nouvelle-demande']['errors'])) {
 
                 $oClients = $this->loadData('clients');
                 $oClients->get($_SESSION['client']['id_client']);
@@ -361,8 +362,6 @@ class espace_emprunteurController extends Bootstrap
                 $oProjectsStatusHistory = $this->loadData('projects_status_history');
                 $oProjectsStatusHistory->addStatus(-2, \projects_status::A_TRAITER, $oProject->id_project);
 
-                unset($_SESSION['forms']['nouvelle-demande']['errors']);
-
                 header('Location:' . $this->lurl . '/espace_emprunteur/projets');
                 die;
             }
@@ -371,15 +370,16 @@ class espace_emprunteurController extends Bootstrap
 
     private function getProjectsPreFunding()
     {
-        $aStatusPreFunding = array(\projects_status::REVUE_ANALYSTE,
-            \projects_status::COMITE,
-            \projects_status::REJET_ANALYSTE,
-            \projects_status::REJET_COMITE,
-            \projects_status::REJETE,
-            \projects_status::PREP_FUNDING,
+        $aStatusPreFunding = array(
             \projects_status::A_FUNDER,
             \projects_status::A_TRAITER,
-            \projects_status::EN_ATTENTE_PIECES
+            \projects_status::COMITE,
+            \projects_status::EN_ATTENTE_PIECES,
+            \projects_status::PREP_FUNDING,
+            \projects_status::REJETE,
+            \projects_status::REJET_ANALYSTE,
+            \projects_status::REJET_COMITE,
+            \projects_status::REVUE_ANALYSTE
         );
 
         $aProjectsPreFunding = $this->companies->getProjectsForCompany($this->companies->id_company, $aStatusPreFunding);
@@ -428,12 +428,14 @@ class espace_emprunteurController extends Bootstrap
 
     private function getProjectsPostFunding()
     {
-        $aStatusPostFunding = array(\projects_status::REMBOURSE,
-            \projects_status::REMBOURSEMENT,
+        $aStatusPostFunding = array(
+            \projects_status::DEFAUT,
             \projects_status::PROBLEME,
             \projects_status::RECOUVREMENT,
-            \projects_status::DEFAUT,
-            \projects_status::REMBOURSEMENT_ANTICIPE);
+            \projects_status::REMBOURSE,
+            \projects_status::REMBOURSEMENT,
+            \projects_status::REMBOURSEMENT_ANTICIPE
+        );
 
 
         $aProjectsPostFunding   = $this->companies->getProjectsForCompany($this->companies->id_company, $aStatusPostFunding);
@@ -635,6 +637,20 @@ class espace_emprunteurController extends Bootstrap
         $oPdf->WritePdf($sPath . $sNamePdfClient, 'operations');
         $oPdf->ReadPdf($sPath . $sNamePdfClient, $sNamePdfClient);
 
+    }
+
+    public function _faq()
+    {
+
+        $this->tree = $this->loadData('tree');
+        $this->tree->get(array('id_tree' => '441', 'id_langue' => $this->language));
+
+        $aContent = $this->tree_elements->select('id_tree = "441" AND id_langue = "' . $this->language . '"');
+
+        foreach ($aContent as $aElement) {
+            $this->elements->get($aElement['id_element']);
+            $this->content[ $this->elements->slug ] = $aElement['value'];
+        }
     }
 
 
