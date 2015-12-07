@@ -889,7 +889,7 @@
                     $iPreviousTotal = null;
 
                     foreach ($this->aBalanceSheets as $aBalanceSheet) {
-                        $iTotal = $this->sumBalances(array('AA', 'AB', 'AD', 'AF', 'AH', 'AJ', 'AL', 'AN', 'AP', 'AR', 'AT', 'AV', 'AX', 'CS', 'CU', 'BB', 'BD', 'BF', 'BH', 'BJ', 'BL', 'BN', 'BP', 'BR', 'BT', 'BV', 'BX', 'BZ', 'CB', 'CF', 'CD', 'CH', 'CJ', 'CW', 'CM', 'CN'), $aBalanceSheet);
+                        $iTotal = $this->sumBalances(array('AA', 'AB', 'AD', 'AF', 'AH', 'AJ', 'AL', 'AN', 'AP', 'AR', 'AT', 'AV', 'AX', 'CS', 'CU', 'BB', 'BD', 'BF', 'BH', 'BL', 'BN', 'BP', 'BR', 'BT', 'BV', 'BX', 'BZ', 'CB', 'CF', 'CD', 'CH', 'CW', 'CM', 'CN'), $aBalanceSheet);
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
@@ -1370,7 +1370,7 @@
                     $iPreviousTotal = null;
 
                     foreach ($this->aBalanceSheets as $aBalanceSheet) {
-                        $iTotal = $this->sumBalances(array('DA', 'DL', 'DO', 'BK', 'CK', 'DR', 'DS', 'DT', 'DU', 'DV', 'DW', 'DX', 'DY', 'DZ', 'EA', 'EB', 'ED'), $aBalanceSheet);
+                        $iTotal = $this->sumBalances(array('DL', 'DO', 'BK', 'CK', 'DR', 'DS', 'DT', 'DU', 'DV', 'DW', 'DX', 'DY', 'DZ', 'EA', 'EB', 'ED'), $aBalanceSheet);
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
