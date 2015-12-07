@@ -1,14 +1,30 @@
 <?php $iLastAnnualAccountsId = end(array_keys($this->aBalanceSheets)); ?>
+<script type="text/javascript">
+    $(function() {
+        $('#last_annual_accounts').change(function() {
+            $('#last_annual_accounts_form').submit();
+        });
+    })
+</script>
 <div class="tab_title" id="title_etape4_2">Etape 4.2 - Bilans</div>
 <div class="tab_content" id="etape4_2">
+    <form id="last_annual_accounts_form" action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post">
+        <h2>Dernier bilan</h2>
+        <select id="last_annual_accounts" name="last_annual_accounts">
+        <?php foreach ($this->aAllAnnualAccounts as $aAnnualAccounts): ?>
+            <option value="<?= $aAnnualAccounts['id_bilan'] ?>"<?= $aAnnualAccounts['id_bilan'] == $this->projects->id_dernier_bilan ? ' selected' : '' ?>><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</option>
+        <?php endforeach; ?>
+        </select>
+    </form>
+    <br/>
     <form id="dossier_etape4_2" action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post" onsubmit="return valid_etape4_2(<?= $this->projects->id_project ?>);">
         <table class="tablesorter annual-accounts" style="text-align:center;">
             <thead>
                 <tr>
                     <th colspan="2">Actif</th>
-                    <?php foreach ($this->aAnnualAccountsDates as $iIndex => $aAnnualAccountsDate): ?>
-                        <th width="200"><?= $aAnnualAccountsDate['start']->format('d/m/Y') ?> au <?= $aAnnualAccountsDate['end']->format('d/m/Y') ?></th>
-                        <?php if ($iIndex != $iLastAnnualAccountsId) { ?><th width="50"></th><?php } ?>
+                    <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
+                        <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
+                        <?php if ($aAnnualAccounts['id_bilan'] != $iLastAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                     <?php endforeach; ?>
                 </tr>
             </thead>

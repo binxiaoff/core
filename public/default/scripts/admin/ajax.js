@@ -516,50 +516,44 @@ function create_client(id_project) {
 }
 
 function valid_etape2(id_project) {
-
-    if ($("#same_address_etape2").attr('checked') == true) var same_address_etape2 = 1;
-    else  var same_address_etape2 = 0;
-
-    var enterprise_etape2 = $('input[name=enterprise_etape2]:checked', '#dossier_etape2').val();
-
-    var civilite_etape2 = $('input[name=civilite_etape2]:checked', '#dossier_etape2').val();
-
-    var civilite2_etape2 = $('input[name=civilite2_etape2]:checked', '#dossier_etape2').val();
-
-    var val = {
-        raison_sociale_etape2: $("#raison_sociale_etape2").val(),
-        forme_juridique_etape2: $("#forme_juridique_etape2").val(),
-        capital_social_etape2: $("#capital_social_etape2").val(),
-        creation_date_etape2: $("#creation_date_etape2").val(),
-        address_etape2: $("#address_etape2").val(),
-        ville_etape2: $("#ville_etape2").val(),
-        postal_etape2: $("#postal_etape2").val(),
-        phone_etape2: $("#phone_etape2").val(),
-        same_address_etape2: same_address_etape2,
-        adresse_correspondance_etape2: $("#adresse_correspondance_etape2").val(),
-        city_correspondance_etape2: $("#city_correspondance_etape2").val(),
-        zip_correspondance_etape2: $("#zip_correspondance_etape2").val(),
-        phone_correspondance_etape2: $("#phone_correspondance_etape2").val(),
-        civilite_etape2: civilite_etape2,
-        nom_etape2: $("#nom_etape2").val(),
-        prenom_etape2: $("#prenom_etape2").val(),
-        fonction_etape2: $("#fonction_etape2").val(),
-        email_etape2: $("#email_etape2").val(),
-        phone_new_etape2: $("#phone_new_etape2").val(),
-        civilite2_etape2: civilite2_etape2,
-        nom2_etape2: $("#nom2_etape2").val(),
-        prenom2_etape2: $("#prenom2_etape2").val(),
-        fonction2_etape2: $("#fonction2_etape2").val(),
-        email2_etape2: $("#email2_etape2").val(),
-        phone_new2_etape2: $("#phone_new2_etape2").val(),
-        status_conseil_externe_entreprise_etape2: $("#status_conseil_externe_entreprise_etape2").val(),
-        preciser_conseil_externe_entreprise_etape2: $("#preciser_conseil_externe_entreprise_etape2").val(),
-        enterprise_etape2: enterprise_etape2,
-        id_project: id_project,
-        id_prescripteur: $("#id_prescripteur").val(),
-        has_prescripteur: $('#enterprise3_etape2').attr('checked'),
-        etape: 2
-    }
+    var same_address_etape2 = $("#same_address_etape2").attr('checked') ? 0 : 1,
+        enterprise_etape2 = $('input[name=enterprise_etape2]:checked', '#dossier_etape2').val(),
+        civilite_etape2 = $('input[name=civilite_etape2]:checked', '#dossier_etape2').val(),
+        civilite2_etape2 = $('input[name=civilite2_etape2]:checked', '#dossier_etape2').val(),
+        val = {
+            raison_sociale_etape2:                      $("#raison_sociale_etape2").val(),
+            forme_juridique_etape2:                     $("#forme_juridique_etape2").val(),
+            capital_social_etape2:                      $("#capital_social_etape2").val(),
+            creation_date_etape2:                       $("#creation_date_etape2").val(),
+            address_etape2:                             $("#address_etape2").val(),
+            ville_etape2:                               $("#ville_etape2").val(),
+            postal_etape2:                              $("#postal_etape2").val(),
+            phone_etape2:                               $("#phone_etape2").val(),
+            same_address_etape2:                        same_address_etape2,
+            adresse_correspondance_etape2:              $("#adresse_correspondance_etape2").val(),
+            city_correspondance_etape2:                 $("#city_correspondance_etape2").val(),
+            zip_correspondance_etape2:                  $("#zip_correspondance_etape2").val(),
+            phone_correspondance_etape2:                $("#phone_correspondance_etape2").val(),
+            civilite_etape2:                            civilite_etape2,
+            nom_etape2:                                 $("#nom_etape2").val(),
+            prenom_etape2:                              $("#prenom_etape2").val(),
+            fonction_etape2:                            $("#fonction_etape2").val(),
+            email_etape2:                               $("#email_etape2").val(),
+            phone_new_etape2:                           $("#phone_new_etape2").val(),
+            civilite2_etape2:                           civilite2_etape2,
+            nom2_etape2:                                $("#nom2_etape2").val(),
+            prenom2_etape2:                             $("#prenom2_etape2").val(),
+            fonction2_etape2:                           $("#fonction2_etape2").val(),
+            email2_etape2:                              $("#email2_etape2").val(),
+            phone_new2_etape2:                          $("#phone_new2_etape2").val(),
+            status_conseil_externe_entreprise_etape2:   $("#status_conseil_externe_entreprise_etape2").val(),
+            preciser_conseil_externe_entreprise_etape2: $("#preciser_conseil_externe_entreprise_etape2").val(),
+            enterprise_etape2:                          enterprise_etape2,
+            id_project:                                 id_project,
+            id_prescripteur:                            $("#id_prescripteur").val(),
+            has_prescripteur:                           $('#enterprise3_etape2').attr('checked'),
+            etape:                                      2
+        };
 
     if (false === val.has_prescripteur) {
         $("#civilite_prescripteur").html('');
@@ -568,6 +562,7 @@ function valid_etape2(id_project) {
         $("#email_prescripteur").html('');
         $("#telephone_prescripteur").html('');
     }
+
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
         $("#title").val($("#raison_sociale_etape2").val());
         $("#prenom").val($("#prenom_etape2").val());
@@ -586,37 +581,33 @@ function valid_etape2(id_project) {
             $("#phone").val($("#phone_correspondance_etape2").val());
         }
 
-
         $("#valid_etape2").slideDown();
 
         setTimeout(function () {
             $("#valid_etape2").slideUp();
         }, 3000);
-
     });
 }
 
 function valid_etape3(id_project) {
     var val = {
-        montant_etape3: $("#montant_etape3").val(),
-        duree_etape3: $("#duree_etape3").val(),
-        titre_etape3: $("#titre_etape3").val(),
-        objectif_etape3: $("#objectif_etape3").val(),
+        montant_etape3:      $("#montant_etape3").val(),
+        duree_etape3:        $("#duree_etape3").val(),
+        titre_etape3:        $("#titre_etape3").val(),
+        objectif_etape3:     $("#objectif_etape3").val(),
         presentation_etape3: $("#presentation_etape3").val(),
-        moyen_etape3: $("#moyen_etape3").val(),
-        comments_etape3: $("#comments_etape3").val(),
-        id_project: id_project,
-        etape: 3
-    }
-    $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
+        moyen_etape3:        $("#moyen_etape3").val(),
+        comments_etape3:     $("#comments_etape3").val(),
+        id_project:          id_project,
+        etape:               3
+    };
+
+    $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
         $("#montant").val($("#montant_etape3").val());
         $("#montant_etape1").val($("#montant_etape3").val());
-
         $('#duree option[value="' + $("#duree_etape3").val() + '"]').attr('selected', true);
         $('#duree_etape1 option[value="' + $("#duree_etape3").val() + '"]').attr('selected', true);
-
         $("#title").val($("#titre_etape3").val());
-
         $("#valid_etape3").slideDown();
 
         setTimeout(function () {
@@ -628,7 +619,8 @@ function valid_etape3(id_project) {
 
 function valid_etape4_1(id_project) {
     var val = 'id_project=' + id_project + '&etape=4.1&' + $('#dossier_etape4_1').serialize();
-    $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
+
+    $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
         $("#valid_etape4_1").slideDown();
 
         setTimeout(function () {
@@ -639,7 +631,8 @@ function valid_etape4_1(id_project) {
 
 function valid_etape4_2(id_project) {
     var val = 'id_project=' + id_project + '&etape=4.2&' + $('#dossier_etape4_2').serialize();
-    $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
+
+    $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
         $("#valid_etape4_2").slideDown();
 
         setTimeout(function () {
@@ -651,14 +644,14 @@ function valid_etape4_2(id_project) {
 
 function valid_etape6(id_project) {
     var val = {
-        question1: $("#question1").val(),
-        question2: $("#question2").val(),
-        question3: $("#question3").val(),
+        question1:  $("#question1").val(),
+        question2:  $("#question2").val(),
+        question3:  $("#question3").val(),
         id_project: id_project,
-        etape: 6
+        etape:      6
     };
 
-    $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
+    $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
         $("#valid_etape6").slideDown();
 
         setTimeout(function () {

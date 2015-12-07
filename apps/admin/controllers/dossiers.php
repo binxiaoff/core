@@ -160,6 +160,7 @@ class dossiersController extends bootstrap
             $this->lProjects_comments   = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added ASC', 0, 3);
             $this->lProjects_status     = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
             $this->aBalanceCodes        = $this->companies_balance_type->getAllByCode();
+            $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
 
             if (empty($this->projects->id_dernier_bilan)) {
                 $this->lbilans = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC', 0, 3);
@@ -233,7 +234,13 @@ class dossiersController extends bootstrap
 
             $this->recup_info_remboursement_anticipe($this->projects->id_project);
 
-            if (isset($this->params[1]) && $this->params[1] == 'altares') {
+            if (isset($_POST['last_annual_accounts'])) {
+                $this->projects->id_dernier_bilan = $_POST['last_annual_accounts'];
+                $this->projects->update();
+
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                die;
+            } elseif (isset($this->params[1]) && $this->params[1] == 'altares') {
                 if (false === empty($this->companies->siren)) {
                     $oAltares = new Altares($this->bdd);
                     $oResult  = $oAltares->getEligibility($this->companies->siren);
