@@ -90,11 +90,11 @@
                     <tr>
                         <th width="40"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
                         <th width="160"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
-                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
-                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-date-de-cloture-prevue'] ?></th>
-                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-funding-atteint'] ?></th>
-                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-taux-moyen-a-date'] ?></th>
-                        <th width="90"></th>
+                        <th width="100"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
+                        <th width="120"><?= $this->lng['espace-emprunteur']['table-projets-date-de-cloture-prevue'] ?></th>
+                        <th width="100"><?= $this->lng['espace-emprunteur']['table-projets-funding-atteint'] ?></th>
+                        <th width="100"><?= $this->lng['espace-emprunteur']['table-projets-taux-moyen-a-date'] ?></th>
+                        <th width="100"></th>
                         <th></th>
                     </tr>
                     </thead>
@@ -105,7 +105,7 @@
                             <td><?= $aProject['nature_project'] ?></td>
                             <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> €
                                 <br> <?= $aProject['period'] ?> <?= $this->lng['espace-emprunteur']['mois'] ?></td>
-                            <td><?= str_replace('-', '/', $aProject['date_retrait']) ?></td>
+                            <td><?= $this->dates->formatDateMysqltoFr($aProject['date_retrait']) ?></td>
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['funding-progress']) ?> %</td>
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['AverageIR']) ?> %</td>
                             <td style="white-space: nowrap;">
