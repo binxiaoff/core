@@ -1270,10 +1270,23 @@ class dossiersController extends bootstrap
                                     // pour chaque preteur on fait la somme des loans qu'il a sur le projet pour le mail
                                     $L_loans = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $p['id_lender']);
                                     $nb_loan = 0;
+                                    $rembNet = 0;
                                     $sum_amount = 0;
                                     foreach ($L_loans as $l) {
                                         $sum_amount += $l['amount'];
                                         $nb_loan++;
+
+                                        $lEchea = $this->echeanciers->select('id_loan = ' . $l['id_loan'] . ' AND id_project = ' . $this->projects->id_project . ' AND status = 1');
+                                        foreach ($lEchea as $e) {
+                                            // on fait la somme de tout
+                                            $rembNet += ($e['montant'] / 100) - $e['prelevements_obligatoires'] - $e['retenues_source'] - $e['csg'] - $e['prelevements_sociaux'] - $e['contributions_additionnelles'] - $e['prelevements_solidarite'] - $e['crds'];
+                                        }
+                                    }
+
+                                    //Gestion du pluriel
+                                    $pret_html = "pr&ecirc;t";
+                                    if ($nb_loan > 1) {
+                                        $pret_html = "pr&ecirc;ts";
                                     }
 
                                     // Gestion de l'ajout des nouvelles notifications manquantes
@@ -1326,10 +1339,13 @@ class dossiersController extends bootstrap
                                                 'cab_recouvrement' => $this->cab,
                                                 'nom_entreprise' => $this->companies->name,
                                                 'motif_virement' => $motif,
-                                                'contenu_mail' => $contenu_a_ajouter_mail,
+                                                'saisie_recouvrement' => $contenu_a_ajouter_mail,
+                                                'valeur_bid' => number_format($sum_amount / 100, 2, ',', ' '),
+                                                'nombre_bids' => $nb_loan . ' ' . $pret_html,
+                                                'montant_rembourse' => number_format($rembNet, 2, ',', ' '),
                                                 'lien_fb' => $lien_fb,
                                                 'lien_tw' => $lien_tw);
-
+                                            
                                             // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                                             $liste_attente_mail = $this->loadData('liste_attente_mail');
                                             $liste_attente_mail->type_mail = 'preteur-dossier-recouvrement';
