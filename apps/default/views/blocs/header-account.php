@@ -30,6 +30,11 @@ if ($this->bDisplayLender) {
                 </li>
                 <li><a target="_blank"
                        href="<?= $this->surl ?>/pdf_cgv_preteurs"><?= $this->lng['header']['cgu-preteur'] ?></a></li>
+                <?php if ($this->bIsBorrowerAndLender) : ?>
+                    <li>
+                        <a href="<?= $this->lurl ?>/espace_emprunteur"><?= $this->lng['acceder-emprunteur'] ?></a>
+                    </li>
+                <?php endif; ?>
                 <li><a href="<?= $this->lurl ?>/logout"><?= $this->lng['header']['deconnexion'] ?></a></li>
             </ul>
         </div>
@@ -39,9 +44,20 @@ if ($this->bDisplayLender) {
     ?>
     <div class="logedin-panel right">
         <a href="<?= $this->lurl ?>/espace_emprunteur/identite" class="header_account_name">
-            <strong><?= $this->lng['header']['siren'].$this->oCompanyDisplay->siren ?></strong></a>
-            <strong><?= $this->oCompanyDisplay->name ?></strong>
+            <strong><?= $this->lng['header']['siren'] . $this->oCompanyDisplay->siren ?></strong></a>
+        <strong><?= $this->oCompanyDisplay->name ?></strong>
         <a href="<?= $this->lurl ?>/logout"><?= $this->lng['header']['deconnexion'] ?></a>
+        <?php if ($this->bIsBorrowerAndLender) : ?>
+            <div class="dd">
+                <span class="bullet notext">bullet</span>
+                <ul>
+                    <li>
+                        <a href="<?= $this->lurl ?>/synthese"><?= $this->lng['acceder-preteur'] ?></a>
+                    </li>
+                </ul>
+            </div>
+        <?php endif; ?>
+
     </div><!-- /.login-panel -->
     <?
 }
