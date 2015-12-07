@@ -287,16 +287,12 @@ class bootstrap extends Controller
                         $this->clients_history->create();
 
 
-                        if ($this->bIsBorrowerAndLender) {
-
-
-                        } elseif ($this->bIsLender) {
+                        if ($this->bIsLender) {
                             $this->loginLender();
 
                         } elseif ($this->bIsBorrower) {
                             $this->loginBorrower();
                         }
-
 
                     } else {
                         $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
