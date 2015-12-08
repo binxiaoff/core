@@ -1319,8 +1319,7 @@ class ajaxController extends bootstrap
             $nbProjetValid = 0;
             foreach ($lProjects as $p) {
                 $this->projects_status->getLastStatutByMonth($p['id_project'], $month, $year);
-                if ($this->projects_status->status > 30) // a partir de a funder
-                {
+                if ($this->projects_status->status > \projects_status::A_FUNDER) {
                     $nbProjetValid += 1;
                 }
             }
@@ -1385,11 +1384,7 @@ class ajaxController extends bootstrap
 
         if (isset($_POST['id']) && isset($_POST['nom']) && isset($_POST['prenom']) && isset($_POST['email']) && isset($_POST['raison_sociale']) && isset($_POST['id_reception'])) {
             $this->lPreteurs = $this->clients->searchPreteursV2($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale']);
-
-
             $this->id_reception = $_POST['id_reception'];
-
-
         }
     }
 
@@ -1405,14 +1400,9 @@ class ajaxController extends bootstrap
         $this->projects         = $this->loadData('projects');
 
         if (isset($_POST['id']) && isset($_POST['siren']) && isset($_POST['raison_sociale']) && isset($_POST['id_reception'])) {
-            // on recup que les emprunteur
-
-
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', '80,100,110,120', '', $_POST['siren'], $_POST['id'], $_POST['raison_sociale']);
             $iCountProjects = (is_array($this->lProjects)) ? array_shift($this->lProjects) : 0;
             $this->id_reception = $_POST['id_reception'];
-
-
         }
     }
 
@@ -1420,18 +1410,15 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        $preteurs   = $this->loadData('clients');
-        $receptions = $this->loadData('receptions');
-
-        $lenders      = $this->loadData('lenders_accounts');
-        $transactions = $this->loadData('transactions');
-        $wallets      = $this->loadData('wallets_lines');
-        $bank         = $this->loadData('bank_lines');
-
-        $this->notifications = $this->loadData('notifications');
-
-        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications'); // add gestion alertes
-        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif'); // add gestion alertes
+        $preteurs                            = $this->loadData('clients');
+        $receptions                          = $this->loadData('receptions');
+        $lenders                             = $this->loadData('lenders_accounts');
+        $transactions                        = $this->loadData('transactions');
+        $wallets                             = $this->loadData('wallets_lines');
+        $bank                                = $this->loadData('bank_lines');
+        $this->notifications                 = $this->loadData('notifications');
+        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
 
 
         if (isset($_POST['id_client']) && isset($_POST['id_reception']) && $preteurs->get($_POST['id_client'], 'id_client') && $receptions->get($_POST['id_reception'], 'id_reception') && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND id_virement') == false && isset($_SESSION['controlDOubleAttr']) && $_SESSION['controlDOubleAttr'] == md5($_SESSION['user']['id_user'])) {

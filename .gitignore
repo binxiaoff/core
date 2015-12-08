@@ -36,7 +36,6 @@ route.php
 # Composer
 /vendor/
 
-
 # Exceptions
 !public/default/styles/default/*
 !public/default/scripts/default/*
