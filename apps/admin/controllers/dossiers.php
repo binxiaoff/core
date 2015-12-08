@@ -893,48 +893,44 @@ class dossiersController extends bootstrap
                                         }
                                     }
 
-                                    // Ajout d'une notification
-                                    $this->notifications->type = 9; // type recouvrement
-                                    $this->notifications->id_lender = $p['id_lender'];
-                                    $this->notifications->id_project = $p['id_project'];
-                                    $this->notifications->amount = $sum_amount;
-                                    $this->notifications->id_bid = 0; // On peut avoir plusieurs bid donc inutile
-                                    $this->notifications->id_notification = $this->notifications->create();
+                                    $this->notifications->type       = 9; // type recouvrement
+                                    $this->notifications->id_lender  = $p['id_lender'];
+                                    $this->notifications->id_project = $this->projects->id_project;
+                                    $this->notifications->amount     = $sum_amount;
+                                    $this->notifications->id_bid     = 0; // On peut avoir plusieurs bid donc inutile
+                                    $this->notifications->create();
 
-                                    //////// GESTION ALERTES //////////
-                                    $this->clients_gestion_mails_notif->id_client = $lender->id_client_owner;
-                                    $this->clients_gestion_mails_notif->id_notif = 9; // type Notifications de retards & régularisations de retards
+                                    $this->clients_gestion_mails_notif->id_client       = $lender->id_client_owner;
+                                    $this->clients_gestion_mails_notif->id_notif        = 9; // type Notifications de retards & régularisations de retards
                                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                                    $this->clients_gestion_mails_notif->id_transaction = 0;
-                                    $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
-                                    $this->clients_gestion_mails_notif->id_loan = 0; // On peut avoir plusieurs loans donc inutile
-                                    $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
-                                    //////// FIN GESTION ALERTES //////////
+                                    $this->clients_gestion_mails_notif->id_transaction  = 0;
+                                    $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                                    $this->clients_gestion_mails_notif->id_loan         = 0; // On peut avoir plusieurs loans donc inutile
+                                    $this->clients_gestion_mails_notif->create();
+
                                     //si on envoi le mail
                                     if ($mail_a_envoyer == 0) {
                                         // pour chaque preteur on check si le preteur veut recevoir l'email instantané
                                         if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true) {
-
-                                            //////// GESTION ALERTES //////////
                                             $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                                             $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                                             $this->clients_gestion_mails_notif->update();
-                                            //////// FIN GESTION ALERTES //////////
-                                            // Variables du mailing
+
                                             $varMail = array(
-                                                'surl' => $this->surl,
-                                                'url' => $this->furl,
-                                                'prenom_p' => $this->clients->prenom,
-                                                'valeur_bid' => number_format(($sum_amount / 100), 2, ',', ' '),
-                                                'nombre_bids' => $nb_loan,
-                                                'nom_entreprise' => $this->companies->name,
-                                                'montant_rembourse' => number_format($rembNet, 2, ',', ' '),
+                                                'surl'                                    => $this->surl,
+                                                'url'                                     => $this->furl,
+                                                'prenom_p'                                => $this->clients->prenom,
+                                                'valeur_bid'                              => $this->ficelle->formatNumer($sum_amount / 100, 2),
+                                                'nombre_bids'                             => $nb_loan,
+                                                'nom_entreprise'                          => $this->companies->name,
+                                                'montant_rembourse'                       => $this->ficelle->formatNumer($rembNet, 2),
                                                 'date_envoi_email_liquidation_judiciaire' => $date_lj,
-                                                'coordonnees_mandataire' => $mandataire,
-                                                'annee_bdc' => $year_financement,
-                                                'motif_virement' => $motif,
-                                                'lien_fb' => $lien_fb,
-                                                'lien_tw' => $lien_tw);
+                                                'coordonnees_mandataire'                  => $mandataire,
+                                                'annee_bdc'                               => $year_financement,
+                                                'motif_virement'                          => $motif,
+                                                'lien_fb'                                 => $lien_fb,
+                                                'lien_tw'                                 => $lien_tw
+                                            );
 
                                             // physique
                                             if (in_array($this->clients->type, array(1, 3))) {
@@ -965,10 +961,10 @@ class dossiersController extends bootstrap
 
                             $this->companies->get($this->projects->id_company, 'id_company');
 
-                            //on desactive le remboursement automatique (CDC Statut emprunteur)                            
+                            //on desactive le remboursement automatique (CDC Statut emprunteur)
                             $this->projects->remb_auto = 1; // remb auto à non
                             $this->projects->update();
-                            
+
                             // on récupère la variable pour savoir si on envoi le mail au preteur ou non
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_probleme'];
                             $contenu_a_ajouter_mail = $_POST['area_probleme'];
@@ -978,7 +974,7 @@ class dossiersController extends bootstrap
                             $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
                             $projects_status_history_informations->information = $contenu_a_ajouter_mail;
                             $projects_status_history_informations->create();
-                           
+
                             // ENVOI MAIL PRETEUR
                             // FB
                             $this->settings->get('Facebook', 'type');
@@ -1042,8 +1038,6 @@ class dossiersController extends bootstrap
                             $liste_attente_mail->statut = 0; //pas envoyé
                             $liste_attente_mail->create();
 
-                            //$lPreteurs = $this->loans->select('id_project = ' . $this->projects->id_project);
-                            //
                             // On recuprere les lenders ayant des loans sur le projet
                             $lPreteurs = $this->loans->getPreteurs($this->projects->id_project);
 
@@ -1088,23 +1082,21 @@ class dossiersController extends bootstrap
                                         }
                                     }
 
-                                    // Ajout d'une notification
-                                    $this->notifications->type = 9; // type problème
-                                    $this->notifications->id_lender = $p['id_lender'];
-                                    $this->notifications->id_project = $p['id_project'];
-                                    $this->notifications->amount = $sum_amount;
-                                    $this->notifications->id_bid = 0; // on peut avoir plusieurs bids
-                                    $this->notifications->id_notification = $this->notifications->create();
+                                    $this->notifications->type       = 9; // type problème
+                                    $this->notifications->id_lender  = $p['id_lender'];
+                                    $this->notifications->id_project = $this->projects->id_project;
+                                    $this->notifications->amount     = $sum_amount;
+                                    $this->notifications->id_bid     = 0; // on peut avoir plusieurs bids
+                                    $this->notifications->create();
 
-                                    //////// GESTION ALERTES //////////
-                                    $this->clients_gestion_mails_notif->id_client = $this->clients->id_client;
-                                    $this->clients_gestion_mails_notif->id_notif = 9; // type problème
+                                    $this->clients_gestion_mails_notif->id_client       = $this->clients->id_client;
+                                    $this->clients_gestion_mails_notif->id_notif        = 9; // type problème
                                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                                    $this->clients_gestion_mails_notif->id_transaction = 0;
-                                    $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
-                                    $this->clients_gestion_mails_notif->id_loan = 0; // on peut avoir plusieurs loans
-                                    $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
-                                    //////// FIN GESTION ALERTES //////////
+                                    $this->clients_gestion_mails_notif->id_transaction  = 0;
+                                    $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                                    $this->clients_gestion_mails_notif->id_loan         = 0; // on peut avoir plusieurs loans
+                                    $this->clients_gestion_mails_notif->create();
+
                                     //si on envoi le mail
                                     if ($mail_a_envoyer == 0) {
                                         // pour chaque preteur on check si le preteur veut recevoir l'email instantané
@@ -1127,19 +1119,19 @@ class dossiersController extends bootstrap
                                             //**************************************//
                                             //*** ENVOI DU MAIL PROBLEME PRETEUR ***//
                                             //**************************************//
-                                            // Variables du mailing
                                             $varMail = array(
-                                                'surl' => $this->surl,
-                                                'url' => $this->furl,
-                                                'prenom_p' => $this->clients->prenom,
-                                                'valeur_bid' => number_format($sum_amount / 100, 2, ',', ' '),
-                                                'nom_entreprise' => $this->companies->name,
-                                                'montant_rembourse' => number_format($rembNet, 2, ',', ' '),
-                                                'cab_recouvrement' => $this->cab,
-                                                'motif_virement' => $motif,
-                                                'lien_fb' => $lien_fb,
-                                                'lien_tw' => $lien_tw,
-                                                'nombre_bids' => $nb_loan . ' ' . $pret_html);
+                                                'surl'              => $this->surl,
+                                                'url'               => $this->furl,
+                                                'prenom_p'          => $this->clients->prenom,
+                                                'valeur_bid'        => $this->ficelle->formatNumer($sum_amount / 100, 2),
+                                                'nom_entreprise'    => $this->companies->name,
+                                                'montant_rembourse' => $this->ficelle->formatNumer($rembNet, 2),
+                                                'cab_recouvrement'  => $this->cab,
+                                                'motif_virement'    => $motif,
+                                                'lien_fb'           => $lien_fb,
+                                                'lien_tw'           => $lien_tw,
+                                                'nombre_bids'       => $nb_loan . ' ' . $pret_html
+                                            );
 
                                             // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
 
@@ -1221,22 +1213,21 @@ class dossiersController extends bootstrap
                             }
                             $CapitalRestantDu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) > "' . $lastFormatSql . '"', 'capital');
 
-
-                            // Variables du mailing
                             $varMail = array(
-                                'surl' => $this->surl,
-                                'url' => $this->furl,
-                                'civilite_e' => $emprunteur->civilite,
-                                'nom_e' => $emprunteur->nom,
-                                'entreprise' => $this->companies->name,
-                                'date_finance' => $date_financement,
-                                'montant_emprunt' => number_format($this->projects->amount, 0, ',', ' '),
-                                'nb_preteurs' => $nb_preteurs,
-                                '2_mensualites' => number_format(($montant_mensuel * 2), 0, ',', ' '),
-                                'capital_restant_du' => number_format($CapitalRestantDu, 0, ',', ' '),
+                                'surl'                     => $this->surl,
+                                'url'                      => $this->furl,
+                                'civilite_e'               => $emprunteur->civilite,
+                                'nom_e'                    => $emprunteur->nom,
+                                'entreprise'               => $this->companies->name,
+                                'date_finance'             => $date_financement,
+                                'montant_emprunt'          => $this->ficelle->formatNumer($this->projects->amount, 0),
+                                'nb_preteurs'              => $nb_preteurs,
+                                '2_mensualites'            => $this->ficelle->formatNumer($montant_mensuel * 2, 0),
+                                'capital_restant_du'       => $this->ficelle->formatNumer($CapitalRestantDu, 0),
                                 'nom_societe_recouvrement' => $this->cab,
-                                'lien_fb' => $lien_fb,
-                                'lien_tw' => $lien_tw);
+                                'lien_fb'                  => $lien_fb,
+                                'lien_tw'                  => $lien_tw
+                            );
 
                             // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                             $liste_attente_mail = $this->loadData('liste_attente_mail');
@@ -1303,49 +1294,45 @@ class dossiersController extends bootstrap
                                         }
                                     }
 
-                                    // Ajout d'une notification
-                                    $this->notifications->type = 10; // type recouvrement
-                                    $this->notifications->id_lender = $p['id_lender'];
-                                    $this->notifications->id_project = $p['id_project'];
-                                    $this->notifications->amount = $sum_amount;
-                                    $this->notifications->id_bid = 0; // On peut avoir plusieurs bid donc inutile
-                                    $this->notifications->id_notification = $this->notifications->create();
+                                    $this->notifications->type       = 10; // type recouvrement
+                                    $this->notifications->id_lender  = $p['id_lender'];
+                                    $this->notifications->id_project = $this->projects->id_project;
+                                    $this->notifications->amount     = $sum_amount;
+                                    $this->notifications->id_bid     = 0; // On peut avoir plusieurs bid donc inutile
+                                    $this->notifications->create();
 
-                                    //////// GESTION ALERTES //////////
-                                    $this->clients_gestion_mails_notif->id_client = $lender->id_client_owner;
-                                    $this->clients_gestion_mails_notif->id_notif = 9; // type Notifications de retards & régularisations de retards
+                                    $this->clients_gestion_mails_notif->id_client       = $lender->id_client_owner;
+                                    $this->clients_gestion_mails_notif->id_notif        = 9; // type Notifications de retards & régularisations de retards
                                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                                    $this->clients_gestion_mails_notif->id_transaction = 0;
-                                    $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
-                                    $this->clients_gestion_mails_notif->id_loan = 0; // On peut avoir plusieurs loans donc inutile
-                                    $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
-                                    //////// FIN GESTION ALERTES //////////
+                                    $this->clients_gestion_mails_notif->id_transaction  = 0;
+                                    $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                                    $this->clients_gestion_mails_notif->id_loan         = 0; // On peut avoir plusieurs loans donc inutile
+                                    $this->clients_gestion_mails_notif->create();
+
                                     //si on envoi le mail
                                     if ($mail_a_envoyer == 0) {
                                         // pour chaque preteur on check si le preteur veut recevoir l'email instantané
                                         if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true) {
-
-                                            //////// GESTION ALERTES //////////
                                             $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                                             $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                                             $this->clients_gestion_mails_notif->update();
-                                            //////// FIN GESTION ALERTES //////////
-                                            // Variables du mailing
+
                                             $varMail = array(
-                                                'surl' => $this->surl,
-                                                'url' => $this->furl,
-                                                'prenom_p' => $this->clients->prenom,
-                                                'date_probleme' => $DateProbleme,
-                                                'cab_recouvrement' => $this->cab,
-                                                'nom_entreprise' => $this->companies->name,
-                                                'motif_virement' => $motif,
+                                                'surl'                => $this->surl,
+                                                'url'                 => $this->furl,
+                                                'prenom_p'            => $this->clients->prenom,
+                                                'date_probleme'       => $DateProbleme,
+                                                'cab_recouvrement'    => $this->cab,
+                                                'nom_entreprise'      => $this->companies->name,
+                                                'motif_virement'      => $motif,
                                                 'saisie_recouvrement' => $contenu_a_ajouter_mail,
-                                                'valeur_bid' => number_format($sum_amount / 100, 2, ',', ' '),
-                                                'nombre_bids' => $nb_loan . ' ' . $pret_html,
-                                                'montant_rembourse' => number_format($rembNet, 2, ',', ' '),
-                                                'lien_fb' => $lien_fb,
-                                                'lien_tw' => $lien_tw);
-                                            
+                                                'valeur_bid'          => $this->ficelle->formatNumer($sum_amount / 100, 2),
+                                                'nombre_bids'         => $nb_loan . ' ' . $pret_html,
+                                                'montant_rembourse'   => $this->ficelle->formatNumer($rembNet, 2),
+                                                'lien_fb'             => $lien_fb,
+                                                'lien_tw'             => $lien_tw
+                                            );
+
                                             // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                                             $liste_attente_mail = $this->loadData('liste_attente_mail');
                                             $liste_attente_mail->type_mail = 'preteur-dossier-recouvrement';
@@ -1406,7 +1393,7 @@ class dossiersController extends bootstrap
                         elseif ($_POST['status'] == '140') {
                             $this->companies->get($this->projects->id_company, 'id_company');
 
-                            //on desactive le remboursement automatique (CDC Statut emprunteur)                            
+                            //on desactive le remboursement automatique (CDC Statut emprunteur)
                             $this->projects->remb_auto = 1; // remb auto à non
                             $this->projects->update();
 
@@ -1530,28 +1517,23 @@ class dossiersController extends bootstrap
                                         }
                                     }
 
-                                    // Ajout d'une notification
-                                    $this->notifications->type = 9; // type problème
-                                    $this->notifications->id_lender = $p['id_lender'];
-                                    $this->notifications->id_project = $p['id_project'];
-                                    $this->notifications->amount = $sum_amount;
-                                    $this->notifications->id_bid = 0;
-                                    $this->notifications->id_notification = $this->notifications->create();
+                                    $this->notifications->type       = 9; // type problème
+                                    $this->notifications->id_lender  = $p['id_lender'];
+                                    $this->notifications->id_project = $this->projects->id_project;
+                                    $this->notifications->amount     = $sum_amount;
+                                    $this->notifications->id_bid     = 0;
+                                    $this->notifications->create();
 
-
-                                    //////// GESTION ALERTES //////////
-                                    $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
-                                    $this->clients_gestion_mails_notif->id_client = $this->clients->id_client;
-                                    $this->clients_gestion_mails_notif->id_notif = 9; // type problème
+                                    $this->clients_gestion_mails_notif                  = $this->loadData('clients_gestion_mails_notif');
+                                    $this->clients_gestion_mails_notif->id_client       = $this->clients->id_client;
+                                    $this->clients_gestion_mails_notif->id_notif        = 9; // type problème
                                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                                    $this->clients_gestion_mails_notif->id_transaction = 0;
-                                    $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
-                                    $this->clients_gestion_mails_notif->id_loan = 0;
-                                    $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
-                                    //////// FIN GESTION ALERTES //////////
-                                    //si on envoi le mail
-                                    if ($mail_a_envoyer == 0) {
+                                    $this->clients_gestion_mails_notif->id_transaction  = 0;
+                                    $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                                    $this->clients_gestion_mails_notif->id_loan         = 0;
+                                    $this->clients_gestion_mails_notif->create();
 
+                                    if ($mail_a_envoyer == 0) {
                                         // pour chaque preteur on check si le preteur veut recevoir l'email instantané
                                         if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true) {
 
@@ -1567,32 +1549,26 @@ class dossiersController extends bootstrap
                                             $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
                                             $motif = mb_strtoupper($id_client . $lettrePrenom . $nom, 'UTF-8');
 
-
-                                            ////////////////////////////////////////////
                                             //**************************************//
                                             //*** ENVOI DU MAIL PROBLEME PRETEUR ***//
                                             //**************************************//
-                                            // Variables du mailing
                                             $varMail = array(
-                                                'surl' => $this->surl,
-                                                'url' => $this->furl,
-                                                'prenom_p' => $this->clients->prenom,
-                                                'valeur_bid' => number_format($sum_amount / 100, 2, ',', ' '),
-                                                'nom_entreprise' => $this->companies->name,
-                                                'montant_rembourse' => number_format($rembNet, 2, ',', ' '),
-                                                'cab_recouvrement' => $this->cab,
-                                                'motif_virement' => $motif,
-                                                'lien_fb' => $lien_fb,
-                                                'lien_tw' => $lien_tw,
-                                                'nombre_bids' => $nb_loan . ' ' . $pret_html,
-                                                'contenu_mail' => $contenu_a_ajouter_mail);
-
-
+                                                'surl'              => $this->surl,
+                                                'url'               => $this->furl,
+                                                'prenom_p'          => $this->clients->prenom,
+                                                'valeur_bid'        => $this->ficelle->formatNumer($sum_amount / 100, 2),
+                                                'nom_entreprise'    => $this->companies->name,
+                                                'montant_rembourse' => $this->ficelle->formatNumer($rembNet, 2),
+                                                'cab_recouvrement'  => $this->cab,
+                                                'motif_virement'    => $motif,
+                                                'lien_fb'           => $lien_fb,
+                                                'lien_tw'           => $lien_tw,
+                                                'nombre_bids'       => $nb_loan . ' ' . $pret_html,
+                                                'contenu_mail'      => $contenu_a_ajouter_mail
+                                            );
 
                                             // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
-
                                             $liste_attente_mail = $this->loadData('liste_attente_mail');
-
                                             $liste_attente_mail->type_mail = 'preteur-statut-probleme-jx';
                                             $liste_attente_mail->language = $this->language;
                                             $liste_attente_mail->variables = serialize($varMail);
@@ -1604,7 +1580,7 @@ class dossiersController extends bootstrap
                                 }
                             }
                         }
-                        // procedure de sauvegarde 
+                        // procedure de sauvegarde
                         elseif ($_POST['status'] == '150') {
                             // On bloque tous les futures prélèvements
                             $prelevements = $this->loadData('prelevements');
@@ -1679,21 +1655,21 @@ class dossiersController extends bootstrap
                             // recup capital restant du (a partire de la date de jugement)
                             $CapitalRestantDu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) > "' . $date_jugement . '"', 'capital');
 
-                            // Variables du mailing
                             $varMail = array(
-                                'surl' => $this->surl,
-                                'url' => $this->furl,
-                                'civilite_e' => $emprunteur->civilite,
-                                'nom_e' => $emprunteur->nom,
-                                'entreprise' => $this->companies->name,
-                                'date_finance' => $date_financement,
-                                'montant_emprunt' => number_format($this->projects->amount, 2, ',', ' '),
-                                'capital_restant_du' => number_format($CapitalRestantDu, 2, ',', ' '),
-                                'tel_emprunteur' => $tel_emprunteur,
-                                'lien_pouvoir' => $this->furl . '/pdf/pouvoir/' . $emprunteur->hash . '/' . $this->projects->id_project,
-                                'nb_preteurs' => $nb_preteurs,
-                                'lien_fb' => $lien_fb,
-                                'lien_tw' => $lien_tw);
+                                'surl'               => $this->surl,
+                                'url'                => $this->furl,
+                                'civilite_e'         => $emprunteur->civilite,
+                                'nom_e'              => $emprunteur->nom,
+                                'entreprise'         => $this->companies->name,
+                                'date_finance'       => $date_financement,
+                                'montant_emprunt'    => $this->ficelle->formatNumer($this->projects->amount, 2),
+                                'capital_restant_du' => $this->ficelle->formatNumer($CapitalRestantDu, 2),
+                                'tel_emprunteur'     => $tel_emprunteur,
+                                'lien_pouvoir'       => $this->furl . '/pdf/pouvoir/' . $emprunteur->hash . '/' . $this->projects->id_project,
+                                'nb_preteurs'        => $nb_preteurs,
+                                'lien_fb'            => $lien_fb,
+                                'lien_tw'            => $lien_tw
+                            );
 
                             // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                             $liste_attente_mail = $this->loadData('liste_attente_mail');
@@ -1751,45 +1727,41 @@ class dossiersController extends bootstrap
                                         }
                                     }
 
-                                    // Ajout d'une notification
-                                    $this->notifications->type = 9; // probleme (type procedure de sauvegarde)
-                                    $this->notifications->id_lender = $p['id_lender'];
-                                    $this->notifications->id_project = $p['id_project'];
-                                    $this->notifications->amount = $sum_amount;
-                                    $this->notifications->id_bid = 0; // On peut avoir plusieurs bid donc inutile
-                                    $this->notifications->id_notification = $this->notifications->create();
+                                    $this->notifications->type       = 9; // probleme (type procedure de sauvegarde)
+                                    $this->notifications->id_lender  = $p['id_lender'];
+                                    $this->notifications->id_project = $this->projects->id_project;
+                                    $this->notifications->amount     = $sum_amount;
+                                    $this->notifications->id_bid     = 0; // On peut avoir plusieurs bid donc inutile
+                                    $this->notifications->create();
 
-                                    //////// GESTION ALERTES //////////
-                                    $this->clients_gestion_mails_notif->id_client = $lender->id_client_owner;
-                                    $this->clients_gestion_mails_notif->id_notif = 9; // type Notifications de retards & régularisations de retards
+                                    $this->clients_gestion_mails_notif->id_client       = $lender->id_client_owner;
+                                    $this->clients_gestion_mails_notif->id_notif        = 9; // type Notifications de retards & régularisations de retards
                                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                                    $this->clients_gestion_mails_notif->id_transaction = 0;
-                                    $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
-                                    $this->clients_gestion_mails_notif->id_loan = 0; // On peut avoir plusieurs loans donc inutile
-                                    $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                                    $this->clients_gestion_mails_notif->id_transaction  = 0;
+                                    $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                                    $this->clients_gestion_mails_notif->id_loan         = 0; // On peut avoir plusieurs loans donc inutile
+                                    $this->clients_gestion_mails_notif->immediatement   = 1; // on met a jour le statut immediatement
                                     $this->clients_gestion_mails_notif->create();
-                                    //////// FIN GESTION ALERTES //////////
+
                                     //si on envoi le mail
                                     if ($mail_a_envoyer == 0) {
                                         // pour chaque preteur on check si le preteur veut recevoir l'email instantané (mail obligatoire)
-                                        //if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true) {
-                                        // Variables du mailing
                                         $varMail = array(
-                                            'surl' => $this->surl,
-                                            'url' => $this->furl,
-                                            'prenom_p' => $this->clients->prenom,
-                                            'valeur_bid' => number_format(($sum_amount / 100), 2, ',', ' '),
-                                            'nombre_bids' => $nb_loan,
-                                            'nom_entreprise' => $this->companies->name,
-                                            'montant_rembourse' => number_format($rembNet, 2, ',', ' '),
+                                            'surl'                   => $this->surl,
+                                            'url'                    => $this->furl,
+                                            'prenom_p'               => $this->clients->prenom,
+                                            'valeur_bid'             => $this->ficelle->formatNumer($sum_amount / 100, 2),
+                                            'nombre_bids'            => $nb_loan,
+                                            'nom_entreprise'         => $this->companies->name,
+                                            'montant_rembourse'      => $this->ficelle->formatNumer($rembNet, 2),
                                             'saisie_proc_sauvegarde' => $contenu_a_ajouter_mail,
-                                            'annee_bdc' => $year_financement,
+                                            'annee_bdc'              => $year_financement,
                                             'coordonnees_mandataire' => $mandataire,
-                                            'date_jugement_2mois' => $date_jugement_display,
-                                            'motif_virement' => $motif,
-                                            'lien_fb' => $lien_fb,
-                                            'lien_tw' => $lien_tw);
-
+                                            'date_jugement_2mois'    => $date_jugement_display,
+                                            'motif_virement'         => $motif,
+                                            'lien_fb'                => $lien_fb,
+                                            'lien_tw'                => $lien_tw
+                                        );
 
                                         // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                                         $liste_attente_mail = $this->loadData('liste_attente_mail');
@@ -1799,7 +1771,6 @@ class dossiersController extends bootstrap
                                         $liste_attente_mail->to = $this->clients->email;
                                         $liste_attente_mail->statut = 0; //pas envoyé
                                         $liste_attente_mail->create();
-                                        //}
                                     }
                                 }
                             }
@@ -1878,21 +1849,21 @@ class dossiersController extends bootstrap
                             // recup capital restant du (a partire de la date de jugement)
                             $CapitalRestantDu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) > "' . $date_jugement . '"', 'capital');
 
-                            // Variables du mailing
                             $varMail = array(
-                                'surl' => $this->surl,
-                                'url' => $this->furl,
-                                'civilite_e' => $emprunteur->civilite,
-                                'nom_e' => $emprunteur->nom,
-                                'entreprise' => $this->companies->name,
-                                'date_finance' => $date_financement,
-                                'montant_emprunt' => number_format($this->projects->amount, 0, ',', ' '),
-                                'capital_restant_du' => number_format($CapitalRestantDu, 0, ',', ' '),
-                                'tel_emprunteur' => $tel_emprunteur,
-                                'lien_pouvoir' => $this->furl . '/pdf/pouvoir/' . $emprunteur->hash . '/' . $this->projects->id_project,
-                                'nb_preteurs' => $nb_preteurs,
-                                'lien_fb' => $lien_fb,
-                                'lien_tw' => $lien_tw);
+                                'surl'               => $this->surl,
+                                'url'                => $this->furl,
+                                'civilite_e'         => $emprunteur->civilite,
+                                'nom_e'              => $emprunteur->nom,
+                                'entreprise'         => $this->companies->name,
+                                'date_finance'       => $date_financement,
+                                'montant_emprunt'    => $this->ficelle->formatNumer($this->projects->amount, 0),
+                                'capital_restant_du' => $this->ficelle->formatNumer($CapitalRestantDu, 0),
+                                'tel_emprunteur'     => $tel_emprunteur,
+                                'lien_pouvoir'       => $this->furl . '/pdf/pouvoir/' . $emprunteur->hash . '/' . $this->projects->id_project,
+                                'nb_preteurs'        => $nb_preteurs,
+                                'lien_fb'            => $lien_fb,
+                                'lien_tw'            => $lien_tw
+                            );
 
                             // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                             $liste_attente_mail = $this->loadData('liste_attente_mail');
@@ -1950,45 +1921,41 @@ class dossiersController extends bootstrap
                                         }
                                     }
 
-                                    // Ajout d'une notification
-                                    $this->notifications->type = 9; // probleme (type procedure de sauvegarde)
-                                    $this->notifications->id_lender = $p['id_lender'];
-                                    $this->notifications->id_project = $p['id_project'];
-                                    $this->notifications->amount = $sum_amount;
-                                    $this->notifications->id_bid = 0; // On peut avoir plusieurs bid donc inutile
-                                    $this->notifications->id_notification = $this->notifications->create();
+                                    $this->notifications->type       = 9; // probleme (type procedure de sauvegarde)
+                                    $this->notifications->id_lender  = $p['id_lender'];
+                                    $this->notifications->id_project = $this->projects->id_project;
+                                    $this->notifications->amount     = $sum_amount;
+                                    $this->notifications->id_bid     = 0; // On peut avoir plusieurs bid donc inutile
+                                    $this->notifications->create();
 
-                                    //////// GESTION ALERTES //////////
-                                    $this->clients_gestion_mails_notif->id_client = $lender->id_client_owner;
-                                    $this->clients_gestion_mails_notif->id_notif = 9; // type Notifications de retards & régularisations de retards
+                                    $this->clients_gestion_mails_notif->id_client       = $lender->id_client_owner;
+                                    $this->clients_gestion_mails_notif->id_notif        = 9; // type Notifications de retards & régularisations de retards
                                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                                    $this->clients_gestion_mails_notif->id_transaction = 0;
-                                    $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
-                                    $this->clients_gestion_mails_notif->id_loan = 0; // On peut avoir plusieurs loans donc inutile  
-                                    $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                                    $this->clients_gestion_mails_notif->id_transaction  = 0;
+                                    $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                                    $this->clients_gestion_mails_notif->id_loan         = 0; // On peut avoir plusieurs loans donc inutile
+                                    $this->clients_gestion_mails_notif->immediatement   = 1; // on met a jour le statut immediatement
                                     $this->clients_gestion_mails_notif->create();
 
-                                    //////// FIN GESTION ALERTES //////////
                                     //si on envoi le mail
                                     if ($mail_a_envoyer == 0) {
                                         // pour chaque preteur on check si le preteur veut recevoir l'email instantané (mail obligatoire)
-                                        //if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true) {
-                                        // Variables du mailing
                                         $varMail = array(
-                                            'surl' => $this->surl,
-                                            'url' => $this->furl,
-                                            'prenom_p' => $this->clients->prenom,
-                                            'valeur_bid' => number_format(($sum_amount / 100), 2, ',', ' '),
-                                            'nombre_bids' => $nb_loan,
-                                            'nom_entreprise' => $this->companies->name,
-                                            'montant_rembourse' => number_format($rembNet, 2, ',', ' '),
+                                            'surl'                      => $this->surl,
+                                            'url'                       => $this->furl,
+                                            'prenom_p'                  => $this->clients->prenom,
+                                            'valeur_bid'                => $this->ficelle->formatNumer($sum_amount / 100, 2),
+                                            'nombre_bids'               => $nb_loan,
+                                            'nom_entreprise'            => $this->companies->name,
+                                            'montant_rembourse'         => $this->ficelle->formatNumer($rembNet, 2),
                                             'saisie_redress_judiciaire' => $contenu_a_ajouter_mail,
-                                            'annee_bdc' => $year_financement,
-                                            'coordonnees_mandataire' => $mandataire,
-                                            'date_jugement_2mois' => $date_jugement_display,
-                                            'motif_virement' => $motif,
-                                            'lien_fb' => $lien_fb,
-                                            'lien_tw' => $lien_tw);
+                                            'annee_bdc'                 => $year_financement,
+                                            'coordonnees_mandataire'    => $mandataire,
+                                            'date_jugement_2mois'       => $date_jugement_display,
+                                            'motif_virement'            => $motif,
+                                            'lien_fb'                   => $lien_fb,
+                                            'lien_tw'                   => $lien_tw
+                                        );
 
                                         if ($this->current_projects_status->status == 150) {
                                             $type_mail = 'statut-redressement-judiciaire-bis-preteur';
@@ -2004,7 +1971,6 @@ class dossiersController extends bootstrap
                                         $liste_attente_mail->to = $this->clients->email;
                                         $liste_attente_mail->statut = 0; //pas envoyé
                                         $liste_attente_mail->create();
-                                        //}
                                     }
                                 }
                             }
@@ -2083,21 +2049,21 @@ class dossiersController extends bootstrap
                             // recup capital restant du (a partire de la date de jugement)
                             $CapitalRestantDu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) > "' . $date_jugement . '"', 'capital');
 
-                            // Variables du mailing
                             $varMail = array(
-                                'surl' => $this->surl,
-                                'url' => $this->furl,
-                                'civilite_e' => $emprunteur->civilite,
-                                'nom_e' => $emprunteur->nom,
-                                'entreprise' => $this->companies->name,
-                                'date_finance' => $date_financement,
-                                'montant_emprunt' => number_format($this->projects->amount, 0, ',', ' '),
-                                'capital_restant_du' => number_format($CapitalRestantDu, 0, ',', ' '),
-                                'tel_emprunteur' => $tel_emprunteur,
-                                'lien_pouvoir' => $this->furl . '/pdf/pouvoir/' . $emprunteur->hash . '/' . $this->projects->id_project,
-                                'nb_preteurs' => $nb_preteurs,
-                                'lien_fb' => $lien_fb,
-                                'lien_tw' => $lien_tw);
+                                'surl'               => $this->surl,
+                                'url'                => $this->furl,
+                                'civilite_e'         => $emprunteur->civilite,
+                                'nom_e'              => $emprunteur->nom,
+                                'entreprise'         => $this->companies->name,
+                                'date_finance'       => $date_financement,
+                                'montant_emprunt'    => $this->ficelle->formatNumer($this->projects->amount, 0),
+                                'capital_restant_du' => $this->ficelle->formatNumer($CapitalRestantDu, 0),
+                                'tel_emprunteur'     => $tel_emprunteur,
+                                'lien_pouvoir'       => $this->furl . '/pdf/pouvoir/' . $emprunteur->hash . '/' . $this->projects->id_project,
+                                'nb_preteurs'        => $nb_preteurs,
+                                'lien_fb'            => $lien_fb,
+                                'lien_tw'            => $lien_tw
+                            );
 
                             // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                             $liste_attente_mail = $this->loadData('liste_attente_mail');
@@ -2155,44 +2121,43 @@ class dossiersController extends bootstrap
                                         }
                                     }
 
-                                    // Ajout d'une notification
-                                    $this->notifications->type = 9; // probleme (type procedure de sauvegarde)
-                                    $this->notifications->id_lender = $p['id_lender'];
-                                    $this->notifications->id_project = $p['id_project'];
-                                    $this->notifications->amount = $sum_amount;
-                                    $this->notifications->id_bid = 0; // On peut avoir plusieurs bid donc inutile
-                                    $this->notifications->id_notification = $this->notifications->create();
+                                    // @todo utiliser des constantes de classe pour le type de notification
+                                    $this->notifications->type            = 9; // probleme (type procedure de sauvegarde)
+                                    $this->notifications->id_lender       = $p['id_lender'];
+                                    $this->notifications->id_project      = $this->projects->id_project;
+                                    $this->notifications->amount          = $sum_amount;
+                                    $this->notifications->id_bid          = 0; // On peut avoir plusieurs bid donc inutile
+                                    $this->notifications->create();
 
-                                    //////// GESTION ALERTES //////////
-                                    $this->clients_gestion_mails_notif->id_client = $lender->id_client_owner;
-                                    $this->clients_gestion_mails_notif->id_notif = 9; // type Notifications de retards & régularisations de retards
+                                    // @todo $lender non défini
+                                    $this->clients_gestion_mails_notif->id_client       = $lender->id_client_owner;
+                                    $this->clients_gestion_mails_notif->id_notif        = 9; // type Notifications de retards & régularisations de retards
                                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                                    $this->clients_gestion_mails_notif->id_transaction = 0;
-                                    $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
-                                    $this->clients_gestion_mails_notif->id_loan = 0; // On peut avoir plusieurs loans donc inutile
-                                    $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                                    $this->clients_gestion_mails_notif->id_transaction  = 0;
+                                    $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                                    $this->clients_gestion_mails_notif->id_loan         = 0; // On peut avoir plusieurs loans donc inutile
+                                    $this->clients_gestion_mails_notif->immediatement   = 1; // on met a jour le statut immediatement
                                     $this->clients_gestion_mails_notif->create();
-                                    //////// FIN GESTION ALERTES //////////
+
                                     //si on envoi le mail
                                     if ($mail_a_envoyer == 0) {
                                         // pour chaque preteur on check si le preteur veut recevoir l'email instantané (mail obligatoire)
-                                        //if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 9, "immediatement") == true) {
-                                        // Variables du mailing
                                         $varMail = array(
-                                            'surl' => $this->surl,
-                                            'url' => $this->furl,
-                                            'prenom_p' => $this->clients->prenom,
-                                            'valeur_bid' => number_format(($sum_amount / 100), 2, ',', ' '),
-                                            'nombre_bids' => $nb_loan,
-                                            'nom_entreprise' => $this->companies->name,
-                                            'montant_rembourse' => number_format($rembNet, 2, ',', ' '),
+                                            'surl'                          => $this->surl,
+                                            'url'                           => $this->furl,
+                                            'prenom_p'                      => $this->clients->prenom,
+                                            'valeur_bid'                    => $this->ficelle->formatNumer($sum_amount / 100, 2),
+                                            'nombre_bids'                   => $nb_loan,
+                                            'nom_entreprise'                => $this->companies->name,
+                                            'montant_rembourse'             => $this->ficelle->formatNumer($rembNet, 2),
                                             'saisie_liquidation_judiciaire' => $contenu_a_ajouter_mail,
-                                            'annee_bdc' => $year_financement,
-                                            'coordonnees_mandataire' => $mandataire,
-                                            'date_jugement_2mois' => $date_jugement_display,
-                                            'motif_virement' => $motif,
-                                            'lien_fb' => $lien_fb,
-                                            'lien_tw' => $lien_tw);
+                                            'annee_bdc'                     => $year_financement,
+                                            'coordonnees_mandataire'        => $mandataire,
+                                            'date_jugement_2mois'           => $date_jugement_display,
+                                            'motif_virement'                => $motif,
+                                            'lien_fb'                       => $lien_fb,
+                                            'lien_tw'                       => $lien_tw
+                                        );
 
                                         if ($this->current_projects_status->status == 150) {
                                             $type_mail = 'statut-liquidation-judiciaire-preteur';
@@ -2213,8 +2178,7 @@ class dossiersController extends bootstrap
                             }
                         }
                     }
-                    // fin statuts
-                    // Companies
+
                     $this->companies->siren           = $_POST['siren'];
                     $this->companies->siret           = $_POST['siret'];
                     $this->companies->name            = $_POST['societe'];
@@ -2529,7 +2493,7 @@ class dossiersController extends bootstrap
                                         $this->notifications->id_project      = $l['id_project'];
                                         $this->notifications->amount          = $l['amount'];
                                         $this->notifications->id_bid          = $l['id_bid'];
-                                        $this->notifications->id_notification = $this->notifications->create();
+                                        $this->notifications->create();
 
                                         //////// GESTION ALERTES //////////
                                         $this->clients_gestion_mails_notif->id_client       = $lender->id_client_owner;
@@ -3040,7 +3004,6 @@ class dossiersController extends bootstrap
 
                     // Actif / passif
                     foreach ($this->lCompanies_actif_passif as $k => $cap) {
-
                         $this->companies_actif_passif->get($this->projects->id_company, 'ordre = "' . $actif[$k]['ordre'] . '" AND id_company');
                         $this->companies_actif_passif->immobilisations_corporelles        = $actif[$k]['ic'];
                         $this->companies_actif_passif->immobilisations_incorporelles      = $actif[$k]['ii'];
@@ -3122,9 +3085,6 @@ class dossiersController extends bootstrap
         echo json_encode($aResult);
     }
 
-    /**
-     *
-     */
     public function _tab_email()
     {
         $this->autoFireHeader = false;
@@ -3842,7 +3802,7 @@ class dossiersController extends bootstrap
                                             $this->notifications->id_lender       = $this->lenders_accounts->id_lender_account;
                                             $this->notifications->id_project      = $this->projects->id_project;
                                             $this->notifications->amount          = ($rembNet * 100);
-                                            $this->notifications->id_notification = $this->notifications->create();
+                                            $this->notifications->create();
 
                                             //////// GESTION ALERTES //////////
                                             $this->clients_gestion_mails_notif->id_client                      = $this->lenders_accounts->id_client_owner;
@@ -3850,7 +3810,7 @@ class dossiersController extends bootstrap
                                             $this->clients_gestion_mails_notif->date_notif                     = date('Y-m-d H:i:s');
                                             $this->clients_gestion_mails_notif->id_notification                = $this->notifications->id_notification;
                                             $this->clients_gestion_mails_notif->id_transaction                 = $this->transactions->id_transaction;
-                                            $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
+                                            $this->clients_gestion_mails_notif->create();
                                             //////// FIN GESTION ALERTES //////////
                                             // Motif virement
                                             $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
@@ -4411,7 +4371,7 @@ class dossiersController extends bootstrap
                           $notifications->id_lender = $preteur['id_lender'];
                           $notifications->id_project = $this->projects->id_project;
                           $notifications->amount = ($reste_a_payer_pour_preteur * 100);
-                          $notifications->id_notification = $notifications->create(); */
+                          $notifications->create(); */
 
                         //////// GESTION ALERTES //////////
                         /* $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
@@ -4421,7 +4381,7 @@ class dossiersController extends bootstrap
                           $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
                           $this->clients_gestion_mails_notif->id_notification = $notifications->id_notification;
                           $this->clients_gestion_mails_notif->id_transaction = $this->transactions->id_transaction;
-                          $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create(); */
+                          $this->clients_gestion_mails_notif->create(); */
 
                         //////// FIN GESTION ALERTES //////////
                         //$this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
