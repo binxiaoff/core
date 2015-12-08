@@ -185,7 +185,7 @@ class transfertsController extends bootstrap
         $this->statusVirement = array(0 => 'Reçu', 1 => 'Attribué manu', 2 => 'Attribué auto', 3 => 'Rejeté', 4 => 'Rejet');
     }
 
-    public function updateEcheances($id_project, $montant, $remb_auto)
+    private function updateEcheances($id_project, $montant, $remb_auto)
     {
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $echeanciers            = $this->loadData('echeanciers');
@@ -615,7 +615,7 @@ class transfertsController extends bootstrap
         }
     }
 
-    public function udpdate_statut_remb_echeance($id_echeancier)
+    private function udpdate_statut_remb_echeance($id_echeancier)
     {
         $echeanciers = $this->loadData('echeanciers');
 
@@ -628,7 +628,7 @@ class transfertsController extends bootstrap
         }
     }
 
-    public function rembEcheance($id_reception, $id_echeancier, $id_client, $id_lender, $capital, $interet, $array_fiscal, $prorata = false, $manquant = false)
+    private function rembEcheance($id_reception, $id_echeancier, $id_client, $id_lender, $capital, $interet, $array_fiscal, $prorata = false, $manquant = false)
     {
         $echeanciers_recouvrements_prorata = $this->loadData('echeanciers_recouvrements_prorata');
         $transactions                      = $this->loadData('transactions');
