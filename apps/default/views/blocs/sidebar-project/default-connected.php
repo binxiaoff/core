@@ -52,7 +52,7 @@
                         </div>
                     </div>
                 <?php } ?>
-                <?php if ($this->clients->status_pre_emp != 2) { ?>
+                <?php if ($this->clients->isBorrower($this->projects, $this->clients->id_client) === false ) { ?>
                     <div class="widget-cat">
                         <h4><?= $this->lng['preteur-projets']['faire-une-offre'] ?></h4>
                         <div class="row">

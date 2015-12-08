@@ -155,7 +155,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                             <li><a href="#"><?= $this->lng['preteur-projets']['comptes'] ?></a></li>
                             <?php
                             if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
-                                if (isset($_SESSION['client']) && $_SESSION['client']['status_pre_emp'] == 1) {
+                                if (isset($_SESSION['client']) && $this->clients->isLender($this->loadData('lenders_accounts'), $_SESSION['client']['id_client'])) {
                                     ?>
                                     <li><a href="#"><?= $this->lng['preteur-projets']['suivi-projet'] ?></a></li>
                                     <?php
@@ -797,7 +797,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                     </p>
                 </div>
             </article>
-            <?php if (($this->projects_status->status == 60 || $this->projects_status->status >= 80) && isset($_SESSION['client']) && $_SESSION['client']['status_pre_emp'] == 1) { ?>
+            <?php if (($this->projects_status->status == 60 || $this->projects_status->status >= 80) && isset($_SESSION['client']) && $this->clients->isLender($this->loadData('lenders_accounts'), $_SESSION['client']['id_client'])) { ?>
                 <article class="ex-article">
                     <h3>
                         <a href="#"><?= $this->lng['preteur-projets']['suivi-projet'] ?></a><i class="icon-arrow-down up"></i>

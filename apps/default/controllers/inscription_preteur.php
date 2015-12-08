@@ -101,24 +101,22 @@ class inscription_preteurController extends bootstrap
             $this->clients->get($_SESSION['client']['id_client'],'id_client');
 
             // preteur ayant deja crée son compte
-            if($this->clients->status_pre_emp == 1 && $this->clients->etape_inscription_preteur == 3){
+            if($this->clients->isLender($this->lenders_accounts, $this->clients->id_client)){
                 header('Location:'.$this->lurl.'/projects');
                 die;
             }
             // preteur n'ayant pas terminé la création de son compte
-            elseif($this->clients->status_pre_emp == 1 && $this->clients->etape_inscription_preteur < 3){
+            elseif($this->clients->isLender($this->lenders_accounts, $this->clients->id_client) && $this->clients->etape_inscription_preteur < 3){
                 $this->preteurOnline = true;
             }
             // Si c'est un emprunteur
-            elseif($this->clients->status_pre_emp == 2){
+            elseif($this->clients->isBorrower($this->projects, $this->clients->id_client)){
                 $this->emprunteurCreatePreteur = true;
                 $this->clients->type = 2;
                 // tant qu'on a pas le systeme preteur/emprunteur
                 header('Location:'.$this->lurl.'/projects');
                 die;
             }
-
-
         }
 
         /////////////////////////////
@@ -627,7 +625,6 @@ class inscription_preteurController extends bootstrap
 
                         // parametres pour valider le compte //
 
-                        $this->clients->status_pre_emp =  1; // preteur
                         $this->clients->status = 1; // online
                         $this->clients->status_inscription_preteur = 1; // inscription terminé
                         $this->clients->etape_inscription_preteur = 1; // etape 1 ok
@@ -1117,7 +1114,6 @@ class inscription_preteurController extends bootstrap
 
                         // parametres pour valider le compte //
 
-                        $this->clients->status_pre_emp =  1; // preteur
                         $this->clients->status = 1; // online
                         $this->clients->status_inscription_preteur = 1; // inscription terminé
                         $this->clients->etape_inscription_preteur = 1; // etape 1 ok
@@ -1204,17 +1200,17 @@ class inscription_preteurController extends bootstrap
             $this->clients->get($_SESSION['client']['id_client'],'id_client');
 
             // preteur ayant deja crée son compte
-            if($this->clients->status_pre_emp == 1 && $this->clients->etape_inscription_preteur == 3){
+            if($this->clients->isLender($this->lenders_accounts, $this->clients->id_client) && $this->clients->etape_inscription_preteur == 3){
 
                 header('location:'.$this->lurl.'/inscription_preteur/etape1');
                 die;
             }
             // preteur n'ayant pas terminé la création de son compte
-            elseif($this->clients->status_pre_emp == 1 && $this->clients->etape_inscription_preteur < 3){
+            elseif(isLender($this->lenders_accounts, $this->clients->id_client) && $this->clients->etape_inscription_preteur < 3){
                 $this->preteurOnline = true;
             }
             // Emprunteur/preteur n'ayant pas terminé la création de son compte
-            elseif($this->clients->status_pre_emp == 3 && $this->clients->etape_inscription_preteur < 3){
+            elseif($this->clients->isBorrower($this->projects, $this->clients->id_client) && $this->clients->etape_inscription_preteur < 3){
                 $this->emprunteurCreatePreteur = true;
             }
         }
@@ -1715,16 +1711,16 @@ class inscription_preteurController extends bootstrap
             $this->clients->get($_SESSION['client']['id_client'],'id_client');
 
             // preteur ayant deja crée son compte
-            if($this->clients->status_pre_emp == 1 && $this->clients->etape_inscription_preteur == 3){
+            if($this->clients->isLender($this->lenders_accounts, $this->clients->id_client) && $this->clients->etape_inscription_preteur == 3){
                 header('location:'.$this->lurl.'/inscription_preteur/etape1');
                 die;
             }
             // preteur n'ayant pas terminé la création de son compte
-            elseif($this->clients->status_pre_emp == 1 && $this->clients->etape_inscription_preteur < 3){
+            elseif($this->clients->isLender($this->lenders_accounts, $this->clients->id_client) && $this->clients->etape_inscription_preteur < 3){
                 $this->preteurOnline = true;
             }
             // Emprunteur/preteur n'ayant pas terminé la création de son compte
-            elseif($this->clients->status_pre_emp == 3 && $this->clients->etape_inscription_preteur < 3){
+            elseif($this->clients->isBorrower($this->projects, $this->clients->id_client) && $this->clients->etape_inscription_preteur < 3){
                 $this->emprunteurCreatePreteur = true;
             }
 
@@ -2032,7 +2028,6 @@ class inscription_preteurController extends bootstrap
 
                         // Historique client
                         $this->clients_history->id_client = $this->clients->id_client;
-                        $this->clients_history->type = $this->clients->status_pre_emp;
                         $this->clients_history->status = 2; // statut creation compte preteur
                         $this->clients_history->create();
 
@@ -2346,14 +2341,14 @@ class inscription_preteurController extends bootstrap
             $this->clients->get($_SESSION['client']['id_client'],'id_client');
 
             // Si c'est un preteur on interdit de se créer un deuxieme compte
-            if($this->clients->status_pre_emp == 1)
+            if($this->clients->isLender($this->lenders_accounts, $this->clients->id_client))
             {
                 header('location:'.$this->lurl.'/inscription_preteur/etape1');
                 die;
 
             }
             // Si c'est un emprunteur
-            elseif($this->clients->status_pre_emp == 3) // deja statut changé en 3 car validation de linscription a la fin de letape 2
+            elseif($this->clients->isBorrower($this->projects, $this->clients->id_client)) // deja statut changé en 3 car validation de linscription a la fin de letape 2
             {
                 $this->emprunteurCreatePreteur = true;
 

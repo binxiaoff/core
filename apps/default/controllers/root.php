@@ -49,7 +49,7 @@ class rootController extends bootstrap
 
             // Redirection inscription preteur
             if ($this->tree->id_tree == 127) {
-                if ($this->clients->checkAccess() && in_array($this->clients->status_pre_emp, array(1, 3))) {
+                if ($this->clients->checkAccess() && $this->clients->isLender($this->lenders_accounts, $this->clients->id_client)) {
                     if ($this->clients->etape_inscription_preteur < 3) {
                         $etape = ($this->clients->etape_inscription_preteur + 1);
 
@@ -829,12 +829,10 @@ class rootController extends bootstrap
         if (isset($this->params[0]) && isset($_SESSION['client'])) {
             // on redirige sur le compte preteur
             if ($this->params[0] == 1) {
-                $_SESSION['status_pre_emp'] = 1;
                 header('Location:' . $this->lurl . '/synthese');
                 die;
             } // on redirige sur le compte emprunteur
             else {
-                $_SESSION['status_pre_emp'] = 2;
                 header('Location:' . $this->lurl . '/espace_emprunteur');
                 die;
             }
