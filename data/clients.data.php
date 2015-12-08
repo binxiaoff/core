@@ -1052,4 +1052,110 @@ class clients extends clients_crud
         return $aDataForBorrowerOperations;
 
     }
+
+
+    public function countClientsLender($sWhere = null)
+    {
+        if (is_null($sWhere) === false) {
+            $sWhere = ' WHERE ' . $sWhere;
+        }
+
+        $sql = 'SELECT
+                    COUNT(*)
+                FROM
+                    `clients` cl
+                    INNER JOIN lenders_accounts la ON cl.id_client = la.id_client_owner' . $sWhere;
+
+        $result = $this->bdd->query($sql);
+
+        return (int)($this->bdd->result($result, 0, 0));
+    }
+
+
+
+
+    public function countClientsBorrower($sWhere = null)
+    {
+        if (is_null($sWhere) === false) {
+            $sWhere = ' WHERE ' . $sWhere;
+        }
+
+        $sql = 'SELECT
+                    COUNT(*)
+                FROM
+                    `clients`
+                INNER JOIN companies ON companies.id_client_owner = clients.id_client
+                INNER JOIN projects ON companies.id_company = projects.id_company' . $sWhere;
+
+
+        $result = $this->bdd->query($sql);
+
+        return (int)($this->bdd->result($result, 0, 0));
+    }
+
+    public function countClientsLenderAndBorrower($sWhere = null)
+    {
+        if (is_null($sWhere) === false) {
+            $sWhere = ' WHERE ' . $sWhere;
+        }
+
+        $sql = 'SELECT
+                    COUNT(*)
+                FROM
+                    `clients`
+                INNER JOIN companies ON companies.id_client_owner = clients.id_client
+                INNER JOIN projects ON companies.id_company = projects.id_company
+                INNER JOIN lenders_accounts la ON clients.id_client = la.id_client_owner' . $sWhere;
+
+
+        $result = $this->bdd->query($sql);
+
+        return (int)($this->bdd->result($result, 0, 0));
+
+    }
+
+    public function getClientsLender($sWhere = null)
+    {
+        if (is_null($sWhere) === false) {
+            $sWhere = ' WHERE ' . $sWhere;
+        }
+
+        $sql = 'SELECT *
+                FROM
+                    `clients`
+                    INNER JOIN lenders_accounts la ON clients.id_client = la.id_client_owner'. $sWhere;
+
+        $aClientsLender = array();
+
+        $result = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aClientsLender[] = $record;
+        }
+
+        return $aClientsLender;
+    }
+
+    public function getClientsBorrower($sWhere = null)
+    {
+        if (is_null($sWhere) === false) {
+            $sWhere = ' WHERE ' . $sWhere;
+        }
+
+        $sql = 'SELECT *
+                FROM
+                    `clients`
+                    INNER JOIN companies ON companies.id_client_owner = clients.id_client
+                    INNER JOIN projects ON companies.id_company = projects.id_company' . $sWhere;
+
+        $aClientsBorrower = array();
+
+        $result = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aClientsBorrower[] = $record;
+        }
+
+        return $aClientsBorrower;
+    }
+
+
 }
