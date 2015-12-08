@@ -165,7 +165,7 @@ class preteursController extends bootstrap
             else $nonValide = '';
 
             // On recupera les 10 derniers clients
-            $this->lPreteurs = $this->clients->searchPreteursV2('', '', '', '', '', $nonValide, '', '0', '300');
+            $this->lPreteurs = $this->clients->searchPreteursV2('', '', '', '', '', $nonValide, '0', '300');
         }
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
@@ -191,9 +191,9 @@ class preteursController extends bootstrap
         $a       = count($this->clients->selectPreteursByStatus('60', 'c.status = 1 AND status_inscription_preteur = 1 AND (SELECT COUNT(t.id_transaction) FROM transactions t WHERE t.type_transaction IN (1,3,4,5,7,8,14) AND t.status = 1 AND t.etat = 1 AND t.id_client = c.id_client) < 1'));
         $this->z = $a;
         //preteur "hors ligne"
-        $this->y = $this->clients->counter('status = 0 AND status_inscription_preteur = 1 AND status_pre_emp IN(1,3)');
-        //preteur "total"
-        $this->x = $this->clients->counter('status_inscription_preteur = 1  AND status_pre_emp IN(1,3)');
+        $this->y = $this->clients->countClientsLender('clients.status = 0 AND clients.status_inscription_preteur = 1');
+
+        $this->x = $this->clients->countClientsLender('clients.status_inscription_preteur = 1');
     }
 
     public function _search()
@@ -1217,7 +1217,7 @@ class preteursController extends bootstrap
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         } else {
             // On recupera les 10 derniers clients
-            $this->lPreteurs = $this->clients->searchPreteursV2('', '', '', '', '', $nonValide, '', '0', '300');
+            $this->lPreteurs = $this->clients->searchPreteursV2('', '', '', '', '', $nonValide, '0', '300');
         }
 
 
@@ -1529,7 +1529,6 @@ class preteursController extends bootstrap
                     $backup_clients->type                       = $this->clients->type;
                     $backup_clients->etape_inscription_preteur  = $this->clients->etape_inscription_preteur;
                     $backup_clients->status_inscription_preteur = $this->clients->status_inscription_preteur;
-                    $backup_clients->status_pre_emp             = $this->clients->status_pre_emp;
                     $backup_clients->status_transition          = $this->clients->status_transition;
                     $backup_clients->cni_passeport              = $this->clients->cni_passeport;
                     $backup_clients->signature                  = $this->clients->signature;
