@@ -900,7 +900,7 @@ class dossiersController extends bootstrap
                                     $this->notifications->id_bid     = 0; // On peut avoir plusieurs bid donc inutile
                                     $this->notifications->create();
 
-                                    $this->clients_gestion_mails_notif->id_client       = $lender->id_client_owner;
+                                    $this->clients_gestion_mails_notif->id_client       = $this->clients->id_client;
                                     $this->clients_gestion_mails_notif->id_notif        = 9; // type Notifications de retards & régularisations de retards
                                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                                     $this->clients_gestion_mails_notif->id_transaction  = 0;
@@ -1301,7 +1301,7 @@ class dossiersController extends bootstrap
                                     $this->notifications->id_bid     = 0; // On peut avoir plusieurs bid donc inutile
                                     $this->notifications->create();
 
-                                    $this->clients_gestion_mails_notif->id_client       = $lender->id_client_owner;
+                                    $this->clients_gestion_mails_notif->id_client       = $this->clients->id_client;
                                     $this->clients_gestion_mails_notif->id_notif        = 9; // type Notifications de retards & régularisations de retards
                                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                                     $this->clients_gestion_mails_notif->id_transaction  = 0;
@@ -1734,7 +1734,7 @@ class dossiersController extends bootstrap
                                     $this->notifications->id_bid     = 0; // On peut avoir plusieurs bid donc inutile
                                     $this->notifications->create();
 
-                                    $this->clients_gestion_mails_notif->id_client       = $lender->id_client_owner;
+                                    $this->clients_gestion_mails_notif->id_client       = $this->clients->id_client;
                                     $this->clients_gestion_mails_notif->id_notif        = 9; // type Notifications de retards & régularisations de retards
                                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                                     $this->clients_gestion_mails_notif->id_transaction  = 0;
@@ -1928,7 +1928,7 @@ class dossiersController extends bootstrap
                                     $this->notifications->id_bid     = 0; // On peut avoir plusieurs bid donc inutile
                                     $this->notifications->create();
 
-                                    $this->clients_gestion_mails_notif->id_client       = $lender->id_client_owner;
+                                    $this->clients_gestion_mails_notif->id_client       = $this->clients->id_client;
                                     $this->clients_gestion_mails_notif->id_notif        = 9; // type Notifications de retards & régularisations de retards
                                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                                     $this->clients_gestion_mails_notif->id_transaction  = 0;
@@ -2129,8 +2129,7 @@ class dossiersController extends bootstrap
                                     $this->notifications->id_bid          = 0; // On peut avoir plusieurs bid donc inutile
                                     $this->notifications->create();
 
-                                    // @todo $lender non défini
-                                    $this->clients_gestion_mails_notif->id_client       = $lender->id_client_owner;
+                                    $this->clients_gestion_mails_notif->id_client       = $this->clients->id_client;
                                     $this->clients_gestion_mails_notif->id_notif        = 9; // type Notifications de retards & régularisations de retards
                                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                                     $this->clients_gestion_mails_notif->id_transaction  = 0;
