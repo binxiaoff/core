@@ -252,48 +252,34 @@ class clients extends clients_crud
         }
     }
 
-    // permet de respecter les droits emprunteur et preteur
-    // $statut = 1 : preteur | 2 : emprunteur 3 | : les deux
-    // $restriction = preteur | empreunteur
-    // $option = permet de restreindre le contenu emprunteur
-    // $slug = chemin pour rediriger l'emprunteur sur une page
-    public function checkStatusPreEmp($statut = '1', $restriction = 'preteur', $id_client = '', $option = '', $slug = '')
+    public function checkAccessLender($iClientId = null)
     {
-        $reponse = false;
-
-        if ($restriction == 'preteur') {
-            if ($statut == 1 || $statut == 3) {
-                $reponse = true;
-                // on check si statut preteur valide
-                if ($id_client != '' && ! $this->checkCompteCreate($id_client)) {
-                    header('location:' . $this->lurl . '/inscription-preteurs');
-                    die;
-                }
-            } else {
-                $reponse = false;
-            }
+        if (null === $iClientId) {
+            $iClientId = $this->id_client;
         }
 
-        if ($restriction == 'emprunteur') {
-            if ($statut == 2 || $statut == 3) {
-                $reponse = true;
-            } else {
-                $reponse = false;
-            }
+        if ($this->isLender(new \lenders_accounts($this->bdd), $iClientId)) {
 
-            if ($option == 1) {
-                $reponse = true;
-                header('location:' . $this->lurl . '/' . $slug);
+            if ($this->checkCompteCreate($iClientId) === false) {
+                header('location:' . $this->lurl . '/inscription-preteurs');
                 die;
             }
-        }
-
-        if ($reponse == false) {
-            $this->handleLogout();
         } else {
-            return true;
+            $this->handleLogout();
         }
     }
+
+    public function checkAccessBorrower($iClientId = null)
+    {
+        if (null === $iClientId) {
+            $iClientId = $this->id_client;
+        }
+
+        if ($this->isBorrower(new \projects($this->bdd), $iClientId) === false ) {
+            $this->handleLogout();
+        }
+    }
+
 
     public function searchClients($ref = '', $nom = '', $email = '', $prenom = '')
     {
