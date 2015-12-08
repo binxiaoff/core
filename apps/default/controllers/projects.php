@@ -31,7 +31,7 @@ class projectsController extends bootstrap
             die;
         } else {
             // check preteur ou emprunteur (ou les deux)
-            $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'preteur');
+            $this->clients->checkAccessLender($this->clients->id_client);
         }
 
         // Chargement des datas
