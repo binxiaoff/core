@@ -374,65 +374,11 @@ class clients extends clients_crud
         return $this->bdd->result($result, 0, 0);
     }
 
-    public function searchPreteurs($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $emprunteur = '', $start = '', $nb = '')
-    {
-        $where = 'WHERE 1 = 1 ';
-
-        if ($ref != '') {
-            $where .= ' AND c.id_client IN(' . $ref . ')';
-        }
-        if ($nom != '') {
-            $where .= ' AND c.nom LIKE "%' . $nom . '%"';
-        }
-        if ($email != '') {
-            $where .= ' AND c.email LIKE "%' . $email . '%"';
-        }
-        if ($prenom != '') {
-            $where .= ' AND c.prenom LIKE "%' . $prenom . '%"';
-        }
-        if ($name != '') {
-            $where .= ' AND co.name LIKE "%' . $name . '%"';
-        }
-
-        if ($emprunteur != '') {
-            $where .= ' AND c.status_pre_emp IN (2,3)';
-        } else {
-            if ($noValide != '') {
-                $where .= ' AND c.status_pre_emp NOT IN (2,3)';
-            } else {
-                $where .= ' AND YEAR(NOW()) - YEAR(c.naissance) >= 18 AND c.status_pre_emp IN (1,3) AND status_inscription_preteur = 1';
-            }
-        }
-
-        $sql = 'SELECT l.*,c.*,co.*
-        FROM lenders_accounts l
-        LEFT JOIN clients c ON c.id_client = l.id_client_owner
-        LEFT JOIN companies co ON co.id_company = l.id_company_owner
-        ' . $where . '
-        GROUP BY l.id_lender_account
-        ORDER BY l.id_lender_account DESC' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-
-        $i = 0;
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[$i] = $record;
-
-            if ($record['status'] == '0' && $noValide != '') {
-                $result[$i]['novalid'] = 1;
-            } else {
-                $result[$i]['novalid'] = '0';
-            }
-            $i++;
-        }
-        return $result;
-    }
-
-    public function searchPreteursV2($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $emprunteur = '', $start = '', $nb = '')
+    public function searchPreteursV2($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $start = '', $nb = '')
     {
         $where = 'WHERE 1 = 1 ';
         $and   = '';
+
         if ($ref != '') {
             $and .= ' AND c.id_client IN(' . $ref . ')';
         }
@@ -446,18 +392,13 @@ class clients extends clients_crud
             $and .= ' AND co.name LIKE "%' . $name . '%"';
         }
 
-        if ($emprunteur != '') {
-            $and .= ' AND c.status_pre_emp IN (2,3)';
+        if ($noValide == '1') {
+            $and .= ' AND c.status = 0 AND c.status_inscription_preteur = 1';
+        } // inscription non terminée
+        elseif ($noValide == '2') {
+            $and .= ' AND c.status = 0 AND c.status_inscription_preteur = 0';
         } else {
-            // inscription terminée
-            if ($noValide == '1') {
-                $and .= ' AND c.status_pre_emp NOT IN (2,3) AND c.status = 0 AND c.status_inscription_preteur = 1';
-            } // inscription non terminée
-            elseif ($noValide == '2') {
-                $and .= ' AND c.status_pre_emp NOT IN (2,3) AND c.status = 0 AND c.status_inscription_preteur = 0';
-            } else {
-                $and .= ' AND YEAR(NOW()) - YEAR(c.naissance) >= 18 AND c.status_pre_emp IN (1,3) AND c.status_inscription_preteur = 1';
-            }
+            $and .= ' AND YEAR(NOW()) - YEAR(c.naissance) >= 18 AND c.status_inscription_preteur = 1';
         }
 
         // pour le OR on rajoute la condition derriere
