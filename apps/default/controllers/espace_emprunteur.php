@@ -17,13 +17,17 @@ class espace_emprunteurController extends Bootstrap
             if (!$this->clients->checkAccess()) {
                 header('Location:' . $this->lurl);
                 die;
-            }
-            $this->companies->get($_SESSION['client']['id_client'], 'id_client_owner');
-            $aAllCompanyProjects = $this->companies->getProjectsForCompany($this->companies->id_company);
+            } else {
+                $this->clients->checkAccessBorrower($_SESSION['client']['id_client']);
 
-            if ((int)$aAllCompanyProjects[0]['project_status'] >= projects_status::A_TRAITER && (int)$aAllCompanyProjects[0]['project_status'] <= projects_status::PREP_FUNDING) {
-                header('Location:' . $this->url . '/depot_de_dossier/fichiers/' . $aAllCompanyProjects[0]['hash']);
-                die;
+                $this->companies->get($_SESSION['client']['id_client'], 'id_client_owner');
+                $aAllCompanyProjects = $this->companies->getProjectsForCompany($this->companies->id_company);
+
+                if ((int)$aAllCompanyProjects[0]['project_status'] >= projects_status::A_TRAITER && (int)$aAllCompanyProjects[0]['project_status'] <= projects_status::PREP_FUNDING) {
+                    header('Location:' . $this->url . '/depot_de_dossier/fichiers/' . $aAllCompanyProjects[0]['hash']);
+                    die;
+                }
+
             }
         }
 
