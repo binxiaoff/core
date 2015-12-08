@@ -695,9 +695,6 @@ class ajaxController extends bootstrap
                     } else {
                         $this->clients->email = $_POST['email'];
                     }
-                    // On precise que c'est un emprunteur
-                    $this->clients->status_pre_emp = 2;
-
                     $this->clients->id_client = $this->clients->create();
 
                     $this->clients_adresses->id_client = $this->clients->id_client;
