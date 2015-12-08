@@ -6,7 +6,7 @@ class operationsController extends bootstrap
 {
     var $Command;
 
-    function operationsController($command, $config, $app)
+    public function operationsController($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
@@ -15,19 +15,19 @@ class operationsController extends bootstrap
         $this->setHeader('header_account');
 
         // On check si y a un compte
-        if (!$this->clients->checkAccess()) {
+        if ($this->clients->checkAccess() === false) {
             header('Location:' . $this->lurl);
             die;
         } else {
             // check preteur ou emprunteur (ou les deux)
-            $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'preteur', $this->clients->id_client);
+            $this->clients->checkAccessLender($this->clients->id_client);
         }
         // page
         $this->page                      = 'operations';
         $this->lng['preteur-operations'] = $this->ln->selectFront('preteur-operations', $this->language, $this->App);
     }
 
-    function _default()
+    public function _default()
     {
         $this->transactions            = $this->loadData('transactions');
         $this->wallets_lines           = $this->loadData('wallets_lines');
@@ -116,7 +116,7 @@ class operationsController extends bootstrap
         $this->liste_docs = $this->ifu->select('id_client =' . $this->clients->id_client . ' AND statut = 1', 'annee ASC');
     }
 
-    function _vos_operations()
+    public function _vos_operations()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -125,7 +125,7 @@ class operationsController extends bootstrap
         $this->autoFireDebug  = false;
     }
 
-    function _vos_prets()
+    public function _vos_prets()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -134,7 +134,7 @@ class operationsController extends bootstrap
         $this->autoFireDebug  = false;
     }
 
-    function _histo_transac()
+    public function _histo_transac()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -143,7 +143,7 @@ class operationsController extends bootstrap
         $this->autoFireDebug  = false;
     }
 
-    function _doc_fiscaux()
+    public function _doc_fiscaux()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -153,7 +153,7 @@ class operationsController extends bootstrap
     }
 
 
-    function _vos_operation_csv()
+    public function _vos_operation_csv()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -268,7 +268,7 @@ class operationsController extends bootstrap
             6 => '5,23');
 
         if (isset($post_tri_type_transac)) {
-            $tri_type_transac = $array_type_transactions_liste_deroulante[$post_tri_type_transac];
+            $tri_type_transac = $array_type_transactions_liste_deroulante[ $post_tri_type_transac ];
         } else {
             $tri_type_transac = $array_type_transactions_liste_deroulante[1];
         }
@@ -329,7 +329,7 @@ class operationsController extends bootstrap
 
         $user_agent = $_SERVER['HTTP_USER_AGENT'];
         // MAC
-        if (strpos($user_agent, "Mac") !== FALSE || 5 == 5) {
+        if (strpos($user_agent, "Mac") !== false || 5 == 5) {
             header("Content-type: application/vnd.ms-excel; charset=utf-8");
             header("Expires: 0");
             header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
@@ -555,7 +555,9 @@ class operationsController extends bootstrap
 
                         if ($this->loans->get($this->bids->id_bid, 'status = 0 AND id_bid')) {
                             $id_loan = ' - ' . $this->loans->id_loan;
-                        } else $id_loan = '';
+                        } else {
+                            $id_loan = '';
+                        }
                     }
                     $csv .= $t['libelle_operation'] . $id_loan . ";" . $t['libelle_projet'] . ";" . $this->dates->formatDate($t['date_operation'], 'd-m-Y') . ";" . $plus . ";" . $moins . ";" . number_format($t['montant_operation'] / 100, 2, ',', '') . " €;" . number_format($solde, 2, ',', '') . " €;";
                     $csv .= " \n";
@@ -606,7 +608,7 @@ class operationsController extends bootstrap
         fclose($fp);
     }
 
-    function _get_ifu()
+    public function _get_ifu()
     {
         // recup du fichier
         $hash_client = $this->params[0];
@@ -627,7 +629,7 @@ class operationsController extends bootstrap
     }
 
 
-    function indexation_client($id_client)
+    public function indexation_client($id_client)
     {
         //params
         $liste_id_a_forcer             = $id_client;

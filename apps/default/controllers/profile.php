@@ -22,7 +22,7 @@ class profileController extends bootstrap
             die;
         } else {
             // check preteur ou emprunteur (ou les deux)
-            $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'preteur', $this->clients->id_client);
+            $this->clients->checkAccessLender($this->clients->id_client);
         }
 
         //Recuperation des element de traductions

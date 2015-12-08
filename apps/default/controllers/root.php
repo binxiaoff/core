@@ -202,10 +202,10 @@ class rootController extends bootstrap
                 } else {
                     // 1 preteur
                     if ($this->tree->arbo == 1) {
-                        $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'preteur', $this->clients->id_client);
+                        $this->clients->checkStatusPreEmp('preteur', $this->clients->id_client);
                     } // 2 emprunteur
                     elseif ($this->tree->arbo == 2) {
-                        $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'emprunteur', $this->clients->id_client);
+                        $this->clients->checkStatusPreEmp('emprunteur', $this->clients->id_client);
                     }
 
                     // On prend le header account
@@ -1124,7 +1124,7 @@ class rootController extends bootstrap
         include_once $this->path . '/apps/default/controllers/pdf.php';
 
         if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
-            $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'preteur', $this->clients->id_client);
+            $this->clients->checkAccessLender($this->clients->id_client);
 
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $id_tree_cgu = $this->settings->value;

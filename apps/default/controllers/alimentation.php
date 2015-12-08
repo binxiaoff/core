@@ -22,7 +22,7 @@ class alimentationController extends bootstrap
 		else
 		{
 			// check preteur ou emprunteur (ou les deux)
-			$this->clients->checkStatusPreEmp($this->clients->status_pre_emp,'preteur',$this->clients->id_client);
+			$this->clients->checkStatusPreEmp('preteur',$this->clients->id_client);
 		}
 
 		$this->page = 'alimentation';
