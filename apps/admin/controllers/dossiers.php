@@ -126,11 +126,8 @@ class dossiersController extends bootstrap
             //Check if status is eligible for block the note and comments.
             $this->bReadonlyRiskNote = (in_array($this->current_projects_status->status, $aBlockRiskStatus)) ?: false;
 
-            // On recup l'entreprise
             $this->companies->get($this->projects->id_company, 'id_company');
 
-
-            // Récupération du nombre de jour pour le statut probleme J+X
             $this->settings->get('Statut problème J+X', 'type');
             $this->nb_jour_statut_probleme = $this->settings->value;
 
@@ -1441,24 +1438,25 @@ class dossiersController extends bootstrap
                             // Recup nb_jour_avant_prochain_statut
                             $this->settings->get('Nombre de jours avant prochain statut ', 'type');
                             $nb_jour_avant_prochain_statut = $this->settings->value;
-                            // Variables du mailing
+
                             $varMail = array(
-                                'surl' => $this->surl,
-                                'url' => $this->furl,
-                                'civilite_e' => $emprunteur->civilite,
-                                'nom_e' => $emprunteur->nom,
-                                'entreprise' => $this->companies->name,
-                                'date_finance' => $date_financement,
-                                'montant_emprunt' => $this->projects->amount,
-                                'nb_preteurs' => $nb_preteurs,
-                                'montant_mensuel' => $montant_mensuel,
+                                'surl'                          => $this->surl,
+                                'url'                           => $this->furl,
+                                'civilite_e'                    => $emprunteur->civilite,
+                                'nom_e'                         => $emprunteur->nom,
+                                'entreprise'                    => $this->companies->name,
+                                'date_finance'                  => $date_financement,
+                                'montant_emprunt'               => $this->projects->amount,
+                                'nb_preteurs'                   => $nb_preteurs,
+                                'montant_mensuel'               => $montant_mensuel,
                                 'nb_jour_avant_prochain_statut' => $nb_jour_avant_prochain_statut,
-                                'num_dossier' => $this->projects->id_project,
-                                'bic_sfpmei' => $bic_sfpmei,
-                                'iban_sfpmei' => $iban_sfpmei,
-                                'tel_emprunteur' => $tel_emprunteur,
-                                'lien_fb' => $lien_fb,
-                                'lien_tw' => $lien_tw);
+                                'num_dossier'                   => $this->projects->id_project,
+                                'bic_sfpmei'                    => $bic_sfpmei,
+                                'iban_sfpmei'                   => $iban_sfpmei,
+                                'tel_emprunteur'                => $tel_emprunteur,
+                                'lien_fb'                       => $lien_fb,
+                                'lien_tw'                       => $lien_tw
+                            );
 
                             // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                             $liste_attente_mail = $this->loadData('liste_attente_mail');
@@ -1468,7 +1466,6 @@ class dossiersController extends bootstrap
                             $liste_attente_mail->to = $this->clients->email;
                             $liste_attente_mail->statut = 0; //pas envoyé
                             $liste_attente_mail->create();
-
 
                             // On recuprere les lenders ayant des loans sur le projet
                             $lPreteurs = $this->loans->getPreteurs($this->projects->id_project);

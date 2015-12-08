@@ -1,9 +1,7 @@
-
 <div id="popup">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer" /></a>
-
     <form method="post" name="form_date_retrait" id="form_date_retrait" enctype="multipart/form-data" action="" target="_parent">
-        <h1>Confirmation</h1>            
+        <h1>Confirmation</h1>
         <fieldset>
             <table class="form">
                 <tr>
@@ -22,7 +20,7 @@
                 </tr>
             </table>
         </fieldset>
-    </form>  
+    </form>
 </div>
 <script type="text/javascript">
     $("#oui").click(function () {
@@ -33,5 +31,3 @@
         $('.closeBtn').click();
     });
 </script>
-
-

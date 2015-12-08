@@ -49,22 +49,14 @@
 </div>
 <!--
 <script type="text/javascript">
+    $("#send_preteur").click(function() {
+        var id = $("#id").val(),
+            val = {
+                id: id
+            };
 
-
-
-    $("#send_preteur").click(function () {
-
-        var id = $("#id").val();
-
-        var val = {
-            id: id
-        }
-
-        $.post(add_url + '/ajax/attribution_emprunteur', val).done(function (data) {
-            //alert(data);
-
-            if (data != 'nok')
-            {
+        $.post(add_url + '/ajax/attribution_emprunteur', val).done(function(data) {
+            if (data != 'nok') {
                 $("#leformpreteur").hide();
                 $("#reponse").show();
                 $("#reponse").html(data);
@@ -75,5 +67,4 @@
             }
         });
     });
-
 </script>-->

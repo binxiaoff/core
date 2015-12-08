@@ -737,14 +737,9 @@ class dates
         return $nb_jours;
     }
 
-    function nbJours($debut, $fin) {
-        //60 secondes X 60 minutes X 24 heures dans une journée
-        $nbSecondes= 60*60*24;
-
-        $debut_ts = strtotime($debut);
-        $fin_ts = strtotime($fin);
-        $diff = $fin_ts - $debut_ts;
-        return round($diff / $nbSecondes);
+    function nbJours($debut, $fin)
+    {
+        return round((strtotime($fin) - strtotime($debut)) / (60 * 60 * 24));
     }
 
     function dateDiff($date1, $date2)

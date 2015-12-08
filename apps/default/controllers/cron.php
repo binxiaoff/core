@@ -2283,7 +2283,6 @@ class cronController extends bootstrap
 
                         // On check si on a la restriction "BIENVENUE"
                         if (strpos($ligne, 'BIENVENUE') == true) {
-                            //echo $i.' '.$ligne.'<br>';
                             $array[$i]['unilend_bienvenue'] = true;
                         }
 
@@ -2291,15 +2290,12 @@ class cronController extends bootstrap
                         if (in_array(substr($ligne, 32, 2), array(23, 25, 'A1', 'B1'))) {
                             // On veut recuperer ques ces 2 lignes
                             if (in_array(trim(substr($ligne, 45, 3)), array('LCC', 'LC2'))) {
-
                                 $laligne += 1;
-                                //$array[$i]['ligne'.$laligne] = $ligne;
                                 $array[$i]['libelleOpe' . $laligne] = trim(substr($ligne, 45));
                             }
                         } // virement
                         else {
                             $laligne += 1;
-                            //$array[$i]['ligne'.$laligne] = $ligne;
                             $array[$i]['libelleOpe' . $laligne] = trim(substr($ligne, 45));
                         }
                     }
@@ -2326,34 +2322,27 @@ class cronController extends bootstrap
     public function _reception()
     {
         if (true === $this->startCron('reception', 5)) {
+            $receptions                          = $this->loadData('receptions');
+            $clients                             = $this->loadData('clients');
+            $lenders                             = $this->loadData('lenders_accounts');
+            $transactions                        = $this->loadData('transactions');
+            $wallets                             = $this->loadData('wallets_lines');
+            $bank                                = $this->loadData('bank_lines');
+            $projects                            = $this->loadData('projects');
+            $companies                           = $this->loadData('companies');
+            $prelevements                        = $this->loadData('prelevements');
+            $echeanciers                         = $this->loadData('echeanciers');
+            $echeanciers_emprunteur              = $this->loadData('echeanciers_emprunteur');
+            $bank_unilend                        = $this->loadData('bank_unilend');
+            $projects_remb                       = $this->loadData('projects_remb');
+            $this->notifications                 = $this->loadData('notifications');
+            $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+            $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
 
-            $receptions = $this->loadData('receptions');
-
-            $clients      = $this->loadData('clients');
-            $lenders      = $this->loadData('lenders_accounts');
-            $transactions = $this->loadData('transactions');
-            $wallets      = $this->loadData('wallets_lines');
-            $bank         = $this->loadData('bank_lines');
-
-            $projects               = $this->loadData('projects');
-            $companies              = $this->loadData('companies');
-            $prelevements           = $this->loadData('prelevements');
-            $echeanciers            = $this->loadData('echeanciers');
-            $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-            $bank_unilend           = $this->loadData('bank_unilend');
-
-            $projects_remb = $this->loadData('projects_remb');
-
-            $this->notifications = $this->loadData('notifications');
-
-            $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications'); // add gestion alertes
-            $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif'); // add gestion alertes
-            // Statuts virements
             $statusVirementRecu  = array(05, 18, 45, 13);
             $statusVirementEmis  = array(06, 21);
             $statusVirementRejet = array(12);
 
-            //Statuts prelevements
             $statusPrelevementEmi    = array(23, 25, 'A1', 'B1');
             $statusPrelevementRejete = array(10, 27, 'A3', 'B3');
 
@@ -2383,14 +2372,10 @@ class cronController extends bootstrap
             // enregistrement chez nous
             $file = @file_get_contents($lien);
             if ($file === false) {
-                //die; // pour le test
-                //echo 'pas de fichier';
-
                 $ladate = time();
 
                 // le cron passe a 15 et 45, nous on va check a 15
                 $NotifHeure = mktime(10, 0, 0, date('m'), date('d'), date('Y'));
-
                 $NotifHeurefin = mktime(10, 20, 0, date('m'), date('d'), date('Y'));
 
                 // Si a 10h on a pas encore de fichier bah on lance un mail notif
@@ -2718,82 +2703,73 @@ class cronController extends bootstrap
                             } //end else
                             // FIN RECHERCHE MOTIF EN BDD //
 
-                            if ($retour_auto == true)
-                            {
-                                // REGULARISATION
-                                if($regularisation == true){
+                            if ($retour_auto == true) {
+                                if ($regularisation == true) {
                                     preg_match_all('#[0-9]+#', $r['libelleOpe3'], $extractId_project);
 
-                                    foreach ($extractId_project[0] as $nombre)
-                                    {
+                                    foreach ($extractId_project[0] as $nombre) {
                                         if ($projects->get($nombre, 'id_project')) {
-                                            $companies = $this->loadData('companies');
-                                            $receptionPrelev = $this->loadData('receptions');
+                                            $companies          = $this->loadData('companies');
+                                            $receptionPrelev    = $this->loadData('receptions');
                                             $transactions_types = $this->loadData('transactions_types');
                                             $soldes_emprunteurs = $this->loadData('soldes_emprunteurs');
 
                                             $companies->get($projects->id_company,'id_company');
 
-                                            // on met a jour le virement
                                             $receptions->get($receptions->id_reception, 'id_reception');
-                                            $receptions->motif = $motif;
-                                            $receptions->id_client = $companies->id_client_owner;
+                                            $receptions->motif      = $motif;
+                                            $receptions->id_client  = $companies->id_client_owner;
                                             $receptions->id_project = $nombre;
-                                            $receptions->status_bo = 2;
-                                            $receptions->type_remb = 2;
-                                            $receptions->remb = 1;
+                                            $receptions->status_bo  = 2;
+                                            $receptions->type_remb  = 2;
+                                            $receptions->remb       = 1;
                                             $receptions->update();
 
-                                            // on crée le prelevement
-                                            $receptionPrelev->id_parent = $receptions->id_reception; // fils d'une reception virement
-                                            $receptionPrelev->motif = $motif;
-                                            $receptionPrelev->montant = $receptions->montant;
-                                            $receptionPrelev->type = 1; // prelevement
-                                            $receptionPrelev->type_remb = 2; // regularisation
+                                            $receptionPrelev->id_parent          = $receptions->id_reception; // fils d'une reception virement
+                                            $receptionPrelev->motif              = $motif;
+                                            $receptionPrelev->montant            = $receptions->montant;
+                                            $receptionPrelev->type               = 1; // prelevement
+                                            $receptionPrelev->type_remb          = 2; // regularisation
                                             $receptionPrelev->status_prelevement = 2; // émis
-                                            $receptionPrelev->status_bo = 2; // attr manu
-                                            $receptionPrelev->remb = 1; // remboursé oui
-                                            $receptionPrelev->id_client = $companies->id_client_owner;
-                                            $receptionPrelev->id_project = $nombre;
-                                            $receptionPrelev->ligne = $receptions->ligne;
-                                            $receptionPrelev->id_reception = $receptionPrelev->create();
+                                            $receptionPrelev->status_bo          = 2; // attr manu
+                                            $receptionPrelev->remb               = 1; // remboursé oui
+                                            $receptionPrelev->id_client          = $companies->id_client_owner;
+                                            $receptionPrelev->id_project         = $nombre;
+                                            $receptionPrelev->ligne              = $receptions->ligne;
+                                            $receptionPrelev->create();
 
                                             if ($transactions->get($receptionPrelev->id_reception, 'status = 1 AND etat = 1 AND type_transaction = 24 AND id_prelevement') == false) {
-                                                // transact
-                                                $transactions->id_prelevement = $receptionPrelev->id_reception;
-                                                $transactions->id_client = $companies->id_client_owner;
-                                                $transactions->montant = $receptionPrelev->montant;
-                                                $transactions->id_langue = 'fr';
+                                                $transactions->id_prelevement   = $receptionPrelev->id_reception;
+                                                $transactions->id_client        = $companies->id_client_owner;
+                                                $transactions->montant          = $receptionPrelev->montant;
+                                                $transactions->id_langue        = 'fr';
                                                 $transactions->date_transaction = date('Y-m-d H:i:s');
-                                                $transactions->status = 1;
-                                                $transactions->etat = 1;
-                                                $transactions->transaction = 1;
+                                                $transactions->status           = 1;
+                                                $transactions->etat             = 1;
+                                                $transactions->transaction      = 1;
                                                 $transactions->type_transaction = 24; // Virement de régularisation (remb emprunteur)
-                                                $transactions->ip_client = $_SERVER['REMOTE_ADDR'];
-                                                $transactions->id_transaction = $transactions->create();
+                                                $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                                                $transactions->create();
 
-                                                // bank unilend
                                                 $bank_unilend->id_transaction = $transactions->id_transaction;
-                                                $bank_unilend->id_project = $projects->id_project;
-                                                $bank_unilend->montant = $receptionPrelev->montant;
-                                                $bank_unilend->type = 1;
+                                                $bank_unilend->id_project     = $projects->id_project;
+                                                $bank_unilend->montant        = $receptionPrelev->montant;
+                                                $bank_unilend->type           = 1;
                                                 $bank_unilend->create();
 
                                                 $this->updateEcheances($projects->id_project, $receptionPrelev->montant, $projects->remb_auto);
-
-                                                ///// DEBUT SOLDE EMPRUNTEUR /////
 
                                                 $lastSolde = $soldes_emprunteurs->lastSoldeEmprunteur($companies->id_client_owner);
                                                 $newSolde = $lastSolde + $receptionPrelev->montant;
 
                                                 $transactions_types->get(24, 'id_transaction_type');
 
-                                                $soldes_emprunteurs->id_client = $companies->id_client_owner;
-                                                $soldes_emprunteurs->id_company = $companies->id_company;
-                                                $soldes_emprunteurs->id_transaction = $transactions->id_transaction;
-                                                $soldes_emprunteurs->type = $transactions_types->nom;
-                                                $soldes_emprunteurs->montant = $receptionPrelev->montant;
-                                                $soldes_emprunteurs->solde = $newSolde;
+                                                $soldes_emprunteurs->id_client        = $companies->id_client_owner;
+                                                $soldes_emprunteurs->id_company       = $companies->id_company;
+                                                $soldes_emprunteurs->id_transaction   = $transactions->id_transaction;
+                                                $soldes_emprunteurs->type             = $transactions_types->nom;
+                                                $soldes_emprunteurs->montant          = $receptionPrelev->montant;
+                                                $soldes_emprunteurs->solde            = $newSolde;
                                                 $soldes_emprunteurs->date_transaction = date('Y-m-d H:i:s');
                                                 $soldes_emprunteurs->create();
                                             }
@@ -3022,7 +2998,6 @@ class cronController extends bootstrap
         $projects_remb = $this->loadData('projects_remb');
 
         // on parcourt les echeances
-        //$eche = $echeanciers->getSumRembEmpruntByMonths($projects->id_project,'','0');
         $eche = $echeanciers_emprunteur->select('status_emprunteur = 0 AND id_project = ' . $id_project, 'ordre ASC');
         $sumRemb = ($montant / 100);
 
@@ -3501,10 +3476,7 @@ class cronController extends bootstrap
 
                     $sommePrelev = $sommePrelev / 100;
 
-
-
-                $leRembEmprunteur = $rembEmprunteur[$date]['montant'] + $rembEmprunteurRegularisation[$date]['montant'] + $rejetrembEmprunteur[$date]['montant']; // update le 22/01/2015
-                // additions //
+                    $leRembEmprunteur = $rembEmprunteur[$date]['montant'] + $rembEmprunteurRegularisation[$date]['montant'] + $rejetrembEmprunteur[$date]['montant']; // update le 22/01/2015
 
                     $totalAlimCB += $alimCB[$date]['montant'];
                     $totalAlimVirement += $alimVirement[$date]['montant'];
@@ -8377,20 +8349,14 @@ class cronController extends bootstrap
      */
     public function _traitement_file_attente_envoi_mail()
     {
-        // Récuperation des mails à envoyer
-        $liste_attente_mail = $this->loadData('liste_attente_mail');
+        $liste_attente_mail      = $this->loadData('liste_attente_mail');
         $liste_attente_mail_temp = $this->loadData('liste_attente_mail');
 
         $L_mail_a_traiter = $liste_attente_mail->select('statut = 0','added ASC',0, 50);
 
         if(count($L_mail_a_traiter)> 0) {
             foreach($L_mail_a_traiter as $mail) {
-                // envoi du mail
-
-                // Recuperation du modele de mail
                 $this->mails_text->get($mail['type_mail'], 'lang = "' . $mail['language']. '" AND type');
-
-                // Variables du mailing
 
                 $varMail = unserialize($mail['variables']);
 
@@ -8399,30 +8365,25 @@ class cronController extends bootstrap
                     $varMail = array_map('utf8_decode', $varMail);
                 }
 
-                // Construction du tableau avec les balises EMV
                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                // Attribution des données aux variables
                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                // Envoi du mail
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                if ($this->Config['env'] == 'prod') {  // nmp
+                if ($this->Config['env'] === 'prod') {
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $mail['to'], $tabFiler);
-                    // Injection du mail NMP dans la queue
                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {// non nmp
+                } else {
                     $this->email->addRecipient(trim($mail['to']));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
 
-                // mise à jour du mail dans la file d'attente
                 $liste_attente_mail_temp->get($mail['id']);
                 $liste_attente_mail_temp->statut = 1; //envoyé
                 $liste_attente_mail_temp->update();

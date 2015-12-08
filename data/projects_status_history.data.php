@@ -154,25 +154,22 @@ class projects_status_history extends projects_status_history_crud
         return false;
     }
 
-    public function addStatusAndReturnID($id_user, $status, $id_project) {
-        $sql = 'SELECT id_project_status FROM `projects_status` WHERE status = ' . $status . ' ';
-
-        $result = $this->bdd->query($sql);
-        $id_project_status = (int) ($this->bdd->result($result, 0, 0));
-
-
-        $this->id_project = $id_project;
-        $this->id_project_status = $id_project_status;
-        $this->id_user = $id_user;
+    public function addStatusAndReturnID($id_user, $status, $id_project)
+    {
+        $result                  = $this->bdd->query('SELECT id_project_status FROM `projects_status` WHERE status = ' . $status);
+        $this->id_project        = $id_project;
+        $this->id_project_status = (int) $this->bdd->result($result, 0, 0);
+        $this->id_user           = $id_user;
 
         return $this->create();
     }
 
-    public function selectHisto($id_project, $arrayStatus = '') {
+    public function selectHisto($id_project, $arrayStatus = '')
+    {
         $where = '';
         if ($arrayStatus != '') {
             $status = implode(',', $arrayStatus);
-            $where = ' AND id_project_status IN (' . $status . ') ';
+            $where  = ' AND id_project_status IN (' . $status . ') ';
         }
 
         $sql = '
@@ -187,7 +184,7 @@ class projects_status_history extends projects_status_history_crud
             ORDER BY psh.added ASC';
 
         $resultat = $this->bdd->query($sql);
-        $result = array();
+        $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }

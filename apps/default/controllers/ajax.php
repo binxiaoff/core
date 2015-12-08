@@ -12,16 +12,13 @@ class ajaxController extends bootstrap
         $this->autoFireDebug  = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
-
     }
 
     /* Modification de la modifcation des traductions à la volée */
     public function _activeModificationsTraduction()
     {
-        // On desactive la vue qui sert à rien
         $this->autoFireView = false;
 
-        // On renseigne la session avec l'etat demandé
         $_SESSION['modification'] = $this->params[0];
     }
 
@@ -1747,7 +1744,7 @@ class ajaxController extends bootstrap
             2  => array(1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'], 2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'], 3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']),
             3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            5 => array(1=> $this->lng['preteur-operations-vos-operations']['remboursement'],2 => $this->lng['preteur-operations-vos-operations']['recouvrement']),
+            5  => array(1 => $this->lng['preteur-operations-vos-operations']['remboursement'], 2 => $this->lng['preteur-operations-vos-operations']['recouvrement']),
             7  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             8  => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
             16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],

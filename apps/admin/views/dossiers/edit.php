@@ -84,30 +84,25 @@
                 $("#msgProjectPeriodHS").css('display', 'none');
             }
         });
-<?
-if ($this->nb_lignes != '') {
-    ?>
-                                    $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
-    <?
-}
-?>
-                            });
-<?
-if (isset($_SESSION['freeow'])) {
-    ?>
-                                $(document).ready(function () {
-                                    var title, message, opts, container;
-                                    title = "<?= $_SESSION['freeow']['title'] ?>";
-                                    message = "<?= $_SESSION['freeow']['message'] ?>";
-                                    opts = {};
-                                    opts.classes = ['smokey'];
-                                    $('#freeow-tr').freeow(title, message, opts);
 
-                                });
-    <?
-    unset($_SESSION['freeow']);
-}
-?>
+        <?php if ($this->nb_lignes != '') { ?>
+        $(".tablesorter").tablesorterPager({
+            container: $("#pager"),
+            positionFixed: false,
+            size: <?= $this->nb_lignes ?>
+        });
+        <?php } ?>
+
+        <?php if (isset($_SESSION['freeow'])) { ?>
+        var title = "<?= $_SESSION['freeow']['title'] ?>",
+            message = "<?= $_SESSION['freeow']['message'] ?>",
+            opts = {},
+            container;
+        opts.classes = ['smokey'];
+        $('#freeow-tr').freeow(title, message, opts);
+        <?php unset($_SESSION['freeow']); ?>
+        <?php } ?>
+    });
 </script>
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
@@ -336,21 +331,21 @@ if (isset($_SESSION['freeow'])) {
                         </tr>
                         <tr>
                             <th>Identification virement :</th>
-                            <td>                            
+                            <td>
                                 <label for="statut"><?= $this->receptions->id_reception ?></label>
                             </td>
                         </tr>
 
                         <tr>
                             <th>Montant virement :</th>
-                            <td>                            
+                            <td>
                                 <label for="statut"><?= ($this->receptions->montant / 100) ?> €</label>
                             </td>
                         </tr>
 
                         <tr>
                             <th>Motif du virement :</th>
-                            <td>                            
+                            <td>
                                 <label for="statut"><?= $this->receptions->motif ?></label>
                             </td>
                         </tr>
@@ -489,16 +484,16 @@ if (isset($_SESSION['freeow'])) {
                                 }
                             }
                             ?>
-                        </td>	
-                    </tr>  
+                        </td>
+                    </tr>
+                    <?php if ($this->current_projects_status->status == \projects_status::NOTE_EXTERNE_FAIBLE && false === empty($this->current_projects_status_history->content)) { ?>
+                    <tr>
+                        <th><label for="status">Motif :</label></th>
+                        <td><?= $this->current_projects_status_history->content ?></td>
+                    </tr>
+                    <?php } ?>
                 </table>
-                <?php if ($this->current_projects_status->status == \projects_status::NOTE_EXTERNE_FAIBLE && false === empty($this->current_projects_status_history->content)) { ?>
-                <tr>
-                    <th><label for="status">Motif :</label></th>
-                    <td><?= $this->current_projects_status_history->content ?></td>
-                </tr>
-                <?php } ?>
-                
+
                 <a href="<?= $this->lurl ?>/thickbox/popup_confirmation_send_email/<?= $this->projects->id_project ?>" class="thickbox confirmation_send_email"></a>
                 <input type="hidden" name="check_confirmation_send_email" id="check_confirmation_send_email" value="0">
                 <table class="hidden_table bloc_mail_preteur">
@@ -508,10 +503,10 @@ if (isset($_SESSION['freeow'])) {
                     <tr>
                         <td><textarea class="textarea_lng" name="area_probleme" id="area_probleme" style="height: 100px;width: 420px;"></textarea></td>
                     </tr>
-                    <tr>   
-                        <th><i>Envoyer l'email d'information aux prêteurs :</i></th>                                
+                    <tr>
+                        <th><i>Envoyer l'email d'information aux prêteurs :</i></th>
                     </tr>
-                    <tr>  
+                    <tr>
                         <td>
                             <input type="radio" name="mail_a_envoyer_preteur_probleme" id="oui_envoyer_mail" value="0" />
                             <label for="oui_envoyer_mail">Oui</label>
@@ -529,8 +524,8 @@ if (isset($_SESSION['freeow'])) {
                     <tr>
                         <td><textarea class="textarea_lng" name="area_problemeX" id="area_problemeX" style="height: 100px;width: 420px;"></textarea></td>
                     </tr>
-                    <tr>   
-                        <th><i>Envoyer l'email d'information aux prêteurs :</i></th>                                
+                    <tr>
+                        <th><i>Envoyer l'email d'information aux prêteurs :</i></th>
                     </tr>
                     <tr>
                         <td>
@@ -550,8 +545,8 @@ if (isset($_SESSION['freeow'])) {
                     <tr>
                         <td><textarea class="textarea_lng" name="area_recouvrement" id="area_recouvrement" style="height: 100px;width: 420px;"></textarea></td>
                     </tr>
-                    <tr>   
-                        <th><i>Envoyer l'email d'information aux prêteurs :</i></th>                                
+                    <tr>
+                        <th><i>Envoyer l'email d'information aux prêteurs :</i></th>
                     </tr>
                     <tr>
                         <td>
@@ -591,8 +586,8 @@ if (isset($_SESSION['freeow'])) {
                     <tr>
                         <td><textarea class="textarea_lng" name="area_ps" id="area_ps" style="height: 100px;width: 420px;"></textarea></td>
                     </tr>
-                    <tr>   
-                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>                                
+                    <tr>
+                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>
                     </tr>
                     <tr>
                         <td>
@@ -633,8 +628,8 @@ if (isset($_SESSION['freeow'])) {
                     <tr>
                         <td><textarea class="textarea_lng" name="area_rj" id="area_rj" style="height: 100px;width: 420px;"></textarea></td>
                     </tr>
-                    <tr>   
-                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>                                
+                    <tr>
+                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>
                     </tr>
                     <tr>
                         <td>
@@ -674,8 +669,8 @@ if (isset($_SESSION['freeow'])) {
                     <tr>
                         <td><textarea class="textarea_lng" name="area_lj" id="area_lj" style="height: 100px;width: 420px;"></textarea></td>
                     </tr>
-                    <tr>   
-                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>                                
+                    <tr>
+                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>
                     <tr>
                         <td>
                             <input type="radio" name="mail_a_envoyer_preteur_lj" id="oui_envoyer_mail_lj" value="0" />
@@ -702,8 +697,8 @@ if (isset($_SESSION['freeow'])) {
                     <tr>
                         <td><textarea class="textarea_lng" name="area_default" id="area_default" style="height: 100px;width: 420px;"></textarea></td>
                     </tr>
-                    <tr>   
-                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>                                
+                    <tr>
+                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>
                     <tr>
                         <td>
                             <input type="radio" name="mail_a_envoyer_preteur_default" id="oui_envoyer_mail_default" value="0" />
@@ -714,9 +709,7 @@ if (isset($_SESSION['freeow'])) {
                         </td>
                     </tr>
                 </table>
-
                 <table class="form" style="width: 538px;">
-
                     <?php if (in_array($this->current_projects_status->status, array(25, 31, 33, 35))) { ?>
                         <tr class="change_statut" <?= ($this->current_projects_status->status == 35 ? '' : 'style="display:none"') ?>>
                             <td colspan="2">
@@ -911,38 +904,28 @@ if (isset($_SESSION['freeow'])) {
             <div style="display:none" class="recharge">
                 <script type="text/javascript">
                     $("#status").change(function () {
-
+                        var status = $("#status").val();
                         $('.hidden_table').hide();
 
-                        if ($("#status").val() == 40) {
+                        if (status == <?= \projects_status::A_FUNDER ?>) {
                             $(".change_statut").hide();
-                        }
-                        else if ($("#status").val() == 80) {
+                        } else if (status == 80) {
                             /* dans le cas d'un changement vers probleme, on affiche une box de conf */
-
-                        }
-                        else if ($("#status").val() == 100) {
+                        } else if (status == 100) {
                             $('.bloc_mail_preteur').show();
-                        }
-                        else if ($("#status").val() == 140) {
+                        } else if (status == 140) {
                             $('.bloc_mail_preteur_problemeX').show();
-                        }
-                        else if ($("#status").val() == 110) {
+                        } else if (status == 110) {
                             $('.bloc_mail_preteur_recouvrement').show();
-                        }
-                        else if ($("#status").val() == 120) {
+                        } else if (status == 120) {
                             $('.bloc_mail_preteur_default').show();
-                        }
-                        else if ($("#status").val() == 150) {
+                        } else if (status == 150) {
                             $('.bloc_mail_preteur_ps').show();
-                        }
-                        else if ($("#status").val() == 160) {
+                        } else if (status == 160) {
                             $('.bloc_mail_preteur_rj').show();
-                        }
-                        else if ($("#status").val() == 170) {
+                        } else if (status == 170) {
                             $('.bloc_mail_preteur_lj').show();
-                        }
-                        else {
+                        } else {
                             $(".change_statut").show();
                         }
                     });
@@ -1263,20 +1246,8 @@ if (isset($_SESSION['freeow'])) {
                         </td>
                     </tr>
                     <tr>
-                        <td colspan="4" style="text-align:left;"><input <?= ($this->companies->status_client == 3 ? 'checked' : '') ?> type="radio" name="enterprise_etape2" id="enterprise3_etape2" value="3" /><label for="enterprise3_etape2"> Je suis un conseil externe de l'entreprise </label></td>
-                    </tr>
-                    <!---->
-                    <tr <?= ($this->companies->status_client == 3 ? '' : 'style="display:none;"') ?> class="statut_dirigeant3_etape2">
-                        <th><label for="status_conseil_externe_entreprise_etape2">Type de conseiller :</label></th>
-                        <td>
-                            <select name="status_conseil_externe_entreprise_etape2" id="status_conseil_externe_entreprise_etape2" class="select">
-                                <option value="0">Choisir</option>
-                                <?
-                                foreach ($this->conseil_externe as $k => $conseil_externe) {
-                                    ?><option <?= ($this->companies->status_conseil_externe_entreprise == $k ? 'selected' : '') ?> value="<?= $k ?>" ><?= $conseil_externe ?></option><?
-                                }
-                                ?>
-                            </select>
+                        <td colspan="4" style="text-align:left;">
+                            <input <?= true === $this->bHasPrescripteur ? 'checked' : ''?> type="radio" name="enterprise_etape2" id="enterprise3_etape2" value="3"/><label for="enterprise3_etape2"> Je suis un conseil externe de l'entreprise </label>
                         </td>
                     </tr>
                     <tr>
@@ -2374,49 +2345,32 @@ if (isset($_SESSION['freeow'])) {
 
     $("#dossier_resume").submit(function (event) {
         if ($("#statut_encours").val() == '0') {
-            
             var check_ok = true;
-            
-            if($('input[name=mail_a_envoyer_preteur_probleme]:checked', '#dossier_resume').val() == '0'){
-               
+
+            if ($('input[name=mail_a_envoyer_preteur_probleme]:checked', '#dossier_resume').val() == '0') {
                 check_ok = false;
-            }
-            else if($('input[name=mail_a_envoyer_preteur_problemeX]:checked', '#dossier_resume').val() == '0'){
-               
+            } else if ($('input[name=mail_a_envoyer_preteur_problemeX]:checked', '#dossier_resume').val() == '0') {
                 check_ok = false;
-            }
-            else if($('input[name=mail_a_envoyer_preteur_probleme_recouvrement]:checked', '#dossier_resume').val() == '0'){
-               
+            } else if ($('input[name=mail_a_envoyer_preteur_probleme_recouvrement]:checked', '#dossier_resume').val() == '0') {
                 check_ok = false;
-            }
-            else if($('input[name=mail_a_envoyer_preteur_ps]:checked', '#dossier_resume').val() == '0'){
-               
+            } else if ($('input[name=mail_a_envoyer_preteur_ps]:checked', '#dossier_resume').val() == '0') {
                 check_ok = false;
-            }
-            else if($('input[name=mail_a_envoyer_preteur_rj]:checked', '#dossier_resume').val() == '0'){
-               
+            } else if ($('input[name=mail_a_envoyer_preteur_rj]:checked', '#dossier_resume').val() == '0') {
                 check_ok = false;
-            }
-            else if($('input[name=mail_a_envoyer_preteur_lj]:checked', '#dossier_resume').val() == '0'){
-               
+            } else if ($('input[name=mail_a_envoyer_preteur_lj]:checked', '#dossier_resume').val() == '0') {
                 check_ok = false;
-            }
-            else if($('input[name=mail_a_envoyer_preteur_default]:checked', '#dossier_resume').val() == '0'){
-               
+            } else if ($('input[name=mail_a_envoyer_preteur_default]:checked', '#dossier_resume').val() == '0') {
                 check_ok = false;
             }
             // On a un envoi de mail selected qu'on doit confirmer
-            if(check_ok == false && $('#check_confirmation_send_email').val() == '0'){
+            if (check_ok == false && $('#check_confirmation_send_email').val() == '0') {
                 $(".confirmation_send_email").click();
                 event.preventDefault();
-            }
-            // On peut valider
-            else{
+            } else {
                 $("#statut_encours").val('1');
                 $(".submitdossier").remove();
             }
-        }
-        else {
+        } else {
             event.preventDefault();
         }
     });

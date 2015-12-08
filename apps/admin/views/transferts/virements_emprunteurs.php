@@ -87,7 +87,7 @@ if (isset($_SESSION['freeow'])) {
                 </tr>
             </thead>
             <tbody>
-                <?
+                <?php
                 $i = 1;
                 foreach ($this->lvirements as $v) {
                     $infos = '';

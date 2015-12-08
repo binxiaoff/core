@@ -543,8 +543,8 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                                         if ($s['id_project_status'] == 11) {
                                             $catital_remb              = $this->sumRemb;
                                             $capital_total             = $this->bidsvalid['solde'];
-                                            $pourcentage_capital_recup = (($catital_remb / $capital_total) * 100);
-                                            echo '<p>Vous avez récupéré <b class="pinky-span">'.number_format($pourcentage_capital_recup, 2, ',', ' ').' %</b> de votre capital.</p>';
+                                            $pourcentage_capital_recup = $catital_remb / $capital_total * 100;
+                                            echo '<p>Vous avez récupéré <b class="pinky-span">' . $this->ficelle->formatNumber($pourcentage_capital_recup) . ' %</b> de votre capital.</p>';
                                         }
                                     }
                                 }

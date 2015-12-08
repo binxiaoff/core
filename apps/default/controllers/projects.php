@@ -645,23 +645,19 @@ class projectsController extends bootstrap
                 }
             }
 
-            // Liste des encheres enregistrées
-            $this->lEnchere = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
-
+            $this->lEnchere     = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
             $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
+            $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
 
-            $this->avgAmount = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
-            if ($this->avgAmount == false)
+            if ($this->avgAmount == false) {
                 $this->avgAmount = 0;
-            //$this->avgRate = $this->bids->getAVG($this->projects->id_project,'rate');
-            // moyenne pondéré
+            }
+
             $montantHaut = 0;
-            $tauxBas = 0;
-            $montantBas = 0;
-            // funding ko
+            $tauxBas     = 0;
+            $montantBas  = 0;
 
             if ($this->projects_status->status == 70) {
-
                 foreach ($this->bids->select('id_project = ' . $this->projects->id_project) as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
@@ -682,83 +678,71 @@ class projectsController extends bootstrap
                     $montantBas += ($b['amount'] / 100);
                 }
             }
-            if ($montantHaut > 0 && $montantBas > 0)
+
+            if ($montantHaut > 0 && $montantBas > 0) {
                 $this->avgRate = ($montantHaut / $montantBas);
-            else
+            } else {
                 $this->avgRate = 0;
-            /* if($montantHaut > 0 && $tauxBas > 0)
-              $this->avgAmount = ($montantHaut/$tauxBas)*100;
-              else $this->avgAmount = 0; */
+            }
 
             // status enchere
             $this->status = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
 
-            if ($this->lenders_accounts->id_lender_account != false)
+            if ($this->lenders_accounts->id_lender_account != false) {
                 $this->bidsEncours = $this->bids->getBidsEncours($this->projects->id_project, $this->lenders_accounts->id_lender_account);
+            }
 
             // liste des bids du lender pour le projet
-            if ($this->lenders_accounts->id_lender_account != false)
+            if ($this->lenders_accounts->id_lender_account != false) {
                 $this->lBids = $this->bids->select('id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $this->projects->id_project . ' AND status = 0', 'added ASC');
+            }
 
             ///////////////////////////////
             // Si le projet est en fundé // ou remb
             ///////////////////////////////
             if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
-
-
                 // Retourne un tableau avec le nb d'encheres valides et le solde des encheres validées
-                if ($this->lenders_accounts->id_lender_account != false)
+                if ($this->lenders_accounts->id_lender_account != false) {
                     $this->bidsvalid = $this->loans->getBidsValid($this->projects->id_project, $this->lenders_accounts->id_lender_account);
+                }
 
-                // Nb preteurs validés
                 $this->NbPreteurs = $this->loans->getNbPreteurs($this->projects->id_project);
 
-                // Taux moyen des encheres validés (all du projet)
-                //$this->AvgLoans = $this->loans->getAvgLoans($this->projects->id_project,'rate');
-
                 $montantHaut = 0;
-                $montantBas = 0;
+                $montantBas  = 0;
                 foreach ($this->loans->select('id_project = ' . $this->projects->id_project) as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
                 }
                 $this->AvgLoans = ($montantHaut / $montantBas);
 
-                // Taux moyen des encheres validés du preteur
-                if ($this->lenders_accounts->id_lender_account != false)
+                if ($this->lenders_accounts->id_lender_account != false) {
                     $this->AvgLoansPreteur = $this->loans->getAvgLoansPreteur($this->projects->id_project, $this->lenders_accounts->id_lender_account, 'rate');
-                if ($this->projects->date_publication_full != '0000-00-00 00:00:00')
-                    $date1 = strtotime($this->projects->date_publication_full);
-                else
-                    $date1 = strtotime($this->projects->date_publication . ' 00:00:00');
+                }
 
-                if ($this->projects->date_retrait_full != '0000-00-00 00:00:00')
+                if ($this->projects->date_publication_full != '0000-00-00 00:00:00') {
+                    $date1 = strtotime($this->projects->date_publication_full);
+                } else {
+                    $date1 = strtotime($this->projects->date_publication . ' 00:00:00');
+                }
+
+                if ($this->projects->date_retrait_full != '0000-00-00 00:00:00') {
                     $date2 = strtotime($this->projects->date_retrait_full);
-                else
+                } else {
                     $date2 = strtotime($this->projects->date_fin);
+                }
+
                 $this->interDebutFin = $this->dates->dateDiff($date1, $date2);
 
-
-
-                //$lProjetAvecBids = $this->bids->getProjetAvecBid();
-                //print_r($lProjetAvecBids);
-                // Si en remboursement
-                //if($this->projects_status->status == 80)
-                //{
                 if ($this->lenders_accounts->id_lender_account != false) {
-                    $this->sumRemb = $this->echeanciers->sumARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 0');
-
-                    $this->sumRemb += $this->echeanciers->sumARembByProjectCapital($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 1'); // (add 17/07/2015)
-
+                    $this->sumRemb          = $this->echeanciers->sumARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 0') + $this->echeanciers->sumARembByProjectCapital($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 1');
                     $this->sumRestanteARemb = $this->echeanciers->getSumRestanteARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project);
-
-                    $this->nbPeriod = $this->echeanciers->counterPeriodRestantes($this->lenders_accounts->id_lender_account, $this->projects->id_project);
+                    $this->nbPeriod         = $this->echeanciers->counterPeriodRestantes($this->lenders_accounts->id_lender_account, $this->projects->id_project);
 
                     if ($this->bidsvalid['solde'] > 0) {
                         $this->lhistoStatus = $this->projects_status_history->selectHisto($this->projects->id_project, array(9, 10, 11, 25, 26, 27, 28));
                     }
                 }
-                //}
             }
         } else {
             header('Location: ' . $this->lurl . '/projects');

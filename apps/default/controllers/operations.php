@@ -329,7 +329,7 @@ class operationsController extends bootstrap
         $this->lTrans = $this->indexage_vos_operations->select('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"' . $tri_project, $order);
 
         $user_agent = $_SERVER['HTTP_USER_AGENT'];
-        // MAC
+
         if (strpos($user_agent, "Mac") !== FALSE || 5 == 5) {
             header("Content-type: application/vnd.ms-excel; charset=utf-8");
             header("Expires: 0");
@@ -350,10 +350,8 @@ class operationsController extends bootstrap
                     <th><?= $this->lng['preteur-operations-pdf']['projets'] ?></th>
                     <th><?= $this->lng['preteur-operations-pdf']['date-de-loperation'] ?></th>
                     <th><?= $this->lng['preteur-operations-pdf']['montant-de-loperation'] ?></th>
-
                     <th><?= $this->lng['preteur-operations-vos-operations']['capital-rembourse'] ?></th>
                     <th><?= $this->lng['preteur-operations-vos-operations']['interets-recus'] ?></th>
-
                     <th>Pr&eacute;l&egrave;vements obligatoires</th>
                     <th>Retenue &agrave; la source</th>
                     <th>CSG</th>
@@ -364,12 +362,10 @@ class operationsController extends bootstrap
                     <th>Commission HT</th>
                     <th>Commission TVA</th>
                     <th>Commission TTC</th>
-
                     <th><?= $this->lng['preteur-operations-pdf']['solde-de-votre-compte'] ?></th>
                     <td></td>
                 </tr>
-
-                <?
+                <?php
                 $asterix_on = false;
                 foreach ($this->lTrans as $t) {
 
@@ -402,30 +398,20 @@ class operationsController extends bootstrap
                             $this->echeanciers->contributions_additionnelles = 0;
                             $this->echeanciers->prelevements_solidarite      = 0;
                             $this->echeanciers->crds                         = 0;
+                            $this->echeanciers->capital                      = $t['montant_operation'];
+                        } elseif ($t['type_transaction'] == 5 && $t['recouvrement'] == 1 && $this->echeanciers_recouvrements_prorata->get($t['id_transaction'], 'id_transaction')) {
+                            $retenuesfiscals = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires + $this->echeanciers_recouvrements_prorata->retenues_source + $this->echeanciers_recouvrements_prorata->csg + $this->echeanciers_recouvrements_prorata->prelevements_sociaux + $this->echeanciers_recouvrements_prorata->contributions_additionnelles + $this->echeanciers_recouvrements_prorata->prelevements_solidarite + $this->echeanciers_recouvrements_prorata->crds;
 
-                            $this->echeanciers->capital = $t['montant_operation'];
-                        }
-
-                        // si c'est un recouvrement on remplace les données
-                        if ($t['type_transaction'] == 5 && $t['recouvrement'] == 1) {
-
-                            // si on trouve prorata on affiche celui la
-                            if ($this->echeanciers_recouvrements_prorata->get($t['id_transaction'], 'id_transaction')) {
-                                $retenuesfiscals = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires + $this->echeanciers_recouvrements_prorata->retenues_source + $this->echeanciers_recouvrements_prorata->csg + $this->echeanciers_recouvrements_prorata->prelevements_sociaux + $this->echeanciers_recouvrements_prorata->contributions_additionnelles + $this->echeanciers_recouvrements_prorata->prelevements_solidarite + $this->echeanciers_recouvrements_prorata->crds;
-
-                                $this->echeanciers->prelevements_obligatoires = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires;
-                                $this->echeanciers->retenues_source = $this->echeanciers_recouvrements_prorata->retenues_source;
-                                $this->echeanciers->interets = $this->echeanciers_recouvrements_prorata->interets;
-                                $this->echeanciers->retenues_source = $this->echeanciers_recouvrements_prorata->retenues_source;
-                                $this->echeanciers->csg = $this->echeanciers_recouvrements_prorata->csg;
-                                $this->echeanciers->prelevements_sociaux = $this->echeanciers_recouvrements_prorata->prelevements_sociaux;
-                                $this->echeanciers->contributions_additionnelles = $this->echeanciers_recouvrements_prorata->contributions_additionnelles;
-                                $this->echeanciers->prelevements_solidarite = $this->echeanciers_recouvrements_prorata->prelevements_solidarite;
-                                $this->echeanciers->crds = $this->echeanciers_recouvrements_prorata->crds;
-
-                                $this->echeanciers->capital = $this->echeanciers_recouvrements_prorata->capital;
-
-                            }
+                            $this->echeanciers->prelevements_obligatoires    = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires;
+                            $this->echeanciers->retenues_source              = $this->echeanciers_recouvrements_prorata->retenues_source;
+                            $this->echeanciers->interets                     = $this->echeanciers_recouvrements_prorata->interets;
+                            $this->echeanciers->retenues_source              = $this->echeanciers_recouvrements_prorata->retenues_source;
+                            $this->echeanciers->csg                          = $this->echeanciers_recouvrements_prorata->csg;
+                            $this->echeanciers->prelevements_sociaux         = $this->echeanciers_recouvrements_prorata->prelevements_sociaux;
+                            $this->echeanciers->contributions_additionnelles = $this->echeanciers_recouvrements_prorata->contributions_additionnelles;
+                            $this->echeanciers->prelevements_solidarite      = $this->echeanciers_recouvrements_prorata->prelevements_solidarite;
+                            $this->echeanciers->crds                         = $this->echeanciers_recouvrements_prorata->crds;
+                            $this->echeanciers->capital                      = $this->echeanciers_recouvrements_prorata->capital;
                         }
                         ?>
                         <tr>
@@ -500,6 +486,9 @@ class operationsController extends bootstrap
                             <td></td>
                             <td></td>
                             <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                             <td><?= number_format($solde / 100, 2, ',', '') ?></td>
                             <td></td>
                         </tr>
@@ -525,6 +514,9 @@ class operationsController extends bootstrap
                             <td><?= $t['libelle_projet'] ?></td>
                             <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
                             <td<?= (!$offre_accepte ? $couleur : '') ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
                             <td></td>
                             <td></td>
                             <td></td>
@@ -593,7 +585,7 @@ class operationsController extends bootstrap
 
             header("Content-type: application/vnd.ms-excel");
             header("Content-disposition: attachment; filename=\"" . $titre . ".csv\"");
-            echo($csv);
+            echo $csv;
         }
         die;
     }
@@ -663,22 +655,20 @@ class operationsController extends bootstrap
         $limit_client                  = 50;
         $uniquement_ceux_jamais_indexe = false; // on veut aussi ceux deja indexé
 
-        $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
-        $this->transactions            = $this->loadData('transactions');
-        $this->clients_indexation      = $this->loadData('clients');
-        $this->echeanciers             = $this->loadData('echeanciers');
-        $this->indexage_suivi          = $this->loadData('indexage_suivi');
+        $this->indexage_vos_operations           = $this->loadData('indexage_vos_operations');
+        $this->transactions                      = $this->loadData('transactions');
+        $this->clients_indexation                = $this->loadData('clients');
+        $this->echeanciers                       = $this->loadData('echeanciers');
+        $this->indexage_suivi                    = $this->loadData('indexage_suivi');
         $this->echeanciers_recouvrements_prorata = $this->loadData('echeanciers_recouvrements_prorata');
 
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
         $this->lng['preteur-operations']                = $this->ln->selectFront('preteur-operations', $this->language, $this->App);
 
-        // Recouvrement - commission ht
         $this->settings->get('Recouvrement - commission ht', 'type');
         $commission_ht = $this->settings->value;
 
-        // TVA
         $this->settings->get('TVA', 'type');
         $tva = $this->settings->value;
 
@@ -737,21 +727,18 @@ class operationsController extends bootstrap
                     if ($this->indexage_vos_operations->counter(' id_client = ' . $t['id_client'] . ' AND type_transaction = "' . $t['type_transaction'] . '" AND libelle_operation ="' . $t['type_transaction_alpha'] . '" AND id_transaction = '.$t['id_transaction']) < 1) {
                         $indexage_client_existe = true;
                         $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
+
                         $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
-                        $capital = $this->echeanciers->capital;
-                        $interets = $this->echeanciers->interets;
+                        $capital         = $this->echeanciers->capital;
+                        $interets        = $this->echeanciers->interets;
 
                         // si c'est un recouvrement on remplace les données
-                        if ($t['type_transaction'] == 5 && $t['recouvrement'] == 1) {
-
-                            // si on trouve prorata on affiche celui la
-                            if ($this->echeanciers_recouvrements_prorata->get($t['id_transaction'], 'id_transaction')) {
-                                $retenuesfiscals = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires + $this->echeanciers_recouvrements_prorata->retenues_source + $this->echeanciers_recouvrements_prorata->csg + $this->echeanciers_recouvrements_prorata->prelevements_sociaux + $this->echeanciers_recouvrements_prorata->contributions_additionnelles + $this->echeanciers_recouvrements_prorata->prelevements_solidarite + $this->echeanciers_recouvrements_prorata->crds;
-
-                                $capital = $this->echeanciers_recouvrements_prorata->capital;
-                                $interets = $this->echeanciers_recouvrements_prorata->interets;
-                            }
+                        if ($t['type_transaction'] == 5 && $t['recouvrement'] == 1 && $this->echeanciers_recouvrements_prorata->get($t['id_transaction'], 'id_transaction')) {
+                            $retenuesfiscals = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires + $this->echeanciers_recouvrements_prorata->retenues_source + $this->echeanciers_recouvrements_prorata->csg + $this->echeanciers_recouvrements_prorata->prelevements_sociaux + $this->echeanciers_recouvrements_prorata->contributions_additionnelles + $this->echeanciers_recouvrements_prorata->prelevements_solidarite + $this->echeanciers_recouvrements_prorata->crds;
+                            $capital         = $this->echeanciers_recouvrements_prorata->capital;
+                            $interets        = $this->echeanciers_recouvrements_prorata->interets;
                         }
+
                         // si exoneré à la date de la transact on change le libelle
                         $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['prelevements-fiscaux-et-sociaux'];
                         // on check si il s'agit d'une PM ou PP
@@ -790,21 +777,19 @@ class operationsController extends bootstrap
 
                         $this->indexage_vos_operations->libelle_prelevement = $libelle_prelevements;
                         $this->indexage_vos_operations->montant_prelevement = $retenuesfiscals * 100;
-                        // si c'est un recouvrement
-                        if ($t['type_transaction'] == 5 && $t['recouvrement'] == 1){
-                            $taux_com = $commission_ht;
-                            $taux_tva = $tva;
 
-                            $montant = ($capital/100) + ($interets/100);
-                            $montant_avec_com = round($montant/(1-($taux_com*(1 + $taux_tva))),2);
+                        if ($t['type_transaction'] == 5 && $t['recouvrement'] == 1) {
+                            $taux_com         = $commission_ht;
+                            $taux_tva         = $tva;
+                            $montant          = $capital / 100 + $interets / 100;
+                            $montant_avec_com = round($montant / (1 - $taux_com * (1 + $taux_tva)), 2);
+                            $com_ht           = round($montant_avec_com * $taux_com, 2);
+                            $com_tva          = round($com_ht * $taux_tva, 2);
+                            $com_ttc          = round($com_ht + $com_tva, 2);
 
-                            $com_ht = round($montant_avec_com * $taux_com,2);
-                            $com_tva = round($com_ht * $taux_tva,2);
-                            $com_ttc = round($com_ht + $com_tva,2);
-
-                            $this->indexage_vos_operations->commission_ht = $com_ht*100;
-                            $this->indexage_vos_operations->commission_tva = $com_tva*100;
-                            $this->indexage_vos_operations->commission_ttc = $com_ttc*100;
+                            $this->indexage_vos_operations->commission_ht  = $com_ht * 100;
+                            $this->indexage_vos_operations->commission_tva = $com_tva * 100;
+                            $this->indexage_vos_operations->commission_ttc = $com_ttc * 100;
                         }
                         $this->indexage_vos_operations->create();
                     }

@@ -151,23 +151,22 @@ class profileController extends bootstrap
 
         // Gestion de l'ajout des nouvelles notifications manquantes
         $this->lNotif_manquante = $this->clients_gestion_notifications->select('id_client = '.$this->clients->id_client.' AND id_notif IN (9)');
-        if($this->lNotif_manquante == false){
 
+        if ($this->lNotif_manquante == false) {
             $this->lTypeNotifs_manquates = $this->clients_gestion_type_notif->select('id_client_gestion_type_notif IN (9)');
 
-            foreach($this->lTypeNotifs_manquates as $n){
-                $this->clients_gestion_notifications->id_client = $this->clients->id_client;
-                $this->clients_gestion_notifications->id_notif = $n['id_client_gestion_type_notif'];
+            foreach ($this->lTypeNotifs_manquates as $n) {
+                $this->clients_gestion_notifications->id_client     = $this->clients->id_client;
+                $this->clients_gestion_notifications->id_notif      = $n['id_client_gestion_type_notif'];
                 $this->clients_gestion_notifications->immediatement = 1;
                 $this->clients_gestion_notifications->create();
             }
         }
 
         $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
-        $this->lNotifs = $this->clients_gestion_notifications->select('id_client = '.$this->clients->id_client);
-        $this->NotifC = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
+        $this->lNotifs     = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
+        $this->NotifC      = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
 
-        // formulaire particulier gestion de vos alertes
         if (isset($_POST['send_gestion_alertes'])) {
             foreach ($this->lTypeNotifs as $k => $n) {
                 $id_notif = $n['id_client_gestion_type_notif'];
@@ -1083,21 +1082,21 @@ class profileController extends bootstrap
         ////// Liste des notifs //////
         // Gestion de l'ajout des nouvelles notifications manquantes
         $this->lNotif_manquante = $this->clients_gestion_notifications->select('id_client = '.$this->clients->id_client.' AND id_notif IN (9)');
-        if($this->lNotif_manquante == false){
 
+        if ($this->lNotif_manquante == false) {
             $this->lTypeNotifs_manquates = $this->clients_gestion_type_notif->select('id_client_gestion_type_notif IN (9)');
 
             foreach($this->lTypeNotifs_manquates as $n){
-                $this->clients_gestion_notifications->id_client = $this->clients->id_client;
-                $this->clients_gestion_notifications->id_notif = $n['id_client_gestion_type_notif'];
+                $this->clients_gestion_notifications->id_client     = $this->clients->id_client;
+                $this->clients_gestion_notifications->id_notif      = $n['id_client_gestion_type_notif'];
                 $this->clients_gestion_notifications->immediatement = 1;
                 $this->clients_gestion_notifications->create();
             }
         }
 
         $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
-        $this->lNotifs = $this->clients_gestion_notifications->select('id_client = '.$this->clients->id_client);
-        $this->NotifC = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
+        $this->lNotifs     = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
+        $this->NotifC      = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
 
         if ($this->lNotifs == false) {
             foreach ($this->lTypeNotifs as $n) {

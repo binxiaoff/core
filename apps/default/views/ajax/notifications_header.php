@@ -112,21 +112,21 @@
         elseif ($r['type'] == 9) {
             $this->projects_notifs->get($r['id_project'], 'id_project');
             ?>
-            <b><?= $this->lng['notifications']['annonce-nouveau-probleme'] ?></b><br />
+            <b><?= $this->lng['notifications']['annonce-nouveau-probleme'] ?></b><br/>
             <div class="content_notif">
                 <?= $this->lng['notifications']['probleme-notif-texte1'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['probleme-notif-texte2'] ?>
             </div>
-            <?
+            <?php
         }
         // recouvrement
         elseif ($r['type'] == 10) {
             $this->projects_notifs->get($r['id_project'], 'id_project');
             ?>
-            <b><?= $this->lng['notifications']['annonce-recouvrement'] ?></b><br />
+            <b><?= $this->lng['notifications']['annonce-recouvrement'] ?></b><br/>
             <div class="content_notif">
                 <?= $this->lng['notifications']['recouvrement-notif-texte1'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['recouvrement-notif-texte2'] ?>
             </div>
-            <?
+            <?php
         }
         ?>
         <span class="date_notif"><?= date('d/m/Y', strtotime($r['added'])) ?></span>

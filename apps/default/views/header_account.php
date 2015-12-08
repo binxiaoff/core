@@ -94,62 +94,45 @@ if (isset($_SESSION['lexpress']))
             <div class="shell clearfix">
                 <ul class="styled-nav">
                     <li class="active nav-item-home" style="position: relative;top: 10px;height: 16px;overflow:hidden;"><a href="<?= $this->lurl ?>/synthese"><i class="icon-home"></i></a></li>
-
-                    <?php /* ?><li><a <?=($this->page=='synthese'?'class="active"':'')?> href="<?=$this->lurl?>/synthese"><?=$this->lng['header']['synthese']?></a></li><?php */ ?>
                     <li><a <?= ($this->page == 'alimentation' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/alimentation"><?= $this->lng['header']['alimentation'] ?></a></li>
                     <li><a <?= ($this->page == 'projects' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/projects"><?= $this->lng['header']['projets'] ?></a></li>
                     <li><a <?= ($this->page == 'operations' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/operations"><?= $this->lng['header']['operations'] ?></a></li>
                     <li><a <?= ($this->page == 'profile' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/profile"><?= $this->lng['header']['mon-profil'] ?></a></li>
-
-                    <?
-                    //if($_SERVER['REMOTE_ADDR'] == '93.26.42.99'){
-                    ?>
                     <li style="float:right;width:45px;padding:0px;margin-right:10px;" class="sidebar-notifs">
-
                         <div class="bell-notif">
-                            <?
-                            if ($this->NbNotifHeader > 0)
-                            {
-
-                                if ($this->NbNotifHeader < 100)
-                                {
+                        <?php
+                            if ($this->NbNotifHeader > 0) {
+                                if ($this->NbNotifHeader < 100) {
                                     ?>
                                     <span class="nb-notif" <?= ($this->NbNotifHeader > 9 ? 'style="padding-left: 1px;"' : '') ?> >
                                         <?= $this->NbNotifHeader ?>
                                     </span>
-                                    <?
-                                }
-                                else
-                                {
-                                    ?><span class="nb-notif" style="padding-left: 2px;" >...</span><?
+                                    <?php
+                                } else {
+                                    ?><span class="nb-notif" style="padding-left: 2px;" >...</span><?php
                                 }
                             }
-                            ?></div>
-
+                            ?>
+                        </div>
                         <div class="dd">
                             <span class="bullet notext">bullet</span>
                             <div class="content">
                                 <div class="title_notif" style="padding-left:5px;">Notifications <?= ($this->NbNotifHeader > 0 ? '<a class="marquerlu">Marquer comme lu</a>' : '') ?></div>
-
-                                <?
-                                foreach ($this->lNotifHeader as $r)
-                                {
+                                <?php
+                                foreach ($this->lNotifHeader as $r) {
                                     ?>
                                     <div class="notif <?= ($r['status'] == 1 ? 'view' : '') ?>">
-                                        <?
+                                        <?php
                                         // Offre refusée
-                                        if ($r['type'] == 1)
-                                        {
+                                        if ($r['type'] == 1) {
                                             $this->bids->get($r['id_bid'], 'id_bid');
                                             $this->projects_notifs->get($r['id_project'], 'id_project');
                                             $this->companies_notifs->get($this->projects_notifs->id_company, 'id_company');
 
                                             // decoupé
-                                            if ($this->bids->amount != $r['amount'])
-                                            {
+                                            if ($this->bids->amount != $r['amount']) {
                                                 ?>
                                                 <b><?= $this->lng['notifications']['offre-partiellement-refusee'] ?></b><br />
-
                                                 <div class="content_notif">
                                                     <?
                                                     $montant = ($this->bids->amount - $r['amount']);
@@ -233,7 +216,7 @@ if (isset($_SESSION['lexpress']))
                                             <div class="content_notif">
                                                 <?= $this->lng['notifications']['conf-retrait-votre-retrait-dun-montant-de'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b><?= $this->lng['notifications']['conf-retrait-a-ete-pris-en-compte'] ?>
                                             </div>
-                                            <?
+                                            <?php
                                         }
                                         // Annonce nouveau projet
                                         elseif ($r['type'] == 8)
@@ -243,7 +226,7 @@ if (isset($_SESSION['lexpress']))
                                             <b><?= $this->lng['notifications']['annonce-nouveau-projet'] ?></b><br />
                                             <div class="content_notif"><?= $this->lng['notifications']['annonce-nouveau-projet-nouveau-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['annonce-nouveau-projet-mis-en-ligne-le'] ?> <?= date('d/m/Y', strtotime($this->projects_notifs->date_publication_full)) ?> <?= $this->lng['notifications']['annonce-nouveau-projet-a'] ?> <?= date('H\Hi', strtotime($this->projects_notifs->date_publication_full)) ?><?= $this->lng['notifications']['annonce-nouveau-projet-montant-demande'] ?> <b style="color:#b20066;white-space:nowrap;"><?= $this->ficelle->formatNumber($this->projects_notifs->amount) ?> €</b> <?= $this->lng['notifications']['annonce-nouveau-projet-sur-une-periode-de'] ?> <?= $this->projects_notifs->period ?> <?= $this->lng['notifications']['annonce-nouveau-projet-mois'] ?>
                                             </div>
-                                            <?
+                                            <?php
                                         } elseif ($r['type'] == 9) {
                                             // Projet en probleme
                                             $this->projects_notifs->get($r['id_project'], 'id_project');
@@ -252,7 +235,7 @@ if (isset($_SESSION['lexpress']))
                                             <div class="content_notif">
                                                 <?= $this->lng['notifications']['probleme-notif-texte1'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['probleme-notif-texte2'] ?>
                                             </div>
-                                            <?
+                                            <?php
                                         } elseif ($r['type'] == 10) {
                                             // recouvrement
                                             $this->projects_notifs->get($r['id_project'], 'id_project');
@@ -261,28 +244,22 @@ if (isset($_SESSION['lexpress']))
                                             <div class="content_notif">
                                                 <?= $this->lng['notifications']['recouvrement-notif-texte1'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['recouvrement-notif-texte2'] ?>
                                             </div>
-                                            <?
+                                            <?php
                                         }
                                         ?>
                                         <span class="date_notif" ><?= date('d/m/Y', strtotime($r['added'])) ?></span>
                                     </div>
-
-                                    <?
+                                    <?php
                                 }
 
-                                if ($this->NbNotifHeaderEnTout > $this->nbNotifdisplay)
-                                {
-                                    ?><div class="notif_plus">Afficher plus</div><?
+                                if ($this->NbNotifHeaderEnTout > $this->nbNotifdisplay) {
+                                    ?><div class="notif_plus">Afficher plus</div><?php
                                 }
                                 ?>
-
                                 <div style="display:none" class="compteur_notif"><?= $this->nbNotifdisplay ?></div>
                             </div>
                         </div>
                     </li>
-                    <?
-                    //}
-                    ?>
                 </ul><!-- /.nav-main -->
 
 

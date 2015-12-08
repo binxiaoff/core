@@ -308,9 +308,7 @@
                                         <td class="chiffres" style="color:red;">-<?= $this->ficelle->formatNumber($t['montant_prelevement']) ?> €</td>
                                         <td>&nbsp;</td>
                                     </tr>
-                                    <?php
-                                    if ($t['recouvrement'] == 1) {
-                                        ?>
+                                    <?php if ($t['recouvrement'] == 1): ?>
                                         <tr>
                                             <td></td>
                                             <td class="detail_left"><?= $this->lng['preteur-operations-vos-operations']['com-ht'] ?></td>
@@ -329,9 +327,7 @@
                                             <td class="chiffres" style="color:red;">-<?= number_format($t['commission_ttc'], 2, ',', ' ') ?> €</td>
                                             <td>&nbsp;</td>
                                         </tr>
-                                        <?php
-                                    }
-                                    ?>
+                                    <?php endif; ?>
                                     <tr>
                                         <td colspan="4" style=" height:4px;"></td>
                                     </tr>
