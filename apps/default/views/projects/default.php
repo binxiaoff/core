@@ -208,7 +208,7 @@
                 </div>
                 <div class="nbProjet" style="display:none;"><?= $this->nbProjects ?></div>
                 <div id="ordreProject" style="display:none;"><?= $this->ordreProject ?></div>
-                <div id="where" style="display:none;"><?= $this->where ?></div>
+                <div id="where" style="display:none;"><?= empty($this->where) ?: 1 ?></div>
                 <div id="valType" style="display:none;"><?= $this->type ?></div>
             </div>
         </div>

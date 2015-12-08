@@ -1476,4 +1476,115 @@ class devboxController extends bootstrap
 
         fclose($rHandle);
     }
+
+    public function _importBirthCity()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        //Encode: UTF-8, new line : LF
+        if (($rHandle = fopen($this->path . '/protected/import/' . 'naissance.csv', 'r')) === false) {
+            return;
+        }
+
+        /** @var villes $oVille */
+        $oClient = $this->loadData('clients');
+
+        while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
+            $aRow = array_map('trim', $aRow);
+            $aRow = array_map(array($oClient->bdd, 'escape_string'), $aRow);
+
+            preg_match('/^\d+/s', $aRow[0], $matches);
+            if (false === isset($matches[0])) {
+                continue;
+            }
+            $iClientId = (int) $matches[0];
+            if ('99' === substr($aRow[1], 0, 2)) {
+                $sql = "UPDATE clients set insee_birth = '{$aRow[1]}' WHERE id_client = {$iClientId}";
+            } else {
+                $sql = "UPDATE clients set insee_birth = '{$aRow[1]}', ville_naissance = '{$aRow[2]}' WHERE id_client = {$iClientId}";
+            }
+            $oClient->bdd->query($sql);
+            unset($aRow);
+        }
+
+        fclose($rHandle);
+        echo 'done';
+    }
+
+    public function _importFiscalCity()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        //Encode: UTF-8, new line : LF
+        if (($rHandle = fopen($this->path . '/protected/import/' . 'fiscal_city.csv', 'r')) === false) {
+            return;
+        }
+
+        /** @var villes $oVille */
+        $oClient = $this->loadData('clients_adresses');
+
+        while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
+            $aRow = array_map('trim', $aRow);
+            $aRow = array_map(array($oClient->bdd, 'escape_string'), $aRow);
+
+            preg_match('/^\d+/s', $aRow[0], $matches);
+            if (false === isset($matches[0])) {
+                continue;
+            }
+            $iClientId = (int) $matches[0];
+
+            if (empty($aRow[1])) { // company
+                if ('99' === substr($aRow[2], 0, 2)) {
+                    continue;
+                }
+                $sql = "UPDATE companies SET zip = '{$aRow[2]}', city = '{$aRow[3]}' WHERE id_client_owner = {$iClientId}";
+            } else {
+                $sFieldPostCode = 'cp';
+                $sFieldCity     = 'ville';
+                $sFieldCountry  = 'id_pays';
+
+                $sql = "SELECT meme_adresse_fiscal FROM clients_adresses WHERE id_client = {$iClientId}";
+                $oQuery = $oClient->bdd->query($sql);
+                $aClient = $this->bdd->fetch_array($oQuery);
+
+                if($aClient[meme_adresse_fiscal] === '0') {
+                    $sFieldPostCode = 'cp_fiscal';
+                    $sFieldCity     = 'ville_fiscal';
+                    $sFieldCountry  = 'id_pays_fiscal';
+                }
+
+
+                if ('99' === substr($aRow[2], 0, 2)) {
+                    $sql = "SELECT id_pays_fiscal FROM clients_adresses WHERE id_client = {$iClientId}";
+                    $oQuery = $oClient->bdd->query($sql);
+                    $aClient = $this->bdd->fetch_array($oQuery);
+
+                    if(isset($aClient[id_pays_fiscal]) && false === empty($aClient[id_pays_fiscal]) &&  $aClient[id_pays_fiscal] <= 1) {
+                        $sql = "SELECT p.id_pays FROM pays_v2 p INNER JOIN insee_pays ip ON ip.CODEISO2 = p.iso WHERE ip.COG = {$aRow[2]}";
+                        $oQuery = $oClient->bdd->query($sql);
+                        $aClient = $this->bdd->fetch_array($oQuery);
+
+                        if(isset($aClient[id_pays]) && false === empty($aClient[id_pays])) {
+                            $sql = "UPDATE clients_adresses SET $sFieldCountry = '{$aClient[id_pays]}' WHERE id_client = {$iClientId}";
+                        }
+                    }
+                } else {
+                    $sql = "UPDATE clients_adresses SET $sFieldPostCode = '{$aRow[2]}', $sFieldCity = '{$aRow[3]}' WHERE id_client = {$iClientId}";
+                }
+            }
+            $oClient->bdd->query($sql);
+            unset($aRow);
+        }
+
+        fclose($rHandle);
+        echo 'done';
+    }
 }

@@ -925,7 +925,6 @@ class pdfController extends bootstrap
 
     private function GenerateClaimsHtml()
     {
-        // si le client existe
         $this->oLendersAccounts                     = $this->loadData('lenders_accounts');
         $this->oLoans                               = $this->loadData('loans');
         $this->pays                                 = $this->loadData('pays_v2');
@@ -933,8 +932,6 @@ class pdfController extends bootstrap
         $this->companiesEmpr                        = $this->loadData('companies');
         $this->projects_status_history              = $this->loadData('projects_status_history');
         $this->projects_status_history_informations = $this->loadData('projects_status_history_informations');
-
-
 
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
@@ -965,55 +962,53 @@ class pdfController extends bootstrap
             $this->projects->get($this->oLoans->id_project, 'id_project');
             $this->companiesEmpr->get($this->projects->id_company, 'id_company');
 
+            // @todo on n'utilise jamais les id_projects_status mais les status via les constantes de classe
             // 26 : PS , 27 RJ , 28 LJ
             $retour = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN(26,27,28)', 'added DESC', 0, 1);
+
             if ($retour != false) {
                 $this->projects_status_history_informations->get($retour[0]['id_project_status_history'], 'id_project_status_history');
 
-                // mandataire personalisé
                 $this->mandataires_var = $this->projects_status_history_informations->mandataire;
 
-                // Nature
                 $id_projet_status = $retour[0]['id_project_status'];
+
+                // @todo intl
                 if ($id_projet_status == 26) {
-                    $this->nature_var = "Procédure de sauvegarde";
+                    $this->nature_var = 'Procédure de sauvegarde';
                 } elseif ($id_projet_status == 27) {
-                    $this->nature_var = "Redressement judiciaire";
+                    $this->nature_var = 'Redressement judiciaire';
                 } elseif ($id_projet_status == 28) {
-                    $this->nature_var = "Liquidation judiciaire";
+                    $this->nature_var = 'Liquidation judiciaire';
                 }
                 $date = date('d/m/Y', strtotime($this->projects_status_history_informations->date));
+                // @todo pourquoi passer par un tableau encore ?
                 $this->arrayDeclarationCreance = array($this->projects->id_project => $date);
             } else {
-                // Nature
-                $this->nature_var = "Procédure de sauvegarde";
-
-                // mandataire personalisé
-                $this->mandataires_var = "";
-
+                $this->nature_var              = 'Procédure de sauvegarde';
+                $this->mandataires_var         = '';
                 $this->arrayDeclarationCreance = array(
                     1456  => '27/11/2014',
                     1009  => '15/04/2015',
                     1614  => '27/05/2015',
                     3089  => '29/06/2015',
                     10971 => '06/08/2015',
-                    970   => '30/09/2015'
+                    970   => '30/09/2015',
+                    7727  => '23/11/2015'
                 );
 
-                if ($this->loans->id_project == 1614) {
-                    //plus de mandataire dans le pdf, on l'aura que dans le mail (Note BT: 17793)
-                    //$this->mandataires_var = "
-                    //    Me ROUSSEL Bernard
-                    //    <br />
-                    //    850, rue Etienne Lenoir. Km Delta
-                    //    <br />
-                    //    30 900 Nîmes
-                    //    ";
-                    // Nature
-                    $this->nature_var = "Liquidation judiciaire";
+                switch ($this->oLoans->id_project) {
+                    case 1614:
+                        $this->nature_var = 'Liquidation judiciaire';
+                        break;
+                    case 7727:
+                        $this->nature_var = 'Redressement judiciaire';
+                        break;
+                    case 3089:
+                    default:
+                        $this->nature_var = 'Procédure de sauvegarde';
+                        break;
                 }
-                if ($this->loans->id_project == 3089)
-                    $this->nature_var = "Procédure de sauvegarde";
             }
 
             $this->echu         = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND LEFT(date_echeance,10) >= "2015-04-19" AND LEFT(date_echeance,10) <= "' . date('Y-m-d') . '" AND id_loan = ' . $this->oLoans->id_loan, 'montant');

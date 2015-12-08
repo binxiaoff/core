@@ -99,7 +99,11 @@ class upload
     // **************************************************************** //
     private function clean_name($name_file)
     {
-        $name_file = strtr($name_file, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyyNn');
+        $sFrom = 'àáâãäçèéêëìíîïñòóôõöùúûüýÿÀÁÂÃÄÇÈÉÊËÌÍÎÏÑÒÓÔÕÖÙÚÛÜÝ';
+        $sTo = 'aaaaaceeeeiiiinooooouuuuyyAAAAACEEEEIIIINOOOOOUUUUY';
+
+        $name_file = utf8_encode(strtr(utf8_decode($name_file), utf8_decode($sFrom), utf8_decode($sTo)));
+
         return strtolower(preg_replace('/([^.a-z0-9]+)/i', '-', $name_file));
     }
 
@@ -165,7 +169,7 @@ class upload
             $this->uploadedFileName = $this->clean_name($nom_tmp) . '.' . $extension;
         } else {
             // On applique sur le nouveau nom
-            $this->uploadedFileName = $new_name . '.' . $extension;
+            $this->uploadedFileName = $this->clean_name($new_name) . '.' . $extension;
         }
 
         // Récupération du nom temporaire sur le serveur, de la taille du fichier, son type et son extension
