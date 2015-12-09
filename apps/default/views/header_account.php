@@ -28,22 +28,6 @@ if (isset($_SESSION['lexpress']))
     </div><!-- /.header -->
 
 <?php
-if ($this->bIsBorrowerAndLender) {
- ?>
-    <script type="text/javascript">
-            $(document).ready(function () {
-                        $.colorbox({
-                        href: "-<?= $this->lurl ?>/thickbox/pop_up_lender_and_borrower",
-                        fixed: true,
-                        maxWidth: '90%',
-                        onClosed: function () {
-                            /*location.reload();*/
-                        }
-                    });
-            });
-    </script>
-<?php
-}
     if ($this->bDisplayLender )
     {
         //Affichage de la popup de CGV si on a pas encore valide

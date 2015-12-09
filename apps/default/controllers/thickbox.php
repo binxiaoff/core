@@ -325,4 +325,9 @@ class thickboxController extends bootstrap
 
     }
 
+    public function _pop_up_lender_and_borrower()
+    {
+
+    }
+
 }

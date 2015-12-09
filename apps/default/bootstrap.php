@@ -284,16 +284,22 @@ class bootstrap extends Controller
                         $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
 
                         $this->clients_history->id_client = $_SESSION['client']['id_client'];
-                        $this->clients_history->type      = ($this->bIsBorrowerAndLender) ? 3 : ($this->bIsLender) ? 1 : ($this->bIsBorrower) ? 2 : 0;
                         $this->clients_history->status    = 1; // statut login
                         $this->clients_history->create();
 
+                        if ($this->bIsLenderAndBorrower = $this->checkIfLenderOrBorrower()) {
+                            $this->bPopUpChoice = true;
+                        }
 
-                        if ($this->bIsLender) {
-                            $this->loginLender();
+                        if ($this->bIsLender && $this->bIsLenderAndBorrower === false ) {
+                            $this->handleLoginDataLender();
 
-                        } elseif ($this->bIsBorrower) {
-                            $this->loginBorrower();
+                        } elseif ($this->bIsBorrower && $this->bIsLenderAndBorrower === false) {
+                            $this->handleLoginDataBorrower();
+
+                        } else {
+                            header('location: ' . $this->surl);
+                            die;
                         }
 
                     } else {
@@ -343,12 +349,22 @@ class bootstrap extends Controller
             $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
             $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
 
-            if ($this->bIsBorrower) {
-                $this->getDataBorrower();
+            if ($this->bIsLenderAndBorrower && $command->Name === 'root' && $command->Function === 'default') {
+                $this->bPopUpChoice = true;
             }
 
-            if ($this->bIsLender) {
+            if ($this->clients->isBorrower($this->projects, $_SESSION['client']['id_client']) && $command->Name === 'espace_emprunteur') {
+                $this->getDataBorrower();
+                $this->bDisplayLender = false;
+                $this->bDisplayBorrower = true;
+                $this->bPopUpChoice = false;
+            }
+
+            if ($this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']) && $command->Name === 'synthese') {
                 $this->getDataLender();
+                $this->bDisplayLender = true;
+                $this->bDisplayBorrower = false;
+                $this->bPopUpChoice = false;
             }
         }
 
@@ -535,7 +551,7 @@ class bootstrap extends Controller
     }
 
 
-    private function loginLender()
+    private function handleLoginDataLender()
     {
         $this->bDisplayLender = true;
 
@@ -649,7 +665,7 @@ class bootstrap extends Controller
         }
     }
 
-    private function loginBorrower()
+    private function handleLoginDataBorrower()
     {
         $this->bDisplayBorrower = true;
         $this->companies->get($_SESSION['client']['id_client'], 'id_client_owner');
