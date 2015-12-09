@@ -178,4 +178,15 @@ class projects_status extends projects_status_crud
 
         return $this->select($sPossibleStatus, 'status ASC');
     }
+
+    public static function checkStatusPostRepayment($iStatus)
+    {
+        return $iStatus >= \projects_status::REMBOURSEMENT;
+    }
+
+    public static function checkStatusKo($iStatus){
+
+        $aStatusKo = array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT);
+        return in_array($iStatus, $aStatusKo);
+    }
 }

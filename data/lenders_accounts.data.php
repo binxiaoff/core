@@ -123,12 +123,11 @@ class lenders_accounts extends lenders_accounts_crud
 
         $result = $this->bdd->query($sql);
 
-        $aStatusKo = array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT);
         while ($record = $this->bdd->fetch_array($result)) {
 
-            if ($record["project_status"] >= \projects_status::REMBOURSEMENT) {
+            if (\projects_status::checkStatusPostRepayment($record['project_status'])) {
 
-                if (in_array($record["project_status"], $aStatusKo) && 0 == $record["echeance_status"]) {
+                if (\projects_status::checkStatusKo($record['project_status']) && 0 == $record["echeance_status"]) {
                     $record["montant"] = 0;
                 }
 
