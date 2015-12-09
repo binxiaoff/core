@@ -181,12 +181,12 @@ class projects_status extends projects_status_crud
 
     public static function checkStatusPostRepayment($iStatus)
     {
-        return $iStatus >= \projects_status::REMBOURSEMENT;
+        return $iStatus >= self::REMBOURSEMENT;
     }
 
     public static function checkStatusKo($iStatus){
 
-        $aStatusKo = array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT);
+        $aStatusKo = array(self::PROBLEME, self::RECOUVREMENT);
         return in_array($iStatus, $aStatusKo);
     }
 }
