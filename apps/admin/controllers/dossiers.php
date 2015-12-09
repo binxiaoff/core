@@ -805,6 +805,10 @@ class dossiersController extends bootstrap
                                     $projects_remb->update();
                                 }
                             }
+                            
+                            //on desactive le remboursement automatique (CDC Statut emprunteur)
+                            $this->projects->remb_auto = 1; // remb auto à non
+                            $this->projects->update();
 
                             // on récupère la variable pour savoir si on envoi le mail au preteur ou non
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_default'];
@@ -958,6 +962,30 @@ class dossiersController extends bootstrap
 
                             $this->companies->get($this->projects->id_company, 'id_company');
 
+                            // On bloque tous les futures prélèvements
+                            $prelevements = $this->loadData('prelevements');
+                            $L_prelevements = $prelevements->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
+
+                            if ($L_prelevements != false) {
+                                foreach ($L_prelevements as $prel) {
+                                    $prelevements->get($prel['id_prelevement']);
+                                    $prelevements->status = 4; // bloqué temporairement
+                                    $prelevements->update();
+                                }
+                            }
+
+                            // On stop les remb auto si y en a
+                            $projects_remb = $this->loadData('projects_remb');
+                            $lRembAuto = $projects_remb->select('status = 0 AND id_project = ' . $this->projects->id_project);
+                            if ($lRembAuto != false) {
+                                foreach ($lRembAuto as $r) {
+                                    $projects_remb->get($r['id_project_remb'], 'id_project_remb');
+                                    $projects_remb->status = 4;
+                                    $projects_remb->update();
+                                }
+                            }
+                            
+                            
                             //on desactive le remboursement automatique (CDC Statut emprunteur)
                             $this->projects->remb_auto = 1; // remb auto à non
                             $this->projects->update();
@@ -1169,6 +1197,10 @@ class dossiersController extends bootstrap
                                     $projects_remb->update();
                                 }
                             }
+                            
+                            //on desactive le remboursement automatique (CDC Statut emprunteur)
+                            $this->projects->remb_auto = 1; // remb auto à non
+                            $this->projects->update();
 
                             // on récupère la variable pour savoir si on envoi le mail au preteur ou non
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_probleme_recouvrement'];
@@ -1389,7 +1421,30 @@ class dossiersController extends bootstrap
                         // Statut Probleme J+X
                         elseif ($_POST['status'] == '140') {
                             $this->companies->get($this->projects->id_company, 'id_company');
+                            
+                            // On bloque tous les futures prélèvements
+                            $prelevements = $this->loadData('prelevements');
+                            $L_prelevements = $prelevements->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
 
+                            if ($L_prelevements != false) {
+                                foreach ($L_prelevements as $prel) {
+                                    $prelevements->get($prel['id_prelevement']);
+                                    $prelevements->status = 4; // bloqué temporairement
+                                    $prelevements->update();
+                                }
+                            }
+
+                            // On stop les remb auto si y en a
+                            $projects_remb = $this->loadData('projects_remb');
+                            $lRembAuto = $projects_remb->select('status = 0 AND id_project = ' . $this->projects->id_project);
+                            if ($lRembAuto != false) {
+                                foreach ($lRembAuto as $r) {
+                                    $projects_remb->get($r['id_project_remb'], 'id_project_remb');
+                                    $projects_remb->status = 4;
+                                    $projects_remb->update();
+                                }
+                            }
+                            
                             //on desactive le remboursement automatique (CDC Statut emprunteur)
                             $this->projects->remb_auto = 1; // remb auto à non
                             $this->projects->update();
@@ -1601,6 +1656,10 @@ class dossiersController extends bootstrap
                                     $projects_remb->update();
                                 }
                             }
+                            
+                            //on desactive le remboursement automatique (CDC Statut emprunteur)
+                            $this->projects->remb_auto = 1; // remb auto à non
+                            $this->projects->update();
 
                             // on récupère la variable pour savoir si on envoi le mail aux preteurs ou non
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_ps'];
@@ -1659,8 +1718,8 @@ class dossiersController extends bootstrap
                                 'nom_e'              => $emprunteur->nom,
                                 'entreprise'         => $this->companies->name,
                                 'date_finance'       => $date_financement,
-                                'montant_emprunt'    => $this->ficelle->formatNumer($this->projects->amount, 2),
-                                'capital_restant_du' => $this->ficelle->formatNumer($CapitalRestantDu, 2),
+                                'montant_emprunt'    => $this->ficelle->formatNumber($this->projects->amount, 2),
+                                'capital_restant_du' => $this->ficelle->formatNumber($CapitalRestantDu, 2),
                                 'tel_emprunteur'     => $tel_emprunteur,
                                 'lien_pouvoir'       => $this->furl . '/pdf/pouvoir/' . $emprunteur->hash . '/' . $this->projects->id_project,
                                 'nb_preteurs'        => $nb_preteurs,
@@ -1796,6 +1855,10 @@ class dossiersController extends bootstrap
                                     $projects_remb->update();
                                 }
                             }
+                            
+                            //on desactive le remboursement automatique (CDC Statut emprunteur)
+                            $this->projects->remb_auto = 1; // remb auto à non
+                            $this->projects->update();
 
                             // on récupère la variable pour savoir si on envoi le mail aux preteurs ou non
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_rj'];
@@ -1996,6 +2059,10 @@ class dossiersController extends bootstrap
                                     $projects_remb->update();
                                 }
                             }
+                            
+                            //on desactive le remboursement automatique (CDC Statut emprunteur)
+                            $this->projects->remb_auto = 1; // remb auto à non
+                            $this->projects->update();
 
                             // on récupère la variable pour savoir si on envoi le mail aux preteurs ou non
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_lj'];
