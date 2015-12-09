@@ -2128,13 +2128,19 @@ class preteursController extends bootstrap
 
         // PORTFOLIO DETAILS
 
-        //IRR
-        try {
-            $this->IRR = $this->lenders_accounts->calculateIRR($this->lenders_accounts->id_lender_account);
-        } catch (Exception $e){
-            $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
-            $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
-            $this->IRR = 'non calculable';
+        $oLenderAccountStats = $this->loadData('lenders_account_stats');
+
+
+        $this->IRR = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
+
+        if (empty($this->IRR)) {
+            try {
+                $this->IRR['tri_value'] = $this->lenders_accounts->calculateIRR($this->lenders_accounts->id_lender_account);
+            } catch (Exception $e){
+                $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
+                $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
+                $this->IRR = 'non calculable';
+            }
         }
 
         // amount of projects online since his registration
