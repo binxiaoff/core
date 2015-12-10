@@ -2686,7 +2686,6 @@ class cronController extends bootstrap
                                             if ($projects->get($nombre, 'id_project')) {
                                                 $companies          = $this->loadData('companies');
                                                 $receptionPrelev    = $this->loadData('receptions');
-                                                $transactions_types = $this->loadData('transactions_types');
 
                                                 $companies->get($projects->id_company, 'id_company');
 

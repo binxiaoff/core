@@ -36,7 +36,6 @@ class transfertsController extends bootstrap
         $this->receptions   = $this->loadData('receptions');
         $this->projects     = $this->loadData('projects');
         $transactions       = $this->loadData('transactions');
-        $transactions_types = $this->loadData('transactions_types');
         $bank_unilend       = $this->loadData('bank_unilend');
         $companies          = $this->loadData('companies');
 
