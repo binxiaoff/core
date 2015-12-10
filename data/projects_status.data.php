@@ -28,31 +28,35 @@
 
 class projects_status extends projects_status_crud
 {
-    const NOTE_EXTERNE_FAIBLE    = 5;
-    const PAS_3_BILANS           = 6;
-    const COMPLETUDE_ETAPE_2     = 7;
-    const COMPLETUDE_ETAPE_3     = 8;
-    const ABANDON                = 9;
-    const A_TRAITER              = 10;
-    const EN_ATTENTE_PIECES      = 20;
-    const ATTENTE_ANALYSTE       = 25;
-    const REJETE                 = 30;
-    const REVUE_ANALYSTE         = 31;
-    const REJET_ANALYSTE         = 32;
-    const COMITE                 = 33;
-    const REJET_COMITE           = 34;
-    const PREP_FUNDING           = 35;
-    const A_FUNDER               = 40;
-    const EN_FUNDING             = 50;
-    const FUNDE                  = 60;
-    const FUNDING_KO             = 70;
-    const PRET_REFUSE            = 75;
-    const REMBOURSEMENT          = 80;
-    const REMBOURSE              = 90;
-    const PROBLEME               = 100;
-    const RECOUVREMENT           = 110;
-    const DEFAUT                 = 120;
-    const REMBOURSEMENT_ANTICIPE = 130;
+    const NOTE_EXTERNE_FAIBLE     = 5;
+    const PAS_3_BILANS            = 6;
+    const COMPLETUDE_ETAPE_2      = 7;
+    const COMPLETUDE_ETAPE_3      = 8;
+    const ABANDON                 = 9;
+    const A_TRAITER               = 10;
+    const EN_ATTENTE_PIECES       = 20;
+    const ATTENTE_ANALYSTE        = 25;
+    const REJETE                  = 30;
+    const REVUE_ANALYSTE          = 31;
+    const REJET_ANALYSTE          = 32;
+    const COMITE                  = 33;
+    const REJET_COMITE            = 34;
+    const PREP_FUNDING            = 35;
+    const A_FUNDER                = 40;
+    const EN_FUNDING              = 50;
+    const FUNDE                   = 60;
+    const FUNDING_KO              = 70;
+    const PRET_REFUSE             = 75;
+    const REMBOURSEMENT           = 80;
+    const REMBOURSE               = 90;
+    const PROBLEME                = 100;
+    const RECOUVREMENT            = 110;
+    const DEFAUT                  = 120;
+    const REMBOURSEMENT_ANTICIPE  = 130;
+    const PROBLEME_J_X            = 140;
+    const PROCEDURE_SAUVEGARDE    = 150;
+    const REDRESSEMENT_JUDICIAIRE = 160;
+    const LIQUIDATION_JUDICIAIRE  = 170;
 
     public function __construct($bdd, $params = '')
     {

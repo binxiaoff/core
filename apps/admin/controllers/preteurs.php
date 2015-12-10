@@ -1786,16 +1786,11 @@ class preteursController extends bootstrap
     {
         $this->loadGestionData();
 
-        // on charge des donnÃ©es supplementaires nécessaires pour la méthode
         $this->projects_status         = $this->loadData('projects_status');
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
 
-        // On recup les infos du client
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');
-
-        // On recup les infos du client
         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
-
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
         if (in_array($this->clients->type, array(2, 4))) {
@@ -1813,12 +1808,11 @@ class preteursController extends bootstrap
             $this->IRR = 'non calculable';
         }
 
-        $statusOk                = array(projects_status::A_FUNDER, projects_status::EN_FUNDING, projects_status::REMBOURSEMENT, projects_status::PRET_REFUSE);
-        $this->projectsPublished = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, $statusOk);
-
-        $statusKo            = array(projects_status::PROBLEME, projects_status::RECOUVREMENT);
-        $this->problProjects = $this->projects->countProjectsByStatusAndLender($this->lenders_accounts->id_lender_account, $statusKo);
-        $this->totalProjects = $this->loans->getNbPprojet($this->lenders_accounts->id_lender_account);
+        $statusOk                = array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::PRET_REFUSE, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE);
+        $statusKo                = array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE);
+        $this->projectsPublished = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, array_merge($statusOk, $statusKo));
+        $this->problProjects     = $this->projects->countProjectsByStatusAndLender($this->lenders_accounts->id_lender_account, $statusKo);
+        $this->totalProjects     = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
     }
 
     public function _contratPdf()
@@ -1832,7 +1826,6 @@ class preteursController extends bootstrap
         $this->loans->get($iloan, 'id_loan');
         $this->projects->get($this->loans->id_project, 'id_project');
 
-        // Génération pdf
         $oCommandPdf = new Command('pdf', 'contrat', $this->params, $this->language);
         $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
         $oPdf->_contrat();

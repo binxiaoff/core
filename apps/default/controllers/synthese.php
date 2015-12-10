@@ -173,7 +173,7 @@ class syntheseController extends bootstrap
 
 
 
-		$this->nbLoan = $this->loans->getNbPprojet($this->lenders_accounts->id_lender_account);
+		$this->nbLoan = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
 
 		// somme des bids en cours
 		$this->sumBidsEncours = $this->bids->sumBidsEncours($this->lenders_accounts->id_lender_account);

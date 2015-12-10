@@ -134,7 +134,7 @@ class loans extends loans_crud
         return $result;
     }
 
-    public function getNbPprojet($id_lender)
+    public function getProjectsCount($id_lender)
     {
         $sql = 'SELECT count(DISTINCT id_project) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = 0';
 
