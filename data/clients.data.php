@@ -26,7 +26,6 @@
 //
 // **************************************************************************************************** //
 
-use Unilend\librairies\tnmp;
 
 class clients extends clients_crud
 {
@@ -39,6 +38,11 @@ class clients extends clients_crud
     const COMMISSION_MENSUELLE = 6;
     const REMBOURSEMENT_ANTICIPE = 7;
     const AFFECTATION_RA_PRETEURS = 8;
+
+    const TYPE_PRETEUR_PHYSIQUE = 1;
+    const TYPE_PRETEUR_MORALE = 2;
+    const TYPE_PRETEUR_PHYSIQUE_ETRANGER = 3;
+    const TYPE_PRETEUR_MORALE_ETRANGER = 4;
 
 
     public function __construct($bdd, $params = '')
@@ -1053,6 +1057,4 @@ class clients extends clients_crud
         return $aDataForBorrowerOperations;
 
     }
-
-
 }
