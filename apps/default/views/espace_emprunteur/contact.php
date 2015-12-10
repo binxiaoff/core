@@ -109,7 +109,7 @@
                 <div class="contact-block-body">
                     <h2><?= $this->content['bloc-titre'] ?></h2>
                     <h4><i class="icon-place"></i> <?= $this->content['bloc-adresse'] ?></h4>
-                    <?php $this->settings->get('Téléphone emprunteur', 'type'); ?>
+                    <?php $this->settings->get('TÃ©lÃ©phone emprunteur', 'type'); ?>
                     <p><i class="icon-phone"></i> <?= $this->lng['espace-emprunteur']['bloc-tel'] ?>
                         : <?= $this->settings->value ?></p>
 
