@@ -805,7 +805,7 @@ class dossiersController extends bootstrap
                                     $projects_remb->update();
                                 }
                             }
-                            
+
                             //on desactive le remboursement automatique (CDC Statut emprunteur)
                             $this->projects->remb_auto = 1; // remb auto à non
                             $this->projects->update();
@@ -815,24 +815,20 @@ class dossiersController extends bootstrap
                             $contenu_a_ajouter_mail = $_POST['area_default'];
                             $mandataire = $_POST['mandataire_default'];
 
-                            // on enregsitre le contenu
-                            $projects_status_history_informations = $this->loadData('projects_status_history_informations');
+                            $projects_status_history_informations                            = $this->loadData('projects_status_history_informations');
                             $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                            $projects_status_history_informations->information = $contenu_a_ajouter_mail;
+                            $projects_status_history_informations->information               = $contenu_a_ajouter_mail;
                             $projects_status_history_informations->create();
 
-                            // FB
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
 
-                            // Twitter
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
 
-                            // EMAIL RECOUVREMENT EMPRUNTEUR //
-                            // recup emprunteur
                             $emprunteur = $this->loadData('clients');
                             $emprunteur->get($this->companies->id_client_owner, 'id_client');
+
                             // recup date financement (date de premier passage en statut remboursement)
                             $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
                             $date_remb_time = strtotime($status_remb[0]['added']);
@@ -841,12 +837,12 @@ class dossiersController extends bootstrap
                             $date_financement = $mois . ' ' . $year_financement;
 
                             // recup date liquidation judiciare (date de dernier passage en statut liquidation judiciare)
-                            $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 28', 'added DESC', 0, 1);
+                            $status_remb  = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 28', 'added DESC', 0, 1);
                             $date_lj_time = strtotime($status_remb[0]['added']);
-                            $mois = $this->dates->tableauMois[$this->language][date('n', $date_lj_time)];
-                            $day_lj = date('d', $date_lj_time);
-                            $year_lj = date('Y', $date_lj_time);
-                            $date_lj = $day_lj . ' ' . $mois . ' ' . $year_lj;
+                            $mois         = $this->dates->tableauMois[$this->language][date('n', $date_lj_time)];
+                            $day_lj       = date('d', $date_lj_time);
+                            $year_lj      = date('Y', $date_lj_time);
+                            $date_lj      = $day_lj . ' ' . $mois . ' ' . $year_lj;
 
                             $this->companies->get($this->projects->id_company, 'id_company');
 
@@ -984,8 +980,8 @@ class dossiersController extends bootstrap
                                     $projects_remb->update();
                                 }
                             }
-                            
-                            
+
+
                             //on desactive le remboursement automatique (CDC Statut emprunteur)
                             $this->projects->remb_auto = 1; // remb auto à non
                             $this->projects->update();
@@ -994,65 +990,61 @@ class dossiersController extends bootstrap
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_probleme'];
                             $contenu_a_ajouter_mail = $_POST['area_probleme'];
 
-                            // on enregsitre le contenu
-                            $projects_status_history_informations = $this->loadData('projects_status_history_informations');
+                            $projects_status_history_informations                            = $this->loadData('projects_status_history_informations');
                             $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                            $projects_status_history_informations->information = $contenu_a_ajouter_mail;
+                            $projects_status_history_informations->information               = $contenu_a_ajouter_mail;
                             $projects_status_history_informations->create();
 
-                            // ENVOI MAIL PRETEUR
-                            // FB
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
 
-                            // Twitter
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
 
-                            // EMAIL PROBLEME EMPRUNTEUR //
-                            // recup emprunteur
                             $emprunteur = $this->loadData('clients');
                             $emprunteur->get($this->companies->id_client_owner, 'id_client');
+
                             // recup date financement (date de premier passage en statut remboursement)
                             $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
                             $date_financement = date('d/m/Y', strtotime($status_remb[0]['added']));
-                            // Recup nb preteurs
+
                             $nb_preteurs = $this->loans->getNbPreteurs($this->projects->id_project);
-                            // Reucp mensualité emprunteur
+
                             $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
                             $echeanciers_emprunteur->get($this->projects->id_project, 'ordre = 1 AND id_project');
                             $montant_mensuel = (($echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva) / 100);
-                            // recup bic unilend
+
                             $this->settings->get('Virement - BIC', 'type');
                             $bic_sfpmei = $this->settings->value;
-                            // Recup iban unilend
+
                             $this->settings->get('Virement - IBAN', 'type');
                             $iban_sfpmei = $this->settings->value;
-                            // Recup Tel emprunteur
-                            $this->settings->get('Tel emprunteur', 'type');
+
+                            $this->settings->get('Téléphone emprunteur', 'type');
                             $tel_emprunteur = $this->settings->value;
-                            // Recup nb_jour_avant_prochain_statut
+
                             $this->settings->get('Nombre de jours avant prochain statut ', 'type');
                             $nb_jour_avant_prochain_statut = $this->settings->value;
-                            // Variables du mailing
+
                             $varMail = array(
-                                'surl' => $this->surl,
-                                'url' => $this->furl,
-                                'civilite_e' => $emprunteur->civilite,
-                                'nom_e' => $emprunteur->nom,
-                                'entreprise' => $this->companies->name,
-                                'date_finance' => $date_financement,
-                                'montant_emprunt' => $this->projects->amount,
-                                'nb_preteurs' => $nb_preteurs,
-                                'montant_mensuel' => $montant_mensuel,
+                                'surl'                          => $this->surl,
+                                'url'                           => $this->furl,
+                                'civilite_e'                    => $emprunteur->civilite,
+                                'nom_e'                         => $emprunteur->nom,
+                                'entreprise'                    => $this->companies->name,
+                                'date_finance'                  => $date_financement,
+                                'montant_emprunt'               => $this->projects->amount,
+                                'nb_preteurs'                   => $nb_preteurs,
+                                'montant_mensuel'               => $montant_mensuel,
                                 'nb_jour_avant_prochain_statut' => $nb_jour_avant_prochain_statut,
-                                'num_dossier' => $this->projects->id_project,
-                                'bic_sfpmei' => $bic_sfpmei,
-                                'iban_sfpmei' => $iban_sfpmei,
-                                'tel_emprunteur' => $tel_emprunteur,
-                                'contenu_mail' => $contenu_a_ajouter_mail,
-                                'lien_fb' => $lien_fb,
-                                'lien_tw' => $lien_tw);
+                                'num_dossier'                   => $this->projects->id_project,
+                                'bic_sfpmei'                    => $bic_sfpmei,
+                                'iban_sfpmei'                   => $iban_sfpmei,
+                                'tel_emprunteur'                => $tel_emprunteur,
+                                'contenu_mail'                  => $contenu_a_ajouter_mail,
+                                'lien_fb'                       => $lien_fb,
+                                'lien_tw'                       => $lien_tw
+                            );
 
                             // Le mail sera envoyé dorénament en asynchrone donc le cron '_traitement_file_attente_envoi_mail()'
                             $liste_attente_mail = $this->loadData('liste_attente_mail');
@@ -1197,7 +1189,7 @@ class dossiersController extends bootstrap
                                     $projects_remb->update();
                                 }
                             }
-                            
+
                             //on desactive le remboursement automatique (CDC Statut emprunteur)
                             $this->projects->remb_auto = 1; // remb auto à non
                             $this->projects->update();
@@ -1206,34 +1198,30 @@ class dossiersController extends bootstrap
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_probleme_recouvrement'];
                             $contenu_a_ajouter_mail = $_POST['area_recouvrement'];
 
-                            // on enregsitre le contenu
-                            $projects_status_history_informations = $this->loadData('projects_status_history_informations');
+                            $projects_status_history_informations                            = $this->loadData('projects_status_history_informations');
                             $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                            $projects_status_history_informations->information = $contenu_a_ajouter_mail;
+                            $projects_status_history_informations->information               = $contenu_a_ajouter_mail;
                             $projects_status_history_informations->create();
 
-                            // FB
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
 
-                            // Twitter
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
 
-                            // EMAIL RECOUVREMENT EMPRUNTEUR //
-                            // recup emprunteur
                             $emprunteur = $this->loadData('clients');
                             $emprunteur->get($this->companies->id_client_owner, 'id_client');
+
                             // recup date financement (date de premier passage en statut remboursement)
                             $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
                             $date_financement = date('m/Y', strtotime($status_remb[0]['added']));
-                            // Recup nb preteurs
+
                             $nb_preteurs = $this->loans->getNbPreteurs($this->projects->id_project);
-                            // Reucp mensualité emprunteur
+
                             $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
                             $echeanciers_emprunteur->get($this->projects->id_project, 'ordre = 1 AND id_project');
                             $montant_mensuel = (($echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva) / 100);
-                            // recup capital restant du
+
                             $statut_recouvrement = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 10', 'added DESC', 0, 1);
                             if ($statut_recouvrement != false) {
                                 $lastFormatSql = date('Y-m-d', strtotime($statut_recouvrement[0]['added']));
@@ -1421,7 +1409,7 @@ class dossiersController extends bootstrap
                         // Statut Probleme J+X
                         elseif ($_POST['status'] == '140') {
                             $this->companies->get($this->projects->id_company, 'id_company');
-                            
+
                             // On bloque tous les futures prélèvements
                             $prelevements = $this->loadData('prelevements');
                             $L_prelevements = $prelevements->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND type_prelevement = 1 AND date_execution_demande_prelevement > NOW()');
@@ -1444,7 +1432,7 @@ class dossiersController extends bootstrap
                                     $projects_remb->update();
                                 }
                             }
-                            
+
                             //on desactive le remboursement automatique (CDC Statut emprunteur)
                             $this->projects->remb_auto = 1; // remb auto à non
                             $this->projects->update();
@@ -1453,44 +1441,39 @@ class dossiersController extends bootstrap
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_problemeX'];
                             $contenu_a_ajouter_mail = $_POST['area_problemeX'];
 
-                            // on enregsitre le contenu
-                            $projects_status_history_informations = $this->loadData('projects_status_history_informations');
+                            $projects_status_history_informations                            = $this->loadData('projects_status_history_informations');
                             $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                            $projects_status_history_informations->information = $contenu_a_ajouter_mail;
+                            $projects_status_history_informations->information               = $contenu_a_ajouter_mail;
                             $projects_status_history_informations->create();
 
-                            // ENVOI MAIL PRETEUR
-                            // FB
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
 
-                            // Twitter
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
 
-                            // EMAIL PROBLEME EMPRUNTEUR //
-                            // recup emprunteur
                             $emprunteur = $this->loadData('clients');
                             $emprunteur->get($this->companies->id_client_owner, 'id_client');
+
                             // recup date financement (date de premier passage en statut remboursement)
                             $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
                             $date_financement = date('d/m/Y', strtotime($status_remb[0]['added']));
-                            // Recup nb preteurs
+
                             $nb_preteurs = $this->loans->getNbPreteurs($this->projects->id_project);
-                            // Reucp mensualité emprunteur
+
                             $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
                             $echeanciers_emprunteur->get($this->projects->id_project, 'ordre = 1 AND id_project');
                             $montant_mensuel = (($echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva) / 100);
-                            // recup bic unilend
+
                             $this->settings->get('Virement - BIC', 'type');
                             $bic_sfpmei = $this->settings->value;
-                            // Recup iban unilend
+
                             $this->settings->get('Virement - IBAN', 'type');
                             $iban_sfpmei = $this->settings->value;
-                            // Recup Tel emprunteur
-                            $this->settings->get('Tel emprunteur', 'type');
+
+                            $this->settings->get('Téléphone emprunteur', 'type');
                             $tel_emprunteur = $this->settings->value;
-                            // Recup nb_jour_avant_prochain_statut
+
                             $this->settings->get('Nombre de jours avant prochain statut ', 'type');
                             $nb_jour_avant_prochain_statut = $this->settings->value;
 
@@ -1656,7 +1639,7 @@ class dossiersController extends bootstrap
                                     $projects_remb->update();
                                 }
                             }
-                            
+
                             //on desactive le remboursement automatique (CDC Statut emprunteur)
                             $this->projects->remb_auto = 1; // remb auto à non
                             $this->projects->update();
@@ -1676,39 +1659,34 @@ class dossiersController extends bootstrap
 
                             $mandataire = $_POST['mandataire_ps'];
 
-                            // on enregsitre le contenu
-                            $projects_status_history_informations = $this->loadData('projects_status_history_informations');
+                            $projects_status_history_informations                            = $this->loadData('projects_status_history_informations');
                             $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                            $projects_status_history_informations->information = $contenu_a_ajouter_mail;
-                            $projects_status_history_informations->date = $date_jugement;
-                            $projects_status_history_informations->mandataire = $mandataire;
+                            $projects_status_history_informations->information               = $contenu_a_ajouter_mail;
+                            $projects_status_history_informations->date                      = $date_jugement;
+                            $projects_status_history_informations->mandataire                = $mandataire;
                             $projects_status_history_informations->create();
 
-                            // FB
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
 
-                            // Twitter
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
 
-                            // Tel emprunteur
-                            $this->settings->get('Tel emprunteur', 'type');
+                            $this->settings->get('Téléphone emprunteur', 'type');
                             $tel_emprunteur = $this->settings->value;
 
-                            // EMAIL RECOUVREMENT EMPRUNTEUR //
-                            // recup emprunteur
                             $emprunteur = $this->loadData('clients');
                             $emprunteur->get($this->companies->id_client_owner, 'id_client');
+
                             // recup date financement (date de premier passage en statut remboursement)
                             $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
                             $date_remb_time = strtotime($status_remb[0]['added']);
                             $mois = $this->dates->tableauMois[$this->language][date('n', $date_remb_time)];
                             $year_financement = date('Y', $date_remb_time);
                             $date_financement = $mois . ' ' . $year_financement;
-                            // Recup nb preteurs
+
                             $nb_preteurs = $this->loans->getNbPreteurs($this->projects->id_project);
-                            // recup capital restant du (a partire de la date de jugement)
+
                             $CapitalRestantDu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) > "' . $date_jugement . '"', 'capital');
 
                             $varMail = array(
@@ -1855,7 +1833,7 @@ class dossiersController extends bootstrap
                                     $projects_remb->update();
                                 }
                             }
-                            
+
                             //on desactive le remboursement automatique (CDC Statut emprunteur)
                             $this->projects->remb_auto = 1; // remb auto à non
                             $this->projects->update();
@@ -1875,24 +1853,20 @@ class dossiersController extends bootstrap
 
                             $mandataire = $_POST['mandataire_rj'];
 
-                            // on enregsitre le contenu
-                            $projects_status_history_informations = $this->loadData('projects_status_history_informations');
+                            $projects_status_history_informations                            = $this->loadData('projects_status_history_informations');
                             $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                            $projects_status_history_informations->information = $contenu_a_ajouter_mail;
-                            $projects_status_history_informations->date = $date_jugement;
-                            $projects_status_history_informations->mandataire = $mandataire;
+                            $projects_status_history_informations->information               = $contenu_a_ajouter_mail;
+                            $projects_status_history_informations->date                      = $date_jugement;
+                            $projects_status_history_informations->mandataire                = $mandataire;
                             $projects_status_history_informations->create();
 
-                            // FB
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
 
-                            // Twitter
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
 
-                            // Tel emprunteur
-                            $this->settings->get('Tel emprunteur', 'type');
+                            $this->settings->get('Téléphone emprunteur', 'type');
                             $tel_emprunteur = $this->settings->value;
 
                             // EMAIL RECOUVREMENT EMPRUNTEUR //
@@ -2059,7 +2033,7 @@ class dossiersController extends bootstrap
                                     $projects_remb->update();
                                 }
                             }
-                            
+
                             //on desactive le remboursement automatique (CDC Statut emprunteur)
                             $this->projects->remb_auto = 1; // remb auto à non
                             $this->projects->update();
@@ -2079,38 +2053,33 @@ class dossiersController extends bootstrap
 
                             $mandataire = $_POST['mandataire_lj'];
 
-                            // on enregsitre le contenu
-                            $projects_status_history_informations = $this->loadData('projects_status_history_informations');
+                            $projects_status_history_informations                            = $this->loadData('projects_status_history_informations');
                             $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                            $projects_status_history_informations->information = $contenu_a_ajouter_mail;
-                            $projects_status_history_informations->date = $date_jugement;
-                            $projects_status_history_informations->mandataire = $mandataire;
+                            $projects_status_history_informations->information               = $contenu_a_ajouter_mail;
+                            $projects_status_history_informations->date                      = $date_jugement;
+                            $projects_status_history_informations->mandataire                = $mandataire;
                             $projects_status_history_informations->create();
 
-                            // FB
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
 
-                            // Twitter
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
 
-                            // Tel emprunteur
-                            $this->settings->get('Tel emprunteur', 'type');
+                            $this->settings->get('Téléphone emprunteur', 'type');
                             $tel_emprunteur = $this->settings->value;
 
-                            // EMAIL RECOUVREMENT EMPRUNTEUR //
-                            // recup emprunteur
                             $emprunteur = $this->loadData('clients');
                             $emprunteur->get($this->companies->id_client_owner, 'id_client');
+
                             // recup date financement (date de premier passage en statut remboursement)
                             $status_remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
                             $date_remb_time = strtotime($status_remb[0]['added']);
                             $year_financement = date('Y', $date_remb_time);
                             $date_financement = $mois . ' ' . $year_financement;
-                            // Recup nb preteurs
+
                             $nb_preteurs = $this->loans->getNbPreteurs($this->projects->id_project);
-                            // recup capital restant du (a partire de la date de jugement)
+
                             $CapitalRestantDu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) > "' . $date_jugement . '"', 'capital');
 
                             $varMail = array(
