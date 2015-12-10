@@ -891,7 +891,7 @@ class statsController extends bootstrap
         foreach($aCountries as $aCountry) {
             $aZoneB040CountryIds[] = $aCountry['id_pays'];
         }
-
+        $this->bdd->query('SET SQL_BIG_SELECTS=1');
         $sql = '
               SELECT
                 c.id_client,
