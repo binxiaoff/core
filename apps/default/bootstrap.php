@@ -279,7 +279,9 @@ class bootstrap extends Controller
                             }
                         }
 
-                        $this->checkIfLenderOrBorrower();
+                        $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
+                        $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $_SESSION['client']['id_client']);
+                        $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
 
                         $this->clients_history->id_client = $_SESSION['client']['id_client'];
                         $this->clients_history->type      = ($this->bIsBorrowerAndLender) ? 3 : ($this->bIsLender) ? 1 : ($this->bIsBorrower) ? 2 : 0;
@@ -337,7 +339,9 @@ class bootstrap extends Controller
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-            $this->checkIfLenderOrBorrower();
+            $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
+            $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $_SESSION['client']['id_client']);
+            $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
 
             if ($this->bIsBorrower) {
                 $this->getDataBorrower();
@@ -551,19 +555,32 @@ class bootstrap extends Controller
                 $this->clients_gestion_notifications->id_notif  = $n['id_client_gestion_type_notif'];
                 $id_notif                                       = $n['id_client_gestion_type_notif'];
                 // immediatement
-                if (in_array($id_notif, array(3, 6, 7, 8))) {
+                if (in_array($id_notif, array(
+                    \clients_gestion_type_notif::OFFRES_REFUSEES,
+                    \clients_gestion_type_notif::ALIMENTATION_VIREMENT,
+                    \clients_gestion_type_notif::ALIMENTATION_CB,
+                    \clients_gestion_type_notif::RETRAIT
+                ))) {
                     $this->clients_gestion_notifications->immediatement = 1;
                 } else {
                     $this->clients_gestion_notifications->immediatement = 0;
                 }
                 // quotidienne
-                if (in_array($id_notif, array(1, 2, 4, 5))) {
+                if (in_array($id_notif, array(
+                    \clients_gestion_type_notif::ANNONCE_NOUVEAUX_PROJETS,
+                    \clients_gestion_type_notif::OFFRES_REALISEES,
+                    \clients_gestion_type_notif::OFFRES_ACCEPTEES,
+                    \clients_gestion_type_notif::REMBOPURSEMENT
+                ))) {
                     $this->clients_gestion_notifications->quotidienne = 1;
                 } else {
                     $this->clients_gestion_notifications->quotidienne = 0;
                 }
                 // hebdomadaire
-                if (in_array($id_notif, array(1, 4))) {
+                if (in_array($id_notif, array(
+                    \clients_gestion_type_notif::ANNONCE_NOUVEAUX_PROJETS,
+                    \clients_gestion_type_notif::OFFRES_ACCEPTEES
+                ))) {
                     $this->clients_gestion_notifications->hebdomadaire = 1;
                 } else {
                     $this->clients_gestion_notifications->hebdomadaire = 0;
@@ -576,76 +593,59 @@ class bootstrap extends Controller
 
         ////////////////////////////////////////////////////////////////////////////
 
-        // Si on est en cours d'inscription on redirige sur le formulaire d'inscription
         if ($_SESSION['client']['etape_inscription_preteur'] < 3) {
             $etape = ($_SESSION['client']['etape_inscription_preteur'] + 1);
             header('Location:' . $this->lurl . '/inscription_preteur/etape' . $etape);
             die;
-
         } else {
-
-            // on check le statut du preteur pour voir si on doit le rediriger sur la page des doc à uploader
             $this->clients_status->getLastStatut($_SESSION['client']['id_client']);
-            if (in_array($this->clients_status->status, array(20, 30))) {
+            if (in_array($this->clients_status->id_client_status, array(clients_status::COMPLETUDE, clients_status::COMPLETUDE_RELANCE))) {
 
-                if (in_array($_SESSION['client']['type'], array(1, 3))) {
+                if (in_array($_SESSION['client']['type'], array(clients::TYPE_PRETEUR_PHYSIQUE, clients::TYPE_PRETEUR_PHYSIQUE_ETRANGER))) {
                     $lapage = 'particulier_doc';
                 } else {
                     $lapage = 'societe_doc';
                 }
                 header('Location:' . $this->lurl . '/profile/' . $lapage);
                 die;
-
             } else {
 
-                // On regarde le CGU du preteur pour voir si il est signé ou pas (cgv particulier et entreprise ont le mm contenu)
                 $this->clients->get($_SESSION['client']['id_client'], 'id_client');
-                // cgu societe
-                if (in_array($this->clients->type, array(2, 4))) {
+                if (in_array($this->clients->type, array(clients::TYPE_PRETEUR_MORALE, clients::TYPE_PRETEUR_MORALE_ETRANGER))) {
                     $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
                     $this->lienConditionsGenerales = $this->settings->value;
-                } // cgu particulier
+                }
                 else {
                     $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
                     $this->lienConditionsGenerales = $this->settings->value;
                 }
 
-                // liste des cgv accepté
                 $listeAccept = $this->acceptations_legal_docs->selectAccepts('id_client = ' . $this->clients->id_client);
-                // On cherche si on a déjà le cgv (si pas signé on redirige sur la page synthèse pour qu'il signe)
+
                 if (!in_array($this->lienConditionsGenerales, $listeAccept)) {
                     header('Location:' . $this->lurl . '/synthese');
                     die;
-
                 } else {
-
-                    // On va sur la session de redirection
                     if (isset($_SESSION['redirection_url']) &&
                         $_SESSION['redirection_url'] != '' &&
                         $_SESSION['redirection_url'] != 'login' &&
                         $_SESSION['redirection_url'] != 'captcha'
                     ) {
-
-                        // on redirige que si on vient de projects
                         $redirect = explode('/', $_SESSION['redirection_url']);
 
                         if ($redirect[1] == 'projects') {
-                            header('location:' . $_SESSION['redirection_url']);
+                            header('Location:' . $_SESSION['redirection_url']);
                             die;
                         } else {
                             header('Location:' . $this->lurl . '/synthese');
                             die;
                         }
-
                     } else {
-                        // Sinon page synthese si pas de session
                         header('Location:' . $this->lurl . '/synthese');
                         die;
                     }
                 }
-
             }
-
         }
     }
 
@@ -669,7 +669,7 @@ class bootstrap extends Controller
     {
         $this->bDisplayLender = true;
         // particulier
-        if ($this->clients->type == 1) {
+        if ($this->clients->type == clients::TYPE_PRETEUR_PHYSIQUE) {
             // cgu particulier
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $this->lienConditionsGenerales = $this->settings->value;
@@ -719,13 +719,6 @@ class bootstrap extends Controller
         $this->oCompanyDisplay->get($this->clients->id_client, 'id_client_owner');
 
     }
-
-    private function checkIfLenderOrBorrower(){
-        $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
-        $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $_SESSION['client']['id_client']);
-        $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
-    }
-
 }
 
 
