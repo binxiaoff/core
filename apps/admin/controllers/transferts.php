@@ -38,7 +38,6 @@ class transfertsController extends bootstrap
         $transactions       = $this->loadData('transactions');
         $transactions_types = $this->loadData('transactions_types');
         $bank_unilend       = $this->loadData('bank_unilend');
-        $soldes_emprunteurs = $this->loadData('soldes_emprunteurs');
         $companies          = $this->loadData('companies');
 
         $this->settings->get('Recouvrement - commission ht', 'type');
@@ -84,20 +83,6 @@ class transfertsController extends bootstrap
                     $bank_unilend->type           = 1; // remb emprunteur
                     $bank_unilend->status         = 0; // chez unilend
                     $bank_unilend->create();
-
-                    $lastSolde = $soldes_emprunteurs->lastSoldeEmprunteur($companies->id_client_owner);
-                    $newSolde  = $lastSolde + $this->receptions->montant;
-
-                    $transactions_types->get(22, 'id_transaction_type');
-
-                    $soldes_emprunteurs->id_client        = $companies->id_client_owner;
-                    $soldes_emprunteurs->id_company       = $companies->id_client;
-                    $soldes_emprunteurs->id_transaction   = $transactions->id_transaction;
-                    $soldes_emprunteurs->type             = $transactions_types->nom;
-                    $soldes_emprunteurs->montant          = $this->receptions->montant;
-                    $soldes_emprunteurs->solde            = $newSolde;
-                    $soldes_emprunteurs->date_transaction = date('Y-m-d H:i:s');
-                    $soldes_emprunteurs->create();
                 } elseif (in_array($_POST['type_remb'], array(2, 3))) { // 2 Regularisation /  3 recouvrement
                     $motif      = $_POST['motif'];
                     $id_project = $_POST['id'];
@@ -160,20 +145,6 @@ class transfertsController extends bootstrap
                     if ($_POST['type_remb'] == 2) {
                         $this->updateEcheances($this->projects->id_project, $this->receptions->montant, $this->projects->remb_auto);
                     }
-
-                    $lastSolde = $soldes_emprunteurs->lastSoldeEmprunteur($companies->id_client_owner);
-                    $newSolde  = $lastSolde + $montant;
-
-                    $transactions_types->get($type_transaction, 'id_transaction_type');
-
-                    $soldes_emprunteurs->id_client        = $companies->id_client_owner;
-                    $soldes_emprunteurs->id_company       = $companies->id_company;
-                    $soldes_emprunteurs->id_transaction   = $transactions->id_transaction;
-                    $soldes_emprunteurs->type             = $transactions_types->nom;
-                    $soldes_emprunteurs->montant          = $montant;
-                    $soldes_emprunteurs->solde            = $newSolde;
-                    $soldes_emprunteurs->date_transaction = date('Y-m-d H:i:s');
-                    $soldes_emprunteurs->create();
                 }
 
                 header('Location: ' . $this->lurl . '/transferts/virements_emprunteurs');

@@ -2687,7 +2687,6 @@ class cronController extends bootstrap
                                                 $companies          = $this->loadData('companies');
                                                 $receptionPrelev    = $this->loadData('receptions');
                                                 $transactions_types = $this->loadData('transactions_types');
-                                                $soldes_emprunteurs = $this->loadData('soldes_emprunteurs');
 
                                                 $companies->get($projects->id_company, 'id_company');
 
@@ -2733,20 +2732,6 @@ class cronController extends bootstrap
                                                     $bank_unilend->create();
 
                                                     $this->updateEcheances($projects->id_project, $receptionPrelev->montant, $projects->remb_auto);
-
-                                                    $lastSolde = $soldes_emprunteurs->lastSoldeEmprunteur($companies->id_client_owner);
-                                                    $newSolde  = $lastSolde + $receptionPrelev->montant;
-
-                                                    $transactions_types->get(24, 'id_transaction_type');
-
-                                                    $soldes_emprunteurs->id_client        = $companies->id_client_owner;
-                                                    $soldes_emprunteurs->id_company       = $companies->id_company;
-                                                    $soldes_emprunteurs->id_transaction   = $transactions->id_transaction;
-                                                    $soldes_emprunteurs->type             = $transactions_types->nom;
-                                                    $soldes_emprunteurs->montant          = $receptionPrelev->montant;
-                                                    $soldes_emprunteurs->solde            = $newSolde;
-                                                    $soldes_emprunteurs->date_transaction = date('Y-m-d H:i:s');
-                                                    $soldes_emprunteurs->create();
                                                 }
                                                 break;
                                             }
