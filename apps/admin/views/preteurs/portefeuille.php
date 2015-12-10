@@ -65,12 +65,13 @@
     <div>
         <h2>Portefeuille</h2>
 
-        <h3>TRI du portefeuille : <?= $this->IRR ?> % </h3>
+        <h3>TRI du portefeuille : <?= (is_array($this->IRR) && isset($this->IRR['tri_value'])) ? $this->IRR['tri_value'].'%' : $this->IRR ?>
+            à date <?= (is_array($this->IRR) && isset($this->IRR['tri_value'])) ? $this->dates->formatDateMysqltoShortFR($this->IRR['tri_date']): 'aujourd\'hui' ?></h3>
 
         <h3>Nombre de projets à probleme dans le portefeuille :  <?= $this->problProjects ?></h3>
         <h3>Nombre de projets total dans le portefeuille : <?= $this->totalProjects ?></h3>
 
-        <h3>Nombre de projets mis en ligne depuis son inscription : <?php echo $this->projectsPublished; ?><h2>
+        <h3>Nombre de projets mis en ligne depuis son inscription : <?= $this->projectsPublished ?><h2>
 
     </div>
 
