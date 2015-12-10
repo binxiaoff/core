@@ -790,66 +790,6 @@ class clients extends clients_crud
 
     }
 
-    public function sendEmailBorrower($iClientId = null, $sTypeEmail)
-    {
-        /* @var array $config */
-        include __DIR__ . '/../config.php';
-
-        if (null === $iClientId) {
-            $iClientId = $this->id_client;
-        }
-        $this->get($iClientId);
-
-        // @todo intl
-        $oMailsText = new \mails_text($this->bdd);
-        $oMailsText->get($sTypeEmail, 'lang = "fr" AND type');
-
-        $oSettings = new \settings($this->bdd);
-        $oSettings->get('Facebook', 'type');
-        $sFacebookURL = $this->settings->value;
-        $oSettings->get('Twitter', 'type');
-        $sTwitterURL = $this->settings->value;
-
-        $sTemporaryLink = $config['static_url'][$config['env']].'/espace_emprunteur/securite/'.$this->generateTemporaryLink($iClientId);
-
-
-        $aVariables = array(
-            'surl'                   => $config['static_url'][ $config['env'] ],
-            'url'                    => $config['url'][ $config['env'] ]['default'],
-            'link_compte_emprunteur' => $sTemporaryLink,
-            'lien_fb'                => $sFacebookURL,
-            'lien_tw'                => $sTwitterURL,
-            'prenom'                 => $this->prenom
-        );
-
-        $sRecipient = $this->clients->email;
-        $oTnmp = new \tnmp(array(new \nmp($this->bdd), new \nmp_desabo($this->bdd), $config['env']));
-
-
-        $oEmail = new \email();
-        $oEmail->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
-        $oEmail->setSubject(stripslashes(utf8_decode($oMailsText->subject)));
-        $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($oMailsText->content), $oTnmp->constructionVariablesServeur($aVariables))));
-
-        if ($config['env'] == 'prod') {
-            Mailer::sendNMP(
-                $oEmail,
-                new \mails_filer($this->bdd),
-                $oMailsText->id_textemail,
-                $sRecipient,
-                $aNMPResponse);
-            $oTnmp->sendMailNMP(
-                $aNMPResponse,
-                $aVariables,
-                $oMailsText->nmp_secure,
-                $oMailsText->id_nmp,
-                $oMailsText->nmp_unique,
-                $oMailsText->mode);
-        } else {
-            $oEmail->addRecipient($sRecipient);
-            Mailer::send($oEmail, new \mails_filer($this->bdd), $oMailsText->id_textemail);
-        }
-    }
 
     public function getDataForBorrowerOperations($iClientId = null, array $aProjects, $sStartDate = '"2013-01-01 00:00:00"', $sEndDate = 'NOW()', $iOperation = 0)
     {
