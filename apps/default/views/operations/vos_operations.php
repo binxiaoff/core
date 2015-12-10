@@ -1,12 +1,12 @@
 <script type="text/javascript">
-    $(function () {
+    $(function() {
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
         $("#debut").datepicker({
             changeMonth: true,
             changeYear: true,
-            yearRange: '<?=(date('Y')-40)?>:<?=(date('Y'))?>',
-            maxDate: '<?=$this->date_fin_display?>',
+            yearRange: '<?= (date('Y') - 40) ?>:<?= date('Y') ?>',
+            maxDate: '<?= $this->date_fin_display ?>',
             onClose: function (selectedDate) {
                 $("#fin").datepicker("option", "minDate", selectedDate);
             }
@@ -15,8 +15,8 @@
         $("#fin").datepicker({
             changeMonth: true,
             changeYear: true,
-            yearRange: '<?=(date('Y')-40)?>:<?=(date('Y'))?>',
-            minDate: '<?=$this->date_debut_display?>',
+            yearRange: '<?= (date('Y') - 40) ?>:<?= date('Y') ?>',
+            minDate: '<?= $this->date_debut_display ?>',
             onClose: function (selectedDate) {
                 $("#debut").datepicker("option", "maxDate", selectedDate);
             }
@@ -28,7 +28,7 @@
 
     .vos_operations{font-size:13px;}
     .vos_operations td{padding:5px;}
-    .vos_operations tr.content_transact td{height: 0px;padding: 0px;}
+    .vos_operations tr.content_transact td{height: 0;padding: 0;}
 
     table.vos_operations th#order_projects{text-align:left;}
 
@@ -36,7 +36,7 @@
     .vos_operations tr.content_transact .div_content_transact{display:inline-block;width:100%;}
 
     .vos_operations tr.content_transact td .soustable{border-bottom:1px solid #b10366;margin-top: 10px;padding-bottom: 10px;}
-    .vos_operations tr.content_transact td .soustable tr td{padding:0px;height: 15px;}
+    .vos_operations tr.content_transact td .soustable tr td{padding:0;height: 15px;}
     .vos_operations tr.content_transact td .soustable tr td.chiffres{text-align:right;}
     .vos_operations tr.content_transact td .soustable tr td.detail_remb{padding-left:5px;vertical-align:top;}
 
@@ -87,7 +87,6 @@
 
     .vos_operations .th-wrap {
         text-align: center;
-        /*width: 100px;*/
         font-size: 12px;
     }
 
@@ -158,7 +157,6 @@
             Imprimer<br/>
             <a href="<?= $this->lurl ?>/pdf/vos_operations_pdf_indexation" target="_blank"><img class="print" src="<?= $this->surl ?>/styles/default/preteurs/images/icon-print.png"/></a>
         </div>
-
         <div style="width:30px;display:inline-block;"></div>
         <div class="vos_operations_ligne" style="text-align:center;">
             Exporter<br/>
@@ -168,7 +166,6 @@
     <div style="clear:both;"></div>
     <div class="filtre" id="filtres_secondaires">
         <b><?= $this->lng['preteur-operations']['selectionnez-un-ou-plusieurs-filtres'] ?></b><br/><br/>
-
         <div class="vos_operations_ligne">
             <select name="tri_type_transac" id="tri_type_transac" class="custom-select field-mini" width="200px;">
                 <option value="1"><?= $this->lng['preteur-operations']['tri-operation'] ?></option>
@@ -178,7 +175,6 @@
                 <option value="4"><?= $this->lng['preteur-operations']['tri-retraits'] ?></option>
                 <option value="5"><?= $this->lng['preteur-operations']['tri-prets'] ?></option>
                 <option value="6"><?= $this->lng['preteur-operations']['tri-remboursement'] ?></option>
-
             </select>
         </div>
         &nbsp;&nbsp;&nbsp;
@@ -186,12 +182,9 @@
             <select name="tri_projects" id="tri_projects" class="custom-select field-mini">
                 <option value="0"><?= $this->lng['preteur-operations']['trier-projet'] ?></option>
                 <option value="1"><?= $this->lng['preteur-operations']['trier-tous'] ?></option>
-                <?
-                foreach ($this->lProjectsLoans as $pro) {
-                    ?>
-                    <option value="<?= $pro['id_project'] ?>"><?= $pro['title'] ?></option><?
-                }
-                ?>
+                <?php foreach ($this->lProjectsLoans as $pro): ?>
+                    <option value="<?= $pro['id_project'] ?>"><?= $pro['title'] ?></option>
+                <?php endforeach; ?>
             </select>
         </div>
     </div>
@@ -260,11 +253,9 @@
                 $couleur = 'style="color:red;"';
             }
 
-            //$solde = $this->transactions->getSoldeDateLimite($t['id_client'],date('Y-m-d',strtotime($t['added'])));
             if ($t['solde'] > 0) {
                 $solde = $t['solde'];
             }
-
 
             // Remb preteur
             if ($t['type_transaction'] == 5 || $t['type_transaction'] == 23) {
@@ -277,15 +268,10 @@
                     <td><?= $t['bdc'] ?></td>
                     <td class="companieleft"><?= $t['libelle_projet'] ?></td>
                     <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
-                    <?php /*?><td><?=$plus?></td>
-                    <td><?=$moins?></td><?php */
-                    ?>
                     <td <?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?> €</td>
                     <td><?= $this->ficelle->formatNumber($t['solde']) ?> €</td>
                 </tr>
                 <tr class="content_transact <?= ($i % 2 == 1 ? '' : 'odd') ?>" height="0">
-                    <?php /*?><tr<?=($i%2 == 1?'':' class="odd"')?>><?php */
-                    ?>
                     <td colspan="7">
                         <div class="div_content_transact content_remb_<?= $t['id_transaction'] ?>" style="display:none;">
                             <table class="soustable" width="100%">
@@ -312,19 +298,19 @@
                                         <tr>
                                             <td></td>
                                             <td class="detail_left"><?= $this->lng['preteur-operations-vos-operations']['com-ht'] ?></td>
-                                            <td class="chiffres" style="color:red;">-<?= number_format($t['commission_ht']/100, 2, ',', ' ') ?> €</td>
+                                            <td class="chiffres" style="color:red;">-<?= $this->ficelle->formatNumber($t['commission_ht'] / 100) ?> €</td>
                                             <td>&nbsp;</td>
                                         </tr>
                                         <tr>
                                             <td></td>
                                             <td class="detail_left"><?= $this->lng['preteur-operations-vos-operations']['com-tva'] ?></td>
-                                            <td class="chiffres" style="color:red;">-<?= number_format($t['commission_tva']/100, 2, ',', ' ') ?> €</td>
+                                            <td class="chiffres" style="color:red;">-<?= $this->ficelle->formatNumber($t['commission_tva'] / 100) ?> €</td>
                                             <td>&nbsp;</td>
                                         </tr>
                                         <tr>
                                             <td></td>
                                             <td class="detail_left"><?= $this->lng['preteur-operations-vos-operations']['com-ttc'] ?></td>
-                                            <td class="chiffres" style="color:red;">-<?= number_format($t['commission_ttc'], 2, ',', ' ') ?> €</td>
+                                            <td class="chiffres" style="color:red;">-<?= $this->ficelle->formatNumber($t['commission_ttc']) ?> €</td>
                                             <td>&nbsp;</td>
                                         </tr>
                                     <?php endif; ?>
@@ -388,7 +374,6 @@
                     break;
             }
 
-
             // ajout KLE 03/03/15 , pour un client à a du lui faire un retrait positif car :
             /*
 
@@ -396,7 +381,6 @@
 
             Rep :
             -	La régularisation devra s’effectuer en date du jour (et non pas en corrigeant la ligne correspondant à la date où avait été demandé ce virement).
-
             */
 
             $type = "";
@@ -423,7 +407,6 @@
                 $bdc = "";
             }
 
-
             //asterix pour les offres acceptees
             $asterix       = "";
             $offre_accepte = false;
@@ -432,7 +415,6 @@
                 $offre_accepte = true;
                 $asterix_on    = true;
             }
-
 
             ?>
                 <tr <?= ($i % 2 == 1 ? '' : 'class="odd"') ?>>
@@ -522,7 +504,7 @@
                 id_last_action: $(this).attr('id'),
                 order: order,
                 type: type
-            }
+            };
 
             $.post(add_url + "/ajax/vos_operations", val).done(function (data) {
 
@@ -559,10 +541,8 @@
 
             $("#debut").val(obj.debut);
             $("#fin").val(obj.fin);
-
             $("#filtres_secondaires").html(obj.html_filtre);
             $(".custom-select").c2Selectbox();
-
             $(".content_table_vos_operations").html(obj.html);
             $(".load_table_vos_operations").fadeOut();
         });

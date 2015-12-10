@@ -1,12 +1,10 @@
-<?
+<?php
 
 use Unilend\librairies\ULogger;
 
 class operationsController extends bootstrap
 {
-    var $Command;
-
-    function operationsController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
@@ -27,7 +25,7 @@ class operationsController extends bootstrap
         $this->lng['preteur-operations'] = $this->ln->selectFront('preteur-operations', $this->language, $this->App);
     }
 
-    function _default()
+    public function _default()
     {
         $this->transactions            = $this->loadData('transactions');
         $this->wallets_lines           = $this->loadData('wallets_lines');
@@ -116,36 +114,32 @@ class operationsController extends bootstrap
         $this->liste_docs = $this->ifu->select('id_client =' . $this->clients->id_client . ' AND statut = 1', 'annee ASC');
     }
 
-    function _vos_operations()
+    public function _vos_operations()
     {
-        // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
     }
 
-    function _vos_prets()
+    public function _vos_prets()
     {
-        // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
     }
 
-    function _histo_transac()
+    public function _histo_transac()
     {
-        // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
     }
 
-    function _doc_fiscaux()
+    public function _doc_fiscaux()
     {
-        // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
@@ -153,9 +147,8 @@ class operationsController extends bootstrap
     }
 
 
-    function _vos_operation_csv()
+    public function _vos_operation_csv()
     {
-        // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
@@ -187,7 +180,6 @@ class operationsController extends bootstrap
 
         $this->clients->get($post_id_client, 'id_client');
 
-        //////////// DEBUT PARTIE DATES //////////////
         // tri debut/fin
         if (isset($post_id_last_action) && in_array($post_id_last_action, array('debut', 'fin'))) {
 
@@ -239,17 +231,15 @@ class operationsController extends bootstrap
             }
         }
 
-        // on recup au format sql
         $this->date_debut = date('Y-m-d', $date_debut_time);
         $this->date_fin   = date('Y-m-d', $date_fin_time);
-        //////////// FIN PARTIE DATES //////////////
 
         $array_type_transactions = array(
             1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             2  => array(1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'], 2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'], 3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']),
             3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            5 => array(1 => $this->lng['preteur-operations-vos-operations']['remboursement'], 2 => $this->lng['preteur-operations-vos-operations']['recouvrement']),
+            5  => array(1 => $this->lng['preteur-operations-vos-operations']['remboursement'], 2 => $this->lng['preteur-operations-vos-operations']['recouvrement']),
             7  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             8  => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
             16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
@@ -257,25 +247,24 @@ class operationsController extends bootstrap
             19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
             20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
             22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
-            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur']);
+            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur']
+        );
 
-        ////////// DEBUT PARTIE TRI TYPE TRANSAC /////////////
         $array_type_transactions_liste_deroulante = array(
             1 => '1,2,3,4,5,7,8,16,17,19,20,23',
             2 => '3,4,7,8',
             3 => '3,4,7',
             4 => '8',
             5 => '2',
-            6 => '5,23');
+            6 => '5,23'
+        );
 
         if (isset($post_tri_type_transac)) {
             $tri_type_transac = $array_type_transactions_liste_deroulante[$post_tri_type_transac];
         } else {
             $tri_type_transac = $array_type_transactions_liste_deroulante[1];
         }
-        ////////// FIN PARTIE TRI TYPE TRANSAC /////////////
 
-        ////////// DEBUT TRI PAR PROJET /////////////
         if (isset($post_tri_projects)) {
             if (in_array($post_tri_projects, array(0, 1))) {
                 $tri_project = '';
@@ -283,7 +272,6 @@ class operationsController extends bootstrap
                 $tri_project = ' AND le_id_project = ' . $post_tri_projects;
             }
         }
-        ////////// FIN TRI PAR PROJET /////////////
 
         $order = 'date_operation DESC, id_transaction DESC';
         if (isset($_POST['type']) && isset($_POST['order'])) {
@@ -328,306 +316,218 @@ class operationsController extends bootstrap
 
         $this->lTrans = $this->indexage_vos_operations->select('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"' . $tri_project, $order);
 
-        $user_agent = $_SERVER['HTTP_USER_AGENT'];
-
-        if (strpos($user_agent, "Mac") !== FALSE || 5 == 5) {
-            header("Content-type: application/vnd.ms-excel; charset=utf-8");
-            header("Expires: 0");
-            header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-            header("content-disposition: attachment;filename=" . $this->bdd->generateSlug('operations_' . date('Y-m-d')) . ".xls");
-            // si exoneré à la date de la transact on change le libelle
-            $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['prelevements-fiscaux-et-sociaux'];
-            // on check si il s'agit d'une PM ou PP
-            if ($this->clients->type != 1 && $this->clients->type != 3) {
-                $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['retenues-a-la-source'];
-            }
-            ?>
-            <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8"/>
-            <table border=1>
-                <tr>
-                    <th><?= $this->lng['preteur-operations-pdf']['operations'] ?></th>
-                    <th><?= $this->lng['preteur-operations-pdf']['info-titre-bon-caisse'] ?></th>
-                    <th><?= $this->lng['preteur-operations-pdf']['projets'] ?></th>
-                    <th><?= $this->lng['preteur-operations-pdf']['date-de-loperation'] ?></th>
-                    <th><?= $this->lng['preteur-operations-pdf']['montant-de-loperation'] ?></th>
-                    <th><?= $this->lng['preteur-operations-vos-operations']['capital-rembourse'] ?></th>
-                    <th><?= $this->lng['preteur-operations-vos-operations']['interets-recus'] ?></th>
-                    <th>Pr&eacute;l&egrave;vements obligatoires</th>
-                    <th>Retenue &agrave; la source</th>
-                    <th>CSG</th>
-                    <th>Pr&eacute;l&egrave;vements sociaux</th>
-                    <th>Contributions additionnelles</th>
-                    <th>Pr&eacute;l&egrave;vements solidarit&eacute;</th>
-                    <th>CRDS</th>
-                    <th>Commission HT</th>
-                    <th>Commission TVA</th>
-                    <th>Commission TTC</th>
-                    <th><?= $this->lng['preteur-operations-pdf']['solde-de-votre-compte'] ?></th>
-                    <td></td>
-                </tr>
-                <?php
-                $asterix_on = false;
-                foreach ($this->lTrans as $t) {
-
-                    $t['libelle_operation'] = $t['libelle_operation'];
-                    $t['libelle_projet']    = $t['libelle_projet'];
-                    if ($t['montant_operation'] > 0) {
-                        $plus    = '+';
-                        $moins   = '&nbsp;';
-                        $couleur = ' style="color:#40b34f;"';
-                    } else {
-                        $plus    = '&nbsp;';
-                        $moins   = '-';
-                        $couleur = ' style="color:red;"';
-                    }
-
-                    $solde = $t['solde'];
-                    // remb
-                    if ($t['type_transaction'] == 5 || $t['type_transaction'] == 23) {
-                        $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
-
-                        $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
-
-                        if ($t['type_transaction'] == 23) {
-                            $this->echeanciers->prelevements_obligatoires    = 0;
-                            $this->echeanciers->retenues_source              = 0;
-                            $this->echeanciers->interets                     = 0;
-                            $this->echeanciers->retenues_source              = 0;
-                            $this->echeanciers->csg                          = 0;
-                            $this->echeanciers->prelevements_sociaux         = 0;
-                            $this->echeanciers->contributions_additionnelles = 0;
-                            $this->echeanciers->prelevements_solidarite      = 0;
-                            $this->echeanciers->crds                         = 0;
-                            $this->echeanciers->capital                      = $t['montant_operation'];
-                        } elseif ($t['type_transaction'] == 5 && $t['recouvrement'] == 1 && $this->echeanciers_recouvrements_prorata->get($t['id_transaction'], 'id_transaction')) {
-                            $retenuesfiscals = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires + $this->echeanciers_recouvrements_prorata->retenues_source + $this->echeanciers_recouvrements_prorata->csg + $this->echeanciers_recouvrements_prorata->prelevements_sociaux + $this->echeanciers_recouvrements_prorata->contributions_additionnelles + $this->echeanciers_recouvrements_prorata->prelevements_solidarite + $this->echeanciers_recouvrements_prorata->crds;
-
-                            $this->echeanciers->prelevements_obligatoires    = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires;
-                            $this->echeanciers->retenues_source              = $this->echeanciers_recouvrements_prorata->retenues_source;
-                            $this->echeanciers->interets                     = $this->echeanciers_recouvrements_prorata->interets;
-                            $this->echeanciers->retenues_source              = $this->echeanciers_recouvrements_prorata->retenues_source;
-                            $this->echeanciers->csg                          = $this->echeanciers_recouvrements_prorata->csg;
-                            $this->echeanciers->prelevements_sociaux         = $this->echeanciers_recouvrements_prorata->prelevements_sociaux;
-                            $this->echeanciers->contributions_additionnelles = $this->echeanciers_recouvrements_prorata->contributions_additionnelles;
-                            $this->echeanciers->prelevements_solidarite      = $this->echeanciers_recouvrements_prorata->prelevements_solidarite;
-                            $this->echeanciers->crds                         = $this->echeanciers_recouvrements_prorata->crds;
-                            $this->echeanciers->capital                      = $this->echeanciers_recouvrements_prorata->capital;
-                        }
-                        ?>
-                        <tr>
-                            <td><?= $t['libelle_operation'] ?></td>
-                            <td><?= $t['bdc'] ?></td>
-                            <td><?= $t['libelle_projet'] ?></td>
-                            <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
-                            <td<?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
-                            <td><?= $this->ficelle->formatNumber(($this->echeanciers->capital / 100)) ?></td>
-                            <td><?= $this->ficelle->formatNumber(($this->echeanciers->interets / 100)) ?></td>
-                            <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_obligatoires) ?></td>
-                            <td><?= $this->ficelle->formatNumber($this->echeanciers->retenues_source) ?></td>
-                            <td><?= $this->ficelle->formatNumber($this->echeanciers->csg) ?></td>
-                            <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_sociaux) ?></td>
-                            <td><?= $this->ficelle->formatNumber($this->echeanciers->contributions_additionnelles) ?></td>
-                            <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_solidarite) ?></td>
-                            <td><?= $this->ficelle->formatNumber($this->echeanciers->crds) ?></td>
-                            <td><?= $this->ficelle->formatNumber($t['commission_ht'] / 100) ?></td>
-                            <td><?= $this->ficelle->formatNumber($t['commission_tva'] / 100) ?></td>
-                            <td><?= $this->ficelle->formatNumber($t['commission_ttc'] / 100) ?></td>
-                            <td><?= $this->ficelle->formatNumber($solde / 100, 2) ?></td>
-                            <td></td>
-                        </tr>
-                        <?
-                    } elseif (in_array($t['type_transaction'], array(8, 1, 3, 4, 16, 17, 19, 20))) {
-                        // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
-                        switch ($t['type_transaction']) {
-                            case 8:
-                                $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['retrait-dargents'];
-                                break;
-                            case 1:
-                                $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
-                                break;
-                            case 3:
-                                $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
-                                break;
-                            case 4:
-                                $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
-                                break;
-                            case 16:
-                                $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'];
-                                break;
-                            case 17:
-                                $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['retrait-offre'];
-                                break;
-                            case 19:
-                                $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-filleul'];
-                                break;
-                            case 20:
-                                $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-parrain'];
-                                break;
-                        }
-                        $type = "";
-                        if ($t['type_transaction'] == 8 && $t['montant'] > 0) {
-                            $type = "Annulation retrait des fonds - compte bancaire clos";
-                        } else {
-                            $type = $t['libelle_operation'];
-                        }
-                        ?>
-                        <tr>
-                            <td><?= $type ?></td>
-                            <td></td>
-                            <td>&nbsp;</td>
-                            <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
-                            <td<?= $couleur ?>><?= number_format($t['montant_operation'] / 100, 2, ',', '') ?></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td><?= number_format($solde / 100, 2, ',', '') ?></td>
-                            <td></td>
-                        </tr>
-                        <?
-
-                    } elseif (in_array($t['type_transaction'], array(2))) {//offres en cours
-                        $bdc = $t['bdc'];
-                        if ($t['bdc'] == 0) {
-                            $bdc = "";
-                        }
-                        //asterix pour les offres acceptees
-                        $asterix       = "";
-                        $offre_accepte = false;
-                        if ($t['libelle_operation'] == $this->lng['preteur-operations-vos-operations']['offre-acceptee']) {
-                            $asterix       = " *";
-                            $offre_accepte = true;
-                            $asterix_on    = true;
-                        }
-                        ?>
-                        <tr>
-                            <td><?= $t['libelle_operation'] ?></td>
-                            <td><?= $bdc ?></td>
-                            <td><?= $t['libelle_projet'] ?></td>
-                            <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
-                            <td<?= (!$offre_accepte ? $couleur : '') ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td><?= number_format($t['solde'] / 100, 2, ',', '') ?></td>
-                            <td><?= $asterix ?></td>
-                        </tr>
-                        <?
-                    }
-                }
-                ?>
-            </table>
+        header("Content-type: application/vnd.ms-excel; charset=utf-8");
+        header("Expires: 0");
+        header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+        header("content-disposition: attachment;filename=" . $this->bdd->generateSlug('operations_' . date('Y-m-d')) . ".xls");
+        // si exoneré à la date de la transact on change le libelle
+        $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['prelevements-fiscaux-et-sociaux'];
+        // on check si il s'agit d'une PM ou PP
+        if ($this->clients->type != 1 && $this->clients->type != 3) {
+            $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['retenues-a-la-source'];
+        }
+        ?>
+        <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8"/>
+        <table border=1>
+            <tr>
+                <th><?= $this->lng['preteur-operations-pdf']['operations'] ?></th>
+                <th><?= $this->lng['preteur-operations-pdf']['info-titre-bon-caisse'] ?></th>
+                <th><?= $this->lng['preteur-operations-pdf']['projets'] ?></th>
+                <th><?= $this->lng['preteur-operations-pdf']['date-de-loperation'] ?></th>
+                <th><?= $this->lng['preteur-operations-pdf']['montant-de-loperation'] ?></th>
+                <th><?= $this->lng['preteur-operations-vos-operations']['capital-rembourse'] ?></th>
+                <th><?= $this->lng['preteur-operations-vos-operations']['interets-recus'] ?></th>
+                <th>Pr&eacute;l&egrave;vements obligatoires</th>
+                <th>Retenue &agrave; la source</th>
+                <th>CSG</th>
+                <th>Pr&eacute;l&egrave;vements sociaux</th>
+                <th>Contributions additionnelles</th>
+                <th>Pr&eacute;l&egrave;vements solidarit&eacute;</th>
+                <th>CRDS</th>
+                <th>Commission HT</th>
+                <th>Commission TVA</th>
+                <th>Commission TTC</th>
+                <th><?= $this->lng['preteur-operations-pdf']['solde-de-votre-compte'] ?></th>
+                <td></td>
+            </tr>
             <?php
-            if ($asterix_on) {
-                ?>
-                <div>* <?= $this->lng['preteur-operations-vos-operations']['offre-acceptee-asterix-csv'] ?></div>
-                <?
-            }
-            die;
-
-        } else {// PC (old on utilise pas)
-            $header = $this->lng['preteur-operations-pdf']['operations'] . ";" . $this->lng['preteur-operations-pdf']['projets'] . ";" . $this->lng['preteur-operations-pdf']['date-de-loperation'] . ";+;-;" . $this->lng['preteur-operations-pdf']['montant-de-loperation'] . ";" . $this->lng['preteur-operations-pdf']['solde-de-votre-compte'] . ";";
-            $header = $header;
-
-            $csv = "";
-            $csv .= $header . " \n";
-
+            $asterix_on = false;
             foreach ($this->lTrans as $t) {
+                $t['libelle_operation'] = $t['libelle_operation'];
+                $t['libelle_projet']    = $t['libelle_projet'];
                 if ($t['montant_operation'] > 0) {
-                    $plus  = '+';
-                    $moins = '';
+                    $plus    = '+';
+                    $moins   = '&nbsp;';
+                    $couleur = ' style="color:#40b34f;"';
                 } else {
-                    $plus  = '';
-                    $moins = '-';
+                    $plus    = '&nbsp;';
+                    $moins   = '-';
+                    $couleur = ' style="color:red;"';
                 }
+
                 $solde = $t['solde'];
                 // remb
                 if ($t['type_transaction'] == 5 || $t['type_transaction'] == 23) {
                     $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
-                    $csv .= $t['libelle_operation'] . " - " . $this->echeanciers->id_loan . ";" . $t['title'] . ";" . $this->dates->formatDate($t['date_operation'], 'd-m-Y') . ";" . $plus . ";" . $moins . ";" . number_format($t['montant_operation'] / 100, 2, ',', '') . " €;" . number_format($solde, 2, ',', '') . " €;";
-                    $csv .= " \n";
-                } elseif (in_array($t['type_transaction'], array(8, 1, 3, 4, 16, 17, 19, 20))) {
-                    $csv .= $t['libelle_operation'] . ";" . $t['title'] . ";" . $this->dates->formatDate($t['date_operation'], 'd-m-Y') . ";" . $plus . ";" . $moins . ";" . number_format($t['montant_operation'] / 100, 2, ',', '') . " €;" . number_format($solde, 2, ',', '') . " €;";
-                    $csv .= " \n";
-                } elseif (in_array($t['type_transaction'], array(2))) {//offres en cours
-                    if ($t['id_bid_remb'] != 0) {
-                        $this->bids->get($t['id_bid_remb'], 'id_bid');
-                        $id_loan = '';
-                    } else {
-                        $this->wallets_lines->get($t['id_transaction'], 'id_transaction');
-                        $this->bids->get($this->wallets_lines->id_wallet_line, 'id_lender_wallet_line');
 
-                        if ($this->loans->get($this->bids->id_bid, 'status = 0 AND id_bid')) {
-                            $id_loan = ' - ' . $this->loans->id_loan;
-                        } else $id_loan = '';
+                    $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
+
+                    if ($t['type_transaction'] == 23) {
+                        $this->echeanciers->prelevements_obligatoires    = 0;
+                        $this->echeanciers->retenues_source              = 0;
+                        $this->echeanciers->interets                     = 0;
+                        $this->echeanciers->retenues_source              = 0;
+                        $this->echeanciers->csg                          = 0;
+                        $this->echeanciers->prelevements_sociaux         = 0;
+                        $this->echeanciers->contributions_additionnelles = 0;
+                        $this->echeanciers->prelevements_solidarite      = 0;
+                        $this->echeanciers->crds                         = 0;
+                        $this->echeanciers->capital                      = $t['montant_operation'];
+                    } elseif ($t['type_transaction'] == 5 && $t['recouvrement'] == 1 && $this->echeanciers_recouvrements_prorata->get($t['id_transaction'], 'id_transaction')) {
+                        $retenuesfiscals = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires + $this->echeanciers_recouvrements_prorata->retenues_source + $this->echeanciers_recouvrements_prorata->csg + $this->echeanciers_recouvrements_prorata->prelevements_sociaux + $this->echeanciers_recouvrements_prorata->contributions_additionnelles + $this->echeanciers_recouvrements_prorata->prelevements_solidarite + $this->echeanciers_recouvrements_prorata->crds;
+
+                        $this->echeanciers->prelevements_obligatoires    = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires;
+                        $this->echeanciers->retenues_source              = $this->echeanciers_recouvrements_prorata->retenues_source;
+                        $this->echeanciers->interets                     = $this->echeanciers_recouvrements_prorata->interets;
+                        $this->echeanciers->retenues_source              = $this->echeanciers_recouvrements_prorata->retenues_source;
+                        $this->echeanciers->csg                          = $this->echeanciers_recouvrements_prorata->csg;
+                        $this->echeanciers->prelevements_sociaux         = $this->echeanciers_recouvrements_prorata->prelevements_sociaux;
+                        $this->echeanciers->contributions_additionnelles = $this->echeanciers_recouvrements_prorata->contributions_additionnelles;
+                        $this->echeanciers->prelevements_solidarite      = $this->echeanciers_recouvrements_prorata->prelevements_solidarite;
+                        $this->echeanciers->crds                         = $this->echeanciers_recouvrements_prorata->crds;
+                        $this->echeanciers->capital                      = $this->echeanciers_recouvrements_prorata->capital;
                     }
-                    $csv .= $t['libelle_operation'] . $id_loan . ";" . $t['libelle_projet'] . ";" . $this->dates->formatDate($t['date_operation'], 'd-m-Y') . ";" . $plus . ";" . $moins . ";" . number_format($t['montant_operation'] / 100, 2, ',', '') . " €;" . number_format($solde, 2, ',', '') . " €;";
-                    $csv .= " \n";
+                    ?>
+                    <tr>
+                        <td><?= $t['libelle_operation'] ?></td>
+                        <td><?= $t['bdc'] ?></td>
+                        <td><?= $t['libelle_projet'] ?></td>
+                        <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
+                        <td<?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber(($this->echeanciers->capital / 100)) ?></td>
+                        <td><?= $this->ficelle->formatNumber(($this->echeanciers->interets / 100)) ?></td>
+                        <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_obligatoires) ?></td>
+                        <td><?= $this->ficelle->formatNumber($this->echeanciers->retenues_source) ?></td>
+                        <td><?= $this->ficelle->formatNumber($this->echeanciers->csg) ?></td>
+                        <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_sociaux) ?></td>
+                        <td><?= $this->ficelle->formatNumber($this->echeanciers->contributions_additionnelles) ?></td>
+                        <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_solidarite) ?></td>
+                        <td><?= $this->ficelle->formatNumber($this->echeanciers->crds) ?></td>
+                        <td><?= $this->ficelle->formatNumber($t['commission_ht'] / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber($t['commission_tva'] / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber($t['commission_ttc'] / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber($solde / 100, 2) ?></td>
+                        <td></td>
+                    </tr>
+                    <?
+                } elseif (in_array($t['type_transaction'], array(8, 1, 3, 4, 16, 17, 19, 20))) {
+                    // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
+                    switch ($t['type_transaction']) {
+                        case 8:
+                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['retrait-dargents'];
+                            break;
+                        case 1:
+                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
+                            break;
+                        case 3:
+                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
+                            break;
+                        case 4:
+                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
+                            break;
+                        case 16:
+                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'];
+                            break;
+                        case 17:
+                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['retrait-offre'];
+                            break;
+                        case 19:
+                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-filleul'];
+                            break;
+                        case 20:
+                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-parrain'];
+                            break;
+                    }
+                    $type = "";
+                    if ($t['type_transaction'] == 8 && $t['montant'] > 0) {
+                        $type = "Annulation retrait des fonds - compte bancaire clos";
+                    } else {
+                        $type = $t['libelle_operation'];
+                    }
+                    ?>
+                    <tr>
+                        <td><?= $type ?></td>
+                        <td></td>
+                        <td>&nbsp;</td>
+                        <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
+                        <td<?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><?= $this->ficelle->formatNumber($solde / 100) ?></td>
+                        <td></td>
+                    </tr>
+                    <?
+
+                } elseif (in_array($t['type_transaction'], array(2))) {//offres en cours
+                    $bdc = $t['bdc'];
+                    if ($t['bdc'] == 0) {
+                        $bdc = "";
+                    }
+                    //asterix pour les offres acceptees
+                    $asterix       = "";
+                    $offre_accepte = false;
+                    if ($t['libelle_operation'] == $this->lng['preteur-operations-vos-operations']['offre-acceptee']) {
+                        $asterix       = " *";
+                        $offre_accepte = true;
+                        $asterix_on    = true;
+                    }
+                    ?>
+                    <tr>
+                        <td><?= $t['libelle_operation'] ?></td>
+                        <td><?= $bdc ?></td>
+                        <td><?= $t['libelle_projet'] ?></td>
+                        <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
+                        <td<?= (!$offre_accepte ? $couleur : '') ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td><?= $this->ficelle->formatNumber($t['solde'] / 100) ?></td>
+                        <td><?= $asterix ?></td>
+                    </tr>
+                    <?
                 }
             }
-
-            header("Content-type: application/vnd.ms-excel");
-            header("Content-disposition: attachment; filename=\"" . $titre . ".csv\"");
-            echo $csv;
+            ?>
+        </table>
+        <?php
+        if ($asterix_on) {
+            ?>
+            <div>* <?= $this->lng['preteur-operations-vos-operations']['offre-acceptee-asterix-csv'] ?></div>
+            <?
         }
         die;
     }
 
-    function conversion_vers_csv($chemin_fichier, array $donnees)
-    {
-        // On cherche des infos sur le fichier à ouvrir
-        $infos_fichier = stat($chemin_fichier);
-        // Si le fichier est inexistant ou vide, on va le créer et y ajouter les
-        // libellés de colonne.
-        if (!file_exists($chemin_fichier) || $infos_fichier['size'] == 0) {
-            // On ouvre le fichier en écriture seule et on le vide de son contenu
-            $fp = @fopen($chemin_fichier, 'w');
-            if ($fp === false) {
-                throw new Exception("Le fichier ${chemin_fichier} n'a pas pu être créé.");
-            }
-            // Les entêtes sont les clés du tableau associatif
-            $entetes = array_keys($donnees[0]);
-            // Décodage des entêtes qui sont en UTF8 à la base
-            foreach ($entetes as &$entete) {
-                // Notez l'utilisation de iconv pour changer l'encodage.
-                $entete = (is_string($entete)) ? iconv("UTF-8", "Windows-1252//TRANSLIT", $entete) : $entete;
-            }
-            // On utilise le troisième paramètre de fputcsv pour changer le séparateur
-            // par défaut de php.
-            fputcsv($fp, $entetes, ';');
-        }
-        // On ouvre le handler en écriture pour écrire le fichier
-        // s'il ne l'est pas déjà.
-        $fp = ($fp) ? $fp : fopen($chemin_fichier, 'a');
-        // Écriture des données
-        foreach ($donnees as $donnee) {
-            foreach ($donnee as &$champ) {
-                $champ = (is_string($champ)) ?
-                    iconv("UTF-8", "Windows-1252//TRANSLIT", $champ) : $champ;
-            }
-            fputcsv($fp, $donnee, ';');
-        }
-        fclose($fp);
-    }
-
-    function _get_ifu()
+    public function _get_ifu()
     {
         // recup du fichier
         $hash_client = $this->params[0];
@@ -647,10 +547,8 @@ class operationsController extends bootstrap
         }
     }
 
-
-    function indexation_client($id_client)
+    private function indexation_client($id_client)
     {
-        //params
         $liste_id_a_forcer             = $id_client;
         $limit_client                  = 50;
         $uniquement_ceux_jamais_indexe = false; // on veut aussi ceux deja indexé
@@ -697,9 +595,8 @@ class operationsController extends bootstrap
             $this->L_clients = $this->clients_indexation->select(' etape_inscription_preteur = 3 ' . $sql_forcage_id_client, '', '', $limit_client);
         }
 
-        $nb_client_concernes = count($this->L_clients);
-        $nb_maj              = 0;
-        $nb_creation         = 0;
+        $nb_maj      = 0;
+        $nb_creation = 0;
         foreach ($this->L_clients as $clt) {
             if ($this->clients_indexation->get($clt['id_client'], 'id_client')) {
                 // Récupération de la date de la derniere indexation
@@ -713,11 +610,11 @@ class operationsController extends bootstrap
                     $date_debut_a_indexer = "2013-01-01";
                 }
                 $this->lTrans = $this->transactions->selectTransactionsOp($array_type_transactions, 't.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20,23)
-						AND t.status = 1
-						AND t.etat = 1
-						AND t.display = 0
-						AND t.id_client = ' . $this->clients_indexation->id_client . '
-						AND LEFT(t.date_transaction,10) >= "' . $date_debut_a_indexer . '"', 'id_transaction DESC');
+                        AND t.status = 1
+                        AND t.etat = 1
+                        AND t.display = 0
+                        AND t.id_client = ' . $this->clients_indexation->id_client . '
+                        AND DATE(t.date_transaction) >= "' . $date_debut_a_indexer . '"', 'id_transaction DESC');
 
                 $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
                 $nb_entrees = count($this->lTrans);
@@ -811,11 +708,11 @@ class operationsController extends bootstrap
                     $nb_creation++;
                 }
             } else {
-                // on get pas le client donc erreur
-                $oLogger = new ULogger('Operation : indexation_client', $this->logPath, 'cron.log');
+                $oLogger = new ULogger('operations', $this->logPath, 'operations.log');
                 $oLogger->addRecord(ULogger::ERROR,
-                    'Impossible de recuperer le client : ' . $clt['id_client'],
-                    array(__FILE__ . ' at line ' . __LINE__));
+                    'Impossible de récupérer le client : ' . $clt['id_client'],
+                    array(__FILE__ . ' at line ' . __LINE__)
+                );
             }
         }
     }
