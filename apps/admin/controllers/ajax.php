@@ -2703,9 +2703,39 @@ class ajaxController extends bootstrap
                     break;
             }
 
-            $oClients->sendEmailBorrower($oClients->id_client, $sTypeEmail);
+            $oMailsText = $this->loadData(mails_text);
+            $oMailsText->get($sTypeEmail, 'lang = "fr" AND type');
 
+            $this->settings->get('Facebook', 'type');
+            $sFacebookURL = $this->settings->value;
+            $this->settings->get('Twitter', 'type');
+            $sTwitterURL = $this->settings->value;
+
+            $sTemporaryLink = $this->surl.'/espace_emprunteur/securite/'.$this->generateTemporaryLink($oClients->id_client);
+
+                $aVariables = array(
+                    'surl'                   => $this->surl,
+                    'url'                    => $this->url,
+                    'link_compte_emprunteur' => $sTemporaryLink,
+                    'lien_fb'                => $sFacebookURL,
+                    'lien_tw'                => $sTwitterURL,
+                    'prenom'                 => $this->clients->prenom
+                );
+
+            $sRecipient = $this->clients->email;
+
+            $oEmail = $this->loadLib('email');
+            $oEmail->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
+            $oEmail->setSubject(stripslashes(utf8_decode($oMailsText->subject)));
+            $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($oMailsText->content), $this->tnmp->constructionVariablesServeur($aVariables))));
+
+            if ($this->Config['env'] == 'prod') {
+                Mailer::sendNMP($oEmail, $this->mails_filer, $oMailsText->id_textemail, $sRecipient, $aNMPResponse);
+                $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $oMailsText->nmp_secure, $oMailsText->id_nmp, $oMailsText->nmp_unique, $oMailsText->mode);
+            } else {
+                $this->email->addRecipient($sRecipient);
+                Mailer::send($oEmail, $this->mails_filer, $oMailsText->id_textemail);
+            }
         }
-
     }
 }
