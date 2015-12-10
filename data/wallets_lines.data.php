@@ -38,7 +38,7 @@ class wallets_lines extends wallets_lines_crud
     const TYPE_REMBOURSEMENT = 40;
 
 
-    public function wallets_lines($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::wallets_lines($bdd, $params);
     }
