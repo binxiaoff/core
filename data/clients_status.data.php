@@ -29,12 +29,12 @@
 class clients_status extends clients_status_crud
 {
 
-    const A_CONTROLER        = 1;
-    const COMPLETUDE         = 2;
-    const COMPLETUDE_RELANCE = 3;
-    const COMPLETUDE_REPONSE = 4;
-    const MODIFICATION       = 5;
-    const VALIDE             = 6;
+    const TO_BE_CHECKED         = 1;
+    const COMPLETENESS          = 2;
+    const COMPLETENESS_REMINDER = 3;
+    const COMPLETENESS_REPLY    = 4;
+    const MODIFICATION          = 5;
+    const VALIDATED             = 6;
 
     public function clients_status($bdd, $params = '')
     {
@@ -133,7 +133,7 @@ class clients_status extends clients_status_crud
         $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
             // On recup que les clients en completude
-            if ($record['id_client_status'] == self::COMPLETUDE) {
+            if ($record['id_client_status'] == self::COMPLETENESS) {
                 $result[] = $record;
             }
         }

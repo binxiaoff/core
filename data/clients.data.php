@@ -39,10 +39,10 @@ class clients extends clients_crud
     const REMBOURSEMENT_ANTICIPE = 7;
     const AFFECTATION_RA_PRETEURS = 8;
 
-    const TYPE_PRETEUR_PHYSIQUE = 1;
-    const TYPE_PRETEUR_MORALE = 2;
-    const TYPE_PRETEUR_PHYSIQUE_ETRANGER = 3;
-    const TYPE_PRETEUR_MORALE_ETRANGER = 4;
+    const TYPE_BORROWER_PERSON = 1;
+    const TYPE_BORROWER_LEGAL_ENTITY = 2;
+    const TYPE_BORROWER_PERSON_FOREIGNER = 3;
+    const TYPE_BORROWER_LEGAL_ENTITY_FOREIGNER = 4;
 
 
     public function __construct($bdd, $params = '')
