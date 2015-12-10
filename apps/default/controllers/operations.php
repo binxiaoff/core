@@ -36,6 +36,7 @@ class operationsController extends bootstrap
         $this->companies               = $this->loadData('companies');
         $this->projects_status         = $this->loadData('projects_status');
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
+        $this->ifu                     = $this->loadData('ifu');
 
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
@@ -75,8 +76,8 @@ class operationsController extends bootstrap
             3 => '3,4,7',
             4 => '8',
             5 => '2',
-            6 => '5,23');
-
+            6 => '5,23'
+        );
 
         // on va chercker si il n'y a pas de nouvelle indexation à faire
         $this->indexation_client($this->clients->id_client);
@@ -100,18 +101,11 @@ class operationsController extends bootstrap
         $_SESSION['filtre_vos_operations']['type']             = '';
         $_SESSION['filtre_vos_operations']['id_client']        = $this->clients->id_client;
 
-
-        // DETAIL DE VOS OPERATIONS //
-        $year         = date('Y');
-        $this->lLoans = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = ' . $year . ' AND status = 0', 'added DESC');
-
-        // VOS PRETS //
+        $year                          = date('Y');
+        $this->lLoans                  = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = ' . $year . ' AND status = 0', 'added DESC');
         $this->lSumLoans               = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, $year, 'next_echeance ASC');
-        $this->arrayDeclarationCreance = array(1456, 1009, 1614, 3089, 10971, 970, 7727);
-
-        // ONGLET VOS DOCS FISCAUX
-        $this->ifu        = $this->loadData('ifu');
-        $this->liste_docs = $this->ifu->select('id_client =' . $this->clients->id_client . ' AND statut = 1', 'annee ASC');
+        $this->arrayDeclarationCreance = $this->projects->getProjectsInDebt();
+        $this->liste_docs              = $this->ifu->select('id_client =' . $this->clients->id_client . ' AND statut = 1', 'annee ASC');
     }
 
     public function _vos_operations()
@@ -145,7 +139,6 @@ class operationsController extends bootstrap
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
     }
-
 
     public function _vos_operation_csv()
     {

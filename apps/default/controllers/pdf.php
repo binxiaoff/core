@@ -930,95 +930,62 @@ class pdfController extends bootstrap
         $this->pays                                 = $this->loadData('pays_v2');
         $this->echeanciers                          = $this->loadData('echeanciers');
         $this->companiesEmpr                        = $this->loadData('companies');
-        $this->projects_status_history              = $this->loadData('projects_status_history');
+        $this->projects_status                      = $this->loadData('projects_status');
+        $this->projects_last_status_history         = $this->loadData('projects_last_status_history');
         $this->projects_status_history_informations = $this->loadData('projects_status_history_informations');
 
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
         if ($this->oLoans->get($this->oLendersAccounts->id_lender_account, 'id_loan = ' . $this->params[1] . ' AND id_lender')) {
-            // particulier
-            if (in_array($this->clients->type, array(1, 4))) {
-
-                // client adresse
-                $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
-                // pays fiscal
-                if ($this->clients_adresses->id_pays_fiscal == 0) $this->clients_adresses->id_pays_fiscal = 1;
-                $this->pays->get($this->clients_adresses->id_pays_fiscal, 'id_pays');
-                $this->pays_fiscal = $this->pays->fr;
-
-            } // entreprise
-            else {
-                $this->companies->get($this->clients->id_client, 'id_client_owner');
-
-                // pays fiscal
-                if ($this->companies->id_pays == 0) {
-                    $this->companies->id_pays = 1;
-                }
-                $this->pays->get($this->companies->id_pays, 'id_pays');
-                $this->pays_fiscal = $this->pays->fr;
-            }
-
             $this->projects->get($this->oLoans->id_project, 'id_project');
             $this->companiesEmpr->get($this->projects->id_company, 'id_company');
 
-            // @todo on n'utilise jamais les id_projects_status mais les status via les constantes de classe
-            // 26 : PS , 27 RJ , 28 LJ
-            $retour = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN(26,27,28)', 'added DESC', 0, 1);
+            $this->projects_status->getLastStatut($this->projects->id_project);
 
-            if ($retour != false) {
-                $this->projects_status_history_informations->get($retour[0]['id_project_status_history'], 'id_project_status_history');
+            if (in_array($this->clients->type, array(1, 4))) {
+                $this->clients_adresses->get($this->clients->id_client, 'id_client');
+                $iCountryId = $this->clients_adresses->id_pays_fiscal;
+            } else {
+                $this->companies->get($this->clients->id_client, 'id_client_owner');
+                $iCountryId = $this->companies->id_pays;
+            }
+
+            if ($iCountryId == 0) {
+                $iCountryId = 1;
+            }
+
+            $this->pays->get($iCountryId, 'id_pays');
+            $this->pays_fiscal = $this->pays->fr;
+
+            if (in_array($this->projects_status->status, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
+                $this->projects_last_status_history->get($this->oLoans->id_project, 'id_project');
+                $this->projects_status_history_informations->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
 
                 $this->mandataires_var = $this->projects_status_history_informations->mandataire;
 
-                $id_projet_status = $retour[0]['id_project_status'];
-
                 // @todo intl
-                if ($id_projet_status == 26) {
-                    $this->nature_var = 'Procédure de sauvegarde';
-                } elseif ($id_projet_status == 27) {
-                    $this->nature_var = 'Redressement judiciaire';
-                } elseif ($id_projet_status == 28) {
-                    $this->nature_var = 'Liquidation judiciaire';
-                }
-                $date = date('d/m/Y', strtotime($this->projects_status_history_informations->date));
-                // @todo pourquoi passer par un tableau encore ?
-                $this->arrayDeclarationCreance = array($this->projects->id_project => $date);
-            } else {
-                $this->nature_var              = 'Procédure de sauvegarde';
-                $this->mandataires_var         = '';
-                $this->arrayDeclarationCreance = array(
-                    1456  => '27/11/2014',
-                    1009  => '15/04/2015',
-                    1614  => '27/05/2015',
-                    3089  => '29/06/2015',
-                    10971 => '06/08/2015',
-                    970   => '30/09/2015',
-                    7727  => '23/11/2015'
-                );
-
-                switch ($this->oLoans->id_project) {
-                    case 1614:
-                        $this->nature_var = 'Liquidation judiciaire';
-                        break;
-                    case 7727:
-                        $this->nature_var = 'Redressement judiciaire';
-                        break;
-                    case 3089:
-                    default:
+                switch ($this->projects_status->status) {
+                    case \projects_status::PROCEDURE_SAUVEGARDE:
                         $this->nature_var = 'Procédure de sauvegarde';
                         break;
+                    case \projects_status::REDRESSEMENT_JUDICIAIRE:
+                        $this->nature_var = 'Redressement judiciaire';
+                        break;
+                    case \projects_status::LIQUIDATION_JUDICIAIRE:
+                        $this->nature_var = 'Liquidation judiciaire';
+                        break;
                 }
+
+                $this->date = date('d/m/Y', strtotime($this->projects_status_history_informations->date));
             }
 
-            $this->echu         = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND LEFT(date_echeance,10) >= "2015-04-19" AND LEFT(date_echeance,10) <= "' . date('Y-m-d') . '" AND id_loan = ' . $this->oLoans->id_loan, 'montant');
-            $this->echoir       = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND LEFT(date_echeance,10) > "' . date('Y-m-d') . '" AND id_loan = ' . $this->oLoans->id_loan, 'capital');
-            $this->total        = ($this->echu + $this->echoir);
+            $this->echu         = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND DATE(date_echeance) >= "2015-04-19" AND DATE(date_echeance) <= "' . date('Y-m-d') . '" AND id_loan = ' . $this->oLoans->id_loan, 'montant');
+            $this->echoir       = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND DATE(date_echeance) > "' . date('Y-m-d') . '" AND id_loan = ' . $this->oLoans->id_loan, 'capital');
+            $this->total        = $this->echu + $this->echoir;
             $lastEcheance       = $this->echeanciers->select('id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_loan = ' . $this->oLoans->id_loan, 'ordre DESC', 0, 1);
             $this->lastEcheance = date('d/m/Y', strtotime($lastEcheance[0]['date_echeance']));
 
             $this->setDisplay('declaration_de_creances_html');
-
         } else {
             header('Location: ' . $this->lurl);
         }
@@ -1027,8 +994,8 @@ class pdfController extends bootstrap
     public function _vos_operations_pdf_indexation()
     {
         if (isset($_SESSION['filtre_vos_operations']['id_client'])) {
-            $sPath                 = $this->path . 'protected/operations_export_pdf/' . $_SESSION['filtre_vos_operations']['id_client'] . '/';
-            $sNamePdfClient        = 'vos_operations_' . date('Y-m-d') . '.pdf';
+            $sPath          = $this->path . 'protected/operations_export_pdf/' . $_SESSION['filtre_vos_operations']['id_client'] . '/';
+            $sNamePdfClient = 'vos_operations_' . date('Y-m-d') . '.pdf';
 
             $this->GenerateOperationsHtml();
             $this->WritePdf($sPath . $sNamePdfClient, 'operations');

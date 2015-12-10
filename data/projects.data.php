@@ -615,4 +615,25 @@ class projects extends projects_crud
 
         return $aProjects;
     }
+
+    public function getProjectsInDebt()
+    {
+        $aProjects = array();
+        $rResult   = $this->bdd->query('
+            SELECT p.*
+            FROM projects p
+            INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
+            INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            WHERE ps.status IN (' . implode(', ', array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)) . ')'
+        );
+
+        if ($this->bdd->num_rows($rResult) > 0) {
+            while ($aResult = $this->bdd->fetch_assoc($rResult)) {
+                $aProjects[] = (int) $aResult['id_project'];
+            }
+        }
+
+        return $aProjects;
+    }
 }
