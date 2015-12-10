@@ -885,6 +885,13 @@ class statsController extends bootstrap
         $annee = '2015';
         $date  = '31/12/2015';
 
+        $oCountry = $this->loadData('pays_v2');
+        $aCountries = $oCountry->getZoneB040Countries();
+
+        foreach($aCountries as $aCountry) {
+            $aZoneB040CountryIds[] = $aCountry['id_pays'];
+        }
+
         $sql = '
               SELECT
                 c.id_client,
@@ -893,10 +900,15 @@ class statsController extends bootstrap
                 SUM(e.interets),
                 SUM(e.retenues_source),
                 SUM(ROUND(e.prelevements_obligatoires, 2)),
-                SUM(e.capital)
+                lh.id_pays
               FROM lenders_accounts la
                 INNER JOIN clients c ON (la.id_client_owner = c.id_client)
                 LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
+                LEFT JOIN (
+                  SELECT lih.id_lender, lih.id_pays, MAX(lih.added) AS added
+                  FROM `lenders_imposition_history` lih
+                  GROUP BY lih.id_lender
+                ) lh ON lh.id_lender = la.id_lender_account AND lh.added <= e.date_echeance_reel
               WHERE YEAR(e.date_echeance_reel) = ' . $annee . '
                 AND e.status = 1
                 AND e.status_ra = 0
@@ -947,6 +959,19 @@ class statsController extends bootstrap
                 $csv .= ";";
                 $csv .= " \n";
             }
+
+            if (in_array($record[6], $aZoneB040CountryIds)) {
+                // Interets
+                $csv .= "1;";
+                $csv .= $cbene . ";";
+                $csv .= "81;";
+                $csv .= $date . ";";
+                $csv .= number_format(($record[3] / 100), 2, ',', '') . ";";
+                $csv .= "EURO;";
+                $csv .= ";";
+                $csv .= ";";
+                $csv .= " \n";
+            }
         }
 
         $sql = '
@@ -954,10 +979,16 @@ class statsController extends bootstrap
                 c.id_client,
                 c.prenom,
                 c.nom,
-                SUM(e.capital)
+                SUM(e.capital),
+                lh.id_pays
               FROM lenders_accounts la
                 INNER JOIN clients c ON (la.id_client_owner = c.id_client)
                 LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
+                LEFT JOIN (
+                  SELECT lih.id_lender, lih.id_pays, MAX(lih.added) AS added
+                  FROM `lenders_imposition_history` lih
+                  GROUP BY lih.id_lender
+                ) lh ON lh.id_lender = la.id_lender_account AND lh.added <= e.date_echeance_reel
               WHERE YEAR(e.date_echeance_reel) = ' . $annee . '
                 AND e.status = 1
               GROUP BY c.id_client';
@@ -981,6 +1012,19 @@ class statsController extends bootstrap
             $csv .= ";";
             $csv .= ";";
             $csv .= " \n";
+
+            if (in_array($record[4], $aZoneB040CountryIds)) {
+                // Interets
+                $csv .= "1;";
+                $csv .= $cbene . ";";
+                $csv .= "82;";
+                $csv .= $date . ";";
+                $csv .= number_format(($record[3] / 100), 2, ',', '') . ";";
+                $csv .= "EURO;";
+                $csv .= ";";
+                $csv .= ";";
+                $csv .= " \n";
+            }
         }
 
         $sql = '
