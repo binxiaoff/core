@@ -885,22 +885,35 @@ class statsController extends bootstrap
         $annee = '2015';
         $date  = '31/12/2015';
 
+        $oCountry = $this->loadData('pays_v2');
+        $aCountries = $oCountry->getZoneB040Countries();
+
+        foreach($aCountries as $aCountry) {
+            $aZoneB040CountryIds[] = $aCountry['id_pays'];
+        }
+        $this->bdd->query('SET SQL_BIG_SELECTS=1');
         $sql = '
-              SELECT
-                c.id_client,
-                c.prenom,
-                c.nom,
-                SUM(e.interets),
-                SUM(e.retenues_source),
-                SUM(ROUND(e.prelevements_obligatoires, 2)),
-                SUM(e.capital)
-              FROM lenders_accounts la
-                INNER JOIN clients c ON (la.id_client_owner = c.id_client)
-                LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
-              WHERE YEAR(e.date_echeance_reel) = ' . $annee . '
-                AND e.status = 1
-                AND e.status_ra = 0
-              GROUP BY c.id_client';
+                SELECT
+                  c.id_client,
+                  c.prenom,
+                  c.nom,
+                  SUM(e.interets),
+                  SUM(e.retenues_source),
+                  SUM(ROUND(e.prelevements_obligatoires, 2)),
+                  (
+                    SELECT lih.id_pays
+                    FROM `lenders_imposition_history` lih
+                    WHERE lih.added <= e.date_echeance_reel
+                      AND lih.id_lender = e.id_lender
+                    ORDER BY lih.added DESC LIMIT 1
+                  ) as id_pays
+                FROM lenders_accounts la
+                  INNER JOIN clients c ON (la.id_client_owner = c.id_client)
+                  LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
+                WHERE YEAR(e.date_echeance_reel) = ' . $annee . '
+                  AND e.status = 1
+                  AND e.status_ra = 0
+                GROUP BY c.id_client';
         $resultat = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($resultat)) {
@@ -947,6 +960,19 @@ class statsController extends bootstrap
                 $csv .= ";";
                 $csv .= " \n";
             }
+
+            if (in_array($record[6], $aZoneB040CountryIds)) {
+                // Interets
+                $csv .= "1;";
+                $csv .= $cbene . ";";
+                $csv .= "81;";
+                $csv .= $date . ";";
+                $csv .= number_format(($record[3] / 100), 2, ',', '') . ";";
+                $csv .= "EURO;";
+                $csv .= ";";
+                $csv .= ";";
+                $csv .= " \n";
+            }
         }
 
         $sql = '
@@ -954,7 +980,14 @@ class statsController extends bootstrap
                 c.id_client,
                 c.prenom,
                 c.nom,
-                SUM(e.capital)
+                SUM(e.capital),
+                (
+                    SELECT lih.id_pays
+                    FROM `lenders_imposition_history` lih
+                    WHERE lih.added <= e.date_echeance_reel
+                      AND lih.id_lender = e.id_lender
+                    ORDER BY lih.added DESC LIMIT 1
+                  ) as id_pays
               FROM lenders_accounts la
                 INNER JOIN clients c ON (la.id_client_owner = c.id_client)
                 LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
@@ -981,6 +1014,19 @@ class statsController extends bootstrap
             $csv .= ";";
             $csv .= ";";
             $csv .= " \n";
+
+            if (in_array($record[4], $aZoneB040CountryIds)) {
+                // Interets
+                $csv .= "1;";
+                $csv .= $cbene . ";";
+                $csv .= "82;";
+                $csv .= $date . ";";
+                $csv .= number_format(($record[3] / 100), 2, ',', '') . ";";
+                $csv .= "EURO;";
+                $csv .= ";";
+                $csv .= ";";
+                $csv .= " \n";
+            }
         }
 
         $sql = '
