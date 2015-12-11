@@ -280,7 +280,7 @@ class bootstrap extends Controller
                         }
 
                         $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
-                        $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $_SESSION['client']['id_client']);
+                        $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
                         $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
 
                         $this->clients_history->id_client = $_SESSION['client']['id_client'];
@@ -340,7 +340,7 @@ class bootstrap extends Controller
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
-            $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $_SESSION['client']['id_client']);
+            $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
             $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
 
             if ($this->bIsBorrower) {

@@ -759,13 +759,12 @@ class clients extends clients_crud
 
     }
 
-    public function isBorrower(projects $oProjects, $iClientId = null)
+    public function isBorrower(projects $oProjects, companies $oCompanies, $iClientId = null)
     {
         if (null === $iClientId) {
             $iClientId = $this->id_client;
         }
 
-        $oCompanies = new \companies($this->bdd);
         $oCompanies->get($iClientId, 'id_client_owner');
 
         return $oProjects->exist($oCompanies->id_company, 'id_company');
@@ -795,7 +794,7 @@ class clients extends clients_crud
     }
 
 
-    public function getDataForBorrowerOperations($iClientId = null, array $aProjects, $sStartDate = '"2013-01-01 00:00:00"', $sEndDate = 'NOW()', $iOperation = 0)
+    public function getDataForBorrowerOperations(array $aProjects, DateTime $oStartDate, DateTime $oEndDate, $iOperation = null, $iClientId = null)
     {
         if (null === $iClientId) {
             $iClientId = $this->id_client;
@@ -815,6 +814,9 @@ class clients extends clients_crud
         } else {
             $aOperations = array($iOperation);
         }
+
+        $sStartDate = '"' . $oStartDate->format('Y-m-d') . ' 00:00:00"';
+        $sEndDate   = '"' . $oEndDate->format('Y-m-d') . ' 23:59:59"';
 
         $aDataForBorrowerOperations = array();
 
@@ -880,7 +882,8 @@ class clients extends clients_crud
         $sql = 'SELECT
                     sum(l.amount)/100 AS montant,
                     psh.added AS date,
-                    l.id_project
+                    l.id_project,
+                    "financement" AS "type"
                 FROM
                     `loans` l
                     INNER JOIN projects_status_history psh ON l.id_project = psh.id_project
@@ -888,15 +891,13 @@ class clients extends clients_crud
                 WHERE
                     l.id_project IN (' . implode(',', $aProjects) . ')
                     AND ps.status = ' . \projects_status::REMBOURSEMENT . '
-                    AND psh.added >= ' . $sStartDate . '
-                    AND psh.added <= ' . $sEndDate . '
+                    AND psh.added BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
                 GROUP BY
                     id_project';
 
         $result = $this->bdd->query($sql);
 
             while ($record = $this->bdd->fetch_assoc($result)) {
-                $record['type']               = 'financement';
                 $aDataForBorrowerOperations[] = $record;
             }
         return $aDataForBorrowerOperations;
@@ -908,21 +909,20 @@ class clients extends clients_crud
         $sql = 'SELECT
                     montant/100 AS montant,
                     `date_transaction` AS date,
-                    id_project
+                    id_project,
+                    "virement" AS "type"
                 FROM
                     `transactions`
                 WHERE
                     `id_project` IN (' . implode(',', $aProjects) . ')
                     AND id_client = ' . $iClientId . '
-                    AND date_transaction >= ' . $sStartDate . '
-                    AND date_transaction <= ' . $sEndDate . '
+                    AND date_transaction BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
                     AND `type_transaction` = 9
                 GROUP BY
                     id_project';
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
-            $record['type']               = 'virement';
             $aDataForBorrowerOperations[] = $record;
         }
 
@@ -942,8 +942,7 @@ class clients extends clients_crud
                     `echeanciers_emprunteur`
                 WHERE
                     `id_project` IN (' . implode(',', $aProjects) . ')
-                    AND DATE(`date_echeance_emprunteur_reel`) >= ' . $sStartDate . '
-                    AND DATE(`date_echeance_emprunteur_reel`) <= ' . $sEndDate . '
+                    AND DATE(`date_echeance_emprunteur_reel`) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
                     AND `status_emprunteur` = 1
                     AND `status_ra` = 0
                 GROUP BY
@@ -983,13 +982,13 @@ class clients extends clients_crud
                     `id_project`,
                     -SUM(`capital` + `interets`)/100 AS montant,
                     `date_echeance_reel` AS date,
-                    `ordre`
+                    `ordre`,
+                    "affectation-preteurs" AS "type"
                 FROM
                     `echeanciers`
                 WHERE
                     `id_project` IN (' . implode(',', $aProjects) . ')
-                    AND DATE(`date_echeance_reel`) >= ' . $sStartDate . '
-                    AND DATE(`date_echeance_reel`) <= ' . $sEndDate . '
+                    AND DATE(`date_echeance_reel`) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
                     AND `status` = 1
                     AND `status_ra` = 0
                 GROUP BY
@@ -998,10 +997,8 @@ class clients extends clients_crud
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
-            $record['type']               = 'affectation-preteurs';
             $aDataForBorrowerOperations[] = $record;
         }
-
         return $aDataForBorrowerOperations;
     }
 
@@ -1011,19 +1008,18 @@ class clients extends clients_crud
         $sql = 'SELECT
                         `id_project`,
                         montant/100 AS montant,
-                        added as date
+                        added as date,
+                        "remboursement-anticipe" AS "type"
                     FROM
                         `receptions`
                     WHERE
                         `remb_anticipe` = 1
                         AND `id_project` IN (' . implode(',', $aProjects) . ')
-                        AND added >= ' . $sStartDate . '
-                        AND added <= ' . $sEndDate. '
+                        AND added BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
                     GROUP BY `id_project`';
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
-            $record['type']               = 'remboursement-anticipe';
             $aDataForBorrowerOperations[] = $record;
         }
 
@@ -1036,13 +1032,13 @@ class clients extends clients_crud
         $sql = 'SELECT
                     `id_project`,
                     - SUM(`capital`)/100 AS montant,
-                    date_echeance_reel AS date
+                    date_echeance_reel AS date,
+                    "affectation-ra-preteur" AS "type"
                 FROM
                     `echeanciers`
                 WHERE
                     `id_project` IN (' . implode(',', $aProjects) . ')
-                    AND `date_echeance_reel` >= ' . $sStartDate . '
-                    AND `date_echeance_reel` <= ' . $sEndDate. '
+                    AND `date_echeance_reel` BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
                     AND `status` = 1
                     AND `status_ra` = 1
                 GROUP BY
@@ -1050,7 +1046,6 @@ class clients extends clients_crud
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
-            $record['type']               = 'affectation-ra-preteur';
             $aDataForBorrowerOperations[] = $record;
         }
 
