@@ -158,26 +158,27 @@ class projects_status extends projects_status_crud
      */
     public function getPossibleStatus($iProjectId, projects_status_history $oProjectStatusHistory)
     {
-        if ($this->status >= self::REMBOURSEMENT) {
-            $sPossibleStatus = 'status >= '. self::REMBOURSEMENT;
-        } else {
-            switch ($this->status) {
-                case self::ABANDON:
-                    return $this->select('id_project_status = ' . $oProjectStatusHistory->getBeforeLastStatus($iProjectId) . ' OR status = ' . $this->status);
-                case self::A_TRAITER:
-                case self::EN_ATTENTE_PIECES:
-                    $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . $this->status . ', ' . $this->getNextStatus($this->status) . ')';
-                    break;
-                case self::ATTENTE_ANALYSTE:
-                    $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . $this->status . ')';
-                    break;
-                case self::PREP_FUNDING:
-                    $sPossibleStatus = 'status IN (' . self::PREP_FUNDING . ',' . self::A_FUNDER . ')';
-                    break;
-                case self::REJETE:
-                default:
+        switch ($this->status) {
+            case self::ABANDON:
+                return $this->select('id_project_status = ' . $oProjectStatusHistory->getBeforeLastStatus($iProjectId) . ' OR status = ' . $this->status);
+            case self::A_TRAITER:
+            case self::EN_ATTENTE_PIECES:
+                $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . $this->status . ', ' . $this->getNextStatus($this->status) . ')';
+                break;
+            case self::ATTENTE_ANALYSTE:
+                $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . self::ATTENTE_ANALYSTE . ')';
+                break;
+            case self::PREP_FUNDING:
+                $sPossibleStatus = 'status IN (' . self::PREP_FUNDING . ',' . self::A_FUNDER . ')';
+                break;
+            case self::REMBOURSEMENT_ANTICIPE:
+                return array();
+            default:
+                if ($this->status < self::REMBOURSEMENT) {
                     return array();
-            }
+                }
+                $sPossibleStatus = 'status >= '. self::REMBOURSEMENT;
+                break;
         }
 
         return $this->select($sPossibleStatus, 'status ASC');

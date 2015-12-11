@@ -420,7 +420,7 @@
                             </select>
                         </td>
                     </tr>
-                <tr>
+                    <tr>
                         <th><label for="status">Statut :</label></th>
                         <td id="current_statut">
                             <?php
@@ -429,39 +429,35 @@
                             $sDisplayStatus      = 'block';
                             $sDisplayMsgProject  = 'block';
 
-                            if ($this->current_projects_status->status == \projects_status::REMBOURSEMENT_ANTICIPE) {
-                                echo 'Remboursement anticipé';
-                            } else {
-                                if (count($this->lProjects_status) > 0) {
-                                    if (
-                                        (0 == $this->projects->period || 1000000 == $this->projects->period || empty($this->aAttachments[3]['path'])) // No RIB or no duration selected
-                                        && $this->current_projects_status->status == \projects_status::PREP_FUNDING
-                                    ) {
-                                        $sDisplayPeriodHS    = 'block';
-                                        $sDisplayStatus      = 'none';
-                                        $sDisplayMsgPeriodHs = 'block';
-                                        $sDisplayMsgProject  = 'none';
-                                    }
-                                ?>
-                                    <span id="displayPeriodHS" style="display:<?= $sDisplayPeriodHS ?>;">
-                                        <?= $this->current_projects_status->label ?>
-                                    </span>
-                                    <select name="status" id="status" class="select" style="display:<?= $sDisplayStatus ?>;" <?= ($this->current_projects_status->status == \projects_status::REMBOURSEMENT_ANTICIPE ? '"disabled"' : "") ?>>
-                                    <?php foreach ($this->lProjects_status as $s) { ?>
-                                        <option <?= ($this->current_projects_status->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
-                                    <?php } ?>
-                                    </select>
-                                    <?php
-                                } else {
-                                    ?><input type="hidden" name="status" id="status"
-                                             value="<?= $this->current_projects_status->status ?>" /><?
-                                    echo $this->current_projects_status->label;
+                            if (count($this->lProjects_status) > 0) {
+                                if (
+                                    (0 == $this->projects->period || 1000000 == $this->projects->period || empty($this->aAttachments[3]['path'])) // No RIB or no duration selected
+                                    && $this->current_projects_status->status == \projects_status::PREP_FUNDING
+                                ) {
+                                    $sDisplayPeriodHS    = 'block';
+                                    $sDisplayStatus      = 'none';
+                                    $sDisplayMsgPeriodHs = 'block';
+                                    $sDisplayMsgProject  = 'none';
                                 }
+                            ?>
+                                <span id="displayPeriodHS" style="display:<?= $sDisplayPeriodHS ?>;">
+                                    <?= $this->current_projects_status->label ?>
+                                </span>
+                                <select name="status" id="status" class="select" style="display:<?= $sDisplayStatus ?>;" <?= ($this->current_projects_status->status == \projects_status::REMBOURSEMENT_ANTICIPE ? '"disabled"' : "") ?>>
+                                <?php foreach ($this->lProjects_status as $s) { ?>
+                                    <option <?= ($this->current_projects_status->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
+                                <?php } ?>
+                                </select>
+                                <?php
+                            } else {
+                                ?><input type="hidden" name="status" id="status"
+                                         value="<?= $this->current_projects_status->status ?>" /><?
+                                echo $this->current_projects_status->label;
                             }
                             ?>
                         </td>
                         <td>
-                            <a href="<?= $this->lurl ?>/thickbox/project_history/<?= $this->projects->id_project ?>" class="thickbox" title="Historique dossier"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Information" /></a>
+                            <a href="<?= $this->lurl ?>/thickbox/project_history/<?= $this->projects->id_project ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Information" /></a>
                         </td>
                     </tr>
                     <?php if ($this->current_projects_status->status == \projects_status::NOTE_EXTERNE_FAIBLE && false === empty($this->current_projects_status_history->content)) { ?>
