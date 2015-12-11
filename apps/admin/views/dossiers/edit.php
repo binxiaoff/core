@@ -15,7 +15,7 @@
     }
 </style>
 <script type="text/javascript">
-    $(document).ready(function () {
+    $(function () {
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
         $("#date").datepicker({
@@ -24,54 +24,55 @@
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
-            yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'});
-                    $("#date_pub").datepicker({
-                        showOn: 'both',
-                        buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
-                        buttonImageOnly: true,
-                        changeMonth: true,
-                        changeYear: true,
-                        minDate: new Date(<?= date('Y') ?>, <?= date('m') - 1 ?>, <?= (date('d')) ?>)
-                    });
-                    $("#date_de_retrait").datepicker({
-                        showOn: 'both',
-                        buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
-                        buttonImageOnly: true,
-                        changeMonth: true,
-                        changeYear: true,
-                        minDate: new Date(<?= date('Y') ?>, <?= date('m') - 1 ?>, <?= (date('d')) ?>)
-                    });
-                    $("#date_ps").datepicker({
-                        showOn: 'both',
-                        buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
-                        buttonImageOnly: true,
-                        changeMonth: true,
-                        changeYear: true
-                    });
-                    $("#date_rj").datepicker({
-                        showOn: 'both',
-                        buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
-                        buttonImageOnly: true,
-                        changeMonth: true,
-                        changeYear: true
-                    });
-                    $("#date_lj").datepicker({
-                        showOn: 'both',
-                        buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
-                        buttonImageOnly: true,
-                        changeMonth: true,
-                        changeYear: true
-                    });
-                    $("#creation_date_etape2").datepicker({
-                        showOn: 'both',
-                        buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
-                        buttonImageOnly: true,
-                        changeMonth: true,
-                        changeYear: true,
-                        yearRange: '<?= (date('Y') - 40) ?>:<?= (date('Y')) ?>'
-                                });
+            yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
+        });
+        $("#date_pub").datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            minDate: new Date(<?= date('Y') ?>, <?= (date('m') - 1) ?>, <?= date('d') ?>)
+        });
+        $("#date_de_retrait").datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            minDate: new Date(<?= date('Y') ?>, <?= (date('m') - 1) ?>, <?= date('d') ?>)
+        });
+        $("#date_ps").datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true
+        });
+        $("#date_rj").datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true
+        });
+        $("#date_lj").datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true
+        });
+        $("#creation_date_etape2").datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '<?= (date('Y') - 40) ?>:<?= date('Y') ?>'
+        });
 
-                    $('#duree').change(function(){
+        $('#duree').change(function() {
             if(0 == $(this).val() && 35 == <?= $this->current_projects_status->status ?>) {
                 $("#status").css('display', 'none');
                 $("#msgProject").css('display', 'none');
@@ -86,21 +87,21 @@
         });
 
         <?php if ($this->nb_lignes != '') { ?>
-        $(".tablesorter").tablesorterPager({
-            container: $("#pager"),
-            positionFixed: false,
-            size: <?= $this->nb_lignes ?>
-        });
+            $(".tablesorter").tablesorterPager({
+                container: $("#pager"),
+                positionFixed: false,
+                size: <?= $this->nb_lignes ?>
+            });
         <?php } ?>
 
         <?php if (isset($_SESSION['freeow'])) { ?>
-        var title = "<?= $_SESSION['freeow']['title'] ?>",
-            message = "<?= $_SESSION['freeow']['message'] ?>",
-            opts = {},
-            container;
-        opts.classes = ['smokey'];
-        $('#freeow-tr').freeow(title, message, opts);
-        <?php unset($_SESSION['freeow']); ?>
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {},
+                container;
+            opts.classes = ['smokey'];
+            $('#freeow-tr').freeow(title, message, opts);
+            <?php unset($_SESSION['freeow']); ?>
         <?php } ?>
     });
 </script>
@@ -454,13 +455,13 @@
                             $sDisplayStatus      = 'block';
                             $sDisplayMsgProject  = 'block';
 
-                            if ($this->current_projects_status->status == 130) {
+                            if ($this->current_projects_status->status == \projects_status::REMBOURSEMENT_ANTICIPE) {
                                 echo 'Remboursement anticipé';
                             } else {
                                 if (count($this->lProjects_status) > 0) {
                                     if (
                                         (0 == $this->projects->period || 1000000 == $this->projects->period || empty($this->aAttachments[3]['path'])) // No RIB or no duration selected
-                                        && $this->current_projects_status->status == 35
+                                        && $this->current_projects_status->status == \projects_status::PREP_FUNDING
                                     ) {
                                         $sDisplayPeriodHS    = 'block';
                                         $sDisplayStatus      = 'none';
@@ -471,7 +472,7 @@
                                     <span id="displayPeriodHS" style="display:<?= $sDisplayPeriodHS ?>;">
                                         <?= $this->current_projects_status->label ?>
                                     </span>
-                                    <select name="status" id="status" class="select" style="display:<?= $sDisplayStatus ?>;" <?= ($this->current_projects_status->status == 130 ? '"disabled"' : "") ?>>
+                                    <select name="status" id="status" class="select" style="display:<?= $sDisplayStatus ?>;" <?= ($this->current_projects_status->status == \projects_status::REMBOURSEMENT_ANTICIPE ? '"disabled"' : "") ?>>
                                     <?php foreach ($this->lProjects_status as $s) { ?>
                                         <option <?= ($this->current_projects_status->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
                                     <?php } ?>
@@ -484,6 +485,9 @@
                                 }
                             }
                             ?>
+                        </td>
+                        <td>
+                            <a href="<?= $this->lurl ?>/thickbox/project_history/<?= $this->projects->id_project ?>" class="thickbox" title="Historique dossier"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Information" /></a>
                         </td>
                     </tr>
                     <?php if ($this->current_projects_status->status == \projects_status::NOTE_EXTERNE_FAIBLE && false === empty($this->current_projects_status_history->content)) { ?>

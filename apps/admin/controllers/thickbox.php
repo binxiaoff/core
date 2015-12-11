@@ -8,13 +8,11 @@ class thickboxController extends bootstrap
 
         $this->catchAll = true;
 
-        // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
 
-        // On place le redirect sur la home
         $_SESSION['request_url'] = $this->url;
     }
 
@@ -54,5 +52,44 @@ class thickboxController extends bootstrap
     public function _popup_confirmation_send_email()
     {
 
+    }
+
+    public function _project_history()
+    {
+        $oProjects = $this->loadData('projects');
+
+        $this->aHistory = array();
+
+        if (isset($this->params[0]) && $oProjects->get($this->params[0])) {
+            $oProjectsStatusHistory = $this->loadData('projects_status_history');
+            $aProjectHistory        = $oProjectsStatusHistory->select('id_project = ' . $oProjects->id_project, 'id_project_status_history ASC');
+
+            if (false === empty($aProjectHistory)) {
+                $oProjectsStatus               = $this->loadData('projects_status');
+                $oProjectsStatusHistoryDetails = $this->loadData('projects_status_history_details');
+                $oUsers                        = $this->loadData('users');
+
+                $this->aProjectHistoryDetails = $oProjectsStatusHistoryDetails->select(
+                    'id_project_status_history IN (' . implode(', ', array_column($aProjectHistory, 'id_project_status_history')) . ')',
+                    'id_project_status_history ASC',
+                    '',
+                    '',
+                    'id_project_status_history'
+                );
+
+                foreach ($aProjectHistory as $aHistory) {
+                    $oProjectsStatus->get($aHistory['id_project_status']);
+                    $this->aHistory[] = array(
+                        'status'           => $oProjectsStatus->label,
+                        'date'             => $aHistory['added'],
+                        'user'             => $oUsers->getName($aHistory['id_user']),
+                        'decision_date'    => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['date'],
+                        'receiver'         => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['receiver'],
+                        'mail_content'     => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['mail_content'],
+                        'site_content'     => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['site_content'],
+                    );
+                }
+            }
+        }
     }
 }
