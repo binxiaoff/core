@@ -32,10 +32,10 @@ class wallets_lines extends wallets_lines_crud
     /*
      * Types of financial operations
      */
-    const TYPE_INSCRIPTION_PRETEUR = 10;
-    const TYPE_ENCHERE = 20;
-    const TYPE_ALIMENTATION = 30;
-    const TYPE_REMBOURSEMENT = 40;
+    const TYPE_LENDER_SUBSCRIPTION = 10;
+    const TYPE_BID= 20;
+    const TYPE_MONEY_SUPPLY= 30;
+    const TYPE_REPAYMENT = 40;
 
 
     public function __construct($bdd, $params = '')

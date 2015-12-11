@@ -29,10 +29,10 @@
 class bank_unilend extends bank_unilend_crud
 {
 
-    const TYPE_TROIS_POURCENT_TVA = 0;
-    const TYPE_REMB_EMPRUNTEUR = 1;
-    const TYPE_REMB_PRETEUR = 3;
-    const TYPE_UNILEND_BIENVENUE_PARRAINAGE = 4;
+    const TYPE_THREE_PERCENT_VAT = 0;
+    const TYPE_REPAYMENT_BORROWER = 1;
+    const TYPE_REPAYMENT_LENDER = 3;
+    const TYPE_UNILEND_WELCOME_OFFER_PATRONAGE = 4;
 
 
     public function __construct($bdd, $params = '')
