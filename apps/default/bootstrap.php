@@ -570,7 +570,7 @@ class bootstrap extends Controller
                     \clients_gestion_type_notif::ANNONCE_NOUVEAUX_PROJETS,
                     \clients_gestion_type_notif::OFFRES_REALISEES,
                     \clients_gestion_type_notif::OFFRES_ACCEPTEES,
-                    \clients_gestion_type_notif::REMBOPURSEMENT
+                    \clients_gestion_type_notif::REMBOURSEMENT
                 ))) {
                     $this->clients_gestion_notifications->quotidienne = 1;
                 } else {
@@ -669,7 +669,7 @@ class bootstrap extends Controller
     {
         $this->bDisplayLender = true;
         // particulier
-        if ($this->clients->type == clients::TYPE_PRETEUR_PHYSIQUE) {
+        if ($this->clients->type == clients::TYPE_BORROWER_PERSON) {
             // cgu particulier
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $this->lienConditionsGenerales = $this->settings->value;

@@ -33,7 +33,7 @@ class clients_gestion_type_notif extends clients_gestion_type_notif_crud
     const OFFRES_REALISEES         = 2;
     const OFFRES_REFUSEES          = 3;
     const OFFRES_ACCEPTEES         = 4;
-    const REMBOPURSEMENT           = 5;
+    const REMBOURSEMENT            = 5;
     const ALIMENTATION_VIREMENT    = 6;
     const ALIMENTATION_CB          = 7;
     const RETRAIT                  = 8;
