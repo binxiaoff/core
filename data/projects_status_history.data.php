@@ -168,8 +168,7 @@ class projects_status_history extends projects_status_history_crud
     {
         $where = '';
         if ($arrayStatus != '') {
-            $status = implode(',', $arrayStatus);
-            $where  = ' AND id_project_status IN (' . $status . ') ';
+            $where  = ' AND id_project_status IN (' . implode(',', $arrayStatus) . ')';
         }
 
         $sql = '

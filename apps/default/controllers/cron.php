@@ -2450,7 +2450,7 @@ class cronController extends bootstrap
                 $recep = $receptions->select('LEFT(added,10) = "' . date('Y-m-d') . '"'); // <------------------------------------------------------------ a remettre
                 // si on a un fichier et qu'il n'est pas deja present en bdd
                 // on enregistre qu'une fois par jour
-                if ($lrecus != false && $recep == false) {
+                if ($lrecus != false && ($recep == false || isset($this->params[0]) && $this->params[0] === 'forceReplay')) {
                     file_put_contents($this->path . 'protected/sftp/reception/UNILEND-00040631007-' . date('Ymd') . '.txt', $file); // <------------------ a remettre
 
                     foreach ($lrecus as $r) {
@@ -2918,17 +2918,16 @@ class cronController extends bootstrap
     }
 
     // Utilisé pour mettre a jours les echeances emprunteurs et preteurs suite a un prelevement emprunteur
-    public function updateEcheances($id_project, $montant, $remb_auto)
+    private function updateEcheances($id_project, $montant, $remb_auto)
     {
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $echeanciers            = $this->loadData('echeanciers');
         $projects_remb          = $this->loadData('projects_remb');
 
-        // on parcourt les echeances
         $eche    = $echeanciers_emprunteur->select('status_emprunteur = 0 AND id_project = ' . $id_project, 'ordre ASC');
         $sumRemb = ($montant / 100);
+        $newsum  = $sumRemb;
 
-        $newsum = $sumRemb;
         foreach ($eche as $e) {
             $ordre = $e['ordre'];
 
@@ -2948,7 +2947,6 @@ class cronController extends bootstrap
                 $newsum = $newsum - $montantDuMois;
 
                 if ($projects_remb->counter('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" AND status IN(0,1)') <= 0) {
-
                     $date_echeance_preteur = $echeanciers->select('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '"', '', 0, 1);
                     // On regarde si le remb preteur auto est autorisé (eclatement preteur auto)
                     if ($remb_auto == 0) {
