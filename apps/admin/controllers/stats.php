@@ -893,26 +893,27 @@ class statsController extends bootstrap
         }
         $this->bdd->query('SET SQL_BIG_SELECTS=1');
         $sql = '
-              SELECT
-                c.id_client,
-                c.prenom,
-                c.nom,
-                SUM(e.interets),
-                SUM(e.retenues_source),
-                SUM(ROUND(e.prelevements_obligatoires, 2)),
-                lh.id_pays
-              FROM lenders_accounts la
-                INNER JOIN clients c ON (la.id_client_owner = c.id_client)
-                LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
-                LEFT JOIN (
-                  SELECT lih.id_lender, lih.id_pays, MAX(lih.added) AS added
-                  FROM `lenders_imposition_history` lih
-                  GROUP BY lih.id_lender
-                ) lh ON lh.id_lender = la.id_lender_account AND lh.added <= e.date_echeance_reel
-              WHERE YEAR(e.date_echeance_reel) = ' . $annee . '
-                AND e.status = 1
-                AND e.status_ra = 0
-              GROUP BY c.id_client';
+                SELECT
+                  c.id_client,
+                  c.prenom,
+                  c.nom,
+                  SUM(e.interets),
+                  SUM(e.retenues_source),
+                  SUM(ROUND(e.prelevements_obligatoires, 2)),
+                  (
+                    SELECT lih.id_pays
+                    FROM `lenders_imposition_history` lih
+                    WHERE lih.added <= e.date_echeance_reel
+                      AND lih.id_lender = e.id_lender
+                    ORDER BY lih.added DESC LIMIT 1
+                  ) as id_pays
+                FROM lenders_accounts la
+                  INNER JOIN clients c ON (la.id_client_owner = c.id_client)
+                  LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
+                WHERE YEAR(e.date_echeance_reel) = ' . $annee . '
+                  AND e.status = 1
+                  AND e.status_ra = 0
+                GROUP BY c.id_client';
         $resultat = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($resultat)) {
@@ -980,15 +981,16 @@ class statsController extends bootstrap
                 c.prenom,
                 c.nom,
                 SUM(e.capital),
-                lh.id_pays
+                (
+                    SELECT lih.id_pays
+                    FROM `lenders_imposition_history` lih
+                    WHERE lih.added <= e.date_echeance_reel
+                      AND lih.id_lender = e.id_lender
+                    ORDER BY lih.added DESC LIMIT 1
+                  ) as id_pays
               FROM lenders_accounts la
                 INNER JOIN clients c ON (la.id_client_owner = c.id_client)
                 LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
-                LEFT JOIN (
-                  SELECT lih.id_lender, lih.id_pays, MAX(lih.added) AS added
-                  FROM `lenders_imposition_history` lih
-                  GROUP BY lih.id_lender
-                ) lh ON lh.id_lender = la.id_lender_account AND lh.added <= e.date_echeance_reel
               WHERE YEAR(e.date_echeance_reel) = ' . $annee . '
                 AND e.status = 1
               GROUP BY c.id_client';
