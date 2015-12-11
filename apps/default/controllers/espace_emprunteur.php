@@ -219,11 +219,11 @@ class espace_emprunteurController extends Bootstrap
 
             if (empty($sFilePath) === false) {
                 $this->email->attach($sFilePath);
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                @unlink($sFilePath);
-            } else {
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
+
+            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            @unlink($sFilePath);
+
             $this->bSuccessMessage = true;
         }
 
@@ -525,14 +525,14 @@ class espace_emprunteurController extends Bootstrap
 
             case 'l':
                 $sFilename      = 'details_prets';
-                $aColumnHeaders = array(utf8_decode('ID Préteur'), 'Nom ou Raison Sociale', utf8_decode('Prénom'), 'Mouvement', 'Montant', 'Date');
-                $sType          = utf8_decode($this->lng['espace-emprunteur']['mouvement-deblocage-des-fonds']);
+                $aColumnHeaders = array('ID Préteur', 'Nom ou Raison Sociale', 'Prénom', 'Mouvement', 'Montant', 'Date');
+                $sType          = $this->lng['espace-emprunteur']['mouvement-deblocage-des-fonds'];
                 $aData          = $this->projects->getLoansAndLendersForProject($this->projects->id_project);
                 break;
             case 'e':
                 $sFilename      = 'details_remboursements';
-                $aColumnHeaders = array(utf8_decode('ID Préteur'), 'Nom ou Raison Sociale', utf8_decode('Prénom'), 'Mouvement', 'Montant', 'Capital', utf8_decode('Intérets'), 'Date');
-                $sType          = utf8_decode($this->lng['espace-emprunteur']['mouvement-remboursement']);
+                $aColumnHeaders = array('ID Préteur', 'Nom ou Raison Sociale', 'Prénom', 'Mouvement', 'Montant', 'Capital', 'Intérets', 'Date');
+                $sType          = $this->lng['espace-emprunteur']['mouvement-remboursement'];
                 $aData          = $this->projects->getDuePaymentsAndLenders($this->projects->id_project, $this->params[2]);
                 break;
             default:
@@ -553,59 +553,36 @@ class espace_emprunteurController extends Bootstrap
             }
         }
 
-        header('Content-type: text/csv');
-        header('Content-Disposition: attachment; filename = ' . $sFilename . '.csv');
-        header('Pragma: no-cache');
-        header('Expires: 0');
+        $this->exportCSV($aColumnHeaders, $aData, $sFilename);
 
-        $csvFile = fopen('php://output', 'w');
-        fputcsv($csvFile, $aColumnHeaders);
-
-        foreach ($aData as $row) {
-            fputcsv($csvFile, $row);
-        }
-
-        exit();
     }
 
     public function _getCSVOperations()
     {
         $aBorrowerOperations = $this->clients->getDataForBorrowerOperations(
-            $this->clients->id_client,
             $_SESSION['operations-filter']['projects'],
             $_SESSION['operations-filter']['start'],
             $_SESSION['operations-filter']['end'],
-            $_SESSION['operations-filter']['transaction']
+            $_SESSION['operations-filter']['transaction'],
+            $this->clients->id_client
         );
 
         $sFilename      = 'operations';
-        $aColumnHeaders = array(utf8_decode('Opération'), utf8_decode('Référence de projet'), utf8_decode('Date de l\'opération'), utf8_decode('Montant de l\'opération'), 'Dont TVA');
+        $aColumnHeaders = array('Opération', 'Référence de projet', 'Date de l\'opération', 'Montant de l\'opération', 'Dont TVA');
 
 
         foreach ($aBorrowerOperations as $aOperation) {
 
             $aData[] = array(
-                utf8_decode($this->lng['espace-emprunteur'][ 'operations-type-' . $aOperation['type'] ]),
+                $this->lng['espace-emprunteur'][ 'operations-type-' . $aOperation['type'] ],
                 $aOperation['id_project'],
                 $this->dates->formatDateMysqltoShortFR($aOperation['date']),
                 number_format($aOperation['montant'], 2, ',', ''),
                 number_format($aOperation['tva'], 2, ',', '')
             );
-
-
         }
-        header('Content-type: text/csv');
-        header('Content-Disposition: attachment; filename = ' . $sFilename . '.csv');
-        header('Pragma: no-cache');
-        header('Expires: 0');
 
-        $csvFile = fopen('php://output', 'w');
-        fputcsv($csvFile, $aColumnHeaders);
-
-        foreach ($aData as $row) {
-            fputcsv($csvFile, $row);
-        }
-        exit();
+        $this->exportCSV($aColumnHeaders, $aData, $sFilename);
     }
 
     public function _getPdfOperations()
@@ -624,11 +601,11 @@ class espace_emprunteurController extends Bootstrap
 
 
         $oPdf->aBorrowerOperations = $this->clients->getDataForBorrowerOperations(
-            $this->clients->id_client,
             $_SESSION['operations-filter']['projects'],
             $_SESSION['operations-filter']['start'],
             $_SESSION['operations-filter']['end'],
-            $_SESSION['operations-filter']['transaction']
+            $_SESSION['operations-filter']['transaction'],
+            $this->clients->id_client
         );
 
         $oPdf->companies->get($this->clients->id_client, 'id_client_owner');
@@ -651,6 +628,31 @@ class espace_emprunteurController extends Bootstrap
             $this->elements->get($aElement['id_element']);
             $this->content[ $this->elements->slug ] = $aElement['value'];
         }
+    }
+
+    private function exportCSV($aColumnHeaders, $aData, $sFilename)
+    {
+        $sSeparator  = "\t";
+        $sEol = "\n";
+        $sCSV  =  count($aColumnHeaders) ? '"'. implode('"'.$sSeparator.'"', $aColumnHeaders).'"'.$sEol : '';
+
+        foreach ($aData as $row) {
+            $sCSV .= '"'. implode('"'.$sSeparator.'"', $row).'"'.$sEol;
+        }
+
+        $sEncodedCSV = mb_convert_encoding($sCSV, 'UTF-16LE', 'UTF-8');
+
+        header('Content-Description: File Transfer');
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment; filename="'.$sFilename.'.csv"');
+        header('Content-Transfer-Encoding: binary');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Pragma: public');
+        header('Content-Length: '. strlen($sEncodedCSV));
+        echo chr(255) . chr(254) . $sEncodedCSV;
+        exit;
+
     }
 
 

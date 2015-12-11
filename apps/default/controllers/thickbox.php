@@ -305,7 +305,7 @@ class thickboxController extends bootstrap
             $this->projects->get($this->params[0], 'hash');
         }
 
-        $fIR       = $this->projects->calculateAvgInterestRate($oProjects->id_project);
+        $fIR       = $this->projects->calculateAvgInterestRate($this->projects->id_project);
         $this->fIR = (is_null($fIR) === false) ? $fIR : 0;
 
     }
