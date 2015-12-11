@@ -1616,13 +1616,13 @@ class devboxController extends bootstrap
             $sql = "UPDATE `lenders_imposition_history`
                     SET `id_pays`= (SELECT p.id_pays FROM pays_v2 p WHERE p.iso = '{$aRow[1]}')
                     WHERE `id_lenders_imposition_history` = (
-                      SELECT tmp.id_lenders_imposition_history
-                       FROM (
-                        SELECT lih.id_lenders_imposition_history, MAX(lih.added)
-                        FROM `lenders_imposition_history` lih
-                        INNER JOIN lenders_accounts la ON la.id_lender_account = lih.id_lender
-                        WHERE la.id_client_owner = $iClientId
-                        ) tmp
+                    SELECT t.id_lenders_imposition_history FROM (
+                        SELECT lih.id_lenders_imposition_history
+                            FROM `lenders_imposition_history` lih
+                            INNER JOIN lenders_accounts la ON la.id_lender_account = lih.id_lender
+                            WHERE la.id_client_owner = $iClientId
+                            ORDER BY lih.added DESC LIMIT 1
+                        ) t
                     )";
             $oClient->bdd->query($sql);
             unset($aRow);
