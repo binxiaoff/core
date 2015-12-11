@@ -175,10 +175,9 @@ class projects_status_history extends projects_status_history_crud
             SELECT
                 psh.id_project_status,
                 psh.added,
-                pshi.information,
-                status = 0
+                pshd.mail_content
             FROM projects_status_history psh
-            LEFT JOIN projects_status_history_informations pshi ON psh.id_project_status_history = pshi.id_project_status_history AND pshi.status = 0
+            LEFT JOIN projects_status_history_details pshd ON psh.id_project_status_history = pshd.id_project_status_history
             WHERE psh.id_project = ' . $id_project . $where . '
             ORDER BY psh.added ASC';
 

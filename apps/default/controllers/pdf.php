@@ -925,14 +925,14 @@ class pdfController extends bootstrap
 
     private function GenerateClaimsHtml()
     {
-        $this->oLendersAccounts                     = $this->loadData('lenders_accounts');
-        $this->oLoans                               = $this->loadData('loans');
-        $this->pays                                 = $this->loadData('pays_v2');
-        $this->echeanciers                          = $this->loadData('echeanciers');
-        $this->companiesEmpr                        = $this->loadData('companies');
-        $this->projects_status                      = $this->loadData('projects_status');
-        $this->projects_last_status_history         = $this->loadData('projects_last_status_history');
-        $this->projects_status_history_informations = $this->loadData('projects_status_history_informations');
+        $this->oLendersAccounts                = $this->loadData('lenders_accounts');
+        $this->oLoans                          = $this->loadData('loans');
+        $this->pays                            = $this->loadData('pays_v2');
+        $this->echeanciers                     = $this->loadData('echeanciers');
+        $this->companiesEmpr                   = $this->loadData('companies');
+        $this->projects_status                 = $this->loadData('projects_status');
+        $this->projects_last_status_history    = $this->loadData('projects_last_status_history');
+        $this->projects_status_history_details = $this->loadData('projects_status_history_details');
 
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
@@ -959,9 +959,9 @@ class pdfController extends bootstrap
 
             if (in_array($this->projects_status->status, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
                 $this->projects_last_status_history->get($this->oLoans->id_project, 'id_project');
-                $this->projects_status_history_informations->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
+                $this->projects_status_history_details->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
 
-                $this->mandataires_var = $this->projects_status_history_informations->mandataire;
+                $this->mandataires_var = $this->projects_status_history_details->receiver;
 
                 // @todo intl
                 switch ($this->projects_status->status) {
@@ -976,7 +976,7 @@ class pdfController extends bootstrap
                         break;
                 }
 
-                $this->date = date('d/m/Y', strtotime($this->projects_status_history_informations->date));
+                $this->date = date('d/m/Y', strtotime($this->projects_status_history_details->date));
             }
 
             $this->echu         = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND DATE(date_echeance) >= "2015-04-19" AND DATE(date_echeance) <= "' . date('Y-m-d') . '" AND id_loan = ' . $this->oLoans->id_loan, 'montant');

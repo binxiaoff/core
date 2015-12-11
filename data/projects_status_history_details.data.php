@@ -26,47 +26,27 @@
 //
 // **************************************************************************************************** //
 
-class projects_status_history_informations extends projects_status_history_informations_crud
+class projects_status_history_details extends projects_status_history_details_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::projects_status_history_informations($bdd, $params);
+        parent::projects_status_history_details($bdd, $params);
     }
 
-    public function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = null, $order = null, $start = null, $nb = null, $sKey = 'id_project_status_history_details')
     {
-        if ($where != '') {
+        if (false === empty($where)) {
             $where = ' WHERE ' . $where;
         }
-        if ($order != '') {
+        if (false === empty($order)) {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `projects_status_history_informations`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
+        $result = array();
+        $query  = $this->bdd->query('SELECT * FROM projects_status_history_details' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : '')));
+        while ($record = $this->bdd->fetch_array($query)) {
+            $result[$record[$sKey]] = $record;
         }
         return $result;
-    }
-
-    public function counter($where = '')
-    {
-        if ($where != '') {
-            $where = ' WHERE ' . $where;
-        }
-
-        $sql = 'SELECT count(*) FROM `projects_status_history_informations` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
-    }
-
-    public function exist($id, $field = 'id_project_status_history_information')
-    {
-        $sql    = 'SELECT * FROM `projects_status_history_informations` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 }

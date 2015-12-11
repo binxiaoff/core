@@ -806,19 +806,18 @@ class dossiersController extends bootstrap
                                 }
                             }
 
-                            //on desactive le remboursement automatique (CDC Statut emprunteur)
                             $this->projects->remb_auto = 1; // remb auto à non
                             $this->projects->update();
 
-                            // on récupère la variable pour savoir si on envoi le mail au preteur ou non
-                            $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_default'];
+                            $mail_a_envoyer         = $_POST['mail_a_envoyer_preteur_default'];
+                            $mandataire             = $_POST['mandataire_default'];
                             $contenu_a_ajouter_mail = $_POST['area_default'];
-                            $mandataire = $_POST['mandataire_default'];
 
-                            $projects_status_history_informations                            = $this->loadData('projects_status_history_informations');
-                            $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                            $projects_status_history_informations->information               = $contenu_a_ajouter_mail;
-                            $projects_status_history_informations->create();
+                            $projects_status_history_details                            = $this->loadData('projects_status_history_details');
+                            $projects_status_history_details->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                            $projects_status_history_details->receiver                  = $mandataire;
+                            $projects_status_history_details->mail_content              = $contenu_a_ajouter_mail;
+                            $projects_status_history_details->create();
 
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
@@ -990,10 +989,10 @@ class dossiersController extends bootstrap
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_probleme'];
                             $contenu_a_ajouter_mail = $_POST['area_probleme'];
 
-                            $projects_status_history_informations                            = $this->loadData('projects_status_history_informations');
-                            $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                            $projects_status_history_informations->information               = $contenu_a_ajouter_mail;
-                            $projects_status_history_informations->create();
+                            $projects_status_history_details                            = $this->loadData('projects_status_history_details');
+                            $projects_status_history_details->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                            $projects_status_history_details->mail_content              = $contenu_a_ajouter_mail;
+                            $projects_status_history_details->create();
 
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
@@ -1198,10 +1197,10 @@ class dossiersController extends bootstrap
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_probleme_recouvrement'];
                             $contenu_a_ajouter_mail = $_POST['area_recouvrement'];
 
-                            $projects_status_history_informations                            = $this->loadData('projects_status_history_informations');
-                            $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                            $projects_status_history_informations->information               = $contenu_a_ajouter_mail;
-                            $projects_status_history_informations->create();
+                            $projects_status_history_details                            = $this->loadData('projects_status_history_details');
+                            $projects_status_history_details->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                            $projects_status_history_details->mail_content              = $contenu_a_ajouter_mail;
+                            $projects_status_history_details->create();
 
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
@@ -1441,10 +1440,10 @@ class dossiersController extends bootstrap
                             $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_problemeX'];
                             $contenu_a_ajouter_mail = $_POST['area_problemeX'];
 
-                            $projects_status_history_informations                            = $this->loadData('projects_status_history_informations');
-                            $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                            $projects_status_history_informations->information               = $contenu_a_ajouter_mail;
-                            $projects_status_history_informations->create();
+                            $projects_status_history_details                            = $this->loadData('projects_status_history_details');
+                            $projects_status_history_details->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                            $projects_status_history_details->mail_content              = $contenu_a_ajouter_mail;
+                            $projects_status_history_details->create();
 
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
@@ -1640,17 +1639,14 @@ class dossiersController extends bootstrap
                                 }
                             }
 
-                            //on desactive le remboursement automatique (CDC Statut emprunteur)
                             $this->projects->remb_auto = 1; // remb auto à non
                             $this->projects->update();
 
-                            // on récupère la variable pour savoir si on envoi le mail aux preteurs ou non
-                            $mail_a_envoyer = $_POST['mail_a_envoyer_preteur_ps'];
+                            $mail_a_envoyer         = $_POST['mail_a_envoyer_preteur_ps'];
                             $contenu_a_ajouter_mail = $_POST['area_ps'];
-
-                            $date_jugement = $_POST['date_ps'];
-                            $tab = explode('/', $date_jugement);
-                            $date_jugement = $tab[2] . '-' . $tab[1] . '-' . $tab[0];
+                            $date_jugement          = $_POST['date_ps'];
+                            $tab                    = explode('/', $date_jugement);
+                            $date_jugement          = $tab[2] . '-' . $tab[1] . '-' . $tab[0];
 
                             $month_date_jugement = $this->dates->tableauMois[$this->language][$tab[1]];
                             $year_date_jugement = $tab[2];
@@ -1659,12 +1655,12 @@ class dossiersController extends bootstrap
 
                             $mandataire = $_POST['mandataire_ps'];
 
-                            $projects_status_history_informations                            = $this->loadData('projects_status_history_informations');
-                            $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                            $projects_status_history_informations->information               = $contenu_a_ajouter_mail;
-                            $projects_status_history_informations->date                      = $date_jugement;
-                            $projects_status_history_informations->mandataire                = $mandataire;
-                            $projects_status_history_informations->create();
+                            $projects_status_history_details                            = $this->loadData('projects_status_history_details');
+                            $projects_status_history_details->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                            $projects_status_history_details->date                      = $date_jugement;
+                            $projects_status_history_details->receiver                  = $mandataire;
+                            $projects_status_history_details->mail_content              = $contenu_a_ajouter_mail;
+                            $projects_status_history_details->create();
 
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
@@ -1853,12 +1849,12 @@ class dossiersController extends bootstrap
 
                             $mandataire = $_POST['mandataire_rj'];
 
-                            $projects_status_history_informations                            = $this->loadData('projects_status_history_informations');
-                            $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                            $projects_status_history_informations->information               = $contenu_a_ajouter_mail;
-                            $projects_status_history_informations->date                      = $date_jugement;
-                            $projects_status_history_informations->mandataire                = $mandataire;
-                            $projects_status_history_informations->create();
+                            $projects_status_history_details                            = $this->loadData('projects_status_history_details');
+                            $projects_status_history_details->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                            $projects_status_history_details->date                      = $date_jugement;
+                            $projects_status_history_details->receiver                  = $mandataire;
+                            $projects_status_history_details->mail_content              = $contenu_a_ajouter_mail;
+                            $projects_status_history_details->create();
 
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
@@ -2053,12 +2049,12 @@ class dossiersController extends bootstrap
 
                             $mandataire = $_POST['mandataire_lj'];
 
-                            $projects_status_history_informations                            = $this->loadData('projects_status_history_informations');
-                            $projects_status_history_informations->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                            $projects_status_history_informations->information               = $contenu_a_ajouter_mail;
-                            $projects_status_history_informations->date                      = $date_jugement;
-                            $projects_status_history_informations->mandataire                = $mandataire;
-                            $projects_status_history_informations->create();
+                            $projects_status_history_details                            = $this->loadData('projects_status_history_details');
+                            $projects_status_history_details->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                            $projects_status_history_details->date                      = $date_jugement;
+                            $projects_status_history_details->receiver                  = $mandataire;
+                            $projects_status_history_details->mail_content              = $contenu_a_ajouter_mail;
+                            $projects_status_history_details->create();
 
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
@@ -4490,8 +4486,8 @@ class dossiersController extends bootstrap
                         $this->bank_unilend->create();
                     }
 
-                    // bank_unilend
                     $lesRembEmprun = $this->bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $this->projects->id_project, 'id_unilend ASC'); // on ajoute la restriction pour BT 17882
+
                     // On parcourt les remb non reversé aux preteurs dans bank unilend et on met a jour le satut pour dire que c'est remb
                     foreach ($lesRembEmprun as $r) {
                         $this->bank_unilend->get($r['id_unilend'], 'id_unilend');
@@ -4549,7 +4545,6 @@ class dossiersController extends bootstrap
                 $this->MontantRemb += $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
             }
 
-            // liste des encheres
             $this->lLenders = $this->loans->select('id_project = ' . $this->projects->id_project, 'rate ASC');
         }
     }
