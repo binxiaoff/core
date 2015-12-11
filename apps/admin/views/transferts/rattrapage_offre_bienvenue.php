@@ -35,6 +35,25 @@
     }
     ?>
 </script>
+<style>
+    .datepicker_table {
+        width: 650px;
+        margin: 0 auto 20px;
+        background-color: white;
+        border: 1px solid #A1A5A7;
+        border-radius: 10px 10px 10px 10px;
+        padding: 5px;
+        padding-bottom: 20px;
+    }
+    .csv{
+        margin-bottom:20px;
+        float:right;
+     }
+    .search_fields td {
+        padding-top:23px;
+        padding-left: 10px;
+    }
+</style>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <ul class="breadcrumbs">
@@ -43,44 +62,35 @@
     </ul>
     <h1>Rattrapage offre de bienvenue</h1>
 
+    <div class="csv">
+        <a href="<?= $this->lurl ?>/transferts/csv_rattrapage_offre_bienvenue/" class="btn colorAdd">Recuperation du CSV</a>
+    </div>
 
-    <form method="post" name="recupCSV">
-        <input type="hidden" name="recup"/>
-        <input type="hidden" name="spy_date1" value="<?= $_POST['date1'] ?>"/>
-        <input type="hidden" name="spy_date2" value="<?= $_POST['date2'] ?>"/>
-
-    </form>
-
-    <div style="margin-bottom:20px; float:right;"><a onClick="document.forms['recupCSV'].submit();"
-                                                     class="btn colorAdd">Recuperation du CSV</a></div>
-
-
-    <div
-        style="width:500px;margin: auto;margin-bottom:20px;background-color: white;border: 1px solid #A1A5A7;border-radius: 10px 10px 10px 10px;margin: 0 auto 20px;padding:5px;">
+    <div class="datepicker_table">
         <form method="post" name="date_select">
             <fieldset>
-                <table class="formColor">
+                <table class="search_fields">
                     <tr>
-                        <td style="padding-top:23px;"><label>Date debut</label><br/><input type="text" name="date1"
-                                                                                           id="datepik_1"
-                                                                                           class="input_dp"
-                                                                                           value="<?= $_POST['date1'] ?>"/>
-                        </td>
-                        <td style="padding-top:23px;"><label>Date fin</label><br/><input type="text" name="date2"
-                                                                                         id="datepik_2" class="input_dp"
-                                                                                         value="<?= $_POST['date2'] ?>"/>
-                        </td>
+                        <td><label for="id">ID :</label><br/>
+                            <input type="text" name="id" id="id" class="input_large"
+                                   value="<?= (empty($_POST['dateStart']) && empty($_POST['dateEnd'])) ? $_POST['id'] : '' ?>"/></td>
 
-                        <td style="padding-top:23px;">
+                        <td><label>Date debut</label><br/>
+                            <input type="text" name="dateStart"
+                                   id="datepik_1"
+                                   class="input_dp"
+                                   value="<?= empty($_POST['id']) ? $_POST['dateStart'] : '' ?>"/>
+                        </td>
+                        <td><label>Date fin</label><br/>
+                            <input type="text" name="dateEnd"
+                                   id="datepik_2" class="input_dp"
+                                   value="<?= empty($_POST['id']) ? $_POST['dateEnd'] : '' ?>"/>
+                        </td>
+                        <td><br>
                             <input type="hidden" name="spy_search" id="spy_search"/>
                             <input type="submit" value="Valider" title="Valider" name="send_dossier" id="send_dossier"
                                    class="btn"/>
                         </td>
-                    </tr>
-                    <tr>
-                        <th colspan="8" style="">
-
-                        </th>
                     </tr>
                 </table>
             </fieldset>
@@ -99,6 +109,23 @@
         </tr>
         </thead>
         <tbody>
+        <?php if(empty($this->aLenders) === false) :
+
+        foreach ($this->aLenders as $aLender) : ?>
+            <tr>
+                <td><?= $aLender['id_lender']?></td>
+                <td><?= empty($aLender['company']) ? $aLender['nom'] : $aLender['company'] ?></td>
+                <td><?= empty($aLender['company']) ? $aLender['prenom'] : '' ?></td>
+                <td><?= $this->dates->formatDateMysqltoShortFR($aLender['date_creation']) ?></td>
+                <td><?= (empty($aLender['date_validation']) === false) ? $this->dates->formatDateMysqltoShortFR($aLender['date_validation']) : '' ?></td>
+                <td>
+                    <?php if (empty($aLender['date_validation']) === false ) : ?>
+                        <a href="<?= $this->lurl ?>/transferts/affect_welcome_offer/<?= $aLender['id_lender'] ?>" class="link thickbox"><img alt="Modifier " src="https://dev.www.unilend.fr/images/admin/edit.png"></a>
+                    <?php endif; ?>
+                </td>
+            </tr>
+<?php endforeach;
+        endif; ?>
 
         </tbody>
     </table>

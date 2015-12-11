@@ -332,4 +332,59 @@ class lenders_accounts extends lenders_accounts_crud
         }
         return $result;
     }
+
+    public function getLendersWithNoWelcomeOffer($iLenderId = null, $sStartDate = null, $sEndDate = null)
+    {
+        if ($sStartDate === null) {
+            $sStartDate = '"2013-01-01 00:00:00"';
+        }
+
+        if ($sEndDate === null) {
+            $sEndDate = 'NOW()';
+        }
+
+        if (is_null($iLenderId) === false) {
+            $sWhereID = 'AND la.id_lender_account IN ('.$iLenderId.')';
+        }
+
+        $sql = 'SELECT
+                    la.id_lender_account AS id_lender,
+                    c.nom,
+                    c.prenom,
+                    companies.name,
+                    DATE(la.added) AS date_creation,
+                    (
+                    SELECT
+                            DATE(csh.added)
+                        FROM
+                            clients_status_history csh
+                            LEFT JOIN clients ON clients.id_client = csh.id_client
+                        WHERE
+                            csh.id_client_status = ' . \clients_status::VALIDE .'
+                            AND c.id_client = csh.id_client
+                        ORDER BY
+                            csh.added DESC
+                        LIMIT
+                            1
+                    ) As date_validation
+                FROM
+                    clients c
+                    INNER JOIN lenders_accounts la ON c.id_client = la.id_client_owner
+                    LEFT JOIN companies ON c.id_client = companies.id_client_owner
+                WHERE
+                    NOT EXISTS (SELECT * FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
+                    AND NOT EXISTS (SELECT * FROM transactions t WHERE t.id_type = 16)
+                    AND DATE(la.added) >= '.$sStartDate.'
+                    AND DATE(la.added) <= '.$sEndDate.' '.$sWhereID;
+
+        //TODO replace transaction type ID by const TYPE_WELCOME_OFFER = 16 once the code is available (Commit [Unilend/release-statuts-emprunteurs] 24d6d5036026: [DEV-131])
+        $resultat = $this->bdd->query($sql);
+
+        $aLenders   = array();
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
+            $aLenders[] = $record;
+        }
+
+        return $aLenders;
+    }
 }
