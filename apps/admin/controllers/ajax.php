@@ -2738,4 +2738,280 @@ class ajaxController extends bootstrap
             }
         }
     }
+
+    /* Fonction AJAX change le statut d'un dossier*/
+    public function _check_status_dossier()
+    {
+        $this->autoFireView = true;
+
+        $this->projects                = $this->loadData('projects');
+        $this->projects_status         = $this->loadData('projects_status');
+        $this->projects_status_history = $this->loadData('projects_status_history');
+        $this->companies               = $this->loadData('companies');
+        $this->clients                 = $this->loadData('clients');
+        $this->clients_history         = $this->loadData('clients_history');
+
+        if (isset($this->params[0]) && isset($this->params[1])) {
+
+            if ($this->projects->get($this->params[1], 'id_project') &&
+                $this->projects->amount > 0 &&
+                $this->projects->target_rate != '0' &&
+                $this->companies->get($this->projects->id_company, 'id_company') &&
+                $this->companies->risk != '' && $this->projects->period > 0 &&
+                $this->params[2] != '' &&
+                $this->projects->date_publication != '0000-00-00' &&
+                $this->projects->date_retrait != '0000-00-00'
+                ||
+                $this->projects->get($this->params[1], 'id_project') &&
+                $this->companies->get($this->projects->id_company, 'id_company') &&
+                $this->params[0] == 30
+            ) {
+                // On recup le title du projet
+                $title = $this->projects->title;
+
+
+
+                // on maj le statut (40 ou 30)
+                $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $this->params[0], $this->projects->id_project);
+
+                // On recup le client
+                $this->clients->get($this->companies->id_client_owner, 'id_client');
+
+
+                //*****************************************//
+                //*** ENVOI DU MAIL Validation ou rejet ***//
+                //*****************************************//
+
+                // Recuperation du modele de mail
+                // validé
+                if ($this->params[0] == 40) {
+
+                    // Si statut a funder, en funding ou fundé
+                    if (in_array($this->params[0], array(40, 50, 60))) {
+                        /////////////////////////////////////
+                        // Partie check données manquantes //
+                        /////////////////////////////////////
+
+                        $companies        = $this->loadData('companies');
+                        $clients          = $this->loadData('clients');
+                        $clients_adresses = $this->loadData('clients_adresses');
+
+                        // on recup la companie
+                        $companies->get($this->projects->id_company, 'id_company');
+                        // et l'emprunteur
+                        $clients->get($companies->id_client_owner, 'id_client');
+                        // son adresse
+                        $clients_adresses->get($companies->id_client_owner, 'id_client');
+
+
+                        $mess = '<ul>';
+
+                        if ($this->projects->title == '') {
+                            $mess .= '<li>Titre projet</li>';
+                        }
+                        if ($this->projects->title_bo == '') {
+                            $mess .= '<li>Titre projet BO</li>';
+                        }
+                        if ($this->projects->period == '0') {
+                            $mess .= '<li>Periode projet</li>';
+                        }
+                        if ($this->projects->amount == '0') {
+                            $mess .= '<li>Montant projet</li>';
+                        }
+
+                        if ($companies->name == '') {
+                            $mess .= '<li>Nom entreprise</li>';
+                        }
+                        if ($companies->forme == '') {
+                            $mess .= '<li>Forme juridique</li>';
+                        }
+                        if ($companies->siren == '') {
+                            $mess .= '<li>SIREN entreprise</li>';
+                        }
+                        if ($companies->iban == '') {
+                            $mess .= '<li>IBAN entreprise</li>';
+                        }
+                        if ($companies->bic == '') {
+                            $mess .= '<li>BIC entreprise</li>';
+                        }
+                        if ($companies->rcs == '') {
+                            $mess .= '<li>RCS entreprise</li>';
+                        }
+                        if ($companies->tribunal_com == '') {
+                            $mess .= '<li>Tribunal de commerce entreprise</li>';
+                        }
+                        if ($companies->capital == '0') {
+                            $mess .= '<li>Capital entreprise</li>';
+                        }
+                        if ($companies->date_creation == '0000-00-00') {
+                            $mess .= '<li>Date creation entreprise</li>';
+                        }
+                        if ($companies->sector == 0) {
+                            $mess .= '<li>Secteur entreprise</li>';
+                        }
+
+                        if ($clients->nom == '') {
+                            $mess .= '<li>Nom emprunteur</li>';
+                        }
+                        if ($clients->prenom == '') {
+                            $mess .= '<li>Prenom emprunteur</li>';
+                        }
+                        if ($clients->fonction == '') {
+                            $mess .= '<li>Fonction emprunteur</li>';
+                        }
+                        if ($clients->telephone == '') {
+                            $mess .= '<li>Telephone emprunteur</li>';
+                        }
+                        if ($clients->email == '') {
+                            $mess .= '<li>Email emprunteur</li>';
+                        }
+
+                        if ($clients_adresses->adresse1 == '') {
+                            $mess .= '<li>Adresse emprunteur</li>';
+                        }
+                        if ($clients_adresses->cp == '') {
+                            $mess .= '<li>CP emprunteur</li>';
+                        }
+                        if ($clients_adresses->ville == '') {
+                            $mess .= '<li>Ville emprunteur</li>';
+                        }
+
+                        $mess .= '</ul>';
+
+                        if (strlen($mess) > 9) {
+                            $to = implode(',', $this->Config['DebugAlertesBusiness']);
+                            $to .= ($this->Config['env'] == 'prod') ? ', nicolas.lesur@unilend.fr' : '';
+                            // subject
+                            $subject = '[Rappel] Donnees projet manquantes';
+                            // message
+                            $message = '
+                            <html>
+                            <head>
+                              <title>[Rappel] Donnees projet manquantes</title>
+                            </head>
+                            <body>
+                                <p>Un projet qui vient d\'etre publie ne dispose pas de toutes les donnees necessaires</p>
+                                <p>Listes des informations manquantes sur le projet ' . $this->projects->id_project . ' : </p>
+                                ' . $mess . '
+                            </body>
+                            </html>
+                            ';
+
+                            // To send HTML mail, the Content-type header must be set
+                            $headers = 'MIME-Version: 1.0' . "\r\n";
+                            $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+
+                            // Additional headers
+
+                            $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
+                            //$headers .= 'From: Unilend <courtier.damien@gmail.com>' . "\r\n";
+
+                            // Mail it
+                            mail($to, $subject, $message, $headers);
+                        }
+                    }
+
+
+                    // si inscription
+                    if ($this->clients->status_transition == 1) {
+                        $this->clients_history->id_client = $this->clients->id_client;
+                        $this->clients_history->type      = $this->clients->status_pre_emp;
+                        $this->clients_history->status    = 2; // statut inscription
+                        $this->clients_history->create();
+                    }
+
+                    $this->clients_history->id_client = $this->clients->id_client;
+                    $this->clients_history->type      = $this->clients->status_pre_emp;
+                    $this->clients_history->status    = 3; // statut depot de dossier validé
+                    $this->clients_history->create();
+
+                    // statut emprunteur online
+                    $this->clients->status = 1;
+                    // on retire l'etape de transition
+                    $this->clients->status_transition = 0;
+
+
+                    $this->mails_text->get('emprunteur-dossier-valide', 'lang = "' . $this->language . '" AND type');
+                } // rejeté
+                elseif ($this->params[0] == 30) {
+                    $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
+
+                    // statut emprunteur offline
+                    $this->clients->status = 0;
+                    //$lemotdepasse = '';
+                }
+
+                // FB
+                $this->settings->get('Facebook', 'type');
+                $lien_fb = $this->settings->value;
+
+                // Twitter
+                $this->settings->get('Twitter', 'type');
+                $lien_tw = $this->settings->value;
+
+                $timeDatedebut  = strtotime($this->projects->date_publication);
+                $monthDatedebut = $this->dates->tableauMois['fr'][date('n', $timeDatedebut)];
+                $datedebut      = date('d', $timeDatedebut) . ' ' . $monthDatedebut . ' ' . date('Y', $timeDatedebut);
+
+                $timeDateretrait  = strtotime($this->projects->date_retrait);
+                $monthDateretrait = $this->dates->tableauMois['fr'][date('n', $timeDateretrait)];
+                $date_retrait     = date('d', $timeDateretrait) . ' ' . $monthDateretrait . ' ' . date('Y', $timeDateretrait);
+
+                $varMail = array(
+                    'surl'                             => $this->surl,
+                    'url'                              => $this->furl,
+                    'prenom_e'                         => $this->clients->prenom,
+                    'link_compte_emprunteur'           => $this->furl . '/synthese_emprunteur',
+                    'date_presentation_dossier_debut'  => $datedebut,
+                    'heure_presentation_dossier_debut' => date('H', $timeDatedebut),
+                    'date_presentation_dossier_fin'    => $date_retrait,
+                    'heure_presentation_dossier_fin'   => date('H', $timeDateretrait),
+                    'lien_fb'                          => $lien_fb,
+                    'lien_tw'                          => $lien_tw
+                );
+
+                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                $this->email = $this->loadLib('email');
+                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                $this->email->setSubject(stripslashes($sujetMail));
+                $this->email->setHTMLBody(stripslashes($texteMail));
+
+                if ($this->Config['env'] === 'prod') {
+                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $this->email->addRecipient(trim($this->clients->email));
+                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                }
+
+                //on recup le statut courant
+                $this->current_projects_status = $this->loadData('projects_status');
+                $this->current_projects_status->getLastStatut($this->projects->id_project);
+
+                //on charge la liste des statut dispo
+                if ($this->current_projects_status->status == 20) {
+                    $this->lProjects_status = $this->projects_status->select(' status <= 20 ', ' status ASC ');
+                } elseif ($this->current_projects_status->status >= 80) {
+                    $this->lProjects_status = $this->projects_status->select(' status >= 80 ', ' status ASC ');
+                } else {
+                    $this->lProjects_status = array();
+                }
+
+                // on met a jour le statut de l'emprunteur
+                $this->clients->update();
+
+                $this->bloc_statut = 'ok';
+            } else {
+                echo 'nok';
+            }
+        } else {
+            echo 'nok';
+        }
+    }
+
 }
