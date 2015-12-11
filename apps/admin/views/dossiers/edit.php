@@ -317,70 +317,44 @@
                 <h2>Remboursement anticipé / Information</h2>
                 <table class="form" style="width: 538px; border: 1px solid #B10366;">
                     <tr>
-                        <th>Statut :</th>
-                        <td>
-                            <label for="statut"><?= $this->phrase_resultat ?></label>
-                        </td>
+                        <th>Statut</th>
+                        <td><strong><?= $this->phrase_resultat ?></strong></td>
                     </tr>
-
-                    <?php if ($this->virement_recu) { ?>
+                    <?php if ($this->virement_recu): ?>
                         <tr>
-                            <th>Virement reçu le :</th>
-                            <td>
-                                <label for="statut"><?= $this->dates->formatDateMysqltoFr_HourOut($this->receptions->added) ?></label>
-                            </td>
+                            <th>Virement reçu le</th>
+                            <td><strong><?= $this->dates->formatDateMysqltoFr_HourOut($this->receptions->added) ?></strong></td>
                         </tr>
                         <tr>
-                            <th>Identification virement :</th>
-                            <td>
-                                <label for="statut"><?= $this->receptions->id_reception ?></label>
-                            </td>
+                            <th>Identification virement</th>
+                            <td><strong><?= $this->receptions->id_reception ?></strong></td>
                         </tr>
 
                         <tr>
-                            <th>Montant virement :</th>
-                            <td>
-                                <label for="statut"><?= ($this->receptions->montant / 100) ?> €</label>
-                            </td>
+                            <th>Montant virement</th>
+                            <td><strong><?= $this->ficelle->formatNumber($this->receptions->montant / 100) ?> €</strong></td>
                         </tr>
 
                         <tr>
-                            <th>Motif du virement :</th>
-                            <td>
-                                <label for="statut"><?= $this->receptions->motif ?></label>
-                            </td>
+                            <th>Motif du virement</th>
+                            <td><strong><?= $this->receptions->motif ?></strong></td>
                         </tr>
-
-                        <?php
-                    } else {
-                        ?>
+                    <?php else: ?>
                         <tr>
-                            <th>Virement à émettre avant le :</th>
-                            <td>
-                                <label for="statut"><?= (isset($this->date_next_echeance_4jouvres_avant)) ? $this->date_next_echeance_4jouvres_avant : '' ?></label>
-                            </td>
+                            <th>Virement à émettre avant le</th>
+                            <td><strong><?= (isset($this->date_next_echeance_4jouvres_avant)) ? $this->date_next_echeance_4jouvres_avant : '' ?></strong></td>
                         </tr>
-                        <?php
-                    }
-                    ?>
+                    <?php endif; ?>
                     <tr>
-                        <th>Montant CRD (*) :</th>
-                        <td>
-                            <label for="statut"><?= $this->montant_restant_du_preteur ?>€</label>
-                        </td>
+                        <th>Montant CRD (*)</th>
+                        <td><strong><?= $this->ficelle->formatNumber($this->montant_restant_du_preteur) ?>€</strong></td>
                     </tr>
-
-                    <?php if (false == $this->virement_recu) { ?>
+                    <?php if (false == $this->virement_recu): ?>
                         <tr>
-                            <th>Motif à indiquer sur le virement :</th>
-                            <td>
-                                <label for="statut">RA-<?= $this->projects->id_project ?></label>
-                            </td>
+                            <th>Motif à indiquer sur le virement</th>
+                            <td><strong>RA-<?= $this->projects->id_project ?></strong></td>
                         </tr>
-                        <?php
-                    }
-                    ?>
-
+                    <?php endif; ?>
                 </table>
                 <?php if (! $this->virement_recu && ! $this->remb_anticipe_effectue && isset($this->date_next_echeance)) { ?>
                     * : Le montant correspond aux CRD des échéances restantes après celle du <?= $this->date_next_echeance ?> qui sera prélevé normalement
@@ -398,11 +372,11 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>Id dossier :</th>
+                        <th>ID dossier :</th>
                         <td><?= $this->projects->id_project ?></td>
                     </tr>
                     <tr>
-                        <th>id emprunteur:</th>
+                        <th>ID emprunteur :</th>
                         <td>
                             <?= $this->clients->id_client ?>
                             <input id="id_client" type="hidden" value="<?= $this->clients->id_client ?>" name="id_client">

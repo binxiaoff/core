@@ -8,16 +8,18 @@
                 <th rowspan="2">Statut</th>
                 <th rowspan="2">Date</th>
                 <th rowspan="2">Utilisateur</th>
-                <th colspan="4">PS, RJ, LJ</th>
-            </tr>
-            <tr>
                 <?php if (false === empty($this->aProjectHistoryDetails)): ?>
+                    <th colspan="4">PS, RJ, LJ</th>
+                <?php endif; ?>
+            </tr>
+            <?php if (false === empty($this->aProjectHistoryDetails)): ?>
+                <tr>
                     <th>Mandataire</th>
                     <th>Date jugement</th>
                     <th>Mail</th>
                     <th>Site</th>
-                <?php endif; ?>
-            </tr>
+                </tr>
+            <?php endif; ?>
         </thead>
         <tbody>
         <?php $iOrder = 1; ?>
