@@ -883,7 +883,7 @@ class clients extends clients_crud
                     sum(l.amount)/100 AS montant,
                     psh.added AS date,
                     l.id_project,
-                    "financement" AS "type"
+                    "financement" AS type
                 FROM
                     `loans` l
                     INNER JOIN projects_status_history psh ON l.id_project = psh.id_project
@@ -910,7 +910,7 @@ class clients extends clients_crud
                     montant/100 AS montant,
                     `date_transaction` AS date,
                     id_project,
-                    "virement" AS "type"
+                    "virement" AS type
                 FROM
                     `transactions`
                 WHERE
@@ -983,7 +983,7 @@ class clients extends clients_crud
                     -SUM(`capital` + `interets`)/100 AS montant,
                     `date_echeance_reel` AS date,
                     `ordre`,
-                    "affectation-preteurs" AS "type"
+                    "affectation-preteurs" AS type
                 FROM
                     `echeanciers`
                 WHERE
@@ -1009,7 +1009,7 @@ class clients extends clients_crud
                         `id_project`,
                         montant/100 AS montant,
                         added as date,
-                        "remboursement-anticipe" AS "type"
+                        "remboursement-anticipe" AS type
                     FROM
                         `receptions`
                     WHERE
@@ -1033,7 +1033,7 @@ class clients extends clients_crud
                     `id_project`,
                     - SUM(`capital`)/100 AS montant,
                     date_echeance_reel AS date,
-                    "affectation-ra-preteur" AS "type"
+                    "affectation-ra-preteur" AS type
                 FROM
                     `echeanciers`
                 WHERE
