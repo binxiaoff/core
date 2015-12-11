@@ -334,7 +334,40 @@ function moveImageToFirstOne(id_img, id_prod) {
     xhr_object.open('GET', add_url + '/ajax/moveImageToFirstOne/' + id_prod + '/' + id_img + '/' + param, true);
     xhr_object.send(null);
 }
+/* Fonction AJAX change le statut d'un dossier*/
+function check_status_dossier(surl, status, id_project) {
+    if (status == 40) {
+        var message = 'valider';
+    }
+    else if (status == 30) {
+        var message = 'rejeter';
+    }
 
+
+    if (confirm('Etes vous sur de ' + message + ' le dossier ?') == true) {
+        xhr_object = AjaxObject();
+        var param = no_cache();
+
+        var date_pub = document.getElementById('date_pub').value;
+        var date_pub = date_pub.replace(/\//g, "-");
+
+        xhr_object.onreadystatechange = function () {
+            if (xhr_object.readyState == 4 && xhr_object.status == 200) {
+                var reponse = xhr_object.responseText;
+                if (reponse == 'nok') {
+                    alert('Tous les critères obligatoires n\'ont pas été rentrés');
+                }
+                else {
+                    document.getElementById('current_statut').innerHTML = reponse;
+                    $('#status_dossier').remove();
+                }
+            }
+        }
+        xhr_object.open('GET', add_url + '/ajax/check_status_dossier/' + status + '/' + id_project + '/' + date_pub + '/' + param, false);
+        xhr_object.send(null);
+
+    }
+}
 
 
 function addMemo(id, type) {
