@@ -7771,15 +7771,6 @@ class cronController extends bootstrap
                 }
             }
 
-            $html = "Nombre client concernes : " . $nb_client_concernes . " <br />";
-            $html .= "Nombre mise à jour : " . $nb_maj . " <br />";
-            $html .= "Nombre creation : " . $nb_creation . " <br />";
-            $html .= "Debut : " . $heure_debut . " -  Termine :" . date("Y-m-d H:i:s");
-
-            if ($nb_maj > 0 or $nb_creation > 0) {
-                mail($this->sDestinatairesDebug, 'INDEXATION - UNILEND', $html, $this->sHeadersDebug);
-            }
-
             $this->stopCron();
         }
     }
