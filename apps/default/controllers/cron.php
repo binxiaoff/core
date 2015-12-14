@@ -8270,54 +8270,6 @@ class cronController extends bootstrap
             array(__FILE__ . ' on line ' . __LINE__));
     }
 
-    // fonction qui envoie les mails en differé (pour eviter la surchage au CTA)
-    /* Executé toutes les minutes avec une limite de nb/minute
-     *
-     */
-    public function _traitement_file_attente_envoi_mail()
-    {
-        $liste_attente_mail      = $this->loadData('liste_attente_mail');
-        $liste_attente_mail_temp = $this->loadData('liste_attente_mail');
-
-        $L_mail_a_traiter = $liste_attente_mail->select('statut = 0', 'added ASC', 0, 50);
-
-        if (count($L_mail_a_traiter) > 0) {
-            foreach ($L_mail_a_traiter as $mail) {
-                $this->mails_text->get($mail['type_mail'], 'lang = "' . $mail['language'] . '" AND type');
-
-                $varMail = unserialize($mail['variables']);
-
-                // on rajoute un decodage utf8 lorsqu'on n'est pas en prod
-                if ($this->Config['env'] != 'prod') {
-                    $varMail = array_map('utf8_decode', $varMail);
-                }
-
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                if ($this->Config['env'] === 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $mail['to'], $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient(trim($mail['to']));
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                }
-
-                $liste_attente_mail_temp->get($mail['id']);
-                $liste_attente_mail_temp->statut = 1; //envoyé
-                $liste_attente_mail_temp->update();
-            }
-        }
-    }
-
     /**
      * Function to calculate the IRR (Internal Rate of Return) for each lender on a regular basis
      * Given the amount of lenders and the time and resources needed for calculation
