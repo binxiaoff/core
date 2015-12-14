@@ -2711,7 +2711,7 @@ class ajaxController extends bootstrap
             $this->settings->get('Twitter', 'type');
             $sTwitterURL = $this->settings->value;
 
-            $sTemporaryLink = $this->surl.'/espace_emprunteur/securite/'.$this->generateTemporaryLink($oClients->id_client);
+            $sTemporaryLink = $this->surl.'/espace_emprunteur/securite/'.$oClients->generateTemporaryLink($oClients->id_client);
 
                 $aVariables = array(
                     'surl'                   => $this->surl,
@@ -2733,7 +2733,7 @@ class ajaxController extends bootstrap
                 Mailer::sendNMP($oEmail, $this->mails_filer, $oMailsText->id_textemail, $sRecipient, $aNMPResponse);
                 $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $oMailsText->nmp_secure, $oMailsText->id_nmp, $oMailsText->nmp_unique, $oMailsText->mode);
             } else {
-                $this->email->addRecipient($sRecipient);
+                $oEmail->addRecipient($sRecipient);
                 Mailer::send($oEmail, $this->mails_filer, $oMailsText->id_textemail);
             }
         }

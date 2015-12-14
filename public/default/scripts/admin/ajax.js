@@ -791,7 +791,6 @@ function send_email_borrower_area(id_client, type) {
         id_client: id_client,
         type: type
     }
-
     $.post(add_url + '/ajax/send_email_borrower_area', val).done(function (data) {
         if (data != 'nok') {
 
@@ -802,7 +801,6 @@ function send_email_borrower_area(id_client, type) {
             }, 3000);
         }
     });
-
 }
 
 function loadDashYear(annee) {
