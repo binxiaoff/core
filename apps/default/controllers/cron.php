@@ -1360,7 +1360,10 @@ class cronController extends bootstrap
 					<FinInstnId>
 						<BIC>' . str_replace(' ', '', $bic) . '</BIC>
 					</FinInstnId>
-				</DbtrAgt>';
+				</DbtrAgt>
+				<UltmtDbtr>
+				    <Nm>UNILEND - SFPMEI</Nm>
+				</UltmtDbtr>';
 
             foreach ($lVirementsEnCours as $v) {
                 $this->clients->get($v['id_client'], 'id_client');
@@ -1400,35 +1403,40 @@ class cronController extends bootstrap
                 // variables
                 $id_lot  = $titulaire . '/' . $dateColle . '/' . $v['id_virement'];
                 $montant = round($v['montant'] / 100, 2);
-
+                if (strncmp('FR', strtoupper(str_replace(' ', '', $ibanDestinataire)), 2) == 0) {
+                    $ibanFr = "
+                        <CdtrAcct>
+                            <Id>
+                                <IBAN>' . str_replace(' ', '', $ibanDestinataire) . '</IBAN>
+                            </Id>
+                        </CdtrAcct>'";
+                } else {
+                    $ibanFr = '';
+                }
                 $xml .= '
-				<CdtTrfTxInf>
-					<PmtId>
-						<EndToEndId>' . $id_lot . '</EndToEndId>
-					</PmtId>
-					<Amt>
-						<InstdAmt Ccy="EUR">' . $montant . '</InstdAmt>
-					</Amt>
-					<CdtrAgt>
-						<FinInstnId>
-							<BIC>' . str_replace(' ', '', $bicDestinataire) . '</BIC>
-						</FinInstnId>
-					 </CdtrAgt>
-					 <Cdtr>
-						 <Nm>' . ($v['type'] == 4 ? $retraitTitu : $destinataire) . '</Nm>
-						 <PstlAdr>
-							 <Ctry>FR</Ctry>
-						 </PstlAdr>
-					 </Cdtr>
-					 <CdtrAcct>
-						 <Id>
-							 <IBAN>' . str_replace(' ', '', $ibanDestinataire) . '</IBAN>
-						 </Id>
-					 </CdtrAcct>
-					 <RmtInf>
-						 <Ustrd>' . str_replace(' ', '', $v['motif']) . '</Ustrd>
-					 </RmtInf>
-				</CdtTrfTxInf>';
+                <CdtTrfTxInf>
+                    <PmtId>
+                        <EndToEndId>' . $id_lot . '</EndToEndId>
+                    </PmtId>
+                    <Amt>
+                        <InstdAmt Ccy="EUR">' . $montant . '</InstdAmt>
+                    </Amt>
+                    <CdtrAgt>
+                        <FinInstnId>
+                            <BIC>' . str_replace(' ', '', $bicDestinataire) . '</BIC>
+                        </FinInstnId>
+                     </CdtrAgt>
+                     <Cdtr>
+                         <Nm>' . ($v['type'] == 4 ? $retraitTitu : $destinataire) . '</Nm>
+                         <PstlAdr>
+                             <Ctry>FR</Ctry>
+                         </PstlAdr>
+                     </Cdtr>'.
+                    $ibanFr
+                    .'<RmtInf>
+                         <Ustrd>' . str_replace(' ', '', $v['motif']) . '</Ustrd>
+                     </RmtInf>
+                </CdtTrfTxInf>';
             }
             $xml .= '
 			</PmtInf>
