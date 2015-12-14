@@ -15,6 +15,9 @@ Vagrant.configure(2) do |config|
 
   config.vm.network "private_network", ip: "172.28.128.3"
   config.vm.hostname = "dev.unilend"
+  config.vm.provider "virtualbox" do |v|
+    v.memory = 1024
+  end
   config.hostsupdater.aliases = ["dev.www.unilend.fr", "dev.admin.unilend.fr", "dev.pma.unilend.fr", "dev.mailcatcher.unilend.fr"]
 
   config.vm.synced_folder "../", "/srv/sites/unilend", type: "nfs"
