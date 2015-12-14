@@ -970,7 +970,10 @@ class pdfController extends bootstrap
                 3089  => '29/06/2015',
                 10971 => '06/08/2015',
                 970   => '30/09/2015',
-                7727  => '23/11/2015'
+                7727  => '23/11/2015',
+                374   => '09/12/2015',
+                679   => '09/12/2015',
+                1011  => '09/12/2015'
             );
 
             switch ($this->oLoans->id_project) {
@@ -978,6 +981,9 @@ class pdfController extends bootstrap
                     $this->nature_var = 'Liquidation judiciaire';
                     break;
                 case 7727:
+                case 374:
+                case 679:
+                case 1011:
                     $this->nature_var = 'Redressement judiciaire';
                     break;
                 case 3089:
