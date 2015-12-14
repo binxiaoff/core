@@ -638,8 +638,14 @@
                 {
                     ?>
                     <td><input type="button" id="valider_preteur" class="btn" value="Valider le prêteur"></td>
-                    <td><input type="button" onclick="if(confirm('Voulez vous supprimer définitivement ce prêteur ?')){window.location = '<?=$this->lurl?>/preteurs/activation/delete/<?=$this->clients->id_client?>';}" class="btnRouge" value="Supprimer"></td>
-                    <?
+
+                    <?php
+                    if ($this->bHasLenderActivity ) : ?>
+                        <td style="color: red">Suppression impossible. <br> des mouvements financiers sont détectés</td>
+
+                    <?php else: ?>
+                        <td><input type="button" onclick="if(confirm('Voulez vous supprimer définitivement ce prêteur ?')){window.location = '<?=$this->lurl?>/preteurs/activation/delete/<?=$this->clients->id_client?>';}" class="btnRouge" value="Supprimer"></td>
+                <?php endif;
                 }
                 ?>
             </tr>

@@ -387,4 +387,25 @@ class lenders_accounts extends lenders_accounts_crud
 
         return $aLenders;
     }
+
+
+    public function hasLenderActivity($iLenderId = null)
+    {
+        if ($iLenderId === null) {
+            $iLenderId = $this->id_lender_account;
+        }
+
+        $oBids = new \bids($this->bdd);
+        $oWalletLines = new \wallets_lines($this->bdd);
+        $oPaymentSchedule = new \echeanciers($this->bdd);
+
+        $aTransactionTypes = array(\wallets_lines::TYPE_BID, \wallets_lines::TYPE_MONEY_SUPPLY, \wallets_lines::TYPE_REPAYMENT);
+
+        $iBids        = $oBids->counter('id_lender_account = ' . $iLenderId);
+        $iPayments    = $oPaymentSchedule->counter('id_lender = ' . $iLenderId);
+        $iWalletLines = $oWalletLines->counter('id_lender = ' . $iLenderId . ' AND type_financial_operation IN (' . implode($aTransactionTypes, ',') . ')');
+
+        return ($iBids + $iPayments + $iWalletLines > 0);
+
+    }
 }

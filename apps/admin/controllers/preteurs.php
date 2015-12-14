@@ -358,6 +358,8 @@ class preteursController extends bootstrap
 
         // On recup les infos du client
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');
+        $this->bHasLenderActivity = $this->lenders_accounts->hasLenderActivity($this->id_lender_account);
+        //TODO: get isBorrower function from espace_emprunteur: $this->clients->isBorrower($this->projects, $this->companies, $this->clients->id_client) === false &&
 
         // On recup les infos du client
         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
@@ -1244,309 +1246,302 @@ class preteursController extends bootstrap
     // Activation des comptes prêteurs
     public function _activation()
     {
-        //On appelle la fonction de chargement des donnÃ©es
+        //On appelle la fonction de chargement des données
         $this->loadGestionData();
 
         // Partie delete
         if (isset($this->params[0]) && $this->params[0] == 'delete') {
-            if ($this->clients->get($this->params[1], 'id_client')) {
-                $backup_delete = false;
 
-                if ($this->lenders_accounts->get($this->clients->id_client, 'id_client_owner'))  {
-                    // On verifie si on a deja une enchere d'effectué par ce compte
-                    $nb = $this->bids->counter('id_lender_account = ' . $this->lenders_accounts->id_lender_account);
+            $this->clients->get($this->params[1], 'id_client');
+            $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
-                    if ($nb > 0) {
-                        $backup_delete = true;
+            //TODO: get isBorrower function from espace_emprunteur: $this->clients->isBorrower($this->projects, $this->companies, $this->clients->id_client) === false &&
 
-                        $backup_clients      = $this->loadData('backup_delete_clients');
-                        $backup_clients_addr = $this->loadData('backup_delete_clients_adresses');
-                        $backup_compa_act_pa = $this->loadData('backup_delete_companies_actif_passif');
-                        $backup_companies    = $this->loadData('backup_delete_companies');
-                        $backup_comp_b       = $this->loadData('backup_delete_companies_bilans');
-                        $backup_comp_det     = $this->loadData('backup_delete_companies_details');
-                        $backup_lenders      = $this->loadData('backup_delete_lenders_accounts');
-                    }
-                }
+            if ($this->lenders_accounts->hasLenderActivity($this->lenders_accounts->id_lender) === false) {
+
+                var_dump(__LINE__);die;
+
+                $oBackupClients              = $this->loadData('backup_delete_clients');
+                $oBackupClientsAdresses      = $this->loadData('backup_delete_clients_adresses');
+                $oBackupCompaniesActifPassif = $this->loadData('backup_delete_companies_actif_passif');
+                $oBackupCompanies            = $this->loadData('backup_delete_companies');
+                $oBackupCompaniesBilans      = $this->loadData('backup_delete_companies_bilans');
+                $oBackupCompaniesDetails     = $this->loadData('backup_delete_companies_details');
+                $oBackupLendersAccounts      = $this->loadData('backup_delete_lenders_accounts');
+
 
                 if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
-                    $companies_actif_passif = $this->loadData('companies_actif_passif');
-                    $companies_bilans       = $this->loadData('companies_bilans');
-                    $companies_details      = $this->loadData('companies_details');
 
-                    $actif_passif = $companies_actif_passif->select('id_company = ' . $this->companies->id_company);
+                    $oCompaniesActifPassif = $this->loadData('companies_actif_passif');
+                    $oCompaniesBilans      = $this->loadData('companies_bilans');
+                    $oCompaniesDetails     = $this->loadData('companies_details');
 
-                    if (count($actif_passif) > 0) {
-                        foreach ($actif_passif as $a) {
-                            if ($backup_delete == true) {
-                                $backup_compa_act_pa->id_actif_passif                    = $a['id_actif_passif'];
-                                $backup_compa_act_pa->id_company                         = $a['id_company'];
-                                $backup_compa_act_pa->ordre                              = $a['ordre'];
-                                $backup_compa_act_pa->annee                              = $a['annee'];
-                                $backup_compa_act_pa->immobilisations_corporelles        = $a['immobilisations_corporelles'];
-                                $backup_compa_act_pa->immobilisations_incorporelles      = $a['immobilisations_incorporelles'];
-                                $backup_compa_act_pa->immobilisations_financieres        = $a['immobilisations_financieres'];
-                                $backup_compa_act_pa->stocks                             = $a['stocks'];
-                                $backup_compa_act_pa->creances_clients                   = $a['creances_clients'];
-                                $backup_compa_act_pa->disponibilites                     = $a['disponibilites'];
-                                $backup_compa_act_pa->valeurs_mobilieres_de_placement    = $a['valeurs_mobilieres_de_placement'];
-                                $backup_compa_act_pa->capitaux_propres                   = $a['capitaux_propres'];
-                                $backup_compa_act_pa->provisions_pour_risques_et_charges = $a['provisions_pour_risques_et_charges'];
-                                $backup_compa_act_pa->amortissement_sur_immo             = $a['amortissement_sur_immo'];
-                                $backup_compa_act_pa->dettes_financieres                 = $a['dettes_financieres'];
-                                $backup_compa_act_pa->dettes_fournisseurs                = $a['dettes_fournisseurs'];
-                                $backup_compa_act_pa->autres_dettes                      = $a['autres_dettes'];
-                                $backup_compa_act_pa->added_backup                       = $a['added'];
-                                $backup_compa_act_pa->updated_backup                     = $a['updated'];
-                                $backup_compa_act_pa->create();
-                            }
-                            $companies_actif_passif->delete($backup_compa_act_pa->id_actif_passif, 'id_actif_passif');
+                    $aActifPassif = $oCompaniesActifPassif->select('id_company = ' . $this->companies->id_company);
+
+                    if (count($aActifPassif) > 0) {
+                        foreach ($aActifPassif as $a) {
+
+                            $oBackupCompaniesActifPassif->id_actif_passif                    = $a['id_actif_passif'];
+                            $oBackupCompaniesActifPassif->id_company                         = $a['id_company'];
+                            $oBackupCompaniesActifPassif->ordre                              = $a['ordre'];
+                            $oBackupCompaniesActifPassif->annee                              = $a['annee'];
+                            $oBackupCompaniesActifPassif->immobilisations_corporelles        = $a['immobilisations_corporelles'];
+                            $oBackupCompaniesActifPassif->immobilisations_incorporelles      = $a['immobilisations_incorporelles'];
+                            $oBackupCompaniesActifPassif->immobilisations_financieres        = $a['immobilisations_financieres'];
+                            $oBackupCompaniesActifPassif->stocks                             = $a['stocks'];
+                            $oBackupCompaniesActifPassif->creances_clients                   = $a['creances_clients'];
+                            $oBackupCompaniesActifPassif->disponibilites                     = $a['disponibilites'];
+                            $oBackupCompaniesActifPassif->valeurs_mobilieres_de_placement    = $a['valeurs_mobilieres_de_placement'];
+                            $oBackupCompaniesActifPassif->capitaux_propres                   = $a['capitaux_propres'];
+                            $oBackupCompaniesActifPassif->provisions_pour_risques_et_charges = $a['provisions_pour_risques_et_charges'];
+                            $oBackupCompaniesActifPassif->amortissement_sur_immo             = $a['amortissement_sur_immo'];
+                            $oBackupCompaniesActifPassif->dettes_financieres                 = $a['dettes_financieres'];
+                            $oBackupCompaniesActifPassif->dettes_fournisseurs                = $a['dettes_fournisseurs'];
+                            $oBackupCompaniesActifPassif->autres_dettes                      = $a['autres_dettes'];
+                            $oBackupCompaniesActifPassif->added_backup                       = $a['added'];
+                            $oBackupCompaniesActifPassif->updated_backup                     = $a['updated'];
+                            $oBackupCompaniesActifPassif->create();
+
+                            $oCompaniesActifPassif->delete($oBackupCompaniesActifPassif->id_actif_passif, 'id_actif_passif');
                         }
                     }
 
-                    $comp_b = $companies_bilans->select('id_company = ' . $this->companies->id_company);
+                    $aCompaniesBilans = $oCompaniesBilans->select('id_company = ' . $this->companies->id_company);
 
-                    if (count($comp_b) > 0) {
-                        foreach ($comp_b as $a) {
-                            if ($backup_delete == true) {
-                                $backup_comp_b->id_actif_passif             = $a['id_actif_passif'];
-                                $backup_comp_b->id_company                  = $a['id_company'];
-                                $backup_comp_b->ca                          = $a['ca'];
-                                $backup_comp_b->resultat_brute_exploitation = $a['resultat_brute_exploitation'];
-                                $backup_comp_b->resultat_exploitation       = $a['resultat_exploitation'];
-                                $backup_comp_b->investissements             = $a['investissements'];
-                                $backup_comp_b->date                        = $a['date'];
-                                $backup_comp_b->added_backup                = $a['added'];
-                                $backup_comp_b->updated                     = $a['updated'];
-                                $backup_comp_b->create();
-                            }
+                    if (count($aCompaniesBilans) > 0) {
+
+                        foreach ($aCompaniesBilans as $a) {
+                            $oBackupCompaniesBilans->id_actif_passif             = $a['id_actif_passif'];
+                            $oBackupCompaniesBilans->id_company                  = $a['id_company'];
+                            $oBackupCompaniesBilans->ca                          = $a['ca'];
+                            $oBackupCompaniesBilans->resultat_brute_exploitation = $a['resultat_brute_exploitation'];
+                            $oBackupCompaniesBilans->resultat_exploitation       = $a['resultat_exploitation'];
+                            $oBackupCompaniesBilans->investissements             = $a['investissements'];
+                            $oBackupCompaniesBilans->date                        = $a['date'];
+                            $oBackupCompaniesBilans->added_backup                = $a['added'];
+                            $oBackupCompaniesBilans->updated                     = $a['updated'];
+                            $oBackupCompaniesBilans->create();
+
                         }
-                        $companies_bilans->delete($this->companies->id_company, 'id_company');
+                        $oCompaniesBilans->delete($this->companies->id_company, 'id_company');
                     }
 
-                    if ($companies_details->get($this->companies->id_company, 'id_company')) {
-                        if ($backup_delete == true) {
-                            $backup_comp_det->id_company_detail                                  = $companies_details->id_company_detail;
-                            $backup_comp_det->id_company                                         = $companies_details->id_company;
-                            $backup_comp_det->date_dernier_bilan                                 = $companies_details->date_dernier_bilan;
-                            $backup_comp_det->date_dernier_bilan_mois                            = $companies_details->date_dernier_bilan_mois;
-                            $backup_comp_det->date_dernier_bilan_annee                           = $companies_details->date_dernier_bilan_annee;
-                            $backup_comp_det->encours_actuel_dette_fianciere                     = $companies_details->encours_actuel_dette_fianciere;
-                            $backup_comp_det->remb_a_venir_cette_annee                           = $companies_details->remb_a_venir_cette_annee;
-                            $backup_comp_det->remb_a_venir_annee_prochaine                       = $companies_details->remb_a_venir_annee_prochaine;
-                            $backup_comp_det->tresorie_dispo_actuellement                        = $companies_details->tresorie_dispo_actuellement;
-                            $backup_comp_det->autre_demandes_financements_prevues                = $companies_details->autre_demandes_financements_prevues;
-                            $backup_comp_det->precisions                                         = $companies_details->precisions;
-                            $backup_comp_det->decouverts_bancaires                               = $companies_details->decouverts_bancaires;
-                            $backup_comp_det->lignes_de_tresorerie                               = $companies_details->lignes_de_tresorerie;
-                            $backup_comp_det->affacturage                                        = $companies_details->affacturage;
-                            $backup_comp_det->escompte                                           = $companies_details->escompte;
-                            $backup_comp_det->financement_dailly                                 = $companies_details->financement_dailly;
-                            $backup_comp_det->credit_de_tresorerie                               = $companies_details->credit_de_tresorerie;
-                            $backup_comp_det->credit_bancaire_investissements_materiels          = $companies_details->credit_bancaire_investissements_materiels;
-                            $backup_comp_det->credit_bancaire_investissements_immateriels        = $companies_details->credit_bancaire_investissements_immateriels;
-                            $backup_comp_det->rachat_entreprise_ou_titres                        = $companies_details->rachat_entreprise_ou_titres;
-                            $backup_comp_det->credit_immobilier                                  = $companies_details->credit_immobilier;
-                            $backup_comp_det->credit_bail_immobilier                             = $companies_details->credit_bail_immobilier;
-                            $backup_comp_det->credit_bail                                        = $companies_details->credit_bail;
-                            $backup_comp_det->location_avec_option_achat                         = $companies_details->location_avec_option_achat;
-                            $backup_comp_det->location_financiere                                = $companies_details->location_financiere;
-                            $backup_comp_det->location_longue_duree                              = $companies_details->location_longue_duree;
-                            $backup_comp_det->pret_oseo                                          = $companies_details->pret_oseo;
-                            $backup_comp_det->pret_participatif                                  = $companies_details->pret_participatif;
-                            $backup_comp_det->fichier_extrait_kbis                               = $companies_details->fichier_extrait_kbis;
-                            $backup_comp_det->fichier_rib                                        = $companies_details->fichier_rib;
-                            $backup_comp_det->fichier_delegation_pouvoir                         = $companies_details->fichier_delegation_pouvoir;
-                            $backup_comp_det->fichier_logo_societe                               = $companies_details->fichier_logo_societe;
-                            $backup_comp_det->fichier_photo_dirigeant                            = $companies_details->fichier_photo_dirigeant;
-                            $backup_comp_det->fichier_dernier_bilan_certifie                     = $companies_details->fichier_dernier_bilan_certifie;
-                            $backup_comp_det->fichier_cni_passeport                              = $companies_details->fichier_cni_passeport;
-                            $backup_comp_det->fichier_derniere_liasse_fiscale                    = $companies_details->fichier_derniere_liasse_fiscale;
-                            $backup_comp_det->fichier_derniers_comptes_approuves                 = $companies_details->fichier_derniers_comptes_approuves;
-                            $backup_comp_det->fichier_derniers_comptes_consolides_groupe         = $companies_details->fichier_derniers_comptes_consolides_groupe;
-                            $backup_comp_det->fichier_annexes_rapport_special_commissaire_compte = $companies_details->fichier_annexes_rapport_special_commissaire_compte;
-                            $backup_comp_det->fichier_arret_comptable_recent                     = $companies_details->fichier_arret_comptable_recent;
-                            $backup_comp_det->fichier_budget_exercice_en_cours_a_venir           = $companies_details->fichier_budget_exercice_en_cours_a_venir;
-                            $backup_comp_det->fichier_notation_banque_france                     = $companies_details->fichier_notation_banque_france;
-                            $backup_comp_det->fichier_autre_1                                    = $companies_details->fichier_autre_1;
-                            $backup_comp_det->fichier_autre_2                                    = $companies_details->fichier_autre_2;
-                            $backup_comp_det->fichier_autre_3                                    = $companies_details->fichier_autre_3;
-                            $backup_comp_det->added_backup                                       = $companies_details->added;
-                            $backup_comp_det->updated_backup                                     = $companies_details->updated;
-                            $backup_comp_det->create();
-                        }
-                        $companies_details->delete($this->companies->id_company, 'id_company');
+                    if ($oCompaniesDetails->get($this->companies->id_company, 'id_company')) {
+
+                        $oBackupCompaniesDetails->id_company_detail                                  = $oCompaniesDetails->id_company_detail;
+                        $oBackupCompaniesDetails->id_company                                         = $oCompaniesDetails->id_company;
+                        $oBackupCompaniesDetails->date_dernier_bilan                                 = $oCompaniesDetails->date_dernier_bilan;
+                        $oBackupCompaniesDetails->date_dernier_bilan_mois                            = $oCompaniesDetails->date_dernier_bilan_mois;
+                        $oBackupCompaniesDetails->date_dernier_bilan_annee                           = $oCompaniesDetails->date_dernier_bilan_annee;
+                        $oBackupCompaniesDetails->encours_actuel_dette_fianciere                     = $oCompaniesDetails->encours_actuel_dette_fianciere;
+                        $oBackupCompaniesDetails->remb_a_venir_cette_annee                           = $oCompaniesDetails->remb_a_venir_cette_annee;
+                        $oBackupCompaniesDetails->remb_a_venir_annee_prochaine                       = $oCompaniesDetails->remb_a_venir_annee_prochaine;
+                        $oBackupCompaniesDetails->tresorie_dispo_actuellement                        = $oCompaniesDetails->tresorie_dispo_actuellement;
+                        $oBackupCompaniesDetails->autre_demandes_financements_prevues                = $oCompaniesDetails->autre_demandes_financements_prevues;
+                        $oBackupCompaniesDetails->precisions                                         = $oCompaniesDetails->precisions;
+                        $oBackupCompaniesDetails->decouverts_bancaires                               = $oCompaniesDetails->decouverts_bancaires;
+                        $oBackupCompaniesDetails->lignes_de_tresorerie                               = $oCompaniesDetails->lignes_de_tresorerie;
+                        $oBackupCompaniesDetails->affacturage                                        = $oCompaniesDetails->affacturage;
+                        $oBackupCompaniesDetails->escompte                                           = $oCompaniesDetails->escompte;
+                        $oBackupCompaniesDetails->financement_dailly                                 = $oCompaniesDetails->financement_dailly;
+                        $oBackupCompaniesDetails->credit_de_tresorerie                               = $oCompaniesDetails->credit_de_tresorerie;
+                        $oBackupCompaniesDetails->credit_bancaire_investissements_materiels          = $oCompaniesDetails->credit_bancaire_investissements_materiels;
+                        $oBackupCompaniesDetails->credit_bancaire_investissements_immateriels        = $oCompaniesDetails->credit_bancaire_investissements_immateriels;
+                        $oBackupCompaniesDetails->rachat_entreprise_ou_titres                        = $oCompaniesDetails->rachat_entreprise_ou_titres;
+                        $oBackupCompaniesDetails->credit_immobilier                                  = $oCompaniesDetails->credit_immobilier;
+                        $oBackupCompaniesDetails->credit_bail_immobilier                             = $oCompaniesDetails->credit_bail_immobilier;
+                        $oBackupCompaniesDetails->credit_bail                                        = $oCompaniesDetails->credit_bail;
+                        $oBackupCompaniesDetails->location_avec_option_achat                         = $oCompaniesDetails->location_avec_option_achat;
+                        $oBackupCompaniesDetails->location_financiere                                = $oCompaniesDetails->location_financiere;
+                        $oBackupCompaniesDetails->location_longue_duree                              = $oCompaniesDetails->location_longue_duree;
+                        $oBackupCompaniesDetails->pret_oseo                                          = $oCompaniesDetails->pret_oseo;
+                        $oBackupCompaniesDetails->pret_participatif                                  = $oCompaniesDetails->pret_participatif;
+                        $oBackupCompaniesDetails->fichier_extrait_kbis                               = $oCompaniesDetails->fichier_extrait_kbis;
+                        $oBackupCompaniesDetails->fichier_rib                                        = $oCompaniesDetails->fichier_rib;
+                        $oBackupCompaniesDetails->fichier_delegation_pouvoir                         = $oCompaniesDetails->fichier_delegation_pouvoir;
+                        $oBackupCompaniesDetails->fichier_logo_societe                               = $oCompaniesDetails->fichier_logo_societe;
+                        $oBackupCompaniesDetails->fichier_photo_dirigeant                            = $oCompaniesDetails->fichier_photo_dirigeant;
+                        $oBackupCompaniesDetails->fichier_dernier_bilan_certifie                     = $oCompaniesDetails->fichier_dernier_bilan_certifie;
+                        $oBackupCompaniesDetails->fichier_cni_passeport                              = $oCompaniesDetails->fichier_cni_passeport;
+                        $oBackupCompaniesDetails->fichier_derniere_liasse_fiscale                    = $oCompaniesDetails->fichier_derniere_liasse_fiscale;
+                        $oBackupCompaniesDetails->fichier_derniers_comptes_approuves                 = $oCompaniesDetails->fichier_derniers_comptes_approuves;
+                        $oBackupCompaniesDetails->fichier_derniers_comptes_consolides_groupe         = $oCompaniesDetails->fichier_derniers_comptes_consolides_groupe;
+                        $oBackupCompaniesDetails->fichier_annexes_rapport_special_commissaire_compte = $oCompaniesDetails->fichier_annexes_rapport_special_commissaire_compte;
+                        $oBackupCompaniesDetails->fichier_arret_comptable_recent                     = $oCompaniesDetails->fichier_arret_comptable_recent;
+                        $oBackupCompaniesDetails->fichier_budget_exercice_en_cours_a_venir           = $oCompaniesDetails->fichier_budget_exercice_en_cours_a_venir;
+                        $oBackupCompaniesDetails->fichier_notation_banque_france                     = $oCompaniesDetails->fichier_notation_banque_france;
+                        $oBackupCompaniesDetails->fichier_autre_1                                    = $oCompaniesDetails->fichier_autre_1;
+                        $oBackupCompaniesDetails->fichier_autre_2                                    = $oCompaniesDetails->fichier_autre_2;
+                        $oBackupCompaniesDetails->fichier_autre_3                                    = $oCompaniesDetails->fichier_autre_3;
+                        $oBackupCompaniesDetails->added_backup                                       = $oCompaniesDetails->added;
+                        $oBackupCompaniesDetails->updated_backup                                     = $oCompaniesDetails->updated;
+                        $oBackupCompaniesDetails->create();
+
+                        $oCompaniesDetails->delete($this->companies->id_company, 'id_company');
                     }
 
-                    if ($backup_delete == true) {
-                        $backup_companies->id_company                          = $this->companies->id_company;
-                        $backup_companies->id_client_owner                     = $this->companies->id_client_owner;
-                        $backup_companies->id_partenaire                       = $this->companies->id_partenaire;
-                        $backup_companies->id_partenaire_subcode               = $this->companies->id_partenaire_subcode;
-                        $backup_companies->email_facture                       = $this->companies->email_facture;
-                        $backup_companies->name                                = $this->companies->name;
-                        $backup_companies->forme                               = $this->companies->forme;
-                        $backup_companies->siren                               = $this->companies->siren;
-                        $backup_companies->siret                               = $this->companies->siret;
-                        $backup_companies->iban                                = $this->companies->iban;
-                        $backup_companies->bic                                 = $this->companies->bic;
-                        $backup_companies->execices_comptables                 = $this->companies->execices_comptables;
-                        $backup_companies->rcs                                 = $this->companies->rcs;
-                        $backup_companies->tribunal_com                        = $this->companies->tribunal_com;
-                        $backup_companies->activite                            = $this->companies->activite;
-                        $backup_companies->lieu_exploi                         = $this->companies->lieu_exploi;
-                        $backup_companies->tva                                 = $this->companies->tva;
-                        $backup_companies->capital                             = $this->companies->capital;
-                        $backup_companies->date_creation                       = $this->companies->date_creation;
-                        $backup_companies->adresse1                            = $this->companies->adresse1;
-                        $backup_companies->adresse2                            = $this->companies->adresse2;
-                        $backup_companies->zip                                 = $this->companies->zip;
-                        $backup_companies->city                                = $this->companies->city;
-                        $backup_companies->id_pays                             = $this->companies->id_pays;
-                        $backup_companies->phone                               = $this->companies->phone;
-                        $backup_companies->status_adresse_correspondance       = $this->companies->status_adresse_correspondance;
-                        $backup_companies->status_client                       = $this->companies->status_client;
-                        $backup_companies->status_conseil_externe_entreprise   = $this->companies->status_conseil_externe_entreprise;
-                        $backup_companies->preciser_conseil_externe_entreprise = $this->companies->preciser_conseil_externe_entreprise;
-                        $backup_companies->civilite_dirigeant                  = $this->companies->civilite_dirigeant;
-                        $backup_companies->nom_dirigeant                       = $this->companies->nom_dirigeant;
-                        $backup_companies->prenom_dirigeant                    = $this->companies->prenom_dirigeant;
-                        $backup_companies->fonction_dirigeant                  = $this->companies->fonction_dirigeant;
-                        $backup_companies->email_dirigeant                     = $this->companies->email_dirigeant;
-                        $backup_companies->phone_dirigeant                     = $this->companies->phone_dirigeant;
-                        $backup_companies->sector                              = $this->companies->sector;
-                        $backup_companies->risk                                = $this->companies->risk;
-                        $backup_companies->altares_eligibility                 = $this->companies->altares_eligibility;
-                        $backup_companies->altares_dateValeur                  = $this->companies->altares_dateValeur;
-                        $backup_companies->altares_niveauRisque                = $this->companies->altares_niveauRisque;
-                        $backup_companies->altares_scoreVingt                  = $this->companies->altares_scoreVingt;
-                        $backup_companies->added_backup                        = $this->companies->added;
-                        $backup_companies->updated_backup                      = $this->companies->updated;
-                        $backup_companies->create();
+                    $oBackupCompanies->id_company                          = $this->companies->id_company;
+                    $oBackupCompanies->id_client_owner                     = $this->companies->id_client_owner;
+                    $oBackupCompanies->id_partenaire                       = $this->companies->id_partenaire;
+                    $oBackupCompanies->id_partenaire_subcode               = $this->companies->id_partenaire_subcode;
+                    $oBackupCompanies->email_facture                       = $this->companies->email_facture;
+                    $oBackupCompanies->name                                = $this->companies->name;
+                    $oBackupCompanies->forme                               = $this->companies->forme;
+                    $oBackupCompanies->siren                               = $this->companies->siren;
+                    $oBackupCompanies->siret                               = $this->companies->siret;
+                    $oBackupCompanies->iban                                = $this->companies->iban;
+                    $oBackupCompanies->bic                                 = $this->companies->bic;
+                    $oBackupCompanies->execices_comptables                 = $this->companies->execices_comptables;
+                    $oBackupCompanies->rcs                                 = $this->companies->rcs;
+                    $oBackupCompanies->tribunal_com                        = $this->companies->tribunal_com;
+                    $oBackupCompanies->activite                            = $this->companies->activite;
+                    $oBackupCompanies->lieu_exploi                         = $this->companies->lieu_exploi;
+                    $oBackupCompanies->tva                                 = $this->companies->tva;
+                    $oBackupCompanies->capital                             = $this->companies->capital;
+                    $oBackupCompanies->date_creation                       = $this->companies->date_creation;
+                    $oBackupCompanies->adresse1                            = $this->companies->adresse1;
+                    $oBackupCompanies->adresse2                            = $this->companies->adresse2;
+                    $oBackupCompanies->zip                                 = $this->companies->zip;
+                    $oBackupCompanies->city                                = $this->companies->city;
+                    $oBackupCompanies->id_pays                             = $this->companies->id_pays;
+                    $oBackupCompanies->phone                               = $this->companies->phone;
+                    $oBackupCompanies->status_adresse_correspondance       = $this->companies->status_adresse_correspondance;
+                    $oBackupCompanies->status_client                       = $this->companies->status_client;
+                    $oBackupCompanies->status_conseil_externe_entreprise   = $this->companies->status_conseil_externe_entreprise;
+                    $oBackupCompanies->preciser_conseil_externe_entreprise = $this->companies->preciser_conseil_externe_entreprise;
+                    $oBackupCompanies->civilite_dirigeant                  = $this->companies->civilite_dirigeant;
+                    $oBackupCompanies->nom_dirigeant                       = $this->companies->nom_dirigeant;
+                    $oBackupCompanies->prenom_dirigeant                    = $this->companies->prenom_dirigeant;
+                    $oBackupCompanies->fonction_dirigeant                  = $this->companies->fonction_dirigeant;
+                    $oBackupCompanies->email_dirigeant                     = $this->companies->email_dirigeant;
+                    $oBackupCompanies->phone_dirigeant                     = $this->companies->phone_dirigeant;
+                    $oBackupCompanies->sector                              = $this->companies->sector;
+                    $oBackupCompanies->risk                                = $this->companies->risk;
+                    $oBackupCompanies->altares_eligibility                 = $this->companies->altares_eligibility;
+                    $oBackupCompanies->altares_dateValeur                  = $this->companies->altares_dateValeur;
+                    $oBackupCompanies->altares_niveauRisque                = $this->companies->altares_niveauRisque;
+                    $oBackupCompanies->altares_scoreVingt                  = $this->companies->altares_scoreVingt;
+                    $oBackupCompanies->added_backup                        = $this->companies->added;
+                    $oBackupCompanies->updated_backup                      = $this->companies->updated;
+                    $oBackupCompanies->create();
 
-                    }
                     $this->companies->delete($this->clients->id_client, 'id_client_owner');
-
                 }
 
+                $aAttachment = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
-                if ($backup_delete == true) {
-                    $attachment = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+                $oBackupLendersAccounts->id_lender_account              = $this->lenders_accounts->id_lender_account;
+                $oBackupLendersAccounts->id_client_owner                = $this->lenders_accounts->id_client_owner;
+                $oBackupLendersAccounts->id_company_owner               = $this->lenders_accounts->id_company_owner;
+                $oBackupLendersAccounts->exonere                        = $this->lenders_accounts->exonere;
+                $oBackupLendersAccounts->iban                           = $this->lenders_accounts->iban;
+                $oBackupLendersAccounts->bic                            = $this->lenders_accounts->bic;
+                $oBackupLendersAccounts->origine_des_fonds              = $this->lenders_accounts->origine_des_fonds;
+                $oBackupLendersAccounts->precision                      = $this->lenders_accounts->precision;
+                $oBackupLendersAccounts->id_partenaire                  = $this->lenders_accounts->id_partenaire;
+                $oBackupLendersAccounts->id_partenaire_subcode          = $this->lenders_accounts->id_partenaire_subcode;
+                $oBackupLendersAccounts->status                         = $this->lenders_accounts->status;
+                $oBackupLendersAccounts->type_transfert                 = $this->lenders_accounts->type_transfert;
+                $oBackupLendersAccounts->motif                          = $this->lenders_accounts->motif;
+                $oBackupLendersAccounts->fonds                          = $this->lenders_accounts->fonds;
+                $oBackupLendersAccounts->cni_passeport                  = $this->lenders_accounts->cni_passeport;
+                $oBackupLendersAccounts->fichier_cni_passeport          = isset($aAttachment[ attachment_type::CNI_PASSPORTE ]["path"]) ? $aAttachment[ attachment_type::CNI_PASSPORTE ]["path"] : '';
+                $oBackupLendersAccounts->fichier_justificatif_domicile  = isset($aAttachment[ attachment_type::JUSTIFICATIF_DOMICILE ]["path"]) ? $aAttachment[ attachment_type::JUSTIFICATIF_DOMICILE ]["path"] : '';
+                $oBackupLendersAccounts->fichier_rib                    = isset($aAttachment[ attachment_type::RIB ]["path"]) ? $aAttachment[ attachment_type::RIB ]["path"] : '';
+                $oBackupLendersAccounts->fichier_cni_passeport_dirigent = isset($aAttachment[ attachment_type::CNI_PASSPORTE_DIRIGEANT ]["path"]) ? $aAttachment[ attachment_type::CNI_PASSPORTE_DIRIGEANT ]["path"] : '';
+                $oBackupLendersAccounts->fichier_extrait_kbis           = isset($aAttachment[ attachment_type::KBIS ]["path"]) ? $aAttachment[ attachment_type::KBIS ]["path"] : '';
+                $oBackupLendersAccounts->fichier_delegation_pouvoir     = isset($aAttachment[ attachment_type::DELEGATION_POUVOIR ]["path"]) ? $aAttachment[ attachment_type::DELEGATION_POUVOIR ]["path"] : '';
+                $oBackupLendersAccounts->fichier_statuts                = isset($aAttachment[ attachment_type::STATUTS ]["path"]) ? $aAttachment[ attachment_type::STATUTS ]["path"] : '';
+                $oBackupLendersAccounts->fichier_autre                  = isset($aAttachment[ attachment_type::AUTRE1 ]["path"]) ? $aAttachment[ attachment_type::AUTRE1 ]["path"] : '';
+                $oBackupLendersAccounts->added_backup                   = $this->lenders_accounts->added;
+                $oBackupLendersAccounts->updated_backup                 = $this->lenders_accounts->updated;
+                $oBackupLendersAccounts->create();
 
-                    $backup_lenders->id_lender_account              = $this->lenders_accounts->id_lender_account;
-                    $backup_lenders->id_client_owner                = $this->lenders_accounts->id_client_owner;
-                    $backup_lenders->id_company_owner               = $this->lenders_accounts->id_company_owner;
-                    $backup_lenders->exonere                        = $this->lenders_accounts->exonere;
-                    $backup_lenders->iban                           = $this->lenders_accounts->iban;
-                    $backup_lenders->bic                            = $this->lenders_accounts->bic;
-                    $backup_lenders->origine_des_fonds              = $this->lenders_accounts->origine_des_fonds;
-                    $backup_lenders->precision                      = $this->lenders_accounts->precision;
-                    $backup_lenders->id_partenaire                  = $this->lenders_accounts->id_partenaire;
-                    $backup_lenders->id_partenaire_subcode          = $this->lenders_accounts->id_partenaire_subcode;
-                    $backup_lenders->status                         = $this->lenders_accounts->status;
-                    $backup_lenders->type_transfert                 = $this->lenders_accounts->type_transfert;
-                    $backup_lenders->motif                          = $this->lenders_accounts->motif;
-                    $backup_lenders->fonds                          = $this->lenders_accounts->fonds;
-                    $backup_lenders->cni_passeport                  = $this->lenders_accounts->cni_passeport;
-                    $backup_lenders->fichier_cni_passeport          = isset($attachment[attachment_type::CNI_PASSPORTE]["path"]) ? $attachment[attachment_type::CNI_PASSPORTE]["path"] : '';
-                    $backup_lenders->fichier_justificatif_domicile  = isset($attachment[attachment_type::JUSTIFICATIF_DOMICILE]["path"]) ? $attachment[attachment_type::JUSTIFICATIF_DOMICILE]["path"] : '';
-                    $backup_lenders->fichier_rib                    = isset($attachment[attachment_type::RIB]["path"]) ? $attachment[attachment_type::RIB]["path"] : '';
-                    $backup_lenders->fichier_cni_passeport_dirigent = isset($attachment[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]) ? $attachment[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"] : '';
-                    $backup_lenders->fichier_extrait_kbis           = isset($attachment[attachment_type::KBIS]["path"]) ? $attachment[attachment_type::KBIS]["path"] : '';
-                    $backup_lenders->fichier_delegation_pouvoir     = isset($attachment[attachment_type::DELEGATION_POUVOIR]["path"]) ? $attachment[attachment_type::DELEGATION_POUVOIR]["path"] : '';
-                    $backup_lenders->fichier_statuts                = isset($attachment[attachment_type::STATUTS]["path"]) ? $attachment[attachment_type::STATUTS]["path"] : '';
-                    $backup_lenders->fichier_autre                  = isset($attachment[attachment_type::AUTRE1]["path"]) ? $attachment[attachment_type::AUTRE1]["path"] : '';
-                    $backup_lenders->added_backup                   = $this->lenders_accounts->added;
-                    $backup_lenders->updated_backup                 = $this->lenders_accounts->updated;
-                    $backup_lenders->create();
-                }
                 $this->lenders_accounts->delete($this->clients->id_client, 'id_client_owner');
 
                 // ON verif si il est dans adresses
-                if ($this->clients_adresses->get($this->clients->id_client, 'id_client')) ;
-                {
-                    if ($backup_delete == true) {
-                        $backup_clients_addr->id_adresse          = $this->clients_adresses->id_adresse;
-                        $backup_clients_addr->id_client           = $this->clients_adresses->id_client;
-                        $backup_clients_addr->defaut              = $this->clients_adresses->defaut;
-                        $backup_clients_addr->type                = $this->clients_adresses->type;
-                        $backup_clients_addr->nom_adresse         = $this->clients_adresses->nom_adresse;
-                        $backup_clients_addr->civilite            = $this->clients_adresses->civilite;
-                        $backup_clients_addr->nom                 = $this->clients_adresses->nom;
-                        $backup_clients_addr->prenom              = $this->clients_adresses->prenom;
-                        $backup_clients_addr->societe             = $this->clients_adresses->societe;
-                        $backup_clients_addr->adresse1            = $this->clients_adresses->adresse1;
-                        $backup_clients_addr->adresse2            = $this->clients_adresses->adresse2;
-                        $backup_clients_addr->adresse3            = $this->clients_adresses->adresse3;
-                        $backup_clients_addr->cp                  = $this->clients_adresses->cp;
-                        $backup_clients_addr->ville               = $this->clients_adresses->ville;
-                        $backup_clients_addr->id_pays             = $this->clients_adresses->id_pays;
-                        $backup_clients_addr->telephone           = $this->clients_adresses->telephone;
-                        $backup_clients_addr->mobile              = $this->clients_adresses->mobile;
-                        $backup_clients_addr->commentaire         = $this->clients_adresses->commentaire;
-                        $backup_clients_addr->meme_adresse_fiscal = $this->clients_adresses->meme_adresse_fiscal;
-                        $backup_clients_addr->adresse_fiscal      = $this->clients_adresses->adresse_fiscal;
-                        $backup_clients_addr->ville_fiscal        = $this->clients_adresses->ville_fiscal;
-                        $backup_clients_addr->cp_fiscal           = $this->clients_adresses->cp_fiscal;
-                        $backup_clients_addr->id_pays_fiscal      = $this->clients_adresses->id_pays_fiscal;
-                        $backup_clients_addr->status              = $this->clients_adresses->status;
-                        $backup_clients_addr->added_backup        = $this->clients_adresses->added;
-                        $backup_clients_addr->updated_backup      = $this->clients_adresses->updated;
-                        $backup_clients_addr->create();
-                    }
+                if ($this->clients_adresses->get($this->clients->id_client, 'id_client')) {
+
+                    $oBackupClientsAdresses->id_adresse          = $this->clients_adresses->id_adresse;
+                    $oBackupClientsAdresses->id_client           = $this->clients_adresses->id_client;
+                    $oBackupClientsAdresses->defaut              = $this->clients_adresses->defaut;
+                    $oBackupClientsAdresses->type                = $this->clients_adresses->type;
+                    $oBackupClientsAdresses->nom_adresse         = $this->clients_adresses->nom_adresse;
+                    $oBackupClientsAdresses->civilite            = $this->clients_adresses->civilite;
+                    $oBackupClientsAdresses->nom                 = $this->clients_adresses->nom;
+                    $oBackupClientsAdresses->prenom              = $this->clients_adresses->prenom;
+                    $oBackupClientsAdresses->societe             = $this->clients_adresses->societe;
+                    $oBackupClientsAdresses->adresse1            = $this->clients_adresses->adresse1;
+                    $oBackupClientsAdresses->adresse2            = $this->clients_adresses->adresse2;
+                    $oBackupClientsAdresses->adresse3            = $this->clients_adresses->adresse3;
+                    $oBackupClientsAdresses->cp                  = $this->clients_adresses->cp;
+                    $oBackupClientsAdresses->ville               = $this->clients_adresses->ville;
+                    $oBackupClientsAdresses->id_pays             = $this->clients_adresses->id_pays;
+                    $oBackupClientsAdresses->telephone           = $this->clients_adresses->telephone;
+                    $oBackupClientsAdresses->mobile              = $this->clients_adresses->mobile;
+                    $oBackupClientsAdresses->commentaire         = $this->clients_adresses->commentaire;
+                    $oBackupClientsAdresses->meme_adresse_fiscal = $this->clients_adresses->meme_adresse_fiscal;
+                    $oBackupClientsAdresses->adresse_fiscal      = $this->clients_adresses->adresse_fiscal;
+                    $oBackupClientsAdresses->ville_fiscal        = $this->clients_adresses->ville_fiscal;
+                    $oBackupClientsAdresses->cp_fiscal           = $this->clients_adresses->cp_fiscal;
+                    $oBackupClientsAdresses->id_pays_fiscal      = $this->clients_adresses->id_pays_fiscal;
+                    $oBackupClientsAdresses->status              = $this->clients_adresses->status;
+                    $oBackupClientsAdresses->added_backup        = $this->clients_adresses->added;
+                    $oBackupClientsAdresses->updated_backup      = $this->clients_adresses->updated;
+                    $oBackupClientsAdresses->create();
+
                     $this->clients_adresses->delete($this->clients->id_client, 'id_client');
                 }
 
                 $serialize = serialize(array('id_client' => $this->clients->id_client));
                 $this->users_history->histo(12, 'delete preteur activation', $_SESSION['user']['id_user'], $serialize);
 
-                if ($backup_delete == true) {
-                    $backup_clients->id_client                  = $this->clients->id_client;
-                    $backup_clients->hash_client                = $this->clients->hash;
-                    $backup_clients->id_langue                  = $this->clients->id_langue;
-                    $backup_clients->id_partenaire              = $this->clients->id_partenaire;
-                    $backup_clients->id_partenaire_subcode      = $this->clients->id_partenaire_subcode;
-                    $backup_clients->id_facebook                = $this->clients->id_facebook;
-                    $backup_clients->id_linkedin                = $this->clients->id_linkedin;
-                    $backup_clients->id_viadeo                  = $this->clients->id_viadeo;
-                    $backup_clients->id_twitter                 = $this->clients->id_twitter;
-                    $backup_clients->civilite                   = $this->clients->civilite;
-                    $backup_clients->nom                        = $this->clients->nom;
-                    $backup_clients->nom_usage                  = $this->clients->nom_usage;
-                    $backup_clients->prenom                     = $this->clients->prenom;
-                    $backup_clients->slug                       = $this->clients->slug;
-                    $backup_clients->fonction                   = $this->clients->fonction;
-                    $backup_clients->naissance                  = $this->clients->naissance;
-                    $backup_clients->ville_naissance            = $this->clients->ville_naissance;
-                    $backup_clients->id_pays_naissance          = $this->clients->id_pays_naissance;
-                    $backup_clients->id_nationalite             = $this->clients->id_nationalite;
-                    $backup_clients->telephone                  = $this->clients->telephone;
-                    $backup_clients->mobile                     = $this->clients->mobile;
-                    $backup_clients->email                      = $this->clients->email;
-                    $backup_clients->password                   = $this->clients->password;
-                    $backup_clients->secrete_question           = $this->clients->secrete_question;
-                    $backup_clients->secrete_reponse            = $this->clients->secrete_reponse;
-                    $backup_clients->type                       = $this->clients->type;
-                    $backup_clients->etape_inscription_preteur  = $this->clients->etape_inscription_preteur;
-                    $backup_clients->status_inscription_preteur = $this->clients->status_inscription_preteur;
-                    $backup_clients->status_pre_emp             = $this->clients->status_pre_emp;
-                    $backup_clients->status_transition          = $this->clients->status_transition;
-                    $backup_clients->cni_passeport              = $this->clients->cni_passeport;
-                    $backup_clients->signature                  = $this->clients->signature;
-                    $backup_clients->optin1                     = $this->clients->optin1;
-                    $backup_clients->optin2                     = $this->clients->optin2;
-                    $backup_clients->status                     = $this->clients->status;
-                    $backup_clients->added_backup               = $this->clients->added;
-                    $backup_clients->updated_backup             = $this->clients->updated;
-                    $backup_clients->lastlogin                  = $this->clients->lastlogin;
-                    $backup_clients->create();
-
-                    mail('unilend@equinoa.fr', '[ALERTE] Compte supprime', 'Un compte (' . $this->clients->id_client . ') avec des encheres a ete supprime.');
-                }
+                $oBackupClients->id_client                  = $this->clients->id_client;
+                $oBackupClients->hash_client                = $this->clients->hash;
+                $oBackupClients->id_langue                  = $this->clients->id_langue;
+                $oBackupClients->id_partenaire              = $this->clients->id_partenaire;
+                $oBackupClients->id_partenaire_subcode      = $this->clients->id_partenaire_subcode;
+                $oBackupClients->id_facebook                = $this->clients->id_facebook;
+                $oBackupClients->id_linkedin                = $this->clients->id_linkedin;
+                $oBackupClients->id_viadeo                  = $this->clients->id_viadeo;
+                $oBackupClients->id_twitter                 = $this->clients->id_twitter;
+                $oBackupClients->civilite                   = $this->clients->civilite;
+                $oBackupClients->nom                        = $this->clients->nom;
+                $oBackupClients->nom_usage                  = $this->clients->nom_usage;
+                $oBackupClients->prenom                     = $this->clients->prenom;
+                $oBackupClients->slug                       = $this->clients->slug;
+                $oBackupClients->fonction                   = $this->clients->fonction;
+                $oBackupClients->naissance                  = $this->clients->naissance;
+                $oBackupClients->ville_naissance            = $this->clients->ville_naissance;
+                $oBackupClients->id_pays_naissance          = $this->clients->id_pays_naissance;
+                $oBackupClients->id_nationalite             = $this->clients->id_nationalite;
+                $oBackupClients->telephone                  = $this->clients->telephone;
+                $oBackupClients->mobile                     = $this->clients->mobile;
+                $oBackupClients->email                      = $this->clients->email;
+                $oBackupClients->password                   = $this->clients->password;
+                $oBackupClients->secrete_question           = $this->clients->secrete_question;
+                $oBackupClients->secrete_reponse            = $this->clients->secrete_reponse;
+                $oBackupClients->type                       = $this->clients->type;
+                $oBackupClients->etape_inscription_preteur  = $this->clients->etape_inscription_preteur;
+                $oBackupClients->status_inscription_preteur = $this->clients->status_inscription_preteur;
+                $oBackupClients->status_pre_emp             = $this->clients->status_pre_emp;
+                $oBackupClients->status_transition          = $this->clients->status_transition;
+                $oBackupClients->cni_passeport              = $this->clients->cni_passeport;
+                $oBackupClients->signature                  = $this->clients->signature;
+                $oBackupClients->optin1                     = $this->clients->optin1;
+                $oBackupClients->optin2                     = $this->clients->optin2;
+                $oBackupClients->status                     = $this->clients->status;
+                $oBackupClients->added_backup               = $this->clients->added;
+                $oBackupClients->updated_backup             = $this->clients->updated;
+                $oBackupClients->lastlogin                  = $this->clients->lastlogin;
+                $oBackupClients->create();
 
                 $this->clients->delete($this->clients->id_client, 'id_client');
 
                 header('location:' . $this->lurl . '/preteurs/activation');
+                die;
+            } else {
+                header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                 die;
             }
         }
