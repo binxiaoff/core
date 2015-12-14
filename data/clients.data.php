@@ -731,4 +731,22 @@ class clients extends clients_crud
 
         return $oPrescripteurs->exist($iClientId, 'id_client');
     }
+
+    /**
+     * Retrieve pattern that lender must use in bank transfer label
+     * @param int $iClientId
+     * @return string
+     */
+    public function getLenderPattern($iClientId)
+    {
+        $this->get($iClientId);
+
+        $oToolkit = new \ficelle();
+
+        return mb_strtoupper(
+            str_pad($this->id_client, 6, 0, STR_PAD_LEFT) .
+            substr($oToolkit->stripAccents(utf8_decode($this->prenom)), 0, 1) .
+            $oToolkit->stripAccents(utf8_decode($this->clients->nom))
+        );
+    }
 }
