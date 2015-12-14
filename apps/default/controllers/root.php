@@ -1418,8 +1418,8 @@ class rootController extends bootstrap
                 $oUnilendEmail->addRecipient($_POST['email']);
                 $oUnilendEmail->sendFromTemplate();
             } catch (\Exception $oException) {
-                $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
             }
 
             //***************************************//
@@ -1459,10 +1459,10 @@ class rootController extends bootstrap
                 $oUnilendEmail->setTemplate('notification-demande-de-contact', $this->language);
                 $oUnilendEmail->addRecipient($destinataire);
                 $oUnilendEmail->setReplyTo($this->demande_contact->email, $this->demande_contact->nom . ' ' . $this->demande_contact->prenom);
-                $oUnilendEmail->sendDirectly();
+                $oUnilendEmail->sendToStaff();
             } catch (\Exception $oException) {
-                $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
             }
 
             $this->demande_contact->demande   = '';

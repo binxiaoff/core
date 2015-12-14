@@ -607,8 +607,8 @@ class ajaxController extends bootstrap
                     $oUnilendEmail->addRecipient($this->clients->email);
                     $oUnilendEmail->sendFromTemplate();
                 } catch (\Exception $oException) {
-                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                 }
 
                 //on recup le statut courant
@@ -1053,8 +1053,8 @@ class ajaxController extends bootstrap
                 $oUnilendEmail->addRecipient($this->clients->email);
                 $oUnilendEmail->sendFromTemplate();
             } catch (\Exception $oException) {
-                $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
             }
 
             $this->clients->password = md5($this->ficelle->generatePassword(8));
@@ -1145,8 +1145,8 @@ class ajaxController extends bootstrap
                 $oUnilendEmail->addRecipient($clients->email);
                 $oUnilendEmail->sendFromTemplate();
             } catch (\Exception $oException) {
-                $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
             }
 
             echo 'ok';
@@ -1206,8 +1206,8 @@ class ajaxController extends bootstrap
                 $oUnilendEmail->addRecipient($this->clients->email);
                 $oUnilendEmail->sendFromTemplate();
             } catch (\Exception $oException) {
-                $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
             }
         }
     }
@@ -1534,8 +1534,8 @@ class ajaxController extends bootstrap
                     $oUnilendEmail->addRecipient($preteurs->email);
                     $oUnilendEmail->sendFromTemplate();
                 } catch (\Exception $oException) {
-                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                 }
             }
 
@@ -2213,8 +2213,8 @@ class ajaxController extends bootstrap
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
                     } catch (\Exception $oException) {
-                        $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
                     // on passe l'emprunteur en offline
                     $this->clients->status = 0;
@@ -2356,8 +2356,8 @@ class ajaxController extends bootstrap
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
                     } catch (\Exception $oException) {
-                        $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
                     // on passe l'emprunteur en offline
                     $this->clients->status = 0;
@@ -2697,8 +2697,8 @@ class ajaxController extends bootstrap
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
                     } catch (\Exception $oException) {
-                        $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
 
                     // on passe l'emprunteur en offline

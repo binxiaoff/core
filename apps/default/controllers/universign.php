@@ -64,43 +64,35 @@ class universignController extends bootstrap
                     // on verif si on a le mandat de déjà signé
                     if ($projects_pouvoir->get($clients_mandats->id_project, 'id_project') && $projects_pouvoir->status == 1) {
                         $this->settings->get('Adresse notification pouvoir mandat signe', 'type');
-                        $destinaire = $this->settings->value;
+                        $sRecipient = $this->settings->value;
 
                         $projects->get($projects_pouvoir->id_project, 'id_project');
                         $companies->get($projects->id_company, 'id_company');
-                        $clients->get($companies->id_client_owner, 'id_client');
 
-                        $lien_pdf_pouvoir = $this->lurl . $projects_pouvoir->url_pdf;
-                        $lien_pdf_mandat  = $this->lurl . $clients_mandats->url_pdf;
+                        $aVarEmail = array(
+                            '$surl'         => $this->surl,
+                            '$id_projet'    => $projects->id_project,
+                            '$nomProjet'    => $projects->title_bo,
+                            '$nomCompany'   => $companies->name,
+                            '$lien_pouvoir' => $this->lurl . $projects_pouvoir->url_pdf,
+                            '$lien_mandat'  => $this->lurl . $clients_mandats->url_pdf,
+                        );
+                        /** @var unilend_email $oUnilendEmail */
+                        $oUnilendEmail = $this->loadLib('unilend_email', array(
+                            $this->loadData('mails_filer'),
+                            $this->loadData('mails_text')
+                        ));
 
-                        $this->mails_text->get('notification-pouvoir-mandat-signe', 'lang = "' . $this->language . '" AND type');
+                        try {
+                            $oUnilendEmail->addAllMailVars($aVarEmail);
+                            $oUnilendEmail->setTemplate('notification-pouvoir-mandat-signe', $this->language);
+                            $oUnilendEmail->addRecipient($sRecipient);
+                            $oUnilendEmail->sendToStaff();
+                        } catch (\Exception $oException) {
+                            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                        }
 
-                        $surl         = $this->surl;
-                        $id_projet    = $projects->id_project;
-                        $nomProjet    = utf8_decode($projects->title_bo);
-                        $nomCompany   = utf8_decode($companies->name);
-                        $lien_pouvoir = $lien_pdf_pouvoir;
-                        $lien_mandat  = $lien_pdf_mandat;
-
-                        $sujetMail = htmlentities($this->mails_text->subject);
-                        eval("\$sujetMail = \"$sujetMail\";");
-
-                        $texteMail = $this->mails_text->content;
-                        eval("\$texteMail = \"$texteMail\";");
-
-                        $exp_name = $this->mails_text->exp_name;
-                        eval("\$exp_name = \"$exp_name\";");
-
-                        $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                        $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                        $this->email = $this->loadLib('email');
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->addRecipient(trim($destinaire));
-                        $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
-                        $this->email->setHTMLBody(utf8_decode($texteMail));
-
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                         $this->oLogger->addRecord(ULogger::INFO, 'Mandat and Pouvoir Ok', array($clients_mandats->id_project));
                     } else {
                         $this->oLogger->addRecord(ULogger::INFO, 'Mandat Ok but Pouvoir not signed.', array($clients_mandats->id_project));
@@ -153,45 +145,34 @@ class universignController extends bootstrap
                         // mail notifiaction admin
                         // Adresse notifications
                         $this->settings->get('Adresse notification pouvoir mandat signe', 'type');
-                        $destinaire = $this->settings->value;
+                        $sRecipient = $this->settings->value;
 
                         $projects->get($projects_pouvoir->id_project, 'id_project');
                         $companies->get($projects->id_company, 'id_company');
-                        $clients->get($companies->id_client_owner, 'id_client');
 
-                        $lien_pdf_pouvoir = $this->lurl . $projects_pouvoir->url_pdf;
-                        $lien_pdf_mandat  = $this->lurl . $clients_mandats->url_pdf;
+                        $aVarEmail = array(
+                            '$surl'         => $this->surl,
+                            '$id_projet'    => $projects->id_project,
+                            '$nomProjet'    => $projects->title_bo,
+                            '$nomCompany'   => $companies->name,
+                            '$lien_pouvoir' => $this->lurl . $projects_pouvoir->url_pdf,
+                            '$lien_mandat'  => $this->lurl . $clients_mandats->url_pdf,
+                        );
+                        /** @var unilend_email $oUnilendEmail */
+                        $oUnilendEmail = $this->loadLib('unilend_email', array(
+                            $this->loadData('mails_filer'),
+                            $this->loadData('mails_text')
+                        ));
 
-                        $this->mails_text->get('notification-pouvoir-mandat-signe', 'lang = "' . $this->language . '" AND type');
-
-                        $surl         = $this->surl;
-                        $id_projet    = $projects->id_project;
-                        $nomProjet    = utf8_decode($projects->title_bo);
-                        $nomCompany   = utf8_decode($companies->name);
-                        $lien_pouvoir = $lien_pdf_pouvoir;
-                        $lien_mandat  = $lien_pdf_mandat;
-
-                        $sujetMail = htmlentities($this->mails_text->subject);
-                        eval("\$sujetMail = \"$sujetMail\";");
-
-                        $texteMail = $this->mails_text->content;
-                        eval("\$texteMail = \"$texteMail\";");
-
-                        $exp_name = $this->mails_text->exp_name;
-                        eval("\$exp_name = \"$exp_name\";");
-
-                        // Nettoyage de printemps
-                        $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                        $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                        $this->email = $this->loadLib('email');
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->addRecipient(trim($destinaire));
-                        //$this->email->addRecipient(trim(implode(',', $this->Config['DebugMailIt'])));
-
-                        $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
-                        $this->email->setHTMLBody(utf8_decode($texteMail));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                        try {
+                            $oUnilendEmail->addAllMailVars($aVarEmail);
+                            $oUnilendEmail->setTemplate('notification-pouvoir-mandat-signe', $this->language);
+                            $oUnilendEmail->addRecipient($sRecipient);
+                            $oUnilendEmail->sendToStaff();
+                        } catch (\Exception $oException) {
+                            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                        }
                         $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir and Mandat Ok', array($projects_pouvoir->id_project));
                     } else {
                         $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir Ok but Mandat not signed.', array($projects_pouvoir->id_project));
@@ -266,8 +247,6 @@ class universignController extends bootstrap
                         $sRecipient = $this->settings->value;
                     }
 
-                    $this->mails_text->get('notification-cgv-projet-signe', 'lang = "' . $this->language . '" AND type');
-
                     $aReplacements = array(
                         '[AURL]'         => $this->aurl,
                         '[SURL]'         => $this->surl,
@@ -276,14 +255,21 @@ class universignController extends bootstrap
                         '[PROJECT_NAME]' => $oProjects->title_bo,
                         '[CGV_BORROWER]' => $this->lurl . $oProjectCgv->getUrlPath()
                     );
+                    /** @var unilend_email $oUnilendEmail */
+                    $oUnilendEmail = $this->loadLib('unilend_email', array(
+                        $this->loadData('mails_filer'),
+                        $this->loadData('mails_text')
+                    ));
 
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
-                    $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($this->mails_text->subject)) . '?=');
-                    $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), utf8_decode($this->mails_text->content)));
-                    $this->email->addRecipient(trim($sRecipient));
-
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                    try {
+                        $oUnilendEmail->addAllMailVars($aReplacements);
+                        $oUnilendEmail->setTemplate('notification-cgv-projet-signe', $this->language);
+                        $oUnilendEmail->addRecipient($sRecipient);
+                        $oUnilendEmail->sendToStaff();
+                    } catch (\Exception $oException) {
+                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    }
 
                     $this->oLogger->addRecord(ULogger::INFO, 'CGV emprunteur notification mail sent', array($oProjectCgv->id_project));
                 } else {

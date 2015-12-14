@@ -266,8 +266,8 @@ class alimentationController extends bootstrap
                     $oUnilendEmail->addRecipient($this->clients->email);
                     $oUnilendEmail->sendFromTemplate();
                 } catch (\Exception $oException) {
-                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                 }
                 // fin mail
 
@@ -564,8 +564,8 @@ class alimentationController extends bootstrap
                                 $oUnilendEmail->addRecipient($this->clients->email);
                                 $oUnilendEmail->sendFromTemplate();
                             } catch (\Exception $oException) {
-                                $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                                $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                             }
                         }
 

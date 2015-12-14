@@ -736,8 +736,8 @@ class ajaxController extends bootstrap
                     $oUnilendEmail->addRecipient($this->clients->email);
                     $oUnilendEmail->sendFromTemplate();
                 } catch (\Exception $oException) {
-                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                 }
 
                 echo 'ok';
@@ -794,8 +794,8 @@ class ajaxController extends bootstrap
                 $oUnilendEmail->addRecipient($clients->email);
                 $oUnilendEmail->sendFromTemplate();
             } catch (\Exception $oException) {
-                $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
             }
             echo 'ok';
         } else {
@@ -1028,8 +1028,8 @@ class ajaxController extends bootstrap
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
                     } catch (\Exception $oException) {
-                        $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
                 }
 
@@ -1047,43 +1047,40 @@ class ajaxController extends bootstrap
 
                 $soldePrets = $loans->sumPrets($this->lenders_accounts->id_lender_account);
 
-                // Recuperation du modele de mail
-                $this->mails_text->get('notification-retrait-de-fonds', 'lang = "' . $this->language . '" AND type');
-
-                $surl            = $this->surl;
-                $url             = $this->lurl;
-                $idPreteur       = $this->clients->id_client;
-                $nom             = utf8_decode($this->clients->nom);
-                $prenom          = utf8_decode($this->clients->prenom);
-                $email           = $this->clients->email;
-                $dateinscription = date('d/m/Y', strtotime($this->clients->added));
                 if ($transac->montant != false) {
                     $montantInscription = $this->ficelle->formatNumber($transac->montant / 100);
                 } else {
                     $montantInscription = $this->ficelle->formatNumber(0);
                 }
-                $montantPreteDepuisInscription = $this->ficelle->formatNumber($soldePrets);
-                $montantRetirePlateforme       = $this->ficelle->formatNumber($montant);
-                $solde                         = $this->ficelle->formatNumber($transac->getSolde($this->clients->id_client));
 
-                $sujetMail = $this->mails_text->subject;
-                eval("\$sujetMail = \"$sujetMail\";");
+                $aVarEmail = array(
+                    '$surl'                             => $this->surl,
+                    '$url'                              => $this->lurl,
+                    '$idPreteur'                        => $this->clients->id_client,
+                    '$nom'                              => $this->clients->nom,
+                    '$prenom'                           => $this->clients->prenom,
+                    '$email'                            => $this->clients->email,
+                    '$dateinscription'                  => date('d/m/Y', strtotime($this->clients->added)),
+                    '$montantInscription'               => $montantInscription,
+                    '$montantPreteDepuisInscription'    => $this->ficelle->formatNumber($soldePrets),
+                    '$montantRetirePlateforme'          => $this->ficelle->formatNumber($montant),
+                    '$solde'                            => $this->ficelle->formatNumber($transac->getSolde($this->clients->id_client)),
+                );
+                /** @var unilend_email $oUnilendEmail */
+                $oUnilendEmail = $this->loadLib('unilend_email', array(
+                    $this->loadData('mails_filer'),
+                    $this->loadData('mails_text')
+                ));
 
-                $texteMail = $this->mails_text->content;
-                eval("\$texteMail = \"$texteMail\";");
-
-                $exp_name = $this->mails_text->exp_name;
-                eval("\$exp_name = \"$exp_name\";");
-
-                $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->addRecipient(trim($destinataire));
-                $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-                $this->email->setHTMLBody($texteMail);
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                try {
+                    $oUnilendEmail->addAllMailVars($aVarEmail);
+                    $oUnilendEmail->setTemplate('notification-retrait-de-fonds', $this->language);
+                    $oUnilendEmail->addRecipient($destinataire);
+                    $oUnilendEmail->sendToStaff();
+                } catch (\Exception $oException) {
+                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                }
             }
             echo $verif;
         } else {
@@ -1257,8 +1254,8 @@ class ajaxController extends bootstrap
                     $oUnilendEmail->addRecipient($this->demande_contact->email);
                     $oUnilendEmail->sendFromTemplate();
                 } catch (\Exception $oException) {
-                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                 }
 
                 //***************************************//
@@ -1294,10 +1291,10 @@ class ajaxController extends bootstrap
                     $oUnilendEmail->setTemplate('notification-demande-de-contact', $this->language);
                     $oUnilendEmail->addRecipient($destinataire);
                     $oUnilendEmail->setReplyTo($this->demande_contact->email, $this->demande_contact->nom . ' ' . $this->demande_contact->prenom);
-                    $oUnilendEmail->sendDirectly();
+                    $oUnilendEmail->sendToStaff();
                 } catch (\Exception $oException) {
-                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                 }
                 echo $captcha = '<iframe width="133" src="' . $this->surl . '/images/default/securitecode.php"></iframe>';
             } else {
@@ -1871,7 +1868,7 @@ class ajaxController extends bootstrap
             }
 
             $this->lSumLoans               = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, $annee, $arrayTri[$tri] . " " . $this->order);
-            $this->arrayDeclarationCreance = array(1456, 1009, 1614, 3089, 10971, 970, 7727);
+            $this->arrayDeclarationCreance = array(1456, 1009, 1614, 3089, 10971, 970, 7727, 374, 679, 1011);
         } else {
             echo 'nok';
             die;

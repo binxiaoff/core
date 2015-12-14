@@ -606,8 +606,8 @@ class inscription_preteurController extends bootstrap
                             $oUnilendEmail->addRecipient($this->clients->email);
                             $oUnilendEmail->sendFromTemplate();
                         } catch (\Exception $oException) {
-                            $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                            $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                         }
                         // fin mail
 
@@ -1085,8 +1085,8 @@ class inscription_preteurController extends bootstrap
                             $oUnilendEmail->addRecipient($this->clients->email);
                             $oUnilendEmail->sendFromTemplate();
                         } catch (\Exception $oException) {
-                            $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                            $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                         }
 
                         // parametres pour valider le compte //
@@ -1337,46 +1337,33 @@ class inscription_preteurController extends bootstrap
                         $destinataire = $this->settings->value;
 
                         $lemois = $this->dates->tableauMois[$this->language][date('n')];
+                        $aVarEmail = array(
+                            '$surl' => $this->surl,
+                            '$url' => $this->lurl,
+                            '$id_preteur' => $this->clients->id_client,
+                            '$nom' => utf8_decode($this->clients->nom),
+                            '$prenom' => utf8_decode($this->clients->prenom),
+                            '$montant' => '',
+                            '$date' => date('d').' '.$lemois.' '.date('Y'),
+                            '$heure_minute' => date('h:m'),
+                            '$email' => $this->clients->email,
+                            '$lien' => $this->aurl.'/preteurs/edit_preteur/'.$this->lenders_accounts->id_lender_account,
+                        );
+                        /** @var unilend_email $oUnilendEmail */
+                        $oUnilendEmail = $this->loadLib('unilend_email', array(
+                            $this->loadData('mails_filer'),
+                            $this->loadData('mails_text')
+                        ));
 
-                        // Recuperation du modele de mail
-                        $this->mails_text->get('notification-nouveaux-preteurs','lang = "'.$this->language.'" AND type');
-
-                        // Variables du mailing
-                        $surl = $this->surl;
-                        $url = $this->lurl;
-                        $id_preteur = $this->clients->id_client;
-                        $nom = utf8_decode($this->clients->nom);
-                        $prenom = utf8_decode($this->clients->prenom);
-                        //$montant = 'virement';
-                        $montant = '';
-                        $date = date('d').' '.$lemois.' '.date('Y');
-                        $heure_minute = date('h:m');
-                        $email = $this->clients->email;
-                        $lien = $this->aurl.'/preteurs/edit_preteur/'.$this->lenders_accounts->id_lender_account;
-
-                        // Attribution des données aux variables
-                        $sujetMail = htmlentities($this->mails_text->subject);
-                        eval("\$sujetMail = \"$sujetMail\";");
-
-                        $texteMail = $this->mails_text->content;
-                        eval("\$texteMail = \"$texteMail\";");
-
-                        $exp_name = $this->mails_text->exp_name;
-                        eval("\$exp_name = \"$exp_name\";");
-
-                        // Nettoyage de printemps
-                        $sujetMail = strtr($sujetMail,'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                        $exp_name = strtr($exp_name,'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email',array());
-                        $this->email->setFrom($this->mails_text->exp_email,$exp_name);
-                        $this->email->addRecipient(trim($destinataire));
-                        //$this->email->addBCCRecipient('');
-
-                        $this->email->setSubject('=?UTF-8?B?'.base64_encode(html_entity_decode($sujetMail)).'?=');
-                        $this->email->setHTMLBody($texteMail);
-                        Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);
+                        try {
+                            $oUnilendEmail->addAllMailVars($aVarEmail);
+                            $oUnilendEmail->setTemplate('notification-nouveaux-preteurs', $this->language);
+                            $oUnilendEmail->addRecipient($destinataire);
+                            $oUnilendEmail->sendToStaff();
+                        } catch (\Exception $oException) {
+                            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                        }
                         // fin mail
 
                         // email inscription preteur //
@@ -1433,44 +1420,35 @@ class inscription_preteurController extends bootstrap
                             $destinataire = $this->settings->value;
                             //$destinataire = 'courtier.damien@gmail.com';
 
-                            $lemois = utf8_decode($this->dates->tableauMois[$this->language][date('n')]);
-
-                            // Recuperation du modele de mail
-                            $this->mails_text->get('notification-modification-preteurs','lang = "'.$this->language.'" AND type');
-
+                            $lemois = $this->dates->tableauMois[$this->language][date('n')];
                             // Variables du mailing
-                            $surl = $this->surl;
-                            $url = $this->lurl;
-                            $id_preteur = $this->clients->id_client;
-                            $nom = utf8_decode($this->clients->nom);
-                            $prenom = utf8_decode($this->clients->prenom);
-                            $montant = $this->solde.' euros';
-                            $date = date('d').' '.$lemois.' '.date('Y');
-                            $heure_minute = date('H:m');
-                            $email = $this->clients->email;
-                            $lien = $this->aurl.'/preteurs/edit_preteur/'.$this->lenders_accounts->id_lender_account;
+                            $aVarEmail = array(
+                                '$surl' => $this->surl,
+                                '$url' => $this->lurl,
+                                '$id_preteur' => $this->clients->id_client,
+                                '$nom' => $this->clients->nom,
+                                '$prenom' => $this->clients->prenom,
+                                '$montant' => $this->solde.' euros',
+                                '$date' => date('d') . ' ' . $lemois . ' ' . date('Y'),
+                                '$heure_minute' => date('H:m'),
+                                '$email' => $this->clients->email,
+                                '$lien' => $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account,
+                            );
+                            /** @var unilend_email $oUnilendEmail */
+                            $oUnilendEmail = $this->loadLib('unilend_email', array(
+                                $this->loadData('mails_filer'),
+                                $this->loadData('mails_text')
+                            ));
 
-                            // Attribution des données aux variables
-                            $sujetMail = htmlentities($this->mails_text->subject);
-                            eval("\$sujetMail = \"$sujetMail\";");
-
-                            $texteMail = $this->mails_text->content;
-                            eval("\$texteMail = \"$texteMail\";");
-
-                            $exp_name = $this->mails_text->exp_name;
-                            eval("\$exp_name = \"$exp_name\";");
-
-                            // Nettoyage de printemps
-                            $sujetMail = strtr($sujetMail,'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                            $exp_name = strtr($exp_name,'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                            // Envoi du mail
-                            $this->email = $this->loadLib('email',array());
-                            $this->email->setFrom($this->mails_text->exp_email,$exp_name);
-                            $this->email->addRecipient(trim($destinataire));
-                            $this->email->setSubject('=?UTF-8?B?'.base64_encode(html_entity_decode($sujetMail)).'?=');
-                            $this->email->setHTMLBody($texteMail);
-                            Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);
+                            try {
+                                $oUnilendEmail->addAllMailVars($aVarEmail);
+                                $oUnilendEmail->setTemplate('notification-modification-preteurs', $this->language);
+                                $oUnilendEmail->addRecipient($destinataire);
+                                $oUnilendEmail->sendToStaff();
+                            } catch (\Exception $oException) {
+                                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                            }
                             // fin mail
 
                         }
@@ -1571,47 +1549,34 @@ class inscription_preteurController extends bootstrap
                         $this->settings->get('Adresse notification nouveau preteur','type');
                         $destinataire = $this->settings->value;
 
-                        $lemois = utf8_decode($this->dates->tableauMois[$this->language][date('n')]);
+                        $lemois = $this->dates->tableauMois[$this->language][date('n')];
+                        $aVarEmail = array(
+                            '$surl' => $this->surl,
+                            '$url' => $this->lurl,
+                            '$id_preteur' => $this->clients->id_client,
+                            '$nom' => $this->clients->nom,
+                            '$prenom' => $this->clients->prenom,
+                            '$montant' => '',
+                            '$date' => date('d') . ' ' . $lemois . ' ' . date('Y'),
+                            '$heure_minute' => date('h:m'),
+                            '$email' => $this->clients->email,
+                            '$lien' => $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account,
+                        );
+                        /** @var unilend_email $oUnilendEmail */
+                        $oUnilendEmail = $this->loadLib('unilend_email', array(
+                            $this->loadData('mails_filer'),
+                            $this->loadData('mails_text')
+                        ));
 
-                        // Recuperation du modele de mail
-                        $this->mails_text->get('notification-nouveaux-preteurs','lang = "'.$this->language.'" AND type');
-
-                        // Variables du mailing
-                        $surl = $this->surl;
-                        $url = $this->lurl;
-                        $id_preteur = $this->clients->id_client;
-                        $nom = utf8_decode($this->clients->nom);
-                        $prenom = utf8_decode($this->clients->prenom);
-                        //$montant = 'virement';
-                        $montant = '';
-                        $date = date('d').' '.$lemois.' '.date('Y');
-                        $heure_minute = date('h:m');
-                        $email = $this->clients->email;
-                        $lien = $this->aurl.'/preteurs/edit_preteur/'.$this->lenders_accounts->id_lender_account;
-
-                        // Attribution des données aux variables
-                        $sujetMail = htmlentities($this->mails_text->subject);
-                        eval("\$sujetMail = \"$sujetMail\";");
-
-                        $texteMail = $this->mails_text->content;
-                        eval("\$texteMail = \"$texteMail\";");
-
-                        $exp_name = $this->mails_text->exp_name;
-                        eval("\$exp_name = \"$exp_name\";");
-
-                        // Nettoyage de printemps
-                        $sujetMail = strtr($sujetMail,'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                        $exp_name = strtr($exp_name,'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email',array());
-                        $this->email->setFrom($this->mails_text->exp_email,$exp_name);
-                        $this->email->addRecipient(trim($destinataire));
-                        //$this->email->addBCCRecipient('');
-
-                        $this->email->setSubject('=?UTF-8?B?'.base64_encode(html_entity_decode($sujetMail)).'?=');
-                        $this->email->setHTMLBody($texteMail);
-                        Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);
+                        try {
+                            $oUnilendEmail->addAllMailVars($aVarEmail);
+                            $oUnilendEmail->setTemplate('notification-nouveaux-preteurs', $this->language);
+                            $oUnilendEmail->addRecipient($destinataire);
+                            $oUnilendEmail->sendToStaff();
+                        } catch (\Exception $oException) {
+                            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                        }
                         // fin mail
 
                         // email inscription preteur //
@@ -1886,8 +1851,8 @@ class inscription_preteurController extends bootstrap
                     $oUnilendEmail->addRecipient($this->clients->email);
                     $oUnilendEmail->sendFromTemplate();
                 } catch (\Exception $oException) {
-                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                 }
                 header('location:'.$this->lurl.'/inscription_preteur/confirmation/'.$this->clients->hash.'/v/');
                 die;
@@ -2056,39 +2021,29 @@ class inscription_preteurController extends bootstrap
                         $this->settings->get('Adresse notification nouveau versement preteur','type');
                         $destinataire = $this->settings->value;
 
-                        // Recuperation du modele de mail
-                        $this->mails_text->get('notification-nouveau-versement-dun-preteur','lang = "'.$this->language.'" AND type');
+                        $aVarEmail = array(
+                            '$surl' => $this->surl,
+                            '$url' => $this->lurl,
+                            '$id_preteur' => $this->clients->id_client,
+                            '$nom' => $this->clients->nom,
+                            '$prenom' => $this->clients->prenom,
+                            '$montant' => $response['payment']['amount']/100,
+                        );
+                        /** @var unilend_email $oUnilendEmail */
+                        $oUnilendEmail = $this->loadLib('unilend_email', array(
+                            $this->loadData('mails_filer'),
+                            $this->loadData('mails_text')
+                        ));
 
-                        // Variables du mailing
-                        $surl = $this->surl;
-                        $url = $this->lurl;
-                        $id_preteur = $this->clients->id_client;
-                        $nom = utf8_decode($this->clients->nom);
-                        $prenom = utf8_decode($this->clients->prenom);
-                        $montant = ($response['payment']['amount']/100);
-
-                        // Attribution des données aux variables
-                        $sujetMail = htmlentities($this->mails_text->subject);
-                        eval("\$sujetMail = \"$sujetMail\";");
-
-                        $texteMail = $this->mails_text->content;
-                        eval("\$texteMail = \"$texteMail\";");
-
-                        $exp_name = $this->mails_text->exp_name;
-                        eval("\$exp_name = \"$exp_name\";");
-
-                        // Nettoyage de printemps
-                        $sujetMail = strtr($sujetMail,'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                        $exp_name = strtr($exp_name,'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email',array());
-                        $this->email->setFrom($this->mails_text->exp_email,$exp_name);
-                        $this->email->addRecipient(trim($destinataire));
-
-                        $this->email->setSubject('=?UTF-8?B?'.base64_encode(html_entity_decode($sujetMail)).'?=');
-                        $this->email->setHTMLBody($texteMail);
-                        Mailer::send($this->email,$this->mails_filer,$this->mails_text->id_textemail);
+                        try {
+                            $oUnilendEmail->addAllMailVars($aVarEmail);
+                            $oUnilendEmail->setTemplate('notification-nouveau-versement-dun-preteur', $this->language);
+                            $oUnilendEmail->addRecipient($destinataire);
+                            $oUnilendEmail->sendToStaff();
+                        } catch (\Exception $oException) {
+                            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                        }
                         // fin mail
 
                         // email inscription preteur //
@@ -2139,8 +2094,8 @@ class inscription_preteurController extends bootstrap
                             $oUnilendEmail->addRecipient($this->clients->email);
                             $oUnilendEmail->sendFromTemplate();
                         } catch (\Exception $oException) {
-                            $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                            $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                         }
 
                         /// email inscription preteur ///

@@ -26,6 +26,8 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\librairies\ULogger;
+
 class projects_status_history extends projects_status_history_crud
 {
     public function __construct($bdd, $params = '')
@@ -114,9 +116,10 @@ class projects_status_history extends projects_status_history_crud
         /* @var array $config */
         include __DIR__ . '/../config.php';
 
-        // @todo intl
-        $oMailsText = new \mails_text($this->bdd);
-        $oMailsText->get($sNotificationType, 'lang = "fr" AND type');
+        $oUnilendEmail = new \unilend_email(array(
+            new \mails_filer($this->bdd),
+            new \mails_text($this->bdd)
+        ));
 
         $oProjects = new \projects($this->bdd);
         $oProjects->get($iProjectId, 'id_project');
@@ -133,13 +136,15 @@ class projects_status_history extends projects_status_history_crud
             '[LIEN_BO_PROJET]' => $config['url'][ENVIRONMENT]['admin'] . '/dossiers/edit/' . $iProjectId
         );
 
-        $oEmail = new \email();
-        $oEmail->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
-        $oEmail->setSubject(utf8_decode($oMailsText->subject));
-        $oEmail->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $oMailsText->content));
-        $oEmail->addRecipient($sRecipient);
-
-        Mailer::send($oEmail, new \mails_filer($this->bdd), $oMailsText->id_textemail);
+        try {
+            $oUnilendEmail->addAllMailVars($aReplacements);
+            $oUnilendEmail->setTemplate($sNotificationType, $this->language);
+            $oUnilendEmail->addRecipient($sRecipient);
+            $oUnilendEmail->sendToStaff();
+        } catch (\Exception $oException) {
+            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+        }
     }
 
     public function getBeforeLastStatus($iProjectId)

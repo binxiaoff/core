@@ -33,6 +33,8 @@ class unilend_email
 
     private $aReplyTo = array();
 
+    private $oEmail = null;
+
     /**
      * unilend_email constructor.
      *
@@ -50,6 +52,8 @@ class unilend_email
         if (isset($aAttributes[3])) {
             $this->oNmpDesabo = $aAttributes[3];
         }
+
+        $this->oEmail = new Email();
     }
 
     /**
@@ -57,7 +61,7 @@ class unilend_email
      */
     public function sendFromTemplate()
     {
-        $oEmail = $this->prepareEmailFromTemplate();
+        $this->prepareEmailFromTemplate();
 
         $aParams = array(
             'mails_filer' => $this->oMailFiler,
@@ -74,19 +78,20 @@ class unilend_email
             Mailer::setTransport('mail', $aParams);
         }
 
-        Mailer::send($oEmail);
+        $this->send();
     }
 
-    public function sendDirectly()
+    public function sendToStaff()
     {
-        $oEmail = $this->prepareEmailFromTemplate();
+        $this->prepareEmailFromTemplate();
 
         $aParams = array(
             'mails_filer' => $this->oMailFiler,
             'mails_text' => $this->oMailText
         );
         Mailer::setTransport('mail', $aParams);
-        Mailer::send($oEmail);
+
+        $this->send();
     }
 
     /**
@@ -113,26 +118,6 @@ class unilend_email
             $this->aMailVar[$sPrefix . $key . $sSuffix] = $value;
             unset($this->aMailVar['$key']);
         }
-    }
-
-    public function addRecipient($sRecipient)
-    {
-        $this->aRecipient[] = trim($sRecipient);
-    }
-
-    public function addCCRecipient($sRecipient)
-    {
-        $this->aCCRecipient[] = trim($sRecipient);
-    }
-
-    public function addBCCRecipient($sRecipient)
-    {
-        $this->aBCCRecipient[] = trim($sRecipient);
-    }
-
-    public function setReplyTo($sReplyTo)
-    {
-        $this->aReplyTo[] = trim($sReplyTo);
     }
 
     public function setTemplate($sMailType, $sLanguage)
@@ -173,27 +158,29 @@ class unilend_email
         $sMailContent = strtr($this->oMailText->content, $this->aMailVar);
         $sMailFrom    = strtr($this->oMailText->exp_name, $this->aMailVar);
 
-        $oEmail = new Email();
-        $oEmail->setFrom($this->oMailText->exp_email, $sMailFrom);
-        $oEmail->setSubject(stripslashes($sMailSubject));
-        $oEmail->setHTMLBody(stripslashes($sMailContent));
+        $this->oEmail->setFrom($this->oMailText->exp_email, $sMailFrom);
+        $this->oEmail->setSubject(stripslashes($sMailSubject));
+        $this->oEmail->setHTMLBody(stripslashes($sMailContent));
 
-        foreach ($this->aRecipient as $sRecipient) {
-            $oEmail->addRecipient($sRecipient);
+        return $this->oEmail;
+    }
+
+    private function send()
+    {
+        Mailer::send($this->oEmail);
+        $this->aMailVar = array();
+        $this->oEmail = new Email();
+    }
+
+    public function __call($sMethod, $aArgument)
+    {
+        if (!method_exists($this->oEmail, $sMethod)) {
+            throw new Exception("The [$sMethod] is not defined in Email class");
         }
 
-        foreach ($this->aCCRecipient as $sRecipient) {
-            $oEmail->addCCRecipient($sRecipient);
-        }
-
-        foreach ($this->aBCCRecipient as $sRecipient) {
-            $oEmail->addBCCRecipient($sRecipient);
-        }
-
-        foreach ($this->aReplyTo as $sReplyTo) {
-            $oEmail->setReplyTo($sReplyTo);
-        }
-
-        return $oEmail;
+        return call_user_func_array(
+            array($this->oEmail, $sMethod),
+            $aArgument
+        );
     }
 }

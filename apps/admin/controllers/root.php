@@ -61,10 +61,10 @@ class rootController extends bootstrap
                     $oUnilendEmail->addAllMailVars($aVarEmail);
                     $oUnilendEmail->setTemplate('admin-nouveau-mot-de-passe', $this->language);
                     $oUnilendEmail->addRecipient($_POST['email']);
-                    $oUnilendEmail->sendDirectly();
+                    $oUnilendEmail->sendToStaff();
                 } catch (\Exception $oException) {
-                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                 }
 
                 // Mise en session du message
@@ -385,10 +385,10 @@ class rootController extends bootstrap
                                     if ($this->alias_tracking_log != "") {
                                         $oUnilendEmail->addBCCRecipient($this->alias_tracking_log);
                                     }
-                                    $oUnilendEmail->sendDirectly();
+                                    $oUnilendEmail->sendToStaff();
                                 } catch (\Exception $oException) {
-                                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                 }
                                 // On enregistre la modif du mot de passe
                                 $this->loggin_connection_admin                 = $this->loadData('loggin_connection_admin');

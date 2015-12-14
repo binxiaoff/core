@@ -643,8 +643,8 @@ class depot_de_dossierController extends bootstrap
                     $oUnilendEmail->addRecipient($sRecipient);
                     $oUnilendEmail->sendFromTemplate();
                 } catch (\Exception $oException) {
-                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                 }
 
                 $this->clients->status = 1;
@@ -902,22 +902,27 @@ class depot_de_dossierController extends bootstrap
             $this->users = $this->loadData('users');
             $this->users->get($this->projects->id_commercial, 'id_user');
 
-            $this->mails_text->get($sEmailType, 'lang = "' . $this->language . '" AND type');
-
             $aReplacements = array(
                 '[ID_PROJET]'      => $this->projects->id_project,
                 '[LIEN_BO_PROJET]' => $this->aurl . '/dossiers/edit/' . $this->projects->id_project,
                 '[RAISON_SOCIALE]' => utf8_decode($this->companies->name),
                 '[SURL]'           => $this->surl
             );
+            /** @var unilend_email $oUnilendEmail */
+            $oUnilendEmail = $this->loadLib('unilend_email', array(
+                $this->loadData('mails_filer'),
+                $this->loadData('mails_text')
+            ));
 
-            $oEmail = $this->loadLib('email');
-            $oEmail->setFrom($this->mails_text->exp_email, $this->mails_text->exp_name);
-            $oEmail->setSubject(stripslashes(utf8_decode(str_replace('[ID_PROJET]', $this->projects->id_project, $this->mails_text->subject))));
-            $oEmail->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->mails_text->content));
-            $oEmail->addRecipient(trim($this->users->email));
-
-            Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
+            try {
+                $oUnilendEmail->addAllMailVars($aReplacements);
+                $oUnilendEmail->setTemplate($sEmailType, $this->language);
+                $oUnilendEmail->addRecipient($this->users->email);
+                $oUnilendEmail->sendToStaff();
+            } catch (\Exception $oException) {
+                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+            }
         }
     }
 

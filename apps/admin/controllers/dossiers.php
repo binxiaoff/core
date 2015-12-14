@@ -860,8 +860,8 @@ class dossiersController extends bootstrap
                                         $oUnilendEmail->addRecipient($this->clients->email);
                                         $oUnilendEmail->sendFromTemplate();
                                     } catch (\Exception $oException) {
-                                        $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                                        $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                     }
                                     // fin mail pour preteur //
                                 }
@@ -1104,8 +1104,8 @@ class dossiersController extends bootstrap
                                     $oUnilendEmail->addRecipient($clients->email);
                                     $oUnilendEmail->sendFromTemplate();
                                 } catch (\Exception $oException) {
-                                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                 }
                             }
                         }
@@ -1355,8 +1355,8 @@ class dossiersController extends bootstrap
                                                 $oUnilendEmail->addRecipient($preteur->email);
                                                 $oUnilendEmail->sendFromTemplate();
                                             } catch (\Exception $oException) {
-                                                $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                                                $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                                                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                                                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                             }
                                         }
                                     }
@@ -1422,8 +1422,8 @@ class dossiersController extends bootstrap
                                     }
                                     $oUnilendEmail->sendFromTemplate();
                                 } catch (\Exception $oException) {
-                                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                 }
 
                                 $settingsControleRemb->value = 1;
@@ -2637,8 +2637,8 @@ class dossiersController extends bootstrap
                                                     $oUnilendEmail->addRecipient($this->clients->email);
                                                     $oUnilendEmail->sendFromTemplate();
                                                 } catch (\Exception $oException) {
-                                                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                                                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                                                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                                                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                                 }
 
                                                 // et on fait passer le satut recouvrement en remboursement
@@ -2702,8 +2702,8 @@ class dossiersController extends bootstrap
                                                     $oUnilendEmail->addRecipient($this->clients->email);
                                                     $oUnilendEmail->sendFromTemplate();
                                                 } catch (\Exception $oException) {
-                                                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                                                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                                                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                                                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                                 }
                                                 // fin mail pour preteur //
                                             } // mail remboursement
@@ -2774,8 +2774,8 @@ class dossiersController extends bootstrap
                                                         $oUnilendEmail->addRecipient($this->clients->email);
                                                         $oUnilendEmail->sendFromTemplate();
                                                     } catch (\Exception $oException) {
-                                                        $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                                                        $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                                                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                                                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                                     }
                                                     // fin mail pour preteur //
                                                 }
@@ -2882,8 +2882,8 @@ class dossiersController extends bootstrap
                                     }
                                     $oUnilendEmail->sendFromTemplate();
                                 } catch (\Exception $oException) {
-                                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                 }
                                 //////////////////////////////////////////////
                                 // creation pdf facture ER //
@@ -3500,8 +3500,8 @@ class dossiersController extends bootstrap
             $oUnilendEmail->addRecipient($oClients->email);
             $oUnilendEmail->sendFromTemplate();
         } catch (\Exception $oException) {
-            $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-            $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
             $this->result = 'Erreur : L\'envoi du mail a échoué';
             return;
         }
@@ -3634,8 +3634,8 @@ class dossiersController extends bootstrap
                 $oUnilendEmail->addRecipient($sRecipientEmail);
                 $oUnilendEmail->sendFromTemplate();
             } catch (\Exception $oException) {
-                $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
             }
             $this->loadData('projects_status');
             $oProjects_status_history = $this->loadData('projects_status_history');

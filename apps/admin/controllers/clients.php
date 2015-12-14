@@ -294,10 +294,10 @@ class clientsController extends bootstrap
                     $oUnilendEmail->addAllMailVars($aVarEmail);
                     $oUnilendEmail->setTemplate('admin-confirmation-inscription-client', $this->language);
                     $oUnilendEmail->addRecipient($_POST['email']);
-                    $oUnilendEmail->sendDirectly();
+                    $oUnilendEmail->sendToStaff();
                 } catch (\Exception $oException) {
-                    $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                    $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                 }
 
                 // Mise en session du message

@@ -483,8 +483,8 @@ class preteursController extends bootstrap
                 $oUnilendEmail->addRecipient($this->clients->email);
                 $oUnilendEmail->sendFromTemplate();
             } catch (\Exception $oException) {
-                $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
             }
 
             $this->clients_status_history->addStatus($_SESSION['user']['id_user'], '20', $this->clients->id_client, utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]));
@@ -803,8 +803,8 @@ class preteursController extends bootstrap
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
                     } catch (\Exception $oException) {
-                        $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
 
                     /////////////////// IMPOSITION ETRANGER ////////////////////
@@ -1107,8 +1107,8 @@ class preteursController extends bootstrap
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
                     } catch (\Exception $oException) {
-                        $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
 
                     $_SESSION['compte_valide'] = true;
@@ -1884,8 +1884,8 @@ class preteursController extends bootstrap
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
                     } catch (\Exception $oException) {
-                        $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
 
                 }
@@ -2003,8 +2003,8 @@ class preteursController extends bootstrap
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
                     } catch (\Exception $oException) {
-                        $oLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
                 }
             }
@@ -2093,17 +2093,23 @@ class preteursController extends bootstrap
         }
 
         $this->lSumLoans               = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, '', 'next_echeance ASC');
-        $this->arrayDeclarationCreance = array(1456, 1009, 1614, 3089, 10971, 970, 7727);
+        $this->arrayDeclarationCreance = array(1456, 1009, 1614, 3089, 10971, 970, 7727, 374, 679, 1011);
 
         // PORTFOLIO DETAILS
 
-        //IRR
-        try {
-            $this->IRR = $this->lenders_accounts->calculateIRR($this->lenders_accounts->id_lender_account);
-        } catch (Exception $e){
-            $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
-            $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
-            $this->IRR = 'non calculable';
+        $oLenderAccountStats = $this->loadData('lenders_account_stats');
+
+
+        $this->IRR = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
+
+        if (empty($this->IRR)) {
+            try {
+                $this->IRR['tri_value'] = $this->lenders_accounts->calculateIRR($this->lenders_accounts->id_lender_account);
+            } catch (Exception $e){
+                $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
+                $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
+                $this->IRR = 'non calculable';
+            }
         }
 
         // amount of projects online since his registration
