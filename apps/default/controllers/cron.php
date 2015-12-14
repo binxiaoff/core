@@ -2276,7 +2276,6 @@ class cronController extends bootstrap
                     unset($array[$r]);
                 }
             }
-            $this->stopCron();
             return $array;
         }
     }
