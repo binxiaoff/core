@@ -1404,14 +1404,14 @@ class cronController extends bootstrap
                 $id_lot  = $titulaire . '/' . $dateColle . '/' . $v['id_virement'];
                 $montant = round($v['montant'] / 100, 2);
                 if (strncmp('FR', strtoupper(str_replace(' ', '', $ibanDestinataire)), 2) == 0) {
-                    $ibanFr = "
-                        <CdtrAcct>
-                            <Id>
-                                <IBAN>' . str_replace(' ', '', $ibanDestinataire) . '</IBAN>
-                            </Id>
-                        </CdtrAcct>'";
+                    $bicFr = '
+                    <CdtrAgt>
+                        <FinInstnId>
+                            <BIC>' . str_replace(' ', '', $bicDestinataire) . '</BIC>
+                        </FinInstnId>
+                    </CdtrAgt>';
                 } else {
-                    $ibanFr = '';
+                    $bicFr = '';
                 }
                 $xml .= '
                 <CdtTrfTxInf>
@@ -1420,22 +1420,22 @@ class cronController extends bootstrap
                     </PmtId>
                     <Amt>
                         <InstdAmt Ccy="EUR">' . $montant . '</InstdAmt>
-                    </Amt>
-                    <CdtrAgt>
-                        <FinInstnId>
-                            <BIC>' . str_replace(' ', '', $bicDestinataire) . '</BIC>
-                        </FinInstnId>
-                     </CdtrAgt>
-                     <Cdtr>
+                    </Amt>' .
+                    $bicFr
+                    . '<Cdtr>
                          <Nm>' . ($v['type'] == 4 ? $retraitTitu : $destinataire) . '</Nm>
                          <PstlAdr>
                              <Ctry>FR</Ctry>
                          </PstlAdr>
-                     </Cdtr>'.
-                    $ibanFr
-                    .'<RmtInf>
+                    </Cdtr>
+                    <CdtrAcct>
+                            <Id>
+                                <IBAN>' . str_replace(' ', '', $ibanDestinataire) . '</IBAN>
+                            </Id>
+                    </CdtrAcct>
+                    <RmtInf>
                          <Ustrd>' . str_replace(' ', '', $v['motif']) . '</Ustrd>
-                     </RmtInf>
+                    </RmtInf>
                 </CdtTrfTxInf>';
             }
             $xml .= '
