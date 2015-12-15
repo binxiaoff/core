@@ -45,25 +45,28 @@
         padding: 5px;
         padding-bottom: 20px;
     }
-    .csv{
-        margin-bottom:20px;
-        float:right;
-     }
+
+    .csv {
+        margin-bottom: 20px;
+        float: right;
+    }
+
     .search_fields td {
-        padding-top:23px;
+        padding-top: 23px;
         padding-left: 10px;
     }
 </style>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <ul class="breadcrumbs">
-        <li><a href="<?=$this->lurl?>/transferts" >Dépot de fonds</a> - </li>
+        <li><a href="<?= $this->lurl ?>/transferts">Dépot de fonds</a> -</li>
         <li>Rattrapage offre de bienvenue</li>
     </ul>
     <h1>Rattrapage offre de bienvenue</h1>
 
     <div class="csv">
-        <a href="<?= $this->lurl ?>/transferts/csv_rattrapage_offre_bienvenue/" class="btn colorAdd">Recuperation du CSV</a>
+        <a href="<?= $this->lurl ?>/transferts/csv_rattrapage_offre_bienvenue/" class="btn colorAdd">Recuperation du
+            CSV</a>
     </div>
 
     <div class="datepicker_table">
@@ -71,9 +74,10 @@
             <fieldset>
                 <table class="search_fields">
                     <tr>
-                        <td><label for="id">ID :</label><br/>
+                        <td><label for="id">ID ou liste d'IDs (séparés par virgules):</label><br/>
                             <input type="text" name="id" id="id" class="input_large"
-                                   value="<?= (empty($_POST['dateStart']) && empty($_POST['dateEnd'])) ? $_POST['id'] : '' ?>"/></td>
+                                   value="<?= (empty($_POST['dateStart']) && empty($_POST['dateEnd'])) ? $_POST['id'] : '' ?>"/>
+                        </td>
 
                         <td><label>Date debut</label><br/>
                             <input type="text" name="dateStart"
@@ -97,38 +101,46 @@
         </form>
     </div>
 
-    <table class="tablesorter">
-        <thead>
-        <tr>
-            <th>Id</th>
-            <th>Nom</th>
-            <th>Pr&eacute;nom</th>
-            <th>Date de création</th>
-            <th>Date de validation</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        <?php if(empty($this->aLenders) === false) :
+    <?php if (empty($this->aLenders) === false) : ?>
+        <div class="table">
 
-        foreach ($this->aLenders as $aLender) : ?>
-            <tr>
-                <td><?= $aLender['id_lender']?></td>
-                <td><?= empty($aLender['company']) ? $aLender['nom'] : $aLender['company'] ?></td>
-                <td><?= empty($aLender['company']) ? $aLender['prenom'] : '' ?></td>
-                <td><?= $this->dates->formatDateMysqltoShortFR($aLender['date_creation']) ?></td>
-                <td><?= (empty($aLender['date_validation']) === false) ? $this->dates->formatDateMysqltoShortFR($aLender['date_validation']) : '' ?></td>
-                <td>
-                    <?php if (empty($aLender['date_validation']) === false ) : ?>
-                        <a href="<?= $this->lurl ?>/transferts/affect_welcome_offer/<?= $aLender['id_lender'] ?>" class="link thickbox"><img alt="Modifier " src="https://dev.www.unilend.fr/images/admin/edit.png"></a>
-                    <?php endif; ?>
-                </td>
-            </tr>
-<?php endforeach;
-        endif; ?>
+            <table class="tablesorter">
+                <thead>
+                <tr>
+                    <th>Id</th>
+                    <th>Nom</th>
+                    <th>Pr&eacute;nom</th>
+                    <th>Date de création</th>
+                    <th>Date de validation</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
 
-        </tbody>
-    </table>
+                <?php foreach ($this->aLenders as $aLender) : ?>
+                    <tr>
+                        <td><?= $aLender['id_lender'] ?></td>
+                        <td><?= empty($aLender['company']) ? $aLender['nom'] : $aLender['company'] ?></td>
+                        <td><?= empty($aLender['company']) ? $aLender['prenom'] : '' ?></td>
+                        <td><?= $this->dates->formatDateMysqltoShortFR($aLender['date_creation']) ?></td>
+                        <td><?= (empty($aLender['date_validation']) === false) ? $this->dates->formatDateMysqltoShortFR($aLender['date_validation']) : '' ?></td>
+                        <td>
+                            <?php if (empty($aLender['date_validation']) === false) : ?>
+                                <a href="<?= $this->lurl ?>/transferts/affect_welcome_offer/<?= $aLender['id_lender'] ?>"
+                                   class="link thickbox"><img alt="Modifier "
+                                                              src="https://dev.www.unilend.fr/images/admin/edit.png"></a>
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+    <?php else : ?>
+
+        <p>Il n'y a aucun utilisateur pour le moment.</p>
+
+    <?php endif; ?>
 
 </div>
 <?php unset($_SESSION['freeow']); ?>
