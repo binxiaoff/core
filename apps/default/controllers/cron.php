@@ -8265,4 +8265,72 @@ class cronController extends bootstrap
             $this->stopCron();
         }
     }
+
+
+    public function _checkWelcomeOfferValidity()
+    {
+        if (true === $this->startCron('Validité Offre de Bienvenue', 5)) {
+
+            $oSettings            = $this->loadData('settings');
+            $oWelcomeOfferDetails = $this->loadData('offres_bienvenues_details');
+            $oTransactions        = $this->loadData('transactions');
+            $oWalletsLines        = $this->loadData('wallets_lines');
+            $oBankUnilend         = $this->loadData('bank_unilend');
+            $oLendersAccounts     = $this->loadData('lenders_accounts');
+
+            $oSettings->get('Durée validité Offre de bienvenue', 'type');
+            $sOfferValidity = $oSettings->value;
+
+            $aUnusedWelcomeOffers = $oWelcomeOfferDetails->select('status = 0');
+            $oDateTime            = new \DateTime();
+
+            $iNumberOfUnusedWelcomeOffers = 0;
+
+            foreach ($aUnusedWelcomeOffers as $aWelcomeOffer) {
+
+                $oAdded    = DateTime::createFromFormat('Y-m-d H:m:s', $aWelcomeOffer['added']);
+                $oInterval = $oDateTime->diff($oAdded);
+
+                if ($oInterval->days >= $sOfferValidity) {
+
+                    $oWelcomeOfferDetails->get($aWelcomeOffer['id_offre_bienvenue_detail']);
+                    $oWelcomeOfferDetails->status = 2;
+                    $oWelcomeOfferDetails->update();
+
+                    $oTransactions->id_client                 = $aWelcomeOffer['id_client'];
+                    $oTransactions->montant                   = -$aWelcomeOffer['montant'];
+                    $oTransactions->id_offre_bienvenue_detail = $aWelcomeOffer['id_offre_bienvenue_detail'];
+                    $oTransactions->id_langue                 = 'fr';
+                    $oTransactions->date_transaction          = date('Y-m-d H:i:s');
+                    $oTransactions->status                    = '1';
+                    $oTransactions->etat                      = '1';
+                    $oTransactions->ip_client                 = $_SERVER['REMOTE_ADDR'];
+                    $oTransactions->type_transaction          = 17; // TODO use constant once available
+                    $oTransactions->transaction               = 2;
+                    $oTransactions->id_transaction            = $oTransactions->create();
+
+                    $oLendersAccounts->get($aWelcomeOffer['id_client'], 'id_client_owner');
+
+                    $oWalletsLines->id_lender                = $oLendersAccounts->id_lender_account;
+                    $oWalletsLines->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
+                    $oWalletsLines->id_transaction           = $oTransactions->id_transaction;
+                    $oWalletsLines->status                   = 1;
+                    $oWalletsLines->type                     = 1;
+                    $oWalletsLines->amount                   = -$aWelcomeOffer['montant'];
+                    $oWalletsLines->id_wallet_line           = $oWalletsLines->create();
+
+                    $oBankUnilend->id_transaction = $oTransactions->id_transaction;
+                    $oBankUnilend->montant        = '+' . $oWelcomeOfferDetails->montant;
+                    $oBankUnilend->type           = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
+                    $oBankUnilend->create();
+
+                    $iNumberOfUnusedWelcomeOffers +=1;
+
+                }
+            }
+            $this->oLogger->addRecord(ULogger::INFO, 'Nombre d\'offres de Bienvenue retirées : ' . $iNumberOfUnusedWelcomeOffers);
+
+            $this->stopCron();
+        }
+    }
 }
