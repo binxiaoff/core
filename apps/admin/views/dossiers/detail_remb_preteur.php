@@ -71,12 +71,13 @@
                 $this->lenders_accounts->get($r['id_lender'], 'id_lender_account');
                 $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
-                $lesEchances = $this->echeanciers->select('id_loan = ' . $r['id_loan']);
+                $lesEcheances = $this->echeanciers->select('id_loan = ' . $r['id_loan']);
                 ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $r['id_loan'] ?></td>
                     <td><?= $this->ficelle->formatNumber($r['amount'] / 100) ?></td>
                     <td><?= $this->ficelle->formatNumber($r['rate']) ?></td>
+                    <td><?= $lesEcheances[0]['montant'] ?></td>
                     <td><?= $this->clients->nom ?></td>
                     <td><?= $this->clients->prenom ?></td>
                     <td><?= $this->clients->id_client ?></td>
