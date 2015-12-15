@@ -2,6 +2,7 @@
 
 use Unilend\librairies\Mailer\Email;
 use Unilend\librairies\Mailer\Mailer;
+use Unilend\librairies\Mailer\Mime\Header;
 
 /**
  * Created by PhpStorm.
@@ -24,14 +25,6 @@ class unilend_email
     private $oNmpDesabo = null;
 
     private $aMailVar = array();
-
-    private $aRecipient = array();
-
-    private $aCCRecipient = array();
-
-    private $aBCCRecipient = array();
-
-    private $aReplyTo = array();
 
     private $oEmail = null;
 
@@ -65,13 +58,17 @@ class unilend_email
 
         $aParams = array(
             'mails_filer' => $this->oMailFiler,
-            'mails_text' => $this->oMailText
+            'mail_text_id' => $this->oMailText->id_textemail
         );
 
         if (ENVIRONMENT === 'prod') {
-            $aParams['nmp']        = $this->oNmp;
-            $aParams['nmp_desabo'] = $this->oNmpDesabo;
-            $aParams['mail_var']   = $this->aMailVar;
+            $aParams['nmp']            = $this->oNmp;
+            $aParams['nmp_desabo']     = $this->oNmpDesabo;
+            $aParams['mail_var']       = $this->aMailVar;
+            $aParams['mail_text_mode'] = $this->oMailText->mode;
+            $aParams['nmp_secure']     = $this->oMailText->nmp_secure;
+            $aParams['id_nmp']         = $this->oMailText->id_nmp;
+            $aParams['nmp_unique']     = $this->oMailText->nmp_unique;
 
             Mailer::setTransport('sendnmp', $aParams);
         } else {
@@ -87,7 +84,7 @@ class unilend_email
 
         $aParams = array(
             'mails_filer' => $this->oMailFiler,
-            'mails_text' => $this->oMailText
+            'mail_text_id' => $this->oMailText->id_textemail
         );
         Mailer::setTransport('mail', $aParams);
 
@@ -123,35 +120,50 @@ class unilend_email
     public function setTemplate($sMailType, $sLanguage)
     {
         if (false === $this->oMailText->get($sMailType, 'lang = "' . $sLanguage . '" AND type')) {
-            throw new \Exception('The mail template ' . $sMailType . 'is not found.');
+            throw new \Exception('The mail template ' . $sMailType . ' is not found.');
         }
     }
 
     private function prepareEmailFromTemplate()
     {
+        if (! $this->oMailFiler instanceof \mails_filer) {
+            throw new \Exception('not an object mails_filer');
+        }
+        if (! $this->oMailText instanceof \mails_text) {
+            throw new \Exception('not an object mails_text');
+        }
+
         if (!$this->oMailText->id_textemail) {
             throw new \Exception('The mail template is not defined.');
         }
 
-        if (empty($this->aRecipient)) {
+        $oRecipients = $this->oEmail->headers->get('To');
+
+        if (! $oRecipients instanceof Header) {
             throw new \Exception('No recipient');
         }
 
+        $aRecipients = array_map('trim', explode(', ', $oRecipients->value));
+        $this->oEmail->headers->remove('To');
+
         if (ENVIRONMENT !== 'prod') {
             $this->wrapVariables();
+            $this->oMailText->subject = '[' . ENVIRONMENT . '] ' . $this->oMailText->subject;
 
             // @todo once mailcatcher is installed on every dev/demo, email domain check may be deleted (not subject prefixing)
-            foreach ($this->aRecipient as $iIndex => $sRecipient) {
+            foreach ($aRecipients as $iIndex => $sRecipient) {
                 if (1 !== preg_match('/@unilend.fr$/', $sRecipient)) {
-                    unset($this->aRecipient[$iIndex]);
+                    unset($aRecipients[$iIndex]);
                 }
             }
 
-            if (empty($this->aRecipient)) {
-                $this->aRecipient[] = 'test-' . ENVIRONMENT . '@unilend.fr';
+            if (empty($aRecipients)) {
+                $aRecipients[] = 'test-' . ENVIRONMENT . '@unilend.fr';
             }
+        }
 
-            $this->oMailText->subject = '[' . ENVIRONMENT . '] ' . $this->oMailText->subject;
+        foreach ($aRecipients as $sRecipient) {
+            $this->oEmail->addRecipient($sRecipient);
         }
 
         $sMailSubject = strtr($this->oMailText->subject, $this->aMailVar);
@@ -169,7 +181,7 @@ class unilend_email
     {
         Mailer::send($this->oEmail);
         $this->aMailVar = array();
-        $this->oEmail = new Email();
+        $this->oEmail   = new Email();
     }
 
     public function __call($sMethod, $aArgument)

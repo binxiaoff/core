@@ -138,7 +138,7 @@ class projects_status_history extends projects_status_history_crud
 
         try {
             $oUnilendEmail->addAllMailVars($aReplacements);
-            $oUnilendEmail->setTemplate($sNotificationType, $this->language);
+            $oUnilendEmail->setTemplate($sNotificationType, 'fr');
             $oUnilendEmail->addRecipient($sRecipient);
             $oUnilendEmail->sendToStaff();
         } catch (\Exception $oException) {

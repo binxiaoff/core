@@ -145,7 +145,7 @@ class Mail extends abstractTransport
 
         set_error_handler(array($this, 'errorHandler'));
         $result = mail($recipients, $subject, $message, $headers, $params);
-        $this->saveMessage($emailCopy, $this->opts['mails_filer'], isset($this->opts['mails_text']) ? $this->opts['mails_text']->id_textemail : '');
+        $this->saveMessage($emailCopy, $this->opts['mails_filer'], isset($this->opts['mail_text_id']) ? $this->opts['mail_text_id'] : '');
         restore_error_handler();
 
         if ($this->opts['php_use_smtp']) {

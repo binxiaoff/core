@@ -64,11 +64,12 @@ class SendNMP extends abstractTransport
         }
 
         if (isset($this->opts['mails_filer']) && $this->opts['mails_filer'] instanceof \mails_filer
-            && isset($this->opts['mails_text']) && $this->opts['mails_text'] instanceof \mails_text
             && isset($this->opts['nmp']) && $this->opts['nmp'] instanceof \nmp
-            && isset($this->opts['nmp_desabo']) && $this->opts['nmp_desabo'] instanceof \nmp_desabo) {
+            && isset($this->opts['nmp_desabo']) && $this->opts['nmp_desabo'] instanceof \nmp_desabo
+            && isset($this->opts['nmp_secure'], $this->opts['id_nmp'], $this->opts['nmp_unique'], $this->opts['mail_text_id'], $this->opts['mail_text_mode'])
+        ) {
             // On creer la ligne du filer
-            $this->saveMessage($email, $this->opts['mails_filer'], isset($this->opts['mails_text']) ? $this->opts['mails_text']->id_textemail : '');
+            $this->saveMessage($email, $this->opts['mails_filer'], $this->opts['mail_text_id']);
 
             if (ENVIRONMENT === 'demo') {
                 // pas d'enregistrement nmp de minuit a 6h du matin pour la demo
@@ -82,7 +83,7 @@ class SendNMP extends abstractTransport
             }
 
             // Send mail to those who aren't unsubscribed
-            if (!$this->opts['nmp_desabo']->get($this->opts['mails_filer']->email_nmp, 'email') || $this->opts['mails_text']->mode == 0) {
+            if (!$this->opts['nmp_desabo']->get($this->opts['mails_filer']->email_nmp, 'email') || $this->opts['mail_text_mode'] == 0) {
                 $varDyn = array();
 
                 foreach ($this->opts['mail_var'] as $key => $value) {
@@ -102,9 +103,9 @@ class SendNMP extends abstractTransport
                     'content' => array(),
                     'dyn' => $varDyn,
                     'email' => $this->opts['mails_filer']->email_nmp,
-                    'encrypt' => $this->opts['mails_text']->nmp_secure,
-                    'notificationId' => $this->opts['mails_text']->id_nmp,
-                    'random' => $this->opts['mails_text']->nmp_unique,
+                    'encrypt' => $this->opts['nmp_secure'],
+                    'notificationId' => $this->opts['id_nmp'],
+                    'random' => $this->opts['nmp_unique'],
                     'senddate' => date('Y-m-d'),
                     'synchrotype' => 'NOTHING',
                     'uidkey' => 'EMAIL'

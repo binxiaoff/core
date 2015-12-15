@@ -752,18 +752,6 @@ class ajaxController extends bootstrap
         $clients = $this->loadData('clients');
 
         if (isset($_POST['email']) && $this->ficelle->isEmail($_POST['email']) && $clients->get($_POST['email'], 'email')) {
-            //*************************//
-            //*** ENVOI DU MAIL MDP ***//
-            //*************************//
-
-            $this->mails_text->get('mot-de-passe-oublie', 'lang = "' . $this->language . '" AND type');
-
-            $surl          = $this->surl;
-            $url           = $this->lurl;
-            $prenom        = $clients->prenom;
-            $login         = $clients->email;
-            $link_password = $this->lurl . '/' . $this->tree->getSlug(119, $this->language) . '/' . $clients->hash;
-
             $this->settings->get('Facebook', 'type');
             $lien_fb = $this->settings->value;
 
@@ -771,11 +759,11 @@ class ajaxController extends bootstrap
             $lien_tw = $this->settings->value;
 
             $varMail = array(
-                'surl'          => $surl,
-                'url'           => $url,
-                'prenom'        => $prenom,
-                'login'         => $login,
-                'link_password' => $link_password,
+                'surl'          => $this->surl,
+                'url'           => $this->lurl,
+                'prenom'        => $clients->prenom,
+                'login'         => $clients->email,
+                'link_password' => $this->lurl . '/' . $this->tree->getSlug(119, $this->language) . '/' . $clients->hash,
                 'lien_fb'       => $lien_fb,
                 'lien_tw'       => $lien_tw
             );
