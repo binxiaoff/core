@@ -92,11 +92,16 @@ class depot_de_dossierController extends bootstrap
         $this->clients->source         = $_SESSION['utm_source'];
         $this->clients->source2        = $_SESSION['utm_source2'];
         $this->clients->status_pre_emp = 2;
-        $this->clients->email          = $_SESSION['forms']['depot-de-dossier']['email'];
+        if (true === $this->clients->existEmail($_SESSION['forms']['depot-de-dossier']['email'])) { // Email does not exist in DB
+            $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'];
+        } else {
+            $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'] . '-' . time();
+        }
         $this->clients->create();
 
         if (false === is_numeric($this->clients->id_client) || $this->clients->id_client < 1) {
-                header('Location: ' . $this->lurl . '/lp-depot-de-dossier'); die;
+            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
+            die;
         }
         $this->clients_adresses->id_client = $this->clients->id_client;
         $this->clients_adresses->create();
