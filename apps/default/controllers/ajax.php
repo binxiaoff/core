@@ -1599,7 +1599,6 @@ class ajaxController extends bootstrap
                 $_SESSION['nbNotifdisplay'] = $_POST['compteur_notif'];
             }
 
-            $id_lender = $_POST['id_lender'];
             $debut     = $_SESSION['nbNotifdisplay'];
             $nbDisplay = 10;
 
