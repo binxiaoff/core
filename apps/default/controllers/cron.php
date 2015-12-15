@@ -1293,44 +1293,47 @@ class cronController extends bootstrap
             $date_execution = date('Y-m-d');
 
             $xml = '<?xml version="1.0" encoding="UTF-8"?>
-    <Document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03">
-        <CstmrCdtTrfInitn>
-            <GrpHdr>
-                <MsgId>' . $id_message . '</MsgId>
-                <CreDtTm>' . $date_creation . '</CreDtTm>
-                <NbOfTxs>' . $nbVirements . '</NbOfTxs>
-                <CtrlSum>' . $Totalmontants . '</CtrlSum>
-                <InitgPty>
-                    <Nm>' . $compte . '</Nm>
-                </InitgPty>
-            </GrpHdr>
-            <PmtInf>
-                <PmtInfId>' . $titulaire . '/' . $dateColle . '/' . $id_compteur . '</PmtInfId>
-                <PmtMtd>TRF</PmtMtd>
-                <NbOfTxs>' . $nbVirements . '</NbOfTxs>
-                <CtrlSum>' . $Totalmontants . '</CtrlSum>
-                <PmtTpInf>
-                    <SvcLvl>
-                        <Cd>SEPA</Cd>
-                    </SvcLvl>
-                </PmtTpInf>
-                <ReqdExctnDt>' . $date_execution . '</ReqdExctnDt>
-                <Dbtr>
-                    <Nm>SFPMEI</Nm>
-                    <PstlAdr>
-                        <Ctry>FR</Ctry>
-                    </PstlAdr>
-                </Dbtr>
-                <DbtrAcct>
-                    <Id>
-                        <IBAN>' . str_replace(' ', '', $iban) . '</IBAN>
-                    </Id>
-                </DbtrAcct>
-                <DbtrAgt>
-                    <FinInstnId>
-                        <BIC>' . str_replace(' ', '', $bic) . '</BIC>
-                    </FinInstnId>
-                </DbtrAgt>';
+	<Document xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03">
+		<CstmrCdtTrfInitn>
+			<GrpHdr>
+				<MsgId>' . $id_message . '</MsgId>
+				<CreDtTm>' . $date_creation . '</CreDtTm>
+				<NbOfTxs>' . $nbVirements . '</NbOfTxs>
+				<CtrlSum>' . $Totalmontants . '</CtrlSum>
+				<InitgPty>
+					<Nm>' . $compte . '</Nm>
+				</InitgPty>
+			</GrpHdr>
+			<PmtInf>
+				<PmtInfId>' . $titulaire . '/' . $dateColle . '/' . $id_compteur . '</PmtInfId>
+				<PmtMtd>TRF</PmtMtd>
+				<NbOfTxs>' . $nbVirements . '</NbOfTxs>
+				<CtrlSum>' . $Totalmontants . '</CtrlSum>
+				<PmtTpInf>
+					<SvcLvl>
+						<Cd>SEPA</Cd>
+					</SvcLvl>
+				</PmtTpInf>
+				<ReqdExctnDt>' . $date_execution . '</ReqdExctnDt>
+				<Dbtr>
+					<Nm>SFPMEI</Nm>
+					<PstlAdr>
+						<Ctry>FR</Ctry>
+					</PstlAdr>
+				</Dbtr>
+				<DbtrAcct>
+					<Id>
+						<IBAN>' . str_replace(' ', '', $iban) . '</IBAN>
+					</Id>
+				</DbtrAcct>
+				<DbtrAgt>
+					<FinInstnId>
+						<BIC>' . str_replace(' ', '', $bic) . '</BIC>
+					</FinInstnId>
+				</DbtrAgt>
+				<UltmtDbtr>
+				    <Nm>UNILEND - SFPMEI</Nm>
+				</UltmtDbtr>';
 
             foreach ($lVirementsEnCours as $v) {
                 $this->clients->get($v['id_client'], 'id_client');
@@ -1370,7 +1373,16 @@ class cronController extends bootstrap
                 // variables
                 $id_lot  = $titulaire . '/' . $dateColle . '/' . $v['id_virement'];
                 $montant = round($v['montant'] / 100, 2);
-
+                if (strncmp('FR', strtoupper(str_replace(' ', '', $ibanDestinataire)), 2) == 0) {
+                    $bicFr = '
+                    <CdtrAgt>
+                        <FinInstnId>
+                            <BIC>' . str_replace(' ', '', $bicDestinataire) . '</BIC>
+                        </FinInstnId>
+                    </CdtrAgt>';
+                } else {
+                    $bicFr = '';
+                }
                 $xml .= '
                 <CdtTrfTxInf>
                     <PmtId>
@@ -1378,26 +1390,22 @@ class cronController extends bootstrap
                     </PmtId>
                     <Amt>
                         <InstdAmt Ccy="EUR">' . $montant . '</InstdAmt>
-                    </Amt>
-                    <CdtrAgt>
-                        <FinInstnId>
-                            <BIC>' . str_replace(' ', '', $bicDestinataire) . '</BIC>
-                        </FinInstnId>
-                     </CdtrAgt>
-                     <Cdtr>
+                    </Amt>' .
+                    $bicFr
+                    . '<Cdtr>
                          <Nm>' . ($v['type'] == 4 ? $retraitTitu : $destinataire) . '</Nm>
                          <PstlAdr>
                              <Ctry>FR</Ctry>
                          </PstlAdr>
-                     </Cdtr>
-                     <CdtrAcct>
-                         <Id>
-                             <IBAN>' . str_replace(' ', '', $ibanDestinataire) . '</IBAN>
-                         </Id>
-                     </CdtrAcct>
-                     <RmtInf>
+                    </Cdtr>
+                    <CdtrAcct>
+                            <Id>
+                                <IBAN>' . str_replace(' ', '', $ibanDestinataire) . '</IBAN>
+                            </Id>
+                    </CdtrAcct>
+                    <RmtInf>
                          <Ustrd>' . str_replace(' ', '', $v['motif']) . '</Ustrd>
-                     </RmtInf>
+                    </RmtInf>
                 </CdtTrfTxInf>';
             }
             $xml .= '
@@ -2241,7 +2249,6 @@ class cronController extends bootstrap
                     unset($array[$r]);
                 }
             }
-            $this->stopCron();
             return $array;
         }
     }
@@ -7607,15 +7614,6 @@ class cronController extends bootstrap
                         mail($this->sDestinatairesDebug, 'UNILEND - Erreur cron indexage', 'Erreur de get sur le client :' . $clt['id_client'], $this->sHeadersDebug);
                     }
                 }
-            }
-
-            $html = "Nombre client concernes : " . $nb_client_concernes . " <br />";
-            $html .= "Nombre mise à jour : " . $nb_maj . " <br />";
-            $html .= "Nombre creation : " . $nb_creation . " <br />";
-            $html .= "Debut : " . $heure_debut . " -  Termine :" . date("Y-m-d H:i:s");
-
-            if ($nb_maj > 0 or $nb_creation > 0) {
-                mail($this->sDestinatairesDebug, 'INDEXATION - UNILEND', $html, $this->sHeadersDebug);
             }
 
             $this->stopCron();
