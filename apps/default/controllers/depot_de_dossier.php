@@ -94,13 +94,10 @@ class depot_de_dossierController extends bootstrap
         $this->clients->status_pre_emp = 2;
         $this->clients->create();
 
-        if (is_numeric($this->clients->id_client) && $this->clients->id_client > 0) {
-            $this->clients_adresses->id_client = $this->clients->id_client;
+        if (false === is_numeric($this->clients->id_client) || $this->clients->id_client < 1) {
+                header('Location: ' . $this->lurl . '/lp-depot-de-dossier'); die;
         }
-        else {
-            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
-            die;
-        }
+        $this->clients_adresses->id_client = $this->clients->id_client;
         $this->clients_adresses->create();
 
         $this->companies->id_client_owner               = $this->clients->id_client;
