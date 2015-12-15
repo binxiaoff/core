@@ -92,6 +92,7 @@ class depot_de_dossierController extends bootstrap
         $this->clients->source         = $_SESSION['utm_source'];
         $this->clients->source2        = $_SESSION['utm_source2'];
         $this->clients->status_pre_emp = 2;
+        $this->clients->email          = $_SESSION['forms']['depot-de-dossier']['email'];
         $this->clients->create();
 
         if (false === is_numeric($this->clients->id_client) || $this->clients->id_client < 1) {
@@ -103,6 +104,7 @@ class depot_de_dossierController extends bootstrap
         $this->companies->id_client_owner               = $this->clients->id_client;
         $this->companies->siren                         = $iSIREN;
         $this->companies->status_adresse_correspondance = '1';
+        $this->companies->email_dirigeant               = $_SESSION['forms']['depot-de-dossier']['email'];
         $this->companies->create();
 
         $this->companies_details->id_company = $this->companies->id_company;
