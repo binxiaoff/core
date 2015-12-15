@@ -2049,9 +2049,6 @@ class ajaxController extends bootstrap
             if (! $this->companies->get($this->projects->id_company, 'id_company')) {
                 $form_ok = false;
             }
-            if (! $this->clients->get($this->companies->id_client_owner, 'id_client')) {
-                $form_ok = false;
-            }
 
             if ($form_ok == true) {
                 // on check si existe deja
@@ -2060,7 +2057,6 @@ class ajaxController extends bootstrap
                 } else {
                     $update = false;
                 }
-
                 // On recup le title du projet
                 $title = $this->projects->title;
 
