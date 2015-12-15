@@ -92,4 +92,39 @@ class thickboxController extends bootstrap
             }
         }
     }
+
+    public function _project_status_problem()
+    {
+        $this->iProjectId = $this->params[0];
+    }
+
+    public function _project_status_recovery()
+    {
+        $this->iProjectId = $this->params[0];
+    }
+
+    public function _project_status_failure()
+    {
+        $this->iProjectId = $this->params[0];
+    }
+
+    public function _project_status_problem_x()
+    {
+        $this->iProjectId = $this->params[0];
+    }
+
+    public function _project_status_precautionary_process()
+    {
+        $this->iProjectId = $this->params[0];
+    }
+
+    public function _project_status_receivership()
+    {
+        $this->iProjectId = $this->params[0];
+    }
+
+    public function _project_status_compulsory_liquidation()
+    {
+        $this->iProjectId = $this->params[0];
+    }
 }

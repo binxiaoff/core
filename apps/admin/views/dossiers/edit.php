@@ -470,219 +470,7 @@
 
                 <a href="<?= $this->lurl ?>/thickbox/popup_confirmation_send_email/<?= $this->projects->id_project ?>" class="thickbox confirmation_send_email"></a>
                 <input type="hidden" name="check_confirmation_send_email" id="check_confirmation_send_email" value="0">
-                <table class="hidden_table bloc_mail_preteur">
-                    <tr>
-                        <th><label for="nature_project"><i>Email d'information aux prêteurs :</i></label></th>
-                    </tr>
-                    <tr>
-                        <td><textarea class="textarea_lng" name="area_probleme" id="area_probleme" style="height: 100px;width: 420px;"></textarea></td>
-                    </tr>
-                    <tr>
-                        <th><i>Envoyer l'email d'information aux prêteurs :</i></th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="radio" name="mail_a_envoyer_preteur_probleme" id="oui_envoyer_mail" value="0" />
-                            <label for="oui_envoyer_mail">Oui</label>
-                            <input type="radio" name="mail_a_envoyer_preteur_probleme" id="non_envoyer_mail" value="1" checked/>
-                            <label for="non_envoyer_mail">Non</label>
-                            <br><br>
-                        </td>
-                    </tr>
-                </table>
 
-                <table class="hidden_table bloc_mail_preteur_problemeX">
-                    <tr>
-                        <th><label for="nature_project"><i>Email d'information aux prêteurs :</i></label></th>
-                    </tr>
-                    <tr>
-                        <td><textarea class="textarea_lng" name="area_problemeX" id="area_problemeX" style="height: 100px;width: 420px;"></textarea></td>
-                    </tr>
-                    <tr>
-                        <th><i>Envoyer l'email d'information aux prêteurs :</i></th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="radio" name="mail_a_envoyer_preteur_problemeX" id="oui_envoyer_mail_problemeX" value="0" />
-                            <label for="oui_envoyer_mail_problemeX">Oui</label>
-                            <input type="radio" name="mail_a_envoyer_preteur_problemeX" id="non_envoyer_mail_problemeX" value="1" checked/>
-                            <label for="non_envoyer_mail">Non</label>
-                            <br><br>
-                        </td>
-                    </tr>
-                </table>
-
-                <table class="hidden_table bloc_mail_preteur_recouvrement">
-                    <tr>
-                        <th><label for="nature_project"><i>Email d'information aux prêteurs :</i></label></th>
-                    </tr>
-                    <tr>
-                        <td><textarea class="textarea_lng" name="area_recouvrement" id="area_recouvrement" style="height: 100px;width: 420px;"></textarea></td>
-                    </tr>
-                    <tr>
-                        <th><i>Envoyer l'email d'information aux prêteurs :</i></th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="radio" name="mail_a_envoyer_preteur_probleme_recouvrement" id="oui_envoyer_mail_recouvrement" value="0" />
-                            <label for="oui_envoyer_mail_recouvrement">Oui</label>
-                            <input type="radio" name="mail_a_envoyer_preteur_probleme_recouvrement" id="non_envoyer_mail_recouvrement" value="1" checked/>
-                            <label for="non_envoyer_mail_recouvrement">Non</label>
-                        </td>
-                    </tr>
-                </table>
-
-                <table class="hidden_table bloc_mail_preteur_ps">
-                    <tr>
-                        <th>
-                            <br>
-                            <label for="date_ps"><i>Date du jugement</i></label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="text" name="date_ps" id="date_ps" class="input_dp" value="<?= date('d/m/Y') ?>" />
-                            <br><br><br>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="mandataire_ps"><i>Coordonnées du mandataire judiciaire :</i></label></th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <textarea class="textarea_lng" name="mandataire_ps" id="mandataire_ps" style="height: 100px;width: 420px;"></textarea>
-                            <br><br>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="area_ps"><i>Email d'information aux prêteurs :</i></label></th>
-                    </tr>
-                    <tr>
-                        <td><textarea class="textarea_lng" name="area_ps" id="area_ps" style="height: 100px;width: 420px;"></textarea></td>
-                    </tr>
-                    <tr>
-                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="radio" name="mail_a_envoyer_preteur_ps" id="oui_envoyer_mail_ps" value="0" />
-                            <label for="oui_envoyer_mail_ps">Oui</label>
-                            <input type="radio" name="mail_a_envoyer_preteur_ps" id="non_envoyer_mail_ps" value="1" checked/>
-                            <label for="non_envoyer_mail_ps">Non</label>
-                            <br><br>
-                        </td>
-                    </tr>
-                </table>
-
-                <table class="hidden_table bloc_mail_preteur_rj">
-                    <tr>
-                        <th>
-                            <br>
-                            <label for="date_rj"><i>Date du jugement</i></label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="text" name="date_rj" id="date_rj" class="input_dp" value="<?= date('d/m/Y') ?>" />
-                            <br><br><br>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="mandataire_rj"><i>Coordonnées du mandataire judiciaire :</i></label></th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <textarea class="textarea_lng" name="mandataire_rj" id="mandataire_rj" style="height: 100px;width: 420px;"></textarea>
-                            <br><br>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="area_rj"><i>Email d'information aux prêteurs :</i></label></th>
-                    </tr>
-                    <tr>
-                        <td><textarea class="textarea_lng" name="area_rj" id="area_rj" style="height: 100px;width: 420px;"></textarea></td>
-                    </tr>
-                    <tr>
-                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="radio" name="mail_a_envoyer_preteur_rj" id="oui_envoyer_mail_rj" value="0" />
-                            <label for="oui_envoyer_mail_rj">Oui</label>
-                            <input type="radio" name="mail_a_envoyer_preteur_rj" id="non_envoyer_mail_rj" value="1" checked/>
-                            <label for="non_envoyer_mail_rj">Non</label>
-                            <br><br>
-                        </td>
-                    </tr>
-                </table>
-                <table class="hidden_table bloc_mail_preteur_lj">
-                    <tr>
-                        <th>
-                            <br>
-                            <label for="date_lj"><i>Date du jugement</i></label>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <input type="text" name="date_lj" id="date_lj" class="input_dp" value="<?= date('d/m/Y') ?>" />
-                            <br><br><br>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="mandataire_lj"><i>Coordonnées du mandataire judiciaire :</i></label></th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <textarea class="textarea_lng" name="mandataire_lj" id="mandataire_lj" style="height: 100px;width: 420px;"></textarea>
-                            <br><br>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="area_lj"><i>Email d'information aux prêteurs :</i></label></th>
-                    </tr>
-                    <tr>
-                        <td><textarea class="textarea_lng" name="area_lj" id="area_lj" style="height: 100px;width: 420px;"></textarea></td>
-                    </tr>
-                    <tr>
-                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>
-                    <tr>
-                        <td>
-                            <input type="radio" name="mail_a_envoyer_preteur_lj" id="oui_envoyer_mail_lj" value="0" />
-                            <label for="oui_envoyer_mail_lj">Oui</label>
-                            <input type="radio" name="mail_a_envoyer_preteur_lj" id="non_envoyer_mail_lj" value="1" checked/>
-                            <label for="non_envoyer_mail_lj">Non</label>
-                            <br><br>
-                        </td>
-                    </tr>
-                </table>
-                <table class="hidden_table bloc_mail_preteur_default">
-                    <tr>
-                        <th><label for="mandataire_default"><i>Coordonnées du mandataire judiciaire :</i></label></th>
-                    </tr>
-                    <tr>
-                        <td>
-                            <textarea class="textarea_lng" name="mandataire_default" id="mandataire_default" style="height: 100px;width: 420px;"></textarea>
-                            <br><br>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th><label for="area_default"><i>Email d'information aux prêteurs :</i></label></th>
-                    </tr>
-                    <tr>
-                        <td><textarea class="textarea_lng" name="area_default" id="area_default" style="height: 100px;width: 420px;"></textarea></td>
-                    </tr>
-                    <tr>
-                        <th><label><i>Envoyer l'email d'information aux prêteurs :</i></label></th>
-                    <tr>
-                        <td>
-                            <input type="radio" name="mail_a_envoyer_preteur_default" id="oui_envoyer_mail_default" value="0" />
-                            <label for="oui_envoyer_mail_default">Oui</label>
-                            <input type="radio" name="mail_a_envoyer_preteur_default" id="non_envoyer_mail_default" value="1" checked/>
-                            <label for="non_envoyer_mail_default">Non</label>
-                            <br><br>
-                        </td>
-                    </tr>
-                </table>
                 <table class="form" style="width: 538px;">
                     <?php if (in_array($this->current_projects_status->status, array(25, 31, 33, 35))) { ?>
                         <tr class="change_statut" <?= ($this->current_projects_status->status == 35 ? '' : 'style="display:none"') ?>>
@@ -883,22 +671,22 @@
 
                         if (status == <?= \projects_status::A_FUNDER ?>) {
                             $(".change_statut").hide();
-                        } else if (status == 80) {
-                            /* dans le cas d'un changement vers probleme, on affiche une box de conf */
-                        } else if (status == 100) {
-                            $('.bloc_mail_preteur').show();
-                        } else if (status == 140) {
-                            $('.bloc_mail_preteur_problemeX').show();
-                        } else if (status == 110) {
-                            $('.bloc_mail_preteur_recouvrement').show();
-                        } else if (status == 120) {
-                            $('.bloc_mail_preteur_default').show();
-                        } else if (status == 150) {
-                            $('.bloc_mail_preteur_ps').show();
-                        } else if (status == 160) {
-                            $('.bloc_mail_preteur_rj').show();
-                        } else if (status == 170) {
-                            $('.bloc_mail_preteur_lj').show();
+                        } else if (status == <?= \projects_status::REMBOURSEMENT ?>) {
+
+                        } else if (status == <?= \projects_status::PROBLEME ?>) {
+                            $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_problem/<?= $this->projects->id_project ?>"});
+                        } else if (status == <?= \projects_status::RECOUVREMENT ?>) {
+                            $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_recovery/<?= $this->projects->id_project ?>"});
+                        } else if (status == <?= \projects_status::DEFAUT ?>) {
+                            $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_failure/<?= $this->projects->id_project ?>"});
+                        } else if (status == <?= \projects_status::PROBLEME_J_X ?>) {
+                            $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_problem_x/<?= $this->projects->id_project ?>"});
+                        } else if (status == <?= \projects_status::PROCEDURE_SAUVEGARDE ?>) {
+                            $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_precautionary_process/<?= $this->projects->id_project ?>"});
+                        } else if (status == <?= \projects_status::REDRESSEMENT_JUDICIAIRE ?>) {
+                            $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_receivership/<?= $this->projects->id_project ?>"});
+                        } else if (status == <?= \projects_status::LIQUIDATION_JUDICIAIRE ?>) {
+                            $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_compulsory_liquidation/<?= $this->projects->id_project ?>"});
                         } else {
                             $(".change_statut").show();
                         }
@@ -922,59 +710,30 @@
     <br/><br/><br/>
     <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>/altares" class="btn_link">Générer les données Altares</a></div>
     <div id="table_memo">
-
-        <?php
-        if (count($this->lProjects_comments) > 0) {
-            ?>
-            <table class="tablesorter">
-                <thead>
+    <?php if (count($this->lProjects_comments) > 0): ?>
+        <table class="tablesorter">
+            <thead>
                 <tr>
                     <th width="120" align="center">Date ajout</th>
                     <th align="center">Contenu</th>
                     <th width="50" align="center">&nbsp;</th>
                 </tr>
-                </thead>
-                <tbody>
-                <?php
-                $i = 1;
-                foreach ($this->lProjects_comments as $p) {
-
-                    ?>
-                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                        <td align="center"><?= $this->dates->formatDate($p['added'], 'd/m/Y H:i:s') ?></td>
-                        <td><?= nl2br($p['content']) ?></td>
-                        <td align="center">
-                            <a href="<?= $this->lurl ?>/dossiers/addMemo/<?= $p['id_project'] ?>/<?= $p['id_project_comment'] ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier"/></a>
-                            <img style="cursor:pointer;" onclick="deleteMemo(<?= $p['id_project_comment'] ?>,<?= $p['id_project'] ?>);" src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer"/>
-                        </td>
-                    </tr>
-                    <?php
-                    $i++;
-                }
-                ?>
-                </tbody>
-            </table>
-            <?php
-            if ($this->nb_lignes != '') {
-                ?>
-                <table>
-                    <tr>
-                        <td id="pager">
-                            <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
-                            <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
-                            <input type="text" class="pagedisplay"/>
-                            <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
-                            <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
-                            <select class="pagesize">
-                                <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
-                            </select>
-                        </td>
-                    </tr>
-                </table>
-                <?php
-            }
-        }
-        ?>
+            </thead>
+            <tbody>
+            <?php $i = 1; ?>
+            <?php foreach ($this->lProjects_comments as $p): ?>
+                <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
+                    <td align="center"><?= $this->dates->formatDate($p['added'], 'd/m/Y H:i:s') ?></td>
+                    <td><?= nl2br($p['content']) ?></td>
+                    <td align="center">
+                        <a href="<?= $this->lurl ?>/dossiers/addMemo/<?= $p['id_project'] ?>/<?= $p['id_project_comment'] ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier"/></a>
+                        <img style="cursor:pointer;" onclick="deleteMemo(<?= $p['id_project_comment'] ?>,<?= $p['id_project'] ?>);" src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer"/>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
     </div>
     <br>
     <style type="text/css">
