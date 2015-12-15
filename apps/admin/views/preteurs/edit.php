@@ -99,12 +99,8 @@
         <tr>
             <th>Email :</th>
             <td><?=$this->clients->email?></td>
-            <th>
-                Passer hors ligne
-            </th>
-            <td width="365">
-                <img onclick="if(confirm('Voulez vous <?=($this->clients->status==1?'Passer hors ligne':'Passer en ligne')?> ce preteur ?')){window.location = '<?=$this->lurl?>/preteurs/gestion/status/<?=$this->clients->id_client?>/<?=$this->clients->status?>';}" src="<?=$this->surl?>/images/admin/<?=($this->clients->status==1?'offline':'online')?>.png" alt="<?=($this->clients->status==1?'Passer hors ligne':'Passer en ligne')?>" />
-            </td>
+            <th></th>
+            <td width="365"></td>
         </tr>
         <tr>
             <th>Adresse fiscale :</th>
