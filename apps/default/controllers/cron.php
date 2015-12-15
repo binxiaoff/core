@@ -846,7 +846,7 @@ class cronController extends bootstrap
     }
 
     // On créer les echeances des futures remb
-    public function create_echeances($id_project)
+    private function create_echeances($id_project)
     {
         ini_set('max_execution_time', 300); //300 seconds = 5 minutes
         ini_set('memory_limit', '512M');
@@ -1046,7 +1046,7 @@ class cronController extends bootstrap
     }
 
     // fonction create echeances emprunteur
-    public function createEcheancesEmprunteur($id_project)
+    private function createEcheancesEmprunteur($id_project)
     {
         ini_set('memory_limit', '512M');
 
@@ -1890,8 +1890,7 @@ class cronController extends bootstrap
         }
     }
 
-    // xml prelevement
-    public function xmPrelevement($table)
+    private function xmPrelevement($table)
     {
         $id_lot         = $table['id_lot'];
         $montant        = $table['montant'];
@@ -2193,7 +2192,7 @@ class cronController extends bootstrap
     }
 
     // transforme le fichier txt format truc en tableau
-    public function recus2array($file)
+    private function recus2array($file)
     {
         $tablemontant = array(
             '{' => 0,
@@ -4617,188 +4616,6 @@ class cronController extends bootstrap
         }
     }
 
-    /////////////////////////
-    /// POUR LA DEMO ONLY ///
-    /////////////////////////
-    // On copie le backup recu pas oxeva
-    public function copyBackup()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireView   = false;
-
-        if ($this->Config['env'] != 'demo') {
-            die;
-        }
-
-        // Dossier backup
-        $backup = $this->path . 'backup/';
-
-        $backup2 = $this->path . 'backup2/';
-
-        /////////////////////////////////////////////////
-        // On parcour le dossier backup2 pour le vider //
-        /////////////////////////////////////////////////
-
-        $dir = opendir($backup2);
-
-        while ($file = readdir($dir)) {
-            // On retire les dossiers et les "." ".." ainsi que le fichier schemas.sql
-            if ($file != '.' && $file != '..' && ! is_dir($backup2 . $file)) {
-                // On reverifie si on a bien le fichier GZ
-                if (file_exists($backup2 . $file)) {
-                    unlink($backup2 . $file);
-                }
-                // Fin fichier sql.gz
-            }
-        }
-
-        closedir($dir);
-
-        // On parcours le dossier backup rempli par oxeva //
-        $dir = opendir($backup);
-
-        while ($file = readdir($dir)) {
-            // On retire les dossiers et les "." ".." ainsi que le fichier schemas.sql
-            if ($file != '.' && $file != '..' && ! is_dir($backup . $file)) {
-                // On reverifie si on a bien le fichier
-                if (file_exists($backup . $file)) {
-                    // On le copie dans backup2
-                    copy($backup . $file, $backup2 . $file);
-                }
-            }
-        }
-        closedir($dir);
-    }
-
-    // Mise a jour de la bdd demo tous les jours a 2h du matin
-    public function _updateDemoBDD()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireView   = false;
-
-        if ($this->Config['env'] != 'demo') {
-            $this->stopCron();
-            die;
-        }
-
-        // On copie le backup oxeva dans backup2
-        $this->copyBackup();
-
-        // Dossier backup
-        $dirname = $this->path . 'backup2/';
-
-        // Informations pour la connexion à la BDD
-        $mysqlDatabaseName = $this->Config['bdd_config'][$this->Config['env']]['BDD'];
-        $mysqlUserName     = $this->Config['bdd_config'][$this->Config['env']]['USER'];
-        $mysqlPassword     = $this->Config['bdd_config'][$this->Config['env']]['PASSWORD'];
-        $mysqlHostName     = $this->Config['bdd_config'][$this->Config['env']]['HOST'];
-
-        // Si on a un fichier schemas.sql (permet de supprimer et de recrer les tables)
-        if (file_exists($dirname . 'schemas.sql')) {
-            // chemin fichier
-            $mysqlImportFilename = $dirname . 'schemas.sql';
-
-            // Commande
-            $command = 'mysql -h' . $mysqlHostName . ' -u' . $mysqlUserName . ' -p' . $mysqlPassword . ' ' . $mysqlDatabaseName . ' < ' . $mysqlImportFilename;
-
-            // Exec commande
-            exec($command, $output = array(), $worked);
-
-            switch ($worked) {
-                case 0:
-                    echo 'IMPORT SCHEMAS.SQL OK<br>';
-                    break;
-                case 1:
-                    echo 'IMPORT SCHEMAS.SQL NOK<br>';
-                    break;
-            }
-        }
-        echo '---------------<br>';
-
-        $dir = opendir($dirname);
-
-        while ($fileGZ = readdir($dir)) {
-            // On retire les dossiers et les "." ".." ainsi que le fichier schemas.sql
-            if ($fileGZ != '.' && $fileGZ != '..' && ! is_dir($dirname . $fileGZ) && $fileGZ != 'schemas.sql') {
-                // On reverifie si on a bien le fichier GZ
-                if (file_exists($dirname . $fileGZ)) {
-                    $fichierGZ = $dirname . $fileGZ;
-                    $file      = str_replace('.gz', '', $fileGZ);
-                    $fichier   = $dirname . $file;
-
-                    $command = "gunzip " . $fichierGZ;
-                    exec($command, $output = array(), $worked);
-                    switch ($worked) {
-                        case 0:
-                            echo 'GUNZIP ' . $fileGZ . ' OK<br>';
-                            break;
-                        case 1:
-                            echo 'GUNZIP ' . $fileGZ . ' NOK<br>';
-                            break;
-                    }
-
-                    if (file_exists($fichier)) {
-                        $mysqlImportFilename = $fichier;
-
-                        $command = 'mysql -h' . $mysqlHostName . ' -u' . $mysqlUserName . ' -p' . $mysqlPassword . ' ' . $mysqlDatabaseName . ' < ' . $mysqlImportFilename;
-                        exec($command, $output = array(), $worked);
-
-                        switch ($worked) {
-                            case 0:
-                                echo 'IMPORT ' . $file . ' OK<br>';
-                                break;
-                            case 1:
-                                echo 'IMPORT ' . $file . ' NOK<br>';
-                                break;
-                        }
-                    }
-                }
-            }
-            echo '----------------<br>';
-        }
-
-        closedir($dir);
-
-        // Mise a jour des données //
-        // On change l'adresse mail de tout les clients
-        $this->bdd->query("UPDATE clients SET email = 'DCourtier.Auto@equinoa.fr'");
-        // Et on change l'adresse de notifiaction
-        $this->bdd->query("UPDATE settings SET value = 'DCourtier.Auto@equinoa.fr' WHERE id_setting = 44");
-        // email facture
-        $this->bdd->query("UPDATE companies SET email_facture = 'DCourtier.Auto@equinoa.fr'");
-
-        // Email pour prevenir de la mise a jour //
-        $to      = 'unilend@equinoa.fr';
-        $subject = '[UNILEND DEMO] La BDD a ete mise à jour';
-        $message = '
-		<html>
-		<head>
-		  <title>[UNILEND DEMO] La BDD a ete mise à jour</title>
-		</head>
-		<body>
-		  <p>[UNILEND DEMO] La BDD a ete mise à jour</p>
-		</body>
-		</html>
-		';
-
-        $headers = 'MIME-Version: 1.0' . "\r\n";
-        $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-        $headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
-        $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
-
-        if ($this->Config['env'] != "dev") {
-            mail($to, $subject, $message, $headers);
-        } else {
-            mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
-        }
-    }
-
     // Toutes les minutes on check les bids pour les passer en ENCOURS/OK/NOK (check toutes les 5 min et toutes les minutes de 15h30 à 16h00)
     public function _checkBids()
     {
@@ -5667,7 +5484,7 @@ class cronController extends bootstrap
     }
 
     // Une fois par jour (crée le 27/04/2015)
-    public function check_remboursement_preteurs()
+    private function check_remboursement_preteurs()
     {
         $echeanciers = $this->loadData('echeanciers');
         $projects    = $this->loadData('projects');
@@ -6242,7 +6059,7 @@ class cronController extends bootstrap
 
     // fonction synhtese nouveaux projets
     // $type = quotidienne,hebdomadaire,mensuelle
-    public function nouveaux_projets_synthese($array_mail_nouveaux_projects, $type)
+    private function nouveaux_projets_synthese($array_mail_nouveaux_projects, $type)
     {
         $this->clients       = $this->loadData('clients');
         $this->notifications = $this->loadData('notifications');
@@ -6396,7 +6213,7 @@ class cronController extends bootstrap
         }
     }
 
-    public function offres_placees_synthese($array_offres_placees, $type)
+    private function offres_placees_synthese($array_offres_placees, $type)
     {
         $this->clients       = $this->loadData('clients');
         $this->notifications = $this->loadData('notifications');
@@ -6561,7 +6378,7 @@ class cronController extends bootstrap
     }
 
     // offres refusées
-    public function offres_refusees_synthese($array_offres_refusees, $type)
+    private function offres_refusees_synthese($array_offres_refusees, $type)
     {
         $this->clients       = $this->loadData('clients');
         $this->notifications = $this->loadData('notifications');
@@ -6722,7 +6539,7 @@ class cronController extends bootstrap
     }
 
     // offres acceptées
-    public function offres_acceptees_synthese($array_offres_acceptees, $type)
+    private function offres_acceptees_synthese($array_offres_acceptees, $type)
     {
         $this->clients       = $this->loadData('clients');
         $this->notifications = $this->loadData('notifications');
@@ -6908,7 +6725,7 @@ class cronController extends bootstrap
     }
 
     // remb
-    public function remb_synthese($array_remb, $type)
+    private function remb_synthese($array_remb, $type)
     {
         $this->clients       = $this->loadData('clients');
         $this->notifications = $this->loadData('notifications');
@@ -7659,59 +7476,6 @@ class cronController extends bootstrap
         }
     }
 
-    // check les projets n'ayant pas eu de remb a la date theorique emprunteur
-    public function check_remb_emprunteur()
-    {
-        $echeanciers = $this->loadData('echeanciers');
-        $projects    = $this->loadData('projects');
-
-        $date = date('Y-m-d');
-
-        $lRemb_emprunteur = $echeanciers->selectfirstEcheanceByproject($date);
-        if ($lRemb_emprunteur != false) {
-            $table = '';
-            foreach ($lRemb_emprunteur as $remb) {
-                $projects->get($remb['id_project'], 'id_project');
-                $table .= '
-				<tr>
-					<td align="center">' . $remb['id_project'] . ' - ' . utf8_decode($projects->title_bo) . '</td>
-					<td align="center">' . number_format($remb['montant_emprunteur'], 2, ',', '') . '&euro;</td>
-					<td align="center">' . date('Y-m-d', strtotime($remb['date_echeance_emprunteur'])) . '</td>
-					<td align="center">' . date('Y-m-d', strtotime($remb['date_echeance'])) . '</td>
-					<td align="center">' . $remb['ordre'] . '</td>
-					<td align="center"><a href="' . $this->aurl . '/dossiers/detail_remb/' . $remb['id_project'] . '">lien projet</a></td>
-				</tr>';
-            }
-
-            $this->settings->get('Adresse notification prelevement emprunteur', 'type');
-            $destinataire = $this->settings->value;
-            $this->mails_text->get('notification-prelevement-emprunteur', 'lang = "' . $this->language . '" AND type');
-
-            $surl       = $this->surl;
-            $url        = $this->lurl;
-            $liste_remb = $table;
-
-            $sujetMail = $this->mails_text->subject;
-            eval("\$sujetMail = \"$sujetMail\";");
-
-            $texteMail = $this->mails_text->content;
-            eval("\$texteMail = \"$texteMail\";");
-
-            $exp_name = $this->mails_text->exp_name;
-            eval("\$exp_name = \"$exp_name\";");
-
-            $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-            $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-            $this->email = $this->loadLib('email');
-            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-            $this->email->addRecipient(trim($destinataire));
-            $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-            $this->email->setHTMLBody($texteMail);
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-        }
-    }
-
     public function _indexation()
     {
         ini_set('max_execution_time', 3600);
@@ -7913,7 +7677,7 @@ class cronController extends bootstrap
         }
     }
 
-    public function deleteOldFichiers()
+    private function deleteOldFichiers()
     {
         $path  = $this->path . 'protected/sftp_groupama/';
         $duree = 30; // jours
