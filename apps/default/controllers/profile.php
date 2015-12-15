@@ -134,7 +134,7 @@ class profileController extends bootstrap
             6 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement'],
             7 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire'],
             8 => $this->lng['gestion-alertes']['retrait'],
-            9 => $this->lng['gestion-alertes']['retard-et-regulation']
+            9 => $this->lng['gestion-alertes']['incidents-projets-et-regularisation']
         );
 
         $this->infosNotifs['info'] = array(
@@ -146,7 +146,7 @@ class profileController extends bootstrap
             6 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement-info'],
             7 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire-info'],
             8 => $this->lng['gestion-alertes']['retrait-info'],
-            9 => $this->lng['gestion-alertes']['retard-et-regulation-info']
+            9 => $this->lng['gestion-alertes']['incidents-projets-et-regularisation-info']
         );
 
         $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
@@ -1011,7 +1011,7 @@ class profileController extends bootstrap
             6 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement'],
             7 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire'],
             8 => $this->lng['gestion-alertes']['retrait'],
-            9 => $this->lng['gestion-alertes']['retard-et-regulation']
+            9 => $this->lng['gestion-alertes']['incidents-projets-et-regularisation']
         );
 
         $this->infosNotifs['info'] = array(
@@ -1023,7 +1023,7 @@ class profileController extends bootstrap
             6 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement-info'],
             7 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire-info'],
             8 => $this->lng['gestion-alertes']['retrait-info'],
-            9 => $this->lng['gestion-alertes']['retard-et-regulation-info']
+            9 => $this->lng['gestion-alertes']['incidents-projets-et-regularisation-info']
         );
 
         $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
