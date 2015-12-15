@@ -14,8 +14,8 @@
             </tr>
             <?php if (false === empty($this->aProjectHistoryDetails)): ?>
                 <tr>
-                    <th>Mandataire</th>
                     <th>Date jugement</th>
+                    <th>Mandataire</th>
                     <th>Mail</th>
                     <th>Site</th>
                 </tr>
