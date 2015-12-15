@@ -29,12 +29,14 @@
 class clients_status extends clients_status_crud
 {
 
-    const A_CONTROLER        = 1;
-    const COMPLETUDE         = 2;
-    const COMPLETUDE_RELANCE = 3;
-    const COMPLETUDE_REPONSE = 4;
-    const MODIFICATION       = 5;
-    const VALIDE             = 6;
+    const TO_BE_CHECKED         = 10;
+    const COMPLETENESS          = 20;
+    const COMPLETENESS_REMINDER = 30;
+    const COMPLETENESS_REPLY    = 40;
+    const MODIFICATION          = 50;
+    const VALIDATED             = 60;
+    const CLOSED_LENDER_REQUEST = 70;
+    const CLOSED_BY_UNILEND     = 80;
 
     public function clients_status($bdd, $params = '')
     {
@@ -105,7 +107,7 @@ class clients_status extends clients_status_crud
 
     public function getLastStatut($id_client)
     {
-        $sql = 'SELECT id_client_status
+        $sql = 'SELECT id_client_status,
 				FROM `clients_status_history`
 				WHERE id_client = ' . $id_client . '
 				ORDER BY added DESC
@@ -133,7 +135,7 @@ class clients_status extends clients_status_crud
         $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
             // On recup que les clients en completude
-            if ($record['id_client_status'] == self::COMPLETUDE) {
+            if ($record['id_client_status'] == 6) {
                 $result[] = $record;
             }
         }
