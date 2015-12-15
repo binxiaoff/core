@@ -99,6 +99,7 @@ class depot_de_dossierController extends bootstrap
         }
         else {
             header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
+            die;
         }
         $this->clients_adresses->create();
 
