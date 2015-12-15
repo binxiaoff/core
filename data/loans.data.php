@@ -95,9 +95,17 @@ class loans extends loans_crud
         return (int) $this->bdd->result($result, 0, 0);
     }
 
-    public function getPreteurs($id_project)
+    public function getProjectLoansByLender($id_project)
     {
-        $sql = 'SELECT * FROM `loans` WHERE id_project = ' . $id_project . ' AND status = 0 GROUP BY id_lender';
+        $sql = '
+            SELECT id_lender,
+                SUM(amount) AS amount,
+                COUNT(DISTINCT id_loan) AS cnt,
+                GROUP_CONCAT(id_loan) AS loans
+            FROM `loans`
+            WHERE id_project = ' . $id_project . '
+                AND status = 0
+            GROUP BY id_lender';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
