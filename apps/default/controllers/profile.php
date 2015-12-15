@@ -126,27 +126,27 @@ class profileController extends bootstrap
         }
 
         $this->infosNotifs['title'] = array(
-            1 => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets'],
-            2 => $this->lng['gestion-alertes']['offres-realisees'],
-            3 => $this->lng['gestion-alertes']['offres-refusees'],
-            4 => $this->lng['gestion-alertes']['offres-acceptees'],
-            5 => $this->lng['gestion-alertes']['remboursements'],
-            6 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement'],
-            7 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire'],
-            8 => $this->lng['gestion-alertes']['retrait'],
-            9 => $this->lng['gestion-alertes']['incidents-projets-et-regularisation']
+            \clients_gestion_type_notif::TYPE_NEW_PROJECT          => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets'],
+            \clients_gestion_type_notif::TYPE_BID_PLACED           => $this->lng['gestion-alertes']['offres-realisees'],
+            \clients_gestion_type_notif::TYPE_BID_REJECTED         => $this->lng['gestion-alertes']['offres-refusees'],
+            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED        => $this->lng['gestion-alertes']['offres-acceptees'],
+            \clients_gestion_type_notif::TYPE_REPAYMENT            => $this->lng['gestion-alertes']['remboursements'],
+            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement'],
+            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire'],
+            \clients_gestion_type_notif::TYPE_DEBIT                => $this->lng['gestion-alertes']['retrait'],
+            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM      => $this->lng['gestion-alertes']['incidents-projets-et-regularisation']
         );
 
         $this->infosNotifs['info'] = array(
-            1 => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets-info'],
-            2 => $this->lng['gestion-alertes']['offres-realisees-info'],
-            3 => $this->lng['gestion-alertes']['offres-refusees-info'],
-            4 => $this->lng['gestion-alertes']['offres-acceptees-info'],
-            5 => $this->lng['gestion-alertes']['remboursements-info'],
-            6 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement-info'],
-            7 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire-info'],
-            8 => $this->lng['gestion-alertes']['retrait-info'],
-            9 => $this->lng['gestion-alertes']['incidents-projets-et-regularisation-info']
+            \clients_gestion_type_notif::TYPE_NEW_PROJECT          => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets-info'],
+            \clients_gestion_type_notif::TYPE_BID_PLACED           => $this->lng['gestion-alertes']['offres-realisees-info'],
+            \clients_gestion_type_notif::TYPE_BID_REJECTED         => $this->lng['gestion-alertes']['offres-refusees-info'],
+            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED        => $this->lng['gestion-alertes']['offres-acceptees-info'],
+            \clients_gestion_type_notif::TYPE_REPAYMENT            => $this->lng['gestion-alertes']['remboursements-info'],
+            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement-info'],
+            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire-info'],
+            \clients_gestion_type_notif::TYPE_DEBIT                => $this->lng['gestion-alertes']['retrait-info'],
+            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM      => $this->lng['gestion-alertes']['incidents-projets-et-regularisation-info']
         );
 
         $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
@@ -1003,27 +1003,27 @@ class profileController extends bootstrap
         }
 
         $this->infosNotifs['title'] = array(
-            1 => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets'],
-            2 => $this->lng['gestion-alertes']['offres-realisees'],
-            3 => $this->lng['gestion-alertes']['offres-refusees'],
-            4 => $this->lng['gestion-alertes']['offres-acceptees'],
-            5 => $this->lng['gestion-alertes']['remboursements'],
-            6 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement'],
-            7 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire'],
-            8 => $this->lng['gestion-alertes']['retrait'],
-            9 => $this->lng['gestion-alertes']['incidents-projets-et-regularisation']
+            \clients_gestion_type_notif::TYPE_NEW_PROJECT          => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets'],
+            \clients_gestion_type_notif::TYPE_BID_PLACED           => $this->lng['gestion-alertes']['offres-realisees'],
+            \clients_gestion_type_notif::TYPE_BID_REJECTED         => $this->lng['gestion-alertes']['offres-refusees'],
+            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED        => $this->lng['gestion-alertes']['offres-acceptees'],
+            \clients_gestion_type_notif::TYPE_REPAYMENT            => $this->lng['gestion-alertes']['remboursements'],
+            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement'],
+            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire'],
+            \clients_gestion_type_notif::TYPE_DEBIT                => $this->lng['gestion-alertes']['retrait'],
+            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM      => $this->lng['gestion-alertes']['incidents-projets-et-regularisation']
         );
 
         $this->infosNotifs['info'] = array(
-            1 => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets-info'],
-            2 => $this->lng['gestion-alertes']['offres-realisees-info'],
-            3 => $this->lng['gestion-alertes']['offres-refusees-info'],
-            4 => $this->lng['gestion-alertes']['offres-acceptees-info'],
-            5 => $this->lng['gestion-alertes']['remboursements-info'],
-            6 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement-info'],
-            7 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire-info'],
-            8 => $this->lng['gestion-alertes']['retrait-info'],
-            9 => $this->lng['gestion-alertes']['incidents-projets-et-regularisation-info']
+            \clients_gestion_type_notif::TYPE_NEW_PROJECT          => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets-info'],
+            \clients_gestion_type_notif::TYPE_BID_PLACED           => $this->lng['gestion-alertes']['offres-realisees-info'],
+            \clients_gestion_type_notif::TYPE_BID_REJECTED         => $this->lng['gestion-alertes']['offres-refusees-info'],
+            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED        => $this->lng['gestion-alertes']['offres-acceptees-info'],
+            \clients_gestion_type_notif::TYPE_REPAYMENT            => $this->lng['gestion-alertes']['remboursements-info'],
+            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement-info'],
+            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire-info'],
+            \clients_gestion_type_notif::TYPE_DEBIT                => $this->lng['gestion-alertes']['retrait-info'],
+            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM      => $this->lng['gestion-alertes']['incidents-projets-et-regularisation-info']
         );
 
         $this->lTypeNotifs = $this->clients_gestion_type_notif->select();

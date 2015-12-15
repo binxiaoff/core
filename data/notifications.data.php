@@ -28,14 +28,14 @@
 
 class notifications extends notifications_crud
 {
-    const TYPE_NEW_PROJECT                    = 1;
-    const TYPE_BID_PLACED                     = 2;
-    const TYPE_BID_REJECTED                   = 3;
+    const TYPE_BID_REJECTED                   = 1;
+    const TYPE_REPAYMENT                      = 2;
+    const TYPE_BID_PLACED                     = 3;
     const TYPE_LOAN_ACCEPTED                  = 4;
-    const TYPE_REPAYMENT                      = 5;
-    const TYPE_BANK_TRANSFER_CREDIT           = 6;
-    const TYPE_CREDIT_CARD_CREDIT             = 7;
-    const TYPE_DEBIT                          = 8;
+    const TYPE_BANK_TRANSFER_CREDIT           = 5;
+    const TYPE_CREDIT_CARD_CREDIT             = 6;
+    const TYPE_DEBIT                          = 7;
+    const TYPE_NEW_PROJECT                    = 8;
     const TYPE_PROJECT_PROBLEM                = 9;
     const TYPE_PROJECT_RECOVERY               = 10;
     const TYPE_PROJECT_PRECAUTIONARY_PROCESS  = 11;
