@@ -152,7 +152,7 @@ class cronController extends bootstrap
             $this->settings->get('Heure debut periode funding', 'type');
             $this->heureDebutFunding = $this->settings->value;
 
-            $this->lProjects = $this->projects->selectProjectsByStatus(40);
+            $this->lProjects = $this->projects->selectProjectsByStatus(\projects_status::A_FUNDER);
 
             foreach ($this->lProjects as $projects) {
                 $tabdatePublication = explode(':', $projects['date_publication_full']);
@@ -162,7 +162,7 @@ class cronController extends bootstrap
                 echo 'today : ' . $today . '<br><br>';
 
                 if ($datePublication == $today) {// on lance en fonction de l'heure definie dans le bo
-                    $this->projects_status_history->addStatus(-1, 50, $projects['id_project']);
+                    $this->projects_status_history->addStatus(-1, \projects_status::EN_FUNDING, $projects['id_project']);
 
                     // Zippage pour groupama
                     $this->zippage($projects['id_project']);
@@ -211,7 +211,7 @@ class cronController extends bootstrap
         $this->settings->get('Twitter', 'type');
         $lien_tw = $this->settings->value;
 
-        $this->lProjects = $this->projects->selectProjectsByStatus(50);
+        $this->lProjects = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING);
         foreach ($this->lProjects as $projects) {
             $tabdateretrait = explode(':', $projects['date_retrait_full']);
             $dateretrait    = $tabdateretrait[0] . ':' . $tabdateretrait[1];
@@ -234,7 +234,7 @@ class cronController extends bootstrap
                 // Fundé
                 if ($solde >= $projects['amount']) {
                     // on passe le projet en fundé
-                    $this->projects_status_history->addStatus(-1, 60, $projects['id_project']);
+                    $this->projects_status_history->addStatus(-1, \projects_status::FUNDE, $projects['id_project']);
 
                     $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' is now changed to status funded.');
 
@@ -615,7 +615,7 @@ class cronController extends bootstrap
                     }
                 } else {// Funding KO (le solde demandé n'a pas ete atteint par les encheres)
                     // On passe le projet en funding ko
-                    $this->projects_status_history->addStatus(-1, 70, $projects['id_project']);
+                    $this->projects_status_history->addStatus(-1, \projects_status::FUNDING_KO, $projects['id_project']);
 
                     $this->projects->get($projects['id_project'], 'id_project');
                     $this->companies->get($this->projects->id_company, 'id_company');
@@ -910,7 +910,7 @@ class cronController extends bootstrap
         $this->projects_status->getLastStatut($id_project);
 
         // Si le projet est bien en funde on créer les echeances
-        if ($this->projects_status->status == 60) {
+        if ($this->projects_status->status == \projects_status::FUNDE) {
             // On recupere le projet
             $this->projects->get($id_project, 'id_project');
 
@@ -1171,12 +1171,12 @@ class cronController extends bootstrap
                 $dateRemb = strtotime($e['date_echeance_emprunteur']);
 
                 // si statut remb
-                if ($projects_status->status == 80) {
+                if ($projects_status->status == \projects_status::REMBOURSEMENT) {
                     // date echeance emprunteur +5j (probleme)
                     $laDate = mktime(0, 0, 0, date("m", $dateRemb), date("d", $dateRemb) + 5, date("Y", $dateRemb));
                     $type   = 'probleme';
                 } // statut probleme
-                elseif ($projects_status->status == 100) {
+                elseif ($projects_status->status == \projects_status::PROBLEME) {
                     // date echeance emprunteur +8j (recouvrement)
                     $laDate = mktime(0, 0, 0, date("m", $dateRemb), date("d", $dateRemb) + 8, date("Y", $dateRemb));
                     $type   = 'recouvrement';
@@ -1187,11 +1187,11 @@ class cronController extends bootstrap
                     // probleme
                     if ($type == 'probleme') {
                         echo 'probleme<br>';
-                        $projects_status_history->addStatus(-1, 100, $p['id_project']);
+                        $projects_status_history->addStatus(-1, \projects_status::PROBLEME, $p['id_project']);
                     } // recouvrement
                     else {
                         echo 'recouvrement<br>';
-                        $projects_status_history->addStatus(-1, 110, $p['id_project']);
+                        $projects_status_history->addStatus(-1, \projects_status::RECOUVREMENT, $p['id_project']);
 
                         // date du probleme
                         $statusProbleme = $projects_status_history->select('id_project = ' . $p['id_project'] . ' AND  	id_project_status = 9', 'added DESC');
@@ -7923,7 +7923,6 @@ class cronController extends bootstrap
                     $iStatus                       = (int) $aMatches[1];
                     $iLastIndex                    = count($aIntervals);
                     $iPreviousReminderDaysInterval = 0;
-                    $iDaysSincePreviousReminder    = 0;
 
                     foreach ($aIntervals as $iReminderIndex => $iDaysInterval) {
                         $iDaysSincePreviousReminder = $iDaysInterval - $iPreviousReminderDaysInterval;

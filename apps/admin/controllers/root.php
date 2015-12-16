@@ -245,11 +245,9 @@ class rootController extends bootstrap
         $nbProjetValid = 0;
         foreach ($lProjects as $p) {
             $this->projects_status->getLastStatutByMonth($p['id_project'], $this->month, $this->year);
-            if ($this->projects_status->status > 30) // a partir de a funder
-            {
+            if ($this->projects_status->status >= \projects_status::A_FUNDER) {
                 $nbProjetValid += 1;
             }
-
         }
 
         // ratio Projets

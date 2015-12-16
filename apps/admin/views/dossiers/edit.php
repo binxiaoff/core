@@ -73,7 +73,7 @@
         });
 
         $('#duree').change(function() {
-            if(0 == $(this).val() && 35 == <?= $this->current_projects_status->status ?>) {
+            if(0 == $(this).val() && <?= \projects_status::PREP_FUNDING ?> == <?= $this->current_projects_status->status ?>) {
                 $("#status").css('display', 'none');
                 $("#msgProject").css('display', 'none');
                 $("#displayPeriodHS").css('display', 'block');
@@ -276,7 +276,7 @@
                             </select>
                         </td>
                     </tr>
-                    <tr class="content_risk" <?= ($this->current_projects_status->status >= 35 ? '' : 'style="display:none"') ?>>
+                    <tr class="content_risk" <?= ($this->current_projects_status->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
                         <th><label for="risk">Niveau de risque* :</label></th>
                         <td>
                             <select name="risk" id="risk" class="select" style="width:160px;background-color:#AAACAC;">
@@ -472,8 +472,8 @@
                 <input type="hidden" name="check_confirmation_send_email" id="check_confirmation_send_email" value="0">
 
                 <table class="form" style="width: 538px;">
-                    <?php if (in_array($this->current_projects_status->status, array(25, 31, 33, 35))) { ?>
-                        <tr class="change_statut" <?= ($this->current_projects_status->status == 35 ? '' : 'style="display:none"') ?>>
+                    <?php if (in_array($this->current_projects_status->status, array(\projects_status::ATTENTE_ANALYSTE, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING))) { ?>
+                        <tr class="change_statut" <?= ($this->current_projects_status->status == \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
                             <td colspan="2">
                                 <span id="msgProject" style="display:<?= $sDisplayMsgProject ?>;">Vous devez changer le statut du projet pour ajouter une date de publication et de retrait</span>
                                 <span id="msgProjectPeriodHS" style="display:<?= $sDisplayMsgPeriodHs ?>;">V&eacute;rifiez la dur&eacute;e du pr&ecirc;t et le rib avant de pouvoir changer de statut</span>
@@ -482,11 +482,11 @@
                         </tr>
                     <?php } ?>
 
-                    <tr class="content_date_publicaion" <?= ($this->current_projects_status->status >= 35 ? '' : 'style="display:none"') ?>>
+                    <tr class="content_date_publicaion" <?= ($this->current_projects_status->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
                         <th><label for="date_publication">Date de publication* :</label></th>
                         <td id="date_publication">
                             <?php
-                            if (in_array($this->current_projects_status->status, array(20, 31, 33, 35, 40))) {
+                            if (in_array($this->current_projects_status->status, array(\projects_status::EN_ATTENTE_PIECES, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER))) {
                                 ?>
                                 <input style="background-color:#AAACAC;" type="text" name="date_publication" id="date_pub" class="input_dp" value="<?= ($this->projects->date_publication != '0000-00-00' ? $this->dates->formatDate($this->projects->date_publication, 'd/m/Y') : '') ?>" />
                                 <?php
@@ -532,12 +532,12 @@
                         </td>
                     </tr>
 
-                    <tr class="content_date_retrait" <?= ($this->current_projects_status->status >= 35 ? '' : 'style="display:none"') ?>>
+                    <tr class="content_date_retrait" <?= ($this->current_projects_status->status >= \projects_status::PREP_FUNDING ? '' : 'style="display:none"') ?>>
                         <th><label for="date_retrait">Date de retrait* :</label></th>
                         <td id="date_retrait">
 
                             <?php
-                            if (in_array($this->current_projects_status->status, array(20, 31, 33, 35, 40))) {
+                            if (in_array($this->current_projects_status->status, array(\projects_status::EN_ATTENTE_PIECES, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING, \projects_status::A_FUNDER))) {
                                 ?>
                                 <input  style="background-color:#AAACAC;" type="text" name="date_retrait" id="date_de_retrait" class="input_dp" value="<?= ($this->projects->date_retrait != '0000-00-00' ? $this->dates->formatDate($this->projects->date_retrait, 'd/m/Y') : '') ?>" />
                                 <?php
@@ -580,7 +580,7 @@
                                     echo $this->dates->formatDate($this->projects->date_retrait_full, 'd/m/Y H:i');
                                 }
 
-                                if ($this->current_projects_status->status < 60) {
+                                if ($this->current_projects_status->status < \projects_status::FUNDE) {
                                     ?>
                                     &nbsp;&nbsp;&nbsp;<a href="<?= $this->lurl ?>/thickbox/pop_up_edit_date_retrait/<?= $this->projects->id_project ?>" class="thickbox btn_link ">Modifier</a>
                                     <?php
@@ -601,8 +601,8 @@
                         <td></td>
                         <td id="status_dossier">
                         <?php if ($this->current_projects_status->status == \projects_status::EN_ATTENTE_PIECES) { ?>
-                            <input type="button" id="status_dosier_valider" class="btn" onclick="check_status_dossierV2(25, <?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
-                            <input type="button" id="status_dosier_rejeter" class="btn" onclick="check_status_dossierV2(30, <?= $this->projects->id_project ?>);" style="background:#CC0000;border-color:#CC0000;font-size:10px;" value="Rejeter dossier">
+                            <input type="button" id="status_dosier_valider" class="btn" onclick="check_status_dossierV2(<?= \projects_status::ATTENTE_ANALYSTE ?>, <?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
+                            <input type="button" id="status_dosier_rejeter" class="btn" onclick="check_status_dossierV2(<?= \projects_status::REJETE ?>, <?= $this->projects->id_project ?>);" style="background:#CC0000;border-color:#CC0000;font-size:10px;" value="Rejeter dossier">
                         <?php } ?>
                         </td>
                     </tr>
@@ -623,7 +623,7 @@
                         <tr>
                             <th></th>
                             <td>
-                                <?php if ($this->projects_pouvoir->status_remb == '0' && $this->current_projects_status->status == 60) { ?>
+                                <?php if ($this->projects_pouvoir->status_remb == '0' && $this->current_projects_status->status == \projects_status::FUNDE) { ?>
                                     <select name="satut_pouvoir" id="satut_pouvoir" class="select">
                                         <option <?= ($this->projects_pouvoir->status_remb == '0' ? 'selected' : '') ?> value="0">En attente</option>
                                         <option <?= ($this->projects_pouvoir->status_remb == '1' ? 'selected' : '') ?> value="1">Validé</option>
@@ -1680,7 +1680,7 @@
                             if ('ok' == value) {
                                 $(".statut_" + fileType).html('Enregistré');
 
-                                <?php if (0 < $this->projects->period  && 1000000 > $this->projects->period && 35 == $this->current_projects_status->status) { ?>
+                                <?php if (0 < $this->projects->period  && 1000000 > $this->projects->period && \projects_status::PREP_FUNDING == $this->current_projects_status->status) { ?>
                                     if (fileType == 'fichier_3' && $('#displayPeriodHS').css('display') == 'block') { // RIB
                                         $("#status").css('display', 'block');
                                         $("#msgProject").css('display', 'block');
@@ -1763,7 +1763,7 @@
         <div id="content_etape6">
             <?php
             // si statut revueA
-            if ($this->current_projects_status->status >= 31) {
+            if ($this->current_projects_status->status >= \projects_status::REVUE_ANALYSTE) {
                 $moyenne1 = (($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1));
                 $moyenne = round($moyenne1, 1);
                 ?>
@@ -1847,7 +1847,7 @@
                             <input type="button" onclick="valid_rejete_etape6(3,<?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
                             <?php
                         }
-                        if ($this->current_projects_status->status == 31) {
+                        if ($this->current_projects_status->status == \projects_status::REVUE_ANALYSTE) {
                             ?>
                             <input type="button" onclick="valid_rejete_etape6(1,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
                             <input type="button" onclick="valid_rejete_etape6(2,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape6" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
@@ -1877,11 +1877,11 @@
                         individuel = (Math.round(individuel * 10) / 10);
 
                         // Calcules
-                        var performance_fianciere = ((structure + rentabilite + tresorerie) / 3)
+                        var performance_fianciere = ((structure + rentabilite + tresorerie) / 3);
                         performance_fianciere = (Math.round(performance_fianciere * 10) / 10);
 
                         // Arrondis
-                        var marche_opere = ((global + individuel) / 2)
+                        var marche_opere = ((global + individuel) / 2);
                         marche_opere = (Math.round(marche_opere * 10) / 10);
 
                         // --- Fin chiffre et marché ---
@@ -1915,7 +1915,7 @@
         <div id="content_etape7">
             <?php
             // si statut revueA
-            if ($this->current_projects_status->status >= 33) {
+            if ($this->current_projects_status->status >= \projects_status::COMITE) {
                 ?>
                 <div id="title_etape7">Etape 7</div>
                 <div id="etape7">
@@ -2009,11 +2009,11 @@
                             individuel = (Math.round(individuel * 10) / 10);
 
                             // Calcules
-                            var performance_fianciere = ((structure + rentabilite + tresorerie) / 3)
+                            var performance_fianciere = ((structure + rentabilite + tresorerie) / 3);
                             performance_fianciere = (Math.round(performance_fianciere * 10) / 10);
 
                             // Arrondis
-                            var marche_opere = ((global + individuel) / 2)
+                            var marche_opere = ((global + individuel) / 2);
                             marche_opere = (Math.round(marche_opere * 10) / 10);
 
                             // --- Fin chiffre et marché ---
@@ -2048,11 +2048,11 @@
                             <input type="button" onclick="valid_rejete_etape7(3,<?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
                             <?php
                         }
-                        if ($this->current_projects_status->status == 33) {
+                        if ($this->current_projects_status->status == \projects_status::COMITE) {
                             ?>
-                            <input type="button" onclick="valid_rejete_etape7(1,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">
-                            <input type="button" onclick="valid_rejete_etape7(2,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
-                            <input type="button" onclick="valid_rejete_etape7(4,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" value="Plus d'informations">
+                            <input type="button" onclick="valid_rejete_etape7(1, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">
+                            <input type="button" onclick="valid_rejete_etape7(2, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
+                            <input type="button" onclick="valid_rejete_etape7(4, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape7" value="Plus d'informations">
                             <?php
                         }
                         ?>

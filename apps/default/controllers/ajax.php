@@ -219,19 +219,19 @@ class ajaxController extends bootstrap
             $montantHaut = 0;
             $montantBas  = 0;
             // si fundé ou remboursement
-            if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
+            if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) {
                 foreach ($this->loans->select('id_project = ' . $pf['id_project']) as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
                 }
             } // funding ko
-            elseif ($this->projects_status->status == 70) {
+            elseif ($this->projects_status->status == \projects_status::FUNDING_KO) {
                 foreach ($this->bids->select('id_project = ' . $pf['id_project']) as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
                 }
             } // emprun refusé
-            elseif ($this->projects_status->status == 75) {
+            elseif ($this->projects_status->status == \projects_status::PRET_REFUSE) {
                 foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 1') as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
@@ -251,7 +251,7 @@ class ajaxController extends bootstrap
             $affichage .= "
             <tr class='unProjet' id='project" . $pf['id_project'] . "'>
                 <td>";
-            if ($this->projects_status->status >= 60) {
+            if ($this->projects_status->status >= \projects_status::FUNDE) {
                 $dateRest = 'Terminé';
             } else {
                 $tab_date_retrait = explode(' ', $pf['date_retrait_full']);
@@ -309,7 +309,7 @@ class ajaxController extends bootstrap
             $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'><strong id='val" . $pf['id_project'] . "'>" . $dateRest . "</strong></a></td>
                 <td>";
 
-            if ($this->projects_status->status >= 60) {
+            if ($this->projects_status->status >= \projects_status::FUNDE) {
                 $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "' class='btn btn-info btn-small multi grise1 btn-grise'>" . $this->lng['preteur-projets']['voir-le-projet'] . "</a>";
             } else {
                 $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "' class='btn btn-info btn-small'>" . $this->lng['preteur-projets']['pretez'] . "</a>";

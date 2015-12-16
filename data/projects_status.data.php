@@ -48,15 +48,15 @@ class projects_status extends projects_status_crud
     const FUNDING_KO              = 70;
     const PRET_REFUSE             = 75;
     const REMBOURSEMENT           = 80;
+    const REMBOURSEMENT_ANTICIPE  = 85;
     const REMBOURSE               = 90;
     const PROBLEME                = 100;
-    const RECOUVREMENT            = 110;
-    const DEFAUT                  = 120;
-    const REMBOURSEMENT_ANTICIPE  = 130;
-    const PROBLEME_J_X            = 140;
-    const PROCEDURE_SAUVEGARDE    = 150;
-    const REDRESSEMENT_JUDICIAIRE = 160;
-    const LIQUIDATION_JUDICIAIRE  = 170;
+    const PROBLEME_J_X            = 110;
+    const RECOUVREMENT            = 120;
+    const PROCEDURE_SAUVEGARDE    = 130;
+    const REDRESSEMENT_JUDICIAIRE = 140;
+    const LIQUIDATION_JUDICIAIRE  = 150;
+    const DEFAUT                  = 160;
 
     public function __construct($bdd, $params = '')
     {

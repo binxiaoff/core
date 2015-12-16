@@ -558,7 +558,7 @@ class dossiersController extends bootstrap
 
                 $this->retour_dates_valides = "";
 
-                if (! $dates_valide && in_array('40', array($_POST['status'], $this->current_projects_status->status))) {
+                if (! $dates_valide && in_array(\projects_status::A_FUNDER, array($_POST['status'], $this->current_projects_status->status))) {
                     $this->retour_dates_valides = "La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus de 24h.";
                 } // si date valide
                 else {
@@ -1288,7 +1288,7 @@ class dossiersController extends bootstrap
                 } elseif ($_POST['date_retrait_minute'] < 0) {
                     $form_ok = false;
                 }
-                if ($this->current_projects_status->status > 50) {
+                if ($this->current_projects_status->status > \projects_status::EN_FUNDING) {
                     $form_ok = false;
                 }
 
@@ -2937,8 +2937,8 @@ class dossiersController extends bootstrap
                     }
 
                     // si le projet etait en statut Recouvrement/probleme on le repasse en remboursement  || $this->projects_status->status == 100
-                    if ($this->projects_status->status == 110) {
-                        $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 80, $this->params['0']);
+                    if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
+                        $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $this->params['0']);
                     }
 
                     $settingsControleRemb->value = 1;
@@ -3006,7 +3006,7 @@ class dossiersController extends bootstrap
                     $remboursement_anticipe_mail_a_envoyer->create();
 
                     //on change le statut du projet
-                    $this->projects_status_history->addStatus(-1, 130, $this->projects->id_project);
+                    $this->projects_status_history->addStatus(-1, \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects->id_project);
 
                     // REMB ECHEANCE PRETEURS ----------------------------------------------------------------------
                     // FB
@@ -3235,8 +3235,8 @@ class dossiersController extends bootstrap
                     }
 
                     // si le projet etait en statut Recouvrement/probleme on le repasse en remboursement  || $this->projects_status->status == 100
-                    if ($this->projects_status->status == 110) {
-                        $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 24, $this->projects->id_project);
+                    if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
+                        $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects->id_project);
                     }
 
                     header('Location:' . $this->lurl . '/dossiers/detail_remb/' . $this->projects->id_project);

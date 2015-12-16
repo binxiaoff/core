@@ -625,10 +625,10 @@ class ajaxController extends bootstrap
                 $this->current_projects_status->getLastStatut($this->projects->id_project);
 
                 //on charge la liste des statut dispo
-                if ($this->current_projects_status->status == 20) {
-                    $this->lProjects_status = $this->projects_status->select(' status <= 20 ', ' status ASC ');
-                } elseif ($this->current_projects_status->status >= 80) {
-                    $this->lProjects_status = $this->projects_status->select(' status >= 80 ', ' status ASC ');
+                if ($this->current_projects_status->status == \projects_status::EN_ATTENTE_PIECES) {
+                    $this->lProjects_status = $this->projects_status->select(' status <= ' . \projects_status::EN_ATTENTE_PIECES, ' status ASC ');
+                } elseif ($this->current_projects_status->status >= \projects_status::REMBOURSEMENT) {
+                    $this->lProjects_status = $this->projects_status->select(' status >= ' . \projects_status::REMBOURSEMENT, ' status ASC ');
                 } else {
                     $this->lProjects_status = array();
                 }
@@ -1026,7 +1026,7 @@ class ajaxController extends bootstrap
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
 
-            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 10, $this->projects->id_project);
+            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::A_TRAITER, $this->projects->id_project);
 
             //**********************************************//
             //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION ***//
@@ -1774,12 +1774,9 @@ class ajaxController extends bootstrap
         $projects_status_history = $this->loadData('projects_status_history');
 
         if (isset($_POST['id_project']) && isset($_POST['id_reception']) && $projects->get($_POST['id_project'], 'id_project') && $receptions->get($_POST['id_reception'], 'id_reception') && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = 6 AND id_prelevement') && $new_transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = 15 AND id_prelevement') == false) {
-            // On recup l'entreprise
             $companies->get($projects->id_company, 'id_company');
-            // On recup le client
             $clients->get($companies->id_client_owner, 'id_client');
 
-            // transact
             $new_transactions->id_prelevement   = $receptions->id_reception;
             $new_transactions->id_client        = $clients->id_client;
             $new_transactions->montant          = '-' . $receptions->montant;
@@ -1791,16 +1788,14 @@ class ajaxController extends bootstrap
             $new_transactions->type_transaction = 15; // rejet remb emprunteur
             $new_transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
             $new_transactions->id_user          = $_SESSION['user']['id_user'];
-            $new_transactions->id_transaction   = $new_transactions->create();
+            $new_transactions->create();
 
-            // bank unilend
             $bank_unilend->id_transaction = $new_transactions->id_transaction;
             $bank_unilend->id_project     = $projects->id_project;
             $bank_unilend->montant        = '-' . $receptions->montant;
             $bank_unilend->type           = 1;
             $bank_unilend->create();
 
-            // mise a jour de receptions
             $receptions->status_bo = 3; // rejeté
             $receptions->remb      = 0;
             $receptions->update();
@@ -1839,12 +1834,10 @@ class ajaxController extends bootstrap
                 }
             }
 
-            // statut probleme
-            $projects_status_history->addStatus(-1, 100, $p['id_project']);
+            $projects_status_history->addStatus(-1, \projects_status::PROBLEME, $projects->id_project);
 
             echo 'ok';
         }
-
     }
 
     // supprime le bid dans la gestion du preteur et raffiche sa liste de bid mis a jour
@@ -1860,15 +1853,10 @@ class ajaxController extends bootstrap
         $this->projects = $this->loadData('projects');
 
         if (isset($_POST['id_lender']) && isset($_POST['id_bid']) && $bids->get($_POST['id_bid'], 'id_bid') && $lender->get($_POST['id_lender'], 'id_lender_account')) {
-
-            // Histo user //
             $serialize = serialize($_POST);
             $this->users_history->histo(4, 'Bid en cours delete', $_SESSION['user']['id_user'], $serialize);
-            ////////////////
-
 
             $wallets_lines->get($bids->id_lender_wallet_line, 'id_wallet_line');
-
             $transactions->get($wallets_lines->id_transaction, 'id_transaction');
 
             $transactions->delete($transactions->id_transaction, 'id_transaction');
@@ -2320,14 +2308,10 @@ class ajaxController extends bootstrap
                     $this->projects_notes->create();
                 }
 
-                // validé (comité)
                 if ($_POST['status'] == 1) {
-                    // on maj le statut
-                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 33, $this->projects->id_project);
-                } // rejetéA
-                elseif ($_POST['status'] == 2) {
-                    // on maj le statut
-                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 32, $this->projects->id_project);
+                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::COMITE, $this->projects->id_project);
+                } elseif ($_POST['status'] == 2) {
+                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REJET_ANALYSTE, $this->projects->id_project);
 
                     //////////////////////////////////////
                     /// MAIL emprunteur-dossier-rejete ///
@@ -2649,10 +2633,8 @@ class ajaxController extends bootstrap
 
                 $btn_etape6 = '';
 
-                // validé (prep Funding)
                 if ($_POST['status'] == 1) {
-                    // on maj le statut
-                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 35, $this->projects->id_project);
+                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects->id_project);
 
                     $content_risk = '
                         <th><label for="risk">Niveau de risque* :</label></th>
@@ -2670,10 +2652,8 @@ class ajaxController extends bootstrap
                             </select>
                         </td>
                     ';
-                } // rejeté
-                elseif ($_POST['status'] == 2) {
-                    // on maj le statut
-                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 34, $this->projects->id_project);
+                } elseif ($_POST['status'] == 2) {
+                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REJET_COMITE, $this->projects->id_project);
 
                     //////////////////////////////////////
                     /// MAIL emprunteur-dossier-rejete ///
@@ -2719,12 +2699,10 @@ class ajaxController extends bootstrap
                     $this->clients->status = 0;
                     $this->clients->update();
                 } elseif ($_POST['status'] == 4) {
-                    // on maj le statut
-                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 31, $this->projects->id_project);
+                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REVUE_ANALYSTE, $this->projects->id_project);
 
                     $btn_etape6 = '
                         <input type="button" onclick="valid_rejete_etape6(3,' . $this->projects->id_project . ')" class="btn"  value="Sauvegarder">
-
                         <input type="button" onclick="valid_rejete_etape6(1,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
                         <input type="button" onclick="valid_rejete_etape6(2,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
                     ';

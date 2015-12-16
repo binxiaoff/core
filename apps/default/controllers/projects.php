@@ -232,7 +232,7 @@ class projectsController extends bootstrap
                     $this->form_ok = false;
                 } elseif ($montant_p >= $this->projects->amount) {
                     $this->form_ok = false;
-                } elseif ($this->projects_status->status != 50) {
+                } elseif ($this->projects_status->status != \projects_status::EN_FUNDING) {
                     $this->form_ok = false;
                 }
 
@@ -473,7 +473,7 @@ class projectsController extends bootstrap
             }
 
             // Date de retrait complete
-            if ($this->projects_status->status == 50) {
+            if ($this->projects_status->status == \projects_status::EN_FUNDING) {
                 $this->date_retrait = $this->dates->formatDateComplete($this->projects->date_retrait);
                 $this->heure_retrait = substr($this->heureFinFunding, 0, 2);
             } else {

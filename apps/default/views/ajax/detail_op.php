@@ -94,7 +94,7 @@ if ($this->lSumLoans != false)
 
                 <td>
             <?php
-            if ($this->projects_status->status >= 80)
+            if ($this->projects_status->status >= \projects_status::REMBOURSEMENT)
             {
                 ?>
                         <a href="<?= $this->lurl . '/pdf/contrat/' . $this->clients->hash . '/' . $l['id_loan_if_one_loan'] ?>"><img src="<?= $this->surl ?>/styles/default/images/pdf50.png" class="btn-detailLoans_<?= $k ?>" style="margin-right: 20px;"/></a>
@@ -201,7 +201,7 @@ if ($this->lSumLoans != false)
                                     <td class="col6" style="white-space: nowrap;"><?= $this->ficelle->formatNumber(($SumAremb[0]['montant'] / 100) - $fiscal) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
                                     <td>
                                         <?
-                                        if ($this->projects_status->status >= 80)
+                                        if ($this->projects_status->status >= \projects_status::REMBOURSEMENT)
                                         {
                                             ?>
                                             <a class="tooltip-anchor icon-pdf" href="<?= $this->lurl . '/pdf/contrat/' . $this->clients->hash . '/' . $loan['id_loan'] ?>"></a>
@@ -303,7 +303,7 @@ if ($this->lSumLoans != false)
                                         <td class="col6" style="white-space: nowrap;"><?= $this->ficelle->formatNumber(($SumAremb[0]['montant'] / 100) - $fiscal) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
                                         <td style="padding-top:5px;">
                                             <?
-                                            if ($this->projects_status->status >= 80)
+                                            if ($this->projects_status->status >= \projects_status::REMBOURSEMENT)
                                             {
                                                 ?><a style="font-size:9px;margin-left: 14px;margin-right: 6px;  vertical-align: middle;" class="btn btn-info btn-small multi" href="<?= $this->lurl . '/pdf/declaration_de_creances/' . $this->clients->hash . '/' . $loan['id_loan'] ?>"><?= $this->lng['preteur-operations-detail']['declaration-de-creances'] ?></a><?php
                                             }
@@ -480,7 +480,7 @@ if ($this->lSumLoans != false)
             order: order,
             type: type,
             annee: $("#anneeDetailPret").val()
-        }
+        };
         $.post(add_url + "/ajax/detail_op", val).done(function (data) {
 
             if (data != 'nok') {

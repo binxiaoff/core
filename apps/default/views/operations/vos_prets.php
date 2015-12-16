@@ -251,7 +251,7 @@
                             <td><?= $this->ficelle->formatNumber($l['mensuel']) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
                         <?php } ?>
                         <td>
-                        <?php if ($this->projects_status->status >= 80) { ?>
+                        <?php if ($this->projects_status->status >= \projects_status::REMBOURSEMENT) { ?>
                             <a href="<?= $this->lurl . '/pdf/contrat/' . $this->clients->hash . '/' . $l['id_loan_if_one_loan'] ?>"><img
                                src="<?= $this->surl ?>/styles/default/images/pdf50.png"
                                class="btn-detailLoans_<?= $k ?>" style="margin-right: 20px;"/></a>
@@ -368,7 +368,7 @@
                                                 style="white-space: nowrap;"><?= $this->ficelle->formatNumber(($SumAremb[0]['montant'] / 100) - $fiscal) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
                                             <td>
                                                 <?
-                                                if ($this->projects_status->status >= 80) {
+                                                if ($this->projects_status->status >= \projects_status::REMBOURSEMENT) {
                                                     ?>
                                                     <a class="tooltip-anchor icon-pdf"
                                                        href="<?= $this->lurl . '/pdf/contrat/' . $this->clients->hash . '/' . $loan['id_loan'] ?>"></a>
@@ -472,7 +472,7 @@
                                                     style="white-space: nowrap;"><?= $this->ficelle->formatNumber(($SumAremb[0]['montant'] / 100) - $fiscal) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
                                                 <td style="padding-top:5px;">
                                                     <?
-                                                    if ($this->projects_status->status >= 80) {
+                                                    if ($this->projects_status->status >= \projects_status::REMBOURSEMENT) {
                                                         ?><a
                                                         style="font-size:9px;margin-left: 14px;margin-right: 6px;  vertical-align: middle;"
                                                         class="btn btn-info btn-small multi"
@@ -583,11 +583,11 @@
                 order = $("#order_prochaine_prets.asc").length ?  'desc' : 'asc';
         }
         else if ($(this).attr('id') == 'order_fin_prets') {
-            var type = 'order_fin_prets'
+            var type = 'order_fin_prets';
                 order = $("#order_fin_prets.asc").length ?  'desc' : 'asc';
         }
         else if ($(this).attr('id') == 'order_mensualite_prets') {
-            var type = 'order_mensualite_prets'
+            var type = 'order_mensualite_prets';
                 order = $("#order_mensualite_prets.asc").length ?  'desc' : 'asc';
         }
 
@@ -597,7 +597,7 @@
             order: order,
             type: type,
             annee: $("#anneeDetailPret").val()
-        }
+        };
 
         $.post(add_url + "/ajax/detail_op", val).done(function (data) {
             if (data != 'nok') {

@@ -26,7 +26,7 @@ if ($heure_sans_minute == '00h00') {
     $heure_sans_minute = $HfinFunding[0] . 'h00';
 }
 
-if ($this->projects_status->status != 50 || $this->page_attente) {
+if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->page_attente) {
     $this->dateRest = $this->lng['preteur-projets']['termine'];
 } else {
     $this->heureFinFunding = $tab_heure_sans_minute[0] . ':' . $tab_heure_sans_minute[1];
@@ -92,20 +92,17 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                         <p class="left multi-line">
                             <em><?= $this->projects->nature_project ?></em>
                             <?
-                            // si projet pas terminé
-                            if ($this->projects_status->status == 50) {
+
+                            if ($this->projects_status->status == \projects_status::EN_FUNDING) {
                                 ?><strong class="green-span">
                                 <i class="icon-clock-green"></i><?= $this->lng['preteur-projets']['reste'] ?>
                                 <span id="val"><?= $this->dateRest ?></span></strong>, <?
-                            } // sinon il est terminé
-                            else {
+                            } else {
                                 ?><strong class="red-span"><span id="val"><?= $this->dateRest ?></span></strong><?
                             }
                             ?>
-
-                            <?= $this->lng['preteur-projets']['le'] ?> <?= strtolower($this->date_retrait) ?> <?= $this->lng['preteur-projets']['a'] ?> <?= $heure_sans_minute ?><?php /* ?><?=$this->heure_retrait?>h<?php */ ?>
+                            <?= $this->lng['preteur-projets']['le'] ?> <?= strtolower($this->date_retrait) ?> <?= $this->lng['preteur-projets']['a'] ?> <?= $heure_sans_minute ?>
                         </p>
-
                     </div>
                     <div class="main-project-info clearfix">
                         <?php if ($this->projects->photo_projet != '') { ?>
@@ -136,7 +133,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                                 <li>
                                     <span class="i-holder"><i class="icon-graph tooltip-anchor" data-placement="right" data-original-title="<?= $this->lng['preteur-projets']['info-taux-moyen'] ?>"></i></span>
                                     <?php if ($this->CountEnchere > 0) { ?>
-                                        <span><?= $this->ficelle->formatNumber(($this->projects_status->status == 60 || $this->projects_status->status >= 80) ? $this->AvgLoans : $this->avgRate, 1) . ' %' ?></span>
+                                        <span><?= $this->ficelle->formatNumber(($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) ? $this->AvgLoans : $this->avgRate, 1) . ' %' ?></span>
                                     <?php } else { ?>
                                         <span><?= $this->projects->target_rate . ($this->projects->target_rate == '-' ? '' : ' %') ?></span>
                                     <?php } ?>
@@ -146,7 +143,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                     </div>
                     <nav class="tabs-nav">
                         <ul>
-                            <?php if ($this->projects_status->status == 50) { ?>
+                            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) { ?>
                                 <li class="active"><a href="#"><?= $this->lng['preteur-projets']['carnet-dordres'] ?></a></li>
                                 <li><a href="#"><?= $this->lng['preteur-projets']['presentation'] ?></a></li>
                             <?php } else { ?>
@@ -154,7 +151,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                             <?php } ?>
                             <li><a href="#"><?= $this->lng['preteur-projets']['comptes'] ?></a></li>
                             <?php
-                            if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
+                            if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) {
                                 if (isset($_SESSION['client']) && $_SESSION['client']['status_pre_emp'] == 1) {
                                     ?>
                                     <li><a href="#"><?= $this->lng['preteur-projets']['suivi-projet'] ?></a></li>
@@ -167,7 +164,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                     <div class="tabs">
                         <?
                         // en funding
-                        if ($this->projects_status->status == 50) {
+                        if ($this->projects_status->status == \projects_status::EN_FUNDING) {
                         ?>
                         <div class="tab tc" id="bids">
                             <?
@@ -565,10 +562,10 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
             <?php } else { ?>
                 <strong class="red-span"><span id="valM"><?= $this->dateRest ?></span></strong>
             <?php } ?>
-            <?= $this->lng['preteur-projets']['le'] ?> <?= strtolower($this->date_retrait) ?> <?= $this->lng['preteur-projets']['a'] ?> <?= $heure_sans_minute ?><?php /* ?><?=$this->heure_retrait?>h<?php */ ?></p>
+            <?= $this->lng['preteur-projets']['le'] ?> <?= strtolower($this->date_retrait) ?> <?= $this->lng['preteur-projets']['a'] ?> <?= $heure_sans_minute ?>
             <?php $this->fireView('../blocs/project-mobile-header'); ?>
             <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $this->projects->photo_projet ?>" alt="<?= $this->projects->photo_projet ?>">
-            <?php if ($this->bIsConnected && false === $this->page_attente && $this->clients_status->status == 60) { ?>
+            <?php if ($this->bIsConnected && false === $this->page_attente && $this->clients_status->status == \projects_status::FUNDE) { ?>
                 <div class="single-project-actions">
                     <a href="<?= $this->lurl . '/thickbox/pop_up_offer_mobile/' . $this->projects->id_project ?>" class="btn popup-link"><?= $this->lng['preteur-projets']['preter'] ?></a>
                 </div>
@@ -813,7 +810,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                     </p>
                 </div>
             </article>
-            <?php if (($this->projects_status->status == 60 || $this->projects_status->status >= 80) && isset($_SESSION['client']) && $_SESSION['client']['status_pre_emp'] == 1) { ?>
+            <?php if (($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) && isset($_SESSION['client']) && $_SESSION['client']['status_pre_emp'] == 1) { ?>
                 <article class="ex-article">
                     <h3>
                         <a href="#"><?= $this->lng['preteur-projets']['suivi-projet'] ?></a><i class="icon-arrow-down up"></i>
