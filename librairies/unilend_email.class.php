@@ -3,6 +3,7 @@
 use Unilend\librairies\Mailer\Email;
 use Unilend\librairies\Mailer\Mailer;
 use Unilend\librairies\Mailer\Mime\Header;
+use Unilend\librairies\Data;
 
 /**
  * Created by PhpStorm.
@@ -12,9 +13,6 @@ use Unilend\librairies\Mailer\Mime\Header;
  */
 class unilend_email
 {
-    /** @var mails_filer */
-    private $oMailFiler = null;
-
     /** @var mails_text */
     private $oMailText = null;
 
@@ -31,20 +29,10 @@ class unilend_email
     /**
      * unilend_email constructor.
      *
-     * @param $aAttributes
      */
-    public function __construct($aAttributes)
+    public function __construct()
     {
-        $this->oMailFiler = $aAttributes[0];
-        $this->oMailText  = $aAttributes[1];
-
-        if (isset($aAttributes[2])) {
-            $this->oNmp = $aAttributes[2];
-        }
-
-        if (isset($aAttributes[3])) {
-            $this->oNmpDesabo = $aAttributes[3];
-        }
+        $this->oMailText  = Data::loadData('mails_text');
 
         $this->oEmail = new Email();
     }
@@ -57,13 +45,10 @@ class unilend_email
         $this->prepareEmailFromTemplate();
 
         $aParams = array(
-            'mails_filer' => $this->oMailFiler,
             'mail_text_id' => $this->oMailText->id_textemail
         );
 
         if (ENVIRONMENT === 'prod') {
-            $aParams['nmp']            = $this->oNmp;
-            $aParams['nmp_desabo']     = $this->oNmpDesabo;
             $aParams['mail_var']       = $this->aMailVar;
             $aParams['mail_text_mode'] = $this->oMailText->mode;
             $aParams['nmp_secure']     = $this->oMailText->nmp_secure;
@@ -83,7 +68,6 @@ class unilend_email
         $this->prepareEmailFromTemplate();
 
         $aParams = array(
-            'mails_filer' => $this->oMailFiler,
             'mail_text_id' => $this->oMailText->id_textemail
         );
         Mailer::setTransport('mail', $aParams);
@@ -126,9 +110,6 @@ class unilend_email
 
     private function prepareEmailFromTemplate()
     {
-        if (! $this->oMailFiler instanceof \mails_filer) {
-            throw new \Exception('not an object mails_filer');
-        }
         if (! $this->oMailText instanceof \mails_text) {
             throw new \Exception('not an object mails_text');
         }

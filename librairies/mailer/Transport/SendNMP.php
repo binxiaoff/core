@@ -3,6 +3,7 @@
 namespace Unilend\librairies\Mailer\Transport;
 
 use Exception;
+use Unilend\librairies\Data;
 use Unilend\librairies\Mailer\Email;
 
 /**
@@ -63,13 +64,14 @@ class SendNMP extends abstractTransport
             throw new Exception("The Transport NMP doesn't support multi-recipients");
         }
 
-        if (isset($this->opts['mails_filer']) && $this->opts['mails_filer'] instanceof \mails_filer
-            && isset($this->opts['nmp']) && $this->opts['nmp'] instanceof \nmp
-            && isset($this->opts['nmp_desabo']) && $this->opts['nmp_desabo'] instanceof \nmp_desabo
+        $oNMP = Data::loadData('nmp');
+        $oNMPDesabo = Data::loadData('nmp_desabo');
+
+        if ($oNMP instanceof \nmp && $oNMPDesabo instanceof \nmp_desabo
             && isset($this->opts['nmp_secure'], $this->opts['id_nmp'], $this->opts['nmp_unique'], $this->opts['mail_text_id'], $this->opts['mail_text_mode'])
         ) {
             // On creer la ligne du filer
-            $this->saveMessage($email, $this->opts['mails_filer'], $this->opts['mail_text_id']);
+            $oMailsFiler = $this->saveMessage($email, $this->opts['mail_text_id']);
 
             if (ENVIRONMENT === 'demo') {
                 // pas d'enregistrement nmp de minuit a 6h du matin pour la demo
@@ -83,26 +85,26 @@ class SendNMP extends abstractTransport
             }
 
             // Send mail to those who aren't unsubscribed
-            if (!$this->opts['nmp_desabo']->get($this->opts['mails_filer']->email_nmp, 'email') || $this->opts['mail_text_mode'] == 0) {
-                $varDyn = array();
+            if ($oMailsFiler instanceof \mails_filer && !$oNMPDesabo->exist($oMailsFiler->email_nmp, 'email') || $this->opts['mail_text_mode'] == 0) {
+                $aVarDyn = array();
 
                 foreach ($this->opts['mail_var'] as $key => $value) {
-                    $varDyn['entry'][] = array('key' => $key, 'value' => $value);
+                    $aVarDyn['entry'][] = array('key' => $key, 'value' => $value);
                 }
 
-                $varDyn['entry'][] = array(
+                $aVarDyn['entry'][] = array(
                     'key' => 'miroir',
-                    'value' => '/miroir/' . $this->opts['mails_filer']->id_filermails . '/' . md5($this->opts['mails_filer']->id_textemail)
+                    'value' => '/miroir/' . $oMailsFiler->id_filermails . '/' . md5($oMailsFiler->id_textemail)
                 );
-                $varDyn['entry'][] = array(
+                $aVarDyn['entry'][] = array(
                     'key' => 'desabo',
-                    'value' => '/removeNMP/' . $this->opts['mails_filer']->desabo . '/' . $this->opts['mails_filer']->id_filermails . '/' . $this->opts['mails_filer']->email_nmp
+                    'value' => '/removeNMP/' . $oMailsFiler->desabo . '/' . $oMailsFiler->id_filermails . '/' . $oMailsFiler->email_nmp
                 );
 
                 $arg0['arg0'] = array(
                     'content' => array(),
-                    'dyn' => $varDyn,
-                    'email' => $this->opts['mails_filer']->email_nmp,
+                    'dyn' => $aVarDyn,
+                    'email' => $oMailsFiler->email_nmp,
                     'encrypt' => $this->opts['nmp_secure'],
                     'notificationId' => $this->opts['id_nmp'],
                     'random' => $this->opts['nmp_unique'],
@@ -111,11 +113,11 @@ class SendNMP extends abstractTransport
                     'uidkey' => 'EMAIL'
                 );
 
-                $this->opts['nmp']->serialize_content = serialize($arg0);
-                $this->opts['nmp']->date              = date('Y-m-d');
-                $this->opts['nmp']->mailto            = $this->opts['mails_filer']->email_nmp;
-                $this->opts['nmp']->status            = 0;
-                $this->opts['nmp']->create();
+                $oNMP->serialize_content = serialize($arg0);
+                $oNMP->date              = date('Y-m-d');
+                $oNMP->mailto            = $oMailsFiler->email_nmp;
+                $oNMP->status            = 0;
+                $oNMP->create();
             }
         }
     }

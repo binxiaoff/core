@@ -10,6 +10,7 @@
 namespace Unilend\librairies\Mailer\Transport;
 
 use Exception;
+use Unilend\librairies\Data;
 use Unilend\librairies\Mailer\Mailer;
 use Unilend\librairies\Mailer\Email;
 
@@ -94,12 +95,15 @@ abstract class abstractTransport implements TransportInterface
     }
 
     /**
-     * @param Email        $oEmail
-     * @param \mails_filer $oMailFiler
-     * @param              $iTextMailId
+     * @param Email $oEmail
+     * @param       $iTextMailId
+     *
+     * @return mixed
      */
-    protected function saveMessage(Email $oEmail, \mails_filer $oMailFiler, $iTextMailId)
+    protected function saveMessage(Email $oEmail, $iTextMailId)
     {
+        $oMailFiler = Data::loadData('mails_filer');
+
         list($sHeaders, $sMessage) = explode("\r\n\r\n", $oEmail->__toString(), 2);
 
         $oMailFiler->from         = trim(str_replace('From:', '', $oEmail->headers->get('From')));
@@ -112,6 +116,8 @@ abstract class abstractTransport implements TransportInterface
         $oMailFiler->create();
         $oMailFiler->desabo = md5('EQ' . $this->opts['mails_filer']->id_filermails . $this->opts['mails_filer']->email_nmp . 'EQ');
         $oMailFiler->update();
+
+        return $oMailFiler;
     }
 
     /**
