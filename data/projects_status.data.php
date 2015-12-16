@@ -171,7 +171,11 @@ class projects_status extends projects_status_crud
             case self::PREP_FUNDING:
                 $sPossibleStatus = 'status IN (' . self::PREP_FUNDING . ',' . self::A_FUNDER . ')';
                 break;
+            case self::LIQUIDATION_JUDICIAIRE:
+                $sPossibleStatus = 'status IN (' . self::LIQUIDATION_JUDICIAIRE . ',' . self::DEFAUT . ')';
+                break;
             case self::REMBOURSEMENT_ANTICIPE:
+            case self::DEFAUT:
                 return array();
             default:
                 if ($this->status < self::REMBOURSEMENT) {

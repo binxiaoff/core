@@ -12,7 +12,7 @@
         <textarea id="site_content" name="site_content" class="textarea_lng" style="height:100px; width:420px;"></textarea>
         <br/><br/>
         <div style="text-align:right">
-            <input type="hidden" name="problematic_status" value="<?= \projects_status::PROBLEME ?>"/>
+            <input type="hidden" name="problematic_status" value="<?= \projects_status::DEFAUT ?>"/>
             <input type="submit" class="btn_link" value="Sauvegarder"/>
         </div>
     </form>

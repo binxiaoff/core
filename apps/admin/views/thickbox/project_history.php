@@ -9,7 +9,7 @@
                 <th rowspan="2">Date</th>
                 <th rowspan="2">Utilisateur</th>
                 <?php if (false === empty($this->aProjectHistoryDetails)): ?>
-                    <th colspan="4">PS, RJ, LJ</th>
+                    <th colspan="4">Procédures collectives</th>
                 <?php endif; ?>
             </tr>
             <?php if (false === empty($this->aProjectHistoryDetails)): ?>
