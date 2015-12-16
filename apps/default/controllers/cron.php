@@ -4579,7 +4579,7 @@ class cronController extends bootstrap
             $loans    = $this->loadData('loans');
             $projects = $this->loadData('projects');
 
-            $lProjects = $projects->selectProjectsByStatus('80,90,100,110,120');
+            $lProjects = $projects->selectProjectsByStatus(implode(', ', array(\projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)));
 
             if (count($lProjects) > 0) {
                 $a          = 0;

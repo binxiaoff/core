@@ -287,25 +287,8 @@ class rootController extends bootstrap
         if ($TotalRetrait > 0) $this->tauxAttrition = ($TotalRetrait / ($capital + $dispo + $sumGel)) * 100;
         else $this->tauxAttrition = 0;
 
-        /////////////////////
-
-
-        // projet ayant probleme de remb
-        $this->lProjectsNok = $this->projects->selectProjectsByStatus('100,110,120');
-
-
-        $this->lStatus = $this->projects_status->select();
-
-
-        // ******************* //
-        // DERNIERES COMMANDES //
-        // ******************* //
-
-        // Declaration des classes
-        //$this->clients = $this->loadData('clients');
-
-        // Recuperation des commandes en cours de traitement
-        //$this->lCommandes = $this->transactions->select('etat < 3 AND status = 1','etat ASC,date_transaction DESC LIMIT 10');
+        $this->lProjectsNok = $this->projects->selectProjectsByStatus(implode(', ', array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)));
+        $this->lStatus      = $this->projects_status->select();
     }
 
     function _edit_password()

@@ -559,9 +559,9 @@ class bootstrap extends Controller
         // Afficher les projets terminés ? (1 : oui | 0 : non)
         $this->settings->get('Afficher les projets termines', 'type');
         if ($this->settings->value == 1) {
-            $this->tabProjectDisplay = '50,60,70,80,90,100,110,120,130,150,160,170';
+            $this->tabProjectDisplay = implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE));
         } else {
-            $this->tabProjectDisplay = '50';
+            $this->tabProjectDisplay = \projects_status::EN_FUNDING;
         }
 
         $this->create_cookies = true;

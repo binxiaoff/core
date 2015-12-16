@@ -372,7 +372,7 @@ class projects extends projects_crud
             LEFT JOIN companies co ON (p.id_company = co.id_company)
             LEFT JOIN clients c ON (co.id_client_owner = c.id_client)))
             WHERE 1 = 1 ' . $where . '
-            HAVING status_project IN(100, 110, 120)
+            HAVING status_project IN (' . implode(', ', array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)) . ')
             ORDER BY p.added DESC
             ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $resultat = $this->bdd->query($sql);

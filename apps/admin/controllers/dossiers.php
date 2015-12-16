@@ -86,9 +86,6 @@ class dossiersController extends bootstrap
         $this->clients_prescripteurs           = $this->loadData('clients');
         $this->companies_prescripteurs         = $this->loadData('companies');
 
-        // Id Status to block risk note and risk comments.
-        $aBlockRiskStatus = array(50, 60, 70, 80, 100, 110, 120, 130);
-
         $this->settings->get('Durée des prêts autorisées', 'type');
         $this->dureePossible = explode(',', $this->settings->value);
         if (empty($this->settings->value)) {
@@ -123,8 +120,7 @@ class dossiersController extends bootstrap
 
             $this->current_projects_status->getLastStatut($this->projects->id_project);
 
-            //Check if status is eligible for block the note and comments.
-            $this->bReadonlyRiskNote = (in_array($this->current_projects_status->status, $aBlockRiskStatus)) ?: false;
+            $this->bReadonlyRiskNote = $this->current_projects_status->status >= \projects_status::EN_FUNDING;
 
             $this->companies->get($this->projects->id_company, 'id_company');
 
@@ -341,6 +337,7 @@ class dossiersController extends bootstrap
 
             if (isset($_POST['problematic_status']) && $this->current_projects_status->status != $_POST['problematic_status']) {
                 $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects->id_project);
+
                 $this->updateProblematicStatus($_POST['problematic_status']);
             }
 
@@ -1353,6 +1350,9 @@ class dossiersController extends bootstrap
 
         $this->sendProblemStatusEmailBorrower($iStatus);
         $this->sendProblemStatusEmailLender($iStatus);
+
+        header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+        die;
     }
 
     private function sendProblemStatusEmailBorrower($iStatus)

@@ -1400,9 +1400,22 @@ class ajaxController extends bootstrap
         $this->projects         = $this->loadData('projects');
 
         if (isset($_POST['id']) && isset($_POST['siren']) && isset($_POST['raison_sociale']) && isset($_POST['id_reception'])) {
-            $this->lProjects = $this->projects->searchDossiers('', '', '', '', '80,100,110,120', '', $_POST['siren'], $_POST['id'], $_POST['raison_sociale']);
-            $iCountProjects = (is_array($this->lProjects)) ? array_shift($this->lProjects) : 0;
             $this->id_reception = $_POST['id_reception'];
+            $this->lProjects = $this->projects->searchDossiers(
+                '',
+                '',
+                '',
+                '',
+                implode(', ', array(\projects_status::REMBOURSEMENT, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)),
+                '',
+                $_POST['siren'],
+                $_POST['id'],
+                $_POST['raison_sociale']
+            );
+
+            if (is_array($this->lProjects)) {
+                array_shift($this->lProjects);
+            }
         }
     }
 
@@ -1423,12 +1436,10 @@ class ajaxController extends bootstrap
 
         if (isset($_POST['id_client']) && isset($_POST['id_reception']) && $preteurs->get($_POST['id_client'], 'id_client') && $receptions->get($_POST['id_reception'], 'id_reception') && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND id_virement') == false && isset($_SESSION['controlDOubleAttr']) && $_SESSION['controlDOubleAttr'] == md5($_SESSION['user']['id_user'])) {
             unset($_SESSION['controlDOubleAttr']);
-            // lender
             $lenders->get($_POST['id_client'], 'id_client_owner');
             $lenders->status = 1;
             $lenders->update();
 
-            // transact
             $transactions->id_virement      = $receptions->id_reception;
             $transactions->id_client        = $lenders->id_client_owner;
             $transactions->montant          = $receptions->montant;
@@ -1439,25 +1450,22 @@ class ajaxController extends bootstrap
             $transactions->transaction      = 1;
             $transactions->type_transaction = 4; // alimentation virement
             $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-            $transactions->id_transaction   = $transactions->create();
+            $transactions->create();
 
-            // wallet
             $wallets->id_lender                = $lenders->id_lender_account;
             $wallets->type_financial_operation = 30; // alimenation
             $wallets->id_transaction           = $transactions->id_transaction;
             $wallets->type                     = 1; // physique
             $wallets->amount                   = $receptions->montant;
             $wallets->status                   = 1;
-            $wallets->id_wallet_line           = $wallets->create();
+            $wallets->create();
 
-            // bank line
             $bank->id_wallet_line    = $wallets->id_wallet_line;
             $bank->id_lender_account = $lenders->id_lender_account;
             $bank->status            = 1;
             $bank->amount            = $receptions->montant;
             $bank->create();
 
-            // mise a jour de receptions
             $receptions->id_client = $lenders->id_client_owner;
             $receptions->status_bo = 1;
             $receptions->remb      = 1;
@@ -1468,37 +1476,27 @@ class ajaxController extends bootstrap
             $this->notifications->amount          = $receptions->montant;
             $this->notifications->id_notification = $this->notifications->create();
 
-            //////// GESTION ALERTES //////////
             $this->clients_gestion_mails_notif->id_client                      = $lenders->id_client_owner;
-            $this->clients_gestion_mails_notif->id_notif                       = 6; // alim virement
+            $this->clients_gestion_mails_notif->id_notif                       = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
             $this->clients_gestion_mails_notif->date_notif                     = date('Y-m-d H:i:s');
             $this->clients_gestion_mails_notif->id_notification                = $this->notifications->id_notification;
             $this->clients_gestion_mails_notif->id_transaction                 = $transactions->id_transaction;
-            $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
-            //////// FIN GESTION ALERTES //////////
+            $this->clients_gestion_mails_notif->create();
 
-            // on met l'etape inscription a 3
             if ($preteurs->etape_inscription_preteur < 3) {
                 $preteurs->etape_inscription_preteur = 3; // etape 3 ok
                 $preteurs->update();
             }
 
-
-            // envoi email bib ok maintenant ou non
-            if ($this->clients_gestion_notifications->getNotif($lenders->id_client_owner, 6, 'immediatement') == true) {
-
-                //////// GESTION ALERTES //////////
+            if ($this->clients_gestion_notifications->getNotif($lenders->id_client_owner, \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement') == true) {
                 $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                 $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                 $this->clients_gestion_mails_notif->update();
-                //////// FIN GESTION ALERTES //////////
 
                 // mail a envoyer au client reception virement
                 //******************************//
                 //*** ENVOI DU MAIL preteur-alimentation ***//
                 //******************************//
-
-                // Recuperation du modele de mail
                 $this->mails_text->get('preteur-alimentation-manu', 'lang = "' . $this->language . '" AND type');
 
                 $surl    = $this->surl;
@@ -1507,30 +1505,19 @@ class ajaxController extends bootstrap
                 $prenom  = $preteurs->prenom;
                 $message = 'Virement valide';
 
-                // FB
                 $this->settings->get('Facebook', 'type');
                 $lien_fb = $this->settings->value;
 
-                // Twitter
                 $this->settings->get('Twitter', 'type');
                 $lien_tw = $this->settings->value;
-
-                // Motif virement
-                $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($preteurs->prenom))), 0, 1);
-                $nom       = $this->ficelle->stripAccents(utf8_decode(trim($preteurs->nom)));
-                $id_client = str_pad($preteurs->id_client, 6, 0, STR_PAD_LEFT);
-                $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-
-                // Solde du compte preteur
-                $solde = $transactions->getSolde($receptions->id_client);
 
                 $varMail = array(
                     'surl'            => $this->surl,
                     'url'             => $this->furl,
-                    'prenom_p'        => utf8_decode($clients->prenom),
+                    'prenom_p'        => utf8_decode($preteurs->prenom),
                     'fonds_depot'     => $this->ficelle->formatNumber($receptions->montant / 100),
-                    'solde_p'         => $this->ficelle->formatNumber($solde),
-                    'motif_virement'  => $motif,
+                    'solde_p'         => $this->ficelle->formatNumber($transactions->getSolde($receptions->id_client)),
+                    'motif_virement'  => $preteurs->getLenderPattern($preteurs->id_client),
                     'projets'         => $this->furl . '/projets-a-financer',
                     'gestion_alertes' => $this->furl . '/profile',
                     'lien_fb'         => $lien_fb,
@@ -1559,7 +1546,6 @@ class ajaxController extends bootstrap
 
             echo $receptions->id_client;
         }
-
     }
 
     public function _ValidAttribution_project()
@@ -2170,10 +2156,10 @@ class ajaxController extends bootstrap
                         global = (Math.round(global*10)/10);
                         individuel = (Math.round(individuel*10)/10);
 
-                        var performance_fianciere = ((structure+rentabilite+tresorerie)/3)
+                        var performance_fianciere = ((structure+rentabilite+tresorerie)/3);
                         performance_fianciere = (Math.round(performance_fianciere*10)/10);
 
-                        var marche_opere = ((global+individuel)/2)
+                        var marche_opere = ((global+individuel)/2);
                         marche_opere = (Math.round(marche_opere*10)/10);
 
                         // --- Fin chiffre et marché ---
@@ -2500,11 +2486,11 @@ class ajaxController extends bootstrap
                             individuel = (Math.round(individuel*10)/10);
 
                             // Calcules
-                            var performance_fianciere = ((structure+rentabilite+tresorerie)/3)
+                            var performance_fianciere = ((structure+rentabilite+tresorerie)/3);
                             performance_fianciere = (Math.round(performance_fianciere*10)/10);
 
                             // Arrondis
-                            var marche_opere = ((global+individuel)/2)
+                            var marche_opere = ((global+individuel)/2);
                             marche_opere = (Math.round(marche_opere*10)/10);
 
                             // --- Fin chiffre et marché ---
