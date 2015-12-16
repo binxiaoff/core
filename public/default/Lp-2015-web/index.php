@@ -815,7 +815,7 @@
             </ul>
             <div class="conditions" id="bloc_mentions">Conditions de l'offre</div>
             <div class="mentions">
-                Offre valable jusqu’au 30/11/2015 réservée aux personnes physiques, capables, majeures.
+                Offre valable jusqu’au 31/12/2015 réservée aux personnes physiques, capables, majeures.
 
 L’offre est réservée aux nouveaux inscrits dont l’inscription est validée par Unilend. Seules les personnes physiques de nationalité française, ou possédant une nationalité d’un pays de l’Espace Economique Européen, et disposant d’un compte bancaire en euros en France pourront bénéficier de l’offre.
 
