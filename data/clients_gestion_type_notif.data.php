@@ -37,10 +37,6 @@ class clients_gestion_type_notif extends clients_gestion_type_notif_crud
     const TYPE_CREDIT_CARD_CREDIT             = 7;
     const TYPE_DEBIT                          = 8;
     const TYPE_PROJECT_PROBLEM                = 9;
-    const TYPE_PROJECT_RECOVERY               = 10;
-    const TYPE_PROJECT_PRECAUTIONARY_PROCESS  = 11;
-    const TYPE_PROJECT_RECEIVERSHIP           = 12;
-    const TYPE_PROJECT_COMPULSORY_LIQUIDATION = 13;
 
     public function __construct($bdd, $params = '')
     {
