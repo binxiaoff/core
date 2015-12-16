@@ -936,12 +936,7 @@ class devboxController extends bootstrap
         $sum_ech_restant = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');
 
         /** @var unilend_email $oUnilendEmail */
-        $oUnilendEmail = $this->loadLib('unilend_email', array(
-            $this->loadData('mails_filer'),
-            $this->loadData('mails_text'),
-            $this->loadData('nmp'),
-            $this->loadData('nmp_desabo'),
-        ));
+        $oUnilendEmail = $this->loadLib('unilend_email');
 
         $oUnilendEmail->setTemplate('preteur-remboursement-anticipe', $this->language);
 

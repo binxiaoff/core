@@ -285,10 +285,7 @@ class clientsController extends bootstrap
                 );
 
                 /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email', array(
-                    $this->loadData('mails_filer'),
-                    $this->loadData('mails_text')
-                ));
+                $oUnilendEmail = $this->loadLib('unilend_email');
 
                 try {
                     $oUnilendEmail->addAllMailVars($aVarEmail);

@@ -1405,14 +1405,10 @@ class rootController extends bootstrap
             );
 
             /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                $this->loadData('mails_filer'),
-                $this->loadData('mails_text'),
-                $this->loadData('nmp'),
-                $this->loadData('nmp_desabo'),
-            ));
 
             try {
+                /** @var unilend_email $oUnilendEmail */
+                $oUnilendEmail = $this->loadLib('unilend_email');
                 $oUnilendEmail->addAllMailVars($varMail);
                 $oUnilendEmail->setTemplate('demande-de-contact', $this->language);
                 $oUnilendEmail->addRecipient($_POST['email']);
@@ -1447,13 +1443,9 @@ class rootController extends bootstrap
             $infos .= '<li>Message : ' . utf8_decode($this->demande_contact->message) . '</li>';
             $infos .= '</ul>';
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                $this->loadData('mails_filer'),
-                $this->loadData('mails_text')
-            ));
-
             try {
+                /** @var unilend_email $oUnilendEmail */
+                $oUnilendEmail = $this->loadLib('unilend_email');
                 $oUnilendEmail->addMailVar('$surl', $this->surl);
                 $oUnilendEmail->addMailVar('$infos', $infos);
                 $oUnilendEmail->setTemplate('notification-demande-de-contact', $this->language);

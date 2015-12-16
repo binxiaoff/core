@@ -630,12 +630,7 @@ class depot_de_dossierController extends bootstrap
                 $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
 
                 /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email', array(
-                    $this->loadData('mails_filer'),
-                    $this->loadData('mails_text'),
-                    $this->loadData('nmp'),
-                    $this->loadData('nmp_desabo'),
-                ));
+                $oUnilendEmail = $this->loadLib('unilend_email');
 
                 try {
                     $oUnilendEmail->addAllMailVars($aVariables);
@@ -909,10 +904,7 @@ class depot_de_dossierController extends bootstrap
                 '[SURL]'           => $this->surl
             );
             /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                $this->loadData('mails_filer'),
-                $this->loadData('mails_text')
-            ));
+            $oUnilendEmail = $this->loadLib('unilend_email');
 
             try {
                 $oUnilendEmail->addAllMailVars($aReplacements);

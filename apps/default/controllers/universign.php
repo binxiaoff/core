@@ -77,13 +77,10 @@ class universignController extends bootstrap
                             '$lien_pouvoir' => $this->lurl . $projects_pouvoir->url_pdf,
                             '$lien_mandat'  => $this->lurl . $clients_mandats->url_pdf,
                         );
-                        /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email', array(
-                            $this->loadData('mails_filer'),
-                            $this->loadData('mails_text')
-                        ));
 
                         try {
+                            /** @var unilend_email $oUnilendEmail */
+                            $oUnilendEmail = $this->loadLib('unilend_email');
                             $oUnilendEmail->addAllMailVars($aVarEmail);
                             $oUnilendEmail->setTemplate('notification-pouvoir-mandat-signe', $this->language);
                             $oUnilendEmail->addRecipient($sRecipient);
@@ -158,13 +155,10 @@ class universignController extends bootstrap
                             '$lien_pouvoir' => $this->lurl . $projects_pouvoir->url_pdf,
                             '$lien_mandat'  => $this->lurl . $clients_mandats->url_pdf,
                         );
-                        /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email', array(
-                            $this->loadData('mails_filer'),
-                            $this->loadData('mails_text')
-                        ));
 
                         try {
+                            /** @var unilend_email $oUnilendEmail */
+                            $oUnilendEmail = $this->loadLib('unilend_email');
                             $oUnilendEmail->addAllMailVars($aVarEmail);
                             $oUnilendEmail->setTemplate('notification-pouvoir-mandat-signe', $this->language);
                             $oUnilendEmail->addRecipient($sRecipient);
@@ -255,13 +249,10 @@ class universignController extends bootstrap
                         '[PROJECT_NAME]' => $oProjects->title_bo,
                         '[CGV_BORROWER]' => $this->lurl . $oProjectCgv->getUrlPath()
                     );
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email', array(
-                        $this->loadData('mails_filer'),
-                        $this->loadData('mails_text')
-                    ));
 
                     try {
+                        /** @var unilend_email $oUnilendEmail */
+                        $oUnilendEmail = $this->loadLib('unilend_email');
                         $oUnilendEmail->addAllMailVars($aReplacements);
                         $oUnilendEmail->setTemplate('notification-cgv-projet-signe', $this->language);
                         $oUnilendEmail->addRecipient($sRecipient);

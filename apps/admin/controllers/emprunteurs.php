@@ -427,12 +427,7 @@ class emprunteursController extends bootstrap
                                 );
 
                                 /** @var unilend_email $oUnilendEmail */
-                                $oUnilendEmail = $this->loadLib('unilend_email', array(
-                                    $this->loadData('mails_filer'),
-                                    $this->loadData('mails_text'),
-                                    $this->loadData('nmp'),
-                                    $this->loadData('nmp_desabo'),
-                                ));
+                                $oUnilendEmail = $this->loadLib('unilend_email');
 
                                 try {
                                     $oUnilendEmail->addAllMailVars($varMail);

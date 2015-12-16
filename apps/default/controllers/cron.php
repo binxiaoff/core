@@ -168,12 +168,8 @@ class cronController extends bootstrap
         $lien_tw = $this->settings->value;
 
         /** @var unilend_email $oUnilendEmail */
-        $oUnilendEmail = $this->loadLib('unilend_email', array(
-            $this->loadData('mails_filer'),
-            $this->loadData('mails_text'),
-            $this->loadData('nmp'),
-            $this->loadData('nmp_desabo'),
-        ));
+        $oUnilendEmail = $this->loadLib('unilend_email');
+
         $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
         $this->lProjects = $this->projects->selectProjectsByStatus(50);
@@ -469,10 +465,7 @@ class cronController extends bootstrap
                     );
 
                     /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email', array(
-                        $this->loadData('mails_filer'),
-                        $this->loadData('mails_text')
-                    ));
+                    $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
                         $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -527,12 +520,7 @@ class cronController extends bootstrap
                             );
 
                             /** @var unilend_email $oUnilendEmail */
-                            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                                $this->loadData('mails_filer'),
-                                $this->loadData('mails_text'),
-                                $this->loadData('nmp'),
-                                $this->loadData('nmp_desabo'),
-                            ));
+                            $oUnilendEmail = $this->loadLib('unilend_email');
 
                             try {
                                 $oUnilendEmail->addAllMailVars($varMail);
@@ -573,12 +561,7 @@ class cronController extends bootstrap
                         );
 
                         /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email', array(
-                            $this->loadData('mails_filer'),
-                            $this->loadData('mails_text'),
-                            $this->loadData('nmp'),
-                            $this->loadData('nmp_desabo'),
-                        ));
+                        $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
                             $oUnilendEmail->addAllMailVars($varMail);
@@ -702,12 +685,7 @@ class cronController extends bootstrap
                             );
 
                             /** @var unilend_email $oUnilendEmail */
-                            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                                $this->loadData('mails_filer'),
-                                $this->loadData('mails_text'),
-                                $this->loadData('nmp'),
-                                $this->loadData('nmp_desabo'),
-                            ));
+                            $oUnilendEmail = $this->loadLib('unilend_email');
 
                             try {
                                 $oUnilendEmail->addAllMailVars($varMail);
@@ -753,10 +731,7 @@ class cronController extends bootstrap
                     '$montant' => $montant_collect
                 );
                 /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email', array(
-                    $this->loadData('mails_filer'),
-                    $this->loadData('mails_text')
-                ));
+                $oUnilendEmail = $this->loadLib('unilend_email');
 
                 try {
                     $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -2014,12 +1989,7 @@ class cronController extends bootstrap
                     );
 
                     /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email', array(
-                        $this->loadData('mails_filer'),
-                        $this->loadData('mails_text'),
-                        $this->loadData('nmp'),
-                        $this->loadData('nmp_desabo'),
-                    ));
+                    $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
@@ -2339,10 +2309,7 @@ class cronController extends bootstrap
                         '$url'      => $this->lurl,
                     );
                     /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email', array(
-                        $this->loadData('mails_filer'),
-                        $this->loadData('mails_text')
-                    ));
+                    $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
                         $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -2694,10 +2661,7 @@ class cronController extends bootstrap
                                                 '$nom_projet'   => $$this->projects->title,
                                             );
                                             /** @var unilend_email $oUnilendEmail */
-                                            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                                                $this->loadData('mails_filer'),
-                                                $this->loadData('mails_text')
-                                            ));
+                                            $oUnilendEmail = $this->loadLib('unilend_email');
 
                                             try {
                                                 $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -2811,12 +2775,7 @@ class cronController extends bootstrap
                                                     );
 
                                                     /** @var unilend_email $oUnilendEmail */
-                                                    $oUnilendEmail = $this->loadLib('unilend_email', array(
-                                                        $this->loadData('mails_filer'),
-                                                        $this->loadData('mails_text'),
-                                                        $this->loadData('nmp'),
-                                                        $this->loadData('nmp_desabo'),
-                                                    ));
+                                                    $oUnilendEmail = $this->loadLib('unilend_email');
 
                                                     try {
                                                         $oUnilendEmail->addAllMailVars($varMail);
@@ -3907,10 +3866,7 @@ class cronController extends bootstrap
                 '$url'      => $this->lurl,
             );
             /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                $this->loadData('mails_filer'),
-                $this->loadData('mails_text')
-            ));
+            $oUnilendEmail = $this->loadLib('unilend_email');
 
             try {
                 $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -4305,10 +4261,7 @@ class cronController extends bootstrap
                 '$url'      => $this->lurl,
             );
             /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                $this->loadData('mails_filer'),
-                $this->loadData('mails_text')
-            ));
+            $oUnilendEmail = $this->loadLib('unilend_email');
 
             try {
                 $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -4836,12 +4789,7 @@ class cronController extends bootstrap
                             );
 
                             /** @var unilend_email $oUnilendEmail */
-                            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                                $this->loadData('mails_filer'),
-                                $this->loadData('mails_text'),
-                                $this->loadData('nmp'),
-                                $this->loadData('nmp_desabo'),
-                            ));
+                            $oUnilendEmail = $this->loadLib('unilend_email');
 
                             try {
                                 $oUnilendEmail->addAllMailVars($varMail);
@@ -4870,10 +4818,7 @@ class cronController extends bootstrap
                             '$periode' => $tempsRest
                         );
                         /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email', array(
-                            $this->loadData('mails_filer'),
-                            $this->loadData('mails_text')
-                        ));
+                        $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
                             $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -5030,12 +4975,7 @@ class cronController extends bootstrap
                                 );
 
                                 /** @var unilend_email $oUnilendEmail */
-                                $oUnilendEmail = $this->loadLib('unilend_email', array(
-                                    $this->loadData('mails_filer'),
-                                    $this->loadData('mails_text'),
-                                    $this->loadData('nmp'),
-                                    $this->loadData('nmp_desabo'),
-                                ));
+                                $oUnilendEmail = $this->loadLib('unilend_email');
 
                                 try {
                                     $oUnilendEmail->addAllMailVars($varMail);
@@ -5213,12 +5153,7 @@ class cronController extends bootstrap
                         );
 
                         /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email', array(
-                            $this->loadData('mails_filer'),
-                            $this->loadData('mails_text'),
-                            $this->loadData('nmp'),
-                            $this->loadData('nmp_desabo'),
-                        ));
+                        $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
                             $oUnilendEmail->addAllMailVars($varMail);
@@ -5273,12 +5208,7 @@ class cronController extends bootstrap
                     );
 
                     /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email', array(
-                        $this->loadData('mails_filer'),
-                        $this->loadData('mails_text'),
-                        $this->loadData('nmp'),
-                        $this->loadData('nmp_desabo'),
-                    ));
+                    $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
@@ -5531,10 +5461,7 @@ class cronController extends bootstrap
                 '$liste_remb' => $liste_remb
             );
             /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                $this->loadData('mails_filer'),
-                $this->loadData('mails_text')
-            ));
+            $oUnilendEmail = $this->loadLib('unilend_email');
 
             try {
                 $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -6050,12 +5977,7 @@ class cronController extends bootstrap
                 $varMail['motif_virement']  = $motif;
 
                 /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email', array(
-                    $this->loadData('mails_filer'),
-                    $this->loadData('mails_text'),
-                    $this->loadData('nmp'),
-                    $this->loadData('nmp_desabo'),
-                ));
+                $oUnilendEmail = $this->loadLib('unilend_email');
 
                 try {
                     $oUnilendEmail->addAllMailVars($varMail);
@@ -6187,12 +6109,7 @@ class cronController extends bootstrap
                             'lien_tw'         => $lien_tw
                         );
                         /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email', array(
-                            $this->loadData('mails_filer'),
-                            $this->loadData('mails_text'),
-                            $this->loadData('nmp'),
-                            $this->loadData('nmp_desabo'),
-                        ));
+                        $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
                             $oUnilendEmail->addAllMailVars($varMail);
@@ -6335,12 +6252,7 @@ class cronController extends bootstrap
                             );
 
                             /** @var unilend_email $oUnilendEmail */
-                            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                                $this->loadData('mails_filer'),
-                                $this->loadData('mails_text'),
-                                $this->loadData('nmp'),
-                                $this->loadData('nmp_desabo'),
-                            ));
+                            $oUnilendEmail = $this->loadLib('unilend_email');
 
                             try {
                                 $oUnilendEmail->addAllMailVars($varMail);
@@ -6485,12 +6397,7 @@ class cronController extends bootstrap
                         );
 
                         /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email', array(
-                            $this->loadData('mails_filer'),
-                            $this->loadData('mails_text'),
-                            $this->loadData('nmp'),
-                            $this->loadData('nmp_desabo'),
-                        ));
+                        $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
                             $oUnilendEmail->addAllMailVars($varMail);
@@ -6665,12 +6572,7 @@ class cronController extends bootstrap
                             );
 
                             /** @var unilend_email $oUnilendEmail */
-                            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                                $this->loadData('mails_filer'),
-                                $this->loadData('mails_text'),
-                                $this->loadData('nmp'),
-                                $this->loadData('nmp_desabo'),
-                            ));
+                            $oUnilendEmail = $this->loadLib('unilend_email');
 
                             try {
                                 $oUnilendEmail->addAllMailVars($varMail);
@@ -6886,12 +6788,7 @@ class cronController extends bootstrap
                         );
 
                         /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email', array(
-                            $this->loadData('mails_filer'),
-                            $this->loadData('mails_text'),
-                            $this->loadData('nmp'),
-                            $this->loadData('nmp_desabo'),
-                        ));
+                        $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
                             $oUnilendEmail->addAllMailVars($varMail);
@@ -6999,12 +6896,7 @@ class cronController extends bootstrap
                         'lien_tw'         => $lien_tw
                     );
                     /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email', array(
-                        $this->loadData('mails_filer'),
-                        $this->loadData('mails_text'),
-                        $this->loadData('nmp'),
-                        $this->loadData('nmp_desabo'),
-                    ));
+                    $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
@@ -7064,12 +6956,7 @@ class cronController extends bootstrap
                     );
 
                     /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email', array(
-                        $this->loadData('mails_filer'),
-                        $this->loadData('mails_text'),
-                        $this->loadData('nmp'),
-                        $this->loadData('nmp_desabo'),
-                    ));
+                    $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
@@ -7196,12 +7083,7 @@ class cronController extends bootstrap
                                 );
 
                                 /** @var unilend_email $oUnilendEmail */
-                                $oUnilendEmail = $this->loadLib('unilend_email', array(
-                                    $this->loadData('mails_filer'),
-                                    $this->loadData('mails_text'),
-                                    $this->loadData('nmp'),
-                                    $this->loadData('nmp_desabo'),
-                                ));
+                                $oUnilendEmail = $this->loadLib('unilend_email');
 
                                 try {
                                     $oUnilendEmail->addAllMailVars($varMail);
@@ -7382,12 +7264,7 @@ class cronController extends bootstrap
                             );
 
                             /** @var unilend_email $oUnilendEmail */
-                            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                                $this->loadData('mails_filer'),
-                                $this->loadData('mails_text'),
-                                $this->loadData('nmp'),
-                                $this->loadData('nmp_desabo'),
-                            ));
+                            $oUnilendEmail = $this->loadLib('unilend_email');
 
                             try {
                                 $oUnilendEmail->addAllMailVars($varMail);
@@ -7459,10 +7336,7 @@ class cronController extends bootstrap
                 '$liste_remb' => $liste_remb
             );
             /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                $this->loadData('mails_filer'),
-                $this->loadData('mails_text')
-            ));
+            $oUnilendEmail = $this->loadLib('unilend_email');
 
             try {
                 $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -7771,12 +7645,7 @@ class cronController extends bootstrap
             $lien_tw = $this->settings->value;
 
             /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                $this->loadData('mails_filer'),
-                $this->loadData('mails_text'),
-                $this->loadData('nmp'),
-                $this->loadData('nmp_desabo'),
-            ));
+            $oUnilendEmail = $this->loadLib('unilend_email');
 
             foreach ($L_mail_ra_en_attente as $ra_email) {
                 $this->oLogger->addRecord(ULogger::INFO, 'Start email ' . $ra_email['id_reception'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
@@ -7917,12 +7786,7 @@ class cronController extends bootstrap
             );
 
             /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                $this->loadData('mails_filer'),
-                $this->loadData('mails_text'),
-                $this->loadData('nmp'),
-                $this->loadData('nmp_desabo'),
-            ));
+            $oUnilendEmail = $this->loadLib('unilend_email');
 
             foreach ($aReminderIntervals as $sStatus => $aIntervals) {
                 if (1 === preg_match('/^status-([1-9][0-9]*)$/', $sStatus, $aMatches)) {

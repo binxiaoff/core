@@ -593,12 +593,7 @@ class inscription_preteurController extends bootstrap
                                 'lien_tw' => $lien_tw);
 
                         /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email', array(
-                            $this->loadData('mails_filer'),
-                            $this->loadData('mails_text'),
-                            $this->loadData('nmp'),
-                            $this->loadData('nmp_desabo'),
-                        ));
+                        $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
                             $oUnilendEmail->addAllMailVars($varMail);
@@ -1072,12 +1067,7 @@ class inscription_preteurController extends bootstrap
                                 'lien_tw' => $lien_tw);
 
                         /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email', array(
-                            $this->loadData('mails_filer'),
-                            $this->loadData('mails_text'),
-                            $this->loadData('nmp'),
-                            $this->loadData('nmp_desabo'),
-                        ));
+                        $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
                             $oUnilendEmail->addAllMailVars($varMail);
@@ -1350,10 +1340,7 @@ class inscription_preteurController extends bootstrap
                             '$lien' => $this->aurl.'/preteurs/edit_preteur/'.$this->lenders_accounts->id_lender_account,
                         );
                         /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email', array(
-                            $this->loadData('mails_filer'),
-                            $this->loadData('mails_text')
-                        ));
+                        $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
                             $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -1435,10 +1422,7 @@ class inscription_preteurController extends bootstrap
                                 '$lien' => $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account,
                             );
                             /** @var unilend_email $oUnilendEmail */
-                            $oUnilendEmail = $this->loadLib('unilend_email', array(
-                                $this->loadData('mails_filer'),
-                                $this->loadData('mails_text')
-                            ));
+                            $oUnilendEmail = $this->loadLib('unilend_email');
 
                             try {
                                 $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -1563,10 +1547,7 @@ class inscription_preteurController extends bootstrap
                             '$lien' => $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account,
                         );
                         /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email', array(
-                            $this->loadData('mails_filer'),
-                            $this->loadData('mails_text')
-                        ));
+                        $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
                             $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -1838,12 +1819,7 @@ class inscription_preteurController extends bootstrap
                         'lien_tw' => $lien_tw);
 
                 //** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email', array(
-                    $this->loadData('mails_filer'),
-                    $this->loadData('mails_text'),
-                    $this->loadData('nmp'),
-                    $this->loadData('nmp_desabo'),
-                ));
+                $oUnilendEmail = $this->loadLib('unilend_email');
 
                 try {
                     $oUnilendEmail->addAllMailVars($varMail);
@@ -2030,10 +2006,7 @@ class inscription_preteurController extends bootstrap
                             '$montant' => $response['payment']['amount']/100,
                         );
                         /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email', array(
-                            $this->loadData('mails_filer'),
-                            $this->loadData('mails_text')
-                        ));
+                        $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
                             $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -2081,12 +2054,7 @@ class inscription_preteurController extends bootstrap
                                 'lien_tw' => $lien_tw);
 
                         /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email', array(
-                            $this->loadData('mails_filer'),
-                            $this->loadData('mails_text'),
-                            $this->loadData('nmp'),
-                            $this->loadData('nmp_desabo'),
-                        ));
+                        $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
                             $oUnilendEmail->addAllMailVars($varMail);
