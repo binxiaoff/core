@@ -829,15 +829,28 @@ class statsController extends bootstrap
     public function _requete_infosben()
     {
         $oLendersAccounts = $this->loadData('lenders_accounts');
-        $oProjectsStatus = $this->loadData('projects_status');
-        $this->aLenders = $oLendersAccounts->getInfosben($oProjectsStatus);
+
+        $iYear = date('Y');
+        if (isset($this->params[0]) && is_numeric($this->params[0])) {
+            $iYear = (int) $this->params[0];
+        }
+
+        $this->aLenders = $oLendersAccounts->getInfosben($iYear);
     }
 
     public function _requete_infosben_csv()
     {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
         $oLendersAccounts = $this->loadData('lenders_accounts');
-        $oProjectsStatus = $this->loadData('projects_status');
-        $this->aLenders = $oLendersAccounts->getInfosben($oProjectsStatus);
+
+        $iYear = date('Y');
+        if (isset($this->params[0]) && is_numeric($this->params[0])) {
+            $iYear = (int) $this->params[0];
+        }
+
+        $this->aLenders = $oLendersAccounts->getInfosben($iYear);
 
         $header = "Cdos;Cbéné;CEtabl;CGuichet;RéfCompte;NatCompte;TypCompte;CDRC;";
 

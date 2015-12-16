@@ -232,7 +232,7 @@ class lenders_accounts extends lenders_accounts_crud
         return $aLenders;
     }
 
-    public function getInfosben($oProjectsStatus, $iLimit = null, $iOffset = null)
+    public function getInfosben($iYear, $iLimit = null, $iOffset = null)
     {
         $sOffset = '';
         if (null !== $iOffset) {
@@ -246,15 +246,12 @@ class lenders_accounts extends lenders_accounts_crud
             $sLimit = 'LIMIT ' . $iLimit;
         }
 
-        $sql = 'SELECT DISTINCT (c.id_client), c.prenom, c.nom
-                FROM clients c
-                INNER JOIN lenders_accounts la ON la.id_client_owner = c.id_client
-                INNER JOIN loans l on l.id_lender = la.id_lender_account
-                INNER JOIN projects p ON p.id_project = l.id_project
-                INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
-                INNER JOIN projects_status_history psh USING (id_project_status_history)
-                INNER JOIN projects_status ps USING (id_project_status)
-                WHERE ps.status > '. projects_status::REMBOURSEMENT . ' ' . $sLimit. ' '. $sOffset;
+        $sql = 'SELECT DISTINCT c.id_client, c.prenom, c.nom
+                FROM lenders_accounts la
+                  INNER JOIN clients c ON (la.id_client_owner = c.id_client)
+                  LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
+                WHERE YEAR(e.date_echeance_reel) = ' . $iYear . '
+                  AND e.status = 1 ' . ' ' . $sLimit. ' '. $sOffset;
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
