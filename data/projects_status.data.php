@@ -48,8 +48,8 @@ class projects_status extends projects_status_crud
     const FUNDING_KO              = 70;
     const PRET_REFUSE             = 75;
     const REMBOURSEMENT           = 80;
-    const REMBOURSEMENT_ANTICIPE  = 85;
     const REMBOURSE               = 90;
+    const REMBOURSEMENT_ANTICIPE  = 95;
     const PROBLEME                = 100;
     const PROBLEME_J_X            = 110;
     const RECOUVREMENT            = 120;
