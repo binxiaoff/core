@@ -28,6 +28,15 @@
 
 class clients extends clients_crud
 {
+    const TYPE_BORROWER_PERSON = 1;
+    const TYPE_BORROWER_LEGAL_ENTITY = 2;
+    const TYPE_BORROWER_PERSON_FOREIGNER = 3;
+    const TYPE_BORROWER_LEGAL_ENTITY_FOREIGNER = 4;
+
+    const STATUS_OFFLINE = 0;
+    const STATUS_ONLINE = 1;
+
+
     public function __construct($bdd, $params = '')
     {
         parent::clients($bdd, $params);
@@ -730,5 +739,47 @@ class clients extends clients_crud
         }
 
         return $oPrescripteurs->exist($iClientId, 'id_client');
+    }
+
+    public function isBorrower(projects $oProjects, companies $oCompanies, $iClientId = null)
+    {
+        if (null === $iClientId) {
+            $iClientId = $this->id_client;
+        }
+
+        $oCompanies->get($iClientId, 'id_client_owner');
+
+        return $oProjects->exist($oCompanies->id_company, 'id_company');
+    }
+
+    public function checkIfClientAlreadyExists($sName, $sFirstname, $sBirthdate, $aReplace)
+    {
+        $sReplaceSQL = '';
+        $sReplaceCharacters = '';
+
+        foreach ($aReplace as $character) {
+
+            $sReplaceSQL .= 'REPLACE(';
+            $sReplaceCharacters .= ',\''.addslashes($character).'\', \'\')';
+
+        }
+
+        $sql = 'SELECT * FROM clients c WHERE '.$sReplaceSQL.'nom'.$sReplaceCharacters.' LIKE \'%'.$sName.'%\'
+            AND '.$sReplaceSQL.'prenom'.$sReplaceCharacters.' LIKE \'%'.$sFirstname.'%\'
+            AND naissance = DATE(\''.$sBirthdate.'\')
+            AND status = 1
+            AND (SELECT cs.status FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) IN ('.\clients_status::VALIDATED.')';
+
+
+        $oQuery = $this->bdd->query($sql);
+        $result   = array();
+
+        while ($record = $this->bdd->fetch_array($oQuery)) {
+            $result[] = $record;
+        }
+
+        return $result;
+
+
     }
 }

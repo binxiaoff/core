@@ -736,7 +736,11 @@
                         case \clients_status::CLOSED_BY_UNILEND : ?>
                             <tr>
                                 <td>Compte clôturé par Unilend <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?>
-                                    par <?= $this->users->name ?></td>
+                                    par <?= $this->users->name ?>
+                                <?php if (empty($a['content']) === false) :?>
+                                <br>Motif : <?= $a['content'] ?>
+                                <?php endif; ?>
+                                </td>
                             </tr>
                             <?php break;
                     }
@@ -749,7 +753,7 @@
 
             <table class="tabLesStatuts">
                 <tr>
-                    <?php if (!in_array($this->clients_status->status, array(\clients_status::VALIDATED))) : ?>
+                    <?php if (((int)$this->clients_status->status === clients_status::VALIDATED) === false ) : ?>
                         <td><input type="button" id="valider_preteur" class="btn" value="Valider le prêteur"></td>
                     <?php endif; ?>
                 </tr>

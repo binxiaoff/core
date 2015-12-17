@@ -98,7 +98,10 @@ class preteursController extends bootstrap
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
 
-            $this->changeClientStatus($this->params[1], $this->params[2], (($this->params[2] == \clients::STATUS_OFFLINE) ? \clients_status::CLOSED_BY_UNILEND : \clients_status::VALIDATED), $iOriginForUserHistory);
+            $this->changeClientStatus($this->params[1], $this->params[2], $iOriginForUserHistory);
+
+            $oClientsStatusHistory = $this->loadData('clients_status_history');
+            $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], ($this->params[2] == \clients::STATUS_OFFLINE) ? \clients_status::CLOSED_BY_UNILEND : \clients_status::VALIDATED, $this->clients->id_client);
 
             header('location:' . $this->lurl . '/preteurs/gestion');
             die;
@@ -106,8 +109,11 @@ class preteursController extends bootstrap
 
         if (isset($this->params[0]) && $this->params[0] == 'desactivate') {
 
-            $this->changeClientStatus($this->params[1], $this->params[2], \clients_status::CLOSED_LENDER_REQUEST, $iOriginForUserHistory);
+            $this->changeClientStatus($this->params[1], $this->params[2], $iOriginForUserHistory);
             $this->sendEmailClosedAccount();
+
+            $oClientsStatusHistory = $this->loadData('clients_status_history');
+            $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_LENDER_REQUEST, $this->clients->id_client);
 
             header('location:' . $this->lurl . '/preteurs/gestion');
             die;
@@ -422,7 +428,7 @@ class preteursController extends bootstrap
                     \clients_status::CLOSED_LENDER_REQUEST,
                     \clients_status::CLOSED_BY_UNILEND
                 );
-                $checkEmailExistant = $this->clients->selectPreteursByStatus(implode($aLenderStatusForQuery, ','), 'email = "' . $_POST['email'] . '" AND id_client != ' . $this->clients->id_client);
+                $checkEmailExistant    = $this->clients->selectPreteursByStatus(implode($aLenderStatusForQuery, ','), 'email = "' . $_POST['email'] . '" AND id_client != ' . $this->clients->id_client);
                 if (count($checkEmailExistant) > 0) {
                     $les_id_client_email_exist = '';
                     foreach ($checkEmailExistant as $checkEmailEx) {
@@ -589,6 +595,7 @@ class preteursController extends bootstrap
                 $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
                 // Si on a une entreprise reliée, on la supprime car elle n'a plus rien a faire ici. on est un particulier.
+                $this->companies = $this->loadData('companies');
                 if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
                     $this->companies->delete($this->companies->id_company, 'id_company');
                 }
@@ -596,421 +603,447 @@ class preteursController extends bootstrap
                 // On recup le client
                 $this->clients->get($this->clients->id_client, 'id_client');
 
-
                 // Histo user //
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
                 $this->users_history->histo(3, 'modif info preteur', $_SESSION['user']['id_user'], $serialize);
                 ////////////////
 
                 if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
-                    // On check si on a deja eu le compte validé au moins une fois. si c'est pas le cas on check l'offre
-                    if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 6') == 0) {
-                        $this->create_offre_bienvenue($this->clients->id_client);
-                    }
 
-                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
+                    $aCharactersToReplace = array(' ', '-', '_', '*', ',', '^', '`', ':', ';', ',', '.', '!', '&', '"', '\'', '<', '>', '(', ')', '@');
 
-                    // modif ou inscription
-                    $modif = ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) ? true : false;
+                    $sFirstName = str_replace($aCharactersToReplace, '', htmlspecialchars_decode($this->clients->prenom));
+                    $sName      = str_replace($aCharactersToReplace, '', htmlspecialchars_decode($this->clients->nom));
+                    $sBirthdate = $this->clients->naissance;
 
-                    // gestion alert notification //
-                    $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-                    $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
+                    $aExistingClient       = $this->clients->checkIfClientAlreadyExists($sName, $sFirstName, $sBirthdate, $aCharactersToReplace);
+                    $iOriginForUserHistory = 3;
 
-                    ////// Liste des notifs //////
-                    $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
-                    $this->lNotifs     = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
+                    if (empty($aExistingClient) === false) {
 
-                    if ($this->lNotifs == false) {
-                        foreach ($this->lTypeNotifs as $n) {
-                            $this->clients_gestion_notifications->id_client = $this->clients->id_client;
-                            $this->clients_gestion_notifications->id_notif  = $n['id_client_gestion_type_notif'];
-                            $id_notif                                       = $n['id_client_gestion_type_notif'];
-                            // immediatement
-                            if (in_array($id_notif, array(3, 6, 7, 8))) {
-                                $this->clients_gestion_notifications->immediatement = 1;
-                            } else {
-                                $this->clients_gestion_notifications->immediatement = 0;
-                            }
-                            // quotidienne
-                            if (in_array($id_notif, array(1, 2, 4, 5))) {
-                                $this->clients_gestion_notifications->quotidienne = 1;
-                            } else {
-                                $this->clients_gestion_notifications->quotidienne = 0;
-                            }
-                            // hebdomadaire
-                            if (in_array($id_notif, array(1, 4))) {
-                                $this->clients_gestion_notifications->hebdomadaire = 1;
-                            } else {
-                                $this->clients_gestion_notifications->hebdomadaire = 0;
-                            }
-                            // mensuelle
-                            $this->clients_gestion_notifications->mensuelle = 0;
-                            $this->clients_gestion_notifications->create();
+                        $this->changeClientStatus($this->clients->id_client, \clients::STATUS_OFFLINE, $iOriginForUserHistory);
+
+                        $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, $this->clients->id_client, 'Doublon avec client ID : ' . $aExistingClient[0]['id_client']);
+                        header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
+                        die;
+
+                    } else {
+                        // On check si on a deja eu le compte validé au moins une fois. si c'est pas le cas on check l'offre
+                        if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 6') == 0) {
+                            $this->create_offre_bienvenue($this->clients->id_client);
                         }
-                    }
 
-                    /////////////////////////////////
+                        $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
 
+                        // modif ou inscription
+                        $modif = ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) ? true : false;
 
-                    // Mail au client particulier //
-                    // Recuperation du modele de mail
-                    if ($modif == true) {
-                        $this->mails_text->get('preteur-validation-modification-compte', 'lang = "' . $this->language . '" AND type');
-                    } else {
-                        $this->mails_text->get('preteur-confirmation-activation', 'lang = "' . $this->language . '" AND type');
-                    }
+                        // gestion alert notification //
+                        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+                        $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
 
-                    $surl = $this->surl;
-                    $url  = $this->furl;
+                        ////// Liste des notifs //////
+                        $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
+                        $this->lNotifs     = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
 
-                    // FB
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
-
-                    // Twitter
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
-
-                    $lapage = (in_array($this->clients->type, array(\clients::TYPE_BORROWER_PERSON, \clients::TYPE_BORROWER_PERSON_FOREIGNER))) ? 'particulier_doc' : 'societe_doc';
-
-                    $month = $this->dates->tableauMois['fr'][ date('n', $timeCreate) ];
-
-                    $varMail = array(
-                        'surl'    => $surl,
-                        'url'     => $url,
-                        'prenom'  => $this->clients->prenom,
-                        'projets' => $this->furl . '/projets-a-financer',
-                        'lien_fb' => $lien_fb,
-                        'lien_tw' => $lien_tw);
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        // Injection du mail NMP dans la queue
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
-                    ////////////////////
-
-
-                    /////////////////// IMPOSITION ETRANGER ////////////////////
-
-                    // datas
-                    $this->echeanciers                = $this->loadData('echeanciers');
-                    $this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
-
-                    // EQ-Acompte d'impôt sur le revenu
-                    $this->settings->get("EQ-Acompte d'impôt sur le revenu", 'type');
-                    $prelevements_obligatoires = $this->settings->value;
-
-                    // EQ-Contribution additionnelle au Prélèvement Social
-                    $this->settings->get('EQ-Contribution additionnelle au Prélèvement Social', 'type');
-                    $contributions_additionnelles = $this->settings->value;
-
-                    // EQ-CRDS
-                    $this->settings->get('EQ-CRDS', 'type');
-                    $crds = $this->settings->value;
-
-                    // EQ-CSG
-                    $this->settings->get('EQ-CSG', 'type');
-                    $csg = $this->settings->value;
-
-                    // EQ-Prélèvement de Solidarité
-                    $this->settings->get('EQ-Prélèvement de Solidarité', 'type');
-                    $prelevements_solidarite = $this->settings->value;
-
-                    // EQ-Prélèvement social
-                    $this->settings->get('EQ-Prélèvement social', 'type');
-                    $prelevements_sociaux = $this->settings->value;
-
-                    // EQ-Retenue à la source
-                    $this->settings->get('EQ-Retenue à la source', 'type');
-                    $retenues_source = $this->settings->value;
-
-                    $this->etranger = 0;
-                    // fr/resident etranger
-                    if ($this->clients->id_nationalite <= 1 && $this->clients_adresses->id_pays_fiscal > 1) {
-                        $this->etranger = 1;
-                    } // no fr/resident etranger
-                    elseif ($this->clients->id_nationalite > 1 && $this->clients_adresses->id_pays_fiscal > 1) {
-                        $this->etranger = 2;
-                    }
-
-                    // On garde une trace de l'action
-                    $this->lenders_imposition_history->id_lender         = $this->lenders_accounts->id_lender_account;
-                    $this->lenders_imposition_history->exonere           = $this->lenders_accounts->exonere;
-                    $this->lenders_imposition_history->resident_etranger = $this->etranger;
-                    $this->lenders_imposition_history->id_pays           = $this->clients_adresses->id_pays_fiscal; // add 18/06/2015
-                    $this->lenders_imposition_history->id_user           = $_SESSION['user']['id_user'];
-                    $this->lenders_imposition_history->create();
-
-                    $tabImpo = array(
-                        'prelevements_obligatoires'    => $prelevements_obligatoires,
-                        'contributions_additionnelles' => $contributions_additionnelles,
-                        'crds'                         => $crds,
-                        'csg'                          => $csg,
-                        'prelevements_solidarite'      => $prelevements_solidarite,
-                        'prelevements_sociaux'         => $prelevements_sociaux,
-                        'retenues_source'              => $retenues_source);
-
-                    $this->echeanciers->update_imposition_etranger($this->lenders_accounts->id_lender_account, $this->etranger, $tabImpo, $this->lenders_accounts->exonere, $this->lenders_accounts->debut_exoneration, $this->lenders_accounts->fin_exoneration);
-
-                    ////////////////////////////////////////////////////////////
-
-                    $_SESSION['compte_valide'] = true;
-                }
-
-
-                $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-                header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
-                die;
-            } // societe
-            elseif (in_array($this->clients->type, array(\clients::TYPE_BORROWER_LEGAL_ENTITY, \clients::TYPE_BORROWER_LEGAL_ENTITY_FOREIGNER))) {
-                $this->companies->name    = $_POST['raison-sociale'];
-                $this->companies->forme   = $_POST['form-juridique'];
-                $this->companies->capital = str_replace(' ', '', $_POST['capital-sociale']);
-                $this->companies->siren   = $_POST['siren'];
-                $this->companies->siret   = $_POST['siret']; //(19/11/2014)
-                $this->companies->phone   = str_replace(' ', '', $_POST['phone-societe']);
-
-                $this->companies->rcs          = $_POST['rcs'];
-                $this->companies->tribunal_com = $_POST['tribunal_com'];
-
-                ////////////////////////////////////
-                // On verifie meme adresse ou pas //
-                ////////////////////////////////////
-                if ($_POST['meme-adresse'] != false) {
-                    $this->companies->status_adresse_correspondance = '1';
-                } // la meme
-                else {
-                    $this->companies->status_adresse_correspondance = '0';
-                } // pas la meme
-
-                // adresse fiscal (siege de l'entreprise)
-                $this->companies->adresse1 = $_POST['adresse'];
-                $this->companies->city     = $_POST['ville'];
-                $this->companies->zip      = $_POST['cp'];
-
-                // adresse fiscal (dans client entreprise) on vide car c'est pour les particulier ca
-                $this->clients_adresses->adresse_fiscal = '';
-                $this->clients_adresses->ville_fiscal   = '';
-                $this->clients_adresses->cp_fiscal      = '';
-
-                // pas la meme
-                if ($this->companies->status_adresse_correspondance == 0) {
-                    // adresse client
-                    $this->clients_adresses->adresse1 = $_POST['adresse2'];
-                    $this->clients_adresses->ville    = $_POST['ville2'];
-                    $this->clients_adresses->cp       = $_POST['cp2'];
-                } // la meme
-                else {
-                    // adresse client
-                    $this->clients_adresses->adresse1 = $_POST['adresse'];
-                    $this->clients_adresses->ville    = $_POST['ville'];
-                    $this->clients_adresses->cp       = $_POST['cp'];
-                }
-                ////////////////////////////////////////
-
-                $this->companies->status_client = $_POST['enterprise']; // radio 1 dirigeant 2 pas dirigeant 3 externe
-
-                $this->clients->civilite = $_POST['civilite_e'];
-                $this->clients->nom      = $this->ficelle->majNom($_POST['nom_e']);
-                $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_e']);
-                $this->clients->fonction = $_POST['fonction_e'];
-
-                //// check doublon mail ////
-                $checkEmailExistant = $this->clients->selectPreteursByStatus('10,20,30,40,50,60', 'email = "' . $_POST['email_e'] . '" AND id_client != ' . $this->clients->id_client);
-                if (count($checkEmailExistant) > 0) {
-                    $les_id_client_email_exist = '';
-                    foreach ($checkEmailExistant as $checkEmailEx) {
-                        $les_id_client_email_exist .= ' ' . $checkEmailEx['id_client'];
-                    }
-
-                    $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id ' . $les_id_client_email_exist;
-                } else {
-                    $this->clients->email = $_POST['email_e'];
-                }
-
-                //// fin check doublon mail ////
-
-                $this->clients->telephone = str_replace(' ', '', $_POST['phone_e']);
-
-                //extern ou non dirigeant
-                if ($this->companies->status_client == 2 || $this->companies->status_client == 3) {
-                    $this->companies->civilite_dirigeant = $_POST['civilite2_e'];
-                    $this->companies->nom_dirigeant      = $this->ficelle->majNom($_POST['nom2_e']);
-                    $this->companies->prenom_dirigeant   = $this->ficelle->majNom($_POST['prenom2_e']);
-                    $this->companies->fonction_dirigeant = $_POST['fonction2_e'];
-                    $this->companies->email_dirigeant    = $_POST['email2_e'];
-                    $this->companies->phone_dirigeant    = str_replace(' ', '', $_POST['phone2_e']);
-
-                    // externe
-                    if ($this->companies->status_client == 3) {
-                        $this->companies->status_conseil_externe_entreprise   = $_POST['status_conseil_externe_entreprise'];
-                        $this->companies->preciser_conseil_externe_entreprise = $_POST['preciser_conseil_externe_entreprise'];
-                    }
-                } else {
-                    $this->companies->civilite_dirigeant = '';
-                    $this->companies->nom_dirigeant      = '';
-                    $this->companies->prenom_dirigeant   = '';
-                    $this->companies->fonction_dirigeant = '';
-                    $this->companies->email_dirigeant    = '';
-                    $this->companies->phone_dirigeant    = '';
-                }
-
-                // Si form societe ok
-
-                $this->clients->id_langue       = 'fr';
-                $this->clients->type            = 2;
-                $this->clients->nom_usage       = '';
-                $this->clients->naissance       = '0000-00-00';
-                $this->clients->ville_naissance = '';
-
-                // On crée la l'entreprise si existe pas
-                if ($this->companies->exist($this->clients->id_client, 'id_client_owner')) {
-                    $this->companies->update();
-                } else {
-                    $this->companies->id_client_owner = $this->clients->id_client;
-                    $this->companies->id_company      = $this->companies->create();
-                }
-
-                $this->lenders_accounts->bic = str_replace(' ', '', strtoupper($_POST['bic']));
-
-                $iban = '';
-                for ($i = 1; $i <= 7; $i++) {
-                    $iban .= strtoupper($_POST[ 'iban' . $i ]);
-                }
-                $this->lenders_accounts->iban = str_replace(' ', '', $iban);
-
-                $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
-                if ($this->lenders_accounts->origine_des_fonds == '1000000') {
-                    $this->lenders_accounts->precision = $_POST['preciser'];
-                } else {
-                    $this->lenders_accounts->precision = '';
-                }
-
-                // debut fichiers //
-
-                foreach ($_FILES as $field => $file) {
-                    //We made the field name = attachment type id
-                    $iAttachmentType = $field;
-                    if ('' !== $file['name']) {
-                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
-                    }
-                }
-
-                // Mandat
-                if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
-
-                    $this->clients_mandats = $this->loadData('clients_mandants');
-                    if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) {
-                        $create = false;
-                    } else {
-                        $create = true;
-                    }
-
-                    $this->upload->setUploadDir($this->path, 'protected/pdf/mandat/');
-                    if ($this->upload->doUpload('mandat')) {
-                        if ($this->clients_mandats->name != '') {
-                            @unlink($this->path . 'protected/pdf/mandat/' . $this->clients_mandats->name);
+                        if ($this->lNotifs == false) {
+                            foreach ($this->lTypeNotifs as $n) {
+                                $this->clients_gestion_notifications->id_client = $this->clients->id_client;
+                                $this->clients_gestion_notifications->id_notif  = $n['id_client_gestion_type_notif'];
+                                $id_notif                                       = $n['id_client_gestion_type_notif'];
+                                // immediatement
+                                if (in_array($id_notif, array(3, 6, 7, 8))) {
+                                    $this->clients_gestion_notifications->immediatement = 1;
+                                } else {
+                                    $this->clients_gestion_notifications->immediatement = 0;
+                                }
+                                // quotidienne
+                                if (in_array($id_notif, array(1, 2, 4, 5))) {
+                                    $this->clients_gestion_notifications->quotidienne = 1;
+                                } else {
+                                    $this->clients_gestion_notifications->quotidienne = 0;
+                                }
+                                // hebdomadaire
+                                if (in_array($id_notif, array(1, 4))) {
+                                    $this->clients_gestion_notifications->hebdomadaire = 1;
+                                } else {
+                                    $this->clients_gestion_notifications->hebdomadaire = 0;
+                                }
+                                // mensuelle
+                                $this->clients_gestion_notifications->mensuelle = 0;
+                                $this->clients_gestion_notifications->create();
+                            }
                         }
-                        $this->clients_mandats->name          = $this->upload->getName();
-                        $this->clients_mandats->id_client     = $this->clients->id_client;
-                        $this->clients_mandats->id_universign = 'no_universign';
-                        $this->clients_mandats->url_pdf       = '/pdf/mandat/' . $this->clients->hash . '/';
-                        $this->clients_mandats->status        = 1;
 
-                        if ($create == true) {
-                            $this->clients_mandats->create();
+                        /////////////////////////////////
+
+
+                        // Mail au client particulier //
+                        // Recuperation du modele de mail
+                        if ($modif == true) {
+                            $this->mails_text->get('preteur-validation-modification-compte', 'lang = "' . $this->language . '" AND type');
                         } else {
-                            $this->clients_mandats->update();
+                            $this->mails_text->get('preteur-confirmation-activation', 'lang = "' . $this->language . '" AND type');
                         }
 
+                        $surl = $this->surl;
+                        $url  = $this->furl;
+
+                        // FB
+                        $this->settings->get('Facebook', 'type');
+                        $lien_fb = $this->settings->value;
+
+                        // Twitter
+                        $this->settings->get('Twitter', 'type');
+                        $lien_tw = $this->settings->value;
+
+                        $lapage = (in_array($this->clients->type, array(\clients::TYPE_BORROWER_PERSON, \clients::TYPE_BORROWER_PERSON_FOREIGNER))) ? 'particulier_doc' : 'societe_doc';
+
+                        $month = $this->dates->tableauMois['fr'][ date('n', $timeCreate) ];
+
+                        $varMail = array(
+                            'surl'    => $surl,
+                            'url'     => $url,
+                            'prenom'  => $this->clients->prenom,
+                            'projets' => $this->furl . '/projets-a-financer',
+                            'lien_fb' => $lien_fb,
+                            'lien_tw' => $lien_tw);
+                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                        $this->email = $this->loadLib('email');
+                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                        $this->email->setSubject(stripslashes($sujetMail));
+                        $this->email->setHTMLBody(stripslashes($texteMail));
+
+                        if ($this->Config['env'] === 'prod') {
+                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                            // Injection du mail NMP dans la queue
+                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                        } else {
+                            $this->email->addRecipient(trim($this->clients->email));
+                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                        }
+                        ////////////////////
+
+
+                        /////////////////// IMPOSITION ETRANGER ////////////////////
+
+                        // datas
+                        $this->echeanciers                = $this->loadData('echeanciers');
+                        $this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
+
+                        // EQ-Acompte d'impôt sur le revenu
+                        $this->settings->get("EQ-Acompte d'impôt sur le revenu", 'type');
+                        $prelevements_obligatoires = $this->settings->value;
+
+                        // EQ-Contribution additionnelle au Prélèvement Social
+                        $this->settings->get('EQ-Contribution additionnelle au Prélèvement Social', 'type');
+                        $contributions_additionnelles = $this->settings->value;
+
+                        // EQ-CRDS
+                        $this->settings->get('EQ-CRDS', 'type');
+                        $crds = $this->settings->value;
+
+                        // EQ-CSG
+                        $this->settings->get('EQ-CSG', 'type');
+                        $csg = $this->settings->value;
+
+                        // EQ-Prélèvement de Solidarité
+                        $this->settings->get('EQ-Prélèvement de Solidarité', 'type');
+                        $prelevements_solidarite = $this->settings->value;
+
+                        // EQ-Prélèvement social
+                        $this->settings->get('EQ-Prélèvement social', 'type');
+                        $prelevements_sociaux = $this->settings->value;
+
+                        // EQ-Retenue à la source
+                        $this->settings->get('EQ-Retenue à la source', 'type');
+                        $retenues_source = $this->settings->value;
+
+                        $this->etranger = 0;
+                        // fr/resident etranger
+                        if ($this->clients->id_nationalite <= 1 && $this->clients_adresses->id_pays_fiscal > 1) {
+                            $this->etranger = 1;
+                        } // no fr/resident etranger
+                        elseif ($this->clients->id_nationalite > 1 && $this->clients_adresses->id_pays_fiscal > 1) {
+                            $this->etranger = 2;
+                        }
+
+                        // On garde une trace de l'action
+                        $this->lenders_imposition_history->id_lender         = $this->lenders_accounts->id_lender_account;
+                        $this->lenders_imposition_history->exonere           = $this->lenders_accounts->exonere;
+                        $this->lenders_imposition_history->resident_etranger = $this->etranger;
+                        $this->lenders_imposition_history->id_pays           = $this->clients_adresses->id_pays_fiscal; // add 18/06/2015
+                        $this->lenders_imposition_history->id_user           = $_SESSION['user']['id_user'];
+                        $this->lenders_imposition_history->create();
+
+                        $tabImpo = array(
+                            'prelevements_obligatoires'    => $prelevements_obligatoires,
+                            'contributions_additionnelles' => $contributions_additionnelles,
+                            'crds'                         => $crds,
+                            'csg'                          => $csg,
+                            'prelevements_solidarite'      => $prelevements_solidarite,
+                            'prelevements_sociaux'         => $prelevements_sociaux,
+                            'retenues_source'              => $retenues_source);
+
+                        $this->echeanciers->update_imposition_etranger($this->lenders_accounts->id_lender_account, $this->etranger, $tabImpo, $this->lenders_accounts->exonere, $this->lenders_accounts->debut_exoneration, $this->lenders_accounts->fin_exoneration);
+
+                        ////////////////////////////////////////////////////////////
+
+                        $_SESSION['compte_valide'] = true;
                     }
-                }
-
-                // fin fichier //
-
-                // On met a jour le lender
-                $this->lenders_accounts->id_company_owner = $this->companies->id_company;
-                $this->lenders_accounts->update();
-                $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-
-                // On met a jour le client
-                $this->clients->update();
-                // On met a jour l'adresse client
-                $this->clients_adresses->update();
 
 
-                // Histo user //
-                $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
-                $this->users_history->histo(3, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
+                    $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+                    header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
+                    die;
+                } // societe
+                elseif (in_array($this->clients->type, array(\clients::TYPE_BORROWER_LEGAL_ENTITY, \clients::TYPE_BORROWER_LEGAL_ENTITY_FOREIGNER))) {
+                    $this->companies->name    = $_POST['raison-sociale'];
+                    $this->companies->forme   = $_POST['form-juridique'];
+                    $this->companies->capital = str_replace(' ', '', $_POST['capital-sociale']);
+                    $this->companies->siren   = $_POST['siren'];
+                    $this->companies->siret   = $_POST['siret']; //(19/11/2014)
+                    $this->companies->phone   = str_replace(' ', '', $_POST['phone-societe']);
 
-                if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
-                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
+                    $this->companies->rcs          = $_POST['rcs'];
+                    $this->companies->tribunal_com = $_POST['tribunal_com'];
 
+                    ////////////////////////////////////
+                    // On verifie meme adresse ou pas //
+                    ////////////////////////////////////
+                    if ($_POST['meme-adresse'] != false) {
+                        $this->companies->status_adresse_correspondance = '1';
+                    } // la meme
+                    else {
+                        $this->companies->status_adresse_correspondance = '0';
+                    } // pas la meme
 
-                    // Mail au client  societe//
+                    // adresse fiscal (siege de l'entreprise)
+                    $this->companies->adresse1 = $_POST['adresse'];
+                    $this->companies->city     = $_POST['ville'];
+                    $this->companies->zip      = $_POST['cp'];
 
-                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
+                    // adresse fiscal (dans client entreprise) on vide car c'est pour les particulier ca
+                    $this->clients_adresses->adresse_fiscal = '';
+                    $this->clients_adresses->ville_fiscal   = '';
+                    $this->clients_adresses->cp_fiscal      = '';
 
-                    // modif ou inscription
-                    $modif = ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) ? true : false;
-
-                    // Validation inscription
-                    if ($modif == false) {
-                        $this->create_offre_bienvenue($this->clients->id_client);
+                    // pas la meme
+                    if ($this->companies->status_adresse_correspondance == 0) {
+                        // adresse client
+                        $this->clients_adresses->adresse1 = $_POST['adresse2'];
+                        $this->clients_adresses->ville    = $_POST['ville2'];
+                        $this->clients_adresses->cp       = $_POST['cp2'];
+                    } // la meme
+                    else {
+                        // adresse client
+                        $this->clients_adresses->adresse1 = $_POST['adresse'];
+                        $this->clients_adresses->ville    = $_POST['ville'];
+                        $this->clients_adresses->cp       = $_POST['cp'];
                     }
+                    ////////////////////////////////////////
 
-                    if ($modif == true) {
-                        $this->mails_text->get('preteur-validation-modification-compte', 'lang = "' . $this->language . '" AND type');
+                    $this->companies->status_client = $_POST['enterprise']; // radio 1 dirigeant 2 pas dirigeant 3 externe
+
+                    $this->clients->civilite = $_POST['civilite_e'];
+                    $this->clients->nom      = $this->ficelle->majNom($_POST['nom_e']);
+                    $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_e']);
+                    $this->clients->fonction = $_POST['fonction_e'];
+
+                    $aLenderStatusForQuery = array(
+                        \clients_status::TO_BE_CHECKED,
+                        \clients_status::COMPLETENESS,
+                        \clients_status::COMPLETENESS_REMINDER,
+                        \clients_status::COMPLETENESS_REPLY,
+                        \clients_status::MODIFICATION,
+                        \clients_status::VALIDATED,
+                    );
+                    $checkEmailExistant = $this->clients->selectPreteursByStatus(implode($aLenderStatusForQuery, ','), 'email = "' . $_POST['email_e'] . '" AND id_client != ' . $this->clients->id_client);
+                    if (count($checkEmailExistant) > 0) {
+                        $les_id_client_email_exist = '';
+                        foreach ($checkEmailExistant as $checkEmailEx) {
+                            $les_id_client_email_exist .= ' ' . $checkEmailEx['id_client'];
+                        }
+
+                        $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id ' . $les_id_client_email_exist;
                     } else {
-                        $this->mails_text->get('preteur-confirmation-activation', 'lang = "' . $this->language . '" AND type');
+                        $this->clients->email = $_POST['email_e'];
                     }
 
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
+                    //// fin check doublon mail ////
 
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
+                    $this->clients->telephone = str_replace(' ', '', $_POST['phone_e']);
 
-                    $varMail = array(
-                        'surl'    => $this->surl,
-                        'url'     => $this->furl,
-                        'prenom'  => $this->clients->prenom,
-                        'projets' => $this->furl . '/projets-a-financer',
-                        'lien_fb' => $lien_fb,
-                        'lien_tw' => $lien_tw);
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                    //extern ou non dirigeant
+                    if ($this->companies->status_client == 2 || $this->companies->status_client == 3) {
+                        $this->companies->civilite_dirigeant = $_POST['civilite2_e'];
+                        $this->companies->nom_dirigeant      = $this->ficelle->majNom($_POST['nom2_e']);
+                        $this->companies->prenom_dirigeant   = $this->ficelle->majNom($_POST['prenom2_e']);
+                        $this->companies->fonction_dirigeant = $_POST['fonction2_e'];
+                        $this->companies->email_dirigeant    = $_POST['email2_e'];
+                        $this->companies->phone_dirigeant    = str_replace(' ', '', $_POST['phone2_e']);
 
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
-                    $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-                    $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                        // externe
+                        if ($this->companies->status_client == 3) {
+                            $this->companies->status_conseil_externe_entreprise   = $_POST['status_conseil_externe_entreprise'];
+                            $this->companies->preciser_conseil_externe_entreprise = $_POST['preciser_conseil_externe_entreprise'];
+                        }
                     } else {
-                        $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                        $this->companies->civilite_dirigeant = '';
+                        $this->companies->nom_dirigeant      = '';
+                        $this->companies->prenom_dirigeant   = '';
+                        $this->companies->fonction_dirigeant = '';
+                        $this->companies->email_dirigeant    = '';
+                        $this->companies->phone_dirigeant    = '';
                     }
-                    $_SESSION['compte_valide'] = true;
+
+                    // Si form societe ok
+
+                    $this->clients->id_langue       = 'fr';
+                    $this->clients->type            = 2;
+                    $this->clients->nom_usage       = '';
+                    $this->clients->naissance       = '0000-00-00';
+                    $this->clients->ville_naissance = '';
+
+                    // On crée la l'entreprise si existe pas
+                    if ($this->companies->exist($this->clients->id_client, 'id_client_owner')) {
+                        $this->companies->update();
+                    } else {
+                        $this->companies->id_client_owner = $this->clients->id_client;
+                        $this->companies->id_company      = $this->companies->create();
+                    }
+
+                    $this->lenders_accounts->bic = str_replace(' ', '', strtoupper($_POST['bic']));
+
+                    $iban = '';
+                    for ($i = 1; $i <= 7; $i++) {
+                        $iban .= strtoupper($_POST[ 'iban' . $i ]);
+                    }
+                    $this->lenders_accounts->iban = str_replace(' ', '', $iban);
+
+                    $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
+                    if ($this->lenders_accounts->origine_des_fonds == '1000000') {
+                        $this->lenders_accounts->precision = $_POST['preciser'];
+                    } else {
+                        $this->lenders_accounts->precision = '';
+                    }
+
+                    // debut fichiers //
+
+                    foreach ($_FILES as $field => $file) {
+                        //We made the field name = attachment type id
+                        $iAttachmentType = $field;
+                        if ('' !== $file['name']) {
+                            $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
+                        }
+                    }
+
+                    // Mandat
+                    if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
+
+                        $this->clients_mandats = $this->loadData('clients_mandants');
+                        if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) {
+                            $create = false;
+                        } else {
+                            $create = true;
+                        }
+
+                        $this->upload->setUploadDir($this->path, 'protected/pdf/mandat/');
+                        if ($this->upload->doUpload('mandat')) {
+                            if ($this->clients_mandats->name != '') {
+                                @unlink($this->path . 'protected/pdf/mandat/' . $this->clients_mandats->name);
+                            }
+                            $this->clients_mandats->name          = $this->upload->getName();
+                            $this->clients_mandats->id_client     = $this->clients->id_client;
+                            $this->clients_mandats->id_universign = 'no_universign';
+                            $this->clients_mandats->url_pdf       = '/pdf/mandat/' . $this->clients->hash . '/';
+                            $this->clients_mandats->status        = 1;
+
+                            if ($create == true) {
+                                $this->clients_mandats->create();
+                            } else {
+                                $this->clients_mandats->update();
+                            }
+
+                        }
+                    }
+
+                    // fin fichier //
+
+                    // On met a jour le lender
+                    $this->lenders_accounts->id_company_owner = $this->companies->id_company;
+                    $this->lenders_accounts->update();
+                    $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+
+                    // On met a jour le client
+                    $this->clients->update();
+                    // On met a jour l'adresse client
+                    $this->clients_adresses->update();
+
+
+                    // Histo user //
+                    $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
+                    $this->users_history->histo(3, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
+
+                    if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
+                        $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
+
+
+                        // Mail au client  societe//
+
+                        $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
+
+                        // modif ou inscription
+                        $modif = ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) ? true : false;
+
+                        // Validation inscription
+                        if ($modif == false) {
+                            $this->create_offre_bienvenue($this->clients->id_client);
+                        }
+
+                        if ($modif == true) {
+                            $this->mails_text->get('preteur-validation-modification-compte', 'lang = "' . $this->language . '" AND type');
+                        } else {
+                            $this->mails_text->get('preteur-confirmation-activation', 'lang = "' . $this->language . '" AND type');
+                        }
+
+                        $this->settings->get('Facebook', 'type');
+                        $lien_fb = $this->settings->value;
+
+                        $this->settings->get('Twitter', 'type');
+                        $lien_tw = $this->settings->value;
+
+                        $varMail = array(
+                            'surl'    => $this->surl,
+                            'url'     => $this->furl,
+                            'prenom'  => $this->clients->prenom,
+                            'projets' => $this->furl . '/projets-a-financer',
+                            'lien_fb' => $lien_fb,
+                            'lien_tw' => $lien_tw);
+                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                        $this->email = $this->loadLib('email');
+                        $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
+                        $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
+                        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
+
+                        if ($this->Config['env'] === 'prod') {
+                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                        } else {
+                            $this->email->addRecipient(trim($this->clients->email));
+                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                        }
+                        $_SESSION['compte_valide'] = true;
+                    }
+                    header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
+                    die;
                 }
-                header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
-                die;
             }
         }
     }
@@ -1136,7 +1169,7 @@ class preteursController extends bootstrap
             'url'           => $this->lurl,
             'prenom_p'      => $this->clients->prenom,
             'date_creation' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
-            'content'       => utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]),
+            'content'       => utf8_encode($_SESSION['content_email_completude'][ $this->clients->id_client ]),
             'lien_upload'   => $this->furl . '/profile/' . $lapage,
             'lien_fb'       => $lien_fb,
             'lien_tw'       => $lien_tw);
@@ -1170,7 +1203,9 @@ class preteursController extends bootstrap
 
             $this->montant       = str_replace('.', ',', ($offres_bienvenues->montant / 100));
             $this->montant_limit = str_replace('.', ',', ($offres_bienvenues->montant_limit / 100));
-        } else $create = true;
+        } else {
+            $create = true;
+        }
 
         // form send offres de Bienvenues
         if (isset($_POST['form_send_offres'])) {
@@ -1218,8 +1253,11 @@ class preteursController extends bootstrap
                 $offres_bienvenues->montant_limit = ($montant_limit * 100);
                 $offres_bienvenues->id_user       = $_SESSION['user']['id_user'];
 
-                if ($create == false) $offres_bienvenues->update();
-                else $offres_bienvenues->id_offre_bienvenue = $offres_bienvenues->create();
+                if ($create == false) {
+                    $offres_bienvenues->update();
+                } else {
+                    $offres_bienvenues->id_offre_bienvenue = $offres_bienvenues->create();
+                }
 
                 $_SESSION['freeow']['title']   = 'Offre de bienvenue';
                 $_SESSION['freeow']['message'] = 'Offre de bienvenue ajouté';
@@ -1542,6 +1580,7 @@ class preteursController extends bootstrap
             }
         }
     }
+
     /**
      * @param integer $iOwnerId
      * @param integer $field
@@ -1563,11 +1602,11 @@ class preteursController extends bootstrap
         }
 
         if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path ));;
+            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));;
         }
 
         $sNewName = '';
-        if (isset($_FILES[$field]['name']) && $aFileInfo = pathinfo($_FILES[$field]['name'])) {
+        if (isset($_FILES[ $field ]['name']) && $aFileInfo = pathinfo($_FILES[ $field ]['name'])) {
             $sNewName = mb_substr($aFileInfo['filename'], 0, 30) . '_' . $iOwnerId;
         }
 
@@ -1637,9 +1676,9 @@ class preteursController extends bootstrap
         if (empty($this->IRR)) {
             try {
                 $this->IRR['tri_value'] = $this->lenders_accounts->calculateIRR($this->lenders_accounts->id_lender_account);
-            } catch (Exception $e){
-                $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
-                $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
+            } catch (Exception $e) {
+                $oLoggerIRR = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
+                $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: ' . $e->getMessage() . ' ' . $e->getTraceAsString());
                 $this->IRR = 'non calculable';
             }
         }
@@ -1699,7 +1738,7 @@ class preteursController extends bootstrap
         $this->loadJs('default/jquery-ui-1.10.3.custom.min');
 
         /** @var lenders_accounts $oLenders */
-        $oLenders = $this->loadData('lenders_accounts');
+        $oLenders       = $this->loadData('lenders_accounts');
         $this->aLenders = $oLenders->getLendersToMatchCity(200);
     }
 
@@ -1708,13 +1747,13 @@ class preteursController extends bootstrap
         $this->loadJs('default/jquery-ui-1.10.3.custom.min');
 
         /** @var lenders_accounts $oLenders */
-        $oLenders = $this->loadData('lenders_accounts');
+        $oLenders       = $this->loadData('lenders_accounts');
         $this->aLenders = $oLenders->getLendersToMatchBirthCity(200);
     }
 
-    private function changeClientStatus($iClientId, $iStatus, $iClientStatusForHistory, $iOrigin)
+    private function changeClientStatus($iClientId, $iStatus, $iOrigin)
     {
-        if ($this->clients->isBorrower($this->loadData('projects'), $this->loadData('companies'), $iClientId) === false ){
+        if ($this->clients->isBorrower($this->loadData('projects'), $this->loadData('companies'), $iClientId) === false) {
 
             $this->clients->get($iClientId, 'id_client');
             $this->clients->status = $iStatus;
@@ -1727,15 +1766,17 @@ class preteursController extends bootstrap
                     $_SESSION['freeow']['title']   = 'Statut du preteur';
                     $_SESSION['freeow']['message'] = 'Le statut du preteur a bien &eacute;t&eacute; modifi&eacute; !';
                     break;
+                case 3:
+                    $this->users_history->histo($iOrigin, 'status offline d\'un preteur doublon', $_SESSION['user']['id_user'], $serialize);
+                    $_SESSION['freeow']['title']   = 'Doublon client';
+                    $_SESSION['freeow']['message'] = 'Attention, homonyme d\'un autre client. Client mis hors ligne !';
+                    break;
                 case 12:
                     $this->users_history->histo($iOrigin, 'status offline-online preteur non inscrit', $_SESSION['user']['id_user'], $serialize);
                     $_SESSION['freeow']['title']   = 'Statut du preteur non inscrit';
                     $_SESSION['freeow']['message'] = 'Le statut du preteur non inscrit a bien &eacute;t&eacute; modifi&eacute; !';
                     break;
             }
-
-            $oClientsStatusHistory = $this->loadData('clients_status_history');
-            $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], $iClientStatusForHistory, $this->clients->id_client);
 
         } else {
 
@@ -1745,9 +1786,8 @@ class preteursController extends bootstrap
             $oLendersAccounts = $this->loadData('lenders_accounts');
             $oLendersAccounts->get($iClientId, 'id_client_owner');
 
-            header('location:' . $this->lurl . '/preteurs/edit/'.$oLendersAccounts->id_lender_account);
+            header('location:' . $this->lurl . '/preteurs/edit/' . $oLendersAccounts->id_lender_account);
             die;
-
         }
 
     }
@@ -1768,9 +1808,9 @@ class preteursController extends bootstrap
             'prenom'  => $this->clients->prenom,
             'lien_fb' => $sFB,
             'lien_tw' => $sTW);
-        $tabVars = $this->tnmp->constructionVariablesServeur($aVariablesMail);
+        $tabVars        = $this->tnmp->constructionVariablesServeur($aVariablesMail);
 
-        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+        $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
         $this->email = $this->loadLib('email');
         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
@@ -1796,7 +1836,7 @@ class preteursController extends bootstrap
         $this->settings->get('Twitter', 'type');
         $lien_tw = $this->settings->value;
 
-        $lapage =  (in_array($this->clients->type, array(\clients::TYPE_BORROWER_PERSON, \clients::TYPE_BORROWER_PERSON_FOREIGNER))) ? 'particulier_doc' : 'societe_doc';
+        $lapage = (in_array($this->clients->type, array(\clients::TYPE_BORROWER_PERSON, \clients::TYPE_BORROWER_PERSON_FOREIGNER))) ? 'particulier_doc' : 'societe_doc';
 
         $timeCreate = (empty($this->lActions[0]['added']) === false) ? strtotime($this->lActions[0]['added']) : strtotime($this->clients->added);
         $month      = $this->dates->tableauMois['fr'][ date('n', $timeCreate) ];

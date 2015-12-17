@@ -360,13 +360,13 @@ class lenders_accounts extends lenders_accounts_crud
                             clients_status_history csh
                             LEFT JOIN clients ON clients.id_client = csh.id_client
                         WHERE
-                            csh.id_client_status = ' . \clients_status::VALIDE .'
+                            csh.id_client_status = 6
                             AND c.id_client = csh.id_client
                         ORDER BY
                             csh.added DESC
                         LIMIT
                             1
-                    ) As date_validation
+                    ) AS date_validation
                 FROM
                     clients c
                     INNER JOIN lenders_accounts la ON c.id_client = la.id_client_owner
