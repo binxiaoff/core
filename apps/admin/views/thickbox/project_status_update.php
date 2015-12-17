@@ -82,7 +82,7 @@
         <?php endif; ?>
 
         <?php if ($this->bCustomEmail): ?>
-            if ('' == $('#mail_content').val()) {
+            if (1 == $('[name=send_email]:checked').val() && '' == $('#mail_content').val()) {
                 error = true;
             }
         <?php endif; ?>
