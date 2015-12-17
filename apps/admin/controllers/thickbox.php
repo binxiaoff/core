@@ -83,7 +83,7 @@ class thickboxController extends bootstrap
                         'status'           => $oProjectsStatus->label,
                         'date'             => $aHistory['added'],
                         'user'             => $oUsers->getName($aHistory['id_user']),
-                        'decision_date'    => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['date'],
+                        'decision_date'    => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) || '0000-00-00' === $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['date'] ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['date'],
                         'receiver'         => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['receiver'],
                         'mail_content'     => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['mail_content'],
                         'site_content'     => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['site_content'],
