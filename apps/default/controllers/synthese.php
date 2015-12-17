@@ -168,7 +168,7 @@ class syntheseController extends bootstrap
 		/* Modification David Raux 22/06/2015 > affichage des projets par ordre de date de fin croissante
                 $this->lProjetEncours = $this->projects->selectProjectsByStatus(50,$where_not_in,'p.date_publication_full DESC',0,30);
                 */
-                $this->lProjetEncours = $this->projects->selectProjectsByStatus(50,$where_not_in,'p.date_retrait ASC',0,30);
+                $this->lProjetEncours = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING,$where_not_in,'p.date_retrait ASC',0,30);
 
 
 

@@ -458,7 +458,7 @@ class projectsController extends bootstrap
             }
             // FIN INSCRIPTION PRETEUR //
             // Nb projets en funding
-            $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', 75', ' AND p.status = 0 AND p.display = 0');
+            $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0');
 
             // dates pour le js
             $this->mois_jour = $this->dates->formatDate($this->projects->date_retrait, 'F d');

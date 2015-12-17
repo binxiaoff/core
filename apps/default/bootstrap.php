@@ -485,7 +485,7 @@ class bootstrap extends Controller
                 }
 
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
-                $this->nbProjets = $this->projects->countSelectProjectsByStatus('30,50,60,70,80', ' AND id_company = ' . $this->companies->id_company . ' AND p.status = 0 AND p.display = 0');
+                $this->nbProjets = $this->projects->countSelectProjectsByStatus(implode(', ', array(\projects_status::REJETE, \projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::REMBOURSEMENT)), ' AND id_company = ' . $this->companies->id_company . ' AND p.status = 0 AND p.display = 0');
 
                 // pour les emprunteurs donc satut 2 ou 3
                 // Lien conditions generales depot dossier

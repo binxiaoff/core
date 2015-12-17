@@ -40,16 +40,6 @@ class projects extends projects_crud
         parent::projects($bdd, $params);
     }
 
-    public function get($id, $field = 'id_project')
-    {
-        return parent::get($id, $field);
-    }
-
-    public function delete($id, $field = 'id_project')
-    {
-        parent::delete($id, $field);
-    }
-
     public function create()
     {
         $this->id_project            = $this->bdd->escape_string($this->id_project);
@@ -124,15 +114,15 @@ class projects extends projects_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `projects` ' . $where;
+        $sql = 'SELECT COUNT(*) FROM `projects` ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_project')
     {
-        $sql    = 'SELECT * FROM `projects` WHERE ' . $field . '="' . $id . '"';
+        $sql    = 'SELECT * FROM `projects` WHERE ' . $field . ' = "' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
@@ -232,7 +222,7 @@ class projects extends projects_crud
         $sql = '
           SELECT p.*,
               projects_status.status,
-              CASE WHEN projects_status.status = 50
+              CASE WHEN projects_status.status = ' . \projects_status::EN_FUNDING . '
                 THEN "1"
                 ELSE "2"
               END AS lestatut
@@ -329,7 +319,7 @@ class projects extends projects_crud
             LEFT JOIN companies co ON (p.id_company = co.id_company)
             LEFT JOIN clients c ON (co.id_client_owner = c.id_client)))
             WHERE 1 = 1 ' . $where . '
-            HAVING status_project IN(80, 60)
+            HAVING status_project IN(' . \projects_status::FUNDE . ', ' . \projects_status::REMBOURSEMENT . ')
             ORDER BY p.added DESC
             ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $resultat = $this->bdd->query($sql);
@@ -372,7 +362,7 @@ class projects extends projects_crud
             LEFT JOIN companies co ON (p.id_company = co.id_company)
             LEFT JOIN clients c ON (co.id_client_owner = c.id_client)))
             WHERE 1 = 1 ' . $where . '
-            HAVING status_project IN (' . implode(', ', array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)) . ')
+            HAVING status_project IN (' . implode(', ', array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT)) . ')
             ORDER BY p.added DESC
             ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $resultat = $this->bdd->query($sql);
@@ -387,7 +377,7 @@ class projects extends projects_crud
     public function positionProject($id_project, $status = '', $order = '')
     {
         if ($status == '') {
-            $status = '50,60,80';
+            $status = implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT));
         }
 
         // On recupere les en funding et les fundé
@@ -441,37 +431,8 @@ class projects extends projects_crud
         return parent::get($id_project, 'id_project');
     }
 
-    public function countProjectsByStatus($status)
-    {
-        if (is_array($status)) {
-            $statusString = implode(",", $status);
-        }
-
-        $sql = 'SELECT COUNT(*) FROM projects p WHERE(
-    SELECT
-            ps.status
-        FROM
-            projects_status ps
-            LEFT JOIN projects_status_history psh ON (
-            ps.id_project_status = psh.id_project_status
-        )
-        WHERE
-            psh.id_project = p.id_project
-        ORDER BY
-            psh.added DESC
-        LIMIT
-            1
-    ) IN (' . $statusString . ');';
-
-        $result = $this->bdd->query($sql);
-        $record = $this->bdd->result($result);
-
-        return $record;
-    }
-
     public function countProjectsByStatusAndLender($lender, $status)
     {
-
         if (is_array($status)) {
             $statusString = implode(",", $status);
         }
@@ -523,7 +484,7 @@ class projects extends projects_crud
 
         if (false === $aElements) {
             $alProjetsFunding = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $sTabOrderProject, $iStart, $iLimit);
-            $anbProjects      = $this->countSelectProjectsByStatus($sListStatus . ', 75', ' AND p.status = 0 AND p.display = 0');
+            $anbProjects      = $this->countSelectProjectsByStatus($sListStatus . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0');
             $aElements = array(
                 'lProjectsFunding' => $alProjetsFunding,
                 'nbProjects'       => $anbProjects

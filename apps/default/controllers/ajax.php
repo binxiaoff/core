@@ -440,7 +440,7 @@ class ajaxController extends bootstrap
             $_SESSION['ordreProject'] = $this->ordreProject;
 
             $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . $restriction . ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', 75', $where . $restriction . ' AND p.status = 0 AND p.display = 0');
+            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE, $where . $restriction . ' AND p.status = 0 AND p.display = 0');
         } else {
             $this->ordreProject = 1;
             $this->type         = 0;
@@ -449,7 +449,7 @@ class ajaxController extends bootstrap
 
             $this->where           = '';
             $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', 75' . ' AND p.status = 0');
+            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE . ' AND p.status = 0');
         }
     }
 

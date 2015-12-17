@@ -1158,7 +1158,7 @@ class cronController extends bootstrap
         $time = strtotime($today . ' 00:00:00');
 
         // projets en remb ou en probleme
-        $lProjects = $projects->selectProjectsByStatus('80,100');
+        $lProjects = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT . ', ' . \projects_status::PROBLEME);
 
         foreach ($lProjects as $p) {
             // On recupere le statut
@@ -2127,7 +2127,7 @@ class cronController extends bootstrap
         //$today = '2013-11-15';
         //////////
         // les projets en statut remboursement
-        $this->lProjects = $this->projects->selectProjectsByStatus(80);
+        $this->lProjects = $this->projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
 
         foreach ($this->lProjects as $k => $p) {
             // on recup la companie
@@ -5050,7 +5050,7 @@ class cronController extends bootstrap
             $projects_check = $this->loadData('projects_check');
 
             // 60 : fundé | on recup que ceux qui se sont terminé le jour meme
-            $lProjets = $projects->selectProjectsByStatus('60', ' AND LEFT(p.date_fin,10) = "' . date('Y-m-d') . '"');
+            $lProjets = $projects->selectProjectsByStatus(\projects_status::FUNDE, ' AND LEFT(p.date_fin,10) = "' . date('Y-m-d') . '"');
 
             foreach ($lProjets as $p) {
                 if ($projects_check->get($p['id_project'], 'id_project')) {
@@ -5288,7 +5288,7 @@ class cronController extends bootstrap
             $companies = $this->loadData('companies');
             $bids      = $this->loadData('bids');
 
-            $lProjets = $projects->selectProjectsByStatus('50');
+            $lProjets = $projects->selectProjectsByStatus(\projects_status::EN_FUNDING);
 
             $xml = '<?xml version="1.0" encoding="UTF-8"?>';
             $xml .= '<partenaire>';
@@ -5565,8 +5565,7 @@ class cronController extends bootstrap
 
                 //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
                 $lPreteurs = $clients->selectPreteursByStatusSlim(60);
-                // Liste des projets
-                $lProjects = $projects->selectProjectsByStatusSlim(50);
+                $lProjects = $projects->selectProjectsByStatusSlim(\projects_status::EN_FUNDING);
 
                 foreach ($lPreteurs as $preteur) {
                     foreach ($lProjects as $projet) {
@@ -5670,7 +5669,8 @@ class cronController extends bootstrap
 
                 //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
                 $lPreteurs = $clients->selectPreteursByStatusSlim(60);
-                $lProjects = $projects->selectProjectsByStatusSlim(50);
+                $lProjects = $projects->selectProjectsByStatusSlim(\projects_status::EN_FUNDING);
+
                 foreach ($lPreteurs as $preteur) {
                     foreach ($lProjects as $projet) {
                         if ($clients_gestion_mails_notif->counter('id_client = ' . $preteur['id_client'] . ' AND id_project = ' . $projet['id_project']) <= 0) {
@@ -5797,12 +5797,11 @@ class cronController extends bootstrap
         $projects                      = $this->loadData('projects');
 
         $lPreteurs = $clients->selectPreteursByStatusSlim(60);
-        $lProjects = $projects->selectProjectsByStatusSlim(50);
+        $lProjects = $projects->selectProjectsByStatusSlim(\projects_status::EN_FUNDING);
 
         foreach ($lPreteurs as $preteur) {
             foreach ($lProjects as $projet) {
                 if (! $clients_gestion_mails_notif->get($projet['id_project'], 'id_client = ' . $preteur['id_client'] . ' AND id_project')) {
-
                     $notifications->type            = 8; // nouveau projet
                     $notifications->id_lender       = $preteur['id_lender'];
                     $notifications->id_project      = $projet['id_project'];
@@ -5879,8 +5878,7 @@ class cronController extends bootstrap
         $projects                      = $this->loadData('projects');
 
         $lPreteurs = $clients->selectPreteursByStatusSlim(60);
-        // Liste des projets
-        $lProjects = $projects->selectProjectsByStatusSlim(50);
+        $lProjects = $projects->selectProjectsByStatusSlim(\projects_status::EN_FUNDING);
 
         foreach ($lPreteurs as $preteur) {
             foreach ($lProjects as $projet) {
