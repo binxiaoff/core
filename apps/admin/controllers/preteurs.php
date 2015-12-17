@@ -94,43 +94,23 @@ class preteursController extends bootstrap
             $this->lPreteurs = $this->clients->searchPreteursV2('', '', '', '', '', $nonValide, '', '0', '300');
         }
 
+        $iOriginForUserHistory = 1;
+
         if (isset($this->params[0]) && $this->params[0] == 'status') {
 
-            if ($this->clients->isBorrower($this->loadData('projects'), $this->loadData('companies'), $this->params[1]) === false ) {
-                $this->changeClientStatus($this->params[1], $this->params[2], (($this->params[2] == \clients::STATUS_OFFLINE) ? \clients_status::CLOSED_BY_UNILEND : \clients_status::VALIDATED));
+            $this->changeClientStatus($this->params[1], $this->params[2], (($this->params[2] == \clients::STATUS_OFFLINE) ? \clients_status::CLOSED_BY_UNILEND : \clients_status::VALIDATED), $iOriginForUserHistory);
 
-                header('location:' . $this->lurl . '/preteurs/gestion');
-                die;
-            } else {
-                $_SESSION['freeow']['title']   = 'Statut du preteur non modifiable';
-                $_SESSION['freeow']['message'] = 'Le client est également un emprunteur et ne peux etre mis hors ligne !';
-
-                $oLendersAccounts = $this->loadData('lenders_accounts');
-                $oLendersAccounts->get($this->params[1], 'id_client_owner');
-
-                header('location:' . $this->lurl . '/preteurs/edit/'.$oLendersAccounts->id_lender_account);
-                die;
-            }
+            header('location:' . $this->lurl . '/preteurs/gestion');
+            die;
         }
 
         if (isset($this->params[0]) && $this->params[0] == 'desactivate') {
 
-            if ($this->clients->isBorrower($this->loadData('projects'), $this->loadData('companies'), $this->params[1]) === false ){
-                $this->changeClientStatus($this->params[1], $this->params[2], \clients_status::CLOSED_LENDER_REQUEST);
-                $this->sendEmailClosedAccount();
+            $this->changeClientStatus($this->params[1], $this->params[2], \clients_status::CLOSED_LENDER_REQUEST, $iOriginForUserHistory);
+            $this->sendEmailClosedAccount();
 
-                header('location:' . $this->lurl . '/preteurs/gestion');
-                die;
-            } else {
-                $_SESSION['freeow']['title']   = 'Statut du preteur non modifiable';
-                $_SESSION['freeow']['message'] = 'Le client est également un emprunteur et ne peux etre mis hors ligne !';
-
-                $oLendersAccounts = $this->loadData('lenders_accounts');
-                $oLendersAccounts->get($this->params[1], 'id_client_owner');
-
-                header('location:' . $this->lurl . '/preteurs/edit/'.$oLendersAccounts->id_lender_account);
-                die;
-            }
+            header('location:' . $this->lurl . '/preteurs/gestion');
+            die;
         }
 
         //preteur sans mouvement
@@ -1037,71 +1017,11 @@ class preteursController extends bootstrap
 
     public function _liste_preteurs_non_inscrits()
     {
-        //On appelle la fonction de chargement des donnÃ©es
-        $this->loadGestionData();
-
-        // Partie delete
-        if (isset($this->params[0]) && $this->params[0] == 'delete') {
-            // client a delete
-            if ($this->clients->get($this->params[1], 'id_client') && $this->clients->status == 0) {
-                // on verif si y a des infos lender
-                if ($this->lenders_accounts->get($this->clients->id_client, 'id_client_owner')) ;
-                {
-
-                }
-                // on verif dans companie
-                if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
-                    // on verif les autres table comapnie
-                    $companies_actif_passif = $this->loadData('companies_actif_passif');
-                    $companies_bilans       = $this->loadData('companies_bilans');
-                    $companies_details      = $this->loadData('companies_details');
-
-                    if ($companies_actif_passif->get($this->companies->id_company, 'id_company')) {
-                        // On supp
-                        $companies_actif_passif->delete($this->companies->id_company, 'id_company');
-                    }
-                    if ($companies_bilans->get($this->companies->id_company, 'id_company')) {
-                        // On supp
-                        $companies_bilans->delete($this->companies->id_company, 'id_company');
-                    }
-                    if ($companies_details->get($this->companies->id_company, 'id_company')) {
-                        // On supp
-                        $companies_details->delete($this->companies->id_company, 'id_company');
-                    }
-                    // On supp
-                    $this->companies->delete($this->clients->id_client, 'id_client_owner');
-
-                }
-
-                // On supp
-                $this->lenders_accounts->delete($this->clients->id_client, 'id_client_owner');
-
-                // ON verif si il est dans adresses
-                if ($this->clients_adresses->get($this->clients->id_client, 'id_client')) ;
-                {
-                    // On supp
-                    $this->clients_adresses->delete($this->clients->id_client, 'id_client');
-                }
-
-
-                // Histo user //
-                $serialize = serialize(array('id_client' => $this->clients->id_client));
-                $this->users_history->histo(11, 'delete preteur inactif non inscrit', $_SESSION['user']['id_user'], $serialize);
-                ////////////////
-
-                $this->clients->delete($this->clients->id_client, 'id_client');
-
-
-                header('location:' . $this->lurl . '/preteurs/liste_preteurs_non_inscrits');
-                die;
-            }
-
-
-        }
 
         // non inscrit = 2
         // offline = 1
         $nonValide = 2;
+        $this->clients = $this->loadData('clients');
 
         if (isset($_POST['form_search_preteur'])) {
             // Recuperation de la liste des clients searchPreteurs
@@ -1117,20 +1037,14 @@ class preteursController extends bootstrap
 
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
-            $this->clients->get($this->params[1], 'id_client');
-            $this->clients->status = ($this->params[2] == 0 ? 1 : 0);
-            $this->clients->update();
+            $iOriginForUserHistory = 12;
 
-
-            // Histo user //
-            $serialize = serialize(array('id_client' => $this->params[1], 'status' => $this->clients->status));
-            $this->users_history->histo(12, 'status offline-online preteur non inscrit', $_SESSION['user']['id_user'], $serialize);
-            ////////////////
-
-            // Mise en session du message
-            $_SESSION['freeow']['title']   = 'Statut du preteur non inscrit';
-            $_SESSION['freeow']['message'] = 'Le statut du preteur non inscrit a bien &eacute;t&eacute; modifi&eacute; !';
-
+            $this->changeClientStatus(
+                $this->params[1],
+                $this->params[2],
+                (($this->params[2] == \clients::STATUS_OFFLINE) ? \clients_status::CLOSED_BY_UNILEND : \clients_status::TO_BE_CHECKED),
+                $iOriginForUserHistory
+            );
             header('location:' . $this->lurl . '/preteurs/gestion');
             die;
         }
@@ -1798,21 +1712,43 @@ class preteursController extends bootstrap
         $this->aLenders = $oLenders->getLendersToMatchBirthCity(200);
     }
 
-    private function changeClientStatus($iClientId, $iStatus, $iClientStatusForHistory)
+    private function changeClientStatus($iClientId, $iStatus, $iClientStatusForHistory, $iOrigin)
     {
-        $this->clients->get($iClientId, 'id_client');
-        $this->clients->status = $iStatus;
-        $this->clients->update();
+        if ($this->clients->isBorrower($this->loadData('projects'), $this->loadData('companies'), $iClientId) === false ){
 
-        // Histo user //
-        $serialize = serialize(array('id_client' => $iClientId, 'status' => $this->clients->status));
-        $this->users_history->histo(1, 'status preteur', $_SESSION['user']['id_user'], $serialize);
+            $this->clients->get($iClientId, 'id_client');
+            $this->clients->status = $iStatus;
+            $this->clients->update();
 
-        $oClientsStatusHistory = $this->loadData('clients_status_history');
-        $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], $iClientStatusForHistory, $this->clients->id_client);
+            $serialize = serialize(array('id_client' => $iClientId, 'status' => $this->clients->status));
+            switch ($iOrigin) {
+                case 1:
+                    $this->users_history->histo($iOrigin, 'status preteur', $_SESSION['user']['id_user'], $serialize);
+                    $_SESSION['freeow']['title']   = 'Statut du preteur';
+                    $_SESSION['freeow']['message'] = 'Le statut du preteur a bien &eacute;t&eacute; modifi&eacute; !';
+                    break;
+                case 12:
+                    $this->users_history->histo($iOrigin, 'status offline-online preteur non inscrit', $_SESSION['user']['id_user'], $serialize);
+                    $_SESSION['freeow']['title']   = 'Statut du preteur non inscrit';
+                    $_SESSION['freeow']['message'] = 'Le statut du preteur non inscrit a bien &eacute;t&eacute; modifi&eacute; !';
+                    break;
+            }
 
-        $_SESSION['freeow']['title']   = 'Statut du preteur';
-        $_SESSION['freeow']['message'] = 'Le statut du preteur a bien &eacute;t&eacute; modifi&eacute; !';
+            $oClientsStatusHistory = $this->loadData('clients_status_history');
+            $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], $iClientStatusForHistory, $this->clients->id_client);
+
+        } else {
+
+            $_SESSION['freeow']['title']   = 'Statut du preteur non modifiable';
+            $_SESSION['freeow']['message'] = 'Le client est &eacute;galement un emprunteur et ne peux &ecirc;tre mis hors ligne !';
+
+            $oLendersAccounts = $this->loadData('lenders_accounts');
+            $oLendersAccounts->get($iClientId, 'id_client_owner');
+
+            header('location:' . $this->lurl . '/preteurs/edit/'.$oLendersAccounts->id_lender_account);
+            die;
+
+        }
 
     }
 
