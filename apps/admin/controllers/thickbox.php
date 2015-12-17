@@ -93,38 +93,63 @@ class thickboxController extends bootstrap
         }
     }
 
-    public function _project_status_problem()
+    public function _project_status_update()
     {
-        $this->iProjectId = $this->params[0];
-    }
+        $this->projects_status = $this->loadData('projects_status');
+        $this->projects_status->get($this->params[1], 'status');
 
-    public function _project_status_recovery()
-    {
         $this->iProjectId = $this->params[0];
-    }
 
-    public function _project_status_failure()
-    {
-        $this->iProjectId = $this->params[0];
-    }
-
-    public function _project_status_problem_x()
-    {
-        $this->iProjectId = $this->params[0];
-    }
-
-    public function _project_status_precautionary_process()
-    {
-        $this->iProjectId = $this->params[0];
-    }
-
-    public function _project_status_receivership()
-    {
-        $this->iProjectId = $this->params[0];
-    }
-
-    public function _project_status_compulsory_liquidation()
-    {
-        $this->iProjectId = $this->params[0];
+        switch ($this->params[1]) {
+            case \projects_status::PROBLEME:
+                $this->bAskEmail     = true;
+                $this->bCustomEmail  = false;
+                $this->bCustomSite   = true;
+                $this->bDecisionDate = false;
+                $this->bReceiver     = false;
+                break;
+            case \projects_status::PROBLEME_J_X:
+                $this->bAskEmail     = true;
+                $this->bCustomEmail  = true;
+                $this->bCustomSite   = true;
+                $this->bDecisionDate = false;
+                $this->bReceiver     = false;
+                break;
+            case \projects_status::RECOUVREMENT:
+                $this->bAskEmail     = true;
+                $this->bCustomEmail  = true;
+                $this->bCustomSite   = true;
+                $this->bDecisionDate = false;
+                $this->bReceiver     = false;
+                break;
+            case \projects_status::PROCEDURE_SAUVEGARDE:
+                $this->bAskEmail     = false;
+                $this->bCustomEmail  = true;
+                $this->bCustomSite   = true;
+                $this->bDecisionDate = true;
+                $this->bReceiver     = true;
+                break;
+            case \projects_status::REDRESSEMENT_JUDICIAIRE:
+                $this->bAskEmail     = false;
+                $this->bCustomEmail  = true;
+                $this->bCustomSite   = true;
+                $this->bDecisionDate = true;
+                $this->bReceiver     = true;
+                break;
+            case \projects_status::LIQUIDATION_JUDICIAIRE:
+                $this->bAskEmail     = false;
+                $this->bCustomEmail  = true;
+                $this->bCustomSite   = true;
+                $this->bDecisionDate = true;
+                $this->bReceiver     = true;
+                break;
+            case \projects_status::DEFAUT:
+                $this->bAskEmail     = false;
+                $this->bCustomEmail  = false;
+                $this->bCustomSite   = true;
+                $this->bDecisionDate = true;
+                $this->bReceiver     = true;
+                break;
+        }
     }
 }

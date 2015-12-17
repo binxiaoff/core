@@ -13,6 +13,18 @@
         font-size: 17px;
         font-weight: bold;
     }
+
+    .hidden-fields {
+        display: none;
+    }
+
+    #problematic_status_error {
+        display: none;
+        text-align: center;
+        font-size: 16px;
+        font-weight: bold;
+        color: #f00;
+    }
 </style>
 <script type="text/javascript">
     $(function () {
@@ -673,20 +685,16 @@
                             $(".change_statut").hide();
                         } else if (status == <?= \projects_status::REMBOURSEMENT ?>) {
 
-                        } else if (status == <?= \projects_status::PROBLEME ?>) {
-                            $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_problem/<?= $this->projects->id_project ?>"});
-                        } else if (status == <?= \projects_status::RECOUVREMENT ?>) {
-                            $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_recovery/<?= $this->projects->id_project ?>"});
-                        } else if (status == <?= \projects_status::DEFAUT ?>) {
-                            $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_failure/<?= $this->projects->id_project ?>"});
-                        } else if (status == <?= \projects_status::PROBLEME_J_X ?>) {
-                            $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_problem_x/<?= $this->projects->id_project ?>"});
-                        } else if (status == <?= \projects_status::PROCEDURE_SAUVEGARDE ?>) {
-                            $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_precautionary_process/<?= $this->projects->id_project ?>"});
-                        } else if (status == <?= \projects_status::REDRESSEMENT_JUDICIAIRE ?>) {
-                            $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_receivership/<?= $this->projects->id_project ?>"});
-                        } else if (status == <?= \projects_status::LIQUIDATION_JUDICIAIRE ?>) {
-                            $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_compulsory_liquidation/<?= $this->projects->id_project ?>"});
+                        } else if (
+                            status == <?= \projects_status::PROBLEME ?>
+                            || status == <?= \projects_status::PROBLEME_J_X ?>
+                            || status == <?= \projects_status::RECOUVREMENT ?>
+                            || status == <?= \projects_status::PROCEDURE_SAUVEGARDE ?>
+                            || status == <?= \projects_status::REDRESSEMENT_JUDICIAIRE ?>
+                            || status == <?= \projects_status::LIQUIDATION_JUDICIAIRE ?>
+                            || status == <?= \projects_status::DEFAUT ?>
+                        ) {
+                            $.colorbox({href: "<?= $this->lurl ?>/thickbox/project_status_update/<?= $this->projects->id_project ?>/" + status});
                         } else {
                             $(".change_statut").show();
                         }

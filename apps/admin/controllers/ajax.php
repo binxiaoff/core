@@ -1562,15 +1562,10 @@ class ajaxController extends bootstrap
         $bank_unilend           = $this->loadData('bank_unilend');
         $projects_remb          = $this->loadData('projects_remb');
 
-        //mail('k.levezier@equinoa.com','tracker Unilend 1','ValAttribution_projet, tracker 1 ok : '.serialize($_POST)." Projet : ".$projects->id_project);
-
         if (isset($_POST['id_project']) && isset($_POST['id_reception']) && $projects->get($_POST['id_project'], 'id_project') && $receptions->get($_POST['id_reception'], 'id_reception') && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = 6 AND id_prelevement') == false) {
-            // On recup l'entreprise
             $companies->get($projects->id_company, 'id_company');
-            // On recup le client
             $clients->get($companies->id_client_owner, 'id_client');
 
-            // transact
             $transactions->id_prelevement   = $receptions->id_reception;
             $transactions->id_client        = $clients->id_client;
             $transactions->montant          = $receptions->montant;
@@ -1581,26 +1576,20 @@ class ajaxController extends bootstrap
             $transactions->transaction      = 1;
             $transactions->type_transaction = 6; // remb emprunteur
             $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-            $transactions->id_transaction   = $transactions->create();
+            $transactions->create();
 
-            // bank unilend
             $bank_unilend->id_transaction = $transactions->id_transaction;
             $bank_unilend->id_project     = $projects->id_project;
             $bank_unilend->montant        = $receptions->montant;
             $bank_unilend->type           = 1;
             $bank_unilend->create();
 
-            // mise a jour de receptions
             $receptions->id_client  = $clients->id_client;
             $receptions->status_bo  = 1;
             $receptions->remb       = 1;
             $receptions->id_project = $projects->id_project;
             $receptions->update();
 
-            //mail('courtier.damien@gmail.com','tracker Unilend 2','tracker 2 ok : '.serialize($_POST)." Projet : ".$projects->id_project);
-
-            // on parcourt les echeances
-            //$eche = $echeanciers->getSumRembEmpruntByMonths($projects->id_project,'','0');
             $eche    = $echeanciers_emprunteur->select('status_emprunteur = 0 AND id_project = ' . $projects->id_project, 'ordre ASC');
             $sumRemb = ($receptions->montant / 100);
 
@@ -1624,7 +1613,6 @@ class ajaxController extends bootstrap
                     $newsum = $newsum - $montantDuMois;
 
                     if ($projects_remb->counter('id_project = "' . $projects->id_project . '" AND ordre = "' . $ordre . '" AND status IN(0,1)') <= 0) {
-
                         $date_echeance_preteur = $echeanciers->select('id_project = "' . $projects->id_project . '" AND ordre = "' . $ordre . '"', '', 0, 1);
                         // On regarde si le remb preteur auto est autorisé (eclatement preteur auto)
                         if ($projects->remb_auto == 0) {
@@ -1638,14 +1626,10 @@ class ajaxController extends bootstrap
                             $projects_remb->create();
                         }
                     }
-
-                    //mail('courtier.damien@gmail.com','tracker Unilend 3','tracker 3 ok : '.serialize($_POST)." Projet : ".$projects->id_project.' Ordre : '.$ordre);
-
                 } else {
                     break;
                 }
             }
-
 
             echo json_encode(array('id_client' => $receptions->id_client, 'id_project' => $receptions->id_project));
         } else {
@@ -1657,19 +1641,16 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        $preteurs   = $this->loadData('clients');
-        $receptions = $this->loadData('receptions');
-
+        $preteurs     = $this->loadData('clients');
+        $receptions   = $this->loadData('receptions');
         $lenders      = $this->loadData('lenders_accounts');
         $transactions = $this->loadData('transactions');
         $wallets      = $this->loadData('wallets_lines');
         $bank         = $this->loadData('bank_lines');
 
         if (isset($_POST['id_client']) && isset($_POST['id_reception']) && $preteurs->get($_POST['id_client'], 'id_client') && $receptions->get($_POST['id_reception'], 'id_reception') && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND id_virement')) {
-            // On recup le wallet
             $wallets->get($transactions->id_transaction, 'id_transaction');
 
-            // On supp la bank et le wallet
             $bank->delete($wallets->id_wallet_line, 'id_wallet_line');
             $wallets->delete($transactions->id_transaction, 'id_transaction');
 
@@ -1684,8 +1665,6 @@ class ajaxController extends bootstrap
             $receptions->remb      = 0;
             $receptions->update();
             echo 'supp';
-            //$transactions->delete($id,$field='id_client')
-
         }
     }
 
