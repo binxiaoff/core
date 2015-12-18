@@ -1419,14 +1419,23 @@
 
                                 if (parsedDate.reponse == 'OK') {
                                     var url = parsedDate.URL;
-                                    var uniqueid = parsedDate.uniqueid;
 
-                                    if (idSubmit == "inscription_submit2") {
-                                        $(location).attr('href', url);
-                                    } else if(idSubmit == "voir_projets") {
 
-                                        $(location).attr('href', 'https://www.unilend.fr/projets-a-financer');
-                                    }
+                                    dataLayer.push({
+                                        'email_lead':email,
+                                        'source1_lead':utm_source,
+                                        'source2_lead':utm_source2,
+                                        'event':'signupPreteurStep2OK'});
+                                    console.log('email_lead:'+email+' source1_lead:'+utm_source+' source2_lead:'+utm_source2+' event:signupPreteurStep2OK');
+
+                                    setTimeout(function(){
+
+                                        if (idSubmit == "inscription_submit2") {
+                                            $(location).attr('href', url);
+                                        } else if(idSubmit == "voir_projets") {
+                                            $(location).attr('href', 'https://www.unilend.fr/projets-a-financer');
+                                        }
+                                    },3000);return false;
                                 }
                                 else {
                                     $.each( parsedDate.reponse, function( index, value ){
