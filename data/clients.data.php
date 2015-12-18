@@ -746,7 +746,7 @@ class clients extends clients_crud
         return mb_strtoupper(
             str_pad($this->id_client, 6, 0, STR_PAD_LEFT) .
             substr($oToolkit->stripAccents(utf8_decode($this->prenom)), 0, 1) .
-            $oToolkit->stripAccents(utf8_decode($this->clients->nom))
+            $oToolkit->stripAccents(utf8_decode($this->nom))
         );
     }
 }
