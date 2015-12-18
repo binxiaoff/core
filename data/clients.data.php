@@ -772,13 +772,12 @@ class clients extends clients_crud
     }
 
 
-    public function generateTemporaryLink($iClientId = null)
+    public function generateTemporaryLink(temporary_links_login $oTemporaryLink, $iClientId = null)
     {
         if (null === $iClientId) {
             $iClientId = $this->id_client;
         }
 
-        $oTemporaryLink = new \temporary_links_login($this->bdd);
         $sToken = md5($iClientId).md5(time());
 
         $oDateTime =  new \datetime('NOW + 1 week');

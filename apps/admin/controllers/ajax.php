@@ -2711,7 +2711,7 @@ class ajaxController extends bootstrap
             $this->settings->get('Twitter', 'type');
             $sTwitterURL = $this->settings->value;
 
-            $sTemporaryLink = $this->surl.'/espace_emprunteur/securite/'.$oClients->generateTemporaryLink($oClients->id_client);
+            $sTemporaryLink = $this->surl.'/espace_emprunteur/securite/'.$oClients->generateTemporaryLink($this->loadData('temporary_links_login'), $oClients->id_client);
 
                 $aVariables = array(
                     'surl'                   => $this->surl,
@@ -2722,7 +2722,7 @@ class ajaxController extends bootstrap
                     'prenom'                 => $this->clients->prenom
                 );
 
-            $sRecipient = $this->clients->email;
+            $sRecipient = $oClients->email;
 
             $oEmail = $this->loadLib('email');
             $oEmail->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
