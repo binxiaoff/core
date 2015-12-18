@@ -447,15 +447,9 @@ class espace_emprunteurController extends Bootstrap
 
             $aProjectsPostFunding[ $iKey ]['RemainingDueCapital'] = $this->calculateRemainingDueCapital($aProject['id_project']);
 
-            $oClosingDate                                  = new \DateTime($aProject['date_retrait']);
-            $aProjectsPostFunding[ $iKey ]['date_retrait'] = $oClosingDate->format('d-m-Y');
-
-            $oEcheanciersEmprunteur->get($aProject['id_project'], 'ordre = 1 AND id_project');
-
-            $aProjectsPostFunding[ $iKey ]['MonthlyPayment'] = (($oEcheanciersEmprunteur->montant + $oEcheanciersEmprunteur->commission + $oEcheanciersEmprunteur->tva) / 100);
-
-            $oPaymentDate                                            = new \DateTime($oEcheanciersEmprunteur->date_echeance_emprunteur);
-            $aProjectsPostFunding[ $iKey ]['DateNextMonthlyPayment'] = $oPaymentDate->format('d-m-Y');
+            $aNextEchenace = $oEcheanciersEmprunteur->select('status_emprunteur = 0 AND id_project = '.$aProject['id_project'], 'date_echeance_emprunteur ASC', '', 1);
+            $aProjectsPostFunding[ $iKey ]['MonthlyPayment'] = (($aNextEchenace[0]['montant'] + $aNextEchenace[0]['commission'] + $aNextEchenace[0]['tva']) / 100);
+            $aProjectsPostFunding[ $iKey ]['DateNextMonthlyPayment'] = $aNextEchenace[0]['date_echeance_emprunteur' ];
         }
 
         return $aProjectsPostFunding;
