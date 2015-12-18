@@ -38,7 +38,7 @@
 
     .invoices td, .invoices th {
         width: 200px;
-        text-align: left;
+        text-align: center;
         vertical-align: middle;
         padding: 5px;
     }
@@ -88,13 +88,34 @@
 </div>
 <div class="invoices">
     <h2><?= $this->lng['espace-emprunteur']['factures'] ?></h2>
-    <table class="invoices">
+    <table class="invoices" width="100%">
         <thead>
         <tr>
-            <th><?= $this->lng['espace-emprunteur']['no-facture'] ?></th>
-            <th><?= $this->lng['espace-emprunteur']['identifiant-projet'] ?></th>
-            <th><?= $this->lng['espace-emprunteur']['date-facture'] ?></th>
-            <th></th>
+            <th>
+                <div class="th-wrap">
+                    <i class="tooltip-anchor icon-double"></i>
+                    <div><?= $this->lng['espace-emprunteur']['no-facture'] ?></div>
+                </div>
+            </th>
+            <th>
+                <div class="th-wrap">
+                <i class="icon-person tooltip-anchor" style="margin-left:-15px;"></i>
+                    <div><?= $this->lng['espace-emprunteur']['identifiant-projet'] ?></div>
+                </div>
+                </th>
+            <th>
+                <div class="th-wrap">
+                    <i class="icon-calendar tooltip-anchor" style="margin-left:-15px;" ></i>
+                    <div><?= $this->lng['espace-emprunteur']['date-facture'] ?></div>
+                </div>
+
+            </th>
+            <th>
+                <div class="th-wrap">
+                <i title="<?= $this->lng['preteur-operations-pdf']['info-titre-bon-caisse'] ?>" class="tooltip-anchor icon-bdc"></i>
+                    <div><?= $this->lng['espace-emprunteur']['facture'] ?></div>
+                    </div>
+                </th>
         </tr>
         </thead>
         <tbody>
@@ -102,7 +123,7 @@
             <tr class="factures">
                 <td><?= $aInvoice['num_facture'] ?></td>
                 <td><?= $aInvoice['id_project'] ?></td>
-                <td><?= str_replace('-', '/', $aInvoice['date']) ?></td>
+                <td><?= $this->dates->formatDateMysqltoShortFR($aInvoice['date']) ?></td>
                 <td><a class="tooltip-anchor icon-pdf" href="<?= $aInvoice['url'] ?>"></a>
             </tr>
         <?php endforeach ?>

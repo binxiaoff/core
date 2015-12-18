@@ -329,7 +329,7 @@ if ($this->bIsBorrowerAndLender) {
     {
         ?>
         <style type="text/css">
-            .navigation .styled-nav{width: 900px;}
+            .navigation .styled-nav{width: 100%;}
         </style>
             <div class="navigation ">
                 <div class="shell clearfix">

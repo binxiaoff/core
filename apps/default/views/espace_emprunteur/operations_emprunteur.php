@@ -139,6 +139,11 @@
         color:red;
     }
 
+    .body_content_table_vos_operations .col2 {
+        width: 140px;
+        text-align: left;
+    }
+
 
 </style>
 <h2><?= $this->lng['espace-emprunteur']['operations'] ?></h2>
@@ -250,40 +255,40 @@
 </div>
 
 <div class="content_table_vos_operations">
-    <table class="table vos_operations transactions-history finances" border="0" cellspacing="0" cellpadding="0">
+    <table class="table vos_operations transactions-history finances" border="5px" cellspacing="0" cellpadding="0" style="table-layout: fixed;">
         <thead>
         <tr>
             <th width="260px" id="order_operations" align="left" class="col1" style="padding-left: 0px;">
                 <div class="th-wrap" style='top:-3px;width: 250px;'>
-                    <i title="<?= $this->lng['preteur-operations-pdf']['info-titre-operation'] ?>" class="tooltip-anchor icon-double"></i>
+                    <i class="tooltip-anchor icon-double"></i>
                     <div class="title-ope"><?= $this->lng['espace-emprunteur']['operation'] ?>&nbsp;
                     </div>
                 </div>
             </th>
-            <th width="140px" id="order_id_projet" align="right" class="col1" style="padding-left: 0px;">
+            <th width="140px" id="order_id_projet" align="right" class="col2" style="padding-left: 0px;">
                 <div class="th-wrap" style='top:-3px;width: 60px;'>
-                    <i title="<?= $this->lng['preteur-operations-pdf']['info-titre-bon-caisse'] ?>" class="tooltip-anchor icon-bdc"></i>
+                    <i class="tooltip-anchor icon-bdc"></i>
                     <div class="title-ope"><?= $this->lng['espace-emprunteur']['projet'] ?>&nbsp;
                     </div>
                 </div>
             </th>
             <th width="140px" id="order_date">
                 <div class="th-wrap">
-                    <i title="" class="icon-person tooltip-anchor" style="margin-left:-15px;" data-original-title="<?= $this->lng['preteur-operations-pdf']['info-titre-projets'] ?>"></i>
+                    <i class="icon-calendar tooltip-anchor" style="margin-left:-15px;" ></i>
                     <div class="title-ope"><?= $this->lng['espace-emprunteur']['date-de-loperation'] ?>&nbsp;
                     </div>
                 </div>
             </th>
             <th width="180px" id="order_montant">
                 <div class="th-wrap" style="top:-2px;">
-                    <i title="" class="icon-euro tooltip-anchor" data-original-title="<?= $this->lng['preteur-operations-pdf']['info-titre-montant-operation'] ?>"></i>
+                    <i class="icon-euro tooltip-anchor"></i>
                     <div class="title-ope"><?= $this->lng['espace-emprunteur']['montant-de-loperation'] ?>&nbsp;
                     </div>
                 </div>
             </th>
             <th width="140px">
                 <div class="th-wrap">
-                    <i title="" class="icon-person tooltip-anchor" style="margin-left:-15px;" data-original-title="<?= $this->lng['preteur-operations-pdf']['info-titre-projets'] ?>"></i>
+                    <i class="icon-person tooltip-anchor" style="margin-left:-15px;"></i>
                     <div class="title-ope"><?= $this->lng['espace-emprunteur']['detail-preteurs'] ?></div>
                 </div>
             </th>

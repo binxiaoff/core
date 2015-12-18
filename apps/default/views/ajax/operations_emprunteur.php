@@ -10,7 +10,7 @@ foreach ($this->aBorrowerOperations as $aOperation) {
 ?>
     <tr class="<?= $bOdd ? 'odd' : 'even' ?>">
         <td><?= $this->lng['espace-emprunteur'][ 'operations-type-' . $aOperation['type'] ] ?></td>
-        <td><?= $aOperation['id_project'] ?></td>
+        <td class="col2"><?= $aOperation['id_project'] ?></td>
         <td><?= $this->dates->formatDateMysqltoShortFR($aOperation['date']) ?></td>
         <td class="<?= $aOperation['montant'] > 0 ? $sPositif : $sNegatif ?>"><?= $this->ficelle->formatnumber($aOperation['montant']) ?> &euro;</td>
         <?php if ($aOperation['type'] === 'affectation-preteurs'): ?>
