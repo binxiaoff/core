@@ -822,6 +822,9 @@ class clients extends clients_crud
 
         foreach ($aOperations as $iOperation) {
             switch ($iOperation) {
+                case self::COMMISSION_DEBLOCAGE:
+                    $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationCommissionOnFinancing($aProjects, $sStartDate, $sEndDate));
+                    break;
                 case self::OCTROI_FINANCMENT:
                     $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationAllLoans($aProjects, $sStartDate, $sEndDate));
                     break;
@@ -857,14 +860,16 @@ class clients extends clients_crud
             if ($aFirstArray['date'] === $aSecondArray['date']) {
 
                 if ($aFirstArray['type'] == 'prelevement-mensualite') {
-                    return -1;
-                } elseif ($aFirstArray['type'] == 'commission-mensuelle') {
                     return 1;
+                } elseif ($aFirstArray['type'] == 'commission-mensuelle') {
+                    return -1;
                 }
 
-                if ($aFirstArray['type'] == 'financement') {
+                if ($aFirstArray['type'] == 'commission-deblocage') {
                     return -1;
                 } elseif ($aFirstArray['type'] == 'virement') {
+                    return 1;
+                } elseif ($aFirstArray['type'] == 'financement') {
                     return 1;
                 }
 
@@ -1043,6 +1048,33 @@ class clients extends clients_crud
                     AND `status_ra` = 1
                 GROUP BY
                     `date_echeance_reel`';
+
+        $result = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aDataForBorrowerOperations[] = $record;
+        }
+
+        return $aDataForBorrowerOperations;
+
+    }
+
+    private function getBorrowerOperationCommissionOnFinancing($aProjects, $sStartDate, $sEndDate)
+    {
+        $aDataForBorrowerOperations = array();
+
+        $sql = 'SELECT
+                        id_project,
+                        -montant_ttc/100 AS montant,
+                        -montant_ht/100 AS commission,
+                        -tva/100 AS tva,
+                        date,
+                        \'commission-deblocage\' AS type
+                    FROM
+                        `factures`
+                    WHERE
+                        `id_project` IN (' . implode(',', $aProjects) . ')
+                        AND `date` BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
+                        AND type_commission = 1';
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
