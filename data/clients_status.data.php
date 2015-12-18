@@ -29,12 +29,12 @@
 class clients_status extends clients_status_crud
 {
 
-    const TO_BE_CHECKED         = 1;
-    const COMPLETENESS          = 2;
-    const COMPLETENESS_REMINDER = 3;
-    const COMPLETENESS_REPLY    = 4;
-    const MODIFICATION          = 5;
-    const VALIDATED             = 6;
+    const TO_BE_CHECKED         = 10;
+    const COMPLETENESS          = 20;
+    const COMPLETENESS_REMINDER = 30;
+    const COMPLETENESS_REPLY    = 40;
+    const MODIFICATION          = 50;
+    const VALIDATED             = 60;
 
     public function clients_status($bdd, $params = '')
     {

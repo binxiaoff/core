@@ -599,7 +599,7 @@ class bootstrap extends Controller
             die;
         } else {
             $this->clients_status->getLastStatut($_SESSION['client']['id_client']);
-            if (in_array($this->clients_status->id_client_status, array(clients_status::COMPLETENESS, clients_status::COMPLETENESS_REMINDER))) {
+            if (in_array($this->clients_status->status, array(clients_status::COMPLETENESS, clients_status::COMPLETENESS_REMINDER))) {
 
                 if (in_array($_SESSION['client']['type'], array(clients::TYPE_BORROWER_PERSON, clients::TYPE_BORROWER_PERSON_FOREIGNER))) {
                     $lapage = 'particulier_doc';
