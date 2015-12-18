@@ -521,19 +521,22 @@ class espace_emprunteurController extends Bootstrap
     {
         $this->projects->get($this->params[1], 'id_project');
 
+
         switch ($this->params[0]) {
 
             case 'l':
-                $sFilename      = 'details_prets';
                 $aColumnHeaders = array('ID Préteur', 'Nom ou Raison Sociale', 'Prénom', 'Mouvement', 'Montant', 'Date');
                 $sType          = $this->lng['espace-emprunteur']['mouvement-deblocage-des-fonds'];
                 $aData          = $this->projects->getLoansAndLendersForProject($this->projects->id_project);
+                $sFilename      = 'details_prets';
                 break;
             case 'e':
-                $sFilename      = 'details_remboursements';
                 $aColumnHeaders = array('ID Préteur', 'Nom ou Raison Sociale', 'Prénom', 'Mouvement', 'Montant', 'Capital', 'Intérets', 'Date');
                 $sType          = $this->lng['espace-emprunteur']['mouvement-remboursement'];
                 $aData          = $this->projects->getDuePaymentsAndLenders($this->projects->id_project, $this->params[2]);
+                $oDateTime = DateTime::createFromFormat('Y-m-d H:i:s',$aData[0]['date']);
+                $sDate = $oDateTime->format('mY');
+                $sFilename      = 'details_remboursements_'.$this->params[1].'_'.$sDate;
                 break;
             default:
                 break;
@@ -549,7 +552,13 @@ class espace_emprunteurController extends Bootstrap
             $aData[ $key ]['date'] = $this->dates->formatDate($row['date']);
 
             if (empty($row['amount']) === false) {
-                $aData[ $key ]['amount'] = $row['amount'] / 100;
+                $aData[ $key ]['amount'] = $this->ficelle->formatnumber($row['amount'] / 100);
+            }
+
+            if (empty($row['montant']) === false) {
+                $aData[ $key ]['montant'] = $this->ficelle->formatnumber($row['montant']/100);
+                $aData[ $key ]['capital'] = $this->ficelle->formatnumber($row['capital']/100);
+                $aData[ $key ]['interets'] = $this->ficelle->formatnumber($row['interets']/100);
             }
         }
 
@@ -578,7 +587,7 @@ class espace_emprunteurController extends Bootstrap
                 $aOperation['id_project'],
                 $this->dates->formatDateMysqltoShortFR($aOperation['date']),
                 number_format($aOperation['montant'], 2, ',', ''),
-                number_format($aOperation['tva'], 2, ',', '')
+                (empty($aOperation['tva']) === false) ? number_format($aOperation['tva'], 2, ',', '') : '0'
             );
         }
 

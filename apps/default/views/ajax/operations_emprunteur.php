@@ -3,6 +3,8 @@
 ob_start();
 
 $bOdd = true;
+$sPositif = 'positif';
+$sNegatif = 'negatif';
 
 foreach ($this->aBorrowerOperations as $aOperation) {
 ?>
@@ -10,7 +12,7 @@ foreach ($this->aBorrowerOperations as $aOperation) {
         <td><?= $this->lng['espace-emprunteur'][ 'operations-type-' . $aOperation['type'] ] ?></td>
         <td><?= $aOperation['id_project'] ?></td>
         <td><?= $this->dates->formatDateMysqltoShortFR($aOperation['date']) ?></td>
-        <td><?= $this->ficelle->formatnumber($aOperation['montant']) ?> &euro;</td>
+        <td class="<?= $aOperation['montant'] > 0 ? $sPositif : $sNegatif ?>"><?= $this->ficelle->formatnumber($aOperation['montant']) ?> &euro;</td>
         <?php if ($aOperation['type'] === 'affectation-preteurs'): ?>
             <td>
                 <a href="<?= $this->lurl ?>/espace_emprunteur/getCSVWithLenderDetails/e/<?= $aOperation['id_project'].'/'.$aOperation['ordre'] ?>">
@@ -32,14 +34,14 @@ foreach ($this->aBorrowerOperations as $aOperation) {
             <td style="text-align: right"><?= $this->lng['espace-emprunteur']['operations-type-commission-ht'] ?></td>
             <td></td>
             <td></td>
-            <td><?= $this->ficelle->formatnumber($aOperation['commission']) ?> &euro;</td>
+            <td class="<?= $aOperation['montant'] > 0 ? $sPositif : $sNegatif ?>"><?= $this->ficelle->formatnumber($aOperation['commission']) ?> &euro;</td>
             <td></td>
         </tr>
         <tr class="<?= $bOdd ? 'odd' : 'even' ?>">
             <td style="text-align: right"><?= $this->lng['espace-emprunteur']['operations-type-tva'] ?></td>
             <td></td>
             <td></td>
-            <td><?= $this->ficelle->formatnumber($aOperation['tva']) ?> &euro;</td>
+            <td class="<?= $aOperation['montant'] > 0 ? $sPositif : $sNegatif ?>"><?= $this->ficelle->formatnumber($aOperation['tva']) ?> &euro;</td>
             <td></td>
         </tr>
     <?php endif; ?>

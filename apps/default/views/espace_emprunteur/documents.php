@@ -36,7 +36,7 @@
         padding: 4px;
     }
 
-    .invoices td, th {
+    .invoices td, .invoices th {
         width: 200px;
         text-align: left;
         vertical-align: middle;

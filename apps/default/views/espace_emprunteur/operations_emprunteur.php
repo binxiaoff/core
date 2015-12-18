@@ -131,6 +131,15 @@
     .title-ope {
         margin-top: 12.5px;
     }
+
+    .body_content_table_vos_operations .positif {
+        color:#40b34f;
+    }
+    .body_content_table_vos_operations .negatif {
+        color:red;
+    }
+
+
 </style>
 <h2><?= $this->lng['espace-emprunteur']['operations'] ?></h2>
 <div class="table-filter clearfix">
@@ -214,7 +223,7 @@
                 <option value="<?= \clients::COMMISSION_MENSUELLE ?>"><?= $this->lng['espace-emprunteur']['operations-type-commission-mensuelle'] ?></option>
                 <option value="<?= \clients::AFF_MENSUALITE_PRETEURS ?>"><?= $this->lng['espace-emprunteur']['operations-type-affectation-preteurs'] ?></option>
                 <option value="<?= \clients::PRLV_MENSUALITE ?>"><?= $this->lng['espace-emprunteur']['operations-type-prelevement-mensualite'] ?></option>
-                <option value="<?= \clients::COMMISSION_DEBLOCAGE ?>"><?= $this->lng['espace-emprunteur']['operations-type-commission-deblocage'] ?></option>
+<!--                <option value="--><?//= \clients::COMMISSION_DEBLOCAGE ?><!--">--><?//= $this->lng['espace-emprunteur']['operations-type-commission-deblocage'] ?><!--</option>-->
                 <option value="<?= \clients::VIREMENT ?>"><?= $this->lng['espace-emprunteur']['operations-type-virement'] ?></option>
                 <option value="<?= \clients::OCTROI_FINANCMENT ?>"><?= $this->lng['espace-emprunteur']['operations-type-financement'] ?></option>
                 <option value="<?= \clients::REMBOURSEMENT_ANTICIPE ?>"><?= $this->lng['espace-emprunteur']['operations-type-remboursement-anticipe'] ?></option>
@@ -244,32 +253,37 @@
     <table class="table vos_operations transactions-history finances" border="0" cellspacing="0" cellpadding="0">
         <thead>
         <tr>
-            <th width="200px" id="order_operations" align="left" class="col1" style="padding-left: 0px;">
+            <th width="260px" id="order_operations" align="left" class="col1" style="padding-left: 0px;">
                 <div class="th-wrap" style='top:-3px;width: 250px;'>
+                    <i title="<?= $this->lng['preteur-operations-pdf']['info-titre-operation'] ?>" class="tooltip-anchor icon-double"></i>
                     <div class="title-ope"><?= $this->lng['espace-emprunteur']['operation'] ?>&nbsp;
                     </div>
                 </div>
             </th>
-            <th width="200px" id="order_id_projet" align="left" class="col1" style="padding-left: 0px;">
+            <th width="140px" id="order_id_projet" align="right" class="col1" style="padding-left: 0px;">
                 <div class="th-wrap" style='top:-3px;width: 60px;'>
+                    <i title="<?= $this->lng['preteur-operations-pdf']['info-titre-bon-caisse'] ?>" class="tooltip-anchor icon-bdc"></i>
                     <div class="title-ope"><?= $this->lng['espace-emprunteur']['projet'] ?>&nbsp;
                     </div>
                 </div>
             </th>
             <th width="140px" id="order_date">
                 <div class="th-wrap">
+                    <i title="" class="icon-person tooltip-anchor" style="margin-left:-15px;" data-original-title="<?= $this->lng['preteur-operations-pdf']['info-titre-projets'] ?>"></i>
                     <div class="title-ope"><?= $this->lng['espace-emprunteur']['date-de-loperation'] ?>&nbsp;
                     </div>
                 </div>
             </th>
             <th width="180px" id="order_montant">
                 <div class="th-wrap" style="top:-2px;">
+                    <i title="" class="icon-euro tooltip-anchor" data-original-title="<?= $this->lng['preteur-operations-pdf']['info-titre-montant-operation'] ?>"></i>
                     <div class="title-ope"><?= $this->lng['espace-emprunteur']['montant-de-loperation'] ?>&nbsp;
                     </div>
                 </div>
             </th>
             <th width="140px">
                 <div class="th-wrap">
+                    <i title="" class="icon-person tooltip-anchor" style="margin-left:-15px;" data-original-title="<?= $this->lng['preteur-operations-pdf']['info-titre-projets'] ?>"></i>
                     <div class="title-ope"><?= $this->lng['espace-emprunteur']['detail-preteurs'] ?></div>
                 </div>
             </th>
