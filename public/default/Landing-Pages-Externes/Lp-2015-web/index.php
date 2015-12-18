@@ -1147,9 +1147,7 @@
                                         }
 
                                         var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
-                                        var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
-
-                                        $("#tracking").html(tracking1+tracking2);
+                                        $("#tracking").html(tracking1);
 
                                         $('#form_inscription > .form_content.etape2').fadeIn();
                                     });
@@ -1191,9 +1189,8 @@
                                                 }
 
                                                 var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
-                                                var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
 
-                                                $("#tracking").html(tracking1+tracking2);
+                                                $("#tracking").html(tracking1);
 
                                                 $('#form_inscription > .form_content.etape2').fadeIn();
                                             });
@@ -1422,23 +1419,23 @@
 
                                 if (parsedDate.reponse == 'OK') {
                                     var url = parsedDate.URL;
-                                    var uniqueid = parsedDate.uniqueid;
 
-                                    if (idSubmit == "inscription_submit2") {
-                                        // add kle tracking 19/02/15
-                                        var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=14&uniqueid='+uniqueid+'"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
 
-                                        $("#tracking").html(tracking2);
-                                        //end tracking
+                                    dataLayer.push({
+                                        'email_lead':email,
+                                        'source1_lead':utm_source,
+                                        'source2_lead':utm_source2,
+                                        'event':'signupPreteurStep2OK'});
+                                    console.log('email_lead:'+email+' source1_lead:'+utm_source+' source2_lead:'+utm_source2+' event:signupPreteurStep2OK');
 
-                                        $(location).attr('href', url);
-                                    } else if(idSubmit == "voir_projets") {
-                                        var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=13&uniqueid='+uniqueid+'"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
+                                    setTimeout(function(){
 
-                                        $("#tracking").html(tracking2);
-
-                                        $(location).attr('href', 'https://www.unilend.fr/projets-a-financer');
-                                    }
+                                        if (idSubmit == "inscription_submit2") {
+                                            $(location).attr('href', url);
+                                        } else if(idSubmit == "voir_projets") {
+                                            $(location).attr('href', 'https://www.unilend.fr/projets-a-financer');
+                                        }
+                                    },3000);return false;
                                 }
                                 else {
                                     $.each( parsedDate.reponse, function( index, value ){

@@ -1238,9 +1238,8 @@
                                         }
 
                                         var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
-                                        var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
 
-                                        $("#tracking").html(tracking1 + tracking2);
+                                        $("#tracking").html(tracking1);
 
                                         $('#form_inscription > .form_content.etape2').fadeIn();
                                     });
@@ -1283,9 +1282,8 @@
                                                 }
 
                                                 var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
-                                                var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=9&uniqueid=??"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
 
-                                                $("#tracking").html(tracking1 + tracking2);
+                                                $("#tracking").html(tracking1);
 
                                                 $('#form_inscription > .form_content.etape2').fadeIn();
                                             });
@@ -1551,20 +1549,10 @@
 
                                     if (idSubmit == "inscription_submit2")
                                     {
-                                        // add kle tracking 19/02/15
-                                        var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=14&uniqueid=' + uniqueid + '"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
-
-                                        $("#tracking").html(tracking2);
-                                        //end tracking
-
                                         $(location).attr('href', url);
                                     }
                                     else if (idSubmit == "voir_projets")
                                     {
-                                        var tracking2 = '<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=13&uniqueid=' + uniqueid + '"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>';
-
-                                        $("#tracking").html(tracking2);
-
                                         $(location).attr('href', '<?= $url_site ?>/projets-a-financer');
                                     }
                                 }
