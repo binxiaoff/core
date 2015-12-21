@@ -25,9 +25,15 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
+use Unilend\librairies\Cache;
 
 class loans extends loans_crud
 {
+    const IFP_AMOUNT_MAX = 1000;
+
+    const TYPE_CONTRACT_BDC = 1;
+    const TYPE_CONTRACT_IFP = 2;
+
     public function __construct($bdd, $params = '')
     {
         parent::loans($bdd, $params);
@@ -60,7 +66,7 @@ class loans extends loans_crud
         $sql = 'SELECT count(*) FROM `loans` ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int)($this->bdd->result($result, 0, 0));
     }
 
     public function exist($id, $field = 'id_loan')
@@ -92,7 +98,7 @@ class loans extends loans_crud
         $sql = 'SELECT count(DISTINCT id_lender) FROM `loans` WHERE id_project = ' . $id_project . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        return (int) $this->bdd->result($result, 0, 0);
+        return (int)$this->bdd->result($result, 0, 0);
     }
 
     public function getPreteurs($id_project)
@@ -112,7 +118,7 @@ class loans extends loans_crud
         $sql = 'SELECT count(DISTINCT id_project) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int)($this->bdd->result($result, 0, 0));
     }
 
     // retourne la moyenne des prets validés d'un projet
@@ -164,7 +170,7 @@ class loans extends loans_crud
         $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = "0"';
 
         $result  = $this->bdd->query($sql);
-        $montant = (int) ($this->bdd->result($result, 0, 0));
+        $montant = (int)($this->bdd->result($result, 0, 0));
         if ($montant > 0) {
             $montant = $montant / 100;
         } else {
@@ -180,7 +186,7 @@ class loans extends loans_crud
         $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = "0" AND LEFT(added,7) = "' . $year . '-' . $month . '"';
 
         $result  = $this->bdd->query($sql);
-        $montant = (int) ($this->bdd->result($result, 0, 0));
+        $montant = (int)($this->bdd->result($result, 0, 0));
         if ($montant > 0) {
             $montant = $montant / 100;
         } else {
@@ -196,7 +202,7 @@ class loans extends loans_crud
         $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_project = ' . $id_project;
 
         $result  = $this->bdd->query($sql);
-        $montant = (int) ($this->bdd->result($result, 0, 0));
+        $montant = (int)($this->bdd->result($result, 0, 0));
         if ($montant > 0) {
             $montant = $montant / 100;
         } else {
@@ -240,7 +246,7 @@ class loans extends loans_crud
         $sql = 'SELECT SUM(amount) FROM `loans` WHERE LEFT(added,10) = "' . $date . '" AND status = 0';
 
         $result  = $this->bdd->query($sql);
-        $montant = (int) ($this->bdd->result($result, 0, 0));
+        $montant = (int)($this->bdd->result($result, 0, 0));
         return $montant / 100;
     }
 
@@ -253,7 +259,7 @@ class loans extends loans_crud
         $sql = 'SELECT SUM(' . $champ . ') FROM `loans` ' . $where;
 
         $result = $this->bdd->query($sql);
-        $return = (int) ($this->bdd->result($result, 0, 0));
+        $return = (int)($this->bdd->result($result, 0, 0));
 
         return $return;
     }
@@ -323,5 +329,83 @@ class loans extends loans_crud
             $result[] = $record;
         }
         return $result;
+    }
+
+    public function getBids($iLoanId = null)
+    {
+        if (null == $iLoanId) {
+            $iLoanId = $this->id_loan;
+        }
+
+        if ($iLoanId) {
+            $sQuery = ' SELECT b.*, ab.amount as accepted_amount
+                        FROM accepted_bids ab
+                        INNER JOIN bids b ON ab.id_bid = b.id_bid
+                        WHERE ab.id_loan = ' . $iLoanId;
+            $rQuery = $this->bdd->query($sQuery);
+            $aBids  = array();
+            while ($aRow = $this->bdd->fetch_array($rQuery)) {
+                $aBids[] = $aRow;
+            }
+            return $aBids;
+        }
+
+
+    }
+
+    public function getRepaymentSchedule($fCommissionRate, $fVAT, $iLoanId = null)
+    {
+        if (null !== $iLoanId) {
+            $this->get($iLoanId);
+        }
+
+        $iMonthNb = $this->getMonthNb();
+        $aBids    = $this->getBids();
+        $aScheduleGrouped = array();
+        $aCommissionGrouped = array();
+        foreach ($aBids as $aBid) {
+            $aSchedule = \remb::getRepaymentScheduleWithCommission($aBid['accepted_amount'] / 100, $iMonthNb, $aBid['rate'] / 100, $fCommissionRate, $fVAT);
+            //Group the schedule of all bid of a loan
+            foreach ($aSchedule['repayment_schedule'] as $iOrder => $aRepayment) {
+                if (isset($aScheduleGrouped[$iOrder])) {
+                    foreach ($aRepayment as $sKey => $fValue) {
+                        $aScheduleGrouped[$iOrder][$sKey] += $fValue;
+                    }
+                } else {
+                    $aScheduleGrouped[$iOrder] = $aRepayment;
+                }
+
+            }
+
+            foreach ($aSchedule['commission'] as $sKey => $fValue) {
+                $aCommissionGrouped[$sKey] += $fValue;
+            }
+        }
+        return array(
+            'repayment_schedule' => $aScheduleGrouped,
+            'commission' => $aCommissionGrouped
+        );
+    }
+
+    public function getMonthNb($iProjectId = null)
+    {
+        if (null === $iProjectId) {
+            $iProjectId = $this->id_project;
+        }
+
+        if ($iProjectId) {
+            $oCache  = Cache::getInstance();
+            $sKey    = $oCache->makeKey('loans', 'getMonthNb', $iProjectId);
+            $mRecord = $oCache->get($sKey);
+
+            if (!$mRecord) {
+                $sQuery   = 'SELECT period FROM projects WHERE id_project = ' . $iProjectId;
+                $rQuery   = $this->bdd->query($sQuery);
+                $mRecord = (int)$this->bdd->result($rQuery, 0, 0);
+                $oCache->set($sKey, $mRecord);
+            }
+            return $mRecord;
+        }
+        return false;
     }
 }

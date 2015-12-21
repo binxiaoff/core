@@ -27,6 +27,7 @@
 // **************************************************************************************************** //
 
 use Unilend\librairies\ULogger;
+use Unilend\librairies\Cache;
 
 class lenders_accounts extends lenders_accounts_crud
 {
@@ -331,5 +332,68 @@ class lenders_accounts extends lenders_accounts_crud
             $result[] = $record;
         }
         return $result;
+    }
+
+    public function isEligibleIFP($iLenderId = null)
+    {
+        if (null === $iLenderId) {
+            $iLenderId = $this->id_lender_account;
+        }
+
+        if ($iLenderId) {
+            return $this->isNaturalPerson($iLenderId) && $this->isFrenchResident($iLenderId);
+        }
+
+        return false;
+    }
+
+    public function isFrenchResident($iLenderId = null)
+    {
+        if (null === $iLenderId) {
+            $iLenderId = $this->id_lender_account;
+        }
+
+        if ($iLenderId) {
+            $oCache  = Cache::getInstance();
+            $sKey    = $oCache->makeKey('lenders_account', 'isFrenchResident', $iLenderId);
+            $aRecord = $oCache->get($sKey);
+
+            if (false === $aRecord) {
+                $sQuery  = "SELECT resident_etranger, MAX(added) FROM `lenders_imposition_history` WHERE id_lender = $iLenderId";
+                $oQuery  = $this->bdd->query($sQuery);
+                $aRecord = $this->bdd->fetch_array($oQuery);
+                $oCache->set($sKey, $aRecord);
+            }
+            if (empty($aRecord) || '0' === $aRecord['resident_etranger']) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function isNaturalPerson($iLenderId = null)
+    {
+        if (null === $iLenderId) {
+            $iLenderId = $this->id_lender_account;
+        }
+
+        if ($iLenderId) {
+            $oCache  = Cache::getInstance();
+            $sKey    = $oCache->makeKey('lenders_account', 'isNaturalPerson', $iLenderId);
+            $aRecord = $oCache->get($sKey);
+
+            if (false === $aRecord) {
+                $sQuery = "SELECT c.type FROM lenders_accounts la INNER JOIN clients c ON c.id_client =  la.id_client_owner WHERE la.id_lender_account = $iLenderId";
+                $oQuery = $this->bdd->query($sQuery);
+                $aRecord = $this->bdd->fetch_array($oQuery);
+                $oCache->set($sKey, $aRecord);
+            }
+
+            if (isset($aRecord['type']) && '1' === $aRecord['type']) {
+                return true;
+            }
+        }
+        return false;
     }
 }

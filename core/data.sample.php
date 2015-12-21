@@ -28,7 +28,7 @@
 
 class --classe-- extends --classe--_crud
 {
-    public function --table--($bdd,$params='')
+    public function __construct($bdd,$params='')
     {
         parent::--table--($bdd,$params);
     }

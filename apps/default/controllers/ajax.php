@@ -1135,7 +1135,6 @@ class ajaxController extends bootstrap
 
             $tabl = $this->remb->echeancier($montant, $_POST['nb_echeances'], $tx, $com, $tva);
 
-            $donneesEcheances = $tabl[1];
             $lEcheanciers     = $tabl[2];
 
             echo $this->ficelle->formatNumber($lEcheanciers[1]['echeance']);
