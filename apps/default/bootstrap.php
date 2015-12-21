@@ -14,6 +14,11 @@ class bootstrap extends Controller
      */
     public $projects;
 
+    /**
+     * @var array
+     */
+    public $aDataLayer = array();
+
     public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
@@ -477,6 +482,9 @@ class bootstrap extends Controller
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
+            $this->addDataLayer('id_client', $this->clients->id_client);
+            $this->addDataLayer('email_client', $this->clients->email);
+
             // si emprunteur
             if ($this->clients->status_pre_emp > 1) {
                 // si si statut transition = 1 c'est qu'on est en transition
@@ -725,5 +733,14 @@ class bootstrap extends Controller
                 }
             }
         }
+    }
+
+    /**
+     * @param string $sKey DataLayer parameter name
+     * @param mixed $mValue Parameter value
+     */
+    protected function addDataLayer($sKey, $mValue)
+    {
+        $this->aDataLayer[$sKey] = $mValue;
     }
 }
