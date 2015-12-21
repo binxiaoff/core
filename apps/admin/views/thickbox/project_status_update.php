@@ -12,9 +12,11 @@
         <?php endif; ?>
         <?php if ($this->bAskEmail): ?>
             <em>Envoyer un d'information email aux prêteurs</em><br/><br/>
-            <label><input type="radio" name="send_email" value="1"> Oui</label>
-            <label><input type="radio" name="send_email" value="0"> Non</label><br/><br/>
+            <label><input type="radio" name="send_email" value="1"/> Oui</label>
+            <label><input type="radio" name="send_email" value="0"/> Non</label><br/><br/>
             <div class="hidden-fields">
+        <?php else: ?>
+            <input type="hidden" name="send_email" value="1"/>
         <?php endif; ?>
         <?php if ($this->bCustomEmail): ?>
             <label for="mail_content"><em>Email d'information aux prêteurs</em></label><br/><br/>
