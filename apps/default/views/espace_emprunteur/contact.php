@@ -1,14 +1,13 @@
 <div class="main">
     <div class="shell">
         <?php
-        if ($this->bSuccessMessage === true ) { ?>
+        if ($this->bSuccessMessage === true ) : ?>
 
             <span>
                 <?= $this->lng['espace-emprunteur']['confirmation-demande-contact'] ?>
             </span>
         <?php
-        } else {
-
+        else :
         ?>
         <div class="contact">
             <h1><?=$this->lng['espace-emprunteur']['nous-contacter'] ?></h1>
@@ -94,6 +93,7 @@
                                 </div>
                             </div>
                         </div>
+                        <span style="font-size: 0.8em;"><?= $this->lng['espace-emprunteur']['champs-obligatoires'] ?></span>
                     </div>
 
                     <div class="form-foot">
@@ -125,7 +125,6 @@
 <script>
         $(document).on('change', 'input.file-field', function() {
         var val = $(this).val();
-
         if (val.length != 0 || val != '') {
             val = val.replace(/\\/g, '/').replace(/.*\//, '');
             $(this).closest('.uploader').find('input.field').val(val).addClass('LV_valid_field').addClass('file-uploaded');
@@ -133,4 +132,5 @@
     });
 </script>
 
-<?php } ?>
+<?php endif; ?>
+
