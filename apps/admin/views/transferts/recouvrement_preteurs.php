@@ -31,7 +31,7 @@
         <table class="tablesorter">
             <thead>
                 <tr>
-                    <th>ID preteur (id client)</th>
+                    <th>ID prêteur (id client)</th>
                     <th>Email prêteur</th>
                     <th>Capital échus</th>
                     <th>Intérêts échus</th>
@@ -42,13 +42,12 @@
             <tbody>
             <?php if ($this->preteurs != false): ?>
                 <?php foreach ($this->preteurs as $p): ?>
-                    <?php $this->interetsCourus = round($this->diff / $this->nbJourMoisDER * ($p['interets_next'] / 100), 2); ?>
                     <tr>
                         <td><?= $p['id_client'] ?></td>
                         <td><?= $p['email'] ?></td>
                         <td><?= $this->ficelle->formatNumber($p['capital_echus'] / 100) ?> €</td>
                         <td><?= $this->ficelle->formatNumber($p['interets_echus'] / 100) ?> €</td>
-                        <td><?= $this->ficelle->formatNumber($this->interetsCourus) ?> €</td>
+                        <td><?= $this->ficelle->formatNumber($this->diff / $this->nbJourMoisDER * ($p['interets_next'] / 100)) ?> €</td>
                         <td><?= $this->ficelle->formatNumber($p['capital_restant_du'] / 100) ?> €</td>
                     </tr>
                 <?php endforeach; ?>

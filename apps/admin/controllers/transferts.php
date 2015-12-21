@@ -665,11 +665,8 @@ class transfertsController extends bootstrap
         $this->loans                   = $this->loadData('loans');
 
         if (isset($this->params[0]) && $this->receptions->get($this->params[0], 'type = 1 AND type_remb = 3 AND id_reception')) {
-
-            // Projet
             $this->projects->get($this->receptions->id_project, 'id_project');
 
-            // last recouvrement
             if (isset($_SESSION['DER']) && $_SESSION['DER'] != '') {
                 $this->lastDateRecouvrement = date('d/m/Y', strtotime($_SESSION['DER']));
                 $this->lastFormatSql        = date('Y-m-d', strtotime($_SESSION['DER']));

@@ -122,16 +122,15 @@ class loans extends loans_crud
                 c.id_client,
                 c.email,
                 l.id_lender,
-                (SELECT SUM(capital) FROM echeanciers e WHERE e.id_lender = l.id_lender AND e.id_project = '.$id_project.' AND e.status = 0 AND LEFT(e.date_echeance, 10) <= "' . $dateDER . '") AS capital_echus,
-                (SELECT SUM(interets) FROM echeanciers e WHERE e.id_lender = l.id_lender AND e.id_project = '.$id_project.' AND e.status = 0 AND LEFT(e.date_echeance, 10) <= "' . $dateDER . '") AS interets_echus,
-                (SELECT SUM(capital) FROM echeanciers e WHERE e.id_lender = l.id_lender AND e.id_project = '.$id_project.' AND e.status = 0 AND LEFT(e.date_echeance, 10) > "' . $dateDER . '") AS capital_restant_du,
-                (SELECT e.ordre FROM echeanciers e WHERE e.id_lender = l.id_lender AND e.id_project = '.$id_project.' AND e.status = 0 AND LEFT(e.date_echeance, 10) > "' . $dateDER . '" ORDER BY e.date_echeance ASC LIMIT 1) AS  ordre,
-                (SELECT SUM(interets) FROM echeanciers e WHERE e.id_lender = l.id_lender AND e.id_project = '.$id_project.' AND e.ordre = (SELECT e.ordre FROM echeanciers e WHERE e.id_lender = l.id_lender AND e.id_project = ' . $id_project . ' AND e.status = 0 AND LEFT(e.date_echeance, 10) > "' . $dateDER . '" ORDER BY e.date_echeance ASC LIMIT 1)) AS interets_next
+                SUM(IF(DATE(e.date_echeance) <= "' . $dateDER . '", capital, 0)) AS capital_echus,
+                SUM(IF(DATE(e.date_echeance) <= "' . $dateDER . '", interets, 0)) AS interets_echus,
+                SUM(IF(DATE(e.date_echeance) > "' . $dateDER . '", capital, 0)) AS capital_restant_du,
+                SUM(IF(DATE(e.date_echeance) > "' . $dateDER . '" AND e.date_echeance < DATE_ADD("' . $dateDER . '", INTERVAL 45 DAY), interets, 0)) AS interets_next
             FROM loans l
+            LEFT JOIN echeanciers e ON e.id_lender = l.id_lender AND e.id_project = l.id_project
             LEFT JOIN lenders_accounts la ON l.id_lender = la.id_lender_account
             LEFT JOIN clients c ON la.id_client_owner = c.id_client
-            WHERE l.id_project = ' . $id_project . '
-            AND l.status = 0
+            WHERE l.id_project = ' . $id_project . ' AND l.status = 0
             GROUP BY id_lender';
 
         $resultat = $this->bdd->query($sql);
