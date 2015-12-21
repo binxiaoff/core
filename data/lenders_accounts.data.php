@@ -124,9 +124,7 @@ class lenders_accounts extends lenders_accounts_crud
         $result = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($result)) {
-
             if (\projects_status::checkStatusPostRepayment($record['project_status'])) {
-
                 if (\projects_status::checkStatusKo($record['project_status']) && 0 == $record["echeance_status"]) {
                     $record["montant"] = 0;
                 }
@@ -160,9 +158,9 @@ class lenders_accounts extends lenders_accounts_crud
 
         try {
             $aValuesIRR = $this->getValuesForIRR($iLendersAccountId);
-        } catch (Exception $e){
+        } catch (Exception $oException) {
             $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
-            $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
+            $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
         }
 
         foreach ($aValuesIRR as $aValues) {
