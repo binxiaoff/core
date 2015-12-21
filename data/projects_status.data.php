@@ -151,10 +151,9 @@ class projects_status extends projects_status_crud
     }
 
     /**
-     * @param                         $iProjectId
+     * @param int                     $iProjectId
      * @param projects_status_history $oProjectStatusHistory
-     *
-     * @return array|bool
+     * @return array
      */
     public function getPossibleStatus($iProjectId, projects_status_history $oProjectStatusHistory)
     {
@@ -181,7 +180,7 @@ class projects_status extends projects_status_crud
                 if ($this->status < self::REMBOURSEMENT) {
                     return array();
                 }
-                $sPossibleStatus = 'status >= '. self::REMBOURSEMENT;
+                $sPossibleStatus = 'status >= '. self::REMBOURSEMENT . ' AND status != ' . self::DEFAUT;
                 break;
         }
 
