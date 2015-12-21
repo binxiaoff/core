@@ -37,10 +37,12 @@ class notifications extends notifications_crud
     const TYPE_DEBIT                          = 7;
     const TYPE_NEW_PROJECT                    = 8;
     const TYPE_PROJECT_PROBLEM                = 9;
-    const TYPE_PROJECT_RECOVERY               = 10;
-    const TYPE_PROJECT_PRECAUTIONARY_PROCESS  = 11;
-    const TYPE_PROJECT_RECEIVERSHIP           = 12;
-    const TYPE_PROJECT_COMPULSORY_LIQUIDATION = 13;
+    const TYPE_PROJECT_PROBLEM_REMINDER       = 10;
+    const TYPE_PROJECT_RECOVERY               = 11;
+    const TYPE_PROJECT_PRECAUTIONARY_PROCESS  = 12;
+    const TYPE_PROJECT_RECEIVERSHIP           = 13;
+    const TYPE_PROJECT_COMPULSORY_LIQUIDATION = 14;
+    const TYPE_PROJECT_FAILURE                = 15;
 
     public function __construct($bdd, $params = '')
     {
