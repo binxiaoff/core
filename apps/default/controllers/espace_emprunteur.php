@@ -57,6 +57,7 @@ class espace_emprunteurController extends Bootstrap
             $oNow         = new \datetime();
             $oLinkExpires = new \datetime($oTemporary_links->expires);
 
+            var_dump(__LINE__);
 
             if ($oLinkExpires <= $oNow) {
 
@@ -68,8 +69,7 @@ class espace_emprunteurController extends Bootstrap
                 $oTemporary_links->update();
 
                 $this->clients->get($oTemporary_links->id_client);
-
-                if (isset($_POST['form_secret_question'])) {
+                if (isset($_POST['form_mdp_question_emprunteur'])) {
 
                     if (empty($_POST['pass'])) {
                         $_SESSION['forms']['mdp_question_emprunteur']['errors']['pass'] = true;
@@ -99,7 +99,6 @@ class espace_emprunteurController extends Bootstrap
                         $this->clients->secrete_reponse  = md5($_POST['secret-response']);
 
                         $this->clients->update();
-
                         header('Location: ' . $this->lurl);
                     }
                 }
