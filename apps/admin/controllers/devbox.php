@@ -1587,4 +1587,76 @@ class devboxController extends bootstrap
         fclose($rHandle);
         echo 'done';
     }
+
+    public function _importResidenceOverseas()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        //Encode: UTF-8, new line : LF
+        if (($rHandle = fopen($this->path . '/protected/import/' . 'etranger.csv', 'r')) === false) {
+            return;
+        }
+
+        /** @var lenders_imposition_history $oClient */
+        $oClient = $this->loadData('lenders_imposition_history');
+
+        while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
+            $aRow = array_map('trim', $aRow);
+            $aRow = array_map(array($oClient->bdd, 'escape_string'), $aRow);
+
+            preg_match('/^\d+/s', $aRow[0], $matches);
+            if (false === isset($matches[0])) {
+                continue;
+            }
+            $iClientId = (int) $matches[0];
+            $sql = "UPDATE `lenders_imposition_history`
+                    SET `id_pays`= (SELECT p.id_pays FROM pays_v2 p WHERE p.iso = '{$aRow[1]}')
+                    WHERE `id_lenders_imposition_history` = (
+                    SELECT t.id_lenders_imposition_history FROM (
+                        SELECT lih.id_lenders_imposition_history
+                            FROM `lenders_imposition_history` lih
+                            INNER JOIN lenders_accounts la ON la.id_lender_account = lih.id_lender
+                            WHERE la.id_client_owner = $iClientId
+                            ORDER BY lih.added DESC LIMIT 1
+                        ) t
+                    )";
+            $oClient->bdd->query($sql);
+            unset($aRow);
+        }
+
+        fclose($rHandle);
+        echo 'done';
+    }
+
+    public function _addWelcomeOffer()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        //Encode: UTF-8, new line : LF
+        if (($rHandle = fopen($this->path . '/protected/import/' . 'welcome.csv', 'r')) === false) {
+            return;
+        }
+
+        /** @var offres_bienvenues_details $oOffre */
+        $oOffre = $this->loadData('offres_bienvenues_details');
+
+        while (($aRow = fgetcsv($rHandle, 0, ',')) !== false) {
+            $iClientId = $aRow[0];
+            if (false === $oOffre->exist($iClientId, 'id_client')) {
+                $sql = "INSERT INTO `offres_bienvenues_details` (`id_offre_bienvenue`, `motif`, `id_client`, `id_bid`, `id_bid_remb`, `montant`, `status`, `type`, `added`, `updated`)
+                        VALUES (1, 'Offre de bienvenue', $iClientId, 0, 0, 2000, 0, 0, now(), now())";
+                $oOffre->bdd->query($sql);
+            }
+        }
+        fclose($rHandle);
+        echo 'done';
+    }
 }

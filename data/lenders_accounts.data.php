@@ -94,7 +94,7 @@ class lenders_accounts extends lenders_accounts_crud
                 FROM loans l
                 INNER JOIN projects_status_history psh ON l.id_project = psh.id_project
                 INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                WHERE ps.status = ' . projects_status::REMBOURSEMENT . '
+                WHERE ps.status = ' . \projects_status::REMBOURSEMENT . '
                 AND l.id_lender = ' . $iLendersAccountId . '
                 GROUP BY l.id_project,l.id_loan';
 
@@ -123,17 +123,20 @@ class lenders_accounts extends lenders_accounts_crud
 
         $result = $this->bdd->query($sql);
 
-        $aStatusKo = array(projects_status::PROBLEME, projects_status::RECOUVREMENT);
         while ($record = $this->bdd->fetch_array($result)) {
-            if (in_array($record["project_status"], $aStatusKo) && 0 == $record["echeance_status"]) {
-                $record["montant"] = 0;
-            }
 
-            if ($record["date_echeance_reel"] == "0000-00-00 00:00:00") {
-                $record["date_echeance_reel"] = $record["date_echeance"];
-            }
+            if (\projects_status::checkStatusPostRepayment($record['project_status'])) {
 
-            $aValuesIRR[] = array($record["date_echeance_reel"] => $record["montant"]);
+                if (\projects_status::checkStatusKo($record['project_status']) && 0 == $record["echeance_status"]) {
+                    $record["montant"] = 0;
+                }
+
+                if ($record["date_echeance_reel"] == "0000-00-00 00:00:00") {
+                    $record["date_echeance_reel"] = $record["date_echeance"];
+                }
+
+                $aValuesIRR[] = array($record["date_echeance_reel"] => $record["montant"]);
+            }
         }
         return $aValuesIRR;
     }
@@ -229,7 +232,7 @@ class lenders_accounts extends lenders_accounts_crud
         return $aLenders;
     }
 
-    public function getInfosben($oProjectsStatus, $iLimit = null, $iOffset = null)
+    public function getInfosben($iYear, $iLimit = null, $iOffset = null)
     {
         $sOffset = '';
         if (null !== $iOffset) {
@@ -243,15 +246,12 @@ class lenders_accounts extends lenders_accounts_crud
             $sLimit = 'LIMIT ' . $iLimit;
         }
 
-        $sql = 'SELECT DISTINCT (c.id_client), c.prenom, c.nom
-                FROM clients c
-                INNER JOIN lenders_accounts la ON la.id_client_owner = c.id_client
-                INNER JOIN loans l on l.id_lender = la.id_lender_account
-                INNER JOIN projects p ON p.id_project = l.id_project
-                INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
-                INNER JOIN projects_status_history psh USING (id_project_status_history)
-                INNER JOIN projects_status ps USING (id_project_status)
-                WHERE ps.status > '. projects_status::REMBOURSEMENT . ' ' . $sLimit. ' '. $sOffset;
+        $sql = 'SELECT DISTINCT c.id_client, c.prenom, c.nom
+                FROM lenders_accounts la
+                  INNER JOIN clients c ON (la.id_client_owner = c.id_client)
+                  LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
+                WHERE YEAR(e.date_echeance_reel) = ' . $iYear . '
+                  AND e.status = 1 ' . ' ' . $sLimit. ' '. $sOffset;
 
         $resultat = $this->bdd->query($sql);
         $result   = array();

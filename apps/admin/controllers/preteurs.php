@@ -1800,12 +1800,18 @@ class preteursController extends bootstrap
         $this->lSumLoans               = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, '', 'next_echeance ASC');
         $this->arrayDeclarationCreance = $this->projects->getProjectsInDebt();
 
-        try {
-            $this->IRR = $this->lenders_accounts->calculateIRR($this->lenders_accounts->id_lender_account);
-        } catch (Exception $e){
-            $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
-            $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
-            $this->IRR = 'non calculable';
+        $oLenderAccountStats = $this->loadData('lenders_account_stats');
+
+        $this->IRR = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
+
+        if (empty($this->IRR)) {
+            try {
+                $this->IRR['tri_value'] = $this->lenders_accounts->calculateIRR($this->lenders_accounts->id_lender_account);
+            } catch (Exception $e){
+                $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
+                $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
+                $this->IRR = 'non calculable';
+            }
         }
 
         $statusOk                = array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::PRET_REFUSE, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE);
