@@ -60,7 +60,8 @@
                         <th width="200"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
                         <th width="100"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
                         <th width="150"><?= $this->lng['espace-emprunteur']['table-projets-status'] ?></th>
-                        <th></th>
+                        <th width="200"></th>
+                        <th width="152"></th>
                     </tr>
                     </thead>
                     <tbody>
