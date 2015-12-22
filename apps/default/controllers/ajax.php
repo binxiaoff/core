@@ -1119,25 +1119,11 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['montant']) && isset($_POST['tx']) && isset($_POST['nb_echeances'])) {
-
-            // Chargement des librairies
-            $this->remb = $this->loadLib('remb');
-
-            $this->settings->get('Commission remboursement', 'type');
-            $com = $this->settings->value;
-
-            // tva (0.196)
-            $this->settings->get('TVA', 'type');
-            $tva = $this->settings->value;
-
             $montant = str_replace(' ', '', $_POST['montant']);
             $tx      = $_POST['tx'] / 100;
 
-            $tabl = $this->remb->echeancier($montant, $_POST['nb_echeances'], $tx, $com, $tva);
-
-            $lEcheanciers     = $tabl[2];
-
-            echo $this->ficelle->formatNumber($lEcheanciers[1]['echeance']);
+            $aRepaymentSchedule = \repayment::getRepaymentSchedule($montant, $_POST['nb_echeances'], $tx);
+            echo $this->ficelle->formatNumber($aRepaymentSchedule[1]['repayment']);
         }
     }
 

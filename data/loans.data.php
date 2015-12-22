@@ -364,7 +364,7 @@ class loans extends loans_crud
         $aScheduleGrouped = array();
         $aCommissionGrouped = array();
         foreach ($aBids as $aBid) {
-            $aSchedule = \remb::getRepaymentScheduleWithCommission($aBid['accepted_amount'] / 100, $iMonthNb, $aBid['rate'] / 100, $fCommissionRate, $fVAT);
+            $aSchedule = \repayment::getRepaymentScheduleWithCommission($aBid['accepted_amount'] / 100, $iMonthNb, $aBid['rate'] / 100, $fCommissionRate, $fVAT);
             //Group the schedule of all bid of a loan
             foreach ($aSchedule['repayment_schedule'] as $iOrder => $aRepayment) {
                 if (isset($aScheduleGrouped[$iOrder])) {

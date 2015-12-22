@@ -929,12 +929,6 @@ class cronController extends bootstrap
         $this->settings->get('Commission remboursement', 'type');
         $commission = $this->settings->value;
 
-        // On definit le nombre de mois et de jours apres la date de fin pour commencer le remboursement
-        $this->settings->get('Nombre de mois apres financement pour remboursement', 'type');
-        $nb_mois = $this->settings->value;
-        $this->settings->get('Nombre de jours apres financement pour remboursement', 'type');
-        $nb_jours = $this->settings->value;
-
         // tva (0.196)
         $this->settings->get('TVA', 'type');
         $tva = $this->settings->value;
@@ -1081,7 +1075,7 @@ class cronController extends bootstrap
                     $this->echeanciers->capital                      = $e['capital'] * 100;
                     $this->echeanciers->interets                     = $e['capital'] * 100;
                     $this->echeanciers->commission                   = $e['commission'] * 100;
-                    $this->echeanciers->tva                          = $e['tav_amount'] * 100;
+                    $this->echeanciers->tva                          = $e['vat_amount'] * 100;
                     $this->echeanciers->prelevements_obligatoires    = $montant_prelevements_obligatoires;
                     $this->echeanciers->contributions_additionnelles = $montant_contributions_additionnelles;
                     $this->echeanciers->crds                         = $montant_crds;
@@ -1092,11 +1086,9 @@ class cronController extends bootstrap
                     $this->echeanciers->date_echeance                = $dateEcheance;
                     $this->echeanciers->date_echeance_emprunteur     = $dateEcheance_emprunteur;
                     $this->echeanciers->create();
-
-                    $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : echeanciers (' . $this->echeanciers->id_echeancier . ') and order (' . $this->echeanciers->ordre .') has been created for loan (' .  $l['id_loan'] . ')');
                 }
                 $iTreatedLoanNb ++;
-                $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' .  $iTreatedLoanNb . '/' . $iLoanNbTotal . ' lender loan treated.');
+                $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' .  $iTreatedLoanNb . '/' . $iLoanNbTotal . ' lender loan treated. ' . $k . '/' . count($lEcheanciers) . 'repayment schedule created.');
             }
         }
     }
@@ -1108,51 +1100,31 @@ class cronController extends bootstrap
 
         $oLogger = new ULogger('cron', $this->logPath, 'cron_check_projet_en_funding.log');
 
-        $loans                  = $this->loadData('loans');
         $projects               = $this->loadData('projects');
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $echeanciers            = $this->loadData('echeanciers');
 
-        $remb = $this->loadLib('remb');
-        $jo   = $this->loadLib('jours_ouvres');
+        $jo = $this->loadLib('jours_ouvres');
 
         $this->settings->get('Commission remboursement', 'type');
-        $com = $this->settings->value;
-
-        // On definit le nombre de mois et de jours apres la date de fin pour commencer le remboursement
-        $this->settings->get('Nombre de mois apres financement pour remboursement', 'type');
-        $nb_mois = $this->settings->value;
-        $this->settings->get('Nombre de jours apres financement pour remboursement', 'type');
-        $nb_jours = $this->settings->value;
+        $fCommissionRate = $this->settings->value;
 
         // tva (0.196)
         $this->settings->get('TVA', 'type');
-        $tva = $this->settings->value;
+        $fVAT = $this->settings->value;
 
         $projects->get($id_project, 'id_project');
 
-        $montantHaut = 0;
-        $montantBas  = 0;
-        foreach ($loans->select('id_project = ' . $projects->id_project) as $b) {
-            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-            $montantBas += ($b['amount'] / 100);
-        }
-        $tauxMoyen = ($montantHaut / $montantBas);
+        $fAmount  = $projects->amount;
+        $iMonthNb = $projects->period;
 
-        $capital     = $projects->amount;
-        $nbecheances = $projects->period;
-        $taux        = ($tauxMoyen / 100);
-        $commission  = $com;
-
-        $tabl = $remb->echeancier($capital, $nbecheances, $taux, $commission, $tva);
-
-        $donneesEcheances = $tabl[1];
+        $aCommision = \repayment::getRepaymentCommission($fAmount, $iMonthNb, $fCommissionRate, $fVAT);
 
         $lEcheanciers = $echeanciers->getSumRembEmpruntByMonths($projects->id_project);
 
-        $iEcheancierNbTotal = count($lEcheanciers);
+        $iEcheancierNbTotal   = count($lEcheanciers);
         $iTreatedEcheancierNb = 0;
-        $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' .$iEcheancierNbTotal . ' in total.');
+        $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' . $iEcheancierNbTotal . ' in total.');
         foreach ($lEcheanciers as $k => $e) {
             // Date d'echeance emprunteur
             $dateEcheance_emprunteur = $this->dates->dateAddMoisJoursV3($projects->date_fin, $k);
@@ -1166,15 +1138,14 @@ class cronController extends bootstrap
             $echeanciers_emprunteur->montant                  = $e['montant'] * 100; // sum montant preteurs
             $echeanciers_emprunteur->capital                  = $e['capital'] * 100; // sum capital preteurs
             $echeanciers_emprunteur->interets                 = $e['interets'] * 100; // sum interets preteurs
-            $echeanciers_emprunteur->commission               = $donneesEcheances['comParMois'] * 100; // on recup com du projet
-            $echeanciers_emprunteur->tva                      = $donneesEcheances['tvaCom'] * 100; // et tva du projet
+            $echeanciers_emprunteur->commission               = $aCommision['commission_monthly'] * 100; // on recup com du projet
+            $echeanciers_emprunteur->tva                      = $aCommision['vat_amount_monthly'] * 100; // et tva du projet
             $echeanciers_emprunteur->date_echeance_emprunteur = $dateEcheance_emprunteur;
             $echeanciers_emprunteur->create();
 
-            $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' :  echeance (' . $echeanciers_emprunteur->id_echeanciers_emprunteur . ') has been created.');
-
-            $iTreatedEcheancierNb ++;
-            $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' . $iTreatedEcheancierNb . '/' . $iEcheancierNbTotal . ' borrower echeance created.');
+            $iTreatedEcheancierNb++;
+            $oLogger->addRecord(ULogger::INFO,
+                'project : ' . $id_project . ' : borrower  echeance (' . $echeanciers_emprunteur->id_echeanciers_emprunteur . ') has been created. ' . $iTreatedEcheancierNb . '/' . $iEcheancierNbTotal . 'traited');
         }
     }
 
