@@ -516,37 +516,39 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                             </div>
                         <?php } ?>
                         </div>
-                        <?php if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) { ?>
+                        <?php if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT): ?>
                             <div class="tab">
                                 <div class="article">
                                     <p>
                                         <?= $this->lng['preteur-projets']['vous-avez-prete'] ?>
-                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->bidsvalid['solde'], 0) ?> €</strong>
+                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->bidsvalid['solde']) ?>&nbsp;€</strong>
                                     </p>
                                     <p>
-                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb) ?> €</strong> <?= $this->lng['preteur-projets']['vous-ont-ete-rembourses-il-vous-reste'] ?>
-                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRestanteARemb) ?> €</strong> <?= $this->lng['preteur-projets']['a-percevoir-sur-une-periode-de'] ?>
+                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb) ?>&nbsp;€</strong>
+                                        <?= $this->lng['preteur-projets']['vous-ont-ete-rembourses-il-vous-reste'] ?>
+                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRestanteARemb) ?>&nbsp;€</strong>
+                                        <?= $this->lng['preteur-projets']['a-percevoir-sur-une-periode-de'] ?>
                                         <strong class="pinky-span"><?= $this->nbPeriod ?> <?= $this->lng['preteur-projets']['mois'] ?></strong>
                                     </p>
                                 </div>
+                                <?php foreach ($this->aStatusHistory as $aHistory): ?>
+                                    <?php if (false === empty($aHistory['site_content'])): ?>
+                                        <p>
+                                            <?= date('d/m/Y', strtotime($aHistory['added'])) ?>
+                                            <?php if (isset($this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']])): ?>
+                                                <strong class="pinky-span"><?= $this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']] ?></strong>
+                                            <?php endif; ?>
+                                            <br/>
+                                            <?= nl2br($aHistory['site_content']) ?>
+                                            <?php if (1 == $aHistory['failure']): ?>
+                                                <p>Vous avez récupéré <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb / $this->bidsvalid['solde'] * 100) ?>&nbsp;%</strong> de votre capital.</p>
+                                            <?php endif; ?>
+                                            <br/><br/>
+                                        </p>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
                             </div>
-                            <?php
-                                if ($this->lhistoStatus != false) {
-                                    foreach ($this->lhistoStatus as $s) {
-                                        ?>
-                                        <p><?= date('d/m/Y', strtotime($s['added'])) ?> : <?= $s['information'] ?></p>
-                                        <?php
-                                        // status default
-                                        if ($s['id_project_status'] == 11) {
-                                            $catital_remb              = $this->sumRemb;
-                                            $capital_total             = $this->bidsvalid['solde'];
-                                            $pourcentage_capital_recup = $catital_remb / $capital_total * 100;
-                                            echo '<p>Vous avez récupéré <b class="pinky-span">' . $this->ficelle->formatNumber($pourcentage_capital_recup) . ' %</b> de votre capital.</p>';
-                                        }
-                                    }
-                                }
-                            ?>
-                        <?php } ?>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -810,7 +812,7 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                     </p>
                 </div>
             </article>
-            <?php if (($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) && isset($_SESSION['client']) && $_SESSION['client']['status_pre_emp'] == 1) { ?>
+            <?php if (($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) && isset($_SESSION['client']) && $_SESSION['client']['status_pre_emp'] == 1): ?>
                 <article class="ex-article">
                     <h3>
                         <a href="#"><?= $this->lng['preteur-projets']['suivi-projet'] ?></a><i class="icon-arrow-down up"></i>
@@ -830,9 +832,25 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                                 </div>
                             </div>
                         </p>
+                        <?php foreach ($this->aStatusHistory as $aHistory): ?>
+                            <?php if (false === empty($aHistory['site_content'])): ?>
+                                <p>
+                                    <?= date('d/m/Y', strtotime($aHistory['added'])) ?>
+                                    <?php if (isset($this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']])): ?>
+                                        <strong class="pinky-span"><?= $this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']] ?></strong>
+                                    <?php endif; ?>
+                                    <br/>
+                                    <?= nl2br($aHistory['site_content']) ?>
+                                    <?php if (1 == $aHistory['failure']): ?>
+                                        <p>Vous avez récupéré <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb / $this->bidsvalid['solde'] * 100) ?>&nbsp;%</strong> de votre capital.</p>
+                                    <?php endif; ?>
+                                    <br/>
+                                </p>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
                     </div>
                 </article>
-            <?php } ?>
+            <?php endif; ?>
         </div>
     </div>
 </div>

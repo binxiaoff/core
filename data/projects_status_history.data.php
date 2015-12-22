@@ -164,26 +164,24 @@ class projects_status_history extends projects_status_history_crud
         return $this->create();
     }
 
-    public function selectHisto($id_project, $arrayStatus = '')
+    public function getHistoryDetails($id_project)
     {
-        $where = '';
-        if ($arrayStatus != '') {
-            $where  = ' AND id_project_status IN (' . implode(',', $arrayStatus) . ')';
-        }
-
         $sql = '
             SELECT
-                psh.id_project_status,
-                psh.added,
-                pshd.mail_content
+                ps.status,
+                psh.added AS added,
+                IFNULL(pshd.mail_content, "") AS mail_content,
+                IFNULL(pshd.site_content, "") AS site_content,
+                IF (ps.status = ' . \projects_status::DEFAUT . ', 1, 0) AS failure
             FROM projects_status_history psh
             LEFT JOIN projects_status_history_details pshd ON psh.id_project_status_history = pshd.id_project_status_history
-            WHERE psh.id_project = ' . $id_project . $where . '
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            WHERE psh.id_project = ' . $id_project . '
             ORDER BY psh.added ASC';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;

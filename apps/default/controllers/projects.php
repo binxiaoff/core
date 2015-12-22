@@ -627,14 +627,11 @@ class projectsController extends bootstrap
                 $this->interDebutFin = $this->dates->dateDiff($date1, $date2);
 
                 if ($this->lenders_accounts->id_lender_account != false) {
+                    $oProjectsStatusHistory = $this->loadData('projects_status_history');
+                    $this->aStatusHistory   = $oProjectsStatusHistory->getHistoryDetails($this->projects->id_project);
                     $this->sumRemb          = $this->echeanciers->sumARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 0') + $this->echeanciers->sumARembByProjectCapital($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 1');
                     $this->sumRestanteARemb = $this->echeanciers->getSumRestanteARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project);
                     $this->nbPeriod         = $this->echeanciers->counterPeriodRestantes($this->lenders_accounts->id_lender_account, $this->projects->id_project);
-
-                    if ($this->bidsvalid['solde'] > 0) {
-                        // @todo do not use `id_project_status` but `status`
-                        $this->lhistoStatus = $this->projects_status_history->selectHisto($this->projects->id_project, array(10, 11, 25, 26, 27, 28));
-                    }
                 }
             }
         } else {
