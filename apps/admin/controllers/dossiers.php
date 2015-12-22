@@ -3709,7 +3709,7 @@ class dossiersController extends bootstrap
         $this->iClientId = $iClientId;
         $this->iProjectId = $oProjects->id_project;
 
-        $sTypeEmail = $this->selectEmailCompletude($oClients);
+        $sTypeEmail = $this->selectEmailCompleteness($iClientId);
         $this->mails_text->get($sTypeEmail, 'lang = "' . $this->language . '" AND type');
     }
 
@@ -3739,7 +3739,7 @@ class dossiersController extends bootstrap
             return;
         }
 
-        $sTypeEmail = $this->selectEmailCompletude($oClients);
+        $sTypeEmail = $this->selectEmailCompleteness($oClients->id_client);
         $this->mails_text->get($sTypeEmail, 'lang = "' . $this->language . '" AND type');
 
         $varMail = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
@@ -3779,7 +3779,7 @@ class dossiersController extends bootstrap
                 return;
             }
 
-            $sTypeEmail = $this->selectEmailCompletude($oClients);
+            $sTypeEmail = $this->selectEmailCompleteness($oClients->id_client);
             $this->mails_text->get($sTypeEmail, 'lang = "' . $this->language . '" AND type');
 
             $varMail = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
@@ -3904,9 +3904,12 @@ class dossiersController extends bootstrap
         return $this->attachmentHelper->remove($iAttachmentId);
     }
 
-    private function selectEmailCompletude($oClients)
+    private function selectEmailCompleteness($iClientId)
     {
-        if (isset($oClients->secret_question) && isset($oClients->secret_reponse)) {
+        $oClients = $this->loadData('clients');
+        $oClients->get($iClientId);
+
+        if (isset($oClients->secrete_question) && isset($oClients->secrete_reponse)) {
             return 'depot-dossier-relance-status-20-1';
 
         } else {

@@ -2390,7 +2390,7 @@ class ajaxController extends bootstrap
 
                     $aExistingStatus = $this->projects_status_history->select('id_project = '.$this->projects->id_project.' AND id_project_status = '.projects_status::PREP_FUNDING);
                     if (empty($aExistingStatus)) {
-                        $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
+                        $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein', $this->clients);
                     }
 
                     $content_risk = '
@@ -2708,7 +2708,7 @@ class ajaxController extends bootstrap
                     break;
             }
 
-            $this->sendEmailBorrowerArea($sTypeEmail);
+            $this->sendEmailBorrowerArea($sTypeEmail, $oClients);
         }
     }
 
@@ -2987,9 +2987,8 @@ class ajaxController extends bootstrap
         }
     }
 
-    private function sendEmailBorrowerArea($sTypeEmail)
+    private function sendEmailBorrowerArea($sTypeEmail, clients $oClients)
     {
-
         $oMailsText = $this->loadData('mails_text');
         $oMailsText->get($sTypeEmail, 'lang = "fr" AND type');
 
@@ -2999,7 +2998,7 @@ class ajaxController extends bootstrap
         $sTwitterURL = $this->settings->value;
 
         $oTemporaryLink = $this->loadData('temporary_links_login');
-        $sTemporaryLink = $this->surl.'/espace_emprunteur/securite/'.$oTemporaryLink->generateTemporaryLink($this->clients->id_client);
+        $sTemporaryLink = $this->surl.'/espace_emprunteur/securite/'.$oTemporaryLink->generateTemporaryLink($oClients->id_client);
 
         $aVariables = array(
             'surl'                   => $this->surl,
@@ -3007,10 +3006,10 @@ class ajaxController extends bootstrap
             'link_compte_emprunteur' => $sTemporaryLink,
             'lien_fb'                => $sFacebookURL,
             'lien_tw'                => $sTwitterURL,
-            'prenom'                 => $this->clients->prenom
+            'prenom'                 => $oClients->prenom
         );
 
-        $sRecipient = $this->clients->email;
+        $sRecipient = $oClients->email;
 
         $this->email = $this->loadLib('email');
         $this->email->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
@@ -3024,7 +3023,6 @@ class ajaxController extends bootstrap
             $this->email->addRecipient($sRecipient);
             Mailer::send($this->email, $this->mails_filer, $oMailsText->id_textemail);
         }
-
     }
-
 }
+
