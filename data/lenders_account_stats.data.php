@@ -61,7 +61,7 @@ class lenders_account_stats extends lenders_account_stats_crud
     }
 
     /**
-     * @param int|null $iLendersAccountId unique identifier of the lender
+     * @param int $iLendersAccountId unique identifier of the lender
      * @return array with dates and values of loans and dues
      * @throws Exception when there is no id_lender_account
      */
@@ -125,10 +125,9 @@ class lenders_account_stats extends lenders_account_stats_crud
     }
 
     /**
-     * @param int|null $iLendersAccountId unique identifier of the lender for who the IRR should be calculated
+     * @param int $iLendersAccountId unique identifier of the lender for who the IRR should be calculated
      * @return float with IRR value
-     * @throws Exception when there is no id_lender_account,
-     * when not values are available to be used in the calculation,
+     * @throws Exception when not values are available to be used in the calculation,
      * when the result is not in the accepted range
      */
     public function calculateIRR($iLendersAccountId)
