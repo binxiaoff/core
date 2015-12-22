@@ -2448,6 +2448,8 @@ class dossiersController extends bootstrap
 
     public function _no_remb()
     {
+        ini_set('memory_limit', '256M');
+
         $this->projects               = $this->loadData('projects');
         $this->companies              = $this->loadData('companies');
         $this->clients                = $this->loadData('clients');
