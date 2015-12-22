@@ -230,6 +230,11 @@ class espace_emprunteurController extends Bootstrap
 
     }
 
+    public function _profil2()
+    {
+
+    }
+
     public function _operations()
     {
         $this->aClientsProjects = $this->getProjectsPostFunding();
@@ -414,7 +419,7 @@ class espace_emprunteurController extends Bootstrap
             $aProjectsFunding[ $iKey ]['AverageIR'] = $this->projects->calculateAvgInterestRate($aProject['id_project'], $aProject['project_status']);
 
             $iSumBids                                      = $oBids->getSoldeBid($aProject['id_project']);
-            $aProjectsFunding[ $iKey ]['funding-progress'] = ((1 - (($aProject['amount'] - $iSumBids) / $aProject['amount']) * 100));
+            $aProjectsFunding[ $iKey ]['funding-progress'] = ((1 - ($aProject['amount'] - $iSumBids) / $aProject['amount']) * 100);
         }
 
         return $aProjectsFunding;
