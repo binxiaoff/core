@@ -113,7 +113,7 @@
                                 <?php if ($aProject['funding-progress'] >= 100 && $aProject['date_retrait_full'] <= date('Y-m-d H:i:s')) : ?>
                                     <a class="btn btn-info btn-small popup-link"
                                        href="<?= $this->lurl ?>/thickbox/pop_up_anticipation/<?= (empty($aProject['hash']) === false) ? $aProject['hash'] : $aProject['id_project'] ?>"><?= $this->lng['espace-emprunteur']['bouton-arret-funding'] ?></a>
-                                <?php endif ?>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>"><?= $this->lng['espace-emprunteur']['voir-le-projet'] ?></a>
