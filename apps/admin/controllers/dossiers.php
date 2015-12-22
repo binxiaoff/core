@@ -3709,7 +3709,8 @@ class dossiersController extends bootstrap
         $this->iClientId = $iClientId;
         $this->iProjectId = $oProjects->id_project;
 
-        $this->mails_text->get($this->selectEmailCompletude($oClients), 'lang = "' . $this->language . '" AND type');
+        $sTypeEmail = $this->selectEmailCompletude($oClients);
+        $this->mails_text->get($sTypeEmail, 'lang = "' . $this->language . '" AND type');
     }
 
     public function _completude_preview_iframe()
@@ -3738,7 +3739,8 @@ class dossiersController extends bootstrap
             return;
         }
 
-        $this->mails_text->get($this->selectEmailCompletude($oClients), 'lang = "' . $this->language . '" AND type');
+        $sTypeEmail = $this->selectEmailCompletude($oClients);
+        $this->mails_text->get($sTypeEmail, 'lang = "' . $this->language . '" AND type');
 
         $varMail = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
         $varMail['sujet'] = $this->mails_text->subject;
@@ -3777,7 +3779,8 @@ class dossiersController extends bootstrap
                 return;
             }
 
-            $this->mails_text->get($this->selectEmailCompletude($oClients), 'lang = "' . $this->language . '" AND type');
+            $sTypeEmail = $this->selectEmailCompletude($oClients);
+            $this->mails_text->get($sTypeEmail, 'lang = "' . $this->language . '" AND type');
 
             $varMail = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
             $varMail['sujet'] = htmlentities($this->mails_text->subject, null, 'UTF-8');
@@ -3826,6 +3829,8 @@ class dossiersController extends bootstrap
         $this->settings->get('Téléphone emprunteur', 'type');
         $sBorrowerPhoneNumber = $this->settings->value;
 
+        $oTemporaryLink = $this->loadData('temporary_links_login');
+
         return array(
             'furl'                   => $this->furl,
             'surl'                   => $this->surl,
@@ -3838,7 +3843,7 @@ class dossiersController extends bootstrap
             'lien_fb'                => $lien_fb,
             'lien_tw'                => $lien_tw,
             'lien_stop_relance'      => $this->furl . '/depot_de_dossier/emails/' . $oProjects->hash,
-            'link_compte_emprunteur' => $this->surl . '/espace_emprunteur/securite/' . $oClients->generateTemporaryLink($oClients->id_client)
+            'link_compte_emprunteur' => $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($oClients->id_client)
         );
     }
 
