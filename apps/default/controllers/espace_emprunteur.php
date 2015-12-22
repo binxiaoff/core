@@ -57,8 +57,6 @@ class espace_emprunteurController extends Bootstrap
             $oNow         = new \datetime();
             $oLinkExpires = new \datetime($oTemporary_links->expires);
 
-            var_dump(__LINE__);
-
             if ($oLinkExpires <= $oNow) {
 
                 $this->bLinkExpired = true;
@@ -84,19 +82,17 @@ class espace_emprunteurController extends Bootstrap
                     }
                     if (empty($_POST['secret-response']) || $_POST['secret-response'] == $this->lng['espace-emprunteur']['response']) {
                         $_SESSION['forms']['mdp_question_emprunteur']['errors']['secret-response'] = true;
-
                     }
 
                     if (false === empty($_SESSION['forms']['mdp_question_emprunteur']['errors'])) {
                         $_SESSION['forms']['mdp_question_emprunteur']['values'] = $_POST;
-                        header('Location: ' . $this->lurl . '/espace_emprunteur' . $this->params[0]);
-                        die;
 
                     } else {
 
                         $this->clients->password         = md5($_POST['pass']);
                         $this->clients->secrete_question = $_POST['secret-question'];
                         $this->clients->secrete_reponse  = md5($_POST['secret-response']);
+                        $this->clients->status           = 1;
 
                         $this->clients->update();
                         header('Location: ' . $this->lurl);
@@ -231,6 +227,9 @@ class espace_emprunteurController extends Bootstrap
 
     public function _profil()
     {
+
+        $oProjectStatusHistory = $this->loadData('projects_status_history');
+        $oProjectStatusHistory->addStatus(99, \projects_status::PREP_FUNDING, 23448, $numero_relance = 0, $content = '');
 
     }
 
