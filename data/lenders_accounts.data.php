@@ -334,19 +334,6 @@ class lenders_accounts extends lenders_accounts_crud
         return $result;
     }
 
-    public function isEligibleIFP($iLenderId = null)
-    {
-        if (null === $iLenderId) {
-            $iLenderId = $this->id_lender_account;
-        }
-
-        if ($iLenderId) {
-            return $this->isNaturalPerson($iLenderId) && $this->isFrenchResident($iLenderId);
-        }
-
-        return false;
-    }
-
     public function isFrenchResident($iLenderId = null)
     {
         if (null === $iLenderId) {

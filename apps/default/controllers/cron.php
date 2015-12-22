@@ -362,9 +362,9 @@ class cronController extends bootstrap
                     $aLenders = $this->bids->getLenders($projects['id_project'], array(\bids::STATUS_BID_ACCEPTED));
                     foreach ($aLenders as $aLender) {
                         $iLenderId   = $aLender['id_lender_account'];
-                        $aLenderBids = $this->bids->select('id_lender_account = ' . $iLenderId . ' AND id_project = ' . $projects['id_project'] . ' AND status = ' . \bids::STATUS_BID_ACCEPTED, 'rate*amount DESC');
+                        $aLenderBids = $this->bids->select('id_lender_account = ' . $iLenderId . ' AND id_project = ' . $projects['id_project'] . ' AND status = ' . \bids::STATUS_BID_ACCEPTED, 'rate DESC');
 
-                        if ($this->lenders_accounts->isEligibleIFP($iLenderId)) {
+                        if ($this->lenders_accounts->isNaturalPerson($iLenderId)) {
                             $fLoansLenderSum = 0;
                             $fRate           = 0;
                             $bIFPContract    = true;
