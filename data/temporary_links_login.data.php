@@ -29,5 +29,22 @@ class temporary_links_login extends temporary_links_login_crud
         return $result;
     }
 
+    public function generateTemporaryLink($iClientId)
+    {
+
+        $sToken = md5($iClientId).md5(time());
+
+        $oDateTime =  new \datetime('NOW + 1 week');
+        $sExpiryDateTime = $oDateTime->format('Y-m-d H:i:s');
+
+        $this->id_client = $iClientId;
+        $this->token = $sToken;
+        $this->expires = $sExpiryDateTime;
+        $this->create();
+
+        return $sToken;
+
+    }
+
 
 }

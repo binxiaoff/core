@@ -661,6 +661,22 @@ class dossiersController extends bootstrap
                     if ($this->current_projects_status->status != $_POST['status']) {
                         $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
 
+                        switch ((int)$_POST['status']) {
+                            case \projects_status::PREP_FUNDING:
+                                $aExistingStatus = $this->select('id_project = '.$this->projects->id_project.' AND id_project_status = '.projects_status::PREP_FUNDING);
+                                if (empty($aExistingStatus)) {
+                                    $this->sendEmailBorrowerArea('ouverture-espace-emprunteur');
+                                }
+                                break;
+                            case \projects_status::A_FUNDER:
+                                $aExistingStatus = $this->select('id_project = '.$this->projects->id_project.' AND id_project_status = '.projects_status::A_FUNDER);
+
+                                if (empty($aExistingStatus)) {
+                                    $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
+                                }
+                                break;
+                        }
+
                         // Si statut a funder, en funding ou fundé
                         if (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
                             /////////////////////////////////////
@@ -3901,4 +3917,44 @@ class dossiersController extends bootstrap
             return 'depot-dossier-relance-status-20-1-avec-mdp';
         }
     }
+
+    private function sendEmailBorrowerArea($sTypeEmail)
+    {
+
+        $oMailsText = $this->loadData('mails_text');
+        $oMailsText->get($sTypeEmail, 'lang = "fr" AND type');
+
+        $this->settings->get('Facebook', 'type');
+        $sFacebookURL = $this->settings->value;
+        $this->settings->get('Twitter', 'type');
+        $sTwitterURL = $this->settings->value;
+
+        $oTemporaryLink = $this->loadData('temporary_links_login');
+        $sTemporaryLink = $this->surl.'/espace_emprunteur/securite/'.$oTemporaryLink->generateTemporaryLink($this->clients->id_client);
+
+        $aVariables = array(
+            'surl'                   => $this->surl,
+            'url'                    => $this->url,
+            'link_compte_emprunteur' => $sTemporaryLink,
+            'lien_fb'                => $sFacebookURL,
+            'lien_tw'                => $sTwitterURL,
+            'prenom'                 => $this->clients->prenom
+        );
+
+        $sRecipient = $this->clients->email;
+
+        $this->email->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
+        $this->email->setSubject(stripslashes(utf8_decode($oMailsText->subject)));
+        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($oMailsText->content), $this->tnmp->constructionVariablesServeur($aVariables))));
+
+        if ($this->Config['env'] == 'prod') {
+            Mailer::sendNMP($this->email, $this->mails_filer, $oMailsText->id_textemail, $sRecipient, $aNMPResponse);
+            $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $oMailsText->nmp_secure, $oMailsText->id_nmp, $oMailsText->nmp_unique, $oMailsText->mode);
+        } else {
+            $this->email->addRecipient($sRecipient);
+            Mailer::send($this->email, $this->mails_filer, $oMailsText->id_textemail);
+        }
+
+    }
+
 }

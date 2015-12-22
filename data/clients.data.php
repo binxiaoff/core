@@ -772,27 +772,6 @@ class clients extends clients_crud
     }
 
 
-    public function generateTemporaryLink(temporary_links_login $oTemporaryLink, $iClientId = null)
-    {
-        if (null === $iClientId) {
-            $iClientId = $this->id_client;
-        }
-
-        $sToken = md5($iClientId).md5(time());
-
-        $oDateTime =  new \datetime('NOW + 1 week');
-        $sExpiryDateTime = $oDateTime->format('Y-m-d H:i:s');
-
-        $oTemporaryLink->id_client = $iClientId;
-        $oTemporaryLink->token = $sToken;
-        $oTemporaryLink->expires = $sExpiryDateTime;
-        $oTemporaryLink->create();
-
-        return $sToken;
-
-    }
-
-
     public function getDataForBorrowerOperations(array $aProjects, DateTime $oStartDate, DateTime $oEndDate, $iOperation = null, $iClientId = null)
     {
         if (null === $iClientId) {
