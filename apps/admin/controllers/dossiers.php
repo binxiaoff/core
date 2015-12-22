@@ -661,20 +661,11 @@ class dossiersController extends bootstrap
                     if ($this->current_projects_status->status != $_POST['status']) {
                         $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
 
-                        switch ((int)$_POST['status']) {
-                            case \projects_status::PREP_FUNDING:
-                                $aExistingStatus = $this->select('id_project = '.$this->projects->id_project.' AND id_project_status = '.projects_status::PREP_FUNDING);
-                                if (empty($aExistingStatus)) {
-                                    $this->sendEmailBorrowerArea('ouverture-espace-emprunteur');
-                                }
-                                break;
-                            case \projects_status::A_FUNDER:
-                                $aExistingStatus = $this->select('id_project = '.$this->projects->id_project.' AND id_project_status = '.projects_status::A_FUNDER);
-
-                                if (empty($aExistingStatus)) {
-                                    $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
-                                }
-                                break;
+                        if ((int)$_POST['status'] === \projects_status::PREP_FUNDING) {
+                            $aExistingStatus = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = ' . projects_status::PREP_FUNDING);
+                            if (empty($aExistingStatus)) {
+                                $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
+                            }
                         }
 
                         // Si statut a funder, en funding ou fundé
