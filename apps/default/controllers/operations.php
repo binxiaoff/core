@@ -409,7 +409,7 @@ class operationsController extends bootstrap
                         <td><?= $this->ficelle->formatNumber($t['commission_ht'] / 100) ?></td>
                         <td><?= $this->ficelle->formatNumber($t['commission_tva'] / 100) ?></td>
                         <td><?= $this->ficelle->formatNumber($t['commission_ttc'] / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber($solde / 100, 2) ?></td>
+                        <td><?= $this->ficelle->formatNumber($solde / 100) ?></td>
                         <td></td>
                     </tr>
                     <?

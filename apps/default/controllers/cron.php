@@ -2746,7 +2746,7 @@ class cronController extends bootstrap
                                             $receptions->get($receptions->id_reception, 'id_reception');
                                             $receptions->id_project    = $this->projects->id_project;
                                             $receptions->remb_anticipe = 1;
-                                            $receptions->status_bo     = 2;
+                                            $receptions->status_bo     = 2; // attri auto
                                             $receptions->update();
 
                                             $transactions->id_virement      = $receptions->id_reception;

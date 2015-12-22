@@ -1752,7 +1752,13 @@ class ajaxController extends bootstrap
         $projects_remb           = $this->loadData('projects_remb');
         $projects_status_history = $this->loadData('projects_status_history');
 
-        if (isset($_POST['id_project']) && isset($_POST['id_reception']) && $projects->get($_POST['id_project'], 'id_project') && $receptions->get($_POST['id_reception'], 'id_reception') && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = 6 AND id_prelevement') && $new_transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = 15 AND id_prelevement') == false) {
+        if (
+            isset($_POST['id_project'], $_POST['id_reception'])
+            && $projects->get($_POST['id_project'], 'id_project')
+            && $receptions->get($_POST['id_reception'], 'id_reception')
+            && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = 6 AND id_prelevement')
+            && false === $new_transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = 15 AND id_prelevement')
+        ) {
             $companies->get($projects->id_company, 'id_company');
             $clients->get($companies->id_client_owner, 'id_client');
 

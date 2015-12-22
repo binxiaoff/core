@@ -327,10 +327,8 @@ class transfertsController extends bootstrap
                                     $id_client    = $data[0];
                                     $recouvrement = $data[1];
 
-                                    // recup lender
                                     $this->lenders_accounts->get($id_client, 'id_client_owner');
 
-                                    // recup des echeances non remb
                                     $lEcheances = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND status = 0', 'date_echeance ASC');
 
                                     $recouvrement_restant = $recouvrement;

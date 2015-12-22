@@ -1576,7 +1576,10 @@ class dossiersController extends bootstrap
                 $this->notifications->id_bid     = 0;
                 $this->notifications->create();
 
-                if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM, 'immediatement') == true) {
+                if (
+                    in_array($iStatus, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT))
+                    || $this->clients_gestion_notifications->getNotif($this->clients->id_client, \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM, 'immediatement')
+                ) {
                     $this->clients_gestion_mails_notif->id_client       = $this->clients->id_client;
                     $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM;
                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
