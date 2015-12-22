@@ -228,11 +228,7 @@ class espace_emprunteurController extends Bootstrap
     public function _profil()
     {
 
-        $oProjectStatusHistory = $this->loadData('projects_status_history');
-        $oProjectStatusHistory->addStatus(99, \projects_status::PREP_FUNDING, 23448, $numero_relance = 0, $content = '');
-
     }
-
 
     public function _operations()
     {
