@@ -475,7 +475,7 @@ class cronController extends bootstrap
                         }
                     }
 
-                    $this->create_echeances($projects['id_project']);die;
+                    $this->create_echeances($projects['id_project']);
                     $this->createEcheancesEmprunteur($projects['id_project']);
 
                     $e                      = $this->loadData('clients');
@@ -923,7 +923,6 @@ class cronController extends bootstrap
         $this->lenders_accounts = $this->loadData('lenders_accounts');
 
         // Chargement des librairies
-        $this->remb = $this->loadLib('remb');
         $jo         = $this->loadLib('jours_ouvres');
 
         $this->settings->get('Commission remboursement', 'type');
@@ -1088,7 +1087,7 @@ class cronController extends bootstrap
                     $this->echeanciers->create();
                 }
                 $iTreatedLoanNb ++;
-                $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' .  $iTreatedLoanNb . '/' . $iLoanNbTotal . ' lender loan treated. ' . $k . '/' . count($lEcheanciers) . 'repayment schedule created.');
+                $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' .  $iTreatedLoanNb . '/' . $iLoanNbTotal . ' lender loan treated. ' . $k . ' repayment schedules created.');
             }
         }
     }
@@ -1145,7 +1144,7 @@ class cronController extends bootstrap
 
             $iTreatedEcheancierNb++;
             $oLogger->addRecord(ULogger::INFO,
-                'project : ' . $id_project . ' : borrower  echeance (' . $echeanciers_emprunteur->id_echeanciers_emprunteur . ') has been created. ' . $iTreatedEcheancierNb . '/' . $iEcheancierNbTotal . 'traited');
+                'project : ' . $id_project . ' : borrower  echeance (' . $echeanciers_emprunteur->id_echeancier_emprunteur . ') has been created. ' . $iTreatedEcheancierNb . '/' . $iEcheancierNbTotal . 'traited');
         }
     }
 
