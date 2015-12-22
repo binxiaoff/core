@@ -1261,6 +1261,7 @@ class dossiersController extends bootstrap
                                     $lender     = $this->loadData('lenders_accounts');
                                     $leProject  = $this->loadData('projects');
                                     $laCompanie = $this->loadData('companies');
+                                    $oAcceptedBids = $this->loadData('accepted_bids');
 
                                     // FB
                                     $this->settings->get('Facebook', 'type');
@@ -1276,13 +1277,16 @@ class dossiersController extends bootstrap
                                         // preteur (client)
                                         $preteur->get($lender->id_client_owner, 'id_client');
 
-                                        $this->notifications->type            = 4; // accepté
-                                        $this->notifications->id_lender       = $l['id_lender'];
-                                        $this->notifications->id_project      = $l['id_project'];
-                                        $this->notifications->amount          = $l['amount'];
-                                        $this->notifications->id_bid          = $l['id_bid'];
-                                        $this->notifications->id_notification = $this->notifications->create();
+                                        $aAcceptedBids = $oAcceptedBids->get('id_loan = ' . $l['id_loan']);
 
+                                        foreach ($aAcceptedBids as $aBid) {
+                                            $this->notifications->type            = 4; // accepté
+                                            $this->notifications->id_lender       = $l['id_lender'];
+                                            $this->notifications->id_project      = $l['id_project'];
+                                            $this->notifications->amount          = $aBid['amount'];
+                                            $this->notifications->id_bid          = $aBid['id_bid'];
+                                            $this->notifications->id_notification = $this->notifications->create();
+                                        }
                                         //////// GESTION ALERTES //////////
                                         $this->clients_gestion_mails_notif->id_client       = $lender->id_client_owner;
                                         $this->clients_gestion_mails_notif->id_notif        = 4; // offre acceptée

@@ -144,7 +144,9 @@ class echeanciers extends echeanciers_crud
 				INNER JOIN
 					loans l on l.id_lender = e.id_lender and l.id_loan = e.id_loan
 				INNER JOIN
-					bids b on b.id_bid = l.id_bid
+				    accepted_bids ab ON ab.id_loan = l.id_loan
+				INNER JOIN
+					bids b on b.id_bid = ab.id_bid
 				WHERE
 					e.status = 0
 				AND e.id_lender = $id_lender

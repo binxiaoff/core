@@ -10,10 +10,6 @@ class rootController extends bootstrap
 
     public function _default()
     {
-        $this->settings->get('Commission remboursement', 'type');
-        $commission = $this->settings->value;
-        var_dump($this->loadData('loans')->getRepaymentSchedule($commission, 0.196, 93252));die;
-        //var_dump(\remb::getRepaymentScheduleWithCommission(100, 48, 0.059, $commission));die;
         // Activation du cache
         $this->fireCache();
 
