@@ -71,4 +71,15 @@ class accepted_bids extends accepted_bids_crud
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result, 0, 0)>0);
     }
+
+    public function getAcceptedAmount($iBidId)
+    {
+        $aBids = $this->select('id_bid = ' . $iBidId);
+        $fAmount = 0;
+        foreach ($aBids as $aBid) {
+            $fAmount += $aBid['amount'] / 100;
+        }
+
+        return $fAmount;
+    }
 }

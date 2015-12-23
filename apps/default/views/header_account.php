@@ -195,13 +195,14 @@ if (isset($_SESSION['lexpress']))
                                         // Offre acceptée
                                         elseif ($r['type'] == 4)
                                         {
-
-                                            $this->loans->get($r['id_bid'], 'id_bid');
+                                            $this->bids->get($r['id_bid'], 'id_bid');
+                                            $oAcceptedBids = $this->loadData('accepted_bids');
+                                            $fAmount = $oAcceptedBids->getAcceptedAmount($r['id_bid']);
                                             $this->projects_notifs->get($r['id_project'], 'id_project');
                                             ?>
                                             <b><?= $this->lng['notifications']['offre-acceptee'] ?></b><br />
                                             <div class="content_notif">
-                                                <?= $this->lng['notifications']['offre-acceptee-votre-offre-de-pret-de'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->loans->rate) ?> %</b> <?= $this->lng['notifications']['offre-acceptee-pour-un-montant-de'] ?> <b style="color:#b20066;white-space:nowrap;"><?= number_format($this->loans->amount / 100) ?> €</b> <?= $this->lng['notifications']['offre-acceptee-sur-le-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['offre-acceptee-a-ete-acceptee'] ?>
+                                                <?= $this->lng['notifications']['offre-acceptee-votre-offre-de-pret-de'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate) ?> %</b> <?= $this->lng['notifications']['offre-acceptee-pour-un-montant-de'] ?> <b style="color:#b20066;white-space:nowrap;"><?= number_format($fAmount / 100) ?> €</b> <?= $this->lng['notifications']['offre-acceptee-sur-le-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['offre-acceptee-a-ete-acceptee'] ?>
                                             </div>
                                             <?
                                         }

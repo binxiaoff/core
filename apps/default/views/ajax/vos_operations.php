@@ -97,8 +97,8 @@ $html = '<table class="table vos_operations transactions-history finances" borde
 		<th width="200px"  id="order_bdc" class="narrow-th '.((isset($this->type) && $this->type == 'order_bdc') && (isset($this->order) &&$this->order == "asc")?"asc":"").'" style=" font-weight:bold; padding-left: 0px;">
 
 			<div class="th-wrap" style="top:-3px;width: 200px;   text-transform: none;">
-				<i title="'.$this->lng['preteur-operations-pdf']['info-titre-bon-caisse'].'" class="tooltip-anchor icon-bdc"></i>
-				<div class="title-ope">'.$this->lng['preteur-operations-pdf']['bdc'].'&nbsp;<i class="icon-arrows" style="width:15px;"></i>
+				<i title="'.$this->lng['preteur-operations-pdf']['info-titre-loan-id'].'" class="tooltip-anchor icon-bdc"></i>
+				<div class="title-ope">'.$this->lng['preteur-operations-pdf']['loan-id'].'&nbsp;<i class="icon-arrows" style="width:15px;"></i>
 				</div>
 			</div>
 		</th>

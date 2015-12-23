@@ -1729,7 +1729,11 @@ class ajaxController extends bootstrap
 
         $array_type_transactions = array(
             1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            2  => array(1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'], 2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'], 3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']),
+            2  => array(
+                1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'],
+                2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'],
+                3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']
+            ),
             3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             5  => $this->lng['preteur-operations-vos-operations']['remboursement'],

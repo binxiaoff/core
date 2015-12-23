@@ -7713,8 +7713,6 @@ class cronController extends bootstrap
         ini_set('memory_limit', '4096M');
 
         if (true === $this->startCron('indexation', 60)) {
-
-            $heure_debut               = date("Y-m-d H:i:s");
             $indexage_1jour            = true; // Si true, on n'indexe que les clients avec une date de derniere indexation plus vieille de Xh.
             $heure_derniere_indexation = 24;
             $liste_id_a_forcer         = 0;  // force l'indexation juste pour ces id.  (Ex: 12,1,2), si on veut pas on met 0
@@ -7776,11 +7774,11 @@ class cronController extends bootstrap
                 if ($client_a_indexer) {
                     if ($this->clients->get($clt['id_client'], 'id_client')) {
                         $this->lTrans = $this->transactions->selectTransactionsOp($array_type_transactions, 't.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20)
-							AND t.status = 1
-							AND t.etat = 1
-							AND t.display = 0
-							AND t.id_client = ' . $this->clients->id_client . '
-							AND LEFT(t.date_transaction,10) >= "2013-01-01"', 'id_transaction DESC');
+                            AND t.status = 1
+                            AND t.etat = 1
+                            AND t.display = 0
+                            AND t.id_client = ' . $this->clients->id_client . '
+                            AND LEFT(t.date_transaction,10) >= "2013-01-01"', 'id_transaction DESC');
 
                         $sql = 'DELETE FROM `indexage_vos_operations` WHERE id_client =' . $this->clients->id_client;
                         $this->bdd->query($sql);
@@ -7816,7 +7814,7 @@ class cronController extends bootstrap
                                 $this->indexage_vos_operations->libelle_projet      = $t['title'];
                                 $this->indexage_vos_operations->date_operation      = $t['date_tri'];
                                 $this->indexage_vos_operations->solde               = $t['solde'] * 100;
-                                $this->indexage_vos_operations->montant_operation   = $t['montant'];
+                                $this->indexage_vos_operations->montant_operation   = $t['amount_operation'];
                                 $this->indexage_vos_operations->montant_capital     = $this->echeanciers->capital;
                                 $this->indexage_vos_operations->montant_interet     = $this->echeanciers->interets;
                                 $this->indexage_vos_operations->libelle_prelevement = $libelle_prelevements;
