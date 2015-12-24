@@ -3497,11 +3497,6 @@ class dossiersController extends bootstrap
     //utilisé pour récup les infos affichées dans le cadre
     public function recup_info_remboursement_anticipe($id_project)
     {
-$this->virement_recu = false;
-$this->remb_anticipe_effectue = false;
-$this->phrase_resultat = '';
-$this->montant_restant_du_preteur = 0;
-return;
         $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $this->echeanciers            = $this->loadData('echeanciers');
 
