@@ -58,15 +58,13 @@ class receptions extends receptions_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `receptions` ' . $where;
-
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT COUNT(*) FROM `receptions` ' . $where);
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
     public function exist($id, $field = 'id_reception')
     {
-        $sql    = 'SELECT * FROM `receptions` WHERE ' . $field . '="' . $id . '"';
+        $sql    = 'SELECT * FROM `receptions` WHERE ' . $field . ' = "' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }

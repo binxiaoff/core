@@ -12,147 +12,158 @@ class transfertsController extends bootstrap
 
         $this->menu_admin = 'transferts';
 
-        $this->types_remb = array(0 => '', 1 => 'Remboursement anticipé', 2 => 'Régularisation', 3 => 'Recouvrement');
+        $this->types_remb = array(
+            0 => '',
+            1 => 'Remboursement anticipé',
+            2 => 'Régularisation',
+            3 => 'Recouvrement'
+        );
+        $this->statusVirement = $this->statusPrelevement = array(
+            0 => 'Reçu',
+            1 => 'Attribué manu',
+            2 => 'Attribué auto',
+            3 => 'Rejeté',
+            4 => 'Rejet'
+        );
     }
 
     public function _default()
     {
-        $this->receptions = $this->loadData('receptions');
-
-        $this->lvirements = $this->receptions->select('type = 2 AND status_virement = 1 AND id_project = 0', 'remb ASC,id_reception DESC');
-        $this->statusVirement = array(0 => 'Reçu', 1 => 'Attribué manu', 2 => 'Attribué auto', 3 => 'Rejeté', 4 => 'Rejet');
+        header('Location: /transferts/preteurs');
+        die;
     }
 
-    public function _prelevements()
+    public function _preteurs()
     {
-        $this->receptions = $this->loadData('receptions');
-
-        $this->lprelevements = $this->receptions->select('type = 1 AND status_prelevement = 2', 'id_reception DESC');
-        $this->statusPrelevement = array(0 => 'Reçu', 1 => 'Attribué manu', 2 => 'Attribué auto', 3 => 'Rejeté', 4 => 'Rejet');
+        $this->receptions  = $this->loadData('receptions');
+        $this->aOperations = $this->receptions->select('id_client != 0 AND id_project = 0 AND (type = 1 AND status_prelevement = 2 OR type = 2 AND status_virement = 1)', 'id_reception DESC');
     }
 
-    public function _virements_emprunteurs()
+    public function _emprunteurs()
     {
-        $this->receptions   = $this->loadData('receptions');
-        $this->projects     = $this->loadData('projects');
-        $transactions       = $this->loadData('transactions');
-        $bank_unilend       = $this->loadData('bank_unilend');
-        $companies          = $this->loadData('companies');
+        $this->receptions  = $this->loadData('receptions');
+        $this->aOperations = $this->receptions->select('id_project != 0 AND (type = 1 AND status_prelevement = 2 OR type = 2 AND status_virement = 1)', 'id_reception DESC');
+    }
 
-        $this->settings->get('Recouvrement - commission ht', 'type');
-        $commission_ht = $this->settings->value;
+    public function _non_attribues()
+    {
+        $this->projects    = $this->loadData('projects');
+        $this->receptions  = $this->loadData('receptions');
+        $this->aOperations = $this->receptions->select('id_client = 0 AND id_project = 0 AND type IN (1, 2) AND (type = 1 AND status_prelevement = 2 OR type = 2 AND status_virement = 1)', 'id_reception DESC');
 
-        $this->settings->get('TVA', 'type');
-        $tva = $this->settings->value;
+        if (
+            isset($_POST['id_project'], $_POST['id_reception'])
+            && $this->projects->get($_POST['id_project'])
+            && $this->receptions->get($_POST['id_reception'])
+        ) {
+            $transactions   = $this->loadData('transactions');
+            $bank_unilend   = $this->loadData('bank_unilend');
+            $companies      = $this->loadData('companies');
 
-        if (isset($_POST['id']) && isset($_POST['id_reception'])) {
-            if ($this->projects->get($_POST['id']) && $this->receptions->get($_POST['id_reception'])) {
-                $companies->get($this->projects->id_company, 'id_company');
+            $this->settings->get('Recouvrement - commission ht', 'type');
+            $commission_ht = $this->settings->value;
 
-                if (isset($_POST['montant_edite']) && $_POST['montant_edite'] != "" && $_POST['montant_edite'] > 0) {
-                    $this->receptions->montant = ($_POST['montant_edite'] * 100);
-                }
+            $this->settings->get('TVA', 'type');
+            $tva = $this->settings->value;
+            $companies->get($this->projects->id_company, 'id_company');
 
-                // RA
-                if ($_POST['type_remb'] == 1) {
-                    $this->receptions->motif         = $_POST['motif'];
-                    $this->receptions->id_client     = $companies->id_client_owner;
-                    $this->receptions->id_project    = $_POST['id'];
-                    $this->receptions->remb_anticipe = 1;
-                    $this->receptions->status_bo     = 1;
-                    $this->receptions->type_remb     = 1;
-                    $this->receptions->remb          = 1;
-                    $this->receptions->update();
-
-                    $transactions->id_virement      = $this->receptions->id_reception;
-                    $transactions->id_project       = $this->projects->id_project;
-                    $transactions->montant          = $this->receptions->montant;
-                    $transactions->id_langue        = 'fr';
-                    $transactions->date_transaction = date('Y-m-d H:i:s');
-                    $transactions->status           = 1;
-                    $transactions->etat             = 1;
-                    $transactions->transaction      = 1;
-                    $transactions->type_transaction = 22; // remboursement anticipe
-                    $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                    $transactions->create();
-
-                    $bank_unilend->id_transaction = $transactions->id_transaction;
-                    $bank_unilend->id_project     = $this->projects->id_project;
-                    $bank_unilend->montant        = $this->receptions->montant;
-                    $bank_unilend->type           = 1; // remb emprunteur
-                    $bank_unilend->status         = 0; // chez unilend
-                    $bank_unilend->create();
-                } elseif (in_array($_POST['type_remb'], array(2, 3))) { // 2 Regularisation /  3 recouvrement
-                    $motif      = $_POST['motif'];
-                    $id_project = $_POST['id'];
-
-                    // Regularisation
-                    if ($_POST['type_remb'] == 2) {
-                        $type_remb        = 2;
-                        $type_transaction = 24;
-                        $montant          = $this->receptions->montant;
-                    } else { // Recouvrement
-                        $type_remb        = 3;
-                        $type_transaction = 25;
-
-                        // Montant avec la com + tva (on enregistre le prelevement avec la com et pareille chez unilend)
-                        $montant = ($this->receptions->montant / (1 - ($commission_ht * (1 + $tva))));
-                    }
-
-                    // on met a jour le virement RA
-                    $this->receptions->motif      = $motif;
-                    $this->receptions->id_client  = $companies->id_client_owner;
-                    $this->receptions->id_project = $id_project;
-                    $this->receptions->status_bo  = 1;
-                    $this->receptions->type_remb  = $type_remb;
-                    $this->receptions->remb       = 1;
-                    $this->receptions->update();
-
-                    $receptions                     = $this->loadData('receptions');
-                    $receptions->id_parent          = $this->receptions->id_reception; // fils d'une reception virement
-                    $receptions->motif              = $motif;
-                    $receptions->montant            = $montant;
-                    $receptions->type               = 1; // prelevement
-                    $receptions->type_remb          = $type_remb; // regularisation / recouvrement
-                    $receptions->status_prelevement = 2; // émis
-                    $receptions->status_bo          = 1; // attr manu
-                    $receptions->remb               = 1; // remboursé oui
-                    $receptions->id_client          = $companies->id_client_owner;
-                    $receptions->id_project         = $id_project;
-                    $receptions->ligne              = $this->receptions->ligne;
-                    $receptions->create();
-
-                    $transactions->id_prelevement   = $receptions->id_reception;
-                    $transactions->id_client        = $companies->id_client_owner;
-                    $transactions->montant          = $receptions->montant;
-                    $transactions->id_langue        = 'fr';
-                    $transactions->date_transaction = date('Y-m-d H:i:s');
-                    $transactions->status           = 1;
-                    $transactions->etat             = 1;
-                    $transactions->transaction      = 1;
-                    $transactions->type_transaction = $type_transaction; // Virement de régularisation (remb emprunteur)
-                    $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                    $transactions->create();
-
-                    $bank_unilend->id_transaction = $transactions->id_transaction;
-                    $bank_unilend->id_project     = $this->projects->id_project;
-                    $bank_unilend->montant        = $montant;
-                    $bank_unilend->type           = 1;
-                    $bank_unilend->create();
-
-                    // on met a jour les echeances que pour les regularisations
-                    if ($_POST['type_remb'] == 2) {
-                        $this->updateEcheances($this->projects->id_project, $this->receptions->montant, $this->projects->remb_auto);
-                    }
-                }
-
-                header('Location: ' . $this->lurl . '/transferts/virements_emprunteurs');
-                die;
+            if (false === empty($_POST['montant_edite'])) {
+                $this->receptions->montant = str_replace(array(' ', ','), array('', '.'), $_POST['montant_edite']) * 100;
             }
-        }
 
-        $this->lvirements = $this->receptions->select('type = 2 AND status_virement = 1 AND (type_remb != 0 OR id_client = 0)', 'id_reception DESC');
-        $this->statusVirement = array(0 => 'Reçu', 1 => 'Attribué manu', 2 => 'Attribué auto', 3 => 'Rejeté', 4 => 'Rejet');
+            if ($_POST['type_remb'] === 'remboursement_anticipe') {
+                $this->receptions->motif         = $_POST['motif'];
+                $this->receptions->id_client     = $companies->id_client_owner;
+                $this->receptions->id_project    = $_POST['id_project'];
+                $this->receptions->remb_anticipe = 1;
+                $this->receptions->status_bo     = 1;
+                $this->receptions->type_remb     = 1;
+                $this->receptions->remb          = 1;
+                $this->receptions->update();
+
+                $transactions->id_virement      = $this->receptions->id_reception;
+                $transactions->id_project       = $this->projects->id_project;
+                $transactions->montant          = $this->receptions->montant;
+                $transactions->id_langue        = 'fr';
+                $transactions->date_transaction = date('Y-m-d H:i:s');
+                $transactions->status           = 1;
+                $transactions->etat             = 1;
+                $transactions->transaction      = 1;
+                $transactions->type_transaction = 22; // remboursement anticipe
+                $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                $transactions->create();
+
+                $bank_unilend->id_transaction = $transactions->id_transaction;
+                $bank_unilend->id_project     = $this->projects->id_project;
+                $bank_unilend->montant        = $this->receptions->montant;
+                $bank_unilend->type           = 1; // remb emprunteur
+                $bank_unilend->status         = 0; // chez unilend
+                $bank_unilend->create();
+            } elseif (in_array($_POST['type_remb'], array('regularisation', 'recouvrement'))) {
+                $motif      = nl2br($_POST['motif'], false);
+                $id_project = $_POST['id_project'];
+
+                if ($_POST['type_remb'] === 'regularisation') {
+                    $type_remb        = 2;
+                    $type_transaction = 24;
+                    $montant          = $this->receptions->montant;
+                } else { // Recouvrement
+                    $type_remb        = 3;
+                    $type_transaction = 25;
+
+                    // Montant avec la com + tva (on enregistre le prelevement avec la com et pareille chez unilend)
+                    $montant = ($this->receptions->montant / (1 - ($commission_ht * (1 + $tva))));
+                }
+
+                // on met a jour le virement RA
+                $this->receptions->motif      = $motif;
+                $this->receptions->id_client  = $companies->id_client_owner;
+                $this->receptions->id_project = $id_project;
+                $this->receptions->status_bo  = 1;
+                $this->receptions->type_remb  = $type_remb;
+                $this->receptions->remb       = 1;
+                $this->receptions->update();
+
+                $receptions                     = $this->loadData('receptions');
+                $receptions->id_parent          = $this->receptions->id_reception; // fils d'une reception virement
+                $receptions->motif              = $motif;
+                $receptions->montant            = $montant;
+                $receptions->type               = 1; // prelevement
+                $receptions->type_remb          = $type_remb; // regularisation / recouvrement
+                $receptions->status_prelevement = 2; // émis
+                $receptions->status_bo          = 1; // attr manu
+                $receptions->remb               = 1; // remboursé oui
+                $receptions->id_client          = $companies->id_client_owner;
+                $receptions->id_project         = $id_project;
+                $receptions->ligne              = $this->receptions->ligne;
+                $receptions->create();
+
+                $transactions->id_prelevement   = $receptions->id_reception;
+                $transactions->id_client        = $companies->id_client_owner;
+                $transactions->montant          = $receptions->montant;
+                $transactions->id_langue        = 'fr';
+                $transactions->date_transaction = date('Y-m-d H:i:s');
+                $transactions->status           = 1;
+                $transactions->etat             = 1;
+                $transactions->transaction      = 1;
+                $transactions->type_transaction = $type_transaction; // Virement de régularisation (remb emprunteur)
+                $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                $transactions->create();
+
+                $bank_unilend->id_transaction = $transactions->id_transaction;
+                $bank_unilend->id_project     = $this->projects->id_project;
+                $bank_unilend->montant        = $montant;
+                $bank_unilend->type           = 1;
+                $bank_unilend->create();
+
+                if ($_POST['type_remb'] === 'regularisation') {
+                    $this->updateEcheances($this->projects->id_project, $this->receptions->montant, $this->projects->remb_auto);
+                }
+            }
+
+            header('Location: ' . $this->lurl . '/transferts/non_attribues');
+            die;
+        }
     }
 
     private function updateEcheances($id_project, $montant, $remb_auto)
@@ -205,49 +216,24 @@ class transfertsController extends bootstrap
 
     public function _attribution()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $this->receptions = $this->loadData('receptions');
         $this->receptions->get($this->params[0], 'id_reception');
-
-        if ($this->receptions->id_client != 0) {
-            header('Location: ' . $this->lurl . '/transferts');
-            die;
-        }
     }
 
-    public function _attribution_emprunteur()
+    public function _attribution_preteur()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
-        $this->receptions     = $this->loadData('receptions');
-        $this->receptions->get($this->params[0], 'id_reception');
+        $this->clients   = $this->loadData('clients');
+        $this->companies = $this->loadData('companies');
 
-        if ($this->receptions->id_project != 0) {
-            header('Location: ' . $this->lurl . '/transferts');
-            die;
-        }
-    }
+        if (isset($_POST['id'], $_POST['nom'], $_POST['prenom'], $_POST['email'], $_POST['raison_sociale'], $_POST['id_reception'])) {
+            $_SESSION['controlDoubleAttr'] = md5($_SESSION['user']['id_user']);
 
-    public function _attribution_project()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-
-        $this->receptions = $this->loadData('receptions');
-        $this->receptions->get($this->params[0], 'id_reception');
-
-        if ($this->receptions->id_client != 0) {
-            header('Location: ' . $this->lurl . '/transferts/prelevements');
-            die;
+            $this->lPreteurs = $this->clients->searchPreteursV2($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale']);
+            $this->id_reception = $_POST['id_reception'];
         }
     }
 

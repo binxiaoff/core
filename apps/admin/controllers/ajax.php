@@ -2,16 +2,13 @@
 
 class ajaxController extends bootstrap
 {
-    public function ajaxController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
         $_SESSION['request_url'] = $this->url;
 
-        $this->autoFireHeader = false;
-        $this->autoFireDebug  = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
+        $this->hideDecoration();
     }
 
     /* Fonction AJAX delete image ELEMENT */
@@ -1372,53 +1369,6 @@ class ajaxController extends bootstrap
         }
     }
 
-    public function _attribution()
-    {
-        $this->autoFireView = true;
-
-        $this->clients          = $this->loadData('clients');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->transactions     = $this->loadData('transactions');
-        $this->loans            = $this->loadData('loans');
-        $this->companies        = $this->loadData('companies');
-
-        if (isset($_POST['id']) && isset($_POST['nom']) && isset($_POST['prenom']) && isset($_POST['email']) && isset($_POST['raison_sociale']) && isset($_POST['id_reception'])) {
-            $this->lPreteurs = $this->clients->searchPreteursV2($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale']);
-            $this->id_reception = $_POST['id_reception'];
-        }
-    }
-
-    public function _attribution_project()
-    {
-        $this->autoFireView = true;
-
-        $this->clients          = $this->loadData('clients');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->transactions     = $this->loadData('transactions');
-        $this->loans            = $this->loadData('loans');
-        $this->companies        = $this->loadData('companies');
-        $this->projects         = $this->loadData('projects');
-
-        if (isset($_POST['id']) && isset($_POST['siren']) && isset($_POST['raison_sociale']) && isset($_POST['id_reception'])) {
-            $this->id_reception = $_POST['id_reception'];
-            $this->lProjects = $this->projects->searchDossiers(
-                '',
-                '',
-                '',
-                '',
-                implode(', ', array(\projects_status::REMBOURSEMENT, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)),
-                '',
-                $_POST['siren'],
-                $_POST['id'],
-                $_POST['raison_sociale']
-            );
-
-            if (is_array($this->lProjects)) {
-                array_shift($this->lProjects);
-            }
-        }
-    }
-
     public function _ValidAttribution()
     {
         $this->autoFireView = false;
@@ -1433,9 +1383,15 @@ class ajaxController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
 
+        if (
+            isset($_POST['id_client'], $_POST['id_reception'], $_SESSION['controlDoubleAttr'])
+            && $preteurs->get($_POST['id_client'], 'id_client')
+            && $receptions->get($_POST['id_reception'], 'id_reception')
+            && false === $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND id_virement')
+            && $_SESSION['controlDoubleAttr'] == md5($_SESSION['user']['id_user'])
+        ) {
+            unset($_SESSION['controlDoubleAttr']);
 
-        if (isset($_POST['id_client']) && isset($_POST['id_reception']) && $preteurs->get($_POST['id_client'], 'id_client') && $receptions->get($_POST['id_reception'], 'id_reception') && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND id_virement') == false && isset($_SESSION['controlDOubleAttr']) && $_SESSION['controlDOubleAttr'] == md5($_SESSION['user']['id_user'])) {
-            unset($_SESSION['controlDOubleAttr']);
             $lenders->get($_POST['id_client'], 'id_client_owner');
             $lenders->status = 1;
             $lenders->update();
@@ -1498,12 +1454,6 @@ class ajaxController extends bootstrap
                 //*** ENVOI DU MAIL preteur-alimentation ***//
                 //******************************//
                 $this->mails_text->get('preteur-alimentation-manu', 'lang = "' . $this->language . '" AND type');
-
-                $surl    = $this->surl;
-                $url     = $this->furl;
-                $email   = $preteurs->email;
-                $prenom  = $preteurs->prenom;
-                $message = 'Virement valide';
 
                 $this->settings->get('Facebook', 'type');
                 $lien_fb = $this->settings->value;
