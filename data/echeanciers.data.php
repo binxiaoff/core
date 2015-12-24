@@ -1125,4 +1125,16 @@ class echeanciers extends echeanciers_crud
         $sum    = (int)($this->bdd->result($result, 0, 0));
         return ($sum / 100);
     }
+
+    public function getSumByLoan($iLoanId, $sField, $aConditions = array())
+    {
+        $sql = 'SELECT SUM(' . $sField . ') FROM `echeanciers` WHERE id_loan = ' . $iLoanId;
+
+        foreach($aConditions as $sName => $mValue) {
+            $sql .= ' AND ' . $sName . '=' . '\'' . $mValue . '\'';
+        }
+        $result = $this->bdd->query($sql);
+        $sum    = (int)($this->bdd->result($result, 0, 0));
+        return ($sum / 100);
+    }
 }

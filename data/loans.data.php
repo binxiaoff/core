@@ -359,9 +359,9 @@ class loans extends loans_crud
             $this->get($iLoanId);
         }
 
-        $iMonthNb = $this->getMonthNb();
-        $aBids    = $this->getBids();
-        $aScheduleGrouped = array();
+        $iMonthNb           = $this->getMonthNb();
+        $aBids              = $this->getBids();
+        $aScheduleGrouped   = array();
         $aCommissionGrouped = array();
         foreach ($aBids as $aBid) {
             $aSchedule = \repayment::getRepaymentScheduleWithCommission($aBid['accepted_amount'] / 100, $iMonthNb, $aBid['rate'] / 100, $fCommissionRate, $fVAT);
@@ -399,8 +399,8 @@ class loans extends loans_crud
             $mRecord = $oCache->get($sKey);
 
             if (!$mRecord) {
-                $sQuery   = 'SELECT period FROM projects WHERE id_project = ' . $iProjectId;
-                $rQuery   = $this->bdd->query($sQuery);
+                $sQuery  = 'SELECT period FROM projects WHERE id_project = ' . $iProjectId;
+                $rQuery  = $this->bdd->query($sQuery);
                 $mRecord = (int)$this->bdd->result($rQuery, 0, 0);
                 $oCache->set($sKey, $mRecord);
             }

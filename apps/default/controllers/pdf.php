@@ -59,14 +59,6 @@ class pdfController extends bootstrap
             $this->params = $command->getParameters();
         }
 
-        $this->blocs->get('pdf-contrat', 'slug');
-        $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
-        foreach ($lElements as $b_elt) {
-            $this->elements->get($b_elt['id_element']);
-            $this->bloc_pdf_contrat[$this->elements->slug]           = $b_elt['value'];
-            $this->bloc_pdf_contratComplement[$this->elements->slug] = $b_elt['complement'];
-        }
-
         $this->catchAll = true;
 
         $this->autoFireHeader = false;
@@ -556,15 +548,16 @@ class pdfController extends bootstrap
         $sFilePath      = $this->path . 'protected/pdf/contrat/contrat-' . $this->params[0] . '-' . $this->oLoans->id_loan . '.pdf';
 
         if (false === file_exists($sFilePath)) {
-            $this->GenerateContractHtml();
+            $this->GenerateContractHtml($this->oLoans->id_loan);
             $this->WritePdf($sFilePath, 'contract');
         }
 
         $this->ReadPdf($sFilePath, $sNamePdfClient);
     }
 
-    private function GenerateContractHtml()
+    private function GenerateContractHtml($iLoanId)
     {
+        $this->echeanciers                 = $this->loadData('echeanciers');
         $this->echeanciers                 = $this->loadData('echeanciers');
         $this->companiesEmprunteur         = $this->loadData('companies');
         $this->companies_detailsEmprunteur = $this->loadData('companies_details');
@@ -576,7 +569,7 @@ class pdfController extends bootstrap
 
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
-        if ($this->oLoans->get($this->params[1], 'id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_loan')) {
+        if ($this->oLoans->get($iLoanId, 'id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_loan')) {
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
             $this->projects->get($this->oLoans->id_project, 'id_project');
             $this->companiesEmprunteur->get($this->projects->id_company, 'id_company');
@@ -623,7 +616,33 @@ class pdfController extends bootstrap
 
             $this->dateContrat = $this->dateRemb;
 
-            $this->setDisplay('contrat_html');
+            $this->settings->get('Commission remboursement', 'type');
+            $fCommissionRate = $this->settings->value;
+            $this->settings->get('TVA', 'type');
+            $fVat = $this->settings->value;
+            $this->settings->get('Part unilend', 'type');
+            $fProjectCommisionRate = $this->settings->value;
+
+            $this->aCommissionRepayment  = \repayment::getRepaymentCommission($this->oLoans->amount / 100, $this->projects->period, $fCommissionRate, $fVat);
+            $this->fCommissionRepayment  = $this->aCommissionRepayment['commission_total'];
+            $this->fCommissionProject = $fProjectCommisionRate * $this->oLoans->amount / 100;
+
+            if (\loans::TYPE_CONTRACT_BDC == $this->oLoans->id_type_contract) {
+                $this->blocs->get('pdf-contrat', 'slug');
+                $sTemplate = 'contrat_html';
+            } else {
+                $this->blocs->get('pdf-contrat-ifp', 'slug');
+                $sTemplate = 'contrat_ifp_html';
+            }
+
+            $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
+            foreach ($lElements as $b_elt) {
+                $this->elements->get($b_elt['id_element']);
+                $this->bloc_pdf_contrat[$this->elements->slug]           = $b_elt['value'];
+                $this->bloc_pdf_contratComplement[$this->elements->slug] = $b_elt['complement'];
+            }
+
+            $this->setDisplay($sTemplate);
         } else {
             header('Location: ' . $this->lurl);
         }

@@ -51,7 +51,7 @@ class repayment
      *
      * @return array
      */
-    public static function getRepaymentCommission($fAmount, $iMonthNb, $fCommissionRate, $fVAT = 0.196)
+    public static function getRepaymentCommission($fAmount, $iMonthNb, $fCommissionRate, $fVAT)
     {
         $aSchedule   = self::getRepaymentSchedule($fAmount, $iMonthNb, $fCommissionRate);
         $fCommission = 0;
@@ -83,7 +83,7 @@ class repayment
      *
      * @return array
      */
-    public static function getRepaymentScheduleWithCommission($fAmount, $iMonthNb, $fRate, $fCommissionRate, $fVAT = 0.196)
+    public static function getRepaymentScheduleWithCommission($fAmount, $iMonthNb, $fRate, $fCommissionRate, $fVAT)
     {
         $aCommission = self::getRepaymentCommission($fAmount, $iMonthNb, $fCommissionRate, $fVAT);
         $aSchedule   = self::getRepaymentSchedule($fAmount, $iMonthNb, $fRate);
