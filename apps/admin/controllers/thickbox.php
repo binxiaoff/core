@@ -80,13 +80,13 @@ class thickboxController extends bootstrap
                 foreach ($aProjectHistory as $aHistory) {
                     $oProjectsStatus->get($aHistory['id_project_status']);
                     $this->aHistory[] = array(
-                        'status'           => $oProjectsStatus->label,
-                        'date'             => $aHistory['added'],
-                        'user'             => $oUsers->getName($aHistory['id_user']),
-                        'decision_date'    => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) || '0000-00-00' === $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['date'] ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['date'],
-                        'receiver'         => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['receiver'],
-                        'mail_content'     => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['mail_content'],
-                        'site_content'     => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['site_content'],
+                        'status'        => $oProjectsStatus->label,
+                        'date'          => $aHistory['added'],
+                        'user'          => $oUsers->getName($aHistory['id_user']),
+                        'decision_date' => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) || '0000-00-00' === $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['date'] ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['date'],
+                        'receiver'      => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['receiver'],
+                        'mail_content'  => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['mail_content'],
+                        'site_content'  => empty($this->aProjectHistoryDetails[$aHistory['id_project_status_history']]) ? '' : $this->aProjectHistoryDetails[$aHistory['id_project_status_history']]['site_content'],
                     );
                 }
             }
@@ -150,6 +150,16 @@ class thickboxController extends bootstrap
                 $this->bDecisionDate = true;
                 $this->bReceiver     = true;
                 break;
+        }
+
+        if (in_array($this->params[1], array(\projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
+            $oProjectsLastStatusHistory = $this->loadData('projects_last_status_history');
+            $oProjectsLastStatusHistory->get($this->params[0], 'id_project');
+
+            $oProjectsStatusHistoryDetails = $this->loadData('projects_status_history_details');
+            $oProjectsStatusHistoryDetails->get($oProjectsLastStatusHistory->id_project_status_history, 'id_project_status_history');
+
+            $this->sPreviousReceiver = $oProjectsStatusHistoryDetails->receiver;
         }
     }
 }

@@ -8,7 +8,7 @@
         <?php endif; ?>
         <?php if ($this->bReceiver): ?>
             <label for="receiver"><em>Coordonnées du mandataire judiciaire</em></label><br/><br/>
-            <textarea id="receiver" name="receiver" class="textarea_lng" style="height: 100px;width: 420px;"></textarea><br/><br/>
+            <textarea id="receiver" name="receiver" class="textarea_lng" style="height: 100px;width: 420px;"><?= isset($this->sPreviousReceiver) ? $this->sPreviousReceiver : '' ?></textarea><br/><br/>
         <?php endif; ?>
         <?php if ($this->bAskEmail): ?>
             <em>Envoyer un d'information email aux prêteurs</em><br/><br/>

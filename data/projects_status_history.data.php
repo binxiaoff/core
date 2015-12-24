@@ -177,7 +177,7 @@ class projects_status_history extends projects_status_history_crud
             LEFT JOIN projects_status_history_details pshd ON psh.id_project_status_history = pshd.id_project_status_history
             INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
             WHERE psh.id_project = ' . $id_project . '
-            ORDER BY psh.added ASC';
+            ORDER BY psh.added DESC';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
