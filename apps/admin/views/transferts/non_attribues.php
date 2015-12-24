@@ -30,10 +30,10 @@
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <ul class="breadcrumbs">
-        <li><a href="<?= $this->lurl ?>/transferts">Dépot de fonds</a> -</li>
-        <li>Virements prêteurs</li>
+        <li><a href="<?= $this->lurl ?>/transferts">Dépôt de fonds</a> -</li>
+        <li>Opérations non attribuées</li>
     </ul>
-    <h1>Liste des virements prêteurs</h1>
+    <h1>Liste des mouvements non affectés</h1>
     <table class="tablesorter">
         <thead>
             <tr>

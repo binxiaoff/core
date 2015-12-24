@@ -138,8 +138,6 @@
     });
 
     $('#project-form').submit(function(e) {
-        e.preventDefault();
-
         if ($('[name=type_remb]:checked').val() == undefined) {
             e.preventDefault();
             alert('Vous devez renseigner le type de remboursement');
