@@ -1437,7 +1437,7 @@ class dossiersController extends bootstrap
             'mensualite_e'         => $this->ficelle->formatNumber(($oPaymentSchedule->montant + $oPaymentSchedule->commission + $oPaymentSchedule->tva) / 100),
             'num_dossier'          => $this->projects->id_project,
             'nb_preteurs'          => $this->loans->getNbPreteurs($this->projects->id_project),
-            'date_financement'     => $this->dates->tableauMois['fr'][date('n', $iFundingTime)] . date(' Y', $iFundingTime), // @todo intl
+            'date_financement'     => htmlentities($this->dates->tableauMois['fr'][date('n', $iFundingTime)], null, 'UTF-8') . date(' Y', $iFundingTime), // @todo intl
             'lien_pouvoir'         => $this->furl . '/pdf/pouvoir/' . $this->clients->hash . '/' . $this->projects->id_project,
             'societe_recouvrement' => $this->cab,
             'bic_sfpmei'           => $sBIC,
