@@ -2368,7 +2368,6 @@ class cronController extends bootstrap
                     // destinataire
                     $this->settings->get('Adresse notification aucun virement', 'type');
                     $destinataire = $this->settings->value;
-                    //$destinataire = 'd.courtier@equinoa.com';
                     // Recuperation du modele de mail
                     $this->mails_text->get('notification-aucun-virement', 'lang = "' . $this->language . '" AND type');
 
@@ -2685,20 +2684,12 @@ class cronController extends bootstrap
                                     if ($transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement') == false) {
 
                                         if ($is_remboursement_anticipe) {
-                                            // reception
                                             $receptions->get($receptions->id_reception, 'id_reception');
                                             $receptions->id_project    = $this->projects->id_project;
                                             $receptions->remb_anticipe = 1;
                                             $receptions->status_bo     = 2; // // attri auto
                                             $receptions->update();
 
-                                            // Ajouter nouveau type transaction
-                                            //
-                                            //
-                                            //ALTER TABLE  `receptions` ADD  `remb_anticipe` INT NOT NULL COMMENT  '0 : non / 1 : oui' AFTER  `type`
-                                            //
-                                            //
-                                            // transact
                                             $transactions->id_virement      = $receptions->id_reception;
                                             $transactions->id_project       = $this->projects->id_project;
                                             $transactions->montant          = $receptions->montant;
@@ -2709,9 +2700,8 @@ class cronController extends bootstrap
                                             $transactions->transaction      = 1;
                                             $transactions->type_transaction = 22; // remboursement anticipe
                                             $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                                            $transactions->id_transaction   = $transactions->create();
+                                            $transactions->create();
 
-                                            // bank unilend
                                             $bank_unilend                 = $this->loadData('bank_unilend');
                                             $bank_unilend->id_transaction = $transactions->id_transaction;
                                             $bank_unilend->id_project     = $this->projects->id_project;
@@ -2727,15 +2717,13 @@ class cronController extends bootstrap
                                             // destinataire
                                             $this->settings->get('Adresse notification nouveau remboursement anticipe', 'type');
                                             $destinataire = $this->settings->value;
-                                            //$destinataire = 'd.courtier@equinoa.com';
 
-                                            // Recuperation du modele de mail
                                             $this->mails_text->get('notification-nouveau-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
 
-                                            $surl = $this->surl;
-                                            $url = $this->lurl;
-                                            $id_projet = $this->projects->id_project;
-                                            $montant = ($transactions->montant / 100);
+                                            $surl       = $this->surl;
+                                            $url        = $this->lurl;
+                                            $id_projet  = $this->projects->id_project;
+                                            $montant    = $transactions->montant / 100;
                                             $nom_projet = $this->projects->title;
 
                                             $sujetMail = $this->mails_text->subject;
@@ -2747,7 +2735,6 @@ class cronController extends bootstrap
                                             $exp_name = $this->mails_text->exp_name;
                                             eval("\$exp_name = \"$exp_name\";");
 
-                                            // Nettoyage de printemps
                                             $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                                             $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
@@ -2899,7 +2886,6 @@ class cronController extends bootstrap
     public function _etat_quotidien()
     {
         if (true === $this->startCron('etat_quotidien', 10)) {
-
             if (isset($this->params[0])) {
                 $iTimeStamp = strtotime($this->params[0]);
                 if(false === $iTimeStamp) {
@@ -2912,25 +2898,22 @@ class cronController extends bootstrap
 
             $jour = date('d', $iTimeStamp);
 
-            // si on veut mettre a jour une date on met le jour ici mais attention ca va sauvegarder enbdd et sur l'etat quotidien fait ce matin a 1h du mat
+            // si on veut mettre a jour une date on met le jour ici mais attention ca va sauvegarder en BDD et sur l'etat quotidien fait ce matin a 1h du mat
+            // On recup le nombre de jour dans le mois
             if ($jour == 1) {
-                // On recup le nombre de jour dans le mois
                 $mois = mktime(0, 0, 0, date('m', $iTimeStamp) - 1, 1, date('Y', $iTimeStamp));
             } else {
-                // On recup le nombre de jour dans le mois
                 $mois = mktime(0, 0, 0, date('m', $iTimeStamp), 1, date('Y', $iTimeStamp));
             }
 
-            $nbJours = date("t", $mois);
-            $leMois  = date('m', $mois);
-            $lannee  = date('Y', $mois);
-            //$leJour = $nbJours;
+            $nbJours       = date('t', $mois);
+            $leMois        = date('m', $mois);
+            $lannee        = date('Y', $mois);
             $InfeA         = mktime(0, 0, 0, date('m', $iTimeStamp), date('d', $iTimeStamp), date('Y', $iTimeStamp));
             $lanneeLemois  = date('Y-m', $mois);
             $laDate        = date('d-m-Y', $iTimeStamp);
             $lemoisLannee2 = date('m/Y', $mois);
 
-            // chargement des datas
             $transac                = $this->loadData('transactions');
             $echeanciers            = $this->loadData('echeanciers');
             $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
@@ -2939,50 +2922,21 @@ class cronController extends bootstrap
             $etat_quotidien         = $this->loadData('etat_quotidien');
             $bank_unilend           = $this->loadData('bank_unilend');
 
-            // Les remboursements preteurs
-            $lrembPreteurs = $bank_unilend->sumMontantByDayMonths('type = 2 AND status = 1', $leMois, $lannee);
-
-            // On recup les echeances le jour où ils ont été remb aux preteurs
-            $listEcheances = $bank_unilend->ListEcheancesByDayMonths('type = 2 AND status = 1', $leMois, $lannee);
-
-            // alimentations CB
-            $alimCB = $transac->sumByday(3, $leMois, $lannee);
-
-            // 2 : alimentations virements
-            $alimVirement = $transac->sumByday(4, $leMois, $lannee);
-
-            // 7 : alimentations prelevements
-            $alimPrelevement = $transac->sumByday(7, $leMois, $lannee);
-
-            // 6 : remb Emprunteur (prelevement)
-            $rembEmprunteur = $transac->sumByday(6, $leMois, $lannee);
-
-            // 15 : rejet remb emprunteur
-            $rejetrembEmprunteur = $transac->sumByday(15, $leMois, $lannee);
-
-            // 9 : virement emprunteur (octroi prêt : montant | commissions octoi pret : unilend_montant)
-            $virementEmprunteur = $transac->sumByday(9, $leMois, $lannee);
-
-            // 11 : virement unilend (argent gagné envoyé sur le compte)
-            $virementUnilend = $transac->sumByday(11, $leMois, $lannee);
-
-            // 12 virerment pour l'etat
-            $virementEtat = $transac->sumByday(12, $leMois, $lannee);
-
-            // 8 : retrait preteur
-            $retraitPreteur = $transac->sumByday(8, $leMois, $lannee);
-
-            // 13 regul commission
-            $regulCom = $transac->sumByday(13, $leMois, $lannee);
-
-            // 16 unilend offre bienvenue
-            $offres_bienvenue = $transac->sumByday(16, $leMois, $lannee);
-
-            // 17 unilend offre bienvenue retrait
-            $offres_bienvenue_retrait = $transac->sumByday(17, $leMois, $lannee);
-
-            // 18 unilend offre bienvenue
-            $unilend_bienvenue = $transac->sumByday(18, $leMois, $lannee);
+            $lrembPreteurs            = $bank_unilend->sumMontantByDayMonths('type = 2 AND status = 1', $leMois, $lannee); // Les remboursements preteurs
+            $listEcheances            = $bank_unilend->ListEcheancesByDayMonths('type = 2 AND status = 1', $leMois, $lannee); // On recup les echeances le jour où ils ont été remb aux preteurs
+            $alimCB                   = $transac->sumByday('3', $leMois, $lannee); // alimentations CB
+            $alimVirement             = $transac->sumByday('4', $leMois, $lannee); // 2 : alimentations virements
+            $alimPrelevement          = $transac->sumByday('7', $leMois, $lannee); // 7 : alimentations prelevements
+            $rembEmprunteur           = $transac->sumByday('6, 22', $leMois, $lannee); // 6 : remb Emprunteur (prelevement) - 22 : remboursement anticipé
+            $rejetrembEmprunteur      = $transac->sumByday('15', $leMois, $lannee); // 15 : rejet remb emprunteur
+            $virementEmprunteur       = $transac->sumByday('9', $leMois, $lannee); // 9 : virement emprunteur (octroi prêt : montant | commissions octoi pret : unilend_montant)
+            $virementUnilend          = $transac->sumByday('11', $leMois, $lannee); // 11 : virement unilend (argent gagné envoyé sur le compte)
+            $virementEtat             = $transac->sumByday('12', $leMois, $lannee); // 12 virerment pour l'etat
+            $retraitPreteur           = $transac->sumByday('8', $leMois, $lannee); // 8 : retrait preteur
+            $regulCom                 = $transac->sumByday('13', $leMois, $lannee); // 13 regul commission
+            $offres_bienvenue         = $transac->sumByday('16', $leMois, $lannee); // 16 unilend offre bienvenue
+            $offres_bienvenue_retrait = $transac->sumByday('17', $leMois, $lannee); // 17 unilend offre bienvenue retrait
+            $unilend_bienvenue        = $transac->sumByday('18', $leMois, $lannee); // 18 unilend offre bienvenue
 
             $listDates = array();
             for ($i = 1; $i <= $nbJours; $i++) {
@@ -2990,12 +2944,10 @@ class cronController extends bootstrap
             }
 
             // recup des prelevements permanent
-
             $listPrel = array();
             foreach ($prelevements->select('type_prelevement = 1 AND status > 0 AND type = 1') as $prelev) {
-                $addedXml = strtotime($prelev['added_xml']);
-                $added    = strtotime($prelev['added']);
-
+                $addedXml     = strtotime($prelev['added_xml']);
+                $added        = strtotime($prelev['added']);
                 $dateaddedXml = date('Y-m', $addedXml);
                 $date         = date('Y-m', $added);
                 $i            = 1;
@@ -3006,9 +2958,8 @@ class cronController extends bootstrap
                 // tant que la date de creation n'est pas egale on rajoute les mois entre
                 while ($date != $dateaddedXml) {
                     $newdate = mktime(0, 0, 0, date('m', $added) + $i, date('d', $addedXml), date('Y', $added));
-
-                    $date  = date('Y-m', $newdate);
-                    $added = date('Y-m-d', $newdate) . ' 00:00:00';
+                    $date    = date('Y-m', $newdate);
+                    $added   = date('Y-m-d', $newdate) . ' 00:00:00';
 
                     $listPrel[date('Y-m-d', $newdate)] += $prelev['montant'];
 
@@ -3022,26 +2973,18 @@ class cronController extends bootstrap
             $etat_quotidienOld = $etat_quotidien->getTotauxbyMonth($oldDate);
 
             if ($etat_quotidienOld != false) {
-                $soldeDeLaVeille = $etat_quotidienOld['totalNewsoldeDeLaVeille'];
-                $soldeReel       = $etat_quotidienOld['totalNewSoldeReel'];
-
-                $soldeReel_old = $soldeReel;
-
-                $soldeSFFPME_old = $etat_quotidienOld['totalSoldeSFFPME'];
-
+                $soldeDeLaVeille      = $etat_quotidienOld['totalNewsoldeDeLaVeille'];
+                $soldeReel            = $etat_quotidienOld['totalNewSoldeReel'];
+                $soldeSFFPME_old      = $etat_quotidienOld['totalSoldeSFFPME'];
                 $soldeAdminFiscal_old = $etat_quotidienOld['totalSoldeAdminFiscal'];
-
-                $soldePromotion_old = $etat_quotidienOld['totalSoldePromotion'];
+                $soldePromotion_old   = $etat_quotidienOld['totalSoldePromotion'];
             } else {
                 // Solde theorique
                 $soldeDeLaVeille = 0;
 
                 // solde reel
-                $soldeReel     = 0;
-                $soldeReel_old = 0;
-
-                $soldeSFFPME_old = 0;
-
+                $soldeReel            = 0;
+                $soldeSFFPME_old      = 0;
                 $soldeAdminFiscal_old = 0;
 
                 // soldePromotion
@@ -3049,8 +2992,7 @@ class cronController extends bootstrap
             }
 
             $newsoldeDeLaVeille = $soldeDeLaVeille;
-
-            $soldePromotion = $soldePromotion_old;
+            $soldePromotion     = $soldePromotion_old;
 
             // ecart
             $oldecart = $soldeDeLaVeille - $soldeReel;
@@ -3061,7 +3003,6 @@ class cronController extends bootstrap
             // Solde Admin. Fiscale
             $soldeAdminFiscal = $soldeAdminFiscal_old;
 
-            //$bank_unilend->sumMontant('type ')
             // -- totaux -- //
             $totalAlimCB                              = 0;
             $totalAlimVirement                        = 0;
@@ -3070,6 +3011,17 @@ class cronController extends bootstrap
             $totalVirementEmprunteur                  = 0;
             $totalVirementCommissionUnilendEmprunteur = 0;
             $totalCommission                          = 0;
+            $totalVirementUnilend_bienvenue           = 0;
+            $totalAffectationEchEmpr                  = 0;
+            $totalOffrePromo                          = 0;
+            $totalOctroi_pret                         = 0;
+            $totalCapitalPreteur                      = 0;
+            $totalInteretNetPreteur                   = 0;
+            $totalEcartMouvInternes                   = 0;
+            $totalVirementsOK                         = 0;
+            $totalVirementsAttente                    = 0;
+            $totaladdsommePrelev                      = 0;
+            $totalAdminFiscalVir                      = 0;
 
             // Retenues fiscales
             $totalPrelevements_obligatoires    = 0;
@@ -3094,26 +3046,26 @@ class cronController extends bootstrap
             $totalSoldeAdminFiscal = $soldeAdminFiscal_old;
 
             $tableau = '
-		<style>
-			table th,table td{width:80px;height:20px;border:1px solid black;}
-			table td.dates{text-align:center;}
-			.right{text-align:right;}
-			.center{text-align:center;}
-			.boder-top{border-top:1px solid black;}
-			.boder-bottom{border-bottom:1px solid black;}
-			.boder-left{border-left:1px solid black;}
-			.boder-right{border-right:1px solid black;}
-		</style>
+        <style>
+            table th,table td{width:80px;height:20px;border:1px solid black;}
+            table td.dates{text-align:center;}
+            .right{text-align:right;}
+            .center{text-align:center;}
+            .boder-top{border-top:1px solid black;}
+            .boder-bottom{border-bottom:1px solid black;}
+            .boder-left{border-left:1px solid black;}
+            .boder-right{border-right:1px solid black;}
+        </style>
 
-		<table border="0" cellpadding="0" cellspacing="0" style=" background-color:#fff; font:11px/13px Arial, Helvetica, sans-serif; color:#000;width: 2500px;">
-			<tr>
-				<th colspan="34" style="height:35px;font:italic 18px Arial, Helvetica, sans-serif; text-align:center;">UNILEND</th>
-			</tr>
-			<tr>
-				<th rowspan="2">' . $laDate . '</th>
-				<th colspan="3">Chargements compte prêteurs</th>
-				<th>Chargements offres</th>
-				<th>Echeances<br />Emprunteur</th>
+        <table border="0" cellpadding="0" cellspacing="0" style=" background-color:#fff; font:11px/13px Arial, Helvetica, sans-serif; color:#000;width: 2500px;">
+            <tr>
+                <th colspan="34" style="height:35px;font:italic 18px Arial, Helvetica, sans-serif; text-align:center;">UNILEND</th>
+            </tr>
+            <tr>
+                <th rowspan="2">' . $laDate . '</th>
+                <th colspan="3">Chargements compte prêteurs</th>
+                <th>Chargements offres</th>
+                <th>Echeances<br />Emprunteur</th>
                 <th>Octroi prêt</th>
                 <th>Commissions<br />octroi prêt</th>
                 <th>Commissions<br />restant dû</th>
@@ -3124,19 +3076,16 @@ class cronController extends bootstrap
                 <th colspan="6">Mouvements internes</th>
                 <th colspan="3">Virements</th>
                 <th>Prélèvements</th>
-
-			</tr>
-			<tr>
-
-				<td class="center">Carte<br>bancaire</td>
-				<td class="center">Virement</td>
-				<td class="center">Prélèvement</td>
-				<td class="center">Virement</td>
-				<td class="center">Prélèvement</td>
+            </tr>
+            <tr>
+                <td class="center">Carte<br>bancaire</td>
+                <td class="center">Virement</td>
+                <td class="center">Prélèvement</td>
+                <td class="center">Virement</td>
+                <td class="center">Prélèvement</td>
                 <td class="center">Virement</td>
                 <td class="center">Virement</td>
                 <td class="center">Virement</td>
-
                 <td class="center">Prélèvements<br />obligatoires</td>
                 <td class="center">Retenues à la<br />source</td>
                 <td class="center">CSG</td>
@@ -3149,24 +3098,22 @@ class cronController extends bootstrap
                 <td class="center">Solde<br />théorique</td>
                 <td class="center">Solde<br />réel</td>
                 <td class="center">Ecart<br />global</td>
-				<td class="center">Solde<br />Promotions</td>
-				<td class="center">Solde<br />SFF PME</td>
-				<td class="center">Solde Admin.<br>Fiscale</td>
-
-				<td class="center">Offre promo</td>
+                <td class="center">Solde<br />Promotions</td>
+                <td class="center">Solde<br />SFF PME</td>
+                <td class="center">Solde Admin.<br>Fiscale</td>
+                <td class="center">Offre promo</td>
                 <td class="center">Octroi prêt</td>
                 <td class="center">Retour prêteur<br />(Capital)</td>
                 <td class="center">Retour prêteur<br />(Intérêts nets)</td>
-				<td class="center">Affectation<br />Ech. Empr.</td>
+                <td class="center">Affectation<br />Ech. Empr.</td>
                 <td class="center">Ecart<br />fiscal</td>
-
                 <td class="center">Fichier<br />virements</td>
                 <td class="center">Dont<br />SFF PME</td>
-				<td class="center">Administration<br />Fiscale</td>
+                <td class="center">Administration<br />Fiscale</td>
                 <td class="center">Fichier<br />prélèvements</td>
-			</tr>
-			<tr>
-				<td colspan="18">Début du mois</td>
+            </tr>
+            <tr>
+                <td colspan="18">Début du mois</td>
                 <td class="right">' . $this->ficelle->formatNumber($soldeDeLaVeille) . '</td>
                 <td class="right">' . $this->ficelle->formatNumber($soldeReel) . '</td>
                 <td class="right">' . $this->ficelle->formatNumber($oldecart) . '</td>
@@ -3177,9 +3124,7 @@ class cronController extends bootstrap
             </tr>';
 
             foreach ($listDates as $key => $date) {
-
                 if (strtotime($date . ' 00:00:00') < $InfeA) {
-
                     // sommes des echeance par jour (sans RA)
                     $echangeDate = $echeanciers->getEcheanceByDayAll($date, '1 AND status_ra = 0');
 
@@ -3230,11 +3175,9 @@ class cronController extends bootstrap
                     // Solde promotion
                     $soldePromotion += $unilend_bienvenue[$date]['montant'];  // ajouté le 19/11/2014
                     $soldePromotion -= $offres_bienvenue[$date]['montant'];  // ajouté le 19/11/2014
-
                     $soldePromotion += $offres_bienvenue_retrait[$date]['montant']; // (on ajoute le offres retirées d'un compte) ajouté le 19/11/2014
 
                     $offrePromo = $offres_bienvenue[$date]['montant'] + $offres_bienvenue_retrait[$date]['montant'];
-                    //$offrePromo -= ;
                     // ADD $rejetrembEmprunteur[$date]['montant'] // 22/01/2015
                     // total Mouvements
                     $entrees = ($alimCB[$date]['montant'] + $alimVirement[$date]['montant'] + $alimPrelevement[$date]['montant'] + $rembEmprunteur[$date]['montant'] + $unilend_bienvenue[$date]['montant'] + $rejetrembEmprunteur[$date]['montant']);
@@ -3319,9 +3262,8 @@ class cronController extends bootstrap
                     // prelevements
                     $prelevPonctuel = $prelevements->sum('LEFT(added_xml,10) = "' . $date . '" AND status > 0');
 
-                    if ($listPrel[$date] != false) {
+                    if (false === empty($listPrel[$date])) {
                         $sommePrelev = $prelevPonctuel + $listPrel[$date];
-                        //echo $prelevPonctuel .'<br>';
                     } else {
                         $sommePrelev = $prelevPonctuel;
                     }
@@ -3371,16 +3313,12 @@ class cronController extends bootstrap
                     $totalOctroi_pret += $octroi_pret;
                     $totalCapitalPreteur += $capitalPreteur;
                     $totalInteretNetPreteur += $interetNetPreteur;
-
                     $totalEcartMouvInternes += $ecartMouvInternes;
-
                     $totalVirementsOK += $virementsOK;
 
                     // dont sff pme
                     $totalVirementsAttente += $virementsAttente;
-
                     $totaladdsommePrelev += $sommePrelev;
-
                     $totalAdminFiscalVir += $adminFiscalVir;
 
                     $tableau .= '
@@ -3405,7 +3343,7 @@ class cronController extends bootstrap
                     <td class="right">' . $this->ficelle->formatNumber($sommeMouvements) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($soldeTheorique) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($leSoldeReel) . '</td>
-                    <td class="right">' . $this->ficelle->formatNumber(round($ecartSoldes, 2)) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($ecartSoldes) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($soldePromotion) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($soldeSFFPME) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($soldeAdminFiscal) . '</td>
@@ -3486,7 +3424,7 @@ class cronController extends bootstrap
                 <th class="right">' . $this->ficelle->formatNumber($totalSommeMouvements) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalNewsoldeDeLaVeille) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalNewSoldeReel) . '</th>
-                <th class="right">' . $this->ficelle->formatNumber(round($totalEcartSoldes, 2)) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalEcartSoldes) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalSoldePromotion) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalSoldeSFFPME) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalSoldeAdminFiscal) . '</th>
@@ -3503,92 +3441,42 @@ class cronController extends bootstrap
             </tr>
         </table>';
 
-            $table[1]['name'] = 'totalAlimCB';
-            $table[1]['val']  = $totalAlimCB;
-            $table[2]['name'] = 'totalAlimVirement';
-            $table[2]['val']  = $totalAlimVirement;
-            $table[3]['name'] = 'totalAlimPrelevement';
-            $table[3]['val']  = $totalAlimPrelevement;
-            $table[4]['name'] = 'totalRembEmprunteur';
-            $table[4]['val']  = $totalRembEmprunteur;
-            $table[5]['name'] = 'totalVirementEmprunteur';
-            $table[5]['val']  = $totalVirementEmprunteur;
-            $table[6]['name'] = 'totalVirementCommissionUnilendEmprunteur';
-            $table[6]['val']  = $totalVirementCommissionUnilendEmprunteur;
-            $table[7]['name'] = 'totalCommission';
-            $table[7]['val']  = $totalCommission;
+            $table = array(
+                1  => array('name' => 'totalAlimCB', 'val' => $totalAlimCB),
+                2  => array('name' => 'totalAlimVirement', 'val' => $totalAlimVirement),
+                3  => array('name' => 'totalAlimPrelevement', 'val' => $totalAlimPrelevement),
+                4  => array('name' => 'totalRembEmprunteur', 'val' => $totalRembEmprunteur),
+                5  => array('name' => 'totalVirementEmprunteur', 'val' => $totalVirementEmprunteur),
+                6  => array('name' => 'totalVirementCommissionUnilendEmprunteur', 'val' => $totalVirementCommissionUnilendEmprunteur),
+                7  => array('name' => 'totalCommission', 'val' => $totalCommission),
+                8  => array('name' => 'totalPrelevements_obligatoires', 'val' => $totalPrelevements_obligatoires),
+                9  => array('name' => 'totalRetenues_source', 'val' => $totalRetenues_source),
+                10 => array('name' => 'totalCsg', 'val' => $totalCsg),
+                11 => array('name' => 'totalPrelevements_sociaux', 'val' => $totalPrelevements_sociaux),
+                12 => array('name' => 'totalContributions_additionnelles', 'val' => $totalContributions_additionnelles),
+                13 => array('name' => 'totalPrelevements_solidarite', 'val' => $totalPrelevements_solidarite),
+                14 => array('name' => 'totalCrds', 'val' => $totalCrds),
+                15 => array('name' => 'totalRetraitPreteur', 'val' => $totalRetraitPreteur),
+                16 => array('name' => 'totalSommeMouvements', 'val' => $totalSommeMouvements),
+                17 => array('name' => 'totalNewsoldeDeLaVeille', 'val' => $totalNewsoldeDeLaVeille),
+                18 => array('name' => 'totalNewSoldeReel', 'val' => $totalNewSoldeReel),
+                19 => array('name' => 'totalEcartSoldes', 'val' => $totalEcartSoldes),
+                20 => array('name' => 'totalOctroi_pret', 'val' => $totalOctroi_pret),
+                21 => array('name' => 'totalCapitalPreteur', 'val' => $totalCapitalPreteur),
+                22 => array('name' => 'totalInteretNetPreteur', 'val' => $totalInteretNetPreteur),
+                23 => array('name' => 'totalEcartMouvInternes', 'val' => $totalEcartMouvInternes),
+                24 => array('name' => 'totalVirementsOK', 'val' => $totalVirementsOK),
+                25 => array('name' => 'totalVirementsAttente', 'val' => $totalVirementsAttente),
+                26 => array('name' => 'totaladdsommePrelev', 'val' => $totaladdsommePrelev),
+                27 => array('name' => 'totalSoldeSFFPME', 'val' => $totalSoldeSFFPME),
+                28 => array('name' => 'totalSoldeAdminFiscal', 'val' => $totalSoldeAdminFiscal),
+                29 => array('name' => 'totalAdminFiscalVir', 'val' => $totalAdminFiscalVir),
+                30 => array('name' => 'totalAffectationEchEmpr', 'val' => $totalAffectationEchEmpr),
+                31 => array('name' => 'totalVirementUnilend_bienvenue', 'val' => $totalVirementUnilend_bienvenue),
+                32 => array('name' => 'totalSoldePromotion', 'val' => $totalSoldePromotion),
+                33 => array('name' => 'totalOffrePromo', 'val' => $totalOffrePromo)
+            );
 
-            $table[8]['name']  = 'totalPrelevements_obligatoires';
-            $table[8]['val']   = $totalPrelevements_obligatoires;
-            $table[9]['name']  = 'totalRetenues_source';
-            $table[9]['val']   = $totalRetenues_source;
-            $table[10]['name'] = 'totalCsg';
-            $table[10]['val']  = $totalCsg;
-            $table[11]['name'] = 'totalPrelevements_sociaux';
-            $table[11]['val']  = $totalPrelevements_sociaux;
-            $table[12]['name'] = 'totalContributions_additionnelles';
-            $table[12]['val']  = $totalContributions_additionnelles;
-            $table[13]['name'] = 'totalPrelevements_solidarite';
-            $table[13]['val']  = $totalPrelevements_solidarite;
-            $table[14]['name'] = 'totalCrds';
-            $table[14]['val']  = $totalCrds;
-
-            $table[15]['name'] = 'totalRetraitPreteur';
-            $table[15]['val']  = $totalRetraitPreteur;
-            $table[16]['name'] = 'totalSommeMouvements';
-            $table[16]['val']  = $totalSommeMouvements;
-            $table[17]['name'] = 'totalNewsoldeDeLaVeille';
-            //$table[17]['val'] = $totalNewsoldeDeLaVeille-$soldeDeLaVeille;
-            $table[17]['val']  = $totalNewsoldeDeLaVeille;
-            $table[18]['name'] = 'totalNewSoldeReel';
-            //$table[18]['val'] = $totalNewSoldeReel-$soldeReel_old;
-            $table[18]['val']  = $totalNewSoldeReel;
-            $table[19]['name'] = 'totalEcartSoldes';
-            $table[19]['val']  = $totalEcartSoldes;
-
-            $table[20]['name'] = 'totalOctroi_pret';
-            $table[20]['val']  = $totalOctroi_pret;
-
-            $table[21]['name'] = 'totalCapitalPreteur';
-            $table[21]['val']  = $totalCapitalPreteur;
-            $table[22]['name'] = 'totalInteretNetPreteur';
-            $table[22]['val']  = $totalInteretNetPreteur;
-            $table[23]['name'] = 'totalEcartMouvInternes';
-            $table[23]['val']  = $totalEcartMouvInternes;
-
-            $table[24]['name'] = 'totalVirementsOK';
-            $table[24]['val']  = $totalVirementsOK;
-            $table[25]['name'] = 'totalVirementsAttente';
-            $table[25]['val']  = $totalVirementsAttente;
-            $table[26]['name'] = 'totaladdsommePrelev';
-            $table[26]['val']  = $totaladdsommePrelev;
-
-            // Solde SFF PME
-            $table[27]['name'] = 'totalSoldeSFFPME';
-            $table[27]['val']  = $totalSoldeSFFPME;
-            //$table[27]['val'] = $totalSoldeSFFPME-$soldeSFFPME_old;
-            // Solde Admin. Fiscale
-            $table[28]['name'] = 'totalSoldeAdminFiscal';
-            //$table[28]['val'] = $totalSoldeAdminFiscal-$soldeAdminFiscal_old;
-            $table[28]['val'] = $totalSoldeAdminFiscal;
-
-            // Solde Admin. Fiscale (virement)
-            $table[29]['name'] = 'totalAdminFiscalVir';
-            $table[29]['val']  = $totalAdminFiscalVir;
-
-            $table[30]['name'] = 'totalAffectationEchEmpr';
-            $table[30]['val']  = $totalAffectationEchEmpr;
-
-            $table[31]['name'] = 'totalVirementUnilend_bienvenue';
-            $table[31]['val']  = $totalVirementUnilend_bienvenue;
-
-            $table[32]['name'] = 'totalSoldePromotion';
-            $table[32]['val']  = $totalSoldePromotion;
-
-            $table[33]['name'] = 'totalOffrePromo';
-            $table[33]['val']  = $totalOffrePromo;
-
-            // create sav solde
             $etat_quotidien->createEtat_quotidient($table, $leMois, $lannee);
 
             // on recup toataux du mois de decembre de l'année precedente
@@ -3597,26 +3485,20 @@ class cronController extends bootstrap
             $etat_quotidienOld = $etat_quotidien->getTotauxbyMonth($oldDate);
 
             if ($etat_quotidienOld != false) {
-                $soldeDeLaVeille = $etat_quotidienOld['totalNewsoldeDeLaVeille'];
-                $soldeReel       = $etat_quotidienOld['totalNewSoldeReel'];
-
-                $soldeSFFPME_old = $etat_quotidienOld['totalSoldeSFFPME'];
-
+                $soldeDeLaVeille      = $etat_quotidienOld['totalNewsoldeDeLaVeille'];
+                $soldeReel            = $etat_quotidienOld['totalNewSoldeReel'];
+                $soldeSFFPME_old      = $etat_quotidienOld['totalSoldeSFFPME'];
                 $soldeAdminFiscal_old = $etat_quotidienOld['totalSoldeAdminFiscal'];
-
-                $soldePromotion_old = $etat_quotidienOld['totalSoldePromotion'];
+                $soldePromotion_old   = $etat_quotidienOld['totalSoldePromotion'];
             } else {
                 // Solde theorique
                 $soldeDeLaVeille = 0;
 
                 // solde reel
-                $soldeReel = 0;
-
-                $soldeSFFPME_old = 0;
-
+                $soldeReel            = 0;
+                $soldeSFFPME_old      = 0;
                 $soldeAdminFiscal_old = 0;
-
-                $soldePromotion_old = 0;
+                $soldePromotion_old   = 0;
             }
 
             // ecart
@@ -3953,8 +3835,7 @@ class cronController extends bootstrap
             // destinataire
             $this->settings->get('Adresse notification etat quotidien', 'type');
             $destinataire = $this->settings->value;
-            //$destinataire = 'd.courtier@equinoa.com';
-            // Recuperation du modele de mail
+
             $this->mails_text->get('notification-etat-quotidien', 'lang = "' . $this->language . '" AND type');
 
             $surl = $this->surl;
@@ -3969,7 +3850,6 @@ class cronController extends bootstrap
             $exp_name = $this->mails_text->exp_name;
             eval("\$exp_name = \"$exp_name\";");
 
-            // Nettoyage de printemps
             $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
             $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
@@ -4361,7 +4241,6 @@ class cronController extends bootstrap
             //*** ENVOI DU MAIL ETAT FISCAL + echeances mois ***//
             //************************************//
             // destinataire
-            //$destinataire = 'd.courtier@equinoa.com';
             // Recuperation du modele de mail
             $this->mails_text->get('notification-etat-fiscal', 'lang = "' . $this->language . '" AND type');
 
@@ -4387,7 +4266,6 @@ class cronController extends bootstrap
             //$this->email->attachFromString($csv,'echeances_'.date('Y-m-d').'.csv');
 
             if ($this->Config['env'] == 'prod') {
-                //$this->email->addRecipient('d.courtier@equinoa.com');
                 $this->settings->get('Adresse notification etat fiscal', 'type');
                 $this->email->addRecipient($this->settings->value);
             } else {
@@ -5550,7 +5428,6 @@ class cronController extends bootstrap
                             $this->bank_lines->amount            = $response['payment']['amount'];
                             $this->bank_lines->create();
 
-                            $to      = 'd.courtier@relance.fr';
                             $subject = '[Alerte] BACK PAYLINE Transaction approved';
                             $message = '
 						<html>
