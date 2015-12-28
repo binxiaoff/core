@@ -442,6 +442,13 @@ class transactions extends transactions_crud
         $resultat = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($resultat)) {
+            if (false === isset($result[$record['jour']])) {
+                $result[$record['jour']] = array(
+                    'montant'         => 0,
+                    'montant_unilend' => 0,
+                    'montant_etat'    => 0
+                );
+            }
             $result[$record['jour']]['montant'] += $record['montant'];
             $result[$record['jour']]['montant_unilend'] += $record['montant_unilend'];
             $result[$record['jour']]['montant_etat'] = $record['montant_etat'];
@@ -449,9 +456,9 @@ class transactions extends transactions_crud
 
         // on affiche chaque jours du mois
         foreach ($listDates as $d) {
-            $lresult[$d]['montant']         = ($result[$d]['montant'] != false ? $result[$d]['montant'] : '0');
-            $lresult[$d]['montant_unilend'] = ($result[$d]['montant_unilend'] != false ? $result[$d]['montant_unilend'] : '0');
-            $lresult[$d]['montant_etat']    = ($result[$d]['montant_etat'] != false ? $result[$d]['montant_etat'] : '0');
+            $lresult[$d]['montant']         = empty($result[$d]['montant']) ? '0' : $result[$d]['montant'];
+            $lresult[$d]['montant_unilend'] = empty($result[$d]['montant_unilend']) ? '0' : $result[$d]['montant_unilend'];
+            $lresult[$d]['montant_etat']    = empty($result[$d]['montant_etat']) ? '0' : $result[$d]['montant_etat'];
 
         }
 
