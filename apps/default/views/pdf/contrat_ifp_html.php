@@ -11,39 +11,138 @@
     <!-- Shell -->
     <div class="shell">
         <div>
+            <h3>PRINCIPALES CARACTERISTIQUES DU CONTRAT DE PRET</h3>
+            <div class="list">
+                <ul>
+                    <li>
+                        <div class="col-long">
+                            Montant total emprunté :
+                        </div>
+                        <div class="col-small">
+                            <?= $this->ficelle->formatNumber($this->oLoans->amount / 100) ?>&nbsp;&euro;
+                        </div>
+                        <div class="cl">&nbsp;</div>
+                        <br/>
+                    </li>
+                    <li>
+                        <div class="col-long">
+                            Taux d'intérêt annuel :
+                        </div>
+                        <div class="col-small">
+                            <?= $this->ficelle->formatNumber($this->oLoans->rate) ?>&nbsp;%
+                        </div>
+                        <div class="cl">&nbsp;</div>
+                    </li>
+                    <li>
+                        <div class="col-long">
+                            Montant total des intérêts :
+                        </div>
+                        <div class="col-small">
+                            <?= $this->ficelle->formatNumber($this->fInterestTotal) ?>&nbsp;&euro;
+                        </div>
+                        <div class="cl">&nbsp;</div>
+                    </li>
+                    <li>
+                        <div class="col-long">
+                            Montant de l’échéance (capital et intérêts, hors commission Unilend) :
+                        </div>
+                        <div class="col-small">
+                            <?= $this->ficelle->formatNumber($this->lRemb[0]['montant'] / 100) ?>&nbsp;&euro;
+                        </div>
+                        <div class="cl">&nbsp;</div>
+                    </li>
+                    <li>
+                        <div class="col-long">
+                            Date de création :
+                        </div>
+                        <div class="col-small">
+                            <?= $this->dateRemb ?>
+                        </div>
+                        <div class="cl">&nbsp;</div>
+                    </li>
+                    <li>
+                        <div class="col-long">
+                            Date d'échéance :
+                        </div>
+                        <div class="col-small">
+                            <?= date('d/m/Y', strtotime($this->dateLastEcheance)) ?>
+                        </div>
+                        <div class="cl">&nbsp;</div>
+                        <br/>
+                    </li>
+                    <li>
+                        Modalités d’amortissement : <?= $this->bloc_pdf_contrat['modalites-amortissement'] ?>
+                        <br/>
+                    </li>
+                    <li>
+                        <div class="col-long">
+                            Coût total du prêt pour l’Emprunteur :
+                        </div>
+                        <div class="col-small">
+                            <?= $this->ficelle->formatNumber($this->fCommissionRepayment + $this->fCommissionProject + $this->fInterestTotal) ?>&nbsp;&euro;
+                        </div>
+                        <div class="cl">&nbsp;</div>
+                        <br/>
+                    </li>
+                    <li>
+                        Conditions de mise à disposition des fonds : <?= $this->bloc_pdf_contrat['conditions-de-mise-a-disposition-des-fonds'] ?> <br/>
+                    </li>
+                </ul>
+            </div>
+
             <h3><?= $this->bloc_pdf_contrat['titre'] ?> - #<?= $this->oLoans->id_loan ?></h3>
             <h5>Désignation de l'Emprunteur</h5>
             <div class="list">
                 <ul>
-                    <li>Raison sociale
+                    <li>
+                        <div class="col-long">Raison sociale</div>
                         <div class="col-small"><?= $this->companiesEmprunteur->name ?></div>
+                        <div class="cl">&nbsp;</div>
                     </li>
-                    <li>Forme juridique
+                    <li>
+                        <div class="col-long">Forme juridique</div>
                         <div class="col-small"><?= $this->companiesEmprunteur->forme ?></div>
+                        <div class="cl">&nbsp;</div>
                     </li>
-                    <li>Capital social
+                    <li>
+                        <div class="col-long">Capital social</div>
                         <div class="col-small"><?= (0 < $this->companiesEmprunteur->capital) ? $this->ficelle->formatNumber($this->companiesEmprunteur->capital) : 0 ?>&nbsp;&euro;</div>
+                        <div class="cl">&nbsp;</div>
                     </li>
-                    <li>Adresse du siège social
+                    <li>
+                        <div class="col-long">Adresse du siège social</div>
                         <div class="col-small"><?= $this->companiesEmprunteur->adresse1 ?></div>
+                        <div class="cl">&nbsp;</div>
                     </li>
-                    <li>Code postal
+                    <li>
+                        <div class="col-long">Code postal</div>
                         <div class="col-small"><?= $this->companiesEmprunteur->zip ?></div>
+                        <div class="cl">&nbsp;</div>
                     </li>
-                    <li>Ville
+                    <li>
+                        <div class="col-long">Ville</div>
                         <div class="col-small"><?= $this->companiesEmprunteur->city ?></div>
+                        <div class="cl">&nbsp;</div>
                     </li>
-                    <li>Tribunal de commerce
+                    <li>
+                        <div class="col-long">Tribunal de commerce</div>
                         <div class="col-small"><?= $this->companiesEmprunteur->tribunal_com ?></div>
+                        <div class="cl">&nbsp;</div>
                     </li>
-                    <li>R.C.S.
+                    <li>
+                        <div class="col-long">R.C.S.</div>
                         <div class="col-small"><?= $this->companiesEmprunteur->siren ?></div>
+                        <div class="cl">&nbsp;</div>
                     </li>
-                    <li>Activité
+                    <li>
+                        <div class="col-long">Activité</div>
                         <div class="col-small"><?= $this->companiesEmprunteur->activite ?></div>
+                        <div class="cl">&nbsp;</div>
                     </li>
-                    <li>Lieu d'exploitation
+                    <li>
+                        <div class="col-long">Lieu d'exploitation</div>
                         <div class="col-small"><?= $this->companiesEmprunteur->lieu_exploi ?></div>
+                        <div class="cl">&nbsp;</div>
                     </li>
                 </ul>
             </div>
@@ -105,7 +204,7 @@
                 <p>En présence de :</p>
                 <?= $this->bloc_pdf_contrat['description-unilend'] ?>
             </div>
-            <h3>INFORMATION PRECONTRACTUELLE</h3>
+            <h3>RECONNAISSANCE D’INFORMATION PRECONTRACTUELLE</h3>
             <div><?= $this->bloc_pdf_contrat['information-precontractuelle'] ?></div>
             <h3>CARACTERISTIQUES DU PROJET</h3>
             <div>
@@ -117,7 +216,7 @@
                 <ul>
                     <li>
                         <div class="col-long">
-                            Montant total :
+                            Montant total emprunté :
                         </div>
                         <div class="col-small">
                             <?= $this->ficelle->formatNumber($this->oLoans->amount / 100) ?>&nbsp;&euro;
@@ -139,7 +238,16 @@
                             Montant total des intérêts :
                         </div>
                         <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->echeanciers->getSumByLoan($this->oLoans->id_loan, 'interets')) ?>&nbsp;&euro;
+                            <?= $this->ficelle->formatNumber($this->fInterestTotal) ?>&nbsp;&euro;
+                        </div>
+                        <div class="cl">&nbsp;</div>
+                    </li>
+                    <li>
+                        <div class="col-long">
+                            Montant de l’échéance (capital et intérêts, hors commission Unilend) :
+                        </div>
+                        <div class="col-small">
+                            <?= $this->ficelle->formatNumber($this->lRemb[0]['montant'] / 100) ?>&nbsp;&euro;
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
@@ -171,22 +279,21 @@
                             Coût total du prêt pour l’Emprunteur :
                         </div>
                         <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->fCommissionRepayment + $this->fCommissionProject) ?>&nbsp;&euro;
+                            <?= $this->ficelle->formatNumber($this->fCommissionRepayment + $this->fCommissionProject + $this->echeanciers->getSumByLoan($this->oLoans->id_loan, 'interets')) ?>&nbsp;&euro;
                         </div>
                         <div class="cl">&nbsp;</div>
                         <br/>
                     </li>
                     <li>
-                        Conditions de mise à disposition des fonds :<?= $this->bloc_pdf_contrat['conditions-de-mise-a-disposition-des-fonds'] ?> <br/>
-                    </li>
-                    <li>
-                        La signature du contrat de prêt engage l'Emprunteur, en contrepartie des sommes remises ce jour,
-                        à rembourser au Prêteur la somme de <?= $this->ficelle->formatNumber($this->oLoans->amount / 100) ?>&nbsp;&euro;
-                        Assortie des intérêts à <?= $this->ficelle->formatNumber($this->oLoans->rate) ?> % selon l'échéancier annexé aux présentes.
-                        <br/>
-                        <?= $this->bloc_pdf_contrat['legitimite'] ?>
+                        Conditions de mise à disposition des fonds : <?= $this->bloc_pdf_contrat['conditions-de-mise-a-disposition-des-fonds'] ?> <br/>
                     </li>
                 </ul>
+                <p>
+                    La signature du contrat de prêt engage l'Emprunteur, en contrepartie des sommes remises ce jour,
+                    à rembourser au Prêteur la somme de <?= $this->ficelle->formatNumber($this->oLoans->amount / 100) ?>&nbsp;&euro;
+                    assortie des intérêts à <?= $this->ficelle->formatNumber($this->oLoans->rate) ?> % selon l'échéancier annexé aux présentes.
+                </p>
+                <p><?= $this->bloc_pdf_contrat['legitimite'] ?></p>
             </div>
         </div>
         <div>
@@ -257,11 +364,9 @@
             <br>
             <br>
             <br>
-            <br>
-            <br>
             <p>Fait à Paris, le <?= date('d/m/Y') ?></p>
-            <p>Signé par l'EmprunteurReprésenté par SFF PME</p>
-            <p>Signé par le PrêteurReprésenté par SFF PME</p>
+            <p>Signé par l'Emprunteur Représenté par SFF PME</p>
+            <p>Signé par le Prêteur Représenté par SFF PME</p>
         </div>
         <!-- End Page Break -->
 
@@ -272,11 +377,11 @@
             <div class="dates-table">
                 <table width="100%" cellspacing="0" cellpadding="0">
                     <tr>
-                        <th valign="bottom"><?= $this->bloc_pdf_contrat['date'] ?></th>
-                        <th valign="bottom"><?= $this->bloc_pdf_contrat['capital'] ?></th>
-                        <th valign="bottom"><?= $this->bloc_pdf_contrat['interet'] ?></th>
-                        <th valign="bottom"><?= $this->bloc_pdf_contrat['total'] ?></th>
-                        <th valign="bottom"><?= $this->bloc_pdf_contrat['capital-restant'] ?></th>
+                        <th valign="bottom">DATE</th>
+                        <th valign="bottom">CAPITAL</th>
+                        <th valign="bottom">INTERETS</th>
+                        <th valign="bottom">TOTAL</th>
+                        <th valign="bottom">CAPITAL RESTANT DÛ</th>
                     </tr>
                     <?php
                     $capRestant = $this->capital;

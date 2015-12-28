@@ -1072,7 +1072,7 @@ class cronController extends bootstrap
                     $this->echeanciers->ordre                        = $k;
                     $this->echeanciers->montant                      = $e['repayment'] * 100;
                     $this->echeanciers->capital                      = $e['capital'] * 100;
-                    $this->echeanciers->interets                     = $e['capital'] * 100;
+                    $this->echeanciers->interets                     = $e['interest'] * 100;
                     $this->echeanciers->commission                   = $e['commission'] * 100;
                     $this->echeanciers->tva                          = $e['vat_amount'] * 100;
                     $this->echeanciers->prelevements_obligatoires    = $montant_prelevements_obligatoires;
