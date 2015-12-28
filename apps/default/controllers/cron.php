@@ -5400,7 +5400,6 @@ class cronController extends bootstrap
             $lProjets = $projects->selectProjectsByStatus('50');
 
             $xml = '<?xml version="1.0" encoding="UTF-8"?>';
-            $xml .= '<partenaire>';
 
             foreach ($lProjets as $p) {
                 $companies->get($p['id_company'], 'id_company');
@@ -5425,19 +5424,19 @@ class cronController extends bootstrap
                 $xml .= '<type_porteur_projet>ENT</type_porteur_projet>';
                 $xml .= '<qualif_ESS>NON</qualif_ESS>';
                 $xml .= '<code_postal>' . $companies->zip . '</code_postal>'; ////////////////////////////////////////
-                $xml .= '<ville><![CDATA["' . utf8_encode($companies->city) . '"]]></ville>';
-                $xml .= '<titre><![CDATA["' . $p['title'] . '"]]></titre>';
+                $xml .= '<ville>'. $companies->city .'></ville>';
+                $xml .= '<titre>' . $p['title'] . '</titre>';
                 $xml .= '<description><![CDATA["' . $p['nature_project'] . '"]]></description>';
-                $xml .= '<url><![CDATA["' . $this->lurl . '/projects/detail/' . $p['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent"]]></url>';
-                $xml .= '<url_photo><![CDATA["' . $this->surl . '/images/dyn/projets/169/' . $p['photo_projet'] . '"]]></url_photo>';
+                $xml .= '<url>' . $this->lurl . '/projects/detail/' . $p['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent</url>';
+                $xml .= '<url_photo>' . $this->surl . '/images/dyn/projets/169/' . $p['photo_projet'] . '</url_photo>';
                 $xml .= '<date_debut_collecte>' . $p['date_publication'] . '</date_debut_collecte>';
                 $xml .= '<date_fin_collecte>' . $p['date_retrait'] . '</date_fin_collecte>';
                 $xml .= '<montant_recherche>' . $p['amount'] . '</montant_recherche>';
                 $xml .= '<montant_collecte>' . $this->ficelle->formatNumber($monantRecolt, 0) . '</montant_collecte>';
                 $xml .= '</projet>';
             }
-            $xml .= '</partenaire>';
             file_put_contents($this->spath . 'fichiers/045.xml', $xml);
+            file_put_contents($this->spath . 'fichiers/045_historique.xml', $xml, FILE_APPEND);
             $this->stopCron();
         }
         die;
