@@ -718,7 +718,7 @@ class cronController extends bootstrap
                         $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
                         $this->email->setHTMLBody(stripslashes(strtr($this->mails_text->content), $tabVars));
 
-                        if ($oClient->status == 1 && in_array($oClient->id_client, array(15112, 24996, 31346, 17865, 8285, 15416, 9364, 13185, 22418))) {
+                        if ($oClient->status == 1 ) {
                             if ($this->Config['env'] == 'prod') {
                                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $oClient->email, $tabFiler);
                                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
