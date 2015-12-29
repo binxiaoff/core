@@ -586,6 +586,7 @@ class pdfController extends bootstrap
         $this->clients_adresses            = $this->loadData('clients_adresses');
         $this->oLoans                      = $oLoans;
         $this->clients                     = $oClients;
+        $this->projects                    = $oProjects;
 
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
         $this->companiesEmprunteur->get($oProjects->id_company, 'id_company');
