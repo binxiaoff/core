@@ -508,7 +508,8 @@ class pdfController extends bootstrap
         }
 
         $this->taux             = (0 < $montantBas) ? ($montantHaut / $montantBas) : 0;
-        $this->nbLoans          = $this->oLoans->counter('id_project = ' . $this->projects->id_project);
+        $this->nbLoansBDC       = $this->oLoans->counter('id_type_contract = 1 AND id_project = ' . $this->projects->id_project);
+        $this->nbLoansIFP       = $this->oLoans->counter('id_type_contract = 2 AND id_project = ' . $this->projects->id_project);
         $this->echeanceEmprun   = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project . ' AND ordre = 1');
         $this->rembByMonth      = $this->echeanciers->getMontantRembEmprunteur($this->echeanceEmprun[0]['montant'], $this->echeanceEmprun[0]['commission'], $this->echeanceEmprun[0]['tva']);
         $this->rembByMonth      = ($this->rembByMonth / 100);
