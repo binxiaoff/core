@@ -622,7 +622,6 @@ class cronController extends bootstrap
                         $iNumberOfLoansForLender  = count($aLoansOfLender);
                         $iSumLoansOfLender        = ($this->loans->sum('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, 'amount')/100);
                         $iAvgInterestRateOfLender = $this->loans->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $this->projects->id_project);
-                        $iNumberOfPayments        = $oPaymentSchedule->counter('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account);
 
                         if ($iNumberOfLoansForLender > 1) {
                             $sAcceptedOffers            = 'vos offres ont &eacute;t&eacute; accept&eacute;es';
@@ -648,7 +647,7 @@ class cronController extends bootstrap
                         if ($bLenderIsNaturalPerson && $iSumLoansOfLender <= 1000) {
 
                             $sLoansDetails .= 'Nous sommes heureux de vous annoncer que '.$sOffers.' de prêt pour un montant total de '.$iSumLoansOfLender.' euros
-                                                à '.$this->ficelle->formatNumber($iAvgInterestRateOfLender) .' &percnt; pendant ' . $iNumberOfPayments . ' mois
+                                                à '.$this->ficelle->formatNumber($iAvgInterestRateOfLender) .' &percnt; pendant ' . $this->projects->period . ' mois
                                                 '.$sDoes.' partie des meilleures offres s&eacute;lectionn&eacute;es. <br>';
 
 
@@ -678,7 +677,7 @@ class cronController extends bootstrap
                                 }
                                 $sLoansDetails .= '<tr><td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aLoan['amount']/100) . ' &euro;</td>
                                                                         <td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aLoan['rate']) . ' &percnt;</td>
-                                                                        <td style="border: 1px solid; padding: 5px;">' . $iNumberOfPayments . ' mois</td>
+                                                                        <td style="border: 1px solid; padding: 5px;">' . $this->projects->period . ' mois</td>
                                                                         <td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aFirstPayment['montant']) . ' &euro;</td>
                                                                         <td style="border: 1px solid; padding: 5px;">' . $sContractType . '</td></tr>';
                             }
@@ -6778,6 +6777,7 @@ class cronController extends bootstrap
         $this->projects      = $this->loadData('projects');
         $this->companies     = $this->loadData('companies');
         $this->loans         = $this->loadData('loans');
+        $oLender             = $this->loadData('lenders_accounts');
 
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
@@ -6801,6 +6801,10 @@ class cronController extends bootstrap
             foreach ($array_offres_acceptees as $id_client => $mails_notif) {
                 if ($this->clients_gestion_notifications->getNotif($id_client, 4, $type) == true) {
                     $this->clients->get($id_client, 'id_client');
+
+                    $oLender->get($this->clients->id_client, 'id_client_owner');
+                    $bLenderIsNaturalPerson = $oLender->isNaturalPerson($oLender->id_lender_account);
+                    $sLinkExplication       = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a href="' . $this->surl . '/document-de-pret"> cette page </a>. ' : '';
 
                     $p            = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
                     $nom          = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
@@ -6916,17 +6920,18 @@ class cronController extends bootstrap
                             }
 
                             $varMail = array(
-                                'surl'            => $this->surl,
-                                'url'             => $this->furl,
-                                'prenom_p'        => $this->clients->prenom,
-                                'liste_offres'    => $liste_offres,
-                                'motif_virement'  => $motif,
-                                'contenu'         => $lecontenu,
-                                'objet'           => $objet,
-                                'sujet'           => $sujet,
-                                'gestion_alertes' => $this->lurl . '/profile',
-                                'lien_fb'         => $lien_fb,
-                                'lien_tw'         => $lien_tw
+                                'surl'             => $this->surl,
+                                'url'              => $this->furl,
+                                'prenom_p'         => $this->clients->prenom,
+                                'liste_offres'     => $liste_offres,
+                                'motif_virement'   => $motif,
+                                'contenu'          => $lecontenu,
+                                'objet'            => $objet,
+                                'sujet'            => $sujet,
+                                'gestion_alertes'  => $this->lurl . '/profile',
+                                'lien_fb'          => $lien_fb,
+                                'lien_tw'          => $lien_tw,
+                                'link_explication' => $sLinkExplication
                             );
                             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
