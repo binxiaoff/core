@@ -599,6 +599,7 @@ class cronController extends bootstrap
                     $oLender          = $this->loadData('lenders_accounts');
                     $oCompanies       = $this->loadData('companies');
                     $oPaymentSchedule = $this->loadData('echeanciers');
+                    $oAcceptedBids    = $this->loadData('accepted_bids');
 
                     $iNbLenders = count($aLendersIds);
                     $iNbTreatedLenders = 0;
@@ -618,12 +619,15 @@ class cronController extends bootstrap
                         $sMotif    = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
 
                         $bLenderIsNaturalPerson   = $oLender->isNaturalPerson($oLender->id_lender_account);
-                        $aLoansOfLender           = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account);
+                        $aLoansOfLender           = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, '`id_type_contract` DESC');
                         $iNumberOfLoansForLender  = count($aLoansOfLender);
-                        $iSumLoansOfLender        = ($this->loans->sum('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, 'amount')/100);
+                        $iSumLoansOfLender        = ($this->loans->sum('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, 'amount') / 100);
                         $iAvgInterestRateOfLender = $this->loans->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $this->projects->id_project);
+                        $aLoanIFP                 = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
+                        $iNumberOfBidsInLoanIFP   = $oAcceptedBids->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
+                        $iNumberOfAcceptedBids    = $oAcceptedBids->getDistinctBidsForLenderAndProject($oLender->id_lender_account, $this->projects->id_project);
 
-                        if ($iNumberOfLoansForLender > 1) {
+                        if ($iNumberOfAcceptedBids > 1) {
                             $sAcceptedOffers            = 'vos offres ont &eacute;t&eacute; accept&eacute;es';
                             $sOffers                    = 'vos offres';
                             $sDoes                      = 'font';
@@ -633,37 +637,39 @@ class cronController extends bootstrap
                             $sDoes                      = 'fait';
                         }
 
-                        if ($bLenderIsNaturalPerson && $iNumberOfLoansForLender > 1) {
+                        if ($bLenderIsNaturalPerson && $iNumberOfBidsInLoanIFP > 1) {
 
                             $sLoansDetails = 'L&rsquo;ensemble de vos offres &agrave;
                                               concurrence de 1 000 euros sont regroup&eacute;es sous la forme
                                               d&rsquo;un seul contrat de pr&ecirc;t.
                                               Son taux d&rsquo;int&eacute;r&ecirc;t correspond donc &agrave; la moyenne
-                                              pond&eacute;r&eacute;e de vos ' . $iNumberOfLoansForLender . ' offres de pr&ecirc;t.';
+                                              pond&eacute;r&eacute;e de vos <span style="color:#b20066;">' . $iNumberOfBidsInLoanIFP . ' </span> offres de pr&ecirc;t qui le constituent. <br>';
                         } else {
                             $sLoansDetails = '';
                         }
 
-                        if ($bLenderIsNaturalPerson && $iSumLoansOfLender <= 1000) {
+                        if ($bLenderIsNaturalPerson && $iNumberOfLoansForLender <= 1) {
+                            $sLoansDetails .= 'Nous sommes heureux de vous annoncer que <span style="color:#b20066;">' . $sOffers . '
+                                                de pr&ecirc;t </span> pour un montant total de <span style="color:#b20066;">' . $iSumLoansOfLender . ' euros </span>
+                                                &agrave; <span style="color:#b20066;"> ' . $this->ficelle->formatNumber($iAvgInterestRateOfLender) . ' &percnt; </span>
+                                                pendant <span style="color:#b20066;"> ' . $this->projects->period . ' mois </span> ' . $sDoes . '
+                                                partie des meilleures offres s&eacute;lectionn&eacute;es. <br>';
 
-                            $sLoansDetails .= 'Nous sommes heureux de vous annoncer que '.$sOffers.' de prêt pour un montant total de '.$iSumLoansOfLender.' euros
-                                                à '.$this->ficelle->formatNumber($iAvgInterestRateOfLender) .' &percnt; pendant ' . $this->projects->period . ' mois
-                                                '.$sDoes.' partie des meilleures offres s&eacute;lectionn&eacute;es. <br>';
 
+                        } elseif ($bLenderIsNaturalPerson && $iNumberOfLoansForLender > 1 || $bLenderIsNaturalPerson === false) {
 
-                        } elseif ($bLenderIsNaturalPerson && $iSumLoansOfLender > 1000 || $bLenderIsNaturalPerson === false) {
-
-                            $sLoansDetails .= 'Voici la synth&egrave;se de ' . $sOffers . ' de pr&ecirc;t &agrave; ' . $oCompanies->name . ' : <br><br>';
+                            $sLoansDetails .= 'Voici la synth&egrave;se de ' . $sOffers . ' de pr&ecirc;t &agrave; <span style="color:#b20066;"> ' . $oCompanies->name . ' </span> : <br><br>';
                             $sLoansDetails .= '<table style="border: 1px solid; border-collapse: collapse; width:100%; table-layout: fixed;"><tr>
-                                                                    <th style="border: 1px solid; padding: 5px;">Montant pr&ecirc;t&eacute;</th>
-                                                                    <th style="border: 1px solid; padding: 5px;">Taux d&rsquo;interet</th>
-                                                                    <th style="border: 1px solid; padding: 5px;">Dur&eacute;e</th>
-                                                                    <th style="border: 1px solid; padding: 5px;">Mensualit&eacute;s</th>
-                                                                    <th style="border: 1px solid; padding: 5px;">Documents</th></tr>';
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Montant pr&ecirc;t&eacute;</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Taux d&rsquo;interet</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Dur&eacute;e</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Mensualit&eacute;s</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Documents</th></tr>';
 
                             foreach ($aLoansOfLender as $aLoan) {
 
                                 $aFirstPayment = $oPaymentSchedule->getPremiereEcheancePreteurByLoans($aLoan['id_project'], $aLoan['id_lender'], $aLoan['id_loan']);
+
                                 switch ($aLoan['id_type_contract']) {
                                     case \loans::TYPE_CONTRACT_BDC:
                                         $sContractType = 'Bon de caisse';
@@ -676,16 +682,16 @@ class cronController extends bootstrap
                                         break;
                                 }
                                 $sLoansDetails .= '<tr><td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aLoan['amount']/100) . ' &euro;</td>
-                                                                        <td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aLoan['rate']) . ' &percnt;</td>
-                                                                        <td style="border: 1px solid; padding: 5px;">' . $this->projects->period . ' mois</td>
-                                                                        <td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aFirstPayment['montant']) . ' &euro;</td>
-                                                                        <td style="border: 1px solid; padding: 5px;">' . $sContractType . '</td></tr>';
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aLoan['rate']) . ' %</td>
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->projects->period . ' mois</td>
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aFirstPayment['montant']/100) . ' &euro;</td>
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $sContractType . '</td></tr>';
                             }
                             $sLoansDetails .= '</table>';
                         }
 
                         $sLinkExplication = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t,
-                                            vous pouvez consulter <a href="'.$this->surl.'/document-de-pret"> cette page </a>. ': '';
+                                            vous pouvez consulter <a style="color:#b20066;" href="'.$this->surl.'/document-de-pret"> cette page </a>. ': '';
 
                         $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
 
@@ -710,9 +716,9 @@ class cronController extends bootstrap
                         $this->email = $this->loadLib('email');
                         $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
                         $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-                        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
+                        $this->email->setHTMLBody(stripslashes(strtr($this->mails_text->content), $tabVars));
 
-                        if ($oClient->status == 1) {
+                        if ($oClient->status == 1 && in_array($oClient->id_client, array(15112, 24996, 31346, 17865, 8285, 15416, 9364, 13185, 22418))) {
                             if ($this->Config['env'] == 'prod') {
                                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $oClient->email, $tabFiler);
                                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);

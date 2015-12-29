@@ -82,4 +82,49 @@ class accepted_bids extends accepted_bids_crud
 
         return $fAmount;
     }
+
+    public function getDistinctBids($iProjectID)
+    {
+        $sql = 'SELECT
+                    SUM(ab.amount),
+                    ab.id_bid,
+                    l.id_lender
+                FROM
+                    accepted_bids ab
+                    INNER JOIN loans l ON l.id_loan = ab.id_loan
+                WHERE
+                    id_project = '.$iProjectID.'
+                GROUP BY
+                    id_bid';
+
+        $resultat = $this->bdd->query($sql);
+        $result = array();
+
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
+
+    public function getDistinctBidsForLenderAndProject($iLenderId, $iProjectId)
+    {
+        $sql = 'SELECT
+                    SELECT COUNT(ab.id_bid)
+                FROM
+                    accepted_bids ab
+                    INNER JOIN loans l ON l.id_loan = ab.id_loan
+                WHERE
+                    l.id_lender = '.$iLenderId.'
+                     AND l.id_project = '.$iProjectId.'
+                GROUP BY
+                    id_bid';
+
+        $resultat = $this->bdd->query($sql);
+        $result = array();
+
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
 }
