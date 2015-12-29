@@ -71,7 +71,7 @@
                         <br/>
                     </li>
                     <li>
-                        Modalités d’amortissement : <?= $this->bloc_pdf_contrat['modalites-amortissement'] ?>
+                        Modalités d’amortissement : <?= nl2br($this->bloc_pdf_contrat['modalites-amortissement']) ?>
                         <br/>
                     </li>
                     <li>
@@ -85,7 +85,7 @@
                         <br/>
                     </li>
                     <li>
-                        Conditions de mise à disposition des fonds : <?= $this->bloc_pdf_contrat['conditions-de-mise-a-disposition-des-fonds'] ?> <br/>
+                        Conditions de mise à disposition des fonds : <?= nl2br($this->bloc_pdf_contrat['conditions-de-mise-a-disposition-des-fonds']) ?> <br/>
                     </li>
                 </ul>
             </div>
@@ -271,7 +271,7 @@
                         <br/>
                     </li>
                     <li>
-                        Modalités d’amortissement : <?= $this->bloc_pdf_contrat['modalites-amortissement'] ?>
+                        Modalités d’amortissement : <?= nl2br($this->bloc_pdf_contrat['modalites-amortissement']) ?>
                         <br/>
                     </li>
                     <li>
@@ -285,7 +285,7 @@
                         <br/>
                     </li>
                     <li>
-                        Conditions de mise à disposition des fonds : <?= $this->bloc_pdf_contrat['conditions-de-mise-a-disposition-des-fonds'] ?> <br/>
+                        Conditions de mise à disposition des fonds : <?= nl2br($this->bloc_pdf_contrat['conditions-de-mise-a-disposition-des-fonds']) ?> <br/>
                     </li>
                 </ul>
                 <p>
