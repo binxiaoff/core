@@ -1325,7 +1325,6 @@ var_dump(__LINE__);
                                             $iNumberOfLoansForLender  = count($aLoansOfLender);
                                             $iSumLoansOfLender        = $this->loans->sum('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, 'amount')/100;
                                             $iAvgInterestRateOfLender = $this->loans->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $this->projects->id_project);
-                                            $iNumberOfPayments        = $oPaymentSchedule->counter('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account);
                                             $iSumMonthlyPayments      = $oPaymentSchedule->sum('id_lender = '.$oLender->id_lender_account.' AND id_project = '.$this->projects->id_project.' AND ordre = 1', 'montant');
                                             $sDateFirstPayment        = $oPaymentSchedule->getDatePremiereEcheance($this->projects->id_project);
 
@@ -1354,7 +1353,7 @@ var_dump(__LINE__);
                                             if ($bLenderIsNaturalPerson && $iSumLoansOfLender <= 1000) {
 
                                                     $sLoansDetails .= 'Vous lui pr&ecirc;tez donc ' . $iSumLoansOfLender . ' euros &agrave; ' . $this->ficelle->formatNumber($iAvgInterestRateOfLender) . '
-                                                                        &percnt; pendant ' . $iNumberOfPayments . ' mois.';
+                                                                        &percnt; pendant ' . $this->projects->period . ' mois.';
                                             }
                                             elseif ($bLenderIsNaturalPerson && $iSumLoansOfLender > 1000 || $bLenderIsNaturalPerson === false ) {
 
@@ -1382,7 +1381,7 @@ var_dump(__LINE__);
                                                     }
                                                     $sLoansDetails .= '<tr><td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aLoan['amount']) . ' &euro;</td>
                                                                         <td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aLoan['rate']) . ' &percnt;</td>
-                                                                        <td style="border: 1px solid; padding: 5px;">' . $iNumberOfPayments . ' mois</td>
+                                                                        <td style="border: 1px solid; padding: 5px;">' . $this->projects->period . ' mois</td>
                                                                         <td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aFirstPayment['montant']) . ' &euro;</td>
                                                                         <td style="border: 1px solid; padding: 5px;">' . $sContractType . '</td></tr>';
                                                 }
