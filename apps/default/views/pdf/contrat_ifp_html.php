@@ -288,12 +288,12 @@
                         Conditions de mise à disposition des fonds : <?= nl2br($this->bloc_pdf_contrat['conditions-de-mise-a-disposition-des-fonds']) ?> <br/>
                     </li>
                 </ul>
+                <p><?= $this->bloc_pdf_contrat['legitimite'] ?></p>
                 <p>
                     La signature du contrat de prêt engage l'Emprunteur, en contrepartie des sommes remises ce jour,
                     à rembourser au Prêteur la somme de <?= $this->ficelle->formatNumber($this->oLoans->amount / 100) ?>&nbsp;&euro;
                     assortie des intérêts à <?= $this->ficelle->formatNumber($this->oLoans->rate) ?> % selon l'échéancier annexé aux présentes.
                 </p>
-                <p><?= $this->bloc_pdf_contrat['legitimite'] ?></p>
             </div>
         </div>
         <div>
