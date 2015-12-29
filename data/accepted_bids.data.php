@@ -119,12 +119,7 @@ class accepted_bids extends accepted_bids_crud
                 GROUP BY
                     id_bid';
 
-        $resultat = $this->bdd->query($sql);
-        $result = array();
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
+        $result = $this->bdd->query($sql);
+        return (int)($this->bdd->result($result, 0, 0));
     }
 }

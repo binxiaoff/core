@@ -651,7 +651,7 @@ class cronController extends bootstrap
                         if ($bLenderIsNaturalPerson && $iNumberOfLoansForLender <= 1) {
                             $sLoansDetails .= 'Nous sommes heureux de vous annoncer que <span style="color:#b20066;">' . $sOffers . '
                                                 de pr&ecirc;t </span> pour un montant total de <span style="color:#b20066;">' . $iSumLoansOfLender . ' euros </span>
-                                                &agrave; <span style="color:#b20066;"> ' . $this->ficelle->formatNumber($iAvgInterestRateOfLender) . ' &percnt; </span>
+                                                &agrave; <span style="color:#b20066;"> ' . $this->ficelle->formatNumber($iAvgInterestRateOfLender) . ' % </span>
                                                 pendant <span style="color:#b20066;"> ' . $this->projects->period . ' mois </span> ' . $sDoes . '
                                                 partie des meilleures offres s&eacute;lectionn&eacute;es. <br>';
 
@@ -681,7 +681,7 @@ class cronController extends bootstrap
                                         $sContractType = '';
                                         break;
                                 }
-                                $sLoansDetails .= '<tr><td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aLoan['amount']/100) . ' &euro;</td>
+                                $sLoansDetails .= '<tr><td style="border: 1px solid; padding: 5px; text-align: center;">' . $this->ficelle->formatNumber($aLoan['amount']/100) . ' &euro;</td>
                                                                         <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aLoan['rate']) . ' %</td>
                                                                         <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->projects->period . ' mois</td>
                                                                         <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aFirstPayment['montant']/100) . ' &euro;</td>

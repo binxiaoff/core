@@ -1324,7 +1324,6 @@ var_dump(__LINE__);
                                             $iAvgInterestRateOfLender = $this->loans->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $this->projects->id_project);
                                             $iSumMonthlyPayments      = $oPaymentSchedule->sum('id_lender = '.$oLender->id_lender_account.' AND id_project = '.$this->projects->id_project.' AND ordre = 1', 'montant');
                                             $sDateFirstPayment        = $oPaymentSchedule->getDatePremiereEcheance($this->projects->id_project);
-
                                             $aLoanIFP                 = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
                                             $iNumberOfBidsInLoanIFP   = $oAcceptedBids->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
                                             $iNumberOfAcceptedBids    = $oAcceptedBids->getDistinctBidsForLenderAndProject($oLender->id_lender_account, $this->projects->id_project);
@@ -1351,19 +1350,19 @@ var_dump(__LINE__);
                                                 $sLoansDetails = '';
                                             }
 
-                                            if ($bLenderIsNaturalPerson && $iNumberOfBidsInLoanIFP <= 1) {
+                                            if ($bLenderIsNaturalPerson && $iNumberOfLoansForLender <= 1) {
 
-                                                    $sLoansDetails .= 'Vous lui pr&ecirc;tez donc <span style="color:#b20066;">' . $iSumLoansOfLender . ' euros </span> &agrave; <span style="color:#b20066;">' . $this->ficelle->formatNumber($iAvgInterestRateOfLender) . '&percnt; </span> pendant <span style="color:#b20066;"> ' . $this->projects->period . ' mois </span>.';
+                                                    $sLoansDetails .= 'Vous lui pr&ecirc;tez donc <span style="color:#b20066;">' . $iSumLoansOfLender . ' euros </span> &agrave; <span style="color:#b20066;">' . $this->ficelle->formatNumber($iAvgInterestRateOfLender) . '% </span> pendant <span style="color:#b20066;"> ' . $this->projects->period . ' mois </span>.';
                                             }
-                                            elseif ($bLenderIsNaturalPerson && $iNumberOfBidsInLoanIFP > 1 || $bLenderIsNaturalPerson === false ) {
+                                            elseif ($bLenderIsNaturalPerson && $iNumberOfLoansForLender > 1 || $bLenderIsNaturalPerson === false ) {
 
-                                                $sLoansDetails .= 'Voici la synth&egrave;se de '.$sLoans.' &agrave; '.$oCompanies->name.' : <br>';
+                                                $sLoansDetails .= 'Voici la synth&egrave;se de '.$sLoans.' &agrave; '.$oCompanies->name.' : <br><br>';
                                                 $sLoansDetails .= '<table style="border: 1px solid; border-collapse: collapse; width:100%; table-layout: fixed;"><tr>
-                                                                    <th style="border: 1px solid; padding: 5px; color:#727272">Montant pr&ecirc;t&eacute;</th>
-                                                                    <th style="border: 1px solid; padding: 5px; color:#727272">Taux d&rsquo;interet</th>
-                                                                    <th style="border: 1px solid; padding: 5px; color:#727272">Dur&eacute;e</th>
-                                                                    <th style="border: 1px solid; padding: 5px; color:#727272">Mensualit&eacute;s</th>
-                                                                    <th style="border: 1px solid; padding: 5px; color:#727272">Documents</th></tr>';
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center;">Montant pr&ecirc;t&eacute;</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center;">Taux d&rsquo;interet</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center;">Dur&eacute;e</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center;">Mensualit&eacute;s</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center;">Documents</th></tr>';
 
                                                 foreach ($aLoansOfLender as $aLoan) {
 
@@ -1379,13 +1378,13 @@ var_dump(__LINE__);
                                                             $sContractType = '';
                                                             break;
                                                     }
-                                                    $sLoansDetails .= '<tr><td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aLoan['amount']/100) . ' &euro;</td>
-                                                                        <td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aLoan['rate']) . ' %</td>
-                                                                        <td style="border: 1px solid; padding: 5px;">' . $this->projects->period . ' mois</td>
-                                                                        <td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aFirstPayment['montant']/100) . ' &euro;</td>
-                                                                        <td style="border: 1px solid; padding: 5px;">' . $sContractType . '</td></tr>';
+                                                    $sLoansDetails .= '<tr><td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aLoan['amount']/100) . ' &euro;</td>
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aLoan['rate']) . ' %</td>
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->projects->period . ' mois</td>
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aFirstPayment['montant']/100) . ' &euro;</td>
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $sContractType . '</td></tr>';
                                                 }
-                                                $sLoansDetails .= '</table>';
+                                                $sLoansDetails .= '</table><br>';
                                             }
 
                                             $sLinkExplication = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t,
