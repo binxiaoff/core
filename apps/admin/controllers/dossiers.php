@@ -1424,7 +1424,7 @@ var_dump(__LINE__);
                                             $this->email = $this->loadLib('email');
                                             $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
                                             $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-                                            $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
+                                            $this->email->setHTMLBody(stripslashes(strtr($this->mails_text->content, $tabVars)));
 
                                             if ($this->Config['env'] === 'prod') {
                                                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($oClient->email), $tabFiler);
