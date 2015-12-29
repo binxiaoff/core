@@ -90,7 +90,7 @@
                 </ul>
             </div>
 
-            <h3><?= $this->bloc_pdf_contrat['titre'] ?> - #<?= $this->oLoans->id_loan ?></h3>
+            <h3><?= $this->bloc_pdf_contrat['titre-contrat-de-pret'] ?> - #<?= $this->oLoans->id_loan ?></h3>
             <h5>Désignation de l'Emprunteur</h5>
             <div class="list">
                 <ul>
