@@ -6782,7 +6782,7 @@ class cronController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
 
-        if ($array_offres_acceptees != false) {
+        if (isset($array_offres_acceptees)) {
             $clients_gestion_notif_log                              = $this->loadData('clients_gestion_notif_log');
             $clients_gestion_notif_log->id_notif                    = 4;
             $clients_gestion_notif_log->type                        = $type;
@@ -6820,6 +6820,17 @@ class cronController extends bootstrap
                             $this->companies->get($this->projects->id_company, 'id_company');
                             $this->loans->get($n['id_loan'], 'id_loan');
 
+                            switch ($this->loans->id_type_contract){
+                                case \loans::TYPE_CONTRACT_BDC:
+                                    $sContractType = 'Bon de caisse';
+                                    break;
+                                case \loans::TYPE_CONTRACT_IFP:
+                                    $sContractType = 'Contrat de pr&ecirc;t';
+                                    break;
+                                default:
+                                    $sContractType = '';
+                                    break;
+                            }
                             $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
                             if ($type == 'quotidienne') {
                                 $this->clients_gestion_mails_notif->quotidienne              = 1;
@@ -6841,6 +6852,7 @@ class cronController extends bootstrap
 									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' €</td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">'.$sContractType.'</td>
 								</tr>
 								<tr>
 									<td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
@@ -6854,6 +6866,7 @@ class cronController extends bootstrap
 									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' €</td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">'.$sContractType.'</td>
 								</tr>';
                             }
                             $i++;
