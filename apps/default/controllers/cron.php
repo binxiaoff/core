@@ -366,14 +366,14 @@ class cronController extends bootstrap
 
                         if ($this->lenders_accounts->isNaturalPerson($iLenderId)) {
                             $fLoansLenderSum = 0;
-                            $fRate           = 0;
+                            $fInterests      = 0;
                             $bIFPContract    = true;
                             $aBidIFP         = array();
                             foreach ($aLenderBids as $iIndex => $aBid) {
                                 $fBidAmount = $aBid['amount'] / 100;
 
                                 if (true === $bIFPContract && ($fLoansLenderSum + $fBidAmount) <= \loans::IFP_AMOUNT_MAX) {
-                                    $fRate = ($fRate * $fLoansLenderSum + $aBid['rate'] * $fBidAmount) / ($fLoansLenderSum + $fBidAmount);
+                                    $fInterests += $aBid['rate'] * $fBidAmount;
                                     $fLoansLenderSum += $fBidAmount;
                                     $aBidIFP[] = $aBid;
                                 } else {
@@ -410,7 +410,7 @@ class cronController extends bootstrap
                                     $fRest = $fBidAmount - $fDiff;
                                     if (0 < $fRest) {
                                         $aBid['amount'] = $fRest * 100;
-                                        $fRate          = ($fRate * $fLoansLenderSum + $aBid['rate'] * $fRest) / (\loans::IFP_AMOUNT_MAX);
+                                        $fInterests    += $aBid['rate'] * $fRest;
                                         $aBidIFP[]      = $aBid;
                                     }
                                     $fLoansLenderSum = \loans::IFP_AMOUNT_MAX;
@@ -422,7 +422,7 @@ class cronController extends bootstrap
                             $this->loans->id_lender        = $iLenderId;
                             $this->loans->id_project       = $projects['id_project'];
                             $this->loans->amount           = $fLoansLenderSum * 100;
-                            $this->loans->rate             = round($fRate, 2);
+                            $this->loans->rate             = round($fInterests / $fLoansLenderSum, 2);
                             $this->loans->id_type_contract = \loans::TYPE_CONTRACT_IFP;
 
                             $this->loans->create();
