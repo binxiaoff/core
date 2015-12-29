@@ -155,7 +155,7 @@ class preteursController extends bootstrap
             else $nonValide = '';
 
             // Recuperation de la liste des clients searchPreteurs
-            $this->lPreteurs = $this->clients->searchPreteursV2($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
+            $this->lPreteurs = $this->clients->searchPreteurs($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
 
             // Mise en session du message
             $_SESSION['freeow']['title']   = 'Recherche d\'un prêteur';
@@ -165,7 +165,7 @@ class preteursController extends bootstrap
             else $nonValide = '';
 
             // On recupera les 10 derniers clients
-            $this->lPreteurs = $this->clients->searchPreteursV2('', '', '', '', '', $nonValide, '', '0', '300');
+            $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', $nonValide, '', '0', '300');
         }
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
@@ -1210,14 +1210,14 @@ class preteursController extends bootstrap
 
         if (isset($_POST['form_search_preteur'])) {
             // Recuperation de la liste des clients searchPreteurs
-            $this->lPreteurs = $this->clients->searchPreteursV2($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
+            $this->lPreteurs = $this->clients->searchPreteurs($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
 
             // Mise en session du message
             $_SESSION['freeow']['title']   = 'Recherche d\'un prêteur non inscript';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         } else {
             // On recupera les 10 derniers clients
-            $this->lPreteurs = $this->clients->searchPreteursV2('', '', '', '', '', $nonValide, '', '0', '300');
+            $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', $nonValide, '', '0', '300');
         }
 
 
