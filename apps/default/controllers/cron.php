@@ -593,87 +593,141 @@ class cronController extends bootstrap
                     $this->email->setHTMLBody($texteMail);
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
 
-                    $preteur     = $this->loadData('clients');
-                    $companies   = $this->loadData('companies');
-                    $echeanciers = $this->loadData('echeanciers');
+                    //End emails to lenders with accepted bids that became loans
+                    $aLendersIds      = $this->loans->getPreteurs($this->projects->id_project);
+                    $oClient          = $this->loadData('clients');
+                    $oLender          = $this->loadData('lenders_accounts');
+                    $oCompanies       = $this->loadData('companies');
+                    $oPaymentSchedule = $this->loadData('echeanciers');
 
-                    // on parcourt les bids ok du projet et on envoie les mail
-                    $lLoans = $this->loans->select('id_project = ' . $projects['id_project']);
-                    $iLoanNbTotal = count($lLoans);
-                    $iTreatedLoanNb = 0;
-                    $oLogger->addRecord(ULogger::INFO, 'project : ' .  $iLoanNbTotal . ' loans to send email');
-                    foreach ($lLoans as $l) {
-                        $this->projects->get($l['id_project'], 'id_project');
-                        $this->lenders_accounts->get($l['id_lender'], 'id_lender_account');
-                        $preteur->get($this->lenders_accounts->id_client_owner, 'id_client');
-                        $companies->get($this->projects->id_company, 'id_company');
+                    $iNbLenders = count($aLendersIds);
+                    $iNbTreatedLenders = 0;
 
-                        $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($preteur->prenom))), 0, 1);
-                        $nom       = $this->ficelle->stripAccents(utf8_decode(trim($preteur->nom)));
-                        $id_client = str_pad($preteur->id_client, 6, 0, STR_PAD_LEFT);
-                        $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+                    $oLogger->addRecord(ULogger::INFO, 'project : ' .  $iNbLenders . ' lenders to send email');
 
-                        $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($l['id_project'], $l['id_lender'], $l['id_loan']);
+                    foreach ($aLendersIds as $aLenderID) {
+
+                        $oLender->get($aLenderID['id_lender'], 'id_lender_account');
+                        $oClient->get($oLender->id_client_owner, 'id_client');
+                        $oCompanies->get($this->projects->id_company, 'id_company');
+
+                        // Motif virement
+                        $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($oClient->prenom))), 0, 1);
+                        $nom       = $this->ficelle->stripAccents(utf8_decode(trim($oClient->nom)));
+                        $id_client = str_pad($oClient->id_client, 6, 0, STR_PAD_LEFT);
+                        $sMotif    = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+
+                        $bLenderIsNaturalPerson   = $oLender->isNaturalPerson($oLender->id_lender_account);
+                        $aLoansOfLender           = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account);
+                        $iNumberOfLoansForLender  = count($aLoansOfLender);
+                        $iSumLoansOfLender        = ($this->loans->sum('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, 'amount')/100);
+                        $iAvgInterestRateOfLender = $this->loans->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $this->projects->id_project);
+                        $iNumberOfPayments        = $oPaymentSchedule->counter('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account);
+
+                        if ($iNumberOfLoansForLender > 1) {
+                            $sAcceptedOffers            = 'vos offres ont &eacute;t&eacute; accept&eacute;es';
+                            $sOffers                    = 'vos offres';
+                            $sDoes                      = 'font';
+                        } else {
+                            $sAcceptedOffers            = 'votre offre a &eacute;t&eacute; accept&eacute;e';
+                            $sOffers                    = 'votre offre';
+                            $sDoes                      = 'fait';
+                        }
+
+                        if ($bLenderIsNaturalPerson && $iNumberOfLoansForLender > 1) {
+
+                            $sLoansDetails = 'L&rsquo;ensemble de vos offres &agrave;
+                                              concurrence de 1 000 euros sont regroup&eacute;es sous la forme
+                                              d&rsquo;un seul contrat de pr&ecirc;t.
+                                              Son taux d&rsquo;int&eacute;r&ecirc;t correspond donc &agrave; la moyenne
+                                              pond&eacute;r&eacute;e de vos ' . $iNumberOfLoansForLender . ' offres de pr&ecirc;t.';
+                        } else {
+                            $sLoansDetails = '';
+                        }
+
+                        if ($bLenderIsNaturalPerson && $iSumLoansOfLender <= 1000) {
+
+                            $sLoansDetails .= 'Nous sommes heureux de vous annoncer que '.$sOffers.' de prêt pour un montant total de '.$iSumLoansOfLender.' euros
+                                                à '.$this->ficelle->formatNumber($iAvgInterestRateOfLender) .' &percnt; pendant ' . $iNumberOfPayments . ' mois
+                                                '.$sDoes.' partie des meilleures offres s&eacute;lectionn&eacute;es. <br>';
+
+
+                        } elseif ($bLenderIsNaturalPerson && $iSumLoansOfLender > 1000 || $bLenderIsNaturalPerson === false) {
+
+                            $sLoansDetails .= 'Voici la synth&egrave;se de ' . $sOffers . ' de pr&ecirc;t &agrave; ' . $oCompanies->name . ' : <br><br>';
+                            $sLoansDetails .= '<table style="border: 1px solid; border-collapse: collapse; width:100%; table-layout: fixed;"><tr>
+                                                                    <th style="border: 1px solid; padding: 5px;">Montant pr&ecirc;t&eacute;</th>
+                                                                    <th style="border: 1px solid; padding: 5px;">Taux d&rsquo;interet</th>
+                                                                    <th style="border: 1px solid; padding: 5px;">Dur&eacute;e</th>
+                                                                    <th style="border: 1px solid; padding: 5px;">Mensualit&eacute;s</th>
+                                                                    <th style="border: 1px solid; padding: 5px;">Documents</th></tr>';
+
+                            foreach ($aLoansOfLender as $aLoan) {
+
+                                $aFirstPayment = $oPaymentSchedule->getPremiereEcheancePreteurByLoans($aLoan['id_project'], $aLoan['id_lender'], $aLoan['id_loan']);
+                                switch ($aLoan['id_type_contract']) {
+                                    case \loans::TYPE_CONTRACT_BDC:
+                                        $sContractType = 'Bon de caisse';
+                                        break;
+                                    case \loans::TYPE_CONTRACT_IFP:
+                                        $sContractType = 'Contrat de pr&ecirc;t';
+                                        break;
+                                    default:
+                                        $sContractType = '';
+                                        break;
+                                }
+                                $sLoansDetails .= '<tr><td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aLoan['amount']/100) . ' &euro;</td>
+                                                                        <td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aLoan['rate']) . ' &percnt;</td>
+                                                                        <td style="border: 1px solid; padding: 5px;">' . $iNumberOfPayments . ' mois</td>
+                                                                        <td style="border: 1px solid; padding: 5px;">' . $this->ficelle->formatNumber($aFirstPayment['montant']) . ' &euro;</td>
+                                                                        <td style="border: 1px solid; padding: 5px;">' . $sContractType . '</td></tr>';
+                            }
+                            $sLoansDetails .= '</table>';
+                        }
+
+                        $sLinkExplication = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t,
+                                            vous pouvez consulter <a href="'.$this->surl.'/document-de-pret"> cette page </a>. ': '';
 
                         $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
 
-                        $surl = $this->surl;
-                        $url = $this->lurl;
-                        $prenom = $preteur->prenom;
-                        $projet = $this->projects->title;
-                        $montant_pret = $this->ficelle->formatNumber($l['amount'] / 100);
-                        $taux = $this->ficelle->formatNumber($l['rate']);
-                        $entreprise = $companies->name;
-                        $date = $this->dates->formatDate($l['added'], 'd/m/Y');
-                        $heure = $this->dates->formatDate($l['added'], 'H');
-                        $duree = $this->projects->period;
-
-                        $timeAdd = strtotime($lecheancier['date_echeance']);
-                        $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
-
                         $varMail = array(
-                            'surl'           => $this->surl,
-                            'url'            => $this->lurl,
-                            'prenom_p'       => $preteur->prenom,
-                            'valeur_bid'     => $this->ficelle->formatNumber($l['amount'] / 100),
-                            'taux_bid'       => $this->ficelle->formatNumber($l['rate']),
-                            'nom_entreprise' => $companies->name,
-                            'nbre_echeance'  => $this->projects->period,
-                            'mensualite_p'   => $this->ficelle->formatNumber($lecheancier['montant'] / 100),
-                            'date_debut'     => date('d', $timeAdd) . ' ' . strtolower($month) . ' ' . date('Y', $timeAdd),
-                            'compte-p'       => $this->lurl,
-                            'projet-p'       => $this->lurl . '/projects/detail/' . $this->projects->slug,
-                            'motif_virement' => $motif,
-                            'lien_fb'        => $lien_fb,
-                            'lien_tw'        => $lien_tw
+                            'surl'                        => $this->surl,
+                            'url'                         => $this->furl,
+                            'offre_s_acceptee_s'          => $sAcceptedOffers,
+                            'prenom_p'                    => $oClient->prenom,
+                            'nom_entreprise'              => $oCompanies->name,
+                            'fait'                        => $sDoes,
+                            'detail_loans'                => $sLoansDetails,
+                            'offre_s'                     => $sOffers,
+                            'projet-p'                    => $this->furl . '/projects/detail/' . $this->projects->slug,
+                            'link_explication'            => $sLinkExplication,
+                            'motif_virement'              => $sMotif,
+                            'lien_fb'                     => $lien_fb,
+                            'lien_tw'                     => $lien_tw
                         );
 
                         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
                         $this->email = $this->loadLib('email');
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                        $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
+                        $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
+                        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
 
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        if ($preteur->status == 1) {
+                        if ($oClient->status == 1) {
                             if ($this->Config['env'] == 'prod') {
-                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteur->email, $tabFiler);
+                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $oClient->email, $tabFiler);
                                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                             } else {
-                                $this->email->addRecipient(trim($preteur->email));
+                                $this->email->addRecipient(trim($oClient->email));
                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                             }
-                            $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : email preteur-bid-ok sent for loan (' . $l['id_loan'] . ')');
+                            $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : email preteur-bid-ok sent for lender (' . $oLender->id_lender_account . ')');
                         }
-                        $iTreatedLoanNb++;
+                        $iNbTreatedLenders++;
 
-                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iTreatedLoanNb . '/' . $iLoanNbTotal . ' loan notification mail sent');
+                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iNbTreatedLenders . '/' . $iNbLenders . ' loan notification mail sent');
                     }
+
                 } else {// Funding KO (le solde demandé n'a pas ete atteint par les encheres)
                     // On passe le projet en funding ko
                     $this->projects_status_history->addStatus(-1, 70, $projects['id_project']);

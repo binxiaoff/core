@@ -377,7 +377,7 @@ class lenders_accounts extends lenders_accounts_crud
                 $oCache->set($sKey, $aRecord);
             }
 
-            if (isset($aRecord['type']) && '1' === $aRecord['type']) {
+            if (isset($aRecord['type']) && in_array($aRecord['type'], array(1, 3))) {
                 return true;
             }
         }
