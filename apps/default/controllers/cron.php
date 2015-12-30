@@ -6831,6 +6831,7 @@ class cronController extends bootstrap
                             $this->companies->get($this->projects->id_company, 'id_company');
                             $this->loans->get($n['id_loan'], 'id_loan');
 
+
                             switch ($this->loans->id_type_contract){
                                 case \loans::TYPE_CONTRACT_BDC:
                                     $sContractType = 'Bon de caisse';
@@ -6869,6 +6870,7 @@ class cronController extends bootstrap
 									<td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
 									<td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($total, 0) . ' €</td>
 									<td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
+									<td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
 								</tr>
 								';
                             } else {
@@ -6882,7 +6884,6 @@ class cronController extends bootstrap
                             }
                             $i++;
                         }
-
                         if ($goMail == true) {// (BT : 18180 04/08/2015)
 
                             if ($type == 'quotidienne') {
