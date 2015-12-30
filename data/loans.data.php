@@ -48,7 +48,6 @@ class loans extends loans_crud
             $order = ' ORDER BY ' . $order;
         }
         $sql = 'SELECT * FROM `loans`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
         $resultat = $this->bdd->query($sql);
         $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
@@ -407,5 +406,19 @@ class loans extends loans_crud
             return $mRecord;
         }
         return false;
+    }
+
+    public function getWeightedAverageInterestRateForLender($iLenderId, $iProjectId)
+    {
+        $aLoans = $this->select('id_project = ' . $iProjectId . ' AND id_lender = ' . $iLenderId);
+        $iSumOfAmountXRate = 0;
+        $iSumAmount = 0;
+
+        foreach ($aLoans as $aLoan) {
+            $iSumOfAmountXRate += $aLoan['amount'] * $aLoan['rate'];
+            $iSumAmount += $aLoan['amount'];
+        }
+
+        return $iSumOfAmountXRate/$iSumAmount;
     }
 }

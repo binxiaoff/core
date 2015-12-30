@@ -593,87 +593,147 @@ class cronController extends bootstrap
                     $this->email->setHTMLBody($texteMail);
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
 
-                    $preteur     = $this->loadData('clients');
-                    $companies   = $this->loadData('companies');
-                    $echeanciers = $this->loadData('echeanciers');
+                    //End emails to lenders with accepted bids that became loans
+                    $aLendersIds      = $this->loans->getPreteurs($this->projects->id_project);
+                    $oClient          = $this->loadData('clients');
+                    $oLender          = $this->loadData('lenders_accounts');
+                    $oCompanies       = $this->loadData('companies');
+                    $oPaymentSchedule = $this->loadData('echeanciers');
+                    $oAcceptedBids    = $this->loadData('accepted_bids');
 
-                    // on parcourt les bids ok du projet et on envoie les mail
-                    $lLoans = $this->loans->select('id_project = ' . $projects['id_project']);
-                    $iLoanNbTotal = count($lLoans);
-                    $iTreatedLoanNb = 0;
-                    $oLogger->addRecord(ULogger::INFO, 'project : ' .  $iLoanNbTotal . ' loans to send email');
-                    foreach ($lLoans as $l) {
-                        $this->projects->get($l['id_project'], 'id_project');
-                        $this->lenders_accounts->get($l['id_lender'], 'id_lender_account');
-                        $preteur->get($this->lenders_accounts->id_client_owner, 'id_client');
-                        $companies->get($this->projects->id_company, 'id_company');
+                    $iNbLenders = count($aLendersIds);
+                    $iNbTreatedLenders = 0;
 
-                        $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($preteur->prenom))), 0, 1);
-                        $nom       = $this->ficelle->stripAccents(utf8_decode(trim($preteur->nom)));
-                        $id_client = str_pad($preteur->id_client, 6, 0, STR_PAD_LEFT);
-                        $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+                    $oLogger->addRecord(ULogger::INFO, 'project : ' .  $iNbLenders . ' lenders to send email');
 
-                        $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($l['id_project'], $l['id_lender'], $l['id_loan']);
+                    foreach ($aLendersIds as $aLenderID) {
+
+                        $oLender->get($aLenderID['id_lender'], 'id_lender_account');
+                        $oClient->get($oLender->id_client_owner, 'id_client');
+                        $oCompanies->get($this->projects->id_company, 'id_company');
+
+                        // Motif virement
+                        $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($oClient->prenom))), 0, 1);
+                        $nom       = $this->ficelle->stripAccents(utf8_decode(trim($oClient->nom)));
+                        $id_client = str_pad($oClient->id_client, 6, 0, STR_PAD_LEFT);
+                        $sMotif    = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+
+                        $bLenderIsNaturalPerson   = $oLender->isNaturalPerson($oLender->id_lender_account);
+                        $aLoansOfLender           = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, '`id_type_contract` DESC');
+                        $iNumberOfLoansForLender  = count($aLoansOfLender);
+                        $iSumLoansOfLender        = ($this->loans->sum('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, 'amount') / 100);
+                        $iAvgInterestRateOfLender = $this->loans->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $this->projects->id_project);
+                        $iNumberOfAcceptedBids    = $oAcceptedBids->getDistinctBidsForLenderAndProject($oLender->id_lender_account, $this->projects->id_project);
+                        $sLoansDetails            = '';
+
+                        if ($bLenderIsNaturalPerson) {
+                            $aLoanIFP               = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
+                            $iNumberOfBidsInLoanIFP = $oAcceptedBids->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
+
+                            if ($iNumberOfBidsInLoanIFP > 1) {
+                                $sLoansDetails .= 'L&rsquo;ensemble de vos offres &agrave;
+                                                   concurrence de 1 000 euros sont regroup&eacute;es sous la forme
+                                                   d&rsquo;un seul contrat de pr&ecirc;t.
+                                                   Son taux d&rsquo;int&eacute;r&ecirc;t correspond donc &agrave; la moyenne
+                                                   pond&eacute;r&eacute;e de vos <span style="color:#b20066;">' . $iNumberOfBidsInLoanIFP . ' offres de pr&ecirc;t</span>. ';
+                            }
+                        }
+
+                        if ($iNumberOfAcceptedBids > 1) {
+                            $sAcceptedOffers            = 'vos offres ont &eacute;t&eacute; accept&eacute;es';
+                            $sOffers                    = 'vos offres';
+                            $sDoes                      = 'font';
+                        } else {
+                            $sAcceptedOffers            = 'votre offre a &eacute;t&eacute; accept&eacute;e';
+                            $sOffers                    = 'votre offre';
+                            $sDoes                      = 'fait';
+                        }
+
+                        if ($bLenderIsNaturalPerson && $iNumberOfLoansForLender <= 1) {
+                            $sLoansDetails .= 'Nous sommes heureux de vous annoncer que <span style="color:#b20066;">' . $sOffers . '
+                                                de pr&ecirc;t </span> pour un montant total de <span style="color:#b20066;">' . $iSumLoansOfLender . ' euros </span>
+                                                &agrave; <span style="color:#b20066;"> ' . $this->ficelle->formatNumber($iAvgInterestRateOfLender) . ' % </span>
+                                                pendant <span style="color:#b20066;"> ' . $this->projects->period . ' mois </span> ' . $sDoes . '
+                                                partie des meilleures offres s&eacute;lectionn&eacute;es. <br>';
+
+
+                        } elseif ($bLenderIsNaturalPerson && $iNumberOfLoansForLender > 1 || $bLenderIsNaturalPerson === false) {
+
+                            $sLoansDetails .= 'Voici la synth&egrave;se de ' . $sOffers . ' de pr&ecirc;t &agrave; <span style="color:#b20066;"> ' . $oCompanies->name . ' </span> : <br><br>';
+                            $sLoansDetails .= '<table style="border: 1px solid; border-collapse: collapse; width:100%; table-layout: fixed;"><tr>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Montant pr&ecirc;t&eacute;</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Taux d&rsquo;interet</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Dur&eacute;e</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Mensualit&eacute;s</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Documents</th></tr>';
+
+                            foreach ($aLoansOfLender as $aLoan) {
+
+                                $aFirstPayment = $oPaymentSchedule->getPremiereEcheancePreteurByLoans($aLoan['id_project'], $aLoan['id_lender'], $aLoan['id_loan']);
+
+                                switch ($aLoan['id_type_contract']) {
+                                    case \loans::TYPE_CONTRACT_BDC:
+                                        $sContractType = 'Bon de caisse';
+                                        break;
+                                    case \loans::TYPE_CONTRACT_IFP:
+                                        $sContractType = 'Contrat de pr&ecirc;t';
+                                        break;
+                                    default:
+                                        $sContractType = '';
+                                        break;
+                                }
+                                $sLoansDetails .= '<tr><td style="border: 1px solid; padding: 5px; text-align: center;">' . $this->ficelle->formatNumber($aLoan['amount']/100) . ' &euro;</td>
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aLoan['rate']) . ' %</td>
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->projects->period . ' mois</td>
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aFirstPayment['montant']/100) . ' &euro;</td>
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $sContractType . '</td></tr>';
+                            }
+                            $sLoansDetails .= '</table>';
+                        }
+
+                        $sLinkExplication = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t,
+                                            vous pouvez consulter <a style="color:#b20066;" href="'.$this->surl.'/document-de-pret">cette page</a>. ': '';
 
                         $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
 
-                        $surl = $this->surl;
-                        $url = $this->lurl;
-                        $prenom = $preteur->prenom;
-                        $projet = $this->projects->title;
-                        $montant_pret = $this->ficelle->formatNumber($l['amount'] / 100);
-                        $taux = $this->ficelle->formatNumber($l['rate']);
-                        $entreprise = $companies->name;
-                        $date = $this->dates->formatDate($l['added'], 'd/m/Y');
-                        $heure = $this->dates->formatDate($l['added'], 'H');
-                        $duree = $this->projects->period;
-
-                        $timeAdd = strtotime($lecheancier['date_echeance']);
-                        $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
-
                         $varMail = array(
-                            'surl'           => $this->surl,
-                            'url'            => $this->lurl,
-                            'prenom_p'       => $preteur->prenom,
-                            'valeur_bid'     => $this->ficelle->formatNumber($l['amount'] / 100),
-                            'taux_bid'       => $this->ficelle->formatNumber($l['rate']),
-                            'nom_entreprise' => $companies->name,
-                            'nbre_echeance'  => $this->projects->period,
-                            'mensualite_p'   => $this->ficelle->formatNumber($lecheancier['montant'] / 100),
-                            'date_debut'     => date('d', $timeAdd) . ' ' . strtolower($month) . ' ' . date('Y', $timeAdd),
-                            'compte-p'       => $this->lurl,
-                            'projet-p'       => $this->lurl . '/projects/detail/' . $this->projects->slug,
-                            'motif_virement' => $motif,
-                            'lien_fb'        => $lien_fb,
-                            'lien_tw'        => $lien_tw
+                            'surl'                        => $this->surl,
+                            'url'                         => $this->furl,
+                            'offre_s_acceptee_s'          => $sAcceptedOffers,
+                            'prenom_p'                    => $oClient->prenom,
+                            'nom_entreprise'              => $oCompanies->name,
+                            'fait'                        => $sDoes,
+                            'detail_loans'                => $sLoansDetails,
+                            'offre_s'                     => $sOffers,
+                            'projet-p'                    => $this->furl . '/projects/detail/' . $this->projects->slug,
+                            'link_explication'            => $sLinkExplication,
+                            'motif_virement'              => $sMotif,
+                            'lien_fb'                     => $lien_fb,
+                            'lien_tw'                     => $lien_tw
                         );
 
                         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
                         $this->email = $this->loadLib('email');
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                        $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
+                        $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
+                        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
 
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        if ($preteur->status == 1) {
+                        if ($oClient->status == 1 ) {
                             if ($this->Config['env'] == 'prod') {
-                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteur->email, $tabFiler);
+                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $oClient->email, $tabFiler);
                                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                             } else {
-                                $this->email->addRecipient(trim($preteur->email));
+                                $this->email->addRecipient(trim($oClient->email));
                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                             }
-                            $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : email preteur-bid-ok sent for loan (' . $l['id_loan'] . ')');
+                            $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : email preteur-bid-ok sent for lender (' . $oLender->id_lender_account . ')');
                         }
-                        $iTreatedLoanNb++;
+                        $iNbTreatedLenders++;
 
-                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iTreatedLoanNb . '/' . $iLoanNbTotal . ' loan notification mail sent');
+                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iNbTreatedLenders . '/' . $iNbLenders . ' loan notification mail sent');
                     }
+
                 } else {// Funding KO (le solde demandé n'a pas ete atteint par les encheres)
                     // On passe le projet en funding ko
                     $this->projects_status_history->addStatus(-1, 70, $projects['id_project']);
@@ -5768,7 +5828,7 @@ class cronController extends bootstrap
                 $id_notif = 2;
             } elseif (time() >= $dateDebutOffreRefusee && time() < $dateFinOffreRefusee) {// Offre refusée
                 $id_notif = 3;
-            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {// Offre Acceptée
+            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee || true ) {// Offre Acceptée
                 $id_notif = 4;
             } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
                 $id_notif = 5;
@@ -5867,7 +5927,7 @@ class cronController extends bootstrap
                         }
                     }
                 }
-            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {// Offre Acceptée
+            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee || true ) {// Offre Acceptée
                 $id_notif = 4;
             } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
                 $id_notif = 5;
@@ -5923,7 +5983,7 @@ class cronController extends bootstrap
             $dateDebutRemboursement = mktime(11, 0, 0, date('m'), date('d'), date('Y'));
             $dateFinRemboursement   = mktime(11, 30, 0, date('m'), date('d'), date('Y'));
 
-            if (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {
+            if (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee || true ) {
                 $id_notif = 4;
             } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
                 $id_notif = 5;
@@ -6724,11 +6784,12 @@ class cronController extends bootstrap
         $this->projects      = $this->loadData('projects');
         $this->companies     = $this->loadData('companies');
         $this->loans         = $this->loadData('loans');
+        $oLender             = $this->loadData('lenders_accounts');
 
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
 
-        if ($array_offres_acceptees != false) {
+        if (isset($array_offres_acceptees)) {
             $clients_gestion_notif_log                              = $this->loadData('clients_gestion_notif_log');
             $clients_gestion_notif_log->id_notif                    = 4;
             $clients_gestion_notif_log->type                        = $type;
@@ -6748,6 +6809,10 @@ class cronController extends bootstrap
                 if ($this->clients_gestion_notifications->getNotif($id_client, 4, $type) == true) {
                     $this->clients->get($id_client, 'id_client');
 
+                    $oLender->get($this->clients->id_client, 'id_client_owner');
+                    $bLenderIsNaturalPerson = $oLender->isNaturalPerson($oLender->id_lender_account);
+                    $sLinkExplication       = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a href="' . $this->surl . '/document-de-pret"> cette page </a>. ' : '';
+
                     $p            = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
                     $nom          = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
                     $le_id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
@@ -6766,6 +6831,18 @@ class cronController extends bootstrap
                             $this->companies->get($this->projects->id_company, 'id_company');
                             $this->loans->get($n['id_loan'], 'id_loan');
 
+
+                            switch ($this->loans->id_type_contract){
+                                case \loans::TYPE_CONTRACT_BDC:
+                                    $sContractType = 'Bon de caisse';
+                                    break;
+                                case \loans::TYPE_CONTRACT_IFP:
+                                    $sContractType = 'Contrat de pr&ecirc;t';
+                                    break;
+                                default:
+                                    $sContractType = '';
+                                    break;
+                            }
                             $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
                             if ($type == 'quotidienne') {
                                 $this->clients_gestion_mails_notif->quotidienne              = 1;
@@ -6787,10 +6864,12 @@ class cronController extends bootstrap
 									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' €</td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">'.$sContractType.'</td>
 								</tr>
 								<tr>
 									<td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
 									<td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($total, 0) . ' €</td>
+									<td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
 									<td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
 								</tr>
 								';
@@ -6800,11 +6879,11 @@ class cronController extends bootstrap
 									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' €</td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">'.$sContractType.'</td>
 								</tr>';
                             }
                             $i++;
                         }
-
                         if ($goMail == true) {// (BT : 18180 04/08/2015)
 
                             if ($type == 'quotidienne') {
@@ -6849,17 +6928,18 @@ class cronController extends bootstrap
                             }
 
                             $varMail = array(
-                                'surl'            => $this->surl,
-                                'url'             => $this->furl,
-                                'prenom_p'        => $this->clients->prenom,
-                                'liste_offres'    => $liste_offres,
-                                'motif_virement'  => $motif,
-                                'contenu'         => $lecontenu,
-                                'objet'           => $objet,
-                                'sujet'           => $sujet,
-                                'gestion_alertes' => $this->lurl . '/profile',
-                                'lien_fb'         => $lien_fb,
-                                'lien_tw'         => $lien_tw
+                                'surl'             => $this->surl,
+                                'url'              => $this->furl,
+                                'prenom_p'         => $this->clients->prenom,
+                                'liste_offres'     => $liste_offres,
+                                'motif_virement'   => $motif,
+                                'contenu'          => $lecontenu,
+                                'objet'            => $objet,
+                                'sujet'            => $sujet,
+                                'gestion_alertes'  => $this->lurl . '/profile',
+                                'lien_fb'          => $lien_fb,
+                                'lien_tw'          => $lien_tw,
+                                'link_explication' => $sLinkExplication
                             );
                             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
