@@ -12,6 +12,8 @@
     <div class="shell">
         <!-- Page Break -->
         <div class="page-break">
+            <h5><?= $this->bloc_pouvoir['document-confidentiel'] ?></h5>
+            <br>
             <h3 class="pink"><?= $this->bloc_pouvoir['pouvoir'] ?></h3>
             <h5><?= $this->bloc_pouvoir['je-soussigne'] ?></h5>
             <div class="list">
@@ -239,7 +241,7 @@
                 </ul>
             </div>
         </div>
-        <div>
+        <div class="pageBreakBefore" style="margin-top: 40px;padding-top: 20px;">
             <h3 class="pink">DERNIER BILAN CERTIFIE SINCERE DE L'EMETTEUR</h3>
             <div class="list">
                 <ul>
@@ -313,7 +315,7 @@
         if ($this->projects->period > 48) {
             ?>
             <!-- Page Break -->
-            <div class="page-break">
+            <div class="pageBreakBefore" style="margin-top: 40px;padding-top: 20px;">
                 <h3 class="pink">ECHEANCIER DES REMBOURSEMENTS</h3>
                 <div class="dates-table">
                     <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
@@ -401,7 +403,7 @@
         } else {
             ?>
             <!-- Page Break -->
-            <div class="page-break">
+            <div class="pageBreakBefore" style="margin-top: 40px;padding-top: 20px;">
                 <h3 class="pink">ECHEANCIER DES REMBOURSEMENTS</h3>
                 <div class="dates-table">
                     <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
