@@ -5828,7 +5828,7 @@ class cronController extends bootstrap
                 $id_notif = 2;
             } elseif (time() >= $dateDebutOffreRefusee && time() < $dateFinOffreRefusee) {// Offre refusée
                 $id_notif = 3;
-            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {// Offre Acceptée
+            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee || true ) {// Offre Acceptée
                 $id_notif = 4;
             } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
                 $id_notif = 5;
@@ -5927,7 +5927,7 @@ class cronController extends bootstrap
                         }
                     }
                 }
-            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {// Offre Acceptée
+            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee || true ) {// Offre Acceptée
                 $id_notif = 4;
             } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
                 $id_notif = 5;
@@ -5983,7 +5983,7 @@ class cronController extends bootstrap
             $dateDebutRemboursement = mktime(11, 0, 0, date('m'), date('d'), date('Y'));
             $dateFinRemboursement   = mktime(11, 30, 0, date('m'), date('d'), date('Y'));
 
-            if (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {
+            if (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee || true ) {
                 $id_notif = 4;
             } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
                 $id_notif = 5;

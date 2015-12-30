@@ -1260,8 +1260,9 @@ class dossiersController extends bootstrap
                                     $oAcceptedBids    = $this->loadData('accepted_bids');
                                     $oPaymentSchedule = $this->loadData('echeanciers');
 
-                                    $aLendersIds      = $this->loans->getPreteurs($this->projects->id_project);
-                                    $aAcceptedBids    = $oAcceptedBids->getDistinctBids($this->projects->id_project);
+                                    $aLendersIds   = $this->loans->getPreteurs($this->projects->id_project);
+                                    $aAcceptedBids = $oAcceptedBids->getDistinctBids($this->projects->id_project);
+                                    $aLastLoans    = array();
 
                                     foreach ($aAcceptedBids as $aBid) {
 
@@ -1276,22 +1277,29 @@ class dossiersController extends bootstrap
                                         $oLender->get($aBid['id_lender'], 'id_lender_account');
                                         $oClient->get($oLender->id_client_owner, 'id_client');
 
-                                        $this->clients_gestion_mails_notif->id_client       = $oLender->id_client_owner;
-                                        $this->clients_gestion_mails_notif->id_notif        = 4; // offre acceptée
-                                        $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                                        $this->clients_gestion_mails_notif->id_transaction  = 0;
-                                        $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
-                                        $this->clients_gestion_mails_notif->id_loan         = $aBid['id_loan'];
+                                        $aLoansForBid = $oAcceptedBids->select('id_bid = '.$aBid['id_bid']);
 
-                                        if ($this->clients_gestion_notifications->getNotif($oLender->id_client_owner, 4, 'immediatement') == true) {
+                                        foreach ($aLoansForBid as $aLoan) {
 
-                                            $this->clients_gestion_mails_notif->get($aBid['id_loan'], 'id_client = ' . $oLender->id_client_owner . ' AND id_loan');
-                                            $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
-                                            $this->clients_gestion_mails_notif->update();
+                                            if (in_array($aLoan['id_loan'], $aLastLoans) === false ) {
+
+                                                $this->clients_gestion_mails_notif->id_client       = $oLender->id_client_owner;
+                                                $this->clients_gestion_mails_notif->id_notif        = 4; // offre acceptée
+                                                $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                                                $this->clients_gestion_mails_notif->id_transaction  = 0;
+                                                $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                                                $this->clients_gestion_mails_notif->id_loan         = $aLoan['id_loan'];
+
+                                                if ($this->clients_gestion_notifications->getNotif($oLender->id_client_owner, 4, 'immediatement') == true) {
+
+                                                    $this->clients_gestion_mails_notif->get($aLoan['id_loan'], 'id_client = ' . $oLender->id_client_owner . ' AND id_loan');
+                                                    $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                                                    $this->clients_gestion_mails_notif->update();
+                                                }
+                                                $aLastLoans[] = $aLoan['id_loan'];
+                                            }
                                         }
                                     }
-
-
                                     // FB
                                     $this->settings->get('Facebook', 'type');
                                     $sLienFB = $this->settings->value;
@@ -1438,7 +1446,6 @@ class dossiersController extends bootstrap
                                     }
 
                                 }
-                                die;
 
                                 // Renseigner l'id projet
                                 $id_project = $this->projects->id_project;
