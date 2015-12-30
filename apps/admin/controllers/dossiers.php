@@ -1277,7 +1277,7 @@ class dossiersController extends bootstrap
                                         $oLender->get($aBid['id_lender'], 'id_lender_account');
                                         $oClient->get($oLender->id_client_owner, 'id_client');
 
-                                        $aLoansForBid = $oAcceptedBids->select('id_bid = '.$aBid['id_bid']);
+                                        $aLoansForBid = $oAcceptedBids->select('id_bid = ' . $aBid['id_bid']);
 
                                         foreach ($aLoansForBid as $aLoan) {
 
@@ -1351,18 +1351,23 @@ class dossiersController extends bootstrap
                                             if ($iNumberOfAcceptedBids > 1) {
                                                 $sAcceptedOffers = 'vos offres ont &eacute;t&eacute; accept&eacute;es';
                                                 $sOffers         = 'vos offres';
-                                                $sContracts      = 'Vos contrats sont disponibles';
-                                                $sLoans          = 'vos pr&ecirc;ts';
                                             } else {
                                                 $sAcceptedOffers = 'votre offre a &eacute;t&eacute; accept&eacute;e';
                                                 $sOffers         = 'votre offre';
+                                            }
+
+                                            if ($iNumberOfLoansForLender > 1) {
+                                                $sContracts      = 'Vos contrats sont disponibles';
+                                                $sLoans          = 'vos pr&ecirc;ts';
+
+                                            } else {
                                                 $sContracts      = 'Votre contrat est disponible';
                                                 $sLoans          = 'votre pr&ecirc;t';
                                             }
 
                                             if ($bLenderIsNaturalPerson && $iNumberOfLoansForLender <= 1) {
 
-                                                    $sLoansDetails .= 'Vous lui pr&ecirc;tez donc <span style="color:#b20066;">' . $iSumLoansOfLender . ' euros </span> &agrave; <span style="color:#b20066;">' . $this->ficelle->formatNumber($iAvgInterestRateOfLender) . '% </span> pendant <span style="color:#b20066;"> ' . $this->projects->period . ' mois</span>.';
+                                                    $sLoansDetails .= 'Vous lui pr&ecirc;tez donc <span style="color:#b20066;">' . $iSumLoansOfLender . ' euros </span> &agrave; <span style="color:#b20066;">' . $this->ficelle->formatNumber($iAvgInterestRateOfLender) . ' % </span> pendant <span style="color:#b20066;"> ' . $this->projects->period . ' mois</span>.';
                                             }
                                             elseif ($bLenderIsNaturalPerson && $iNumberOfLoansForLender > 1 || $bLenderIsNaturalPerson === false ) {
 

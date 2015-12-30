@@ -6862,13 +6862,13 @@ class cronController extends bootstrap
                                 $liste_offres .= '
 								<tr style="color:#b20066;">
 									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' €</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' &euro;</td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
 									<td align="right" style="font-family:Arial;font-size:14px;">'.$sContractType.'</td>
 								</tr>
 								<tr>
 									<td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
-									<td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($total, 0) . ' €</td>
+									<td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($total, 0) . ' &euro;</td>
 									<td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
 									<td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
 								</tr>
@@ -6877,7 +6877,7 @@ class cronController extends bootstrap
                                 $liste_offres .= '
 								<tr style="color:#b20066;">
 									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' €</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' &euro;</td>
 									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
 									<td align="right" style="font-family:Arial;font-size:14px;">'.$sContractType.'</td>
 								</tr>';
