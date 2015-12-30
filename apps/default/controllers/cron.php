@@ -717,7 +717,7 @@ class cronController extends bootstrap
                         $this->email = $this->loadLib('email');
                         $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
                         $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-                        $this->email->setHTMLBody(stripslashes(strtr($this->mails_text->content, $tabVars)));
+                        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
 
                         if ($oClient->status == 1 ) {
                             if ($this->Config['env'] == 'prod') {

@@ -1262,7 +1262,6 @@ class dossiersController extends bootstrap
 
                                     $aLendersIds      = $this->loans->getPreteurs($this->projects->id_project);
                                     $aAcceptedBids    = $oAcceptedBids->getDistinctBids($this->projects->id_project);
-                                    var_dump($aAcceptedBids);
 
                                     foreach ($aAcceptedBids as $aBid) {
 
@@ -1274,9 +1273,6 @@ class dossiersController extends bootstrap
                                         $this->notifications->id_bid          = $aBid['id_bid'];
                                         $this->notifications->id_notification = $this->notifications->create();
 
-                                        var_dump($this->notifications->id_notification);
-
-
                                         $oLender->get($aBid['id_lender'], 'id_lender_account');
                                         $oClient->get($oLender->id_client_owner, 'id_client');
 
@@ -1286,7 +1282,6 @@ class dossiersController extends bootstrap
                                         $this->clients_gestion_mails_notif->id_transaction  = 0;
                                         $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
                                         $this->clients_gestion_mails_notif->id_loan         = $aBid['id_loan'];
-                                        var_dump($this->clients_gestion_mails_notif->create());
 
                                         if ($this->clients_gestion_notifications->getNotif($oLender->id_client_owner, 4, 'immediatement') == true) {
 
