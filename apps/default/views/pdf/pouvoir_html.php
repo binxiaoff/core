@@ -240,70 +240,70 @@
             </div>
         </div>
         <div>
-            <h3 class="pink"><?= $this->bloc_pdf_contrat['dernier-bilan'] ?></h3>
+            <h3 class="pink">DERNIER BILAN CERTIFIE SINCERE DE L'EMETTEUR</h3>
             <div class="list">
                 <ul>
                     <li>
-                        <?= $this->bloc_pdf_contrat['au'] ?> <?= $this->date_dernier_bilan_jour ?>/<?= $this->date_dernier_bilan_mois ?>/<?= $this->date_dernier_bilan_annee ?>
+                        Au <?= $this->date_dernier_bilan_jour ?>/<?= $this->date_dernier_bilan_mois ?>/<?= $this->date_dernier_bilan_annee ?>
                     </li>
                 </ul>
-                <h5><?= $this->bloc_pdf_contrat['actif'] ?></h5>
+                <h5>ACTIF</h5>
                 <div class="list">
                     <ul>
-                        <li><?= $this->bloc_pdf_contrat['immo-corpo'] ?>
+                        <li>Immobilisations corporelles
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_corporelles']) ?> &euro;</div>
                         </li>
-                        <li><?= $this->bloc_pdf_contrat['immo-incorpo'] ?>
+                        <li>Immobilisations incorporelles
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_incorporelles']) ?> &euro;</div>
                         </li>
-                        <li><?= $this->bloc_pdf_contrat['immo-financieres'] ?>
+                        <li>Immobilisations financières
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_financieres']) ?> &euro;</div>
                         </li>
-                        <li><?= $this->bloc_pdf_contrat['stocks'] ?>
+                        <li>Stocks
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['stocks']) ?> &euro;</div>
                         </li>
-                        <li><?= $this->bloc_pdf_contrat['creances'] ?>
+                        <li>Créances clients et autres
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['creances_clients']) ?> &euro;</div>
                         </li>
-                        <li><?= $this->bloc_pdf_contrat['dispo'] ?>
+                        <li>Disponibilités
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['disponibilites']) ?> &euro;</div>
                         </li>
-                        <li><?= $this->bloc_pdf_contrat['valeurs-mobilieres'] ?>
+                        <li>Valeurs mobilières de placement
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['valeurs_mobilieres_de_placement']) ?> &euro;</div>
                         </li>
                     </ul>
                 </div>
                 <div class="total-row">
-                    <?= $this->bloc_pdf_contrat['total-actif'] ?> : <?= $this->ficelle->formatNumber($this->totalActif) ?> &euro;
+                    Total actif : <?= $this->ficelle->formatNumber($this->totalActif) ?> &euro;
                 </div>
-                <h5><?= $this->bloc_pdf_contrat['passif'] ?></h5>
+                <h5>PASSIF</h5>
                 <div class="list">
                     <ul>
-                        <li><?= $this->bloc_pdf_contrat['capitaux'] ?>
+                        <li>Capitaux propres
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['capitaux_propres']) ?> &euro;</div>
                         </li>
-                        <li><?= $this->bloc_pdf_contrat['provisions'] ?>
+                        <li>Provisions pour risques et charges
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['provisions_pour_risques_et_charges']) ?> &euro;</div>
                         </li>
-                        <li><?= $this->bloc_pdf_contrat['amortissements-sur-immo'] ?>
+                        <li>Amortissements sur immobilisations
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['amortissement_sur_immo']) ?> &euro;</div>
                         </li>
-                        <li><?= $this->bloc_pdf_contrat['dettes-fi'] ?>
+                        <li>Dettes financières
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_financieres']) ?> &euro;</div>
                         </li>
-                        <li><?= $this->bloc_pdf_contrat['dettes-fourn'] ?>
+                        <li>Dettes fournisseurs
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_fournisseurs']) ?> &euro;</div>
                         </li>
-                        <li><?= $this->bloc_pdf_contrat['autres-dettes'] ?>
+                        <li>Autres dettes
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['autres_dettes']) ?> &euro;</div>
                         </li>
                     </ul>
                 </div>
                 <div class="total-row">
-                    <?= $this->bloc_pdf_contrat['total-passif'] ?> : <?= $this->ficelle->formatNumber($this->totalPassif) ?> &euro;
+                    Total passif : <?= $this->ficelle->formatNumber($this->totalPassif) ?> &euro;
                 </div>
                 <div class="center-text">
-                    <?= $this->bloc_pdf_contrat['certifie'] ?>
+                    Certifié sincère par l'Emetteur
                 </div>
             </div>
         </div>
@@ -314,17 +314,17 @@
             ?>
             <!-- Page Break -->
             <div class="page-break">
-                <h3 class="pink"><?= $this->bloc_pdf_contrat['echeancier-remboursements'] ?></h3>
+                <h3 class="pink">ECHEANCIER DES REMBOURSEMENTS</h3>
                 <div class="dates-table">
                     <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
                         <tr>
-                            <th valign="bottom"><?= $this->bloc_pdf_contrat['date'] ?></th>
-                            <th valign="bottom"><?= $this->bloc_pdf_contrat['capital'] ?></th>
-                            <th valign="bottom"><?= $this->bloc_pdf_contrat['interet'] ?></th>
+                            <th valign="bottom">DATE</th>
+                            <th valign="bottom">CAPITAL</th>
+                            <th valign="bottom">INTERETS</th>
                             <th valign="bottom"><?= $this->bloc_pouvoir['commission'] ?><br/> <?= $this->bloc_pouvoir['unilend'] ?></th>
                             <th valign="bottom"><?= $this->bloc_pouvoir['tva'] ?></th>
-                            <th valign="bottom"><?= $this->bloc_pdf_contrat['total'] ?></th>
-                            <th valign="bottom"><?= $this->bloc_pdf_contrat['capital-restant'] ?></th>
+                            <th valign="bottom">TOTAL</th>
+                            <th valign="bottom">CAPITAL RESTANT DÛ</th>
                         </tr>
 
                         <?
@@ -402,17 +402,17 @@
             ?>
             <!-- Page Break -->
             <div class="page-break">
-                <h3 class="pink"><?= $this->bloc_pdf_contrat['echeancier-remboursements'] ?></h3>
+                <h3 class="pink">ECHEANCIER DES REMBOURSEMENTS</h3>
                 <div class="dates-table">
                     <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
                         <tr>
-                            <th valign="bottom"><?= $this->bloc_pdf_contrat['date'] ?></th>
-                            <th valign="bottom"><?= $this->bloc_pdf_contrat['capital'] ?></th>
-                            <th valign="bottom"><?= $this->bloc_pdf_contrat['interet'] ?></th>
+                            <th valign="bottom">DATE</th>
+                            <th valign="bottom">CAPITAL</th>
+                            <th valign="bottom">INTERETS</th>
                             <th valign="bottom"><?= $this->bloc_pouvoir['commission'] ?><br/> <?= $this->bloc_pouvoir['unilend'] ?></th>
                             <th valign="bottom"><?= $this->bloc_pouvoir['tva'] ?></th>
-                            <th valign="bottom"><?= $this->bloc_pdf_contrat['total'] ?></th>
-                            <th valign="bottom"><?= $this->bloc_pdf_contrat['capital-restant'] ?></th>
+                            <th valign="bottom">TOTAL</th>
+                            <th valign="bottom">CAPITAL RESTANT DÛ</th>
                         </tr>
                         <?php
 
