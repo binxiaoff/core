@@ -68,13 +68,6 @@ class transactions extends transactions_crud
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function getCodePays($id_pays)
-    {
-        $sql    = 'SELECT id_langue FROM `pays` WHERE id_pays = "' . $id_pays . '"';
-        $result = $this->bdd->query($sql);
-        return strtoupper($this->bdd->result($result, 0, 0));
-    }
-
     /* Nouvelle fonction utilisée désormais par les fonctions de stats par statuts de transaction ci dessous (factorisation)*/
 
     public function getMonthlyTransactionsBy($year = false, $status = false, $etat = false, $transaction = false, $type_transaction = array(), $type_transaction_filterout = array())
