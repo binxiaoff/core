@@ -65,8 +65,8 @@ if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_com
 
         <th width="200px" id="order_bdc" align="left" class="col1" style=" padding-left: 0px;">
                 <div class="th-wrap" style='top:-3px;width: 200px;'>
-                	<i title="<?=$this->lng['preteur-operations-pdf']['info-titre-bon-caisse']?>" class="tooltip-anchor icon-bdc"></i>
-					<div class="title-ope"><?=$this->lng['preteur-operations-pdf']['bdc']?>&nbsp;<i class="icon-arrows"></i></div>
+                	<i title="<?=$this->lng['preteur-operations-pdf']['info-titre-loan-id']?>" class="tooltip-anchor icon-bdc"></i>
+					<div class="title-ope"><?=$this->lng['preteur-operations-pdf']['loan-id']?>&nbsp;<i class="icon-arrows"></i></div>
                 </div>
             </th>
 
