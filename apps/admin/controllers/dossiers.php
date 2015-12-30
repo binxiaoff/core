@@ -1262,14 +1262,20 @@ class dossiersController extends bootstrap
 
                                     $aLendersIds      = $this->loans->getPreteurs($this->projects->id_project);
                                     $aAcceptedBids    = $oAcceptedBids->getDistinctBids($this->projects->id_project);
+                                    var_dump($aAcceptedBids);
 
                                     foreach ($aAcceptedBids as $aBid) {
+
                                         $this->notifications->type            = 4; // accepté
                                         $this->notifications->id_lender       = $aBid['id_lender'];
+
                                         $this->notifications->id_project      = $this->projects->id_project;
                                         $this->notifications->amount          = $aBid['amount'];
                                         $this->notifications->id_bid          = $aBid['id_bid'];
                                         $this->notifications->id_notification = $this->notifications->create();
+
+                                        var_dump($this->notifications->id_notification);
+
 
                                         $oLender->get($aBid['id_lender'], 'id_lender_account');
                                         $oClient->get($oLender->id_client_owner, 'id_client');
@@ -1280,7 +1286,7 @@ class dossiersController extends bootstrap
                                         $this->clients_gestion_mails_notif->id_transaction  = 0;
                                         $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
                                         $this->clients_gestion_mails_notif->id_loan         = $aBid['id_loan'];
-                                        $this->clients_gestion_mails_notif->create();
+                                        var_dump($this->clients_gestion_mails_notif->create());
 
                                         if ($this->clients_gestion_notifications->getNotif($oLender->id_client_owner, 4, 'immediatement') == true) {
 
@@ -1289,6 +1295,7 @@ class dossiersController extends bootstrap
                                             $this->clients_gestion_mails_notif->update();
                                         }
                                     }
+
 
                                     // FB
                                     $this->settings->get('Facebook', 'type');
@@ -1315,13 +1322,26 @@ class dossiersController extends bootstrap
                                             $bLenderIsNaturalPerson   = $oLender->isNaturalPerson($oLender->id_lender_account);
                                             $aLoansOfLender           = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account);
                                             $iNumberOfLoansForLender  = count($aLoansOfLender);
-                                            $iSumLoansOfLender        = $this->loans->sum('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, 'amount')/100;
+                                            $iSumLoansOfLender        = $this->loans->sum('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, 'amount') / 100;
                                             $iAvgInterestRateOfLender = $this->loans->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $this->projects->id_project);
-                                            $iSumMonthlyPayments      = $oPaymentSchedule->sum('id_lender = '.$oLender->id_lender_account.' AND id_project = '.$this->projects->id_project.' AND ordre = 1', 'montant');
+                                            $iSumMonthlyPayments      = $oPaymentSchedule->sum('id_lender = ' . $oLender->id_lender_account . ' AND id_project = ' . $this->projects->id_project . ' AND ordre = 1', 'montant');
                                             $sDateFirstPayment        = $oPaymentSchedule->getDatePremiereEcheance($this->projects->id_project);
-                                            $aLoanIFP                 = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
-                                            $iNumberOfBidsInLoanIFP   = $oAcceptedBids->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
                                             $iNumberOfAcceptedBids    = $oAcceptedBids->getDistinctBidsForLenderAndProject($oLender->id_lender_account, $this->projects->id_project);
+
+                                            $sLoansDetails            = '';
+
+                                            if ($bLenderIsNaturalPerson) {
+                                                $aLoanIFP               = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
+                                                $iNumberOfBidsInLoanIFP = $oAcceptedBids->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
+
+                                                if ($iNumberOfBidsInLoanIFP > 1) {
+                                                    $sLoansDetails .= 'L&rsquo;ensemble de vos offres &agrave;
+                                                                        concurrence de 1 000 euros sont regroup&eacute;es sous la forme
+                                                                        d&rsquo;un seul contrat de pr&ecirc;t.
+                                                                        Son taux d&rsquo;int&eacute;r&ecirc;t correspond donc &agrave; la moyenne
+                                                                        pond&eacute;r&eacute;e de vos <span style="color:#b20066;">' . $iNumberOfBidsInLoanIFP . ' offres de pr&ecirc;t</span>. ';
+                                                }
+                                            }
 
                                             if ($iNumberOfAcceptedBids > 1) {
                                                 $sAcceptedOffers = 'vos offres ont &eacute;t&eacute; accept&eacute;es';
@@ -1335,19 +1355,9 @@ class dossiersController extends bootstrap
                                                 $sLoans          = 'votre pr&ecirc;t';
                                             }
 
-                                            if ($bLenderIsNaturalPerson && $iNumberOfBidsInLoanIFP > 1) {
-                                                $sLoansDetails = 'L&rsquo;ensemble de vos offres &agrave;
-                                                                        concurrence de 1 000 euros sont regroup&eacute;es sous la forme
-                                                                        d&rsquo;un seul contrat de pr&ecirc;t.
-                                                                        Son taux d&rsquo;int&eacute;r&ecirc;t correspond donc &agrave; la moyenne
-                                                                        pond&eacute;r&eacute;e de vos <span style="color:#b20066;">' . $iNumberOfBidsInLoanIFP . ' offres de pr&ecirc;t </span>.';
-                                            } else {
-                                                $sLoansDetails = '';
-                                            }
-
                                             if ($bLenderIsNaturalPerson && $iNumberOfLoansForLender <= 1) {
 
-                                                    $sLoansDetails .= 'Vous lui pr&ecirc;tez donc <span style="color:#b20066;">' . $iSumLoansOfLender . ' euros </span> &agrave; <span style="color:#b20066;">' . $this->ficelle->formatNumber($iAvgInterestRateOfLender) . '% </span> pendant <span style="color:#b20066;"> ' . $this->projects->period . ' mois </span>.';
+                                                    $sLoansDetails .= 'Vous lui pr&ecirc;tez donc <span style="color:#b20066;">' . $iSumLoansOfLender . ' euros </span> &agrave; <span style="color:#b20066;">' . $this->ficelle->formatNumber($iAvgInterestRateOfLender) . '% </span> pendant <span style="color:#b20066;"> ' . $this->projects->period . ' mois</span>.';
                                             }
                                             elseif ($bLenderIsNaturalPerson && $iNumberOfLoansForLender > 1 || $bLenderIsNaturalPerson === false ) {
 
@@ -1383,7 +1393,7 @@ class dossiersController extends bootstrap
                                             }
 
                                             $sLinkExplication = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t,
-                                            vous pouvez consulter <a style="color:#b20066;" href="'.$this->surl.'/document-de-pret"> cette page </a>. ': '';
+                                            vous pouvez consulter <a style="color:#b20066;" href="'.$this->surl.'/document-de-pret">cette page</a>. ': '';
 
                                             //******************************//
                                             //*** ENVOI DU MAIL CONTRAT ***//
@@ -1419,7 +1429,7 @@ class dossiersController extends bootstrap
                                             $this->email = $this->loadLib('email');
                                             $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
                                             $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-                                            $this->email->setHTMLBody(stripslashes(strtr($this->mails_text->content, $tabVars)));
+                                            $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
 
                                             if ($this->Config['env'] === 'prod') {
                                                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($oClient->email), $tabFiler);
@@ -1433,6 +1443,7 @@ class dossiersController extends bootstrap
                                     }
 
                                 }
+                                die;
 
                                 // Renseigner l'id projet
                                 $id_project = $this->projects->id_project;

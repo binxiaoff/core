@@ -415,8 +415,8 @@ class loans extends loans_crud
         $iSumAmount = 0;
 
         foreach ($aLoans as $aLoan) {
-            $iSumOfAmountXRate += ($aLoan['amount'] / 100) * $aLoan['rate'];
-            $iSumAmount += $aLoan['amount']/100;
+            $iSumOfAmountXRate += $aLoan['amount'] * $aLoan['rate'];
+            $iSumAmount += $aLoan['amount'];
         }
 
         return $iSumOfAmountXRate/$iSumAmount;

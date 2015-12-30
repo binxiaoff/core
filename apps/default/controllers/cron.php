@@ -623,9 +623,21 @@ class cronController extends bootstrap
                         $iNumberOfLoansForLender  = count($aLoansOfLender);
                         $iSumLoansOfLender        = ($this->loans->sum('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, 'amount') / 100);
                         $iAvgInterestRateOfLender = $this->loans->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $this->projects->id_project);
-                        $aLoanIFP                 = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
-                        $iNumberOfBidsInLoanIFP   = $oAcceptedBids->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
                         $iNumberOfAcceptedBids    = $oAcceptedBids->getDistinctBidsForLenderAndProject($oLender->id_lender_account, $this->projects->id_project);
+                        $sLoansDetails            = '';
+
+                        if ($bLenderIsNaturalPerson) {
+                            $aLoanIFP               = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
+                            $iNumberOfBidsInLoanIFP = $oAcceptedBids->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
+
+                            if ($iNumberOfBidsInLoanIFP > 1) {
+                                $sLoansDetails .= 'L&rsquo;ensemble de vos offres &agrave;
+                                                   concurrence de 1 000 euros sont regroup&eacute;es sous la forme
+                                                   d&rsquo;un seul contrat de pr&ecirc;t.
+                                                   Son taux d&rsquo;int&eacute;r&ecirc;t correspond donc &agrave; la moyenne
+                                                   pond&eacute;r&eacute;e de vos <span style="color:#b20066;">' . $iNumberOfBidsInLoanIFP . ' offres de pr&ecirc;t</span>. ';
+                            }
+                        }
 
                         if ($iNumberOfAcceptedBids > 1) {
                             $sAcceptedOffers            = 'vos offres ont &eacute;t&eacute; accept&eacute;es';
@@ -635,17 +647,6 @@ class cronController extends bootstrap
                             $sAcceptedOffers            = 'votre offre a &eacute;t&eacute; accept&eacute;e';
                             $sOffers                    = 'votre offre';
                             $sDoes                      = 'fait';
-                        }
-
-                        if ($bLenderIsNaturalPerson && $iNumberOfBidsInLoanIFP > 1) {
-
-                            $sLoansDetails = 'L&rsquo;ensemble de vos offres &agrave;
-                                              concurrence de 1 000 euros sont regroup&eacute;es sous la forme
-                                              d&rsquo;un seul contrat de pr&ecirc;t.
-                                              Son taux d&rsquo;int&eacute;r&ecirc;t correspond donc &agrave; la moyenne
-                                              pond&eacute;r&eacute;e de vos <span style="color:#b20066;">' . $iNumberOfBidsInLoanIFP . ' </span> offres de pr&ecirc;t qui le constituent. <br>';
-                        } else {
-                            $sLoansDetails = '';
                         }
 
                         if ($bLenderIsNaturalPerson && $iNumberOfLoansForLender <= 1) {
@@ -691,7 +692,7 @@ class cronController extends bootstrap
                         }
 
                         $sLinkExplication = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t,
-                                            vous pouvez consulter <a style="color:#b20066;" href="'.$this->surl.'/document-de-pret"> cette page </a>. ': '';
+                                            vous pouvez consulter <a style="color:#b20066;" href="'.$this->surl.'/document-de-pret">cette page</a>. ': '';
 
                         $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
 
