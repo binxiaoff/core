@@ -666,7 +666,6 @@ class dossiersController extends bootstrap
                             /////////////////////////////////////
                             // Partie check données manquantes //
                             /////////////////////////////////////
-var_dump(__LINE__);
                             $companies        = $this->loadData('companies');
                             $clients          = $this->loadData('clients');
                             $clients_adresses = $this->loadData('clients_adresses');
@@ -1255,15 +1254,14 @@ var_dump(__LINE__);
                                     //*** fin prelevement emprunteur ***//
                                     // les contrats a envoyer //
 
-                                    $aLoans           = $this->loans->select('id_project = ' . $this->projects->id_project);
-                                    $aLendersIds      = $this->loans->getPreteurs($this->projects->id_project);
                                     $oClient          = $this->loadData('clients');
                                     $oLender          = $this->loadData('lenders_accounts');
                                     $oCompanies       = $this->loadData('companies');
                                     $oAcceptedBids    = $this->loadData('accepted_bids');
                                     $oPaymentSchedule = $this->loadData('echeanciers');
 
-                                    $aAcceptedBids = $oAcceptedBids->getDistinctBids($this->projects->id_project);
+                                    $aLendersIds      = $this->loans->getPreteurs($this->projects->id_project);
+                                    $aAcceptedBids    = $oAcceptedBids->getDistinctBids($this->projects->id_project);
 
                                     foreach ($aAcceptedBids as $aBid) {
                                         $this->notifications->type            = 4; // accepté
@@ -1272,11 +1270,8 @@ var_dump(__LINE__);
                                         $this->notifications->amount          = $aBid['amount'];
                                         $this->notifications->id_bid          = $aBid['id_bid'];
                                         $this->notifications->id_notification = $this->notifications->create();
-                                    }
 
-                                    foreach ($aLoans as $aLoan) {
-
-                                        $oLender->get($aLoan['id_lender'], 'id_lender_account');
+                                        $oLender->get($aBid['id_lender'], 'id_lender_account');
                                         $oClient->get($oLender->id_client_owner, 'id_client');
 
                                         $this->clients_gestion_mails_notif->id_client       = $oLender->id_client_owner;
@@ -1284,12 +1279,12 @@ var_dump(__LINE__);
                                         $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                                         $this->clients_gestion_mails_notif->id_transaction  = 0;
                                         $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
-                                        $this->clients_gestion_mails_notif->id_loan         = $aLoan['id_loan'];
+                                        $this->clients_gestion_mails_notif->id_loan         = $aBid['id_loan'];
                                         $this->clients_gestion_mails_notif->create();
 
                                         if ($this->clients_gestion_notifications->getNotif($oLender->id_client_owner, 4, 'immediatement') == true) {
 
-                                            $this->clients_gestion_mails_notif->get($aLoan['id_loan'], 'id_client = ' . $oLender->id_client_owner . ' AND id_loan');
+                                            $this->clients_gestion_mails_notif->get($aBid['id_loan'], 'id_client = ' . $oLender->id_client_owner . ' AND id_loan');
                                             $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                                             $this->clients_gestion_mails_notif->update();
                                         }
