@@ -1324,12 +1324,13 @@ class dossiersController extends bootstrap
                                             $sMotif                   = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
 
                                             $bLenderIsNaturalPerson   = $oLender->isNaturalPerson($oLender->id_lender_account);
-                                            $aLoansOfLender           = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account);
+                                            $aLoansOfLender           = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, '`id_type_contract` DESC');
                                             $iNumberOfLoansForLender  = count($aLoansOfLender);
                                             $iSumLoansOfLender        = $this->loans->sum('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, 'amount') / 100;
                                             $iAvgInterestRateOfLender = $this->loans->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $this->projects->id_project);
                                             $iSumMonthlyPayments      = $oPaymentSchedule->sum('id_lender = ' . $oLender->id_lender_account . ' AND id_project = ' . $this->projects->id_project . ' AND ordre = 1', 'montant');
-                                            $sDateFirstPayment        = $oPaymentSchedule->getDatePremiereEcheance($this->projects->id_project);
+                                            $aFirstPayment            = $oPaymentSchedule->getPremiereEcheancePreteur($this->projects->id_project, $oLender->id_lender_account);
+                                            $sDateFirstPayment        = $aFirstPayment['date_echeance'];
                                             $iNumberOfAcceptedBids    = $oAcceptedBids->getDistinctBidsForLenderAndProject($oLender->id_lender_account, $this->projects->id_project);
 
                                             $sLoansDetails            = '';

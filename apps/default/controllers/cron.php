@@ -5705,7 +5705,7 @@ class cronController extends bootstrap
                 $id_notif = 2;
             } elseif (time() >= $dateDebutOffreRefusee && time() < $dateFinOffreRefusee) {// Offre refusée
                 $id_notif = 3;
-            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee || true ) {// Offre Acceptée
+            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee ) {// Offre Acceptée
                 $id_notif = 4;
             } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
                 $id_notif = 5;
@@ -5804,7 +5804,7 @@ class cronController extends bootstrap
                         }
                     }
                 }
-            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee || true ) {// Offre Acceptée
+            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee ) {// Offre Acceptée
                 $id_notif = 4;
             } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
                 $id_notif = 5;
@@ -5860,7 +5860,7 @@ class cronController extends bootstrap
             $dateDebutRemboursement = mktime(11, 0, 0, date('m'), date('d'), date('Y'));
             $dateFinRemboursement   = mktime(11, 30, 0, date('m'), date('d'), date('Y'));
 
-            if (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee || true ) {
+            if (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee ) {
                 $id_notif = 4;
             } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
                 $id_notif = 5;
@@ -6688,7 +6688,7 @@ class cronController extends bootstrap
 
                     $oLender->get($this->clients->id_client, 'id_client_owner');
                     $bLenderIsNaturalPerson = $oLender->isNaturalPerson($oLender->id_lender_account);
-                    $sLinkExplication       = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a href="' . $this->surl . '/document-de-pret"> cette page </a>. ' : '';
+                    $sLinkExplication       = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a style="color:#b20066;" href="'.$this->surl.'/document-de-pret">cette page</a>. ' : '';
 
                     $p            = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
                     $nom          = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
