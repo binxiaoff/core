@@ -151,9 +151,10 @@ if (isset($_SESSION['lexpress']))
                                                 <b><?= $this->lng['notifications']['offre-partiellement-refusee'] ?></b><br />
 
                                                 <div class="content_notif">
-                                                    <?
-                                                    $montant = ($this->bids->amount - $r['amount']);
-                                                    ?><?= $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate) ?> %</b><?= $this->lng['notifications']['offre-refusee-pour-un-montant-de'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->amount / 100, 2) ?> €</b> <?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a> <?= $this->lng['notifications']['offre-refusee-a-ete-decoupe'] ?> <b style="color:#b20066;"><?= number_format($r['amount'] / 100) ?> €</b><?= $this->lng['notifications']['offre-refusee-point'] ?>
+                                                    <?php $montant = ($this->bids->amount - $r['amount']); ?>
+                                                    <?= $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate) ?> %</b>
+                                                    <?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?> <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a>
+                                                    <?= $this->lng['notifications']['offre-refusee-a-ete-decoupe'] ?> <b style="color:#b20066;"><?= number_format($r['amount'] / 100) ?> €</b><?= $this->lng['notifications']['offre-refusee-point'] ?>
                                                 </div><?
                                             }
                                             else
