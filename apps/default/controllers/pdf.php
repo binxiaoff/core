@@ -642,7 +642,7 @@ class pdfController extends bootstrap
         $this->aCommissionRepayment = \repayment::getRepaymentCommission($oLoans->amount / 100, $oProjects->period, $fCommissionRate, $fVat);
 
         $this->fCommissionRepayment = $this->aCommissionRepayment['commission_total'];
-        $this->fCommissionProject   = $fProjectCommisionRate * $oLoans->amount / 100 ;
+        $this->fCommissionProject   = $fProjectCommisionRate * $oLoans->amount / 100 / (1 + $fVat);
         $this->fInterestTotal       = $this->echeanciers->getSumByLoan($oLoans->id_loan, 'interets');
 
         if (\loans::TYPE_CONTRACT_BDC == $oLoans->id_type_contract) {
