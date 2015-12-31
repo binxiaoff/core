@@ -617,7 +617,7 @@ class projects extends projects_crud
     }
 
 
-    public function calculateAvgInterestRate($iProjectId = null, $iProjectStatus = null)
+    public function calculateAvgInterestRate(bids $oBids, loans $oLoans, $iProjectId = null, $iProjectStatus = null)
     {
         if ($iProjectId === null) {
             $iProjectId = $this->id_project;
@@ -631,9 +631,6 @@ class projects extends projects_crud
 
         $iUpperValue = 0;
         $iLowerValue = 0;
-        $oLoans      = new \loans($this->bdd);
-        $oBids       = new \bids($this->bdd);
-
 
         switch ((int) $iProjectStatus) {
             case \projects_status::FUNDE:
@@ -642,28 +639,28 @@ class projects extends projects_crud
             case \projects_status::PROBLEME:
             case \projects_status::RECOUVREMENT:
             case \projects_status::REMBOURSEMENT_ANTICIPE:
-                foreach ($oLoans->select('id_project = ' . $iProjectId) as $aLoans) {
-                    $iUpperValue += ($aLoans['rate'] * ($aLoans['amount'] / 100));
-                    $iLowerValue += ($aLoans['amount'] / 100);
+                foreach ($oLoans->select('id_project = ' . $iProjectId) as $aLoan) {
+                    $iUpperValue += ($aLoan['rate'] * ($aLoan['amount']));
+                    $iLowerValue += ($aLoan['amount']);
                 }
                 break;
             case \projects_status::EN_FUNDING:
-                foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status = 0') as $aBids) {
-                    $iUpperValue += ($aBids['rate'] * ($aBids['amount'] / 100));
-                    $iLowerValue += ($aBids['amount'] / 100);
+                foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status = 0') as $aBid) {
+                    $iUpperValue += ($aBid['rate'] * ($aBid['amount']));
+                    $iLowerValue += ($aBid['amount']);
                 }
                 break;
             case \projects_status::FUNDING_KO:
-            foreach ($oBids->select('id_project = ' . $iProjectId) as $aBids) {
-                $iUpperValue += ($aBids['rate'] * ($aBids['amount'] / 100));
-                $iLowerValue += ($aBids['amount'] / 100);
+            foreach ($oBids->select('id_project = ' . $iProjectId) as $aBid) {
+                $iUpperValue += ($aBid['rate'] * ($aBid['amount']));
+                $iLowerValue += ($aBid['amount']);
             }
             break;
             case \projects_status::PRET_REFUSE:
             case \projects_status::DEFAUT:
-            foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status = 1') as $aBids) {
-                $iUpperValue += ($aBids['rate'] * ($aBids['amount'] / 100));
-                $iLowerValue += ($aBids['amount'] / 100);
+            foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status = 1') as $aBid) {
+                $iUpperValue += ($aBid['rate'] * ($aBid['amount']));
+                $iLowerValue += ($aBid['amount']);
             }
             break;
             default:
