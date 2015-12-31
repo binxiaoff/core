@@ -320,6 +320,8 @@ class espace_emprunteurController extends Bootstrap
                 $oProject->date_retrait      = $oNewClosureDate->format('Y-m-d');
                 $oProject->update();
 
+                $_SESSION['cloture_anticipe'] = true;
+
                 header('Location:' . $this->lurl . '/espace_emprunteur/projets');
                 die;
             }
@@ -411,15 +413,19 @@ class espace_emprunteurController extends Bootstrap
 
     private function getProjectsFunding()
     {
-        $aProjectsFunding = $this->companies->getProjectsForCompany($this->companies->id_company, \projects_status::EN_FUNDING);
-        $oBids            = $this->loadData('bids');
-
+        $aProjectsFunding   = $this->companies->getProjectsForCompany($this->companies->id_company, \projects_status::EN_FUNDING);
+        $oBids              = $this->loadData('bids');
+        $oLoans             = $this->loadData('loans');
+        $this->oDateTimeNow = new \DateTime('NOW');
 
         foreach ($aProjectsFunding as $iKey => $aProject) {
-            $aProjectsFunding[ $iKey ]['AverageIR'] = $this->projects->calculateAvgInterestRate($aProject['id_project'], $aProject['project_status']);
-
+            $aProjectsFunding[ $iKey ]['AverageIR']        = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $aProject['id_project'], $aProject['project_status']);
             $iSumBids                                      = $oBids->getSoldeBid($aProject['id_project']);
+
             $aProjectsFunding[ $iKey ]['funding-progress'] = ((1 - ($aProject['amount'] - $iSumBids) / $aProject['amount']) * 100);
+
+            $oDateTimeEnd                                  = DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
+            $aProjectsFunding[ $iKey ]['oInterval']        = $oDateTimeEnd->diff($this->oDateTimeNow);
         }
 
         return $aProjectsFunding;
@@ -436,19 +442,19 @@ class espace_emprunteurController extends Bootstrap
             \projects_status::REMBOURSEMENT_ANTICIPE
         );
 
-
         $aProjectsPostFunding   = $this->companies->getProjectsForCompany($this->companies->id_company, $aStatusPostFunding);
-        $oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
+        $oRepaymentSchedule     = $this->loadData('echeanciers_emprunteur');
+        $oBids                  = $this->loadData('bids');
+        $oLoans                 = $this->loadData('loans');
 
 
         foreach ($aProjectsPostFunding as $iKey => $aProject) {
-            $aProjectsPostFunding[ $iKey ]['AverageIR'] = $this->projects->calculateAvgInterestRate($aProject['id_project'], $aProject['project_status']);
+            $aProjectsPostFunding[ $iKey ]['AverageIR']              = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $aProject['id_project'], $aProject['project_status']);
+            $aProjectsPostFunding[ $iKey ]['RemainingDueCapital']    = $this->calculateRemainingDueCapital($aProject['id_project']);
 
-            $aProjectsPostFunding[ $iKey ]['RemainingDueCapital'] = $this->calculateRemainingDueCapital($aProject['id_project']);
-
-            $aNextEchenace = $oEcheanciersEmprunteur->select('status_emprunteur = 0 AND id_project = '.$aProject['id_project'], 'date_echeance_emprunteur ASC', '', 1);
-            $aProjectsPostFunding[ $iKey ]['MonthlyPayment'] = (($aNextEchenace[0]['montant'] + $aNextEchenace[0]['commission'] + $aNextEchenace[0]['tva']) / 100);
-            $aProjectsPostFunding[ $iKey ]['DateNextMonthlyPayment'] = $aNextEchenace[0]['date_echeance_emprunteur' ];
+            $aNextRepayment                                          = $oRepaymentSchedule->select('status_emprunteur = 0 AND id_project = ' . $aProject['id_project'], 'date_echeance_emprunteur ASC', '', 1);
+            $aProjectsPostFunding[ $iKey ]['MonthlyPayment']         = (($aNextRepayment[0]['montant'] + $aNextRepayment[0]['commission'] + $aNextRepayment[0]['tva']) / 100);
+            $aProjectsPostFunding[ $iKey ]['DateNextMonthlyPayment'] = $aNextRepayment[0]['date_echeance_emprunteur'];
         }
 
         return $aProjectsPostFunding;
@@ -456,12 +462,12 @@ class espace_emprunteurController extends Bootstrap
 
     private function calculateRemainingDueCapital($iProjectId)
     {
-        $oEcheanciers = $this->loadData('echeanciers');
+        $oPaymentSchedule = $this->loadData('echeanciers');
 
-        $aEcheance      = $oEcheanciers->getLastOrder($iProjectId);
-        $iEcheanceOrder = (isset($aEcheance)) ? $aEcheance['ordre'] + 1 : 1;
+        $aPayment     = $oPaymentSchedule->getLastOrder($iProjectId);
+        $iPaymentOrder = (isset($aPayment)) ? $aPayment['ordre'] + 1 : 1;
 
-        return $oEcheanciers->reste_a_payer_ra($iProjectId, $iEcheanceOrder);
+        return $oPaymentSchedule->reste_a_payer_ra($iProjectId, $iPaymentOrder);
     }
 
     private function contactEmailClient()

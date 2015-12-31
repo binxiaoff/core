@@ -31,6 +31,7 @@
 
     .table_projects td {
         text-align: center;
+        padding-top: 10px;
     }
 </style>
 
@@ -56,12 +57,12 @@
                 <table class="table_projects" style="table-layout: fixed;">
                     <thead>
                     <tr>
-                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
-                        <th width="200"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
-                        <th width="100"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
-                        <th width="200"><?= $this->lng['espace-emprunteur']['table-projets-status'] ?></th>
-                        <th width="150"></th>
-                        <th width="152"></th>
+                        <th width="10%"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
+                        <th width="22%"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
+                        <th width="11%"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
+                        <th width="22%"><?= $this->lng['espace-emprunteur']['table-projets-status'] ?></th>
+                        <th width="17%"></th>
+                        <th width="18%"></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -89,14 +90,14 @@
                 <table class="table_projects" style="table-layout: fixed;">
                     <thead>
                     <tr>
-                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
-                        <th width="200"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
-                        <th width="100"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
-                        <th width="120"><?= $this->lng['espace-emprunteur']['table-projets-date-de-cloture-prevue'] ?></th>
-                        <th width="100"><?= $this->lng['espace-emprunteur']['table-projets-funding-atteint'] ?></th>
-                        <th width="100"><?= $this->lng['espace-emprunteur']['table-projets-taux-moyen-a-date'] ?></th>
-                        <th width="100"></th>
-                        <th></th>
+                        <th width="10%"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
+                        <th width="22%"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
+                        <th width="11%"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
+                        <th width="12%"><?= $this->lng['espace-emprunteur']['table-projets-date-de-cloture-prevue'] ?></th>
+                        <th width="11%"><?= $this->lng['espace-emprunteur']['table-projets-funding-atteint'] ?></th>
+                        <th width="11%"><?= $this->lng['espace-emprunteur']['table-projets-taux-moyen-a-date'] ?></th>
+                        <th width="11%"></th>
+                        <th width="12%"></th>
                     </tr>
                     </thead>
                     <tbody>
@@ -110,9 +111,10 @@
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['funding-progress']) ?> %</td>
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['AverageIR']) ?> %</td>
                             <td style="white-space: nowrap;">
-                                <?php if ($aProject['funding-progress'] >= 100 && $aProject['date_retrait_full'] <= date('Y-m-d H:i:s')) : ?>
-                                    <a class="btn btn-info btn-small popup-link"
-                                       href="<?= $this->lurl ?>/thickbox/pop_up_anticipation/<?= (empty($aProject['hash']) === false) ? $aProject['hash'] : $aProject['id_project'] ?>"><?= $this->lng['espace-emprunteur']['bouton-arret-funding'] ?></a>
+                                <?php
+                                if ($aProject['funding-progress'] >= 100 && $aProject['oInterval'] >= 0 && isset($_SESSION['cloture_anticipe']) === false) : ?>
+                                    <div style="margin: 10px;"><a class="btn btn-info btn-small popup-link"
+                                       href="<?= $this->lurl ?>/thickbox/pop_up_anticipation/<?= (empty($aProject['hash']) === false) ? $aProject['hash'] : $aProject['id_project'] ?>"><?= $this->lng['espace-emprunteur']['bouton-arret-funding'] ?></a></div>
                                 <?php endif; ?>
                             </td>
                             <td>
@@ -129,15 +131,15 @@
                 <table class="table_projects" style="table-layout: fixed;">
                     <thead>
                     <tr class=table_projects" style="table-layout: fixed;">
-                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
-                        <th width="200"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
-                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
-                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-date-de-cloture'] ?></th>
-                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-mensualite'] ?></th>
-                        <th width="60"><?= $this->lng['espace-emprunteur']['table-projets-taux-moyen'] ?></th>
-                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-crd'] ?></th>
-                        <th width="90"><?= $this->lng['espace-emprunteur']['table-projets-date-prochaine-echeance'] ?></th>
-                        <th></th>
+                        <th width="10%"><?= $this->lng['espace-emprunteur']['table-projets-id'] ?></th>
+                        <th width="22%"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
+                        <th width="10%"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
+                        <th width="10%"><?= $this->lng['espace-emprunteur']['table-projets-date-de-cloture'] ?></th>
+                        <th width="10%"><?= $this->lng['espace-emprunteur']['table-projets-mensualite'] ?></th>
+                        <th width="7%"><?= $this->lng['espace-emprunteur']['table-projets-taux-moyen'] ?></th>
+                        <th width="10%"><?= $this->lng['espace-emprunteur']['table-projets-crd'] ?></th>
+                        <th width="10%"><?= $this->lng['espace-emprunteur']['table-projets-date-prochaine-echeance'] ?></th>
+                        <th width="11%"></th>
                     </tr>
                     </thead>
                     <tbody>

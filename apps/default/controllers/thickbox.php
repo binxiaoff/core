@@ -296,8 +296,9 @@ class thickboxController extends bootstrap
     public function _pop_up_anticipation()
     {
         $this->lng['espace-emprunteur'] = $this->ln->selectFront('espace-emprunteur', $this->language, $this->App);
-
-        $this->projects = $this->loadData('projects');
+        $this->projects                 = $this->loadData('projects');
+        $oLoans                         = $this->loadData('loans');
+        $oBids                          = $this->loadData('bids');
 
         if (is_numeric($this->params[0])) {
             $this->projects->get($this->params[0], 'id_project');
@@ -305,7 +306,7 @@ class thickboxController extends bootstrap
             $this->projects->get($this->params[0], 'hash');
         }
 
-        $fIR       = $this->projects->calculateAvgInterestRate($this->projects->id_project);
+        $fIR       = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $this->projects->id_project);
         $this->fIR = (is_null($fIR) === false) ? $fIR : 0;
 
     }
