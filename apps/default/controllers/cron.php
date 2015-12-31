@@ -569,16 +569,12 @@ class cronController extends bootstrap
                         '$periode' => $this->projects->period
                     );
 
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
-
                     try {
                         $oUnilendEmail->addAllMailVars($aVarEmail);
                         $oUnilendEmail->setTemplate('notification-projet-funde-a-100', $this->language);
                         $oUnilendEmail->addRecipient($destinataire);
                         $oUnilendEmail->sendToStaff();
                     } catch (\Exception $oException) {
-                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                         $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
 
@@ -599,123 +595,115 @@ class cronController extends bootstrap
 
                         $oLender->get($aLenderID['id_lender'], 'id_lender_account');
                         $oClient->get($oLender->id_client_owner, 'id_client');
-                        $oCompanies->get($this->projects->id_company, 'id_company');
-
-                        // Motif virement
-                        $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($oClient->prenom))), 0, 1);
-                        $nom       = $this->ficelle->stripAccents(utf8_decode(trim($oClient->nom)));
-                        $id_client = str_pad($oClient->id_client, 6, 0, STR_PAD_LEFT);
-                        $sMotif    = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-
-                        $bLenderIsNaturalPerson   = $oLender->isNaturalPerson($oLender->id_lender_account);
-                        $aLoansOfLender           = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, '`id_type_contract` DESC');
-                        $iNumberOfLoansForLender  = count($aLoansOfLender);
-                        $iSumLoansOfLender        = ($this->loans->sum('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, 'amount') / 100);
-                        $iAvgInterestRateOfLender = $this->loans->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $this->projects->id_project);
-                        $iNumberOfAcceptedBids    = $oAcceptedBids->getDistinctBidsForLenderAndProject($oLender->id_lender_account, $this->projects->id_project);
-                        $sLoansDetails            = '';
-
-                        if ($bLenderIsNaturalPerson) {
-                            $aLoanIFP               = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
-                            $iNumberOfBidsInLoanIFP = $oAcceptedBids->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
-
-                            if ($iNumberOfBidsInLoanIFP > 1) {
-                                $sLoansDetails .= 'L&rsquo;ensemble de vos offres &agrave;
-                                                   concurrence de 1 000 euros sont regroup&eacute;es sous la forme
-                                                   d&rsquo;un seul contrat de pr&ecirc;t.
-                                                   Son taux d&rsquo;int&eacute;r&ecirc;t correspond donc &agrave; la moyenne
-                                                   pond&eacute;r&eacute;e de vos <span style="color:#b20066;">' . $iNumberOfBidsInLoanIFP . ' offres de pr&ecirc;t</span>. ';
-                            }
-                        }
-
-                        if ($iNumberOfAcceptedBids > 1) {
-                            $sAcceptedOffers            = 'vos offres ont &eacute;t&eacute; accept&eacute;es';
-                            $sOffers                    = 'vos offres';
-                            $sDoes                      = 'font';
-                        } else {
-                            $sAcceptedOffers            = 'votre offre a &eacute;t&eacute; accept&eacute;e';
-                            $sOffers                    = 'votre offre';
-                            $sDoes                      = 'fait';
-                        }
-
-                        if ($bLenderIsNaturalPerson && $iNumberOfLoansForLender <= 1) {
-                            $sLoansDetails .= 'Nous sommes heureux de vous annoncer que <span style="color:#b20066;">' . $sOffers . '
-                                                de pr&ecirc;t </span> pour un montant total de <span style="color:#b20066;">' . $iSumLoansOfLender . ' euros </span>
-                                                &agrave; <span style="color:#b20066;"> ' . $this->ficelle->formatNumber($iAvgInterestRateOfLender) . ' % </span>
-                                                pendant <span style="color:#b20066;"> ' . $this->projects->period . ' mois </span> ' . $sDoes . '
-                                                partie des meilleures offres s&eacute;lectionn&eacute;es. <br>';
-
-
-                        } elseif ($bLenderIsNaturalPerson && $iNumberOfLoansForLender > 1 || $bLenderIsNaturalPerson === false) {
-
-                            $sLoansDetails .= 'Voici la synth&egrave;se de ' . $sOffers . ' de pr&ecirc;t &agrave; <span style="color:#b20066;"> ' . $oCompanies->name . ' </span> : <br><br>';
-                            $sLoansDetails .= '<table style="border: 1px solid; border-collapse: collapse; width:100%; table-layout: fixed;"><tr>
-                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Montant pr&ecirc;t&eacute;</th>
-                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Taux d&rsquo;interet</th>
-                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Dur&eacute;e</th>
-                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Mensualit&eacute;s</th>
-                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Documents</th></tr>';
-
-                            foreach ($aLoansOfLender as $aLoan) {
-
-                                $aFirstPayment = $oPaymentSchedule->getPremiereEcheancePreteurByLoans($aLoan['id_project'], $aLoan['id_lender'], $aLoan['id_loan']);
-
-                                switch ($aLoan['id_type_contract']) {
-                                    case \loans::TYPE_CONTRACT_BDC:
-                                        $sContractType = 'Bon de caisse';
-                                        break;
-                                    case \loans::TYPE_CONTRACT_IFP:
-                                        $sContractType = 'Contrat de pr&ecirc;t';
-                                        break;
-                                    default:
-                                        $sContractType = '';
-                                        break;
-                                }
-                                $sLoansDetails .= '<tr><td style="border: 1px solid; padding: 5px; text-align: center;">' . $this->ficelle->formatNumber($aLoan['amount']/100) . ' &euro;</td>
-                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aLoan['rate']) . ' %</td>
-                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->projects->period . ' mois</td>
-                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aFirstPayment['montant']/100) . ' &euro;</td>
-                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $sContractType . '</td></tr>';
-                            }
-                            $sLoansDetails .= '</table>';
-                        }
-
-                        $sLinkExplication = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t,
-                                            vous pouvez consulter <a style="color:#b20066;" href="'.$this->surl.'/document-de-pret">cette page</a>. ': '';
-
-                        $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
-
-                        $varMail = array(
-                            'surl'                        => $this->surl,
-                            'url'                         => $this->furl,
-                            'offre_s_acceptee_s'          => $sAcceptedOffers,
-                            'prenom_p'                    => $oClient->prenom,
-                            'nom_entreprise'              => $oCompanies->name,
-                            'fait'                        => $sDoes,
-                            'detail_loans'                => $sLoansDetails,
-                            'offre_s'                     => $sOffers,
-                            'projet-p'                    => $this->furl . '/projects/detail/' . $this->projects->slug,
-                            'link_explication'            => $sLinkExplication,
-                            'motif_virement'              => $sMotif,
-                            'lien_fb'                     => $lien_fb,
-                            'lien_tw'                     => $lien_tw
-                        );
-
-                            /** @var unilend_email $oUnilendEmail */
-                            $oUnilendEmail = $this->loadLib('unilend_email');
-
-                        $this->email = $this->loadLib('email');
-                        $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
-                        $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-                        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
 
                         if ($oClient->status == 1 ) {
-                            if ($this->Config['env'] == 'prod') {
-                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $oClient->email, $tabFiler);
-                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                            $oCompanies->get($this->projects->id_company, 'id_company');
+
+                            // Motif virement
+                            $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($oClient->prenom))), 0, 1);
+                            $nom       = $this->ficelle->stripAccents(utf8_decode(trim($oClient->nom)));
+                            $id_client = str_pad($oClient->id_client, 6, 0, STR_PAD_LEFT);
+                            $sMotif    = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+
+                            $bLenderIsNaturalPerson   = $oLender->isNaturalPerson($oLender->id_lender_account);
+                            $aLoansOfLender           = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, '`id_type_contract` DESC');
+                            $iNumberOfLoansForLender  = count($aLoansOfLender);
+                            $iSumLoansOfLender        = ($this->loans->sum('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, 'amount') / 100);
+                            $iAvgInterestRateOfLender = $this->loans->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $this->projects->id_project);
+                            $iNumberOfAcceptedBids    = $oAcceptedBids->getDistinctBidsForLenderAndProject($oLender->id_lender_account, $this->projects->id_project);
+                            $sLoansDetails            = '';
+
+                            if ($bLenderIsNaturalPerson) {
+                                $aLoanIFP               = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
+                                $iNumberOfBidsInLoanIFP = $oAcceptedBids->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
+
+                                if ($iNumberOfBidsInLoanIFP > 1) {
+                                    $sLoansDetails .= 'L&rsquo;ensemble de vos offres &agrave;
+                                                       concurrence de 1 000 euros sont regroup&eacute;es sous la forme
+                                                       d&rsquo;un seul contrat de pr&ecirc;t.
+                                                       Son taux d&rsquo;int&eacute;r&ecirc;t correspond donc &agrave; la moyenne
+                                                       pond&eacute;r&eacute;e de vos <span style="color:#b20066;">' . $iNumberOfBidsInLoanIFP . ' offres de pr&ecirc;t</span>. ';
+                                }
+                            }
+
+                            if ($iNumberOfAcceptedBids > 1) {
+                                $sAcceptedOffers            = 'vos offres ont &eacute;t&eacute; accept&eacute;es';
+                                $sOffers                    = 'vos offres';
+                                $sDoes                      = 'font';
                             } else {
-                                $this->email->addRecipient(trim($oClient->email));
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                $sAcceptedOffers            = 'votre offre a &eacute;t&eacute; accept&eacute;e';
+                                $sOffers                    = 'votre offre';
+                                $sDoes                      = 'fait';
+                            }
+
+                            if ($bLenderIsNaturalPerson && $iNumberOfLoansForLender <= 1) {
+                                $sLoansDetails .= 'Nous sommes heureux de vous annoncer que <span style="color:#b20066;">' . $sOffers . '
+                                                    de pr&ecirc;t </span> pour un montant total de <span style="color:#b20066;">' . $iSumLoansOfLender . ' euros </span>
+                                                    &agrave; <span style="color:#b20066;"> ' . $this->ficelle->formatNumber($iAvgInterestRateOfLender) . ' % </span>
+                                                    pendant <span style="color:#b20066;"> ' . $this->projects->period . ' mois </span> ' . $sDoes . '
+                                                    partie des meilleures offres s&eacute;lectionn&eacute;es. <br>';
+
+
+                            } elseif ($bLenderIsNaturalPerson && $iNumberOfLoansForLender > 1 || $bLenderIsNaturalPerson === false) {
+
+                                $sLoansDetails .= 'Voici la synth&egrave;se de ' . $sOffers . ' de pr&ecirc;t &agrave; <span style="color:#b20066;"> ' . $oCompanies->name . ' </span> : <br><br>';
+                                $sLoansDetails .= '<table style="border: 1px solid; border-collapse: collapse; width:100%; table-layout: fixed;"><tr>
+                                                                        <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Montant pr&ecirc;t&eacute;</th>
+                                                                        <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Taux d&rsquo;interet</th>
+                                                                        <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Dur&eacute;e</th>
+                                                                        <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Mensualit&eacute;s</th>
+                                                                        <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Documents</th></tr>';
+
+                                foreach ($aLoansOfLender as $aLoan) {
+
+                                    $aFirstPayment = $oPaymentSchedule->getPremiereEcheancePreteurByLoans($aLoan['id_project'], $aLoan['id_lender'], $aLoan['id_loan']);
+
+                                    switch ($aLoan['id_type_contract']) {
+                                        case \loans::TYPE_CONTRACT_BDC:
+                                            $sContractType = 'Bon de caisse';
+                                            break;
+                                        case \loans::TYPE_CONTRACT_IFP:
+                                            $sContractType = 'Contrat de pr&ecirc;t';
+                                            break;
+                                        default:
+                                            $sContractType = '';
+                                            break;
+                                    }
+                                    $sLoansDetails .= '<tr><td style="border: 1px solid; padding: 5px; text-align: center;">' . $this->ficelle->formatNumber($aLoan['amount']/100) . ' &euro;</td>
+                                                                            <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aLoan['rate']) . ' %</td>
+                                                                            <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->projects->period . ' mois</td>
+                                                                            <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aFirstPayment['montant']/100) . ' &euro;</td>
+                                                                            <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $sContractType . '</td></tr>';
+                                }
+                                $sLoansDetails .= '</table>';
+                            }
+
+                            $sLinkExplication = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t,
+                                            vous pouvez consulter <a style="color:#b20066;" href="'.$this->surl.'/document-de-pret">cette page</a>. ': '';
+
+                            $varMail = array(
+                                'surl'                        => $this->surl,
+                                'url'                         => $this->furl,
+                                'offre_s_acceptee_s'          => $sAcceptedOffers,
+                                'prenom_p'                    => $oClient->prenom,
+                                'nom_entreprise'              => $oCompanies->name,
+                                'fait'                        => $sDoes,
+                                'detail_loans'                => $sLoansDetails,
+                                'offre_s'                     => $sOffers,
+                                'projet-p'                    => $this->furl . '/projects/detail/' . $this->projects->slug,
+                                'link_explication'            => $sLinkExplication,
+                                'motif_virement'              => $sMotif,
+                                'lien_fb'                     => $lien_fb,
+                                'lien_tw'                     => $lien_tw
+                            );
+
+                            try {
+                                $oUnilendEmail->setTemplate('preteur-bid-ok', $this->language);
+                                $oUnilendEmail->addAllMailVars($varMail);
+                                $oUnilendEmail->addRecipient($oClient->email);
+                                $oUnilendEmail->sendFromTemplate();
+                            } catch (\Exception $oException) {
+                                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                             }
                             $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : email preteur-bid-ok sent for lender (' . $oLender->id_lender_account . ')');
                         }
@@ -746,16 +734,12 @@ class cronController extends bootstrap
                             'lien_tw'  => $lien_tw
                         );
 
-                        /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email');
-
                         try {
                             $oUnilendEmail->addAllMailVars($varMail);
                             $oUnilendEmail->setTemplate('emprunteur-dossier-funding-ko', $this->language);
                             $oUnilendEmail->addRecipient($this->clients->email);
                             $oUnilendEmail->sendFromTemplate();
                         } catch (\Exception $oException) {
-                            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                             $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                         }
                         $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : email emprunteur-dossier-funding-ko sent');
@@ -870,16 +854,12 @@ class cronController extends bootstrap
                                 'lien_tw'               => $lien_tw
                             );
 
-                            /** @var unilend_email $oUnilendEmail */
-                            $oUnilendEmail = $this->loadLib('unilend_email');
-
                             try {
                                 $oUnilendEmail->addAllMailVars($varMail);
                                 $oUnilendEmail->setTemplate('preteur-dossier-funding-ko', $this->language);
                                 $oUnilendEmail->addRecipient($this->clients->email);
                                 $oUnilendEmail->sendFromTemplate();
                             } catch (\Exception $oException) {
-                                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                                 $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                             }
                             $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : email preteur-dossier-funding-ko sent');
@@ -916,16 +896,12 @@ class cronController extends bootstrap
                     '$montant_pret' => $this->projects->amount,
                     '$montant' => $montant_collect
                 );
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
-
                 try {
                     $oUnilendEmail->addAllMailVars($aVarEmail);
                     $oUnilendEmail->setTemplate('notification-projet-fini', $this->language);
                     $oUnilendEmail->addRecipient($destinataire);
                     $oUnilendEmail->sendToStaff();
                 } catch (\Exception $oException) {
-                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                     $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                 }
             }
@@ -2065,6 +2041,10 @@ class cronController extends bootstrap
         // date du jour
         $time = date('Y-m-d H');
 
+        /** @var unilend_email $oUnilendEmail */
+        $oUnilendEmail = $this->loadLib('unilend_email');
+        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+
         // test //
         //$time = '2013-10-11 00';
         //////////
@@ -2138,16 +2118,12 @@ class cronController extends bootstrap
                         'lien_tw'           => $lien_tw
                     );
 
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
-
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
                         $oUnilendEmail->setTemplate('preteur-relance-paiement-inscription', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
                     } catch (\Exception $oException) {
-                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                         $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
                 }
@@ -2376,6 +2352,10 @@ class cronController extends bootstrap
     // reception virements/prelevements (toutes les 30 min)
     public function _reception()
     {
+        /** @var unilend_email $oUnilendEmail */
+        $oUnilendEmail = $this->loadLib('unilend_email');
+        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+
         if (true === $this->startCron('reception', 5)) {
 
             $receptions = $this->loadData('receptions');
@@ -2458,8 +2438,6 @@ class cronController extends bootstrap
                         '$surl'     => $this->surl,
                         '$url'      => $this->lurl,
                     );
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
                         $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -2467,7 +2445,6 @@ class cronController extends bootstrap
                         $oUnilendEmail->addRecipient($destinataire);
                         $oUnilendEmail->sendToStaff();
                     } catch (\Exception $oException) {
-                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                         $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
                 }
@@ -2801,8 +2778,6 @@ class cronController extends bootstrap
                                                 '$montant'      => $transactions->montant / 100,
                                                 '$nom_projet'   => $$this->projects->title,
                                             );
-                                            /** @var unilend_email $oUnilendEmail */
-                                            $oUnilendEmail = $this->loadLib('unilend_email');
 
                                             try {
                                                 $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -2810,7 +2785,6 @@ class cronController extends bootstrap
                                                 $oUnilendEmail->addRecipient($destinataire);
                                                 $oUnilendEmail->sendToStaff();
                                             } catch (\Exception $oException) {
-                                                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                                                 $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                             }
                                         } else {
@@ -2915,16 +2889,12 @@ class cronController extends bootstrap
                                                         'lien_tw'         => $lien_tw
                                                     );
 
-                                                    /** @var unilend_email $oUnilendEmail */
-                                                    $oUnilendEmail = $this->loadLib('unilend_email');
-
                                                     try {
                                                         $oUnilendEmail->addAllMailVars($varMail);
                                                         $oUnilendEmail->setTemplate('preteur-alimentation', $this->language);
                                                         $oUnilendEmail->addRecipient($clients->email);
                                                         $oUnilendEmail->sendFromTemplate();
                                                     } catch (\Exception $oException) {
-                                                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                                                         $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                                     }
                                                 }
@@ -4651,6 +4621,10 @@ class cronController extends bootstrap
             ini_set('max_execution_time', '300');
             ini_set('memory_limit', '1G');
 
+            /** @var unilend_email $oUnilendEmail */
+            $oUnilendEmail = $this->loadLib('unilend_email');
+            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+
             $this->projects                      = $this->loadData('projects');
             $this->projects_status               = $this->loadData('projects_status');
             $this->emprunteur                    = $this->loadData('clients');
@@ -4826,16 +4800,12 @@ class cronController extends bootstrap
                                 'lien_tw'                => $lien_tw
                             );
 
-                            /** @var unilend_email $oUnilendEmail */
-                            $oUnilendEmail = $this->loadLib('unilend_email');
-
                             try {
                                 $oUnilendEmail->addAllMailVars($varMail);
                                 $oUnilendEmail->setTemplate('emprunteur-dossier-funde', $this->language);
                                 $oUnilendEmail->addRecipient($this->emprunteur->email);
                                 $oUnilendEmail->sendFromTemplate();
                             } catch (\Exception $oException) {
-                                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                                 $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                             }
                         }
@@ -4855,8 +4825,6 @@ class cronController extends bootstrap
                             '$tx' => $taux_moyen,
                             '$periode' => $tempsRest
                         );
-                        /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
                             $oUnilendEmail->addAllMailVars($aVarEmail);
@@ -4864,7 +4832,6 @@ class cronController extends bootstrap
                             $oUnilendEmail->addRecipient($destinataire);
                             $oUnilendEmail->sendToStaff();
                         } catch (\Exception $oException) {
-                            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                             $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                         }
                     }
@@ -4925,6 +4892,10 @@ class cronController extends bootstrap
                 $iEmailsSent  = 0;
                 $iBidsUpdated = 0;
                 $lBidsKO = $this->bids->select('status = 2 AND status_email_bid_ko = 0');
+
+                /** @var unilend_email $oUnilendEmail */
+                $oUnilendEmail = $this->loadLib('unilend_email');
+                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
                 foreach ($lBidsKO as $e) {
                     // On check si on a pas de changement en cours de route
@@ -5012,16 +4983,12 @@ class cronController extends bootstrap
                                     'lien_tw'        => $lien_tw
                                 );
 
-                                /** @var unilend_email $oUnilendEmail */
-                                $oUnilendEmail = $this->loadLib('unilend_email');
-
                                 try {
                                     $oUnilendEmail->addAllMailVars($varMail);
                                     $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
                                     $oUnilendEmail->addRecipient($this->preteur->email);
                                     $oUnilendEmail->sendFromTemplate();
                                 } catch (\Exception $oException) {
-                                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                                     $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                 }
                                 ++$iEmailsSent;
@@ -5168,6 +5135,10 @@ class cronController extends bootstrap
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
+            /** @var unilend_email $oUnilendEmail */
+            $oUnilendEmail = $this->loadLib('unilend_email');
+            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+
             foreach ($lPreteurs as $p) {
                 $timestamp_date = $this->dates->formatDateMySqlToTimeStamp($p['added_status']);
 
@@ -5190,16 +5161,12 @@ class cronController extends bootstrap
                             'lien_tw'       => $lien_tw
                         );
 
-                        /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email');
-
                         try {
                             $oUnilendEmail->addAllMailVars($varMail);
                             $oUnilendEmail->setTemplate('completude', $this->language);
                             $oUnilendEmail->addRecipient($p['email']);
                             $oUnilendEmail->sendFromTemplate();
                         } catch (\Exception $oException) {
-                            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                             $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                         }
                     }
@@ -5245,16 +5212,12 @@ class cronController extends bootstrap
                         'lien_tw'       => $lien_tw
                     );
 
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
-
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
                         $oUnilendEmail->setTemplate('completude', $this->language);
                         $oUnilendEmail->addRecipient($p['email']);
                         $oUnilendEmail->sendFromTemplate();
                     } catch (\Exception $oException) {
-                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                         $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
                 }
@@ -5988,6 +5951,10 @@ class cronController extends bootstrap
 
         $oLogger->addRecord(ULogger::DEBUG, 'Lenders count: ' . count($lPreteurs));
 
+        /** @var unilend_email $oUnilendEmail */
+        $oUnilendEmail = $this->loadLib('unilend_email');
+        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+
         foreach ($lPreteurs as $preteur) {
             $this->notifications->type            = 8; // nouveau projet
             $this->notifications->id_lender       = $preteur['id_lender'];
@@ -6013,16 +5980,12 @@ class cronController extends bootstrap
                 $varMail['prenom_p']        = $preteur['prenom'];
                 $varMail['motif_virement']  = $motif;
 
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
-
                 try {
                     $oUnilendEmail->addAllMailVars($varMail);
                     $oUnilendEmail->setTemplate('nouveau-projet', $this->language);
                     $oUnilendEmail->addRecipient($preteur['email']);
                     $oUnilendEmail->sendFromTemplate();
                 } catch (\Exception $oException) {
-                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                     $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                 }
             }
@@ -6057,6 +6020,10 @@ class cronController extends bootstrap
 
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
+
+            /** @var unilend_email $oUnilendEmail */
+            $oUnilendEmail = $this->loadLib('unilend_email');
+            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             foreach ($array_mail_nouveaux_projects as $id_client => $mails_notif) {
                 if ($this->clients_gestion_notifications->getNotif($id_client, 1, $type) == true) {
@@ -6145,8 +6112,6 @@ class cronController extends bootstrap
                             'lien_fb'         => $lien_fb,
                             'lien_tw'         => $lien_tw
                         );
-                        /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
                             $oUnilendEmail->addAllMailVars($varMail);
@@ -6154,7 +6119,6 @@ class cronController extends bootstrap
                             $oUnilendEmail->addRecipient($this->clients->email);
                             $oUnilendEmail->sendFromTemplate();
                         } catch (\Exception $oException) {
-                            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                             $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                         }
                     }
@@ -6202,6 +6166,10 @@ class cronController extends bootstrap
 
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
+
+            /** @var unilend_email $oUnilendEmail */
+            $oUnilendEmail = $this->loadLib('unilend_email');
+            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             foreach ($array_offres_placees as $id_client => $mails_notif) {
                 if ($this->clients_gestion_notifications->getNotif($id_client, 2, $type) == true) {
@@ -6288,16 +6256,12 @@ class cronController extends bootstrap
                                 'lien_tw'         => $lien_tw
                             );
 
-                            /** @var unilend_email $oUnilendEmail */
-                            $oUnilendEmail = $this->loadLib('unilend_email');
-
                             try {
                                 $oUnilendEmail->addAllMailVars($varMail);
                                 $oUnilendEmail->setTemplate('vos-offres-du-jour', $this->language);
                                 $oUnilendEmail->addRecipient($this->clients->email);
                                 $oUnilendEmail->sendFromTemplate();
                             } catch (\Exception $oException) {
-                                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                                 $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                             }
                         }
@@ -6348,6 +6312,10 @@ class cronController extends bootstrap
 
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
+
+            /** @var unilend_email $oUnilendEmail */
+            $oUnilendEmail = $this->loadLib('unilend_email');
+            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             foreach ($array_offres_refusees as $id_client => $mails_notif) {
                 if ($this->clients_gestion_notifications->getNotif($id_client, 3, $type) == true) {
@@ -6433,8 +6401,6 @@ class cronController extends bootstrap
                             'lien_tw'         => $lien_tw
                         );
 
-                        /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
                             $oUnilendEmail->addAllMailVars($varMail);
@@ -6442,7 +6408,6 @@ class cronController extends bootstrap
                             $oUnilendEmail->addRecipient($this->clients->email);
                             $oUnilendEmail->sendFromTemplate();
                         } catch (\Exception $oException) {
-                            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                             $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                         }
                     }
@@ -6493,6 +6458,10 @@ class cronController extends bootstrap
 
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
+
+            /** @var unilend_email $oUnilendEmail */
+            $oUnilendEmail = $this->loadLib('unilend_email');
+            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             foreach ($array_offres_acceptees as $id_client => $mails_notif) {
                 if ($this->clients_gestion_notifications->getNotif($id_client, 4, $type) == true) {
@@ -6629,16 +6598,12 @@ class cronController extends bootstrap
                                 'link_explication' => $sLinkExplication
                             );
 
-                            /** @var unilend_email $oUnilendEmail */
-                            $oUnilendEmail = $this->loadLib('unilend_email');
-
                             try {
                                 $oUnilendEmail->addAllMailVars($varMail);
                                 $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
                                 $oUnilendEmail->addRecipient($this->clients->email);
                                 $oUnilendEmail->sendFromTemplate();
                             } catch (\Exception $oException) {
-                                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                                 $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                             }
                         }
@@ -6690,6 +6655,10 @@ class cronController extends bootstrap
 
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
+
+            /** @var unilend_email $oUnilendEmail */
+            $oUnilendEmail = $this->loadLib('unilend_email');
+            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             foreach ($array_remb as $id_client => $mails_notif) {
                 if ($this->clients_gestion_notifications->getNotif($id_client, 5, $type) == true) {
@@ -6845,16 +6814,12 @@ class cronController extends bootstrap
                             'lien_tw'                => $lien_tw
                         );
 
-                        /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email');
-
                         try {
                             $oUnilendEmail->addAllMailVars($varMail);
                             $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
                             $oUnilendEmail->addRecipient($this->clients->email);
                             $oUnilendEmail->sendFromTemplate();
                         } catch (\Exception $oException) {
-                            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                             $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                         }
                     }
@@ -6892,6 +6857,10 @@ class cronController extends bootstrap
 
         $parrain = $this->loadData('clients');
         $filleul = $this->loadData('clients');
+
+        /** @var unilend_email $oUnilendEmail */
+        $oUnilendEmail = $this->loadLib('unilend_email');
+        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
         if ($offres_parrains_filleuls->get(1, 'status = 0 AND id_offre_parrain_filleul')) {
             $lparrains_filleuls = $parrains_filleuls->select('status = 1 AND etat = 0');
@@ -6953,8 +6922,6 @@ class cronController extends bootstrap
                         'lien_fb'         => $lien_fb,
                         'lien_tw'         => $lien_tw
                     );
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
@@ -6962,7 +6929,6 @@ class cronController extends bootstrap
                         $oUnilendEmail->addRecipient($parrain->email);
                         $oUnilendEmail->sendFromTemplate();
                     } catch (\Exception $oException) {
-                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                         $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
 
@@ -7013,16 +6979,12 @@ class cronController extends bootstrap
                         'lien_tw'         => $lien_tw
                     );
 
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
-
                     try {
                         $oUnilendEmail->addAllMailVars($varMail);
                         $oUnilendEmail->setTemplate('confirmation-offre-filleul', $this->language);
                         $oUnilendEmail->addRecipient($filleul->email);
                         $oUnilendEmail->sendFromTemplate();
                     } catch (\Exception $oException) {
-                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                         $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
                 } else {// si limite depassé on rejet l'offre de parrainage
@@ -7053,6 +7015,10 @@ class cronController extends bootstrap
             // On recup le param du remb auto
             $settingsControleRemb = $this->loadData('settings');
             $settingsControleRemb->get('Controle remboursements auto', 'type');
+
+            /** @var unilend_email $oUnilendEmail */
+            $oUnilendEmail = $this->loadLib('unilend_email');
+            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             // on rentre dans le cron si statut égale 1
             if ($settingsControleRemb->value == 1) {
@@ -7140,16 +7106,12 @@ class cronController extends bootstrap
                                     'lien_tw'               => $lien_tw
                                 );
 
-                                /** @var unilend_email $oUnilendEmail */
-                                $oUnilendEmail = $this->loadLib('unilend_email');
-
                                 try {
                                     $oUnilendEmail->addAllMailVars($varMail);
                                     $oUnilendEmail->setTemplate('preteur-remboursement', $this->language);
                                     $oUnilendEmail->addRecipient($clients->email);
                                     $oUnilendEmail->sendFromTemplate();
                                 } catch (\Exception $oException) {
-                                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                                     $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                 }
                             }
@@ -7191,6 +7153,10 @@ class cronController extends bootstrap
 
             $timeDebut = strtotime(date('Y-m-d') . ' ' . $paramDebut . ':00'); // on commence le traitement du cron a l'heure demandé
             $timeFin   = mktime(0, 0, 0, date("m"), date("d") + 1, date("Y")); // on termine le cron a minuit
+
+            /** @var unilend_email $oUnilendEmail */
+            $oUnilendEmail = $this->loadLib('unilend_email');
+            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             if (date('H:i') == $paramDebut) {
                 $this->check_remboursement_preteurs();
@@ -7321,16 +7287,12 @@ class cronController extends bootstrap
                                 'montantRemb'     => $Total_rembNet
                             );
 
-                            /** @var unilend_email $oUnilendEmail */
-                            $oUnilendEmail = $this->loadLib('unilend_email');
-
                             try {
                                 $oUnilendEmail->addAllMailVars($varMail);
                                 $oUnilendEmail->setTemplate('facture-emprunteur-remboursement', $this->language);
                                 $oUnilendEmail->addRecipient($companies->email_facture);
                                 $oUnilendEmail->sendFromTemplate();
                             } catch (\Exception $oException) {
-                                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                                 $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                             }
 
@@ -7702,6 +7664,7 @@ class cronController extends bootstrap
 
             /** @var unilend_email $oUnilendEmail */
             $oUnilendEmail = $this->loadLib('unilend_email');
+            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             foreach ($L_mail_ra_en_attente as $ra_email) {
                 $this->oLogger->addRecord(ULogger::INFO, 'Start email ' . $ra_email['id_reception'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
@@ -7781,7 +7744,6 @@ class cronController extends bootstrap
                                 $oUnilendEmail->addRecipient($this->clients->email);
                                 $oUnilendEmail->sendFromTemplate();
                             } catch (\Exception $oException) {
-                                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                                 $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                             }
                         }
@@ -7843,6 +7805,7 @@ class cronController extends bootstrap
 
             /** @var unilend_email $oUnilendEmail */
             $oUnilendEmail = $this->loadLib('unilend_email');
+            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             foreach ($aReminderIntervals as $sStatus => $aIntervals) {
                 if (1 === preg_match('/^status-([1-9][0-9]*)$/', $sStatus, $aMatches)) {
@@ -7901,7 +7864,6 @@ class cronController extends bootstrap
                                         $oUnilendEmail->addRecipient($sRecipientEmail);
                                         $oUnilendEmail->sendFromTemplate();
                                     } catch (\Exception $oException) {
-                                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
                                         $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                     }
                                 }

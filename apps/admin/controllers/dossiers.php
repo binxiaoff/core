@@ -1292,6 +1292,10 @@ class dossiersController extends bootstrap
                                     $this->settings->get('Twitter', 'type');
                                     $sLienTW = $this->settings->value;
 
+                                    /** @var unilend_email $oUnilendEmail */
+                                    $oUnilendEmail = $this->loadLib('unilend_email');
+                                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+
                                     foreach ($aLendersIds as $aLenderID) {
 
                                         $oLender->get($aLenderID['id_lender'], 'id_lender_account');
@@ -1417,21 +1421,13 @@ class dossiersController extends bootstrap
                                                 'link_explication'   => $sLinkExplication
                                             );
 
-                                            /** @var unilend_email $oUnilendEmail */
-                                            $oUnilendEmail = $this->loadLib('unilend_email');
-
-                                            $this->email = $this->loadLib('email');
-                                            $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
-                                            $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-                                            $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
-
-                                            if ($this->Config['env'] === 'prod') {
-                                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($oClient->email), $tabFiler);
-                                                // Injection du mail NMP dans la queue
-                                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                            } else {
-                                                $this->email->addRecipient(trim($oClient->email));
-                                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                            try {
+                                                $oUnilendEmail->addAllMailVars($varMail);
+                                                $oUnilendEmail->setTemplate('preteur-contrat', $this->language);
+                                                $oUnilendEmail->addRecipient($oClient->email);
+                                                $oUnilendEmail->sendFromTemplate();
+                                            } catch (\Exception $oException) {
+                                                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                                             }
                                         }
                                     }
