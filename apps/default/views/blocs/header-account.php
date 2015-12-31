@@ -44,8 +44,8 @@ if ($this->bDisplayLender) {
     ?>
     <div class="logedin-panel right">
         <a href="<?= $this->lurl ?>/espace_emprunteur/identite" class="header_account_name">
-            <strong><?= $this->lng['header']['siren'] . $this->oCompanyDisplay->siren ?></strong></a>
-        <strong><?= $this->oCompanyDisplay->name ?></strong>
+            <span style="font-size: 0.8em;"><strong><?= $this->lng['header']['siren'] . $this->oCompanyDisplay->siren ?></strong></span></a>
+        <span style="font-size: 0.8em;"><strong><?= $this->oCompanyDisplay->name ?></strong></span>
         <a href="<?= $this->lurl ?>/logout"><?= $this->lng['header']['deconnexion'] ?></a>
         <?php if ($this->bIsBorrowerAndLender) : ?>
             <div class="dd">
