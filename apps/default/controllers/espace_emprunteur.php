@@ -11,7 +11,6 @@ class espace_emprunteurController extends Bootstrap
         $this->catchAll = true;
 
         if ($command->Function !== 'securite') {
-
             $this->setHeader('header_account');
 
             if (!$this->clients->checkAccess()) {
@@ -51,49 +50,37 @@ class espace_emprunteurController extends Bootstrap
         $oTemporary_links = $this->loadData('temporary_links_login');
 
         if (isset($this->params[0])) {
-
             $oTemporary_links->get($this->params[0], 'token');
-
             $oNow         = new \datetime();
             $oLinkExpires = new \datetime($oTemporary_links->expires);
 
             if ($oLinkExpires <= $oNow) {
-
                 $this->bLinkExpired = true;
-
             } else {
-
                 $oTemporary_links->accessed = $oNow->format('Y-m-d H:i:s');
                 $oTemporary_links->update();
 
                 $this->clients->get($oTemporary_links->id_client);
                 if (isset($_POST['form_mdp_question_emprunteur'])) {
-
                     if (empty($_POST['pass'])) {
                         $_SESSION['forms']['mdp_question_emprunteur']['errors']['pass'] = true;
                     }
                     if (empty($_POST['pass2'])) {
                         $_SESSION['forms']['mdp_question_emprunteur']['errors']['pass2'] = true;
-
                     }
                     if (empty($_POST['secret-question']) || $_POST['secret-question'] == $this->lng['espace-emprunteur']['question-secrete']) {
                         $_SESSION['forms']['mdp_question_emprunteur']['errors']['secret-question'] = true;
-
                     }
                     if (empty($_POST['secret-response']) || $_POST['secret-response'] == $this->lng['espace-emprunteur']['response']) {
                         $_SESSION['forms']['mdp_question_emprunteur']['errors']['secret-response'] = true;
                     }
-
                     if (false === empty($_SESSION['forms']['mdp_question_emprunteur']['errors'])) {
                         $_SESSION['forms']['mdp_question_emprunteur']['values'] = $_POST;
-
                     } else {
-
                         $this->clients->password         = md5($_POST['pass']);
                         $this->clients->secrete_question = $_POST['secret-question'];
                         $this->clients->secrete_reponse  = md5($_POST['secret-response']);
                         $this->clients->status           = 1;
-
                         $this->clients->update();
                         header('Location: ' . $this->lurl);
                     }
@@ -102,27 +89,21 @@ class espace_emprunteurController extends Bootstrap
         } else {
             header('Location: ' . $this->lurl);
         }
-
     }
-
 
     public function _contact()
     {
-
-        $this->lng['contact'] = $this->ln->selectFront('contact', $this->language, $this->App);
-
+        $this->lng['contact']   = $this->ln->selectFront('contact', $this->language, $this->App);
         $oRequestSubjects       = $this->loadData('contact_request_subjects');
         $this->aRequestSubjects = $oRequestSubjects->getAllSubjects($this->language);
-
 
         foreach ($this->tree_elements->select('id_tree = 47 AND id_langue = "' . $this->language . '"') as $elt) {
             $this->elements->get($elt['id_element']);
             $this->content[ $this->elements->slug ] = $elt['value'];
         }
 
-        $aContactRequest = isset($_SESSION['forms']['contact-emprunteur']['values']) ? $_SESSION['forms']['contact-emprunteur']['values'] : array();
-        $this->aErrors   = isset($_SESSION['forms']['contact-emprunteur']['errors']) ? $_SESSION['forms']['contact-emprunteur']['errors'] : array();
-
+        $aContactRequest       = isset($_SESSION['forms']['contact-emprunteur']['values']) ? $_SESSION['forms']['contact-emprunteur']['values'] : array();
+        $this->aErrors         = isset($_SESSION['forms']['contact-emprunteur']['errors']) ? $_SESSION['forms']['contact-emprunteur']['errors'] : array();
         $this->aContactRequest = array(
             'siren'     => isset($aContactRequest['siren']) ? $aContactRequest['siren'] : $this->companies->siren,
             'company'   => isset($aContactRequest['company']) ? $aContactRequest['company'] : $this->companies->name,
@@ -133,7 +114,6 @@ class espace_emprunteurController extends Bootstrap
             'demande'   => isset($aContactRequest['demande']) ? $aContactRequest['demande'] : '',
             'message'   => isset($aContactRequest['message']) ? $aContactRequest['message'] : ''
         );
-
         unset($_SESSION['forms']['contact-emprunteur']);
 
         if (isset($_POST['send_form_contact'])) {
@@ -169,24 +149,18 @@ class espace_emprunteurController extends Bootstrap
         }
 
         if (isset($_FILES) && empty($_FILES) === false) {
-
             $oUpload = new \upload;
             $oUpload->setUploadDir($this->path, 'protected/contact/');
             $oUpload->doUpload('attachement', $new_name = '', $erase = false);
             $sFilePath = $this->path . 'protected/contact/' . $oUpload->getName();
-
         }
 
         if (false === empty($_SESSION['forms']['contact-emprunteur']['errors'])) {
             $_SESSION['forms']['contact-emprunteur']['values'] = $_POST;
             header('Location: ' . $this->lurl . '/espace_emprunteur/contact');
             die;
-
         } else {
-
             $this->contactEmailClient();
-
-            //Email Unilend
             $this->mails_text->get('notification-demande-de-contact-emprunteur', 'lang = "' . $this->language . '" AND type');
             $this->settings->get('Adresse emprunteur', 'type');
 
@@ -205,25 +179,18 @@ class espace_emprunteurController extends Bootstrap
             $this->email = $this->loadLib('email', array());
             $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
             $this->email->addRecipient(trim($this->settings->value));
-            $this->email->setReplyTo(
-                utf8_decode($_POST['email']),
-                utf8_decode($_POST['nom']) . ' ' . utf8_decode($_POST['prenom']));
+            $this->email->setReplyTo(utf8_decode($_POST['email']), utf8_decode($_POST['nom']) . ' ' . utf8_decode($_POST['prenom']));
             $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
-
             $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->mails_text->content));
 
             if (empty($sFilePath) === false) {
                 $this->email->attach($sFilePath);
             }
-
             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             @unlink($sFilePath);
-
             $this->bSuccessMessage = true;
         }
-
     }
-
 
     public function _profil()
     {
@@ -237,31 +204,27 @@ class espace_emprunteurController extends Bootstrap
 
     public function _operations()
     {
-        $this->aClientsProjects = $this->getProjectsPostFunding();
+        $this->aClientsProjects      = $this->getProjectsPostFunding();
 
         $oDateTimeStart              = new \datetime('NOW - 1 month');
         $this->sDisplayDateTimeStart = $oDateTimeStart->format('d/m/Y');
 
-        $oDateTimeEnd              = new \datetime('NOW');
-        $this->sDisplayDateTimeEnd = $oDateTimeEnd->format('d/m/Y');
+        $oDateTimeEnd                = new \datetime('NOW');
+        $this->sDisplayDateTimeEnd   = $oDateTimeEnd->format('d/m/Y');
 
         $this->documents();
-
     }
 
     private function documents()
     {
-
         $oProjectsPouvoir = $this->loadData('projects_pouvoir');
         $oClientsMandat   = $this->loadData('clients_mandats');
 
         foreach ($this->aClientsProjects as $iKey => $aProject) {
-
             $this->aClientsProjects[ $iKey ]['pouvoir'] = $oProjectsPouvoir->select('id_project = ' . $aProject['id_project']);
             $this->aClientsProjects[ $iKey ]['mandat']  = $oClientsMandat->select('id_project = ' . $aProject['id_project'], 'updated DESC');
 
             foreach ($this->aClientsProjects[ $iKey ]['mandat'] as $iMandatKey => $aMandat) {
-
                 switch ($aMandat['status']) {
                     case clients_mandats::STATUS_EN_COURS:
                         $this->aClientsProjects[ $iKey ]['mandat'][ $iMandatKey ]['status-trad'] = 'mandat-en-cours';
@@ -277,12 +240,10 @@ class espace_emprunteurController extends Bootstrap
             }
         }
 
-
-        $oFactures        = $this->loadData('factures');
-        $aClientsInvoices = $oFactures->select('id_company = ' . $this->companies->id_company);
+        $oInvoices        = $this->loadData('factures');
+        $aClientsInvoices = $oInvoices->selectInvoicesExcludeAnticipatedRefunding($this->companies->id_company);
 
         foreach ($aClientsInvoices as $iKey => $aInvoice) {
-
             switch ($aInvoice['type_commission']) {
                 case factures::TYPE_COMMISSION_FINANCEMENT :
                     $aClientsInvoices[ $iKey ]['url'] = $this->url . '/pdf/facture_EF/' . $this->clients->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
@@ -302,7 +263,6 @@ class espace_emprunteurController extends Bootstrap
         $this->aProjectsPostFunding = $this->getProjectsPostFunding();
 
         if (isset($_POST['confirm_cloture_anticipation'])) {
-
             $oProject = $this->loadData('projects');
 
             if (is_numeric($this->params[0])) {
@@ -312,7 +272,6 @@ class espace_emprunteurController extends Bootstrap
             }
 
             if ($oProject->id_company === $this->companies->id_company) {
-
                 $oNewClosureDate = new DateTime();
                 $oNewClosureDate->modify("+5 minutes");
 
@@ -328,7 +287,6 @@ class espace_emprunteurController extends Bootstrap
         }
 
         if (isset($_POST['valider_demande_projet'])) {
-
             unset($_SESSION['forms']['nouvelle-demande']);
 
             if (empty($_POST['montant'])) {
@@ -342,7 +300,6 @@ class espace_emprunteurController extends Bootstrap
             }
 
             if (empty($_SESSION['forms']['nouvelle-demande']['errors'])) {
-
                 $oClients = $this->loadData('clients');
                 $oClients->get($_SESSION['client']['id_client']);
 
@@ -386,7 +343,6 @@ class espace_emprunteurController extends Bootstrap
         $aProjectsPreFunding = $this->companies->getProjectsForCompany($this->companies->id_company, $aStatusPreFunding);
 
         foreach ($aProjectsPreFunding as $iKey => $aProject) {
-
             switch ($aProject['project_status']) {
                 case \projects_status::EN_ATTENTE_PIECES:
                 case \projects_status::A_TRAITER:
@@ -519,10 +475,7 @@ class espace_emprunteurController extends Bootstrap
     public function _getCSVWithLenderDetails()
     {
         $this->projects->get($this->params[1], 'id_project');
-
-
         switch ($this->params[0]) {
-
             case 'l':
                 $aColumnHeaders = array('ID Préteur', 'Nom ou Raison Sociale', 'Prénom', 'Mouvement', 'Montant', 'Date');
                 $sType          = $this->lng['espace-emprunteur']['mouvement-deblocage-des-fonds'];
@@ -542,7 +495,6 @@ class espace_emprunteurController extends Bootstrap
         }
 
         foreach ($aData as $key => $row) {
-
             if (empty($row['name']) === false) {
                 $aData[ $key ]['nom']    = $row['name'];
                 $aData[ $key ]['prenom'] = null;
@@ -578,9 +530,7 @@ class espace_emprunteurController extends Bootstrap
         $sFilename      = 'operations';
         $aColumnHeaders = array('Opération', 'Référence de projet', 'Date de l\'opération', 'Montant de l\'opération', 'Dont TVA');
 
-
         foreach ($aBorrowerOperations as $aOperation) {
-
             $aData[] = array(
                 $this->lng['espace-emprunteur'][ 'operations-type-' . $aOperation['type'] ],
                 $aOperation['id_project'],
@@ -597,16 +547,14 @@ class espace_emprunteurController extends Bootstrap
     {
         include $this->path . '/apps/default/controllers/pdf.php';
 
-        $oCommandPdf = new Command('pdf', 'setDisplay', $this->language);
-        $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-
+        $oCommandPdf    = new Command('pdf', 'setDisplay', $this->language);
+        $oPdf           = new pdfController($oCommandPdf, $this->Config, 'default');
         $sPath          = $this->path . 'protected/operations_export_pdf/' . $this->clients->id_client . '/';
         $sNamePdfClient = 'operations_emprunteur_' . date('Y-m-d') . '.pdf';
 
         $oPdf->lng['espace-emprunteur']                 = $this->ln->selectFront('espace-emprunteur', $this->language, $this->App);
         $oPdf->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $oPdf->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
-
 
         $oPdf->aBorrowerOperations = $this->clients->getDataForBorrowerOperations(
             $_SESSION['operations-filter']['projects'],
@@ -617,7 +565,6 @@ class espace_emprunteurController extends Bootstrap
         );
 
         $oPdf->companies->get($this->clients->id_client, 'id_client_owner');
-
         $oPdf->setDisplay('operations_emprunteur_pdf_html');
         $oPdf->WritePdf($sPath . $sNamePdfClient, 'operations');
         $oPdf->ReadPdf($sPath . $sNamePdfClient, $sNamePdfClient);
@@ -662,6 +609,4 @@ class espace_emprunteurController extends Bootstrap
         exit;
 
     }
-
-
 }
