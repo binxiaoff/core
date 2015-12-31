@@ -26,11 +26,11 @@
 //
 // **************************************************************************************************** //
 
-class --classe-- extends --classe--_crud
+class accepted_bids extends accepted_bids_crud
 {
-    public function __construct($bdd,$params='')
+    public function __construct($bdd, $params = '')
     {
-        parent::--table--($bdd,$params);
+        parent::accepted_bids($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -43,7 +43,7 @@ class --classe-- extends --classe--_crud
             $order = ' ORDER BY '.$order;
         }
 
-        $sql = 'SELECT * FROM `--table--`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+        $sql = 'SELECT * FROM `accepted_bids`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
 
         $resultat = $this->bdd->query($sql);
         $result = array();
@@ -59,16 +59,65 @@ class --classe-- extends --classe--_crud
             $where = ' WHERE '.$where;
         }
 
-        $sql='SELECT count(*) FROM `--table--` '.$where;
+        $sql='SELECT count(*) FROM `accepted_bids` '.$where;
 
         $result = $this->bdd->query($sql);
         return (int)($this->bdd->result($result, 0, 0));
     }
 
-    public function exist($id, $field = '--id--')
+    public function exist($id, $field = 'id_accepted_bid')
     {
-        $sql = 'SELECT * FROM `--table--` WHERE '.$field.'="'.$id.'"';
+        $sql = 'SELECT * FROM `accepted_bids` WHERE '.$field.'="'.$id.'"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result, 0, 0)>0);
+    }
+
+    public function getAcceptedAmount($iBidId)
+    {
+        $aBids = $this->select('id_bid = ' . $iBidId);
+        $fAmount = 0;
+        foreach ($aBids as $aBid) {
+            $fAmount += $aBid['amount'] / 100;
+        }
+
+        return $fAmount;
+    }
+
+    public function getDistinctBids($iProjectID)
+    {
+        $sql = 'SELECT
+                    SUM(ab.amount),
+                    ab.id_bid,
+                    l.id_lender
+                FROM
+                    accepted_bids ab
+                    INNER JOIN loans l ON l.id_loan = ab.id_loan
+                WHERE
+                    id_project = '.$iProjectID.'
+                GROUP BY
+                    id_bid';
+
+        $resultat = $this->bdd->query($sql);
+        $result = array();
+
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
+
+    public function getDistinctBidsForLenderAndProject($iLenderId, $iProjectId)
+    {
+        $sql = 'SELECT
+                    COUNT(ab.id_bid)
+                FROM
+                    accepted_bids ab
+                    INNER JOIN loans l ON l.id_loan = ab.id_loan
+                WHERE
+                    l.id_lender = '.$iLenderId.'
+                     AND l.id_project = '.$iProjectId;
+
+        $result = $this->bdd->query($sql);
+        return (int)($this->bdd->result($result, 0, 0));
     }
 }

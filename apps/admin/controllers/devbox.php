@@ -1608,4 +1608,32 @@ class devboxController extends bootstrap
         fclose($rHandle);
         echo 'done';
     }
+
+    public function _addWelcomeOffer()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        //Encode: UTF-8, new line : LF
+        if (($rHandle = fopen($this->path . '/protected/import/' . 'welcome.csv', 'r')) === false) {
+            return;
+        }
+
+        /** @var offres_bienvenues_details $oOffre */
+        $oOffre = $this->loadData('offres_bienvenues_details');
+
+        while (($aRow = fgetcsv($rHandle, 0, ',')) !== false) {
+            $iClientId = $aRow[0];
+            if (false === $oOffre->exist($iClientId, 'id_client')) {
+                $sql = "INSERT INTO `offres_bienvenues_details` (`id_offre_bienvenue`, `motif`, `id_client`, `id_bid`, `id_bid_remb`, `montant`, `status`, `type`, `added`, `updated`)
+                        VALUES (1, 'Offre de bienvenue', $iClientId, 0, 0, 2000, 0, 0, now(), now())";
+                $oOffre->bdd->query($sql);
+            }
+        }
+        fclose($rHandle);
+        echo 'done';
+    }
 }

@@ -150,6 +150,7 @@ class cronController extends bootstrap
         $this->projects_status_history   = $this->loadData('projects_status_history');
         $this->notifications             = $this->loadData('notifications');
         $this->offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
+        $oAcceptedBids                   = $this->loadData('accepted_bids');
 
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications'); // add gestion alertes
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif'); // add gestion alertes
@@ -199,7 +200,7 @@ class cronController extends bootstrap
 
                     $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' is now changed to status funded.');
 
-                    $this->lEnchere = $this->bids->select('id_project = ' . $projects['id_project'] . ' AND status = 0', 'rate ASC,added ASC');
+                    $this->lEnchere = $this->bids->select('id_project = ' . $projects['id_project'] . ' AND status = '.\bids::STATUS_BID_PENDING, 'rate ASC,added ASC');
                     $leSoldeE       = 0;
 
                     $iBidNbTotal = count($this->lEnchere);
@@ -208,9 +209,8 @@ class cronController extends bootstrap
 
                     foreach ($this->lEnchere as $k => $e) {
                         if ($leSoldeE < $projects['amount']) {
-                            $amount = $e['amount'];
-
                             $leSoldeE += ($e['amount'] / 100);
+                            $this->bids->get($e['id_bid'], 'id_bid');
 
                             // Pour la partie qui depasse le montant de l'emprunt ( ca cest que pour le mec a qui on decoupe son montant)
                             if ($leSoldeE > $projects['amount']) {
@@ -224,10 +224,11 @@ class cronController extends bootstrap
                                 $montant_a_crediter = ($diff * 100);
 
                                 $this->lenders_accounts->get($e['id_lender_account'], 'id_lender_account');
-                                $this->bids->get($e['id_bid'], 'id_bid');
 
                                 if ($this->bids->status == '0') {
-                                    mail('k1@david.equinoa.net', 'debug cron degel', $this->lenders_accounts->id_client_owner . ' - id bid :' . $e['id_bid']);
+                                    // Save new amount of the bid after repayment
+                                    $this->bids->amount = $amount;
+
                                     $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
                                     $this->transactions->montant          = $montant_a_crediter;
                                     $this->transactions->id_bid_remb      = $e['id_bid'];
@@ -286,29 +287,16 @@ class cronController extends bootstrap
                                 }
                             }
 
-                            if ($this->loans->get($e['id_bid'], 'id_bid') == false) {
-                                $this->bids->get($e['id_bid'], 'id_bid');
-                                $this->bids->status = 1;
-                                $this->bids->update();
+                            $this->bids->status = \bids::STATUS_BID_ACCEPTED;
+                            $this->bids->update();
 
-                                $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : The bid (' . $e['id_bid'] . ') status has been updated to 1');
-
-                                $this->loans->id_bid     = $e['id_bid'];
-                                $this->loans->id_lender  = $e['id_lender_account'];
-                                $this->loans->id_project = $e['id_project'];
-                                $this->loans->amount     = $amount;
-
-                                $this->loans->rate = $e['rate'];
-                                $this->loans->create();
-
-                                $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : bid (' . $e['id_bid'] . ') has been transferred to loan (' . $this->loans->id_loan . ').');
-                            }
+                            $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : The bid (' . $e['id_bid'] . ') status has been updated to 1');
                         } else {// Pour les encheres qui depassent on rend l'argent
                             $this->bids->get($e['id_bid'], 'id_bid');
 
                             // On regarde si on a pas deja un remb pour ce bid
                             if ($this->bids->status == '0') {
-                                $this->bids->status = 2;
+                                $this->bids->status = \bids::STATUS_BID_REJECTED;
                                 $this->bids->update();
 
                                 $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : The bid (' . $e['id_bid'] . ') status has been updated to 2');
@@ -373,6 +361,123 @@ class cronController extends bootstrap
                         }
                         $iTreatedBitNb ++;
                         $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated.');
+                    }
+
+                    // Traite the accepted bid by lender
+                    $aLenders = $this->bids->getLenders($projects['id_project'], array(\bids::STATUS_BID_ACCEPTED));
+                    foreach ($aLenders as $aLender) {
+                        $iLenderId   = $aLender['id_lender_account'];
+                        $aLenderBids = $this->bids->select('id_lender_account = ' . $iLenderId . ' AND id_project = ' . $projects['id_project'] . ' AND status = ' . \bids::STATUS_BID_ACCEPTED, 'rate DESC');
+
+                        if ($this->lenders_accounts->isNaturalPerson($iLenderId)) {
+                            $fLoansLenderSum = 0;
+                            $fInterests      = 0;
+                            $bIFPContract    = true;
+                            $aBidIFP         = array();
+                            foreach ($aLenderBids as $iIndex => $aBid) {
+                                $fBidAmount = $aBid['amount'] / 100;
+
+                                if (true === $bIFPContract && ($fLoansLenderSum + $fBidAmount) <= \loans::IFP_AMOUNT_MAX) {
+                                    $fInterests += $aBid['rate'] * $fBidAmount;
+                                    $fLoansLenderSum += $fBidAmount;
+                                    $aBidIFP[] = $aBid;
+                                } else {
+                                    // Greater than \loans::IFP_AMOUNT_MAX ? create BDC loan, split it if needed.
+                                    $bIFPContract = false;
+
+                                    $fDiff = $fLoansLenderSum + $fBidAmount - \loans::IFP_AMOUNT_MAX;
+
+                                    $this->loans->unsetData();
+                                    $this->loans->id_lender        = $aBid['id_lender_account'];
+                                    $this->loans->id_project       = $aBid['id_project'];
+                                    $this->loans->amount           = $fDiff * 100;
+                                    $this->loans->rate             = $aBid['rate'];
+                                    $this->loans->id_type_contract = \loans::TYPE_CONTRACT_BDC;
+
+                                    $this->loans->create();
+
+                                    if ($this->loans->id_loan > 0) {
+                                        $oAcceptedBids->unsetData();
+                                        $oAcceptedBids->id_bid  = $aBid['id_bid'];
+                                        $oAcceptedBids->id_loan = $this->loans->id_loan;
+                                        $oAcceptedBids->amount  = $fDiff * 100;
+
+                                        $oAcceptedBids->create();
+
+                                        if ($oAcceptedBids->id > 0) {
+                                            $oLogger->addRecord(
+                                                ULogger::INFO,
+                                                'project : ' . $projects['id_project'] . ' : bid (' . $aBid['id_bid'] . ') has been transferred to BDC loan (' . $this->loans->id_loan . ') with amount ' . $fDiff
+                                            );
+                                        }
+                                    }
+
+                                    $fRest = $fBidAmount - $fDiff;
+                                    if (0 < $fRest) {
+                                        $aBid['amount'] = $fRest * 100;
+                                        $fInterests    += $aBid['rate'] * $fRest;
+                                        $aBidIFP[]      = $aBid;
+                                    }
+                                    $fLoansLenderSum = \loans::IFP_AMOUNT_MAX;
+                                }
+                            }
+
+                            // Create IFP loan from the grouped bids
+                            $this->loans->unsetData();
+                            $this->loans->id_lender        = $iLenderId;
+                            $this->loans->id_project       = $projects['id_project'];
+                            $this->loans->amount           = $fLoansLenderSum * 100;
+                            $this->loans->rate             = round($fInterests / $fLoansLenderSum, 2);
+                            $this->loans->id_type_contract = \loans::TYPE_CONTRACT_IFP;
+
+                            $this->loans->create();
+
+                            if ($this->loans->id_loan > 0) {
+                                foreach ($aBidIFP as $aBid) {
+                                    $oAcceptedBids->unsetData();
+                                    $oAcceptedBids->id_bid  = $aBid['id_bid'];
+                                    $oAcceptedBids->id_loan = $this->loans->id_loan;
+                                    $oAcceptedBids->amount  = $aBid['amount'];
+
+                                    $oAcceptedBids->create();
+
+                                    if ($oAcceptedBids->id > 0) {
+                                        $oLogger->addRecord(
+                                            ULogger::INFO,
+                                            'project : ' . $projects['id_project'] . ' : bid (' . $aBid['id_bid'] . ') has been transferred to IFP loan (' . $this->loans->id_loan . ') with amount ' . $aBid['amount'] / 100
+                                        );
+                                    }
+                                }
+                            }
+
+                        } else {
+                            foreach ($aLenderBids as $aBid) {
+                                $this->loans->unsetData();
+                                $this->loans->id_lender        = $aBid['id_lender_account'];
+                                $this->loans->id_project       = $aBid['id_project'];
+                                $this->loans->amount           = $aBid['amount'];
+                                $this->loans->rate             = $aBid['rate'];
+                                $this->loans->id_type_contract = \loans::TYPE_CONTRACT_BDC;
+
+                                $this->loans->create();
+
+                                if ($this->loans->id_loan > 0) {
+                                    $oAcceptedBids->unsetData();
+                                    $oAcceptedBids->id_bid  = $aBid['id_bid'];
+                                    $oAcceptedBids->id_loan = $this->loans->id_loan;
+                                    $oAcceptedBids->amount  = $aBid['amount'];
+
+                                    $oAcceptedBids->create();
+
+                                    if ($oAcceptedBids->id > 0) {
+                                        $oLogger->addRecord(
+                                            ULogger::INFO,
+                                            'project : ' . $projects['id_project'] . ' : bid (' . $aBid['id_bid'] . ') has been transferred to BDC loan (' . $this->loans->id_loan . ') with amount ' . $aBid['amount'] / 100
+                                        );
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     $this->create_echeances($projects['id_project']);
@@ -477,67 +582,148 @@ class cronController extends bootstrap
                         $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
                     }
 
-                    $preteur     = $this->loadData('clients');
-                    $companies   = $this->loadData('companies');
-                    $echeanciers = $this->loadData('echeanciers');
+                    //End emails to lenders with accepted bids that became loans
+                    $aLendersIds      = $this->loans->getPreteurs($this->projects->id_project);
+                    $oClient          = $this->loadData('clients');
+                    $oLender          = $this->loadData('lenders_accounts');
+                    $oCompanies       = $this->loadData('companies');
+                    $oPaymentSchedule = $this->loadData('echeanciers');
+                    $oAcceptedBids    = $this->loadData('accepted_bids');
 
-                    // on parcourt les bids ok du projet et on envoie les mail
-                    $lLoans = $this->loans->select('id_project = ' . $projects['id_project']);
-                    $iLoanNbTotal = count($lLoans);
-                    $iTreatedLoanNb = 0;
-                    $oLogger->addRecord(ULogger::INFO, 'project : ' .  $iLoanNbTotal . ' loans to send email');
-                    foreach ($lLoans as $l) {
-                        $this->projects->get($l['id_project'], 'id_project');
-                        $this->lenders_accounts->get($l['id_lender'], 'id_lender_account');
-                        $preteur->get($this->lenders_accounts->id_client_owner, 'id_client');
-                        $companies->get($this->projects->id_company, 'id_company');
+                    $iNbLenders = count($aLendersIds);
+                    $iNbTreatedLenders = 0;
 
-                        $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($preteur->prenom))), 0, 1);
-                        $nom       = $this->ficelle->stripAccents(utf8_decode(trim($preteur->nom)));
-                        $id_client = str_pad($preteur->id_client, 6, 0, STR_PAD_LEFT);
-                        $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+                    $oLogger->addRecord(ULogger::INFO, 'project : ' .  $iNbLenders . ' lenders to send email');
 
-                        $lecheancier = $echeanciers->getPremiereEcheancePreteurByLoans($l['id_project'], $l['id_lender'], $l['id_loan']);
+                    foreach ($aLendersIds as $aLenderID) {
 
-                        if ($preteur->status == 1) {
-                            $timeAdd = strtotime($lecheancier['date_echeance']);
-                            $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
-                            $varMail = array(
-                                'surl'           => $this->surl,
-                                'url'            => $this->lurl,
-                                'prenom_p'       => $preteur->prenom,
-                                'valeur_bid'     => $this->ficelle->formatNumber($l['amount'] / 100),
-                                'taux_bid'       => $this->ficelle->formatNumber($l['rate']),
-                                'nom_entreprise' => $companies->name,
-                                'nbre_echeance'  => $this->projects->period,
-                                'mensualite_p'   => $this->ficelle->formatNumber($lecheancier['montant'] / 100),
-                                'date_debut'     => date('d', $timeAdd) . ' ' . strtolower($month) . ' ' . date('Y', $timeAdd),
-                                'compte-p'       => $this->lurl,
-                                'projet-p'       => $this->lurl . '/projects/detail/' . $this->projects->slug,
-                                'motif_virement' => $motif,
-                                'lien_fb'        => $lien_fb,
-                                'lien_tw'        => $lien_tw
-                            );
+                        $oLender->get($aLenderID['id_lender'], 'id_lender_account');
+                        $oClient->get($oLender->id_client_owner, 'id_client');
+                        $oCompanies->get($this->projects->id_company, 'id_company');
+
+                        // Motif virement
+                        $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($oClient->prenom))), 0, 1);
+                        $nom       = $this->ficelle->stripAccents(utf8_decode(trim($oClient->nom)));
+                        $id_client = str_pad($oClient->id_client, 6, 0, STR_PAD_LEFT);
+                        $sMotif    = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+
+                        $bLenderIsNaturalPerson   = $oLender->isNaturalPerson($oLender->id_lender_account);
+                        $aLoansOfLender           = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, '`id_type_contract` DESC');
+                        $iNumberOfLoansForLender  = count($aLoansOfLender);
+                        $iSumLoansOfLender        = ($this->loans->sum('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, 'amount') / 100);
+                        $iAvgInterestRateOfLender = $this->loans->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $this->projects->id_project);
+                        $iNumberOfAcceptedBids    = $oAcceptedBids->getDistinctBidsForLenderAndProject($oLender->id_lender_account, $this->projects->id_project);
+                        $sLoansDetails            = '';
+
+                        if ($bLenderIsNaturalPerson) {
+                            $aLoanIFP               = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
+                            $iNumberOfBidsInLoanIFP = $oAcceptedBids->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
+
+                            if ($iNumberOfBidsInLoanIFP > 1) {
+                                $sLoansDetails .= 'L&rsquo;ensemble de vos offres &agrave;
+                                                   concurrence de 1 000 euros sont regroup&eacute;es sous la forme
+                                                   d&rsquo;un seul contrat de pr&ecirc;t.
+                                                   Son taux d&rsquo;int&eacute;r&ecirc;t correspond donc &agrave; la moyenne
+                                                   pond&eacute;r&eacute;e de vos <span style="color:#b20066;">' . $iNumberOfBidsInLoanIFP . ' offres de pr&ecirc;t</span>. ';
+                            }
+                        }
+
+                        if ($iNumberOfAcceptedBids > 1) {
+                            $sAcceptedOffers            = 'vos offres ont &eacute;t&eacute; accept&eacute;es';
+                            $sOffers                    = 'vos offres';
+                            $sDoes                      = 'font';
+                        } else {
+                            $sAcceptedOffers            = 'votre offre a &eacute;t&eacute; accept&eacute;e';
+                            $sOffers                    = 'votre offre';
+                            $sDoes                      = 'fait';
+                        }
+
+                        if ($bLenderIsNaturalPerson && $iNumberOfLoansForLender <= 1) {
+                            $sLoansDetails .= 'Nous sommes heureux de vous annoncer que <span style="color:#b20066;">' . $sOffers . '
+                                                de pr&ecirc;t </span> pour un montant total de <span style="color:#b20066;">' . $iSumLoansOfLender . ' euros </span>
+                                                &agrave; <span style="color:#b20066;"> ' . $this->ficelle->formatNumber($iAvgInterestRateOfLender) . ' % </span>
+                                                pendant <span style="color:#b20066;"> ' . $this->projects->period . ' mois </span> ' . $sDoes . '
+                                                partie des meilleures offres s&eacute;lectionn&eacute;es. <br>';
+
+
+                        } elseif ($bLenderIsNaturalPerson && $iNumberOfLoansForLender > 1 || $bLenderIsNaturalPerson === false) {
+
+                            $sLoansDetails .= 'Voici la synth&egrave;se de ' . $sOffers . ' de pr&ecirc;t &agrave; <span style="color:#b20066;"> ' . $oCompanies->name . ' </span> : <br><br>';
+                            $sLoansDetails .= '<table style="border: 1px solid; border-collapse: collapse; width:100%; table-layout: fixed;"><tr>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Montant pr&ecirc;t&eacute;</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Taux d&rsquo;interet</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Dur&eacute;e</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Mensualit&eacute;s</th>
+                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Documents</th></tr>';
+
+                            foreach ($aLoansOfLender as $aLoan) {
+
+                                $aFirstPayment = $oPaymentSchedule->getPremiereEcheancePreteurByLoans($aLoan['id_project'], $aLoan['id_lender'], $aLoan['id_loan']);
+
+                                switch ($aLoan['id_type_contract']) {
+                                    case \loans::TYPE_CONTRACT_BDC:
+                                        $sContractType = 'Bon de caisse';
+                                        break;
+                                    case \loans::TYPE_CONTRACT_IFP:
+                                        $sContractType = 'Contrat de pr&ecirc;t';
+                                        break;
+                                    default:
+                                        $sContractType = '';
+                                        break;
+                                }
+                                $sLoansDetails .= '<tr><td style="border: 1px solid; padding: 5px; text-align: center;">' . $this->ficelle->formatNumber($aLoan['amount']/100) . ' &euro;</td>
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aLoan['rate']) . ' %</td>
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->projects->period . ' mois</td>
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aFirstPayment['montant']/100) . ' &euro;</td>
+                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $sContractType . '</td></tr>';
+                            }
+                            $sLoansDetails .= '</table>';
+                        }
+
+                        $sLinkExplication = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t,
+                                            vous pouvez consulter <a style="color:#b20066;" href="'.$this->surl.'/document-de-pret">cette page</a>. ': '';
+
+                        $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
+
+                        $varMail = array(
+                            'surl'                        => $this->surl,
+                            'url'                         => $this->furl,
+                            'offre_s_acceptee_s'          => $sAcceptedOffers,
+                            'prenom_p'                    => $oClient->prenom,
+                            'nom_entreprise'              => $oCompanies->name,
+                            'fait'                        => $sDoes,
+                            'detail_loans'                => $sLoansDetails,
+                            'offre_s'                     => $sOffers,
+                            'projet-p'                    => $this->furl . '/projects/detail/' . $this->projects->slug,
+                            'link_explication'            => $sLinkExplication,
+                            'motif_virement'              => $sMotif,
+                            'lien_fb'                     => $lien_fb,
+                            'lien_tw'                     => $lien_tw
+                        );
 
                             /** @var unilend_email $oUnilendEmail */
                             $oUnilendEmail = $this->loadLib('unilend_email');
 
-                            try {
-                                $oUnilendEmail->addAllMailVars($varMail);
-                                $oUnilendEmail->setTemplate('preteur-bid-ok', $this->language);
-                                $oUnilendEmail->addRecipient($preteur->email);
-                                $oUnilendEmail->sendFromTemplate();
-                            } catch (\Exception $oException) {
-                                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                        $this->email = $this->loadLib('email');
+                        $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
+                        $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
+                        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
+
+                        if ($oClient->status == 1 ) {
+                            if ($this->Config['env'] == 'prod') {
+                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $oClient->email, $tabFiler);
+                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                            } else {
+                                $this->email->addRecipient(trim($oClient->email));
+                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                             }
-
-                            $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : email preteur-bid-ok sent for loan (' . $l['id_loan'] . ')');
+                            $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : email preteur-bid-ok sent for lender (' . $oLender->id_lender_account . ')');
                         }
-                        $iTreatedLoanNb++;
+                        $iNbTreatedLenders++;
 
-                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iTreatedLoanNb . '/' . $iLoanNbTotal . ' loan notification mail sent');
+                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iNbTreatedLenders . '/' . $iNbLenders . ' loan notification mail sent');
                     }
+
                 } else {// Funding KO (le solde demandé n'a pas ete atteint par les encheres)
                     // On passe le projet en funding ko
                     $this->projects_status_history->addStatus(-1, 70, $projects['id_project']);
@@ -763,17 +949,10 @@ class cronController extends bootstrap
         $this->lenders_accounts = $this->loadData('lenders_accounts');
 
         // Chargement des librairies
-        $this->remb = $this->loadLib('remb');
         $jo         = $this->loadLib('jours_ouvres');
 
         $this->settings->get('Commission remboursement', 'type');
-        $com = $this->settings->value;
-
-        // On definit le nombre de mois et de jours apres la date de fin pour commencer le remboursement
-        $this->settings->get('Nombre de mois apres financement pour remboursement', 'type');
-        $nb_mois = $this->settings->value;
-        $this->settings->get('Nombre de jours apres financement pour remboursement', 'type');
-        $nb_jours = $this->settings->value;
+        $commission = $this->settings->value;
 
         // tva (0.196)
         $this->settings->get('TVA', 'type');
@@ -850,15 +1029,10 @@ class cronController extends bootstrap
                     $etranger = 2;
                 }
 
-                $capital     = ($l['amount'] / 100);
-                $nbecheances = $this->projects->period;
-                $taux        = ($l['rate'] / 100);
-                $commission  = $com;
+                $this->loans->get($l['id_loan']);
+                $tabl = $this->loans->getRepaymentSchedule($commission, $tva);
 
-                $tabl = $this->remb->echeancier($capital, $nbecheances, $taux, $commission, $tva);
-
-                $donneesEcheances = $tabl[1];
-                $lEcheanciers     = $tabl[2];
+                $lEcheanciers     = $tabl['repayment_schedule'];
 
                 // on crée les echeances de chaques preteurs
                 foreach ($lEcheanciers as $k => $e) {
@@ -881,7 +1055,7 @@ class cronController extends bootstrap
                             $montant_csg                          = 0;
                             $montant_prelevements_solidarite      = 0;
                             $montant_prelevements_sociaux         = 0;
-                            $montant_retenues_source              = round($retenues_source * $e['interets'], 2);
+                            $montant_retenues_source              = round($retenues_source * $e['interest'], 2);
                         } else {
                             if ($this->lenders_accounts->exonere == 1) {
 
@@ -890,21 +1064,21 @@ class cronController extends bootstrap
                                     if (strtotime($dateEcheance) >= strtotime($this->lenders_accounts->debut_exoneration) && strtotime($dateEcheance) <= strtotime($this->lenders_accounts->fin_exoneration)) {
                                         $montant_prelevements_obligatoires = 0;
                                     } else {
-                                        $montant_prelevements_obligatoires = round($prelevements_obligatoires * $e['interets'], 2);
+                                        $montant_prelevements_obligatoires = round($prelevements_obligatoires * $e['interest'], 2);
                                     }
                                 } /////////////////////////////
                                 else {
                                     $montant_prelevements_obligatoires = 0;
                                 }
                             } else {
-                                $montant_prelevements_obligatoires = round($prelevements_obligatoires * $e['interets'], 2);
+                                $montant_prelevements_obligatoires = round($prelevements_obligatoires * $e['interest'], 2);
                             }
 
-                            $montant_contributions_additionnelles = round($contributions_additionnelles * $e['interets'], 2);
-                            $montant_crds                         = round($crds * $e['interets'], 2);
-                            $montant_csg                          = round($csg * $e['interets'], 2);
-                            $montant_prelevements_solidarite      = round($prelevements_solidarite * $e['interets'], 2);
-                            $montant_prelevements_sociaux         = round($prelevements_sociaux * $e['interets'], 2);
+                            $montant_contributions_additionnelles = round($contributions_additionnelles * $e['interest'], 2);
+                            $montant_crds                         = round($crds * $e['interest'], 2);
+                            $montant_csg                          = round($csg * $e['interest'], 2);
+                            $montant_prelevements_solidarite      = round($prelevements_solidarite * $e['interest'], 2);
+                            $montant_prelevements_sociaux         = round($prelevements_sociaux * $e['interest'], 2);
                             $montant_retenues_source              = 0;
                         }
                     } // entreprise
@@ -915,18 +1089,18 @@ class cronController extends bootstrap
                         $montant_csg                          = 0;
                         $montant_prelevements_solidarite      = 0;
                         $montant_prelevements_sociaux         = 0;
-                        $montant_retenues_source              = round($retenues_source * $e['interets'], 2);
+                        $montant_retenues_source              = round($retenues_source * $e['interest'], 2);
                     }
 
                     $this->echeanciers->id_lender                    = $l['id_lender'];
                     $this->echeanciers->id_project                   = $this->projects->id_project;
                     $this->echeanciers->id_loan                      = $l['id_loan'];
                     $this->echeanciers->ordre                        = $k;
-                    $this->echeanciers->montant                      = $e['echeance'] * 100;
+                    $this->echeanciers->montant                      = $e['repayment'] * 100;
                     $this->echeanciers->capital                      = $e['capital'] * 100;
-                    $this->echeanciers->interets                     = $e['interets'] * 100;
+                    $this->echeanciers->interets                     = $e['interest'] * 100;
                     $this->echeanciers->commission                   = $e['commission'] * 100;
-                    $this->echeanciers->tva                          = $e['tva'] * 100;
+                    $this->echeanciers->tva                          = $e['vat_amount'] * 100;
                     $this->echeanciers->prelevements_obligatoires    = $montant_prelevements_obligatoires;
                     $this->echeanciers->contributions_additionnelles = $montant_contributions_additionnelles;
                     $this->echeanciers->crds                         = $montant_crds;
@@ -937,11 +1111,9 @@ class cronController extends bootstrap
                     $this->echeanciers->date_echeance                = $dateEcheance;
                     $this->echeanciers->date_echeance_emprunteur     = $dateEcheance_emprunteur;
                     $this->echeanciers->create();
-
-                    $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : echeanciers (' . $this->echeanciers->id_echeancier . ') and order (' . $this->echeanciers->ordre .') has been created for loan (' .  $l['id_loan'] . ')');
                 }
                 $iTreatedLoanNb ++;
-                $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' .  $iTreatedLoanNb . '/' . $iLoanNbTotal . ' lender loan treated.');
+                $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' .  $iTreatedLoanNb . '/' . $iLoanNbTotal . ' lender loan treated. ' . $k . ' repayment schedules created.');
             }
         }
     }
@@ -953,52 +1125,31 @@ class cronController extends bootstrap
 
         $oLogger = new ULogger('cron', $this->logPath, 'cron_check_projet_en_funding.log');
 
-        $loans                  = $this->loadData('loans');
         $projects               = $this->loadData('projects');
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $echeanciers            = $this->loadData('echeanciers');
 
-        $remb = $this->loadLib('remb');
-        $jo   = $this->loadLib('jours_ouvres');
+        $jo = $this->loadLib('jours_ouvres');
 
         $this->settings->get('Commission remboursement', 'type');
-        $com = $this->settings->value;
-
-        // On definit le nombre de mois et de jours apres la date de fin pour commencer le remboursement
-        $this->settings->get('Nombre de mois apres financement pour remboursement', 'type');
-        $nb_mois = $this->settings->value;
-        $this->settings->get('Nombre de jours apres financement pour remboursement', 'type');
-        $nb_jours = $this->settings->value;
+        $fCommissionRate = $this->settings->value;
 
         // tva (0.196)
         $this->settings->get('TVA', 'type');
-        $tva = $this->settings->value;
+        $fVAT = $this->settings->value;
 
         $projects->get($id_project, 'id_project');
 
-        $montantHaut = 0;
-        $montantBas  = 0;
-        foreach ($loans->select('id_project = ' . $projects->id_project) as $b) {
-            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-            $montantBas += ($b['amount'] / 100);
-        }
-        $tauxMoyen = ($montantHaut / $montantBas);
+        $fAmount  = $projects->amount;
+        $iMonthNb = $projects->period;
 
-        $capital     = $projects->amount;
-        $nbecheances = $projects->period;
-        $taux        = ($tauxMoyen / 100);
-        $commission  = $com;
-
-        $tabl = $remb->echeancier($capital, $nbecheances, $taux, $commission, $tva);
-
-        $donneesEcheances = $tabl[1];
-        //$lEcheanciers = $tabl[2];
+        $aCommision = \repayment::getRepaymentCommission($fAmount, $iMonthNb, $fCommissionRate, $fVAT);
 
         $lEcheanciers = $echeanciers->getSumRembEmpruntByMonths($projects->id_project);
 
-        $iEcheancierNbTotal = count($lEcheanciers);
+        $iEcheancierNbTotal   = count($lEcheanciers);
         $iTreatedEcheancierNb = 0;
-        $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' .$iEcheancierNbTotal . ' in total.');
+        $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' . $iEcheancierNbTotal . ' in total.');
         foreach ($lEcheanciers as $k => $e) {
             // Date d'echeance emprunteur
             $dateEcheance_emprunteur = $this->dates->dateAddMoisJoursV3($projects->date_fin, $k);
@@ -1012,15 +1163,14 @@ class cronController extends bootstrap
             $echeanciers_emprunteur->montant                  = $e['montant'] * 100; // sum montant preteurs
             $echeanciers_emprunteur->capital                  = $e['capital'] * 100; // sum capital preteurs
             $echeanciers_emprunteur->interets                 = $e['interets'] * 100; // sum interets preteurs
-            $echeanciers_emprunteur->commission               = $donneesEcheances['comParMois'] * 100; // on recup com du projet
-            $echeanciers_emprunteur->tva                      = $donneesEcheances['tvaCom'] * 100; // et tva du projet
+            $echeanciers_emprunteur->commission               = $aCommision['commission_monthly'] * 100; // on recup com du projet
+            $echeanciers_emprunteur->tva                      = $aCommision['vat_amount_monthly'] * 100; // et tva du projet
             $echeanciers_emprunteur->date_echeance_emprunteur = $dateEcheance_emprunteur;
             $echeanciers_emprunteur->create();
 
-            $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' :  echeance (' . $echeanciers_emprunteur->id_echeanciers_emprunteur . ') has been created.');
-
-            $iTreatedEcheancierNb ++;
-            $oLogger->addRecord(ULogger::INFO, 'project : ' . $id_project . ' : ' . $iTreatedEcheancierNb . '/' . $iEcheancierNbTotal . ' borrower echeance created.');
+            $iTreatedEcheancierNb++;
+            $oLogger->addRecord(ULogger::INFO,
+                'project : ' . $id_project . ' : borrower  echeance (' . $echeanciers_emprunteur->id_echeancier_emprunteur . ') has been created. ' . $iTreatedEcheancierNb . '/' . $iEcheancierNbTotal . 'traited');
         }
     }
 
@@ -2610,20 +2760,12 @@ class cronController extends bootstrap
                                     if ($transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement') == false) {
 
                                         if ($is_remboursement_anticipe) {
-                                            // reception
                                             $receptions->get($receptions->id_reception, 'id_reception');
                                             $receptions->id_project    = $this->projects->id_project;
                                             $receptions->remb_anticipe = 1;
                                             $receptions->status_bo     = 2; // // attri auto
                                             $receptions->update();
 
-                                            // Ajouter nouveau type transaction
-                                            //
-                                            //
-                                            //ALTER TABLE  `receptions` ADD  `remb_anticipe` INT NOT NULL COMMENT  '0 : non / 1 : oui' AFTER  `type`
-                                            //
-                                            //
-                                            // transact
                                             $transactions->id_virement      = $receptions->id_reception;
                                             $transactions->id_project       = $this->projects->id_project;
                                             $transactions->montant          = $receptions->montant;
@@ -2634,9 +2776,8 @@ class cronController extends bootstrap
                                             $transactions->transaction      = 1;
                                             $transactions->type_transaction = 22; // remboursement anticipe
                                             $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                                            $transactions->id_transaction   = $transactions->create();
+                                            $transactions->create();
 
-                                            // bank unilend
                                             $bank_unilend                 = $this->loadData('bank_unilend');
                                             $bank_unilend->id_transaction = $transactions->id_transaction;
                                             $bank_unilend->id_project     = $this->projects->id_project;
@@ -2806,7 +2947,6 @@ class cronController extends bootstrap
     public function _etat_quotidien()
     {
         if (true === $this->startCron('etat_quotidien', 10)) {
-
             if (isset($this->params[0])) {
                 $iTimeStamp = strtotime($this->params[0]);
                 if(false === $iTimeStamp) {
@@ -2819,25 +2959,22 @@ class cronController extends bootstrap
 
             $jour = date('d', $iTimeStamp);
 
-            // si on veut mettre a jour une date on met le jour ici mais attention ca va sauvegarder enbdd et sur l'etat quotidien fait ce matin a 1h du mat
+            // si on veut mettre a jour une date on met le jour ici mais attention ca va sauvegarder en BDD et sur l'etat quotidien fait ce matin a 1h du mat
+            // On recup le nombre de jour dans le mois
             if ($jour == 1) {
-                // On recup le nombre de jour dans le mois
                 $mois = mktime(0, 0, 0, date('m', $iTimeStamp) - 1, 1, date('Y', $iTimeStamp));
             } else {
-                // On recup le nombre de jour dans le mois
                 $mois = mktime(0, 0, 0, date('m', $iTimeStamp), 1, date('Y', $iTimeStamp));
             }
 
-            $nbJours = date("t", $mois);
-            $leMois  = date('m', $mois);
-            $lannee  = date('Y', $mois);
-            //$leJour = $nbJours;
+            $nbJours       = date('t', $mois);
+            $leMois        = date('m', $mois);
+            $lannee        = date('Y', $mois);
             $InfeA         = mktime(0, 0, 0, date('m', $iTimeStamp), date('d', $iTimeStamp), date('Y', $iTimeStamp));
             $lanneeLemois  = date('Y-m', $mois);
             $laDate        = date('d-m-Y', $iTimeStamp);
             $lemoisLannee2 = date('m/Y', $mois);
 
-            // chargement des datas
             $transac                = $this->loadData('transactions');
             $echeanciers            = $this->loadData('echeanciers');
             $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
@@ -2846,50 +2983,21 @@ class cronController extends bootstrap
             $etat_quotidien         = $this->loadData('etat_quotidien');
             $bank_unilend           = $this->loadData('bank_unilend');
 
-            // Les remboursements preteurs
-            $lrembPreteurs = $bank_unilend->sumMontantByDayMonths('type = 2 AND status = 1', $leMois, $lannee);
-
-            // On recup les echeances le jour où ils ont été remb aux preteurs
-            $listEcheances = $bank_unilend->ListEcheancesByDayMonths('type = 2 AND status = 1', $leMois, $lannee);
-
-            // alimentations CB
-            $alimCB = $transac->sumByday(3, $leMois, $lannee);
-
-            // 2 : alimentations virements
-            $alimVirement = $transac->sumByday(4, $leMois, $lannee);
-
-            // 7 : alimentations prelevements
-            $alimPrelevement = $transac->sumByday(7, $leMois, $lannee);
-
-            // 6 : remb Emprunteur (prelevement)
-            $rembEmprunteur = $transac->sumByday(6, $leMois, $lannee);
-
-            // 15 : rejet remb emprunteur
-            $rejetrembEmprunteur = $transac->sumByday(15, $leMois, $lannee);
-
-            // 9 : virement emprunteur (octroi prêt : montant | commissions octoi pret : unilend_montant)
-            $virementEmprunteur = $transac->sumByday(9, $leMois, $lannee);
-
-            // 11 : virement unilend (argent gagné envoyé sur le compte)
-            $virementUnilend = $transac->sumByday(11, $leMois, $lannee);
-
-            // 12 virerment pour l'etat
-            $virementEtat = $transac->sumByday(12, $leMois, $lannee);
-
-            // 8 : retrait preteur
-            $retraitPreteur = $transac->sumByday(8, $leMois, $lannee);
-
-            // 13 regul commission
-            $regulCom = $transac->sumByday(13, $leMois, $lannee);
-
-            // 16 unilend offre bienvenue
-            $offres_bienvenue = $transac->sumByday(16, $leMois, $lannee);
-
-            // 17 unilend offre bienvenue retrait
-            $offres_bienvenue_retrait = $transac->sumByday(17, $leMois, $lannee);
-
-            // 18 unilend offre bienvenue
-            $unilend_bienvenue = $transac->sumByday(18, $leMois, $lannee);
+            $lrembPreteurs            = $bank_unilend->sumMontantByDayMonths('type = 2 AND status = 1', $leMois, $lannee); // Les remboursements preteurs
+            $listEcheances            = $bank_unilend->ListEcheancesByDayMonths('type = 2 AND status = 1', $leMois, $lannee); // On recup les echeances le jour où ils ont été remb aux preteurs
+            $alimCB                   = $transac->sumByday('3', $leMois, $lannee); // alimentations CB
+            $alimVirement             = $transac->sumByday('4', $leMois, $lannee); // 2 : alimentations virements
+            $alimPrelevement          = $transac->sumByday('7', $leMois, $lannee); // 7 : alimentations prelevements
+            $rembEmprunteur           = $transac->sumByday('6, 22', $leMois, $lannee); // 6 : remb Emprunteur (prelevement) - 22 : remboursement anticipé
+            $rejetrembEmprunteur      = $transac->sumByday('15', $leMois, $lannee); // 15 : rejet remb emprunteur
+            $virementEmprunteur       = $transac->sumByday('9', $leMois, $lannee); // 9 : virement emprunteur (octroi prêt : montant | commissions octoi pret : unilend_montant)
+            $virementUnilend          = $transac->sumByday('11', $leMois, $lannee); // 11 : virement unilend (argent gagné envoyé sur le compte)
+            $virementEtat             = $transac->sumByday('12', $leMois, $lannee); // 12 virerment pour l'etat
+            $retraitPreteur           = $transac->sumByday('8', $leMois, $lannee); // 8 : retrait preteur
+            $regulCom                 = $transac->sumByday('13', $leMois, $lannee); // 13 regul commission
+            $offres_bienvenue         = $transac->sumByday('16', $leMois, $lannee); // 16 unilend offre bienvenue
+            $offres_bienvenue_retrait = $transac->sumByday('17', $leMois, $lannee); // 17 unilend offre bienvenue retrait
+            $unilend_bienvenue        = $transac->sumByday('18', $leMois, $lannee); // 18 unilend offre bienvenue
 
             $listDates = array();
             for ($i = 1; $i <= $nbJours; $i++) {
@@ -2897,12 +3005,10 @@ class cronController extends bootstrap
             }
 
             // recup des prelevements permanent
-
             $listPrel = array();
             foreach ($prelevements->select('type_prelevement = 1 AND status > 0 AND type = 1') as $prelev) {
-                $addedXml = strtotime($prelev['added_xml']);
-                $added    = strtotime($prelev['added']);
-
+                $addedXml     = strtotime($prelev['added_xml']);
+                $added        = strtotime($prelev['added']);
                 $dateaddedXml = date('Y-m', $addedXml);
                 $date         = date('Y-m', $added);
                 $i            = 1;
@@ -2913,9 +3019,8 @@ class cronController extends bootstrap
                 // tant que la date de creation n'est pas egale on rajoute les mois entre
                 while ($date != $dateaddedXml) {
                     $newdate = mktime(0, 0, 0, date('m', $added) + $i, date('d', $addedXml), date('Y', $added));
-
-                    $date  = date('Y-m', $newdate);
-                    $added = date('Y-m-d', $newdate) . ' 00:00:00';
+                    $date    = date('Y-m', $newdate);
+                    $added   = date('Y-m-d', $newdate) . ' 00:00:00';
 
                     $listPrel[date('Y-m-d', $newdate)] += $prelev['montant'];
 
@@ -2929,26 +3034,18 @@ class cronController extends bootstrap
             $etat_quotidienOld = $etat_quotidien->getTotauxbyMonth($oldDate);
 
             if ($etat_quotidienOld != false) {
-                $soldeDeLaVeille = $etat_quotidienOld['totalNewsoldeDeLaVeille'];
-                $soldeReel       = $etat_quotidienOld['totalNewSoldeReel'];
-
-                $soldeReel_old = $soldeReel;
-
-                $soldeSFFPME_old = $etat_quotidienOld['totalSoldeSFFPME'];
-
+                $soldeDeLaVeille      = $etat_quotidienOld['totalNewsoldeDeLaVeille'];
+                $soldeReel            = $etat_quotidienOld['totalNewSoldeReel'];
+                $soldeSFFPME_old      = $etat_quotidienOld['totalSoldeSFFPME'];
                 $soldeAdminFiscal_old = $etat_quotidienOld['totalSoldeAdminFiscal'];
-
-                $soldePromotion_old = $etat_quotidienOld['totalSoldePromotion'];
+                $soldePromotion_old   = $etat_quotidienOld['totalSoldePromotion'];
             } else {
                 // Solde theorique
                 $soldeDeLaVeille = 0;
 
                 // solde reel
-                $soldeReel     = 0;
-                $soldeReel_old = 0;
-
-                $soldeSFFPME_old = 0;
-
+                $soldeReel            = 0;
+                $soldeSFFPME_old      = 0;
                 $soldeAdminFiscal_old = 0;
 
                 // soldePromotion
@@ -2956,8 +3053,7 @@ class cronController extends bootstrap
             }
 
             $newsoldeDeLaVeille = $soldeDeLaVeille;
-
-            $soldePromotion = $soldePromotion_old;
+            $soldePromotion     = $soldePromotion_old;
 
             // ecart
             $oldecart = $soldeDeLaVeille - $soldeReel;
@@ -2968,7 +3064,6 @@ class cronController extends bootstrap
             // Solde Admin. Fiscale
             $soldeAdminFiscal = $soldeAdminFiscal_old;
 
-            //$bank_unilend->sumMontant('type ')
             // -- totaux -- //
             $totalAlimCB                              = 0;
             $totalAlimVirement                        = 0;
@@ -2977,6 +3072,17 @@ class cronController extends bootstrap
             $totalVirementEmprunteur                  = 0;
             $totalVirementCommissionUnilendEmprunteur = 0;
             $totalCommission                          = 0;
+            $totalVirementUnilend_bienvenue           = 0;
+            $totalAffectationEchEmpr                  = 0;
+            $totalOffrePromo                          = 0;
+            $totalOctroi_pret                         = 0;
+            $totalCapitalPreteur                      = 0;
+            $totalInteretNetPreteur                   = 0;
+            $totalEcartMouvInternes                   = 0;
+            $totalVirementsOK                         = 0;
+            $totalVirementsAttente                    = 0;
+            $totaladdsommePrelev                      = 0;
+            $totalAdminFiscalVir                      = 0;
 
             // Retenues fiscales
             $totalPrelevements_obligatoires    = 0;
@@ -3031,10 +3137,8 @@ class cronController extends bootstrap
                 <th colspan="6">Mouvements internes</th>
                 <th colspan="3">Virements</th>
                 <th>Prélèvements</th>
-
             </tr>
             <tr>
-
                 <td class="center">Carte<br>bancaire</td>
                 <td class="center">Virement</td>
                 <td class="center">Prélèvement</td>
@@ -3043,7 +3147,6 @@ class cronController extends bootstrap
                 <td class="center">Virement</td>
                 <td class="center">Virement</td>
                 <td class="center">Virement</td>
-
                 <td class="center">Prélèvements<br />obligatoires</td>
                 <td class="center">Retenues à la<br />source</td>
                 <td class="center">CSG</td>
@@ -3059,14 +3162,12 @@ class cronController extends bootstrap
                 <td class="center">Solde<br />Promotions</td>
                 <td class="center">Solde<br />SFF PME</td>
                 <td class="center">Solde Admin.<br>Fiscale</td>
-
                 <td class="center">Offre promo</td>
                 <td class="center">Octroi prêt</td>
                 <td class="center">Retour prêteur<br />(Capital)</td>
                 <td class="center">Retour prêteur<br />(Intérêts nets)</td>
                 <td class="center">Affectation<br />Ech. Empr.</td>
                 <td class="center">Ecart<br />fiscal</td>
-
                 <td class="center">Fichier<br />virements</td>
                 <td class="center">Dont<br />SFF PME</td>
                 <td class="center">Administration<br />Fiscale</td>
@@ -3084,9 +3185,7 @@ class cronController extends bootstrap
             </tr>';
 
             foreach ($listDates as $key => $date) {
-
                 if (strtotime($date . ' 00:00:00') < $InfeA) {
-
                     // sommes des echeance par jour (sans RA)
                     $echangeDate = $echeanciers->getEcheanceByDayAll($date, '1 AND status_ra = 0');
 
@@ -3137,11 +3236,9 @@ class cronController extends bootstrap
                     // Solde promotion
                     $soldePromotion += $unilend_bienvenue[$date]['montant'];  // ajouté le 19/11/2014
                     $soldePromotion -= $offres_bienvenue[$date]['montant'];  // ajouté le 19/11/2014
-
                     $soldePromotion += $offres_bienvenue_retrait[$date]['montant']; // (on ajoute le offres retirées d'un compte) ajouté le 19/11/2014
 
                     $offrePromo = $offres_bienvenue[$date]['montant'] + $offres_bienvenue_retrait[$date]['montant'];
-                    //$offrePromo -= ;
                     // ADD $rejetrembEmprunteur[$date]['montant'] // 22/01/2015
                     // total Mouvements
                     $entrees = ($alimCB[$date]['montant'] + $alimVirement[$date]['montant'] + $alimPrelevement[$date]['montant'] + $rembEmprunteur[$date]['montant'] + $unilend_bienvenue[$date]['montant'] + $rejetrembEmprunteur[$date]['montant']);
@@ -3226,9 +3323,8 @@ class cronController extends bootstrap
                     // prelevements
                     $prelevPonctuel = $prelevements->sum('LEFT(added_xml,10) = "' . $date . '" AND status > 0');
 
-                    if ($listPrel[$date] != false) {
+                    if (false === empty($listPrel[$date])) {
                         $sommePrelev = $prelevPonctuel + $listPrel[$date];
-                        //echo $prelevPonctuel .'<br>';
                     } else {
                         $sommePrelev = $prelevPonctuel;
                     }
@@ -3278,16 +3374,12 @@ class cronController extends bootstrap
                     $totalOctroi_pret += $octroi_pret;
                     $totalCapitalPreteur += $capitalPreteur;
                     $totalInteretNetPreteur += $interetNetPreteur;
-
                     $totalEcartMouvInternes += $ecartMouvInternes;
-
                     $totalVirementsOK += $virementsOK;
 
                     // dont sff pme
                     $totalVirementsAttente += $virementsAttente;
-
                     $totaladdsommePrelev += $sommePrelev;
-
                     $totalAdminFiscalVir += $adminFiscalVir;
 
                     $tableau .= '
@@ -3312,7 +3404,7 @@ class cronController extends bootstrap
                     <td class="right">' . $this->ficelle->formatNumber($sommeMouvements) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($soldeTheorique) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($leSoldeReel) . '</td>
-                    <td class="right">' . $this->ficelle->formatNumber(round($ecartSoldes, 2)) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($ecartSoldes) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($soldePromotion) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($soldeSFFPME) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($soldeAdminFiscal) . '</td>
@@ -3393,7 +3485,7 @@ class cronController extends bootstrap
                 <th class="right">' . $this->ficelle->formatNumber($totalSommeMouvements) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalNewsoldeDeLaVeille) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalNewSoldeReel) . '</th>
-                <th class="right">' . $this->ficelle->formatNumber(round($totalEcartSoldes, 2)) . '</th>
+                <th class="right">' . $this->ficelle->formatNumber($totalEcartSoldes) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalSoldePromotion) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalSoldeSFFPME) . '</th>
                 <th class="right">' . $this->ficelle->formatNumber($totalSoldeAdminFiscal) . '</th>
@@ -3410,92 +3502,42 @@ class cronController extends bootstrap
             </tr>
         </table>';
 
-            $table[1]['name'] = 'totalAlimCB';
-            $table[1]['val']  = $totalAlimCB;
-            $table[2]['name'] = 'totalAlimVirement';
-            $table[2]['val']  = $totalAlimVirement;
-            $table[3]['name'] = 'totalAlimPrelevement';
-            $table[3]['val']  = $totalAlimPrelevement;
-            $table[4]['name'] = 'totalRembEmprunteur';
-            $table[4]['val']  = $totalRembEmprunteur;
-            $table[5]['name'] = 'totalVirementEmprunteur';
-            $table[5]['val']  = $totalVirementEmprunteur;
-            $table[6]['name'] = 'totalVirementCommissionUnilendEmprunteur';
-            $table[6]['val']  = $totalVirementCommissionUnilendEmprunteur;
-            $table[7]['name'] = 'totalCommission';
-            $table[7]['val']  = $totalCommission;
+            $table = array(
+                1  => array('name' => 'totalAlimCB', 'val' => $totalAlimCB),
+                2  => array('name' => 'totalAlimVirement', 'val' => $totalAlimVirement),
+                3  => array('name' => 'totalAlimPrelevement', 'val' => $totalAlimPrelevement),
+                4  => array('name' => 'totalRembEmprunteur', 'val' => $totalRembEmprunteur),
+                5  => array('name' => 'totalVirementEmprunteur', 'val' => $totalVirementEmprunteur),
+                6  => array('name' => 'totalVirementCommissionUnilendEmprunteur', 'val' => $totalVirementCommissionUnilendEmprunteur),
+                7  => array('name' => 'totalCommission', 'val' => $totalCommission),
+                8  => array('name' => 'totalPrelevements_obligatoires', 'val' => $totalPrelevements_obligatoires),
+                9  => array('name' => 'totalRetenues_source', 'val' => $totalRetenues_source),
+                10 => array('name' => 'totalCsg', 'val' => $totalCsg),
+                11 => array('name' => 'totalPrelevements_sociaux', 'val' => $totalPrelevements_sociaux),
+                12 => array('name' => 'totalContributions_additionnelles', 'val' => $totalContributions_additionnelles),
+                13 => array('name' => 'totalPrelevements_solidarite', 'val' => $totalPrelevements_solidarite),
+                14 => array('name' => 'totalCrds', 'val' => $totalCrds),
+                15 => array('name' => 'totalRetraitPreteur', 'val' => $totalRetraitPreteur),
+                16 => array('name' => 'totalSommeMouvements', 'val' => $totalSommeMouvements),
+                17 => array('name' => 'totalNewsoldeDeLaVeille', 'val' => $totalNewsoldeDeLaVeille),
+                18 => array('name' => 'totalNewSoldeReel', 'val' => $totalNewSoldeReel),
+                19 => array('name' => 'totalEcartSoldes', 'val' => $totalEcartSoldes),
+                20 => array('name' => 'totalOctroi_pret', 'val' => $totalOctroi_pret),
+                21 => array('name' => 'totalCapitalPreteur', 'val' => $totalCapitalPreteur),
+                22 => array('name' => 'totalInteretNetPreteur', 'val' => $totalInteretNetPreteur),
+                23 => array('name' => 'totalEcartMouvInternes', 'val' => $totalEcartMouvInternes),
+                24 => array('name' => 'totalVirementsOK', 'val' => $totalVirementsOK),
+                25 => array('name' => 'totalVirementsAttente', 'val' => $totalVirementsAttente),
+                26 => array('name' => 'totaladdsommePrelev', 'val' => $totaladdsommePrelev),
+                27 => array('name' => 'totalSoldeSFFPME', 'val' => $totalSoldeSFFPME),
+                28 => array('name' => 'totalSoldeAdminFiscal', 'val' => $totalSoldeAdminFiscal),
+                29 => array('name' => 'totalAdminFiscalVir', 'val' => $totalAdminFiscalVir),
+                30 => array('name' => 'totalAffectationEchEmpr', 'val' => $totalAffectationEchEmpr),
+                31 => array('name' => 'totalVirementUnilend_bienvenue', 'val' => $totalVirementUnilend_bienvenue),
+                32 => array('name' => 'totalSoldePromotion', 'val' => $totalSoldePromotion),
+                33 => array('name' => 'totalOffrePromo', 'val' => $totalOffrePromo)
+            );
 
-            $table[8]['name']  = 'totalPrelevements_obligatoires';
-            $table[8]['val']   = $totalPrelevements_obligatoires;
-            $table[9]['name']  = 'totalRetenues_source';
-            $table[9]['val']   = $totalRetenues_source;
-            $table[10]['name'] = 'totalCsg';
-            $table[10]['val']  = $totalCsg;
-            $table[11]['name'] = 'totalPrelevements_sociaux';
-            $table[11]['val']  = $totalPrelevements_sociaux;
-            $table[12]['name'] = 'totalContributions_additionnelles';
-            $table[12]['val']  = $totalContributions_additionnelles;
-            $table[13]['name'] = 'totalPrelevements_solidarite';
-            $table[13]['val']  = $totalPrelevements_solidarite;
-            $table[14]['name'] = 'totalCrds';
-            $table[14]['val']  = $totalCrds;
-
-            $table[15]['name'] = 'totalRetraitPreteur';
-            $table[15]['val']  = $totalRetraitPreteur;
-            $table[16]['name'] = 'totalSommeMouvements';
-            $table[16]['val']  = $totalSommeMouvements;
-            $table[17]['name'] = 'totalNewsoldeDeLaVeille';
-            //$table[17]['val'] = $totalNewsoldeDeLaVeille-$soldeDeLaVeille;
-            $table[17]['val']  = $totalNewsoldeDeLaVeille;
-            $table[18]['name'] = 'totalNewSoldeReel';
-            //$table[18]['val'] = $totalNewSoldeReel-$soldeReel_old;
-            $table[18]['val']  = $totalNewSoldeReel;
-            $table[19]['name'] = 'totalEcartSoldes';
-            $table[19]['val']  = $totalEcartSoldes;
-
-            $table[20]['name'] = 'totalOctroi_pret';
-            $table[20]['val']  = $totalOctroi_pret;
-
-            $table[21]['name'] = 'totalCapitalPreteur';
-            $table[21]['val']  = $totalCapitalPreteur;
-            $table[22]['name'] = 'totalInteretNetPreteur';
-            $table[22]['val']  = $totalInteretNetPreteur;
-            $table[23]['name'] = 'totalEcartMouvInternes';
-            $table[23]['val']  = $totalEcartMouvInternes;
-
-            $table[24]['name'] = 'totalVirementsOK';
-            $table[24]['val']  = $totalVirementsOK;
-            $table[25]['name'] = 'totalVirementsAttente';
-            $table[25]['val']  = $totalVirementsAttente;
-            $table[26]['name'] = 'totaladdsommePrelev';
-            $table[26]['val']  = $totaladdsommePrelev;
-
-            // Solde SFF PME
-            $table[27]['name'] = 'totalSoldeSFFPME';
-            $table[27]['val']  = $totalSoldeSFFPME;
-            //$table[27]['val'] = $totalSoldeSFFPME-$soldeSFFPME_old;
-            // Solde Admin. Fiscale
-            $table[28]['name'] = 'totalSoldeAdminFiscal';
-            //$table[28]['val'] = $totalSoldeAdminFiscal-$soldeAdminFiscal_old;
-            $table[28]['val'] = $totalSoldeAdminFiscal;
-
-            // Solde Admin. Fiscale (virement)
-            $table[29]['name'] = 'totalAdminFiscalVir';
-            $table[29]['val']  = $totalAdminFiscalVir;
-
-            $table[30]['name'] = 'totalAffectationEchEmpr';
-            $table[30]['val']  = $totalAffectationEchEmpr;
-
-            $table[31]['name'] = 'totalVirementUnilend_bienvenue';
-            $table[31]['val']  = $totalVirementUnilend_bienvenue;
-
-            $table[32]['name'] = 'totalSoldePromotion';
-            $table[32]['val']  = $totalSoldePromotion;
-
-            $table[33]['name'] = 'totalOffrePromo';
-            $table[33]['val']  = $totalOffrePromo;
-
-            // create sav solde
             $etat_quotidien->createEtat_quotidient($table, $leMois, $lannee);
 
             // on recup toataux du mois de decembre de l'année precedente
@@ -3504,26 +3546,20 @@ class cronController extends bootstrap
             $etat_quotidienOld = $etat_quotidien->getTotauxbyMonth($oldDate);
 
             if ($etat_quotidienOld != false) {
-                $soldeDeLaVeille = $etat_quotidienOld['totalNewsoldeDeLaVeille'];
-                $soldeReel       = $etat_quotidienOld['totalNewSoldeReel'];
-
-                $soldeSFFPME_old = $etat_quotidienOld['totalSoldeSFFPME'];
-
+                $soldeDeLaVeille      = $etat_quotidienOld['totalNewsoldeDeLaVeille'];
+                $soldeReel            = $etat_quotidienOld['totalNewSoldeReel'];
+                $soldeSFFPME_old      = $etat_quotidienOld['totalSoldeSFFPME'];
                 $soldeAdminFiscal_old = $etat_quotidienOld['totalSoldeAdminFiscal'];
-
-                $soldePromotion_old = $etat_quotidienOld['totalSoldePromotion'];
+                $soldePromotion_old   = $etat_quotidienOld['totalSoldePromotion'];
             } else {
                 // Solde theorique
                 $soldeDeLaVeille = 0;
 
                 // solde reel
-                $soldeReel = 0;
-
-                $soldeSFFPME_old = 0;
-
+                $soldeReel            = 0;
+                $soldeSFFPME_old      = 0;
                 $soldeAdminFiscal_old = 0;
-
-                $soldePromotion_old = 0;
+                $soldePromotion_old   = 0;
             }
 
             // ecart
@@ -3860,6 +3896,8 @@ class cronController extends bootstrap
             // destinataire
             $this->settings->get('Adresse notification etat quotidien', 'type');
             $destinataire = $this->settings->value;
+
+            $this->mails_text->get('notification-etat-quotidien', 'lang = "' . $this->language . '" AND type');
 
             $aVarEmail = array(
                 '$surl'     => $this->surl,
@@ -5388,7 +5426,6 @@ class cronController extends bootstrap
                             $this->bank_lines->amount            = $response['payment']['amount'];
                             $this->bank_lines->create();
 
-                            $to      = 'd.courtier@relance.fr';
                             $subject = '[Alerte] BACK PAYLINE Transaction approved';
                             $message = '
                         <html>
@@ -5535,7 +5572,7 @@ class cronController extends bootstrap
                 $id_notif = 2;
             } elseif (time() >= $dateDebutOffreRefusee && time() < $dateFinOffreRefusee) {// Offre refusée
                 $id_notif = 3;
-            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {// Offre Acceptée
+            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee ) {// Offre Acceptée
                 $id_notif = 4;
             } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
                 $id_notif = 5;
@@ -5634,7 +5671,7 @@ class cronController extends bootstrap
                         }
                     }
                 }
-            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {// Offre Acceptée
+            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee ) {// Offre Acceptée
                 $id_notif = 4;
             } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
                 $id_notif = 5;
@@ -5690,7 +5727,7 @@ class cronController extends bootstrap
             $dateDebutRemboursement = mktime(11, 0, 0, date('m'), date('d'), date('Y'));
             $dateFinRemboursement   = mktime(11, 30, 0, date('m'), date('d'), date('Y'));
 
-            if (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {
+            if (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee ) {
                 $id_notif = 4;
             } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
                 $id_notif = 5;
@@ -6436,11 +6473,12 @@ class cronController extends bootstrap
         $this->projects      = $this->loadData('projects');
         $this->companies     = $this->loadData('companies');
         $this->loans         = $this->loadData('loans');
+        $oLender             = $this->loadData('lenders_accounts');
 
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
 
-        if ($array_offres_acceptees != false) {
+        if (isset($array_offres_acceptees)) {
             $clients_gestion_notif_log                              = $this->loadData('clients_gestion_notif_log');
             $clients_gestion_notif_log->id_notif                    = 4;
             $clients_gestion_notif_log->type                        = $type;
@@ -6460,6 +6498,10 @@ class cronController extends bootstrap
                 if ($this->clients_gestion_notifications->getNotif($id_client, 4, $type) == true) {
                     $this->clients->get($id_client, 'id_client');
 
+                    $oLender->get($this->clients->id_client, 'id_client_owner');
+                    $bLenderIsNaturalPerson = $oLender->isNaturalPerson($oLender->id_lender_account);
+                    $sLinkExplication       = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a style="color:#b20066;" href="'.$this->surl.'/document-de-pret">cette page</a>. ' : '';
+
                     $p            = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
                     $nom          = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
                     $le_id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
@@ -6478,6 +6520,18 @@ class cronController extends bootstrap
                             $this->companies->get($this->projects->id_company, 'id_company');
                             $this->loans->get($n['id_loan'], 'id_loan');
 
+
+                            switch ($this->loans->id_type_contract){
+                                case \loans::TYPE_CONTRACT_BDC:
+                                    $sContractType = 'Bon de caisse';
+                                    break;
+                                case \loans::TYPE_CONTRACT_IFP:
+                                    $sContractType = 'Contrat de pr&ecirc;t';
+                                    break;
+                                default:
+                                    $sContractType = '';
+                                    break;
+                            }
                             $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
                             if ($type == 'quotidienne') {
                                 $this->clients_gestion_mails_notif->quotidienne              = 1;
@@ -6495,24 +6549,27 @@ class cronController extends bootstrap
 
                             if ($i == $nb_arrayoffres) {
                                 $liste_offres .= '
-                                <tr style="color:#b20066;">
-                                    <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' €</td>
-                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
-                                </tr>
-                                <tr>
-                                    <td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
-                                    <td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($total, 0) . ' €</td>
-                                    <td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
-                                </tr>
-                                ';
+								<tr style="color:#b20066;">
+									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' &euro;</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">'.$sContractType.'</td>
+								</tr>
+								<tr>
+									<td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
+									<td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($total, 0) . ' &euro;</td>
+									<td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
+									<td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
+								</tr>
+								';
                             } else {
                                 $liste_offres .= '
-                                <tr style="color:#b20066;">
-                                    <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' €</td>
-                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
-                                </tr>';
+								<tr style="color:#b20066;">
+									<td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' &euro;</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
+									<td align="right" style="font-family:Arial;font-size:14px;">'.$sContractType.'</td>
+								</tr>';
                             }
                             $i++;
                         }
@@ -6558,17 +6615,18 @@ class cronController extends bootstrap
                             }
 
                             $varMail = array(
-                                'surl'            => $this->surl,
-                                'url'             => $this->furl,
-                                'prenom_p'        => $this->clients->prenom,
-                                'liste_offres'    => $liste_offres,
-                                'motif_virement'  => $motif,
-                                'contenu'         => $lecontenu,
-                                'objet'           => $objet,
-                                'sujet'           => $sujet,
-                                'gestion_alertes' => $this->lurl . '/profile',
-                                'lien_fb'         => $lien_fb,
-                                'lien_tw'         => $lien_tw
+                                'surl'             => $this->surl,
+                                'url'              => $this->furl,
+                                'prenom_p'         => $this->clients->prenom,
+                                'liste_offres'     => $liste_offres,
+                                'motif_virement'   => $motif,
+                                'contenu'          => $lecontenu,
+                                'objet'            => $objet,
+                                'sujet'            => $sujet,
+                                'gestion_alertes'  => $this->lurl . '/profile',
+                                'lien_fb'          => $lien_fb,
+                                'lien_tw'          => $lien_tw,
+                                'link_explication' => $sLinkExplication
                             );
 
                             /** @var unilend_email $oUnilendEmail */
@@ -7356,8 +7414,6 @@ class cronController extends bootstrap
         ini_set('memory_limit', '4096M');
 
         if (true === $this->startCron('indexation', 60)) {
-
-            $heure_debut               = date("Y-m-d H:i:s");
             $indexage_1jour            = true; // Si true, on n'indexe que les clients avec une date de derniere indexation plus vieille de Xh.
             $heure_derniere_indexation = 24;
             $liste_id_a_forcer         = 0;  // force l'indexation juste pour ces id.  (Ex: 12,1,2), si on veut pas on met 0
@@ -7459,7 +7515,7 @@ class cronController extends bootstrap
                                 $this->indexage_vos_operations->libelle_projet      = $t['title'];
                                 $this->indexage_vos_operations->date_operation      = $t['date_tri'];
                                 $this->indexage_vos_operations->solde               = $t['solde'] * 100;
-                                $this->indexage_vos_operations->montant_operation   = $t['montant'];
+                                $this->indexage_vos_operations->montant_operation   = $t['amount_operation'];
                                 $this->indexage_vos_operations->montant_capital     = $this->echeanciers->capital;
                                 $this->indexage_vos_operations->montant_interet     = $this->echeanciers->interets;
                                 $this->indexage_vos_operations->libelle_prelevement = $libelle_prelevements;

@@ -27,6 +27,7 @@
 // **************************************************************************************************** //
 
 use Unilend\librairies\ULogger;
+use Unilend\librairies\Cache;
 
 class lenders_accounts extends lenders_accounts_crud
 {
@@ -124,9 +125,7 @@ class lenders_accounts extends lenders_accounts_crud
         $result = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($result)) {
-
             if (\projects_status::checkStatusPostRepayment($record['project_status'])) {
-
                 if (\projects_status::checkStatusKo($record['project_status']) && 0 == $record["echeance_status"]) {
                     $record["montant"] = 0;
                 }
@@ -160,9 +159,9 @@ class lenders_accounts extends lenders_accounts_crud
 
         try {
             $aValuesIRR = $this->getValuesForIRR($iLendersAccountId);
-        } catch (Exception $e){
+        } catch (Exception $oException) {
             $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
-            $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
+            $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
         }
 
         foreach ($aValuesIRR as $aValues) {
@@ -232,7 +231,7 @@ class lenders_accounts extends lenders_accounts_crud
         return $aLenders;
     }
 
-    public function getInfosben($oProjectsStatus, $iLimit = null, $iOffset = null)
+    public function getInfosben($iYear, $iLimit = null, $iOffset = null)
     {
         $sOffset = '';
         if (null !== $iOffset) {
@@ -246,15 +245,12 @@ class lenders_accounts extends lenders_accounts_crud
             $sLimit = 'LIMIT ' . $iLimit;
         }
 
-        $sql = 'SELECT DISTINCT (c.id_client), c.prenom, c.nom
-                FROM clients c
-                INNER JOIN lenders_accounts la ON la.id_client_owner = c.id_client
-                INNER JOIN loans l on l.id_lender = la.id_lender_account
-                INNER JOIN projects p ON p.id_project = l.id_project
-                INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
-                INNER JOIN projects_status_history psh USING (id_project_status_history)
-                INNER JOIN projects_status ps USING (id_project_status)
-                WHERE ps.status > '. projects_status::REMBOURSEMENT . ' ' . $sLimit. ' '. $sOffset;
+        $sql = 'SELECT DISTINCT c.id_client, c.prenom, c.nom
+                FROM lenders_accounts la
+                  INNER JOIN clients c ON (la.id_client_owner = c.id_client)
+                  LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
+                WHERE YEAR(e.date_echeance_reel) = ' . $iYear . '
+                  AND e.status = 1 ' . ' ' . $sLimit. ' '. $sOffset;
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -334,5 +330,55 @@ class lenders_accounts extends lenders_accounts_crud
             $result[] = $record;
         }
         return $result;
+    }
+
+    public function isFrenchResident($iLenderId = null)
+    {
+        if (null === $iLenderId) {
+            $iLenderId = $this->id_lender_account;
+        }
+
+        if ($iLenderId) {
+            $oCache  = Cache::getInstance();
+            $sKey    = $oCache->makeKey('lenders_account', 'isFrenchResident', $iLenderId);
+            $aRecord = $oCache->get($sKey);
+
+            if (false === $aRecord) {
+                $sQuery  = "SELECT resident_etranger, MAX(added) FROM `lenders_imposition_history` WHERE id_lender = $iLenderId";
+                $oQuery  = $this->bdd->query($sQuery);
+                $aRecord = $this->bdd->fetch_array($oQuery);
+                $oCache->set($sKey, $aRecord);
+            }
+            if (empty($aRecord) || '0' === $aRecord['resident_etranger']) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function isNaturalPerson($iLenderId = null)
+    {
+        if (null === $iLenderId) {
+            $iLenderId = $this->id_lender_account;
+        }
+
+        if ($iLenderId) {
+            $oCache  = Cache::getInstance();
+            $sKey    = $oCache->makeKey('lenders_account', 'isNaturalPerson', $iLenderId);
+            $aRecord = $oCache->get($sKey);
+
+            if (false === $aRecord) {
+                $sQuery = "SELECT c.type FROM lenders_accounts la INNER JOIN clients c ON c.id_client =  la.id_client_owner WHERE la.id_lender_account = $iLenderId";
+                $oQuery = $this->bdd->query($sQuery);
+                $aRecord = $this->bdd->fetch_array($oQuery);
+                $oCache->set($sKey, $aRecord);
+            }
+
+            if (isset($aRecord['type']) && in_array($aRecord['type'], array(1, 3))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

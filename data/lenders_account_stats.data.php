@@ -2,7 +2,6 @@
 
 class lenders_account_stats extends lenders_account_stats_crud
 {
-
     public function __construct($bdd, $params = '')
     {
         parent::lenders_account_stats($bdd, $params);
@@ -10,24 +9,13 @@ class lenders_account_stats extends lenders_account_stats_crud
 
     public function getLastIRRForLender($iLenderId)
     {
+        $sql = '
+            SELECT *
+            FROM lenders_account_stats
+            WHERE id_lender_account = ' . $iLenderId . '
+            ORDER BY tri_date DESC
+            LIMIT 1';
 
-        $sql = 'SELECT *
-                    FROM
-                        `lenders_account_stats`
-                    WHERE
-                        id_lender_account = ' . $iLenderId . '
-                    ORDER BY
-                        tri_date DESC
-                    LIMIT
-                        1';
-
-        $resultat = $this->bdd->query($sql);
-
-        $result = $this->bdd->fetch_assoc($resultat);
-
-        return $result;
-
+        return $this->bdd->fetch_assoc($this->bdd->query($sql));
     }
-
-
 }

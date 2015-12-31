@@ -1079,26 +1079,11 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['montant']) && isset($_POST['tx']) && isset($_POST['nb_echeances'])) {
-
-            // Chargement des librairies
-            $this->remb = $this->loadLib('remb');
-
-            $this->settings->get('Commission remboursement', 'type');
-            $com = $this->settings->value;
-
-            // tva (0.196)
-            $this->settings->get('TVA', 'type');
-            $tva = $this->settings->value;
-
             $montant = str_replace(' ', '', $_POST['montant']);
             $tx      = $_POST['tx'] / 100;
 
-            $tabl = $this->remb->echeancier($montant, $_POST['nb_echeances'], $tx, $com, $tva);
-
-            $donneesEcheances = $tabl[1];
-            $lEcheanciers     = $tabl[2];
-
-            echo $this->ficelle->formatNumber($lEcheanciers[1]['echeance']);
+            $aRepaymentSchedule = \repayment::getRepaymentSchedule($montant, $_POST['nb_echeances'], $tx);
+            echo $this->ficelle->formatNumber($aRepaymentSchedule[1]['repayment']);
         }
     }
 
@@ -1682,7 +1667,11 @@ class ajaxController extends bootstrap
 
         $array_type_transactions = array(
             1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            2  => array(1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'], 2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'], 3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']),
+            2  => array(
+                1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'],
+                2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'],
+                3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']
+            ),
             3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             5  => $this->lng['preteur-operations-vos-operations']['remboursement'],

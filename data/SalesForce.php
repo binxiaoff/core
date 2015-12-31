@@ -456,7 +456,7 @@ class SalesForce
                 $aRow = array_map(array($this, 'cleanValue'), $aRow);
                 switch ($sNameFile) {
                     case 'preteurs.csv':
-                        $aRow['Valide']           = ('Valide' == $aRow['StatusCompletude']) ? 'Oui' : 'Non';
+                        $aRow['Valide'] = ('Valide' == $aRow['StatusCompletude']) ? 'Oui' : 'Non';
                         break;
                 }
                 if (0 === $iCountLine) {
@@ -505,6 +505,7 @@ class SalesForce
     private function tryIt($sQuery, $sNameFile)
     {
         try {
+            $this->oDatabase->query('SET SQL_BIG_SELECTS=1');
             if ($rSql = $this->oDatabase->query($sQuery)) {
                 $this->createFileFromQuery($rSql, $sNameFile . '.csv');
                 $this->oDatabase->free_result($rSql);
@@ -544,27 +545,6 @@ class SalesForce
                 array(__FILE__ . ' at line ' . __LINE__)
             );
         }
-    }
-
-    /**
-     * @param string $sType name of treatment (preteurs, emprunteurs, projects or companies)
-     */
-    private function sendDataloader($sType)
-    {
-        assert('in_array($sType, self::$aTypeDataloader, true); //Type $sType not authorized for dataloader.');
-
-        $iTimeStartDataloader = microtime(true);
-        //TODO a passer en crontab
-        exec(
-            'java -cp ' . Bootstrap::$aConfig['dataloader_path'][Bootstrap::$aConfig['env']] . 'dataloader-' . self::DATALOADER_VERSION . '-uber.jar -Dsalesforce.config.dir=' . Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_DATALOADER_CONF . ' com.salesforce.dataloader.process.ProcessRunner process.name=' . escapeshellarg($sType),
-            $aReturnDataloader
-        );
-        $iTimeEndDataloader = microtime(true) - $iTimeStartDataloader;
-        $this->oLogger->addRecord(
-            ULogger::ERROR,
-            'Send to dataloader type ' . $sType . ' in ' . round($iTimeEndDataloader, 2),
-            array(__FILE__ . ' on line ' . __LINE__)
-        );
     }
 
     private function cleanValue($sValue)
