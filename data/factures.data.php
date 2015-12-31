@@ -85,7 +85,8 @@ class factures extends factures_crud
             WHERE ee.status_emprunteur = 1
                 AND (SELECT e.status FROM echeanciers e WHERE e.id_project = ee.id_project AND e.ordre = ee.ordre LIMIT 1) = 1
                 AND (SELECT f.date FROM factures f WHERE f.id_project = ee.id_project AND f.ordre = ee.ordre AND f.type_commission = 2 LIMIT 1) IS NULL
-            ORDER BY ee.id_project , ee.ordre';
+                AND ee.status_ra = 0
+            ORDER BY ee.id_project, ee.ordre';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
