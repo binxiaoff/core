@@ -345,7 +345,7 @@ class operationsController extends bootstrap
             <table border=1>
                 <tr>
                     <th><?= $this->lng['preteur-operations-pdf']['operations'] ?></th>
-                    <th><?= $this->lng['preteur-operations-pdf']['info-titre-bon-caisse'] ?></th>
+                    <th><?= $this->lng['preteur-operations-pdf']['info-titre-loan-id'] ?></th>
                     <th><?= $this->lng['preteur-operations-pdf']['projets'] ?></th>
                     <th><?= $this->lng['preteur-operations-pdf']['date-de-loperation'] ?></th>
                     <th><?= $this->lng['preteur-operations-pdf']['montant-de-loperation'] ?></th>
@@ -685,11 +685,11 @@ class operationsController extends bootstrap
                     $date_debut_a_indexer = "2013-01-01";
                 }
                 $this->lTrans = $this->transactions->selectTransactionsOp($array_type_transactions, 't.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20,23)
-						AND t.status = 1
-						AND t.etat = 1
-						AND t.display = 0
-						AND t.id_client = ' . $this->clients_indexation->id_client . '
-						AND LEFT(t.date_transaction,10) >= "' . $date_debut_a_indexer . '"', 'id_transaction DESC');
+                        AND t.status = 1
+                        AND t.etat = 1
+                        AND t.display = 0
+                        AND t.id_client = ' . $this->clients_indexation->id_client . '
+                        AND LEFT(t.date_transaction,10) >= "' . $date_debut_a_indexer . '"', 'id_transaction DESC');
 
                 $nb_entrees = count($this->lTrans);
                 foreach ($this->lTrans as $t) {
@@ -724,7 +724,7 @@ class operationsController extends bootstrap
                         $this->indexage_vos_operations->libelle_projet    = $t['title'];
                         $this->indexage_vos_operations->date_operation    = $t['date_tri'];
                         $this->indexage_vos_operations->solde             = $t['solde'] * 100;
-                        $this->indexage_vos_operations->montant_operation = $t['montant'];
+                        $this->indexage_vos_operations->montant_operation = $t['amount_operation'];
 
                         if ($t['type_transaction'] == 23) {
                             $this->indexage_vos_operations->montant_capital = $t['montant'];

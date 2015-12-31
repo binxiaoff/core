@@ -120,17 +120,19 @@ class echeanciers extends echeanciers_crud
     {
         if (false === is_null($sType) && 'dashboard' == $sType) {
             $sql = "SELECT
-                    SUM(e.$champ)
-                FROM
-                    echeanciers e
-                INNER JOIN
-                    loans l on l.id_lender = e.id_lender and l.id_loan = e.id_loan
-                INNER JOIN
-                    bids b on b.id_bid = l.id_bid
-                WHERE
-                    e.status = 0
-                AND e.id_lender = $id_lender
-                AND b.status = 1";
+					SUM(e.$champ)
+				FROM
+					echeanciers e
+				INNER JOIN
+					loans l on l.id_lender = e.id_lender and l.id_loan = e.id_loan
+				INNER JOIN
+				    accepted_bids ab ON ab.id_loan = l.id_loan
+				INNER JOIN
+					bids b on b.id_bid = ab.id_bid
+				WHERE
+					e.status = 0
+				AND e.id_lender = $id_lender
+				AND b.status = 1";
         } else {
             $sql = "SELECT SUM($champ) FROM `echeanciers` WHERE status = 0 AND id_lender = $id_lender";
         }
@@ -1070,6 +1072,18 @@ class echeanciers extends echeanciers_crud
     {
         $sql = 'SELECT SUM(' . $champ . ') FROM `echeanciers` WHERE status = 1 AND id_loan = ' . $id_loan . ' AND status_ra = 0';
 
+        $result = $this->bdd->query($sql);
+        $sum    = (int)($this->bdd->result($result, 0, 0));
+        return ($sum / 100);
+    }
+
+    public function getSumByLoan($iLoanId, $sField, $aConditions = array())
+    {
+        $sql = 'SELECT SUM(' . $sField . ') FROM `echeanciers` WHERE id_loan = ' . $iLoanId;
+
+        foreach($aConditions as $sName => $mValue) {
+            $sql .= ' AND ' . $sName . '=' . '\'' . $mValue . '\'';
+        }
         $result = $this->bdd->query($sql);
         $sum    = (int)($this->bdd->result($result, 0, 0));
         return ($sum / 100);
