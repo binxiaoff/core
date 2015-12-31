@@ -6,7 +6,6 @@ use Unilend\librairies\Mailer\Mime\Header;
 use Unilend\librairies\Data;
 
 /**
- * Created by PhpStorm.
  * User: binxiao
  * Date: 30/11/2015
  * Time: 14:40
@@ -16,14 +15,9 @@ class unilend_email
     /** @var mails_text */
     private $oMailText = null;
 
-    /** @var nmp */
-    private $oNmp = null;
-
-    /** @var nmp_desabo */
-    private $oNmpDesabo = null;
-
     private $aMailVar = array();
 
+    /** @var Email */
     private $oEmail = null;
 
     /**
@@ -32,9 +26,8 @@ class unilend_email
      */
     public function __construct()
     {
-        $this->oMailText  = Data::loadData('mails_text');
-
-        $this->oEmail = new Email();
+        $this->oMailText = Data::loadData('mails_text');
+        $this->oEmail    = new Email();
     }
 
     /**
@@ -63,6 +56,9 @@ class unilend_email
         $this->send();
     }
 
+    /**
+     * @throws Exception
+     */
     public function sendToStaff()
     {
         $this->prepareEmailFromTemplate();
@@ -101,6 +97,12 @@ class unilend_email
         }
     }
 
+    /**
+     * @param $sMailType
+     * @param $sLanguage
+     *
+     * @throws Exception
+     */
     public function setTemplate($sMailType, $sLanguage)
     {
         if (false === $this->oMailText->get($sMailType, 'lang = "' . $sLanguage . '" AND type')) {
@@ -110,7 +112,7 @@ class unilend_email
 
     private function prepareEmailFromTemplate()
     {
-        if (! $this->oMailText instanceof \mails_text) {
+        if (!$this->oMailText instanceof \mails_text) {
             throw new \Exception('not an object mails_text');
         }
 
@@ -120,14 +122,14 @@ class unilend_email
 
         $oRecipients = $this->oEmail->headers->get('To');
 
-        if (! $oRecipients instanceof Header) {
+        if (!$oRecipients instanceof Header) {
             throw new \Exception('No recipient');
         }
 
-        $aRecipients = array_map('trim', explode(', ', $oRecipients->value));
-        $this->oEmail->headers->remove('To');
-
         if (ENVIRONMENT !== 'prod') {
+            $aRecipients = array_map('trim', explode(', ', $oRecipients->value));
+            $this->oEmail->headers->remove('To');
+
             $this->wrapVariables();
             $this->oMailText->subject = '[' . ENVIRONMENT . '] ' . $this->oMailText->subject;
 
@@ -141,10 +143,10 @@ class unilend_email
             if (empty($aRecipients)) {
                 $aRecipients[] = 'test-' . ENVIRONMENT . '@unilend.fr';
             }
-        }
 
-        foreach ($aRecipients as $sRecipient) {
-            $this->oEmail->addRecipient($sRecipient);
+            foreach ($aRecipients as $sRecipient) {
+                $this->oEmail->addRecipient($sRecipient);
+            }
         }
 
         $sMailSubject = strtr($this->oMailText->subject, $this->aMailVar);
@@ -165,6 +167,13 @@ class unilend_email
         $this->oEmail   = new Email();
     }
 
+    /**
+     * @param $sMethod
+     * @param $aArgument
+     *
+     * @return mixed
+     * @throws Exception
+     */
     public function __call($sMethod, $aArgument)
     {
         if (!method_exists($this->oEmail, $sMethod)) {
