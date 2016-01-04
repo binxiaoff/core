@@ -11,14 +11,14 @@
         });
     });
 
-    function attribuer(id_client, id_reception) {
+    function attribuer_preteur(id_client, id_reception) {
         if (confirm('Voulez vous vraiment attribuer la somme à ce prêteur ?')) {
             var val = {
                 id_client: id_client,
                 id_reception: id_reception
             };
 
-            $.post(add_url + '/ajax/ValidAttribution', val).done(function(data) {
+            $.post(add_url + '/transferts/attribuer_preteur', val).done(function(data) {
                 if (data != 'nok') {
                     $(".attrib").html('');
                     $(".num_client_" + id_reception).html(data);
@@ -73,7 +73,7 @@
                 <td><?= $c['prenom_ou_dirigeant'] ?></td>
                 <td><?= $c['email'] ?></td>
                 <td class="attrib" align="center">
-                    <a onclick="attribuer(<?= $c['id_client'] ?>, <?= $this->id_reception ?>);" title="Attribuer client <?= $c['id_client'] ?>">Attribuer</a>
+                    <a onclick="attribuer_preteur(<?= $c['id_client'] ?>, <?= $this->id_reception ?>);" title="Attribuer client <?= $c['id_client'] ?>">Attribuer</a>
                 </td>
             </tr>
         <?php endforeach; ?>

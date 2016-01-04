@@ -266,7 +266,6 @@ class cronController extends bootstrap
                                 $this->bids->get($e['id_bid'], 'id_bid');
 
                                 if ($this->bids->status == '0') {
-                                    mail('k1@david.equinoa.net', 'debug cron degel', $this->lenders_accounts->id_client_owner . ' - id bid :' . $e['id_bid']);
                                     $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
                                     $this->transactions->montant          = $montant_a_crediter;
                                     $this->transactions->id_bid_remb      = $e['id_bid'];
@@ -1194,7 +1193,7 @@ class cronController extends bootstrap
                         $projects_status_history->addStatus(-1, \projects_status::RECOUVREMENT, $p['id_project']);
 
                         // date du probleme
-                        $statusProbleme = $projects_status_history->select('id_project = ' . $p['id_project'] . ' AND  	id_project_status = 9', 'added DESC');
+                        $statusProbleme = $projects_status_history->select('id_project = ' . $p['id_project'] . ' AND  	id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::PROBLEME . ')', 'added DESC');
 
                         $timeAdd = strtotime($statusProbleme[0]['added']);
                         $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];

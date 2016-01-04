@@ -485,8 +485,6 @@ class echeanciers extends echeanciers_crud
     // $ordre : periode de remb
     public function updateStatusEmprunteur($id_project, $ordre, $annuler = '')
     {
-        //$sql = 'SELECT * FROM echeanciers WHERE id_project = '.$id_project.' AND ordre = '.$ordre;
-
         if ($annuler != '') {
             $sql = 'UPDATE echeanciers SET status_emprunteur = 0, date_echeance_emprunteur_reel = "0000-00-00 00:00:00", updated = "' . date('Y-m-d H:i:s') . '" WHERE id_project = ' . $id_project . ' AND ordre = ' . $ordre;
         } else {
@@ -501,7 +499,6 @@ class echeanciers extends echeanciers_crud
     {
         return round($montant + $tva + $commission, 2);
     }
-
 
     // somme du remb d'un emprunteur sur son projet
     public function getRembTotalEmprunteur($id_project, $tva = '')

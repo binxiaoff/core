@@ -1029,7 +1029,7 @@ class statsController extends bootstrap
               SELECT psh.id_project, MIN(psh.added) as first_added
               FROM projects_status_history psh
                 INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-              WHERE ps.status = 80
+              WHERE ps.status = ' . \projects_status::REMBOURSEMENT . '
               GROUP BY psh.id_project
               HAVING YEAR(first_added) = ' . $annee . '
             ) p ON p.id_project = lo.id_project

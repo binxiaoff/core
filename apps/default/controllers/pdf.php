@@ -613,7 +613,7 @@ class pdfController extends bootstrap
                 $this->dateRemb    = date('d/m/Y');
             }
 
-            $remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added ASC', 0, 1);
+            $remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added ASC', 0, 1);
 
             if ($remb[0]['added'] != "") {
                 $this->dateRemb = date('d/m/Y', strtotime($remb[0]['added']));
@@ -747,7 +747,7 @@ class pdfController extends bootstrap
         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
         if ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
-            $histoRemb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = 8', 'added DESC', 0, 1);
+            $histoRemb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added DESC', 0, 1);
 
             if ($histoRemb != false) {
                 $this->transactions->get($this->projects->id_project, 'type_transaction = 9 AND status = 1 AND etat = 1 AND id_project');

@@ -6,12 +6,9 @@
                 id_reception: id_reception
             };
 
-            $.post(add_url + '/ajax/annulerAttribution', val).done(function (data) {
+            $.post(add_url + '/transferts/annuler_attribution_preteur', val).done(function(data) {
                 if (data != 'nok') {
-                    $(".num_client_" + id_reception).html('0');
-                    $(".ajouter_" + id_reception).show();
-                    $(".annuler_" + id_reception).hide();
-                    $(".statut_operation_" + id_reception).html('Recu');
+                    $(".statut_operation_" + id_reception).parent('tr').fadeOut();
                 }
             });
         }
@@ -51,7 +48,7 @@
         <li><a href="<?= $this->lurl ?>/transferts">Dépot de fonds</a> -</li>
         <li>Virements prêteurs</li>
     </ul>
-    <h1>Liste des virements prêteurs</h1>
+    <h1>Virements prêteurs</h1>
     <table class="tablesorter">
         <thead>
             <tr>
