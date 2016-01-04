@@ -138,22 +138,21 @@
                                 </td>
                             </tr>
                             <tr>
-                                <td colspan="3"><h4><?= $this->lng['espace-emprunteur']['adresse'] ?></h4></td>
+                                <td colspan="3"><div class="info small"><p><?= $this->lng['espace-emprunteur']['adresse'] ?></p></div></td>
                             </tr>
                             <tr>
-                                <td colspan="3"><div
-                                        class="large content"><?= empty($this->companies->adresse1) === false ? $this->companies->adresse1 : $this->lng['espace-emprunteur']['adresse'] ?></div>
+                                <td colspan="3">
+                                    <div class="large content"><?= empty($this->companies->adresse1) === false ? $this->companies->adresse1 : $this->lng['espace-emprunteur']['adresse'] ?></div>
                                 </td>
                             </tr>
                             <tr>
+                                <td class="td_small">
+                                        <div class="content"><?= $this->companies->zip ?></div>
+                                </td>
                                 <td colspan="2">
-                                    <div class="content">
-                                        <span class="small"><?= $this->companies->zip ?></span>
-                                        <span class="medium"><?= $this->companies->city ?></span>
-                                    </div>
+                                        <div class="medium content"><?= $this->companies->city ?></div>
                                 </td>
                             </tr>
-                            <tr></tr>
                             <tr>
                                 <td>
                                     <div class="info"><?= $this->lng['espace-emprunteur']['telephone-societe'] ?></div>
