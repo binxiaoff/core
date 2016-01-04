@@ -94,7 +94,8 @@
                         </div>
                         <div class="row">
                             <div class="inline-text">
-                                <div class="field-small"><?= $this->lng['espace-emprunteur']['telephone-societe'] ?></div>
+                                <div
+                                    class="field-small"><?= $this->lng['espace-emprunteur']['telephone-societe'] ?></div>
                             </div>
                             <div class="inline-text">
                                 <div class="field field-medium"><?= $this->companies->phone ?></div>
@@ -102,7 +103,8 @@
                         </div>
                         <div class="row">
                             <div class="inline-text">
-                                <div class="field-small"><?= $this->lng['espace-emprunteur']['email-facturation'] ?></div>
+                                <div
+                                    class="field-small"><?= $this->lng['espace-emprunteur']['email-facturation'] ?></div>
                             </div>
                             <div class="inline-text">
                                 <div class="field field-medium"><?= $this->companies->email_facture ?></div>
@@ -110,6 +112,73 @@
                         </div>
                     </form>
 
+                </div>
+                <div class="clear" style="clear: both"></div>
+                <div class="row row-btn">
+                    <a href="contact">
+                        <button class="btn" style="margin-left: 389px;">
+                            <?= $this->lng['espace-emprunteur']['demande-modification'] ?>
+                            <i class="icon-arrow-next"></i>
+                        </button>
+                    </a>
+                </div>
+            </div>
+            <div class="tab page2" style="display: none;">
+                <div class="row row-bank">
+                    <form>
+                        <div class="row">
+                            <h3><?= $this->lng['espace-emprunteur']['votre-rib'] ?></h3>
+                        </div>
+                        <div class="row">
+                            <label for="bic" class="inline-text">
+                                <?= $this->lng['espace-emprunteur']['bic'] ?>
+                            </label>
+                            <div class="inline-text">
+                                <div class="field field-medium"><?= $this->companies->bic ?></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <label class="inline-text">
+                                <?= $this->lng['espace-emprunteur']['iban'] ?>
+                            </label>
+                            <?php if (empty($this->companies->iban) === false) : ?>
+                                <div class="inline-text">
+                                    <span
+                                        class="field field-extra-tiny"><?= substr($this->companies->iban, 0, 4) ?></span>
+                                </div>
+                                <div class="inline-text">
+                                    <span
+                                        class="field field-extra-tiny"><?= substr($this->companies->iban, 4, 4) ?></span>
+                                </div>
+                                <div class="inline-text">
+                                    <span
+                                        class="field field-extra-tiny"><?= substr($this->companies->iban, 8, 4) ?></span>
+                                </div>
+                                <div class="inline-text">
+                                    <span
+                                        class="field field-extra-tiny"><?= substr($this->companies->iban, 12, 4) ?></span>
+                                </div>
+                                <div class="inline-text">
+                                    <span
+                                        class="field field-extra-tiny"><?= substr($this->companies->iban, 16, 4) ?></span>
+                                </div>
+                                <div class="inline-text">
+                                    <span
+                                        class="field field-extra-tiny"><?= substr($this->companies->iban, 20, 4) ?></span>
+                                </div>
+                                <div class="inline-text">
+                                    <span
+                                        class="field field-extra-tiny"><?= substr($this->companies->iban, 24, 3) ?></span>
+                                </div>
+
+                            <?php else : ?>
+                                <div class="field field-large"></div>
+                            <?php endif; ?>
+                        </div>
+                    </form>
+
+                    <div class="row">
+                        <p><?= $this->lng['espace-emprunteur']['explication-changement-rib'] ?></p>
                     </div>
                     <div class="clear" style="clear: both"></div>
                     <div class="row row-btn">
@@ -119,50 +188,6 @@
                                 <i class="icon-arrow-next"></i>
                             </button>
                         </a>
-                    </div>
-                </div>
-                <div class="tab page2" style="display: none;">
-                    <div class="row row-bank">
-                        <form>
-                            <div class="row">
-                                    <h3><?= $this->lng['espace-emprunteur']['votre-rib'] ?></h3>
-                                    <div class="field field-medium"><?= $this->companies->bic ?></div>
-                            </div>
-                            <div class="row">
-<?php if (empty($this->companies->iban) === false ) : ?>
-    <div class="inline-text">
-            <span class="field field-extra-tiny"><?= substr($this->companies->iban, 0, 4) ?></span></div>
-            <div class="inline-text">
-                <span class="field field-extra-tiny"><?= substr($this->companies->iban, 4, 4) ?></span></div>
-        <div class="inline-text">
-                    <span class="field field-extra-tiny"><?= substr($this->companies->iban, 8, 4) ?></span></div>
-            <div class="inline-text">
-                        <span class="field field-extra-tiny"><?= substr($this->companies->iban, 12, 4) ?></span></div>
-                <div class="inline-text">
-                            <span class="field field-extra-tiny"><?= substr($this->companies->iban, 16, 4) ?></span></div>
-                    <div class="inline-text">
-                                <span class="field field-extra-tiny"><?= substr($this->companies->iban, 20, 4) ?></span></div>
-                        <div class="inline-text">
-                                    <span class="field field-extra-tiny"><?= substr($this->companies->iban, 24, 3) ?></span></div>
-
-                                    <?php else : ?>
-                                        <div class="field field-large"></div>
-                                    <?php endif; ?>
-                                </div>
-                        </form>
-
-                        <div class="row">
-                            <p><?= $this->lng['espace-emprunteur']['explication-changement-rib'] ?></p>
-                        </div>
-                        <div class="clear" style="clear: both"></div>
-                        <div class="row row-btn">
-                            <a href="contact">
-                                <button class="btn" style="margin-left: 389px;">
-                                    <?= $this->lng['espace-emprunteur']['demande-modification'] ?>
-                                    <i class="icon-arrow-next"></i>
-                                </button>
-                            </a>
-                        </div>
                     </div>
                 </div>
             </div>

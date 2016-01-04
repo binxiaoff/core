@@ -190,11 +190,16 @@
                                 <th rowspan="3">
                                     <div class="small info"><?= $this->lng['espace-emprunteur']['votre-rib'] ?></div></th>
                                 <td>
-                                    <div class="medium content"><?= $this->companies->bic ?></div>
+                                    <label for="bic"><?=$this->lng['espace-emprunteur']['bic']?></label>
+                                </td>
+                                <td>
+                                    <div class="content field-small"><?= $this->companies->bic ?></div>
                                 </td>
                             </tr>
-                            <tr><td colspan="2"><div class="info"></div></td></tr>
-                            <tr><td colspan="2"><?php if (empty($this->companies->iban) === false ) : ?>
+                            <tr><td colspan="3"><div class="info"></div></td></tr>
+                            <tr><td><label class="inline-text"><?=$this->lng['espace-emprunteur']['iban']?></label></td>
+                                <td colspan="2">
+                                    <?php if (empty($this->companies->iban) === false ) : ?>
                                     <span class="content field-extra-tiny"><?= substr($this->companies->iban, 0, 4) ?></span>
                                     <span class="content field-extra-tiny"><?= substr($this->companies->iban, 4, 4) ?></span>
                                     <span class="content field-extra-tiny"><?= substr($this->companies->iban, 8, 4) ?></span>
