@@ -391,6 +391,7 @@ class espace_emprunteurController extends Bootstrap
     {
         $aStatusPostFunding = array(
             \projects_status::DEFAUT,
+            \projects_status::FUNDE,
             \projects_status::PROBLEME,
             \projects_status::RECOUVREMENT,
             \projects_status::REMBOURSE,
@@ -507,9 +508,9 @@ class espace_emprunteurController extends Bootstrap
             }
 
             if (empty($row['montant']) === false) {
-                $aData[ $key ]['montant'] = $this->ficelle->formatnumber($row['montant']/100);
-                $aData[ $key ]['capital'] = $this->ficelle->formatnumber($row['capital']/100);
-                $aData[ $key ]['interets'] = $this->ficelle->formatnumber($row['interets']/100);
+                $aData[ $key ]['montant'] = $this->ficelle->formatnumber($row['montant'] / 100);
+                $aData[ $key ]['capital'] = $this->ficelle->formatnumber($row['capital'] / 100);
+                $aData[ $key ]['interets'] = $this->ficelle->formatnumber($row['interets'] / 100);
             }
         }
 
