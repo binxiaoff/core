@@ -6235,11 +6235,24 @@ class cronController extends bootstrap
                         $this->clients_gestion_mails_notif->update();
 
                         $liste_projets .= '
-								<tr style="color:#b20066;">
-									<td  style="font-family:Arial;font-size:14px;height: 25px;"><a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->projects->amount, 0) . ' &euro;</td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->projects->period . ' mois</td>
-								</tr>';
+                            <tr class="unProjet">
+                                <div style="line-height: 18px;" class="description">
+                                    <td style="font-family:Arial;font-size:11px;height: 25px; padding-top:15px; padding-bottom:15px; width:360px; line-height: 15px;">
+                                        <a href="'. $this->lurl . "/projects/detail/" . $this->projects->slug . '">
+                                            <img style="border: 2px solid #fff; box-shadow: 0 0 3px rgba(0,0,0,0.4); float: left; width: 108px;height: 72px; margin-right: 5px;" src="'. "https://www.unilend.fr/images/dyn/projets/72/" . $this->projects->photo_projet .'" alt="'. $this->projects->photo_projet .'" class="thumb">
+                                        </a>
+                                        <p style="margin-top:0; margin-bottom:0; font-size:11px; font-weight:bold; color:#b20066;" href="' . $this->lurl . "/projects/detail/" . $this->projects->slug . '">'. $this->projects->title .'</p>
+                                        <p style="margin-top:0; margin-bottom:0; font-size:11px; color:#b20066; ">'. $this->companies->city . ($this->companies->zip != '' ? ', ' : '') . $this->companies->zip .'</p>
+                                        <p style="margin-top:0;">'. $this->projects->nature_project .'</p>
+                                    </td>
+                                    <td style="white-space:nowrap;font-family:Arial;font-size:11px;height: 25px; padding-bottom:15px; padding-right:8px; width:54px;">
+                                        <div class="cadreEtoiles"><div class="etoile '. $this->lNotes[$this->projects->risk] .'"></div></div>
+                                    </td>
+                                    <td align="right" style="white-space:nowrap;font-family:Arial;font-size:11px;height: 25px; padding-top:15px; padding-bottom:15px; width: 54px;">' . $this->ficelle->formatNumber($this->projects->amount, 0) . ' &euro;</td>
+                                    <td align="right" style="white-space:nowrap;font-family:Arial;font-size:11px;height: 25px; padding-top:15px; padding-bottom:15px; width: 54px;">' . $this->projects->period . ' mois</td>
+                                    <td><a href="'. $this->lurl .'/projects/detail/'. $this->projects->slug .'" class="btn btn-info btn-small" style="font-weight:bold;height:20px;text-decoration:none; margin-left:10px; padding:9px;">PRÊTez</a>
+                                </div>
+                            </tr>';
                     }
                     if ($goMail == true) {// (BT 18180 04/08/2015)
                         if ($type == 'quotidienne') {
