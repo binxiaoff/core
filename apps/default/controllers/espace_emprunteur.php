@@ -414,7 +414,11 @@ class espace_emprunteurController extends Bootstrap
             $aProjectsPostFunding[ $iKey ]['DateNextMonthlyPayment'] = $aNextRepayment[0]['date_echeance_emprunteur'];
         }
 
-        return $aProjectsPostFunding;
+        usort($aProjectsPostFunding, function ($aFirstArray, $aSecondArray) {
+            return $aFirstArray['date_retrait'] < $aSecondArray['date_retrait'];
+        });
+
+        return $aProjectsPostFunding ;
     }
 
     private function calculateRemainingDueCapital($iProjectId)
