@@ -7897,42 +7897,58 @@ class cronController extends bootstrap
         $projects->get($id_project, 'id_project');
         $companies->get($projects->id_company, 'id_company');
 
+        $sPathNoZip        = $this->path . 'protected/sftp_groupama_nozip/';
+        $sPath             = $this->path . 'protected/sftp_groupama/';
+
+        if (!is_dir($sPathNoZip . $companies->siren)) {
+            mkdir($sPathNoZip . $companies->siren);
+        }
+
         /** @var attachment_helper $oAttachmentHelper */
         $oAttachmentHelper = $this->loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->path));
         $aAttachments      = $projects->getAttachments();
-        $path_cni          = $oAttachmentHelper->getFullPath(attachment::PROJECT, attachment_type::CNI_PASSPORTE_DIRIGEANT) . $aAttachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]['path'];
-        $path_kbis         = $oAttachmentHelper->getFullPath(attachment::PROJECT, attachment_type::KBIS) . $aAttachments[attachment_type::KBIS]['path'];
 
-        $ext_cni           = substr(strrchr($aAttachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]['path'], '.'), 1);
-        $ext_kbis          = substr(strrchr($aAttachments[attachment_type::KBIS]['path'], '.'), 1);
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_PASSPORTE_DIRIGEANT, 'CNI-#', $companies->siren, $sPathNoZip);
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_PASSPORTE_VERSO, 'CNI-VERSO-#', $companies->siren, $sPathNoZip);
 
-        $new_nom_cni       = 'CNI-#' . $companies->siren . '.' . $ext_cni;
-        $new_nom_kbis      = 'KBIS-#' . $companies->siren . '.' . $ext_kbis;
-        $path_nozip        = $this->path . 'protected/sftp_groupama_nozip/';
-        $path              = $this->path . 'protected/sftp_groupama/';
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::KBIS, 'KBIS-#', $companies->siren, $sPathNoZip);
 
-        $nom_dossier = $companies->siren;
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_1, 'CNI-25-1-#', $companies->siren, $sPathNoZip);
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1, 'CNI-25-1-VERSO-#', $companies->siren, $sPathNoZip);
 
-        if (!is_dir($path_nozip . $nom_dossier)) {
-            mkdir($path_nozip . $nom_dossier);
-        }
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_2, 'CNI-25-2-#', $companies->siren, $sPathNoZip);
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2, 'CNI-25-2-VERSO-#', $companies->siren, $sPathNoZip);
 
-        copy($path_cni, $path_nozip . $nom_dossier . '/' . $new_nom_cni);
-        copy($path_kbis, $path_nozip . $nom_dossier . '/' . $new_nom_kbis);
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_3, 'CNI-25-3-#', $companies->siren, $sPathNoZip);
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3, 'CNI-25-3-VERSO-#', $companies->siren, sPathNoZip);
 
         $zip = new ZipArchive();
-        if (is_dir($path_nozip . $nom_dossier)) {
-            if ($zip->open($path . $nom_dossier . '.zip', ZipArchive::CREATE) == TRUE) {
-                $fichiers = scandir($path_nozip . $nom_dossier);
+        if (is_dir($sPathNoZip . $companies->siren)) {
+            if ($zip->open($sPath . $companies->siren . '.zip', ZipArchive::CREATE) == TRUE) {
+                $fichiers = scandir($sPathNoZip . $companies->siren);
                 unset($fichiers[0], $fichiers[1]);
                 foreach ($fichiers as $f) {
-                    $zip->addFile($path_nozip . $nom_dossier . '/' . $f, $f);
+                    $zip->addFile($sPathNoZip . $companies->siren . '/' . $f, $f);
                 }
                 $zip->close();
             }
         }
 
         $this->deleteOldFichiers();
+    }
+
+    private function copyAttachment($oAttachmentHelper, $aAttachments, $sAttachmentType, $sPrefix, $sSiren, $sPathNoZip)
+    {
+        if (! isset($aAttachments[$sAttachmentType]['path'])) {
+            return;
+        }
+
+        $sFromPath =  $oAttachmentHelper->getFullPath(attachment::PROJECT, $sAttachmentType) . $aAttachments[$sAttachmentType]['path'];
+        $aPathInfo = pathinfo($sFromPath);
+        $sExtension = isset($aPathInfo['extension']) ? $aPathInfo['extension'] : '';
+        $sNewName = $sPrefix . $sSiren . '.' . $sExtension;
+
+        copy($sFromPath, $sPathNoZip . $sSiren . '/' . $sNewName);
     }
 
     /**
