@@ -241,7 +241,7 @@ class espace_emprunteurController extends Bootstrap
         }
 
         $oInvoices        = $this->loadData('factures');
-        $aClientsInvoices = $oInvoices->selectInvoicesExcludeAnticipatedRefunding($this->companies->id_company);
+        $aClientsInvoices = $oInvoices->select('id_company = ' . $this->companies->id_company, 'date DESC');
 
         foreach ($aClientsInvoices as $iKey => $aInvoice) {
             switch ($aInvoice['type_commission']) {

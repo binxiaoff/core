@@ -96,28 +96,4 @@ class factures extends factures_crud
         return $result;
     }
 
-    public function selectInvoicesExcludeAnticipatedRefunding($iCompanyId)
-    {
-        $sql = 'SELECT
-                    f.*
-                FROM
-                    `factures` f
-                    INNER JOIN echeanciers_emprunteur ee ON f.id_project = ee.id_project
-                WHERE
-                id_company = '.$iCompanyId.'
-                    AND ee.status_ra = 0
-                    AND f.ordre = ee.ordre
-                GROUP BY
-                    id_facture
-                ORDER BY date DESC';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-
-
-    }
 }
