@@ -830,7 +830,7 @@ class pdfController extends bootstrap
             if ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
                 $this->oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
 
-                if ($this->oEcheanciersEmprunteur->get($this->projects->id_project, 'ordre = ' . $iOrder . '  AND id_project')) {
+                if ($this->oEcheanciersEmprunteur->get($this->projects->id_project, 'ordre = ' . $iOrder . ' AND status_ra = 0  AND id_project')) {
                     $sNamePdfClient = 'FACTURE-UNILEND-' . $this->projects->slug . '-' . $iOrder;
                     $sFileName      = $this->path . 'protected/pdf/facture/facture_ER-' . $sHash . '-' . $iProjectId . '-' . $iOrder . '.pdf';
 
