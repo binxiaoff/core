@@ -5465,7 +5465,7 @@ class cronController extends bootstrap
             foreach ($aRepaymentNoInvoice as $r) {
                 $oCommandPdf = new Command('pdf', 'facture_ER', array($r['hash'], $r['id_project'], $r['ordre']), $this->language);
                 $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre']);
+                $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre'], false);
             }
 
             $aProjectsInRepayment = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
@@ -5475,7 +5475,7 @@ class cronController extends bootstrap
                     $emprunteurs->get($companies->id_client_owner, 'id_client');
                     $oCommandPdf = new Command('pdf', 'facture_EF', array($emprunteurs->hash, $r['id_project']), $this->language);
                     $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                    $oPdf->_facture_EF($emprunteurs->hash, $r['id_project']);
+                    $oPdf->_facture_EF($emprunteurs->hash, $r['id_project'], false);
                 }
             }
 

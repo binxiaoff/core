@@ -709,11 +709,10 @@ class pdfController extends bootstrap
         }
     }
 
-    public function _facture_EF($sHash = null, $iProjectId = null)
+    public function _facture_EF($sHash = null, $iProjectId = null, $bRead = true)
     {
         $sHash      = (false === is_null($sHash)) ? $sHash : $this->params[0];
         $iProjectId = (false === is_null($iProjectId)) ? $iProjectId : $this->params[1];
-        $bRead      = (true === isset($this->params)) ?: false;
 
         if ($this->clients->get($sHash, 'hash') && isset($iProjectId)) {
             $this->companies->get($this->clients->id_client, 'id_client_owner');
@@ -817,12 +816,11 @@ class pdfController extends bootstrap
         }
     }
 
-    public function _facture_ER($sHash = null, $iProjectId = null, $iOrder = null)
+    public function _facture_ER($sHash = null, $iProjectId = null, $iOrder = null, $bRead = true)
     {
         $sHash      = (false === is_null($sHash)) ? $sHash : $this->params[0];
         $iProjectId = (false === is_null($iProjectId)) ? $iProjectId : $this->params[1];
         $iOrder     = (false === is_null($iOrder)) ? $iOrder : $this->params[2];
-        $bRead      = (true === isset($this->params)) ?: false;
 
         if ($this->clients->get($sHash, 'hash') && isset($iProjectId)) {
             $this->companies->get($this->clients->id_client, 'id_client_owner');
