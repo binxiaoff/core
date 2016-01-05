@@ -8,7 +8,7 @@
 	<?php
 	if($this->google_webmaster_tools != '')
 	{
-	?>    
+	?>
 		<meta name="google-site-verification" content="<?=$this->google_webmaster_tools?>" />
    	<?php
 	}
@@ -24,23 +24,23 @@
     <script type="text/javascript">
 		var add_surl = '<?=$this->surl?>';
 		var add_url = '<?=$this->lurl?>';
-		
+
 	</script>
 	<?php $this->callCss();?>
-    <?php $this->callJs();?>	
-    
+    <?php $this->callJs();?>
+
     <?
 	// partenaire challanges
 	if($this->lurl == 'http://partenaire.unilend.challenges.fr'){
-	
+
 	// PUB challenges
 	/*$sas_pageid	= '61933/486256'
-	
-	
-	
+
+
+
 	?>
      <script>
-		var sas_tmstp = Math.round(Math.random()*10000000000), 
+		var sas_tmstp = Math.round(Math.random()*10000000000),
 		sas_pageid = '<?=$sas_pageid?>',
 		sas_target = '',
 		sas_formatids = '23885,23371,27098,21482,21488,21487,21486,21485,27097,21483,21484';
@@ -48,9 +48,9 @@
 		</script>
 		<script src="http://referentiel.nouvelobs.com/tools/smart.php"></script>
     <?*/
-	
-	
-	
+
+
+
 	}
 	?>
 </head>
@@ -63,13 +63,13 @@ if($this->Config['env'] == 'prod'){
 	}
 	// Validation inscription preteur (template de confirmation)
 	if(in_array($this->tree->id_tree,array(16,130))){
-		
+
 		if(isset($this->params[1])){
-			$this->clients->get($this->params[1],'hash');	
+			$this->clients->get($this->params[1],'hash');
 		}
-		
-		?><iframe src="https://secure.img-cdn.mediaplex.com/0/27518/universal.html?page_name=conversion_complete&complete=1&mpuid=<?=$this->clients->id_client?>" HEIGHT=1 WIDTH=1 FRAMEBORDER=0></iframe><?	
-		
+
+		?><iframe src="https://secure.img-cdn.mediaplex.com/0/27518/universal.html?page_name=conversion_complete&complete=1&mpuid=<?=$this->clients->id_client?>" HEIGHT=1 WIDTH=1 FRAMEBORDER=0></iframe><?
+
 		// ajout kle, BT 17471
 		?>
         <iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track=<?=$this->clients->id_client?>" width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>
@@ -90,10 +90,10 @@ if($this->Config['env'] == 'prod'){
         <iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=11&uniqueid=<?=$this->clients->id_client?>"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>
         <?
 	}
-	
+
 	// Etape 2 inscription preteur
 	if($this->page_preteur == 2){
-		
+
 		// ajout kle, BT 17471
 		?>
         <iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track=<?=$this->clients->id_client?>" width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>
@@ -102,7 +102,7 @@ if($this->Config['env'] == 'prod'){
 
 
         <iframe src="https://secure.img-cdn.mediaplex.com/0/27518/universal.html?page_name=conversion&inscription=1&mpuid=<?=$this->clients->id_client?>" HEIGHT=1 WIDTH=1 FRAMEBORDER=0></iframe>
-		
+
         <iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=14&uniqueid=<?=$this->clients->id_client?>"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>
 
         <?php /*?><!-- Facebook Conversion Code for Unilend -->
@@ -121,7 +121,7 @@ if($this->Config['env'] == 'prod'){
         window._fbq.push(['track', '6024039893052', {'value':'0.00','currency':'EUR'}]);
         </script>
         <noscript><img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6024039893052&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" /></noscript><?php */?>
-        
+
         <?php /*?><!-- Facebook Conversion Code for Unilend -->
 		<script>(function() {
           var _fbq = window._fbq || (window._fbq = []);
@@ -138,8 +138,8 @@ if($this->Config['env'] == 'prod'){
         window._fbq.push(['track', '6020057935405', {'value':'0.00','currency':'EUR'}]);
         </script>
         <noscript><img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6020057935405&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" /></noscript><?php */?>
-         
-        
+
+
          <?php /*?> 13/11/2014 et daplacé dans les landing page offre de bienvenue le 17/12/2014<?php */?>
         <?php /*?><!-- Facebook Conversion Code for Unilend -->
 		<script>(function() {
@@ -157,10 +157,10 @@ if($this->Config['env'] == 'prod'){
         window._fbq.push(['track', '6021615722883', {'value':'0.00','currency':'EUR'}]);
         </script>
         <noscript><img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" /></noscript><?php */?>
-         
-		<img src="https://ext.ligatus.com/conversion/?c=77615&a=10723" width="1" height="1" />       
-        
-		<?	
+
+		<img src="https://ext.ligatus.com/conversion/?c=77615&a=10723" width="1" height="1" />
+
+		<?
 	}
 	// Etape 3 inscription preteur
 	if($this->page_preteur == 3){
@@ -168,7 +168,7 @@ if($this->Config['env'] == 'prod'){
         <iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=4&uniqueid=<?=$this->clients->id_client?>"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>
         <?
 	}
-	
+
 	// tracking apres validation landing page
 	if(isset($_SESSION['landing_page']) && $_SESSION['landing_page'] == true){
 
@@ -176,29 +176,29 @@ if($this->Config['env'] == 'prod'){
 		unset($_SESSION['landing_page']);
 
 	}
-	
+
 	// depot dossier etape 2
 	if($this->page == 2){
-		?><img src="https://ext.ligatus.com/conversion/?c=74703&a=9617" width="1" height="1" /><?	
+		?><img src="https://ext.ligatus.com/conversion/?c=74703&a=9617" width="1" height="1" /><?
 	}
 	// confirmation depot de dossier
 	elseif($this->tree->id_tree == 48){
 		?><img src="https://ms.ligatus.com/de/track/triggerext.php?cn=trcn74703" width="1" height="1"><?
 	}
-	
+
 	// projets-a-financer
 	if($this->tree->id_tree == 4){
-		
+
 		if(isset($_SESSION['LP_id_unique'])){
 			$this->clients->get($_SESSION['LP_id_unique'],'id_client');
 			unset($_SESSION['LP_id_unique']);
 		}
-		
+
 		?>
         <iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=13&uniqueid=<?=$this->clients->id_client?>"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>
         <?
 	}
-	
+
 	// partenaire challanges
 	if($this->lurl == 'http://partenaire.unilend.challenges.fr'){
 		?>
@@ -216,9 +216,9 @@ if($this->Config['env'] == 'prod'){
 		<noscript>
 		<img width="1" height="1" alt="" src="http://logi150.xiti.com/hit.xiti?s=350533&amp;s2=46&amp;p=Unilend::Global&amp;di=&amp;" />
 		</noscript>
-		
-        
-        
+
+
+
 		<?php
 		// pub challenges
 		 /*?><script>
@@ -228,8 +228,8 @@ if($this->Config['env'] == 'prod'){
 			<a href="http://ww690.smartadserver.com/call/pubjumpi/<?=$sas_pageid?>/21487/S/<?=time()?>/?" target="_blank">
 			<img src="http://ww690.smartadserver.com/call/pubi/<?=$sas_pageid?>/21487/S/<?=time()?>/?" border="0" alt="" /></a>
 		</noscript>
-		
-		
+
+
 		<script>
 		SmartAdServerAjaxOneCall(sas_pageid, 21486, sas_target);
 		</script>
@@ -238,15 +238,15 @@ if($this->Config['env'] == 'prod'){
 			<img src="http://ww690.smartadserver.com/call/pubi/<?=$sas_pageid?>/21486/S/<?=time()?>/?" border="0" alt="" /></a>
 		</noscript><?php */?>
 
-       
 
-        	
+
+
         <?
 	}
 }
 ?>
 
-
+<script>var dataLayer = [<?= json_encode($this->aDataLayer) ?>];</script>
 <!-- Google Tag Manager -->
 <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -277,10 +277,10 @@ if(isset($_SESSION['user']['id_user']) && $_SESSION['user']['id_user'] != '' && 
 	{
 		?>
 		<script type="text/javascript">
-			$(document).ready(function() { 
+			$(document).ready(function() {
 				$('a').click(function() {
-					 return false; 
-				});			 
+					 return false;
+				});
 			});
 		</script>
     	<?php
@@ -297,7 +297,7 @@ if(isset($_SESSION['user']['id_user']) && $_SESSION['user']['id_user'] != '' && 
 <?php
 if($this->google_analytics != '')
 {
-	?>    
+	?>
     <script type="text/javascript">
         var _gaq = _gaq || [];
         _gaq.push(['_setAccount', '<?=$this->google_analytics?>']);
@@ -323,7 +323,7 @@ if($_SESSION['login']['nb_tentatives_precedentes'] > 1)
             setTimeout(function() {
                 $('.error_wait').hide();
                 $('.btn_login').show();
-            }, <?=($_SESSION['login']['duree_waiting']*1000)?>);  
+            }, <?=($_SESSION['login']['duree_waiting']*1000)?>);
         });
     </script>
     <?php
@@ -331,6 +331,6 @@ if($_SESSION['login']['nb_tentatives_precedentes'] > 1)
 
 if($_SESSION['login']['nb_tentatives_precedentes'] >= 5)
 {
-    
+
 }
 ?>
