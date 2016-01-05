@@ -2137,7 +2137,7 @@ class preteursController extends bootstrap
             $this->IRRDate = $aIRR['tri_date'];
         } else {
             try {
-                $this->IRRValue = $this->$oLenderAccountStats->calculateIRR($this->lenders_accounts->id_lender_account);
+                $this->IRRValue = $oLenderAccountStats->calculateIRR($this->lenders_accounts->id_lender_account);
                 $this->IRRDate = '';
             } catch (Exception $e){
                 $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
