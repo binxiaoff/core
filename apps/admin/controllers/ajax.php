@@ -461,9 +461,6 @@ class ajaxController extends bootstrap
                         if ($companies->bic == '') {
                             $mess .= '<li>BIC entreprise</li>';
                         }
-                        if ($companies->rcs == '') {
-                            $mess .= '<li>RCS entreprise</li>';
-                        }
                         if ($companies->tribunal_com == '') {
                             $mess .= '<li>Tribunal de commerce entreprise</li>';
                         }

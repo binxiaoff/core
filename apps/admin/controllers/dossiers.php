@@ -710,9 +710,6 @@ class dossiersController extends bootstrap
                             if ($companies->bic == '') {
                                 $mess .= '<li>BIC entreprise</li>';
                             }
-                            if ($companies->rcs == '') {
-                                $mess .= '<li>RCS entreprise</li>';
-                            }
                             if ($companies->tribunal_com == '') {
                                 $mess .= '<li>Tribunal de commerce entreprise</li>';
                             }
@@ -969,7 +966,6 @@ class dossiersController extends bootstrap
                     $this->companies->siren           = $_POST['siren'];
                     $this->companies->siret           = $_POST['siret'];
                     $this->companies->name            = $_POST['societe'];
-                    $this->companies->rcs             = $_POST['rcs'];
                     $this->companies->sector          = $_POST['sector'];
                     $this->companies->id_client_owner = $_POST['id_client'];
                     $this->companies->code_naf        = $_POST['code_naf'];
