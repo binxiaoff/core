@@ -795,7 +795,7 @@ class pdfController extends bootstrap
                 $montant           = ((str_replace('-', '', $this->transactions->montant) + $this->transactions->montant_unilend) / 100); // Montant pret
                 $txCom             = (0 < $montant) ? round(($this->ht / $montant) * 100, 0) : 0; // taux commission
 
-                if (!$this->factures->get($this->projects->id_project, 'type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
+                if (!$this->factures->exist($this->projects->id_project, 'type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
                     $this->factures->num_facture     = $this->num_facture;
                     $this->factures->date            = $this->dateRemb;
                     $this->factures->id_company      = $this->companies->id_company;
@@ -874,13 +874,12 @@ class pdfController extends bootstrap
                 $this->ht          = ($this->oEcheanciersEmprunteur->commission / 100);
                 $this->taxes       = ($this->oEcheanciersEmprunteur->tva / 100);
                 $this->ttc         = ($this->ht + $this->taxes);
-
-                if (!$this->factures->get($this->projects->id_project, 'ordre = ' . $iOrdre . ' AND  type_commission = 2 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
+                if (!$this->factures->exist($this->projects->id_project, 'ordre = ' . $iOrdre . ' AND  type_commission = 2 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
                     $this->factures->num_facture     = $this->num_facture;
                     $this->factures->date            = $this->date_echeance_reel;
                     $this->factures->id_company      = $this->companies->id_company;
                     $this->factures->id_project      = $this->projects->id_project;
-                    $this->factures->ordre           = $this->params[2];
+                    $this->factures->ordre           = $iOrdre;
                     $this->factures->type_commission = 2; // remboursement
                     $this->factures->commission      = ($txcom * 100);
                     $this->factures->montant_ht      = ($this->ht * 100);
