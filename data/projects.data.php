@@ -357,12 +357,15 @@ class projects extends projects_crud
             SELECT p.*,
                 co.*,
                 c.*,
-                (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status_project
-            FROM ((projects p
+                ps.label AS status_label
+            FROM projects p
+            INNER JOIN projects_last_status_history plsh ON (p.id_project = plsh.id_project)
+            INNER JOIN projects_status_history psh ON (plsh.id_project_status_history = psh.id_project_status_history)
+            INNER JOIN projects_status ps ON (psh.id_project_status = ps.id_project_status)
             LEFT JOIN companies co ON (p.id_company = co.id_company)
-            LEFT JOIN clients c ON (co.id_client_owner = c.id_client)))
-            WHERE 1 = 1 ' . $where . '
-            HAVING status_project IN (' . implode(', ', array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT)) . ')
+            LEFT JOIN clients c ON (co.id_client_owner = c.id_client)
+            WHERE ps.status IN (' . implode(', ', array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT)) . ')
+            ' . $where . '
             ORDER BY p.added DESC
             ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $resultat = $this->bdd->query($sql);
