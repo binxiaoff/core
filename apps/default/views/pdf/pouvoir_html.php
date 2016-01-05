@@ -56,10 +56,10 @@
                     </li>
                     <li>
                         <div class="col-long">
-                            R.C.S.
+                            SIREN
                         </div>
                         <div class="col-small">
-                            <?= $this->companies->rcs ?>
+                            <?= $this->companies->siren ?>
                         </div>
                     </li>
                 </ul>
@@ -471,7 +471,7 @@
                             ?>
                             <tr>
                                 <th><?= $this->bloc_pouvoir['nom'] ?><br/> <?= $this->bloc_pouvoir['raison-sociale'] ?></th>
-                                <th><?= $this->bloc_pouvoir['prenom'] ?><br/> <?= $this->bloc_pouvoir['rcs'] ?></th>
+                                <th><?= $this->bloc_pouvoir['prenom'] ?><br/> <?= $this->bloc_pouvoir['siren'] ?></th>
                                 <th><?= $this->bloc_pouvoir['adresse'] ?></th>
                                 <th><?= $this->bloc_pouvoir['code'] ?><br/> <?= $this->bloc_pouvoir['postal'] ?></th>
                                 <th><?= $this->bloc_pouvoir['ville'] ?></th>
@@ -497,7 +497,7 @@
                                         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
                                         $nom    = $this->companies->name;
-                                        $prenom = $this->companies->rcs;
+                                        $prenom = $this->companies->siren;
                                     }
 
                                     ?>
