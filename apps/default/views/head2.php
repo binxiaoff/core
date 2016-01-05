@@ -99,64 +99,11 @@ if($this->Config['env'] == 'prod'){
         <iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track=<?=$this->clients->id_client?>" width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>
         <?php
 		mail('k1@david.equinoa.net','TAG unilend 2','<iframe src="http://nodes.network-touchvibes.com/scripts/tracking.php?params=466|4&track=<?=$this->clients->id_client?>" width="1" height="1" marginwidth="0" marginheight="0" frameborder="0" scrolling="no"></iframe>');
-
+	?>
 
         <iframe src="https://secure.img-cdn.mediaplex.com/0/27518/universal.html?page_name=conversion&inscription=1&mpuid=<?=$this->clients->id_client?>" HEIGHT=1 WIDTH=1 FRAMEBORDER=0></iframe>
 
         <iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=lead&pid=3&type=14&uniqueid=<?=$this->clients->id_client?>"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>
-
-        <?php /*?><!-- Facebook Conversion Code for Unilend -->
-		<script>(function() {
-          var _fbq = window._fbq || (window._fbq = []);
-          if (!_fbq.loaded) {
-            var fbds = document.createElement('script');
-            fbds.async = true;
-            fbds.src = '//connect.facebook.net/en_US/fbds.js';
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(fbds, s);
-            _fbq.loaded = true;
-          }
-        })();
-        window._fbq = window._fbq || [];
-        window._fbq.push(['track', '6024039893052', {'value':'0.00','currency':'EUR'}]);
-        </script>
-        <noscript><img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6024039893052&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" /></noscript><?php */?>
-
-        <?php /*?><!-- Facebook Conversion Code for Unilend -->
-		<script>(function() {
-          var _fbq = window._fbq || (window._fbq = []);
-          if (!_fbq.loaded) {
-            var fbds = document.createElement('script');
-            fbds.async = true;
-            fbds.src = '//connect.facebook.net/en_US/fbds.js';
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(fbds, s);
-            _fbq.loaded = true;
-          }
-        })();
-        window._fbq = window._fbq || [];
-        window._fbq.push(['track', '6020057935405', {'value':'0.00','currency':'EUR'}]);
-        </script>
-        <noscript><img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6020057935405&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" /></noscript><?php */?>
-
-
-         <?php /*?> 13/11/2014 et daplacé dans les landing page offre de bienvenue le 17/12/2014<?php */?>
-        <?php /*?><!-- Facebook Conversion Code for Unilend -->
-		<script>(function() {
-          var _fbq = window._fbq || (window._fbq = []);
-          if (!_fbq.loaded) {
-            var fbds = document.createElement('script');
-            fbds.async = true;
-            fbds.src = '//connect.facebook.net/en_US/fbds.js';
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(fbds, s);
-            _fbq.loaded = true;
-          }
-        })();
-        window._fbq = window._fbq || [];
-        window._fbq.push(['track', '6021615722883', {'value':'0.00','currency':'EUR'}]);
-        </script>
-        <noscript><img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" /></noscript><?php */?>
 
 		<img src="https://ext.ligatus.com/conversion/?c=77615&a=10723" width="1" height="1" />
 
