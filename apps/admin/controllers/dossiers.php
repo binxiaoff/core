@@ -1304,7 +1304,7 @@ class dossiersController extends bootstrap
             if (is_array($aDirectDebits)) {
                 foreach ($aDirectDebits as $aDirectDebit) {
                     $prelevements->get($aDirectDebit['id_prelevement']);
-                    $prelevements->status = 4; // bloqué temporairement
+                    $prelevements->status = \prelevements::STATUS_TEMPORARILY_BLOCKED;
                     $prelevements->update();
                 }
             }
@@ -2392,39 +2392,30 @@ class dossiersController extends bootstrap
 
     public function _remboursements()
     {
-        $this->projects               = $this->loadData('projects');
-        $this->companies              = $this->loadData('companies');
-        $this->clients                = $this->loadData('clients');
-        $this->echeanciers            = $this->loadData('echeanciers');
-        $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-
-        $this->settings->get('TVA', 'type');
-        $this->tva = $this->settings->value;
-
-        if (isset($_POST['form_search_remb'])) {
-            $this->lProjects = $this->projects->searchDossiersRemb($_POST['siren'], $_POST['societe'], $_POST['nom'], $_POST['prenom'], $_POST['projet'], $_POST['email']);
-        } else {
-            $this->lProjects = $this->projects->searchDossiersRemb();
-        }
+        $this->setView('remboursements');
+        $this->pageTitle = 'Remboursements';
+        $this->listing(array(\projects_status::FUNDE, \projects_status::REMBOURSEMENT));
     }
 
     public function _no_remb()
     {
-        ini_set('memory_limit', '256M');
+        $this->setView('remboursements');
+        $this->pageTitle = 'Incidents de remboursement';
+        $this->listing(array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT));
+    }
 
+    private function listing(array $aStatus)
+    {
         $this->projects               = $this->loadData('projects');
         $this->companies              = $this->loadData('companies');
         $this->clients                = $this->loadData('clients');
         $this->echeanciers            = $this->loadData('echeanciers');
         $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
 
-        $this->settings->get('TVA', 'type');
-        $this->tva = $this->settings->value;
-
         if (isset($_POST['form_search_remb'])) {
-            $this->lProjects = $this->projects->searchDossiersNoRemb($_POST['siren'], $_POST['societe'], $_POST['nom'], $_POST['prenom'], $_POST['projet'], $_POST['email']);
+            $this->lProjects = $this->projects->searchDossiersByStatus($aStatus, $_POST['siren'], $_POST['societe'], $_POST['nom'], $_POST['prenom'], $_POST['projet'], $_POST['email']);
         } else {
-            $this->lProjects = $this->projects->searchDossiersNoRemb();
+            $this->lProjects = $this->projects->searchDossiersByStatus($aStatus);
         }
     }
 

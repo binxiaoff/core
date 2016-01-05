@@ -288,72 +288,30 @@ class projects extends projects_crud
         return current($this->bdd->fetch_assoc($this->bdd->query($sql)));
     }
 
-    public function searchDossiersRemb($siren = '', $societe = '', $nom = '', $prenom = '', $projet = '', $email = '', $start = '', $nb = '')
+    public function searchDossiersByStatus(array $aStatus, $siren = null, $societe = null, $nom = null, $prenom = null, $projet = null, $email = null, $start = null, $nb = null)
     {
         $where = '';
-        if ($siren != '') {
+        if (false === empty($siren)) {
             $where .= ' AND co.siren = "' . $siren . '"';
         }
-        if ($societe != '') {
+        if (false === empty($societe)) {
             $where .= ' AND co.name = "' . $societe . '"';
         }
-        if ($nom != '') {
+        if (false === empty($nom)) {
             $where .= ' AND c.nom = "' . $nom . '"';
         }
-        if ($prenom != '') {
+        if (false === empty($prenom)) {
             $where .= ' AND c.prenom = "' . $prenom . '"';
         }
-        if ($projet != '') {
+        if (false === empty($projet)) {
             $where .= ' AND p.title_bo LIKE "%' . $projet . '%"';
         }
-        if ($email != '') {
+        if (false === empty($email)) {
             $where .= ' AND c.email = "' . $email . '"';
         }
 
-        $sql      = '
-            SELECT p.*,
-                co.*,
-                c.*,
-                (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status_project
-            FROM ((projects p
-            LEFT JOIN companies co ON (p.id_company = co.id_company)
-            LEFT JOIN clients c ON (co.id_client_owner = c.id_client)))
-            WHERE 1 = 1 ' . $where . '
-            HAVING status_project IN(' . \projects_status::FUNDE . ', ' . \projects_status::REMBOURSEMENT . ')
-            ORDER BY p.added DESC
-            ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-        $resultat = $this->bdd->query($sql);
         $result   = array();
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-    public function searchDossiersNoRemb($siren = '', $societe = '', $nom = '', $prenom = '', $projet = '', $email = '', $start = '', $nb = '')
-    {
-        $where = '';
-        if ($siren != '') {
-            $where .= ' AND co.siren = "' . $siren . '"';
-        }
-        if ($societe != '') {
-            $where .= ' AND co.name = "' . $societe . '"';
-        }
-        if ($nom != '') {
-            $where .= ' AND c.nom = "' . $nom . '"';
-        }
-        if ($prenom != '') {
-            $where .= ' AND c.prenom = "' . $prenom . '"';
-        }
-        if ($projet != '') {
-            $where .= ' AND p.title_bo LIKE "%' . $projet . '%"';
-        }
-        if ($email != '') {
-            $where .= ' AND c.email = "' . $email . '"';
-        }
-
-        $sql      = '
+        $resultat = $this->bdd->query('
             SELECT p.*,
                 co.*,
                 c.*,
@@ -364,14 +322,13 @@ class projects extends projects_crud
             INNER JOIN projects_status ps ON (psh.id_project_status = ps.id_project_status)
             LEFT JOIN companies co ON (p.id_company = co.id_company)
             LEFT JOIN clients c ON (co.id_client_owner = c.id_client)
-            WHERE ps.status IN (' . implode(', ', array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT)) . ')
+            WHERE ps.status IN (' . implode(', ', $aStatus) . ')
             ' . $where . '
             ORDER BY p.added DESC
-            ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
+            ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''))
+        );
 
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;

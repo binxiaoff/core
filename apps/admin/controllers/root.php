@@ -159,7 +159,6 @@ class rootController extends bootstrap
 
     function _default()
     {
-        return;
         // Check de la plateforme
         if ($this->cms == 'iZinoa') {
             // Renvoi sur la page de gestion de l'arbo
