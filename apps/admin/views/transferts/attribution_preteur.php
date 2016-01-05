@@ -3,11 +3,12 @@
         $('.tablePreteur').tablesorter({headers: {4: {sorter: false}}});
         $('.tablePreteur').tablesorterPager({container: $('#search-pager'), positionFixed: false, size: 5});
 
-        $('#newRecherche').click(function () {
-            document.getElementById('search_preteur').reset();
-            $('#response').hide();
-            $('#lender-form-container').show();
-            $.colorbox.resize();
+        $('#newRecherche').click(function() {
+            document.getElementById('search-lender').reset();
+            $('#response').hide(0);
+            $('#lender-form-container').show(0, function() {
+                $.colorbox.resize();
+            });
         });
     });
 
