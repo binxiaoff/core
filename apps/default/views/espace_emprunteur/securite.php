@@ -6,7 +6,7 @@ if ($this->bLinkExpired === true) : ?>
         </div>
     </div>
 <?php else : ?>
-    <div class="wrapper">
+    <div class="main">
         <div class="shell">
             <form action="" method="post" id="form_mdp_question_emprunteur"
                   name="form_mdp_question_emprunteur">
