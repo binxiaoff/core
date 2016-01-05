@@ -1,6 +1,6 @@
 <?php
 if ($this->bLinkExpired === true) : ?>
-    <div class="wrapper">
+    <div class="main">
         <div class="shell">
             <p><?= $this->lng['espace-emprunteur']['lien-expire'] ?></p>
         </div>
@@ -11,13 +11,14 @@ if ($this->bLinkExpired === true) : ?>
             <form action="" method="post" id="form_mdp_question_emprunteur"
                   name="form_mdp_question_emprunteur">
                 <div>
-                    <div class="row">
+                    <div class="row inline-text">
                         <span class="pass-field-holder">
                         <input type="password" name="pass" id="pass"
                                title="<?= $this->lng['espace-emprunteur']['mot-de-passe'] ?>"
                                value="" class="field field-large required">
                         </span>
-
+                    </div>
+                    <div class="row inline-text">
                         <span class="pass-field-holder">
                         <input type="password" name="pass2" id="pass2"
                                title="<?= $this->lng['espace-emprunteur']['confirmation-de-mot-de-passe'] ?>"
@@ -25,8 +26,11 @@ if ($this->bLinkExpired === true) : ?>
                                class="field field-large "
                                data-validators="Confirmation,{ match: 'pass' }">
                         </span>
-                        <div><em><?= $this->lng['espace-emprunteur']['info-mdp'] ?></em></div>
                     </div>
+                        <div class="row">
+                        <em style="font-size: 0.9em;"><?= $this->lng['espace-emprunteur']['info-mdp'] ?></em>
+                        </div>
+
                     <div class="row">
                         <input type="text" id="secret-question" name="secret-question"
                                title="<?= $this->lng['espace-emprunteur']['question-secrete'] ?>"
