@@ -57,7 +57,7 @@
         <br />
         <?=$this->companiesEmpr->zip?> <?=$this->companiesEmpr->city?>
         <br />
-        <?=$this->companiesEmpr->rcs?>
+        <?=$this->companiesEmpr->siren?>
     </div>
 
     <div class="procedure">
