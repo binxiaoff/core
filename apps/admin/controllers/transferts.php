@@ -67,12 +67,7 @@ class transfertsController extends bootstrap
             $tva = $this->settings->value;
             $companies->get($this->projects->id_company, 'id_company');
 
-            if (false === empty($_POST['montant_edite'])) {
-                $this->receptions->montant = str_replace(array(' ', ','), array('', '.'), $_POST['montant_edite']) * 100;
-            }
-
             if ($_POST['type_remb'] === 'remboursement_anticipe') {
-                $this->receptions->motif         = $_POST['motif'];
                 $this->receptions->id_client     = $companies->id_client_owner;
                 $this->receptions->id_project    = $_POST['id_project'];
                 $this->receptions->remb_anticipe = 1;

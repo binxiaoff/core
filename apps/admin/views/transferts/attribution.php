@@ -65,14 +65,6 @@
                         <td><input type="text" id="id_project" name="id_project" class="input_large"/></td>
                     </tr>
                     <tr>
-                        <th><label for="montant_edite">Editer le montant :</label></th>
-                        <td><input type="text" id="montant_edite" name="montant_edite" class="input_moy" value="<?= $this->ficelle->formatNumber($this->receptions->montant / 100) ?>"/> &euro;</td>
-                    </tr>
-                    <tr>
-                        <th><label for="motif">Editer le motif :</label></th>
-                        <td><textarea id="motif" name="motif" class="textarea"><?= str_replace('<br>', "\n", $this->receptions->motif) ?></textarea>
-                    </tr>
-                    <tr>
                         <th><label for="motif">Type de remboursement :</label></th>
                         <td>
                             <label class="label_radio">
