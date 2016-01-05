@@ -709,11 +709,10 @@ class pdfController extends bootstrap
         }
     }
 
-    public function _facture_EF($sHash = null, $iProjectId = null)
+    public function _facture_EF($sHash = null, $iProjectId = null, $bRead = true)
     {
         $sHash      = (false === is_null($sHash)) ? $sHash : $this->params[0];
         $iProjectId = (false === is_null($iProjectId)) ? $iProjectId : $this->params[1];
-        $bRead      = (true === isset($this->params)) ?: false;
 
         if ($this->clients->get($sHash, 'hash') && isset($iProjectId)) {
             $this->companies->get($this->clients->id_client, 'id_client_owner');
@@ -795,7 +794,7 @@ class pdfController extends bootstrap
                 $montant           = ((str_replace('-', '', $this->transactions->montant) + $this->transactions->montant_unilend) / 100); // Montant pret
                 $txCom             = (0 < $montant) ? round(($this->ht / $montant) * 100, 0) : 0; // taux commission
 
-                if (!$this->factures->get($this->projects->id_project, 'type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
+                if (!$this->factures->exist($this->projects->id_project, 'type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
                     $this->factures->num_facture     = $this->num_facture;
                     $this->factures->date            = $this->dateRemb;
                     $this->factures->id_company      = $this->companies->id_company;
@@ -817,12 +816,11 @@ class pdfController extends bootstrap
         }
     }
 
-    public function _facture_ER($sHash = null, $iProjectId = null, $iOrder = null)
+    public function _facture_ER($sHash = null, $iProjectId = null, $iOrder = null, $bRead = true)
     {
         $sHash      = (false === is_null($sHash)) ? $sHash : $this->params[0];
         $iProjectId = (false === is_null($iProjectId)) ? $iProjectId : $this->params[1];
         $iOrder     = (false === is_null($iOrder)) ? $iOrder : $this->params[2];
-        $bRead      = (true === isset($this->params)) ?: false;
 
         if ($this->clients->get($sHash, 'hash') && isset($iProjectId)) {
             $this->companies->get($this->clients->id_client, 'id_client_owner');
@@ -830,7 +828,7 @@ class pdfController extends bootstrap
             if ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
                 $this->oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
 
-                if ($this->oEcheanciersEmprunteur->get($this->projects->id_project, 'ordre = ' . $iOrder . '  AND id_project')) {
+                if ($this->oEcheanciersEmprunteur->get($this->projects->id_project, 'ordre = ' . $iOrder . ' AND status_ra = 0  AND id_project')) {
                     $sNamePdfClient = 'FACTURE-UNILEND-' . $this->projects->slug . '-' . $iOrder;
                     $sFileName      = $this->path . 'protected/pdf/facture/facture_ER-' . $sHash . '-' . $iProjectId . '-' . $iOrder . '.pdf';
 
@@ -874,13 +872,12 @@ class pdfController extends bootstrap
                 $this->ht          = ($this->oEcheanciersEmprunteur->commission / 100);
                 $this->taxes       = ($this->oEcheanciersEmprunteur->tva / 100);
                 $this->ttc         = ($this->ht + $this->taxes);
-
-                if (!$this->factures->get($this->projects->id_project, 'ordre = ' . $iOrdre . ' AND  type_commission = 2 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
+                if (!$this->factures->exist($this->projects->id_project, 'ordre = ' . $iOrdre . ' AND  type_commission = 2 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
                     $this->factures->num_facture     = $this->num_facture;
                     $this->factures->date            = $this->date_echeance_reel;
                     $this->factures->id_company      = $this->companies->id_company;
                     $this->factures->id_project      = $this->projects->id_project;
-                    $this->factures->ordre           = $this->params[2];
+                    $this->factures->ordre           = $iOrdre;
                     $this->factures->type_commission = 2; // remboursement
                     $this->factures->commission      = ($txcom * 100);
                     $this->factures->montant_ht      = ($this->ht * 100);

@@ -76,13 +76,14 @@ class factures extends factures_crud
         $sql = '
             SELECT ee.id_project, p.slug, p.id_company, c.id_client_owner, cli.hash, ee.ordre
             FROM echeanciers_emprunteur ee
-            LEFT JOIN projects p ON ee.id_project = p.id_project
-            LEFT JOIN companies c ON p.id_company = c.id_company
-            LEFT JOIN clients cli ON c.id_client_owner = cli.id_client
+            INNER JOIN projects p ON ee.id_project = p.id_project
+            INNER JOIN companies c ON p.id_company = c.id_company
+            INNER JOIN clients cli ON c.id_client_owner = cli.id_client
             WHERE ee.status_emprunteur = 1
                 AND (SELECT e.status FROM echeanciers e WHERE e.id_project = ee.id_project AND e.ordre = ee.ordre LIMIT 1) = 1
                 AND (SELECT f.date FROM factures f WHERE f.id_project = ee.id_project AND f.ordre = ee.ordre AND f.type_commission = 2 LIMIT 1) IS NULL
-            ORDER BY ee.id_project , ee.ordre';
+                AND ee.status_ra = 0
+            ORDER BY ee.id_project, ee.ordre';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();

@@ -5461,19 +5461,21 @@ class cronController extends bootstrap
             $companies   = $this->loadData('companies');
             $emprunteurs = $this->loadData('clients');
 
-            foreach ($factures->selectEcheancesRembAndNoFacture() as $r) {
+            $aRepaymentNoInvoice = $factures->selectEcheancesRembAndNoFacture();
+            foreach ($aRepaymentNoInvoice as $r) {
                 $oCommandPdf = new Command('pdf', 'facture_ER', array($r['hash'], $r['id_project'], $r['ordre']), $this->language);
-                    $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                    $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre']);
-                }
+                $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
+                $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre'], false);
+            }
 
-            foreach ($projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT) as $projet) {
-                if (false === $factures->get($projet['id_project'], 'type_commission = 1 AND id_project')) {
+            $aProjectsInRepayment = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
+            foreach ($aProjectsInRepayment as $projet) {
+                if (false === $factures->exist($projet['id_project'], 'type_commission = 1 AND id_project')) {
                     $companies->get($projet['id_company'], 'id_company');
                     $emprunteurs->get($companies->id_client_owner, 'id_client');
                     $oCommandPdf = new Command('pdf', 'facture_EF', array($emprunteurs->hash, $r['id_project']), $this->language);
                     $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                    $oPdf->_facture_EF($emprunteurs->hash, $r['id_project']);
+                    $oPdf->_facture_EF($emprunteurs->hash, $r['id_project'], false);
                 }
             }
 
