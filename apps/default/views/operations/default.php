@@ -25,6 +25,7 @@
 <script type="text/javascript">
     $('#operations').click(function () {
         location.hash = '';
+        history.pushState('', '', location.pathname);
         $("#operations").scrollTop();
     });
     $('#prets').click(function () {
