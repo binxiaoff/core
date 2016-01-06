@@ -520,43 +520,6 @@ class operationsController extends bootstrap
         die;
     }
 
-    public function conversion_vers_csv($chemin_fichier, array $donnees)
-    {
-        // On cherche des infos sur le fichier à ouvrir
-        $infos_fichier = stat($chemin_fichier);
-        // Si le fichier est inexistant ou vide, on va le créer et y ajouter les
-        // libellés de colonne.
-        if (!file_exists($chemin_fichier) || $infos_fichier['size'] == 0) {
-            // On ouvre le fichier en écriture seule et on le vide de son contenu
-            $fp = @fopen($chemin_fichier, 'w');
-            if ($fp === false) {
-                throw new Exception("Le fichier ${chemin_fichier} n'a pas pu être créé.");
-            }
-            // Les entêtes sont les clés du tableau associatif
-            $entetes = array_keys($donnees[0]);
-            // Décodage des entêtes qui sont en UTF8 à la base
-            foreach ($entetes as &$entete) {
-                // Notez l'utilisation de iconv pour changer l'encodage.
-                $entete = (is_string($entete)) ? iconv("UTF-8", "Windows-1252//TRANSLIT", $entete) : $entete;
-            }
-            // On utilise le troisième paramètre de fputcsv pour changer le séparateur
-            // par défaut de php.
-            fputcsv($fp, $entetes, ';');
-        }
-        // On ouvre le handler en écriture pour écrire le fichier
-        // s'il ne l'est pas déjà.
-        $fp = ($fp) ? $fp : fopen($chemin_fichier, 'a');
-        // Écriture des données
-        foreach ($donnees as $donnee) {
-            foreach ($donnee as &$champ) {
-                $champ = (is_string($champ)) ?
-                    iconv("UTF-8", "Windows-1252//TRANSLIT", $champ) : $champ;
-            }
-            fputcsv($fp, $donnee, ';');
-        }
-        fclose($fp);
-    }
-
     public function _get_ifu()
     {
         // recup du fichier

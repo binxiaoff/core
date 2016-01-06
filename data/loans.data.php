@@ -381,8 +381,6 @@ class loans extends loans_crud
             }
             return $aBids;
         }
-
-
     }
 
     public function getRepaymentSchedule($fCommissionRate, $fVAT, $iLoanId = null)

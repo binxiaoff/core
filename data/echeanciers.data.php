@@ -138,8 +138,8 @@ class echeanciers extends echeanciers_crud
     {
         $sql = 'SELECT SUM(prelevements_obligatoires) as prelevements_obligatoires,SUM(retenues_source) as retenues_source,SUM(csg) as csg,SUM(prelevements_sociaux) as prelevements_sociaux,SUM(contributions_additionnelles) as contributions_additionnelles,SUM(prelevements_solidarite) as prelevements_solidarite,SUM(crds) as crds FROM `echeanciers` WHERE status = 1 AND id_lender = ' . $id_lender;
 
-        $result   = $this->bdd->query($sql);
         $retenues = 0;
+        $resultat = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($resultat)) {
             $retenues += $record['prelevements_obligatoires'] + $record['retenues_source'] + $record['csg'] + $record['prelevements_sociaux'] + $record['contributions_additionnelles'] + $record['prelevements_solidarite'] + $record['crds'];
         }
@@ -151,8 +151,8 @@ class echeanciers extends echeanciers_crud
     {
         $sql = 'SELECT SUM(prelevements_obligatoires) as prelevements_obligatoires,SUM(retenues_source) as retenues_source,SUM(csg) as csg,SUM(prelevements_sociaux) as prelevements_sociaux,SUM(contributions_additionnelles) as contributions_additionnelles,SUM(prelevements_solidarite) as prelevements_solidarite,SUM(crds) as crds FROM `echeanciers` WHERE status = 0 AND id_lender = ' . $id_lender;
 
-        $result   = $this->bdd->query($sql);
         $retenues = 0;
+        $resultat = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($resultat)) {
             $retenues += $record['prelevements_obligatoires'] + $record['retenues_source'] + $record['csg'] + $record['prelevements_sociaux'] + $record['contributions_additionnelles'] + $record['prelevements_solidarite'] + $record['crds'];
         }
