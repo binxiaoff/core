@@ -762,7 +762,7 @@ class rootController extends bootstrap
                     // Additional headers
 
                     //$headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
-                    $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
+                    $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
 
                     // Mail it
                     mail($to, $subject, $message, $headers);
@@ -809,7 +809,7 @@ class rootController extends bootstrap
                     // Additional headers
 
                     //$headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
-                    $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
+                    $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
 
                     // Mail it
                     mail($to, $subject, $message, $headers);

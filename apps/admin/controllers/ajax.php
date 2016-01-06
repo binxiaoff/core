@@ -530,7 +530,7 @@ class ajaxController extends bootstrap
 
                             // Additional headers
 
-                            $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
+                            $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
                             //$headers .= 'From: Unilend <courtier.damien@gmail.com>' . "\r\n";
 
                             // Mail it
