@@ -28,6 +28,10 @@
 
 class bids extends bids_crud
 {
+    const STATUS_BID_PENDING    = 0;
+    const STATUS_BID_ACCEPTED   = 1;
+    const STATUS_BID_REJECTED   = 2;
+
     public function __construct($bdd, $params = '')
     {
         parent::bids($bdd, $params);
@@ -254,5 +258,30 @@ class bids extends bids_crud
     {
         $result = $this->bdd->query('SELECT MAX(rate) FROM bids WHERE id_project = ' . $iProjectId . ' AND status = 0');
         return round($this->bdd->result($result, 0, 0), 1);
+    }
+
+    public function getLenders($iProjectId, $aStatus = array())
+    {
+        $iProjectId = $this->bdd->escape_string($iProjectId);
+        $sStatus = '';
+        if (false === empty($aStatus)) {
+            $sStatus = implode(',', $aStatus);
+            $sStatus = $this->bdd->escape_string($sStatus);
+        }
+        $sQuery = 'SELECT id_lender_account, count(*) as bid_nb, SUM(amount) as amount_sum FROM `bids` WHERE id_project = ' . $iProjectId;
+
+        if ('' !== $sStatus) {
+            $sQuery .= ' AND status in (' . $sStatus . ')';
+        }
+
+        $sQuery .= 'Group BY id_lender_account';
+
+        $rQuery = $this->bdd->query($sQuery);
+        $aLenders = array();
+        while ($aRow = $this->bdd->fetch_array($rQuery)) {
+            $aLenders[] = $aRow;
+        }
+
+        return $aLenders;
     }
 }

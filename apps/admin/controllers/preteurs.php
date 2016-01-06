@@ -1807,9 +1807,9 @@ class preteursController extends bootstrap
         if (empty($this->IRR)) {
             try {
                 $this->IRR['tri_value'] = $this->lenders_accounts->calculateIRR($this->lenders_accounts->id_lender_account);
-            } catch (Exception $e){
+            } catch (Exception $e) {
                 $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
-                $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
+                $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: ' . $e->getMessage() .  ' ' . $e->getTraceAsString());
                 $this->IRR = 'non calculable';
             }
         }

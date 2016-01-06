@@ -59,14 +59,6 @@ class pdfController extends bootstrap
             $this->params = $command->getParameters();
         }
 
-        $this->blocs->get('pdf-contrat', 'slug');
-        $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
-        foreach ($lElements as $b_elt) {
-            $this->elements->get($b_elt['id_element']);
-            $this->bloc_pdf_contrat[$this->elements->slug]           = $b_elt['value'];
-            $this->bloc_pdf_contratComplement[$this->elements->slug] = $b_elt['complement'];
-        }
-
         $this->catchAll = true;
 
         $this->autoFireHeader = false;
@@ -516,7 +508,8 @@ class pdfController extends bootstrap
         }
 
         $this->taux             = (0 < $montantBas) ? ($montantHaut / $montantBas) : 0;
-        $this->nbLoans          = $this->oLoans->counter('id_project = ' . $this->projects->id_project);
+        $this->nbLoansBDC       = $this->oLoans->counter('id_type_contract = 1 AND id_project = ' . $this->projects->id_project);
+        $this->nbLoansIFP       = $this->oLoans->counter('id_type_contract = 2 AND id_project = ' . $this->projects->id_project);
         $this->echeanceEmprun   = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project . ' AND ordre = 1');
         $this->rembByMonth      = $this->echeanciers->getMontantRembEmprunteur($this->echeanceEmprun[0]['montant'], $this->echeanceEmprun[0]['commission'], $this->echeanceEmprun[0]['tva']);
         $this->rembByMonth      = ($this->rembByMonth / 100);
@@ -539,31 +532,49 @@ class pdfController extends bootstrap
 
     public function _contrat()
     {
-        if ((false === $this->clients->checkAccess() || $this->clients->hash != $this->params[0]) && (false === isset($_SESSION['user']['id_user']) || $_SESSION['user']['id_user'] == '')) {
+        if (false === isset($this->params[0], $this->params[1])) {
             header('Location: ' . $this->lurl);
             exit;
         }
 
-        $this->oLoans           = $this->loadData('loans');
-        $this->oLendersAccounts = $this->loadData('lenders_accounts');
+        $oClients = $this->loadData('clients');
 
-        $this->clients->get($this->params[0], 'hash');
-        $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
-        $this->oLoans->get($this->params[1], 'id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_loan');
-        $this->projects->get($this->oLoans->id_project, 'id_project');
+        if (false === $oClients->get($this->params[0], 'hash') || false === $oClients->checkAccess() && (false === isset($_SESSION['user']['id_user']) || $_SESSION['user']['id_user'] == '')) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
 
-        $sNamePdfClient = 'CONTRAT-UNILEND-' . $this->projects->slug . '-' . $this->oLoans->id_loan;
-        $sFilePath      = $this->path . 'protected/pdf/contrat/contrat-' . $this->params[0] . '-' . $this->oLoans->id_loan . '.pdf';
+        $oLoans           = $this->loadData('loans');
+        $oLendersAccounts = $this->loadData('lenders_accounts');
+        $oProjects        = $this->loadData('projects');
+
+        if (false === $oLendersAccounts->get($oClients->id_client, 'id_client_owner')) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+
+        if (false === $oLoans->get($this->params[1], 'id_lender = ' . $oLendersAccounts->id_lender_account . ' AND id_loan')) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+
+        if (false === $oProjects->get($oLoans->id_project, 'id_project')) {
+            header('Location: ' . $this->lurl);
+            exit;
+        }
+
+        $sNamePdfClient = 'CONTRAT-UNILEND-' . $oProjects->slug . '-' . $oLoans->id_loan;
+        $sFilePath      = $this->path . 'protected/pdf/contrat/contrat-' . $this->params[0] . '-' . $oLoans->id_loan . '.pdf';
 
         if (false === file_exists($sFilePath)) {
-            $this->GenerateContractHtml();
+            $this->GenerateContractHtml($oClients, $oLoans, $oProjects);
             $this->WritePdf($sFilePath, 'contract');
         }
 
         $this->ReadPdf($sFilePath, $sNamePdfClient);
     }
 
-    private function GenerateContractHtml()
+    private function GenerateContractHtml($oClients, $oLoans, $oProjects)
     {
         $this->echeanciers                 = $this->loadData('echeanciers');
         $this->companiesEmprunteur         = $this->loadData('companies');
@@ -573,60 +584,83 @@ class pdfController extends bootstrap
         $this->companies_actif_passif      = $this->loadData('companies_actif_passif');
         $this->projects_status_history     = $this->loadData('projects_status_history');
         $this->oProjectsPouvoir            = $this->loadData('projects_pouvoir');
+        $this->clients_adresses            = $this->loadData('clients_adresses');
+        $this->oLoans                      = $oLoans;
+        $this->clients                     = $oClients;
+        $this->projects                    = $oProjects;
 
-        $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
-
-        if ($this->oLoans->get($this->params[1], 'id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_loan')) {
-            $this->clients_adresses->get($this->clients->id_client, 'id_client');
-            $this->projects->get($this->oLoans->id_project, 'id_project');
-            $this->companiesEmprunteur->get($this->projects->id_company, 'id_company');
-            $this->companies_detailsEmprunteur->get($this->projects->id_company, 'id_company');
-            $this->emprunteur->get($this->companiesEmprunteur->id_client_owner, 'id_client');
-
-            // Si preteur morale
-            if ($this->clients->type == 2) {
-                $this->companiesPreteur->get($this->clients->id_client, 'id_client_owner');
-            }
-
-            $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
-
-            $date_dernier_bilan             = explode('-', $this->companies_detailsEmprunteur->date_dernier_bilan);
-            $this->date_dernier_bilan_annee = $date_dernier_bilan[0];
-            $this->date_dernier_bilan_mois  = $date_dernier_bilan[1];
-            $this->date_dernier_bilan_jour  = $date_dernier_bilan[2];
-
-            $this->l_AP        = $this->companies_actif_passif->select('id_company = "' . $this->companiesEmprunteur->id_company . '" AND annee = ' . $this->date_dernier_bilan_annee, 'annee DESC');
-            $this->totalActif  = ($this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement']);
-            $this->totalPassif = ($this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes']);
-            $this->lRemb       = $this->echeanciers->select('id_loan = ' . $this->oLoans->id_loan, 'ordre ASC');
-
-            $this->capital = 0;
-            foreach ($this->lRemb as $r) {
-                $this->capital += $r['capital'];
-            }
-
-            if ($this->oProjectsPouvoir->get($this->projects->id_project, 'id_project')) {
-                $this->dateContrat = date('d/m/Y', strtotime($this->oProjectsPouvoir->updated));
-                $this->dateRemb    = date('d/m/Y', strtotime($this->oProjectsPouvoir->updated));
-            } else {
-                $this->dateContrat = date('d/m/Y');
-                $this->dateRemb    = date('d/m/Y');
-            }
-
-            $remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added ASC', 0, 1);
-
-            if ($remb[0]['added'] != "") {
-                $this->dateRemb = date('d/m/Y', strtotime($remb[0]['added']));
-            } else {
-                $this->dateRemb = date('d/m/Y');
-            }
-
-            $this->dateContrat = $this->dateRemb;
-
-            $this->setDisplay('contrat_html');
-        } else {
-            header('Location: ' . $this->lurl);
+        $this->clients_adresses->get($this->clients->id_client, 'id_client');
+        $this->companiesEmprunteur->get($oProjects->id_company, 'id_company');
+        $this->companies_detailsEmprunteur->get($oProjects->id_company, 'id_company');
+        $this->emprunteur->get($this->companiesEmprunteur->id_client_owner, 'id_client');
+        // Si preteur morale
+        if ($this->clients->type == 2) {
+            $this->companiesPreteur->get($this->clients->id_client, 'id_client_owner');
         }
+        $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($oProjects->id_project);
+
+        $date_dernier_bilan             = explode('-', $this->companies_detailsEmprunteur->date_dernier_bilan);
+        $this->date_dernier_bilan_annee = $date_dernier_bilan[0];
+        $this->date_dernier_bilan_mois  = $date_dernier_bilan[1];
+        $this->date_dernier_bilan_jour  = $date_dernier_bilan[2];
+
+        $this->l_AP        = $this->companies_actif_passif->select('id_company = "' . $this->companiesEmprunteur->id_company . '" AND annee = ' . $this->date_dernier_bilan_annee, 'annee DESC');
+        $this->totalActif  = ($this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement']);
+        $this->totalPassif = ($this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes']);
+        $this->lRemb       = $this->echeanciers->select('id_loan = ' . $oLoans->id_loan, 'ordre ASC');
+
+        $this->capital = 0;
+        foreach ($this->lRemb as $r) {
+            $this->capital += $r['capital'];
+        }
+
+        if ($this->oProjectsPouvoir->get($oProjects->id_project, 'id_project')) {
+            $this->dateContrat = date('d/m/Y', strtotime($this->oProjectsPouvoir->updated));
+            $this->dateRemb    = date('d/m/Y', strtotime($this->oProjectsPouvoir->updated));
+        } else {
+            $this->dateContrat = date('d/m/Y');
+            $this->dateRemb    = date('d/m/Y');
+        }
+
+        $remb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added ASC', 0, 1);
+
+        if ($remb[0]['added'] != "") {
+            $this->dateRemb = date('d/m/Y', strtotime($remb[0]['added']));
+        } else {
+            $this->dateRemb = date('d/m/Y');
+        }
+
+        $this->dateContrat = $this->dateRemb;
+
+        $this->settings->get('Commission remboursement', 'type');
+        $fCommissionRate = $this->settings->value;
+        $this->settings->get('TVA', 'type');
+        $fVat = $this->settings->value;
+        $this->settings->get('Part unilend', 'type');
+        $fProjectCommisionRate = $this->settings->value;
+
+        $this->aCommissionRepayment = \repayment::getRepaymentCommission($oLoans->amount / 100, $oProjects->period, $fCommissionRate, $fVat);
+
+        $this->fCommissionRepayment = $this->aCommissionRepayment['commission_total'];
+        $this->fCommissionProject   = $fProjectCommisionRate * $oLoans->amount / 100 / (1 + $fVat);
+        $this->fInterestTotal       = $this->echeanciers->getSumByLoan($oLoans->id_loan, 'interets');
+
+        if (\loans::TYPE_CONTRACT_BDC == $oLoans->id_type_contract) {
+            $this->blocs->get('pdf-contrat', 'slug');
+            $sTemplate = 'contrat_html';
+        } else {
+            $this->blocs->get('pdf-contrat-ifp', 'slug');
+            $sTemplate = 'contrat_ifp_html';
+        }
+
+        $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
+        foreach ($lElements as $b_elt) {
+            $this->elements->get($b_elt['id_element']);
+            $this->bloc_pdf_contrat[$this->elements->slug]           = $b_elt['value'];
+            $this->bloc_pdf_contratComplement[$this->elements->slug] = $b_elt['complement'];
+        }
+
+        $this->setDisplay($sTemplate);
     }
 
     public function _declarationContratPret_html($iIdLoan, $sPath)
@@ -675,11 +709,10 @@ class pdfController extends bootstrap
         }
     }
 
-    public function _facture_EF($sHash = null, $iProjectId = null)
+    public function _facture_EF($sHash = null, $iProjectId = null, $bRead = true)
     {
         $sHash      = (false === is_null($sHash)) ? $sHash : $this->params[0];
         $iProjectId = (false === is_null($iProjectId)) ? $iProjectId : $this->params[1];
-        $bRead      = (true === isset($this->params)) ?: false;
 
         if ($this->clients->get($sHash, 'hash') && isset($iProjectId)) {
             $this->companies->get($this->clients->id_client, 'id_client_owner');
@@ -761,7 +794,7 @@ class pdfController extends bootstrap
                 $montant           = ((str_replace('-', '', $this->transactions->montant) + $this->transactions->montant_unilend) / 100); // Montant pret
                 $txCom             = (0 < $montant) ? round(($this->ht / $montant) * 100, 0) : 0; // taux commission
 
-                if (!$this->factures->get($this->projects->id_project, 'type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
+                if (!$this->factures->exist($this->projects->id_project, 'type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
                     $this->factures->num_facture     = $this->num_facture;
                     $this->factures->date            = $this->dateRemb;
                     $this->factures->id_company      = $this->companies->id_company;
@@ -783,12 +816,11 @@ class pdfController extends bootstrap
         }
     }
 
-    public function _facture_ER($sHash = null, $iProjectId = null, $iOrder = null)
+    public function _facture_ER($sHash = null, $iProjectId = null, $iOrder = null, $bRead = true)
     {
         $sHash      = (false === is_null($sHash)) ? $sHash : $this->params[0];
         $iProjectId = (false === is_null($iProjectId)) ? $iProjectId : $this->params[1];
         $iOrder     = (false === is_null($iOrder)) ? $iOrder : $this->params[2];
-        $bRead      = (true === isset($this->params)) ?: false;
 
         if ($this->clients->get($sHash, 'hash') && isset($iProjectId)) {
             $this->companies->get($this->clients->id_client, 'id_client_owner');
@@ -796,7 +828,7 @@ class pdfController extends bootstrap
             if ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
                 $this->oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
 
-                if ($this->oEcheanciersEmprunteur->get($this->projects->id_project, 'ordre = ' . $iOrder . '  AND id_project')) {
+                if ($this->oEcheanciersEmprunteur->get($this->projects->id_project, 'ordre = ' . $iOrder . ' AND status_ra = 0  AND id_project')) {
                     $sNamePdfClient = 'FACTURE-UNILEND-' . $this->projects->slug . '-' . $iOrder;
                     $sFileName      = $this->path . 'protected/pdf/facture/facture_ER-' . $sHash . '-' . $iProjectId . '-' . $iOrder . '.pdf';
 
@@ -841,12 +873,12 @@ class pdfController extends bootstrap
                 $this->taxes       = ($this->oEcheanciersEmprunteur->tva / 100);
                 $this->ttc         = ($this->ht + $this->taxes);
 
-                if (!$this->factures->get($this->projects->id_project, 'ordre = ' . $iOrdre . ' AND  type_commission = 2 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
+                if (!$this->factures->exist($this->projects->id_project, 'ordre = ' . $iOrdre . ' AND  type_commission = 2 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
                     $this->factures->num_facture     = $this->num_facture;
                     $this->factures->date            = $this->date_echeance_reel;
                     $this->factures->id_company      = $this->companies->id_company;
                     $this->factures->id_project      = $this->projects->id_project;
-                    $this->factures->ordre           = $this->params[2];
+                    $this->factures->ordre           = $iOrdre;
                     $this->factures->type_commission = 2; // remboursement
                     $this->factures->commission      = ($txcom * 100);
                     $this->factures->montant_ht      = ($this->ht * 100);

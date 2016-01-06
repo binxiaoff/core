@@ -33,6 +33,7 @@ class transactions extends transactions_crud
         parent::transactions($bdd, $params);
     }
 
+
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
@@ -57,28 +58,14 @@ class transactions extends transactions_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `transactions` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM `transactions` ' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_transaction')
     {
-        $sql    = 'SELECT * FROM `transactions` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT * FROM `transactions` WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
-    }
-
-    //******************************************************************************************//
-    //**************************************** AJOUTS ******************************************//
-    //******************************************************************************************//
-
-    public function getCodePays($id_pays)
-    {
-        $sql    = 'SELECT id_langue FROM `pays` WHERE id_pays = "' . $id_pays . '"';
-        $result = $this->bdd->query($sql);
-        return strtoupper($this->bdd->result($result, 0, 0));
     }
 
     /* Nouvelle fonction utilisée désormais par les fonctions de stats par statuts de transaction ci dessous (factorisation)*/
@@ -98,11 +85,14 @@ class transactions extends transactions_crud
             return false;
         }
 
+        $sql = "
+            SELECT SUM(montant / 100) AS montant,
+                DATE_FORMAT(date_transaction, '%m') AS monthTransaction
+            FROM transactions
+            WHERE status = " . $status . "
+                AND etat = " . $etat . "
+                AND transaction = " . $transaction;
 
-        $sql = "SELECT SUM(montant/100) AS montant, date_format(date_transaction,'%m') AS monthTransaction FROM transactions
-                    WHERE status = " . $status . "
-                    AND etat = " . $etat . "
-                    AND transaction = " . $transaction;
         if (count($type_transaction_filterout) > 0) {
             $sql .= " AND type_transaction not in (" . implode(",", $type_transaction_filterout) . ")";
         }
@@ -112,12 +102,9 @@ class transactions extends transactions_crud
 
         $sql .= " AND year(date_transaction) = " . $year . " GROUP BY monthTransaction";
 
-
         $req = $this->bdd->query($sql);
         $res = array();
         while ($rec = $this->bdd->fetch_array($req)) {
-            //$d = explode('-',$rec['date']);
-            //if ($rec['monthTransaction']
             $res[$rec['monthTransaction']] = $rec['montant'];
         }
         return $res;
@@ -140,7 +127,18 @@ class transactions extends transactions_crud
 
     public function getSumDepotByMonths($id_client, $year)
     {
-        $sql = 'SELECT SUM(montant/100) AS montant, LEFT(date_transaction,7) AS date FROM transactions WHERE status = 1 AND etat = 1 AND YEAR(date_transaction) = ' . $year . ' AND type_transaction IN (1,3,4) AND display = 0  AND id_client = ' . $id_client . ' GROUP BY LEFT(date_transaction,7)';
+        $sql = '
+            SELECT SUM(montant / 100) AS montant,
+                LEFT(date_transaction, 7) AS date
+            FROM transactions
+            WHERE status = 1
+                AND etat = 1
+                AND YEAR(date_transaction) = ' . $year . '
+                AND type_transaction IN (1, 3, 4)
+                AND display = 0
+                AND id_client = ' . $id_client . '
+            GROUP BY LEFT(date_transaction, 7)';
+
         $req = $this->bdd->query($sql);
         $res = array();
         while ($rec = $this->bdd->fetch_array($req)) {
@@ -157,7 +155,18 @@ class transactions extends transactions_crud
      **/
     public function recupMonthlyPartnershipTurnoverByYear($year)
     {
-        $sql = 'SELECT p.id_type as idTypePartenaire, date_format(date_transaction,"%m") AS monthTransaction, SUM(montant / 100) AS montant FROM transactions t inner join partenaires p on (t.id_partenaire = p.id_partenaire ) inner join partenaires_types pt on (p.id_type = pt.id_type) WHERE t.status = 1 AND t.etat != 3 AND pt.status = 1 AND year(date_transaction) = "' . $year . '" GROUP BY 1,2';
+        $sql = '
+            SELECT p.id_type AS idTypePartenaire,
+                DATE_FORMAT(date_transaction, "%m") AS monthTransaction,
+                SUM(montant / 100) AS montant
+            FROM transactions t
+            INNER JOIN partenaires p ON (t.id_partenaire = p.id_partenaire )
+            INNER JOIN partenaires_types pt ON (p.id_type = pt.id_type)
+            WHERE t.status = 1
+                AND t.etat != 3
+                AND pt.status = 1
+                AND YEAR(date_transaction) = "' . $year . '"
+            GROUP BY 1, 2';
 
         $req = $this->bdd->query($sql);
         $res = array();
@@ -166,82 +175,6 @@ class transactions extends transactions_crud
             $res[$rec['idTypePartenaire']][$rec['monthTransaction']] = $montantFormate;
         }
         return $res;
-    }
-
-    public function getCAcommandes($deb_jour, $deb_mois, $deb_annee, $fin_jour, $fin_mois, $fin_annee)
-    {
-        $deb = str_pad($deb_annee, 4, '0', STR_PAD_LEFT) . '-' . str_pad($deb_mois, 2, '0', STR_PAD_LEFT) . '-' . str_pad($deb_jour, 2, '0', STR_PAD_LEFT);
-        $fin = str_pad($fin_annee, 4, '0', STR_PAD_LEFT) . '-' . str_pad($fin_mois, 2, '0', STR_PAD_LEFT) . '-' . str_pad($fin_jour, 2, '0', STR_PAD_LEFT);
-
-        $sql    = "SELECT SUM(montant/100) AS somme FROM transactions WHERE status = 1 AND etat != 3 AND date_transaction >= '" . $deb . " 00:00:00' AND date_transaction <= '" . $fin . " 23:59:59'";
-        $result = $this->bdd->query($sql);
-        $somme  = $this->bdd->result($result, 0, 'somme');
-        if ($somme == '') {
-            $somme = 0;
-        }
-
-        return $somme;
-    }
-
-    public function getNBcommandes($deb_jour, $deb_mois, $deb_annee, $fin_jour, $fin_mois, $fin_annee)
-    {
-        $deb = str_pad($deb_annee, 4, '0', STR_PAD_LEFT) . '-' . str_pad($deb_mois, 2, '0', STR_PAD_LEFT) . '-' . str_pad($deb_jour, 2, '0', STR_PAD_LEFT);
-        $fin = str_pad($fin_annee, 4, '0', STR_PAD_LEFT) . '-' . str_pad($fin_mois, 2, '0', STR_PAD_LEFT) . '-' . str_pad($fin_jour, 2, '0', STR_PAD_LEFT);
-
-        $sql    = "SELECT COUNT(*) AS nombre FROM transactions WHERE status = 1 AND etat != 3 AND date_transaction >= '" . $deb . " 00:00:00' AND date_transaction <= '" . $fin . " 23:59:59'";
-        $result = $this->bdd->query($sql);
-        $nombre = $this->bdd->result($result, 0, 'nombre');
-        if ($nombre == '') {
-            $nombre = 0;
-        }
-        return $nombre;
-    }
-
-    public function getNBabandons($deb_jour, $deb_mois, $deb_annee, $fin_jour, $fin_mois, $fin_annee)
-    {
-        $deb = str_pad($deb_annee, 4, '0', STR_PAD_LEFT) . '-' . str_pad($deb_mois, 2, '0', STR_PAD_LEFT) . '-' . str_pad($deb_jour, 2, '0', STR_PAD_LEFT);
-        $fin = str_pad($fin_annee, 4, '0', STR_PAD_LEFT) . '-' . str_pad($fin_mois, 2, '0', STR_PAD_LEFT) . '-' . str_pad($fin_jour, 2, '0', STR_PAD_LEFT);
-
-        $sql    = "SELECT COUNT(*) AS nombre FROM paniers WHERE added >= '" . $deb . " 00:00:00' AND added <= '" . $fin . " 23:59:59'";
-        $result = $this->bdd->query($sql);
-        $nombre = $this->bdd->result($result, 0, 'nombre');
-        if ($nombre == '') {
-            $nombre = 0;
-        }
-        return $nombre;
-    }
-
-    public function searchCommandes($ref = '', $nom = '', $email = '', $prenom = '', $debut = '', $fin = '')
-    {
-        $where = 'WHERE 1=1 AND t.status = 1 ';
-
-        if ($ref != '') {
-            $where .= 'AND t.id_transaction LIKE "%' . $ref . '%" ';
-        }
-        if ($nom != '') {
-            $where .= 'AND c.nom LIKE "%' . $nom . '%" ';
-        }
-        if ($email != '') {
-            $where .= 'AND c.email LIKE "%' . $email . '%" ';
-        }
-        if ($prenom != '') {
-            $where .= 'AND c.prenom LIKE "%' . $prenom . '%" ';
-        }
-        if ($debut != '--') {
-            $where .= 'AND t.date_transaction >= "' . $debut . ' 00:00:00" ';
-        }
-        if ($fin != '--') {
-            $where .= 'AND t.date_transaction <= "' . $fin . ' 23:59:59" ';
-        }
-
-        $sql      = 'SELECT t.* FROM transactions t LEFT JOIN clients c ON c.id_client = t.id_client ' . $where . ' ORDER BY t.date_transaction DESC';
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-
-        return $result;
     }
 
     public function sum($where = '', $champ)
@@ -260,7 +193,12 @@ class transactions extends transactions_crud
 
     public function getSolde($id_client)
     {
-        $sql = 'SELECT SUM(montant) as solde FROM transactions WHERE etat = 1 AND status = 1 AND id_client = ' . $id_client;
+        $sql = '
+            SELECT SUM(montant) AS solde
+            FROM transactions
+            WHERE etat = 1
+                AND status = 1
+                AND id_client = ' . $id_client;
 
         $result = $this->bdd->query($sql);
         $solde  = $this->bdd->result($result, 0, 'solde');
@@ -275,7 +213,14 @@ class transactions extends transactions_crud
     // solde jusqu'a une certaine date (solde a une date precise)
     public function getSoldeDateLimite($id_client, $dateLimite)
     {
-        $sql = 'SELECT SUM(montant) as solde FROM transactions WHERE etat = 1 AND status = 1 AND id_client = ' . $id_client . ' AND type_transaction NOT IN (9,6,15) AND LEFT(added,10) <= "' . $dateLimite . '"';
+        $sql = '
+            SELECT SUM(montant) AS solde
+            FROM transactions
+            WHERE etat = 1
+                AND status = 1
+                AND id_client = ' . $id_client . '
+                AND type_transaction NOT IN (9, 6, 15)
+                AND DATE(added) <= "' . $dateLimite . '"';
 
         $result = $this->bdd->query($sql);
         $solde  = $this->bdd->result($result, 0, 'solde');
@@ -290,7 +235,14 @@ class transactions extends transactions_crud
     // solde jusqu'a une certaine date (solde a une date precise)
     public function getSoldeDateLimite_fulldate($id_client, $dateLimite)
     {
-        $sql = 'SELECT SUM(montant) as solde FROM transactions WHERE etat = 1 AND status = 1 AND id_client = ' . $id_client . ' AND type_transaction NOT IN (9,6,15) AND added <= "' . $dateLimite . '"';
+        $sql = '
+            SELECT SUM(montant) AS solde
+            FROM transactions
+            WHERE etat = 1
+                AND status = 1
+                AND id_client = ' . $id_client . '
+                AND type_transaction NOT IN (9, 6, 15)
+                AND added <= "' . $dateLimite . '"';
 
         $result = $this->bdd->query($sql);
         $solde  = $this->bdd->result($result, 0, 'solde');
@@ -302,11 +254,16 @@ class transactions extends transactions_crud
         return $solde;
     }
 
-
     // total soldes d'un mois
     public function getDispo($month, $year)
     {
-        $sql = 'SELECT SUM(montant) as solde FROM transactions WHERE etat = 1 AND status = 1 AND MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year;
+        $sql = '
+            SELECT SUM(montant) AS solde
+            FROM transactions
+            WHERE etat = 1
+                AND status = 1
+                AND MONTH(added) = ' . $month . '
+                AND YEAR(added) = ' . $year;
 
         $result = $this->bdd->query($sql);
         $solde  = $this->bdd->result($result, 0, 'solde');
@@ -325,7 +282,15 @@ class transactions extends transactions_crud
         // 4 : alimentation virement
         // 7 : alimentation prelevement
 
-        $sql = 'SELECT AVG(montant) as montant FROM transactions WHERE MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year . ' AND etat = 1 AND status = 1 AND transaction = 1 AND type_transaction IN(1,3,4,7)';
+        $sql = '
+            SELECT AVG(montant) AS montant
+            FROM transactions
+            WHERE MONTH(added) = ' . $month . '
+                AND YEAR(added) = ' . $year . '
+                AND etat = 1
+                AND status = 1
+                AND transaction = 1
+                AND type_transaction IN(1, 3, 4, 7)';
 
         $result  = $this->bdd->query($sql);
         $montant = $this->bdd->result($result, 0, 'montant');
@@ -339,9 +304,14 @@ class transactions extends transactions_crud
 
     public function sumByMonth($type_transaction, $month, $year)
     {
-        // 8 : retrait
-
-        $sql = 'SELECT SUM(montant) as montant FROM transactions WHERE MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year . ' AND etat = 1 AND status = 1 AND type_transaction IN(' . $type_transaction . ')';
+        $sql = '
+            SELECT SUM(montant) AS montant
+            FROM transactions
+            WHERE MONTH(added) = ' . $month . '
+                AND YEAR(added) = ' . $year . '
+                AND etat = 1
+                AND status = 1
+                AND type_transaction IN(' . $type_transaction . ')';
 
         $result  = $this->bdd->query($sql);
         $montant = $this->bdd->result($result, 0, 'montant');
@@ -355,10 +325,15 @@ class transactions extends transactions_crud
 
     public function sumByMonthByPreteur($id_client, $type_transaction, $month, $year)
     {
-
-        // 8 : retrait
-
-        $sql = 'SELECT SUM(montant) as montant FROM transactions WHERE MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year . ' AND etat = 1 AND status = 1 AND type_transaction IN(' . $type_transaction . ') AND id_client = ' . $id_client;
+        $sql = '
+            SELECT SUM(montant) AS montant
+            FROM transactions
+            WHERE MONTH(added) = ' . $month . '
+                AND YEAR(added) = ' . $year . '
+                AND etat = 1
+                AND status = 1
+                AND type_transaction IN(' . $type_transaction . ')
+                AND id_client = ' . $id_client;
 
         $result  = $this->bdd->query($sql);
         $montant = $this->bdd->result($result, 0, 'montant');
@@ -372,10 +347,14 @@ class transactions extends transactions_crud
 
     public function sumByMonthByEmprunteur($id_client, $type_transaction, $month, $year)
     {
-
-        // 8 : retrait
-
-        $sql = 'SELECT SUM(montant) as montant FROM transactions WHERE LEFT(added,7) = "' . $year . '-' . $month . '" AND etat = 1 AND status = 1 AND type_transaction IN(' . $type_transaction . ') AND id_client = ' . $id_client;
+        $sql = '
+            SELECT SUM(montant) AS montant
+            FROM transactions
+            WHERE LEFT(added, 7) = "' . $year . '-' . $month . '"
+                AND etat = 1
+                AND status = 1
+                AND type_transaction IN(' . $type_transaction . ')
+                AND id_client = ' . $id_client;
 
         $result  = $this->bdd->query($sql);
         $montant = $this->bdd->result($result, 0, 'montant');
@@ -389,8 +368,16 @@ class transactions extends transactions_crud
 
     public function sumByMonthByEmprunteurMultichamp($id_client, $type_transaction, $month, $year)
     {
-
-        $sql = 'SELECT montant, montant_unilend as montant_unilend FROM transactions WHERE LEFT(added,7) = "' . $year . '-' . $month . '" AND etat = 1 AND status = 1 AND type_transaction IN(' . $type_transaction . ') AND id_client = ' . $id_client . ' GROUP BY LEFT(added,7)';
+        $sql = '
+            SELECT montant,
+                montant_unilend
+            FROM transactions
+            WHERE LEFT(added, 7) = "' . $year . '-' . $month . '"
+                AND etat = 1
+                AND status = 1
+                AND type_transaction IN(' . $type_transaction . ')
+                AND id_client = ' . $id_client . '
+            GROUP BY LEFT(added, 7)';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -411,27 +398,24 @@ class transactions extends transactions_crud
             $listDates[$i] = $year . '-' . $month . '-' . (strlen($i) < 2 ? '0' : '') . $i;
         }
 
-
         $result = array();
 
-
-        if ($type_transaction == 3) // si cb on recup les inscription par cb
-        {
+        if ($type_transaction == 3) { // si cb on recup les inscription par cb
             $sql = '
                 SELECT
-                    SUM(ROUND(t.montant/100,2)) AS montant,
-                    SUM(ROUND(montant_unilend/100,2)) AS montant_unilend,
-                    SUM(ROUND(montant_etat/100,2)) AS montant_etat,
-                    LEFT(t.date_transaction,10) as jour
+                    SUM(ROUND(t.montant / 100, 2)) AS montant,
+                    SUM(ROUND(montant_unilend / 100, 2)) AS montant_unilend,
+                    SUM(ROUND(montant_etat / 100, 2)) AS montant_etat,
+                    DATE(t.date_transaction) AS jour
                 FROM transactions t,lenders_accounts l
                 WHERE t.id_client = l.id_client_owner
-                AND MONTH(t.added) = ' . $month . '
-                AND YEAR(t.added) = ' . $year . '
-                AND t.etat = 1
-                AND t.status = 1
-                AND t.type_transaction = 1
-                AND l.type_transfert = 2
-                GROUP BY LEFT(t.date_transaction,10)';
+                    AND MONTH(t.added) = ' . $month . '
+                    AND YEAR(t.added) = ' . $year . '
+                    AND t.etat = 1
+                    AND t.status = 1
+                    AND t.type_transaction = 1
+                    AND l.type_transfert = 2
+                GROUP BY DATE(t.date_transaction)';
 
             $resultat = $this->bdd->query($sql);
 
@@ -442,24 +426,30 @@ class transactions extends transactions_crud
             }
         }
 
-
         $sql = '
             SELECT
-                SUM(ROUND(montant/100,2)) AS montant,
-                SUM(ROUND(montant_unilend/100,2)) AS montant_unilend,
-                SUM(ROUND(montant_etat/100,2)) AS montant_etat,
-                LEFT(date_transaction,10) as jour
+                SUM(ROUND(montant / 100, 2)) AS montant,
+                SUM(ROUND(montant_unilend / 100, 2)) AS montant_unilend,
+                SUM(ROUND(montant_etat / 100, 2)) AS montant_etat,
+                DATE(date_transaction) AS jour
             FROM transactions
             WHERE MONTH(added) = ' . $month . '
-            AND YEAR(added) = ' . $year . '
-            AND etat = 1
-            AND status = 1
-            AND type_transaction IN(' . $type_transaction . ')
-            GROUP BY LEFT(date_transaction,10)';
+                AND YEAR(added) = ' . $year . '
+                AND etat = 1
+                AND status = 1
+                AND type_transaction IN(' . $type_transaction . ')
+            GROUP BY DATE(date_transaction)';
 
         $resultat = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($resultat)) {
+            if (false === isset($result[$record['jour']])) {
+                $result[$record['jour']] = array(
+                    'montant'         => 0,
+                    'montant_unilend' => 0,
+                    'montant_etat'    => 0
+                );
+            }
             $result[$record['jour']]['montant'] += $record['montant'];
             $result[$record['jour']]['montant_unilend'] += $record['montant_unilend'];
             $result[$record['jour']]['montant_etat'] = $record['montant_etat'];
@@ -467,9 +457,9 @@ class transactions extends transactions_crud
 
         // on affiche chaque jours du mois
         foreach ($listDates as $d) {
-            $lresult[$d]['montant']         = ($result[$d]['montant'] != false ? $result[$d]['montant'] : '0');
-            $lresult[$d]['montant_unilend'] = ($result[$d]['montant_unilend'] != false ? $result[$d]['montant_unilend'] : '0');
-            $lresult[$d]['montant_etat']    = ($result[$d]['montant_etat'] != false ? $result[$d]['montant_etat'] : '0');
+            $lresult[$d]['montant']         = empty($result[$d]['montant']) ? '0' : $result[$d]['montant'];
+            $lresult[$d]['montant_unilend'] = empty($result[$d]['montant_unilend']) ? '0' : $result[$d]['montant_unilend'];
+            $lresult[$d]['montant_etat']    = empty($result[$d]['montant_etat']) ? '0' : $result[$d]['montant_etat'];
 
         }
 
@@ -488,7 +478,17 @@ class transactions extends transactions_crud
             $listDates[$i] = date('Y-m') . '-' . (strlen($i) < 2 ? '0' : '') . $i;
         }
 
-        $sql      = 'SELECT SUM(montant) as solde, LEFT(date_transaction,10) as jour FROM transactions WHERE etat = 1 AND status = 1 AND transaction = 1 AND MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year . ' GROUP BY LEFT(date_transaction,10)';
+        $sql = '
+            SELECT SUM(montant) AS solde,
+                DATE(date_transaction) AS jour
+            FROM transactions
+            WHERE etat = 1
+                AND status = 1
+                AND transaction = 1
+                AND MONTH(added) = ' . $month . '
+                AND YEAR(added) = ' . $year . '
+            GROUP BY DATE(date_transaction)';
+
         $resultat = $this->bdd->query($sql);
         $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
@@ -516,9 +516,8 @@ class transactions extends transactions_crud
                 AND type_transaction <> 11
                 AND type_transaction <> 12
                 AND type_transaction <> 14
-                AND LEFT(date_transaction, 10) = "' . $date . '"
-            GROUP BY LEFT(date_transaction, 10)';
-
+                AND DATE(date_transaction) = "' . $date . '"
+            GROUP BY DATE(date_transaction)';
 
         $result = $this->bdd->query($sql);
         $solde  = $this->bdd->result($result, 0, 'solde');
@@ -534,14 +533,14 @@ class transactions extends transactions_crud
     public function getSoldeReelUnilendDay($date)
     {
         $sql = '
-            SELECT SUM(montant-montant_unilend) AS solde
+            SELECT SUM(montant - montant_unilend) AS solde
             FROM transactions
             WHERE etat = 1
                 AND status = 1
                 AND transaction = 1
                 AND type_transaction = 9
-                AND LEFT(date_transaction, 10) = "' . $date . '"
-            GROUP BY LEFT(date_transaction, 10)';
+                AND DATE(date_transaction) = "' . $date . '"
+            GROUP BY DATE(date_transaction)';
 
         $result = $this->bdd->query($sql);
         $solde  = $this->bdd->result($result, 0, 'solde');
@@ -562,8 +561,8 @@ class transactions extends transactions_crud
                 AND status = 1
                 AND transaction = 2
                 AND type_transaction = 10
-                AND LEFT(date_transaction, 10) = "' . $date . '"
-            GROUP BY LEFT(date_transaction, 10)';
+                AND DATE(date_transaction) = "' . $date . '"
+            GROUP BY DATE(date_transaction)';
 
         $result = $this->bdd->query($sql);
         $solde  = $this->bdd->result($result, 0, 'solde');
@@ -578,7 +577,13 @@ class transactions extends transactions_crud
     // total soldes d'un mois
     public function getSoldePreteur($id_client, $month, $year)
     {
-        $sql = 'SELECT SUM(montant) as solde FROM transactions WHERE etat = 1 AND status = 1 AND LEFT(added,7) <= "' . $year . '-' . $month . '" AND id_client = ' . $id_client;
+        $sql = '
+            SELECT SUM(montant) AS solde
+            FROM transactions
+            WHERE etat = 1
+                AND status = 1
+                AND LEFT(added, 7) <= "' . $year . '-' . $month . '"
+                AND id_client = ' . $id_client;
 
         $result = $this->bdd->query($sql);
         $solde  = $this->bdd->result($result, 0, 'solde');
@@ -593,7 +598,14 @@ class transactions extends transactions_crud
     // total soldes d'un mois
     public function getSoldeEmprunteur($id_client, $month, $year)
     {
-        $sql = 'SELECT SUM(montant) as solde FROM transactions WHERE etat = 1 AND status = 1 AND LEFT(added,7) <= "' . $year . '-' . $month . '" AND id_client = ' . $id_client . ' AND type_transaction IN(6,9) ';
+        $sql = '
+            SELECT SUM(montant) AS solde
+            FROM transactions
+            WHERE etat = 1
+                AND status = 1
+                AND LEFT(added, 7) <= "' . $year . '-' . $month . '"
+                AND id_client = ' . $id_client . '
+                AND type_transaction IN(6, 9)';
 
         $result = $this->bdd->query($sql);
         $solde  = $this->bdd->result($result, 0, 'solde');
@@ -614,7 +626,7 @@ class transactions extends transactions_crud
             $order = ' ORDER BY ' . $order;
         }
         $sql = '
-        (SELECT t.*,
+        ( SELECT t.*,
 
             CASE ';
 
@@ -623,25 +635,23 @@ class transactions extends transactions_crud
                 foreach ($t as $key_offre => $offre) {
                     // offre en cours
                     if ($key_offre == 1) {
-                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant <= 0 AND (SELECT lo.id_loan FROM loans lo WHERE lo.id_bid = b.id_bid AND lo.status = 0) IS NULL THEN "' . $offre . '"';
+                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant <= 0 THEN "' . $offre . '"';
                     } // offre rejeté
                     elseif ($key_offre == 2) {
                         $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant > 0 THEN "' . $offre . '"';
                     } // offre acceptée
                     else {
-                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant <= 0 AND (SELECT lo.id_loan FROM loans lo WHERE lo.id_bid = b.id_bid AND lo.status = 0) IS NOT NULL THEN "' . $t[1] . '"';
+                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant <= 0 THEN "' . $t[1] . '"';
                     }
                 }
             } elseif ($key == 5) {
                 foreach ($t as $key_remb => $remb) {
                     // remb
                     if ($key_remb == 1) {
-                        $sql .= '
-                                            WHEN t.type_transaction = ' . $key . ' AND t.recouvrement = 0 THEN "' . $remb . '"';
+                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.recouvrement = 0 THEN "' . $remb . '"';
                     } // recouvrement
                     else {
-                        $sql .= '
-                                            WHEN t.type_transaction = ' . $key . ' AND t.recouvrement = 1 THEN "' . $remb . '"';
+                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.recouvrement = 1 THEN "' . $remb . '"';
                     }
                 }
             } else {
@@ -659,7 +669,6 @@ class transactions extends transactions_crud
                 ELSE b.id_project
             END as le_id_project,
 
-
             date_transaction as date_tri,
 
             (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.id_transaction <= t.id_transaction ) as solde,
@@ -672,13 +681,13 @@ class transactions extends transactions_crud
             END as title,
 
             CASE t.type_transaction
-                WHEN 2 THEN (SELECT loa.id_loan FROM loans loa WHERE loa.id_bid = b.id_bid AND loa.status = 0)
+                WHEN 2 THEN 0
                 WHEN 5 THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_echeancier = t.id_echeancier)
-                                WHEN 23 THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_project = t.id_project AND w.id_lender = e.id_lender LIMIT 1)
+                WHEN 23 THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_project = t.id_project AND w.id_lender = e.id_lender LIMIT 1)
                 ELSE ""
-            END as bdc
+            END as bdc,
 
-
+            t.montant as amount_operation
 
             FROM transactions t
             LEFT JOIN wallets_lines w ON t.id_transaction = w.id_transaction
@@ -709,25 +718,24 @@ class transactions extends transactions_crud
                     ELSE ""
                 END as title,
 
-                lo.id_loan as bdc
+                lo.id_loan as bdc,
+
+                ab.amount as amount_operation
 
             FROM loans lo
-            LEFT JOIN bids b ON lo.id_bid = b.id_bid
+            INNER JOIN accepted_bids ab ON ab.id_loan = lo.id_loan
+            LEFT JOIN bids b ON ab.id_bid = b.id_bid
             LEFT JOIN wallets_lines w ON w.id_wallet_line = b.id_lender_wallet_line
             LEFT JOIN transactions t ON t.id_transaction = w.id_transaction
             LEFT JOIN bids b2 ON t.id_bid_remb = b2.id_bid
             WHERE 1=1
             AND lo.status = 0
             ' . $where . '
-
-
             ' . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : '')) . '
         )
         ' . $order . '
         ';
-
         $this->bdd->query("SET SQL_BIG_SELECTS=1");  //Set it before your main query
-
         $resultat = $this->bdd->query($sql);
         $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
@@ -735,6 +743,7 @@ class transactions extends transactions_crud
         }
         return $result;
     }
+
 
     public function getSoldeByTransaction($id_client, $id_transaction)
     {

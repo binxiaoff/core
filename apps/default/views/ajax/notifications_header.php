@@ -13,20 +13,19 @@
                     <div class="content_notif">
                         <?php $montant = $this->bids->amount - $r['amount']; ?>
                         <?= $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a'] ?>
-                        <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?> %</b><?= $this->lng['notifications']['offre-refusee-pour-un-montant-de'] ?>
-                        <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->amount / 100) ?> €</b> <?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?>
-                        <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a> <?= $this->lng['notifications']['offre-refusee-a-ete-decoupe'] ?>
-                        <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b><?= $this->lng['notifications']['offre-refusee-point'] ?>
-                    </div><?php
-                } else {
-                    ?>
+                        <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?> %</b><?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?>
+                        <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a>
+                        <?= $this->lng['notifications']['offre-refusee-a-ete-decoupe'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b><?= $this->lng['notifications']['offre-refusee-point'] ?>
+                    </div>
+                <?php } else { ?>
                     <b><?= $this->lng['notifications']['offre-refusee'] ?></b><br/>
                     <div class="content_notif">
                         <?= $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a'] ?>
                         <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?> %</b> <?= $this->lng['notifications']['offre-refusee-pour-un-montant-de'] ?>
                         <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b> <?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?>
                         <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a> <?= $this->lng['notifications']['offre-refusee-nest-plus-recevable'] ?>
-                    </div><?php
+                    </div>
+                <?php
                 }
                 break;
             case \notifications::TYPE_REPAYMENT:
@@ -53,14 +52,17 @@
                 </div><?php
                 break;
             case \notifications::TYPE_LOAN_ACCEPTED:
-                $this->loans->get($r['id_bid'], 'id_bid');
+                $oAcceptedBids = $this->loadData('accepted_bids');
+                $fAmount = $oAcceptedBids->getAcceptedAmount($r['id_bid']);
+                $this->bids->get($r['id_bid'], 'id_bid');
                 $this->projects_notifs->get($r['id_project'], 'id_project');
+
                 ?>
                 <b><?= $this->lng['notifications']['offre-acceptee'] ?></b><br/>
                 <div class="content_notif">
                     <?= $this->lng['notifications']['offre-acceptee-votre-offre-de-pret-de'] ?>
-                    <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->loans->rate, 1) ?> %</b> <?= $this->lng['notifications']['offre-acceptee-pour-un-montant-de'] ?>
-                    <b style="color:#b20066;white-space:nowrap;"><?= $this->ficelle->formatNumber($this->loans->amount / 100) ?> €</b> <?= $this->lng['notifications']['offre-acceptee-sur-le-projet'] ?>
+                    <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?> %</b> <?= $this->lng['notifications']['offre-acceptee-pour-un-montant-de'] ?>
+                    <b style="color:#b20066;white-space:nowrap;"><?= $this->ficelle->formatNumber($fAmount) ?> €</b> <?= $this->lng['notifications']['offre-acceptee-sur-le-projet'] ?>
                     <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['offre-acceptee-a-ete-acceptee'] ?>
                 </div><?php
                 break;

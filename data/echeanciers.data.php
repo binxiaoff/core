@@ -93,7 +93,7 @@ class echeanciers extends echeanciers_crud
     {
         $sql = 'SELECT SUM(montant) as montant,SUM(capital) as capital, SUM(interets) as interets, LEFT(date_echeance,4) as annee FROM `echeanciers` WHERE id_loan = ' . $id_loan . ' GROUP BY LEFT(date_echeance,4)';
 
-        $result = $this->bdd->query($sql);
+        $resultat = $this->bdd->query($sql);
         $result = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
@@ -116,25 +116,21 @@ class echeanciers extends echeanciers_crud
     public function getSumARemb($id_lender, $champ = 'montant', $sType = null)
     {
         if (false === is_null($sType) && 'dashboard' == $sType) {
-            $sql = "SELECT
-                    SUM(e.$champ)
-                FROM
-                    echeanciers e
-                INNER JOIN
-                    loans l on l.id_lender = e.id_lender and l.id_loan = e.id_loan
-                INNER JOIN
-                    bids b on b.id_bid = l.id_bid
-                WHERE
-                    e.status = 0
-                AND e.id_lender = $id_lender
-                AND b.status = 1";
+            $sql = "
+                SELECT SUM(e.$champ)
+                FROM echeanciers e
+                INNER JOIN loans l ON l.id_lender = e.id_lender AND l.id_loan = e.id_loan
+                INNER JOIN accepted_bids ab ON ab.id_loan = l.id_loan
+                INNER JOIN bids b ON b.id_bid = ab.id_bid
+                WHERE e.status = 0
+                    AND e.id_lender = $id_lender
+                    AND b.status = 1";
         } else {
             $sql = "SELECT SUM($champ) FROM `echeanciers` WHERE status = 0 AND id_lender = $id_lender";
         }
 
         $result = $this->bdd->query($sql);
-        $sum    = (int) ($this->bdd->result($result, 0, 0));
-        return ($sum / 100);
+        return (int) ($this->bdd->result($result, 0, 0) / 100);
     }
 
     // retourne la somme des revenues fiscale des echeances deja remboursés d'un preteur
@@ -188,10 +184,8 @@ class echeanciers extends echeanciers_crud
         $sql = 'SELECT SUM(' . $champ . ') FROM `echeanciers` WHERE status = 1 AND id_loan = ' . $id_loan;
 
         $result = $this->bdd->query($sql);
-        $sum    = (int) ($this->bdd->result($result, 0, 0));
-        return ($sum / 100);
+        return (int) ($this->bdd->result($result, 0, 0) / 100);
     }
-
 
     // retourne la somme des echeances deja remboursé
     public function getTotalSumRembByMonth($month, $year)
@@ -199,10 +193,8 @@ class echeanciers extends echeanciers_crud
         $sql = 'SELECT SUM(capital) FROM `echeanciers` WHERE MONTH(date_echeance_emprunteur) = ' . $month . ' AND YEAR(date_echeance_emprunteur) = ' . $year . ' AND status_emprunteur = 0';
 
         $result = $this->bdd->query($sql);
-        $sum    = (int) ($this->bdd->result($result, 0, 0));
-        return ($sum / 100);
+        return (int) ($this->bdd->result($result, 0, 0) / 100);
     }
-
 
     // retourne la somme des echeances deja remboursé d'un preteur par projet
     public function getSumArembByProject($id_lender, $id_project, $champ = 'montant')
@@ -1101,6 +1093,18 @@ class echeanciers extends echeanciers_crud
 
         $result = $this->bdd->query($sql);
         $sum    = (int) ($this->bdd->result($result, 0, 0));
+        return ($sum / 100);
+    }
+
+    public function getSumByLoan($iLoanId, $sField, $aConditions = array())
+    {
+        $sql = 'SELECT SUM(' . $sField . ') FROM `echeanciers` WHERE id_loan = ' . $iLoanId;
+
+        foreach($aConditions as $sName => $mValue) {
+            $sql .= ' AND ' . $sName . '=' . '\'' . $mValue . '\'';
+        }
+        $result = $this->bdd->query($sql);
+        $sum    = (int)($this->bdd->result($result, 0, 0));
         return ($sum / 100);
     }
 }

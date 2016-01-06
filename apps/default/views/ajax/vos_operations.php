@@ -11,7 +11,6 @@ $html_filtre = '
             <option value="4">' . $this->lng['preteur-operations']['tri-retraits'] . '</option>
             <option value="5">' . $this->lng['preteur-operations']['tri-prets'] . '</option>
             <option value="6">' . $this->lng['preteur-operations']['tri-remboursement'] . '</option>
-
         </select>
     </div>
     &nbsp;&nbsp;&nbsp;
@@ -68,8 +67,8 @@ $html = '<table class="table vos_operations transactions-history finances" borde
         </th>
         <th width="200px"  id="order_bdc" class="narrow-th ' . ((isset($this->type) && $this->type == 'order_bdc') && (isset($this->order) && $this->order == "asc") ? "asc" : "") . '" style=" font-weight:bold; padding-left: 0px;">
             <div class="th-wrap" style="top:-3px;width: 200px;   text-transform: none;">
-                <i title="' . $this->lng['preteur-operations-pdf']['info-titre-bon-caisse'] . '" class="tooltip-anchor icon-bdc"></i>
-                <div class="title-ope">' . $this->lng['preteur-operations-pdf']['bdc'] . '&nbsp;<i class="icon-arrows" style="width:15px;"></i>
+                <i title="' . $this->lng['preteur-operations-pdf']['info-titre-loan-id'] . '" class="tooltip-anchor icon-bdc"></i>
+                <div class="title-ope">' . $this->lng['preteur-operations-pdf']['loan-id'] . '&nbsp;<i class="icon-arrows" style="width:15px;"></i>
                 </div>
             </div>
         </th>
@@ -262,7 +261,6 @@ foreach ($this->lTrans as $t) {
                 <td></td>
                 <td></td>
                 <td>' . $this->dates->formatDate($t['date_operation'], 'd-m-Y') . '</td>
-
                 <td ' . $couleur . '>' . $this->ficelle->formatNumber($t['montant_operation'] / 100) . ' €</td>
                 <td>' . $this->ficelle->formatNumber($t['solde']) . ' €</td>
             </tr>
