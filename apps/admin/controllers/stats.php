@@ -1236,7 +1236,7 @@ class statsController extends bootstrap
             ORDER BY l.added DESC';
 
         if (isset($this->params[0]) && $this->params[0] == 'csv') {
-            $this->exportQueryCSV($this->sql, 'infos_preteurs_' . date('Ymd'), array('id_client', 'civilite', 'nom', 'nom_usage', 'prenom', 'fonction', 'naissance', 'telephone', 'email', 'source', 'adresse', 'cp', 'ville', 'adresse_fiscal', 'ville_fiscal', 'cp_fiscal', 'exonere', 'debut_exoneration', 'fin_exoneration', 'origine_des_fonds', 'Entreprise', 'id_company', 'forme_juridique', 'siren', 'execices_comptables', 'rcs', 'tribunal_com', 'activite', 'lieu_exploi', 'capital', 'date_creation', 'adresse_company', 'cp_company', 'ville_company', 'telephone_company', 'status_client', 'status_conseil_externe_entreprise', 'civilite_dirigeant', 'nom_dirigeant', 'prenom_dirigeant', 'fonction_dirigeant', 'email_dirigeant', 'phone_dirigeant', 'sector', 'risk', 'code_banque'));
+            $this->exportQueryCSV($this->sql, 'infos_preteurs_' . date('Ymd'), array('id_client', 'civilite', 'nom', 'nom_usage', 'prenom', 'fonction', 'naissance', 'telephone', 'email', 'source', 'adresse', 'cp', 'ville', 'adresse_fiscal', 'ville_fiscal', 'cp_fiscal', 'exonere', 'debut_exoneration', 'fin_exoneration', 'origine_des_fonds', 'Entreprise', 'id_company', 'forme_juridique', 'siren', 'execices_comptables', 'tribunal_com', 'activite', 'lieu_exploi', 'capital', 'date_creation', 'adresse_company', 'cp_company', 'ville_company', 'telephone_company', 'status_client', 'status_conseil_externe_entreprise', 'civilite_dirigeant', 'nom_dirigeant', 'prenom_dirigeant', 'fonction_dirigeant', 'email_dirigeant', 'phone_dirigeant', 'sector', 'risk', 'code_banque'));
         }
     }
 
@@ -1372,7 +1372,6 @@ class statsController extends bootstrap
         if (count($aResult) > 0 && is_null($aHeaders)) {
             $aHeaders = array_keys($aResult[0]);
         }
-
         $this->exportCSV($aResult, $sFileName, $aHeaders);
     }
 
