@@ -4459,7 +4459,6 @@ class cronController extends bootstrap
     public function _checkMailNoDestinataire()
     {
         if (true === $this->startCron('checkMailNoDestinataire', 5)) {
-
             $nmp  = $this->loadData('nmp');
             $date = mktime(0, 0, 0, date("m"), date("d") - 1, date("Y"));
             $date = date('Y-m-d', $date);
@@ -4468,7 +4467,6 @@ class cronController extends bootstrap
 
             if ($lNoMail != false) {
                 foreach ($lNoMail as $m) {
-                    $to      = 'unilend@equinoa.fr';
                     $subject = '[Alerte] Mail Sans destinataire';
 
                     $message = '
@@ -4487,17 +4485,9 @@ class cronController extends bootstrap
 				</html>
 				';
 
-                    $headers = 'MIME-Version: 1.0' . "\r\n";
-                    $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-                    $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
-                    if ($this->Config['env'] != "dev") {
-                        mail($to, $subject, $message, $headers);
-                    } else {
-                        mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
-                    }
+                mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
                 }
             }
-
             $this->stopCron();
         }
     }
@@ -4707,7 +4697,6 @@ class cronController extends bootstrap
         $this->bdd->query("UPDATE companies SET email_facture = 'DCourtier.Auto@equinoa.fr'");
 
         // Email pour prevenir de la mise a jour //
-        $to      = 'unilend@equinoa.fr';
         $subject = '[UNILEND DEMO] La BDD a ete mise à jour';
         $message = '
 		<html>
@@ -4720,16 +4709,7 @@ class cronController extends bootstrap
 		</html>
 		';
 
-        $headers = 'MIME-Version: 1.0' . "\r\n";
-        $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-        $headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
-        $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
-
-        if ($this->Config['env'] != "dev") {
-            mail($to, $subject, $message, $headers);
-        } else {
-            mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
-        }
+        mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
     }
 
     // Toutes les minutes on check les bids pour les passer en ENCOURS/OK/NOK (check toutes les 5 min et toutes les minutes de 15h30 à 16h00)
@@ -5165,13 +5145,10 @@ class cronController extends bootstrap
             $transactions   = $this->loadData('transactions');
             $projects_check = $this->loadData('projects_check');
 
-            // 60 : fundé | on recup que ceux qui se sont terminé le jour meme
-            $lProjets = $projects->selectProjectsByStatus('60', ' AND LEFT(p.date_fin,10) = "' . date('Y-m-d') . '"');
+            $lProjets = $projects->selectProjectsByStatus(\projects_status::FUNDE, ' AND LEFT(p.date_fin,10) = "' . date('Y-m-d') . '"');
 
             foreach ($lProjets as $p) {
-                if ($projects_check->get($p['id_project'], 'id_project')) {
-
-                } else {
+                if ($projects_check->get($p['id_project'], 'id_project') === false ) {
                     $montantBidsTotal = $bids->getSoldeBid($p['id_project']);
                     $montantBidsOK    = $bids->sum('id_project = ' . $p['id_project'] . ' AND status = 1', 'amount');
                     $montantBidsOK    = ($montantBidsOK / 100);
@@ -5223,7 +5200,6 @@ class cronController extends bootstrap
                     }
 
                     if ($verif_no_good == true) {
-                        $to      = 'unilend@equinoa.fr';
                         $subject = '[ALERTE] Une incoherence est présente dans le projet ' . $p['id_project'];
                         $message = '
 					<html>
@@ -5236,16 +5212,7 @@ class cronController extends bootstrap
 					</body>
 					</html>
 					';
-                        $headers = 'MIME-Version: 1.0' . "\r\n";
-                        $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-                        $headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
-                        $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
-                        if ($this->Config['env'] != "dev") {
-                            mail($to, $subject, $message, $headers);
-                        } else {
-                            mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
-                        }
-
+                        mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
                         $projects_check->status = 2;
                     } else {// pas d'erreur
                         $projects_check->status = 1;
@@ -5455,7 +5422,6 @@ class cronController extends bootstrap
     public function _genere_factures()
     {
         if (true === $this->startCron('genereFacture', 5)) {
-
             $projects    = $this->loadData('projects');
             $factures    = $this->loadData('factures');
             $companies   = $this->loadData('companies');
@@ -5478,7 +5444,6 @@ class cronController extends bootstrap
                     $oPdf->_facture_EF($emprunteurs->hash, $r['id_project'], false);
                 }
             }
-
             $this->stopCron();
         }
         die;
@@ -5488,7 +5453,6 @@ class cronController extends bootstrap
     public function _check_alim_cb()
     {
         if (true === $this->startCron('checkAlimCb', 5)) {
-
             $this->autoFireHeader = false;
             $this->autoFireHead   = false;
             $this->autoFireView   = false;
@@ -5583,14 +5547,7 @@ class cronController extends bootstrap
 						</html>
 						';
 
-                            $headers = 'MIME-Version: 1.0' . "\r\n";
-                            $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-                            $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
-                            if ($this->Config['env'] != "dev") {
-                                mail($to, $subject, $message, $headers);
-                            } else {
-                                mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
-                            }
+                        mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
                         }
                     }
                 }
