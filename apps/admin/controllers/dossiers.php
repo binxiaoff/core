@@ -2987,7 +2987,6 @@ class dossiersController extends bootstrap
                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                 if ($this->Config['env'] == 'prod') {
                                     $this->email->addBCCRecipient('nicolas.lesur@unilend.fr');
-                                    $this->email->addBCCRecipient('d.nandji@equinoa.com');
                                 }
 
                                 $this->email->setSubject(stripslashes($sujetMail));
