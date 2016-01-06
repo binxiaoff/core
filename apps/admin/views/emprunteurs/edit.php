@@ -215,7 +215,7 @@ if (isset($_SESSION['freeow'])) {
                                 ?><a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>">POUVOIR</a><?
                             }
                             echo '&nbsp;&nbsp;';
-                            if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $p['id_project'] . ' AND id_client')) {
+                            if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $p['id_project'] . ' AND status = ' . clients_mandats::STATUS_SIGNED . ' AND id_client')) {
                                 ?><a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>">MANDAT</a><?
                             }
                             ?>
