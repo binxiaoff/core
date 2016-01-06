@@ -19,7 +19,6 @@
 		<!-- Shell -->
 		<div class="shell">
 			<div class="logo">
-<!--				<img src="--><?//=$this->surl?><!--/styles/default/pdf/images/logo.png" alt="" />-->
 			</div>
 
 			<h2>MANDAT SEPA</h2>
@@ -341,98 +340,6 @@
 
 				</div>
 				<!-- End Case 3 -->
-
-				<!-- Case 3 -->
-				<?php /*?><div class="case-3 alone"></div><?php */?>
-				<!-- End Case 3 -->
-
-				<!-- Case 3 -->
-				<?php /*?><div class="case-3">
-
-					<h4>Informations relatives au contrat entre le créancier et le débiteur - fournies seulement à titre indicatif.</h4>
-					<table width="100%" cellpadding="0" cellspacing="0" border="0">
-						<tr>
-							<td class="col-1">
-								Code identifiant <br />du débiteur
-							</td>
-							<td class="col-2">&nbsp;
-
-							</td>
-							<td class="col-3">
-
-								<!-- Row -->
-								<div class="row">
-									<div class="text-box">&nbsp;</div>
-									<span class="small-text">Indiquer ici tout code que vous souhaitez voir restitué par votre banque</span>
-								</div>
-								<!-- End Row -->
-
-							</td>
-							<td class="col-4">
-								14
-							</td>
-						</tr>
-						<tr>
-							<td class="col-1">
-								Tiers débiteur pour <br />le compte duquel le <br />paiement est effectué<br />(si différent du débiteur <br />lui-même)
-							</td>
-							<td class="col-2">&nbsp;
-
-							</td>
-							<td class="col-3">
-
-								<div class="row">
-									<div class="text-box">&nbsp;</div>
-									<span class="small-text">Nom du tiers débiteur : si votre paiement concerne un accord passé entre <?=$this->creancier?> et un tiers <br />(par exemple, vous payez la facture d'une autre personne), veuillez indiquer ici son nom. <br />Si vous payez pour votre propre compte, ne pas remplir.</span>
-								</div>
-								<div class="row">
-									<div class="text-box">&nbsp;</div>
-									<span class="small-text">Code identifiant du tiers débiteur</span>
-									<span class="number">16</span>
-								</div>
-								<div class="row">
-									<div class="text-box">&nbsp;</div>
-									<span class="small-text">Nom du tiers créancier : le créancier doit compléter cette section s'il remet des prélèvements pour le compte d'un tiers.</span>
-									<span class="number">17</span>
-								</div>
-								<div class="row">
-									<div class="text-box"><?=$this->creancier_code_id?></div>
-									<span class="small-text">Code identifiant du tiers créancier</span>
-									<span class="number">18</span>
-								</div>
-							</td>
-							<td class="col-4">
-								15
-							</td>
-						</tr>
-						<tr>
-							<td class="col-1">
-								Contrat concerné
-							</td>
-							<td class="col-2">&nbsp;
-
-							</td>
-							<td class="col-3">
-
-								<div class="row">
-									<div class="text-box">&nbsp;</div>
-									<span class="small-text">Numéro d'identification du contrat</span>
-								</div>
-								<div class="row">
-									<div class="text-box">&nbsp;</div>
-									<span class="small-text">Description du contrat</span>
-									<span class="number">20</span>
-								</div>
-							</td>
-							<td class="col-4">
-								19
-							</td>
-						</tr>
-					</table>
-
-				</div><?php */?>
-				<!-- End Case 3 -->
-
 				<!-- Case 4 -->
 				<div class="case-4">
 					<table width="100%" cellpadding="0" cellspacing="0" border="0">

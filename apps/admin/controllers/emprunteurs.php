@@ -359,25 +359,24 @@ class emprunteursController extends bootstrap
                     $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
                     foreach ($companie->select('id_client_owner = ' . $this->clients->id_client) as $company2) {
                         foreach ($project->select('id_company = ' . $company2['id_company']) as $projects) {
-                            if ($clients_mandats->get($this->params[0], 'status <> 4 AND id_project = "' . $projects['id_project'] . '" AND id_client')) {
-                                $clients_mandats->status = 4;
+                            $aMandats = $clients_mandats->select('id_project = ' . $projects['id_project'] . ' AND id_client = ' . $this->clients->id_client . ' AND status <> ' . clients_mandats::STATUS_ARCHIVED);
+                            if (false === empty($aMandats)) {
+                                foreach ($aMandats as $aMandatToArchive) {
+                                    $clients_mandats->get($aMandatToArchive['id_mandat']);
+                                    if (clients_mandats::STATUS_SIGNED == $clients_mandats->status) {
+                                        $nouveauNom    = str_replace('mandat', 'mandat-' . $clients_mandats->id_mandat, $clients_mandats->name);
+                                        $chemin        = $this->path . 'protected/pdf/mandat/' . $clients_mandats->name;
+                                        $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
 
-                                // Rename old mandate (prefix name with mandate ID)
-                                $oldname       = $clients_mandats->name;
-                                $nouveauNom    = str_replace('mandat', 'mandat-' . $clients_mandats->id_mandat, $clients_mandats->name);
-                                $chemin        = $this->path . 'protected/pdf/mandat/' . $clients_mandats->name;
-                                $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
+                                        rename($chemin, $nouveauChemin);
 
-                                rename($chemin, $nouveauChemin);
+                                        $clients_mandats->name = $nouveauNom;
+                                    }
+                                    $clients_mandats->status = clients_mandats::STATUS_ARCHIVED;
+                                    $clients_mandats->update();
+                                }
 
-                                $clients_mandats->name = $nouveauNom;
-                                $clients_mandats->update();
-
-                                $clients_mandats->status         = 0;
-                                $clients_mandats->name           = $oldname;
-                                $clients_mandats->id_universign  = '';
-                                $clients_mandats->url_universign = '';
-                                $clients_mandats->create();
+                                //No need to create the new mandat, it will be created in pdf::_mandat()
 
                                 //**********************************************//
                                 //*** ENVOI DU MAIL FUNDE EMPRUNTEUR TERMINE ***//
@@ -399,6 +398,14 @@ class emprunteursController extends bootstrap
                                 $mensualite = $echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva;
                                 $mensualite = ($mensualite / 100);
 
+                                // FB
+                                $this->settings->get('Facebook', 'type');
+                                $lien_fb = $this->settings->value;
+
+                                // Twitter
+                                $this->settings->get('Twitter', 'type');
+                                $lien_tw = $this->settings->value;
+
                                 $surl         = $this->surl;
                                 $url          = $this->lurl;
                                 $projet       = $project->title;
@@ -414,7 +421,6 @@ class emprunteursController extends bootstrap
                                     'nom_e'                  => $companie->name,
                                     'mensualite'             => $this->ficelle->formatNumber($mensualite),
                                     'montant'                => $this->ficelle->formatNumber($project->amount, 0),
-                                    'taux_moyen'             => $this->ficelle->formatNumber($taux_moyen),
                                     'link_compte_emprunteur' => $this->lurl . '/projects/detail/' . $project->id_project,
                                     'link_mandat'            => $link_mandat,
                                     'link_pouvoir'           => $link_pouvoir,
