@@ -184,7 +184,6 @@ class depot_de_dossierController extends bootstrap
             $this->companies->adresse1                          = $oIdentity->rue;
             $this->companies->city                              = $oIdentity->ville;
             $this->companies->zip                               = $oIdentity->codePostal;
-            $this->companies->rcs                               = $oIdentity->rcs;
             $this->companies->siret                             = $oIdentity->siret;
             $this->companies->date_creation                     = substr($oIdentity->dateCreation, 0, 10);
 
