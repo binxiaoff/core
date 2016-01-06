@@ -1291,7 +1291,7 @@ class dossiersController extends bootstrap
         if (is_array($aAutomaticRepayments)) {
             foreach ($aAutomaticRepayments as $aAutomaticRepayment) {
                 $projects_remb->get($aAutomaticRepayment['id_project_remb'], 'id_project_remb');
-                $projects_remb->status = 4;
+                $projects_remb->status = \projects_remb::STATUS_AUTOMATIC_REFUND_DISABLED;
                 $projects_remb->update();
             }
         }
@@ -2514,23 +2514,20 @@ class dossiersController extends bootstrap
 
             // activer/desactiver remb auto (eclatement)
             if (isset($_POST['send_remb_auto'])) {
-                // On desactive
                 if ($_POST['remb_auto'] == 1) {
-
-                    $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_remb_preteurs,10) >= "' . date('Y-m-d') . '"');
+                    $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \projects_remb::STATUS_PENDING . ' AND LEFT(date_remb_preteurs,10) >= "' . date('Y-m-d') . '"');
 
                     foreach ($listdesRembauto as $rembauto) {
                         $this->projects_remb->get($rembauto['id_project_remb'], 'id_project_remb');
-                        $this->projects_remb->status = 4; // remb auto desactivé
+                        $this->projects_remb->status = \projects_remb::STATUS_AUTOMATIC_REFUND_DISABLED;
                         $this->projects_remb->update();
                     }
-                } // On active
-                elseif ($_POST['remb_auto'] == 0) {
-                    $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = 4 AND LEFT(date_remb_preteurs,10) >= "' . date('Y-m-d') . '" AND date_remb_preteurs_reel = "0000-00-00 00:00:00"');
+                } elseif ($_POST['remb_auto'] == 0) {
+                    $listdesRembauto = $this->projects_remb->select('id_project = ' . $this->projects->id_project . ' AND status = ' . \projects_remb::STATUS_AUTOMATIC_REFUND_DISABLED . ' AND LEFT(date_remb_preteurs,10) >= "' . date('Y-m-d') . '" AND date_remb_preteurs_reel = "0000-00-00 00:00:00"');
 
                     foreach ($listdesRembauto as $rembauto) {
                         $this->projects_remb->get($rembauto['id_project_remb'], 'id_project_remb');
-                        $this->projects_remb->status = 0; // remb auto desactivé
+                        $this->projects_remb->status = \projects_remb::STATUS_PENDING;
                         $this->projects_remb->update();
                     }
                 }

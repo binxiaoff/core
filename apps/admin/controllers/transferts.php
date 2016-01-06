@@ -198,7 +198,7 @@ class transfertsController extends bootstrap
                         $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
                         $projects_remb->date_remb_preteurs        = $date_echeance_preteur[0]['date_echeance'];
                         $projects_remb->date_remb_preteurs_reel   = '0000-00-00 00:00:00';
-                        $projects_remb->status                    = 0; // nom remb aux preteurs
+                        $projects_remb->status                    = \projects_remb::STATUS_PENDING;
                         $projects_remb->create();
                     }
                 }
@@ -903,7 +903,7 @@ class transfertsController extends bootstrap
                             $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
                             $projects_remb->date_remb_preteurs        = $date_echeance_preteur[0]['date_echeance'];
                             $projects_remb->date_remb_preteurs_reel   = '0000-00-00 00:00:00';
-                            $projects_remb->status                    = 0; // nom remb aux preteurs
+                            $projects_remb->status                    = \projects_remb::STATUS_PENDING;
                             $projects_remb->create();
                         }
                     }
@@ -1050,7 +1050,7 @@ class transfertsController extends bootstrap
                     // On met a jour le remb emprunteur rejete
                     if ($projects_remb->counter('id_project = "' . $projects->id_project . '" AND ordre = "' . $e['ordre'] . '" AND status = 0') > 0) {
                         $projects_remb->get($e['ordre'], 'status = 0 AND id_project = "' . $projects->id_project . '" AND ordre');
-                        $projects_remb->status = 2; // rejeté
+                        $projects_remb->status = \projects_remb::STATUS_REJECTED;
                         $projects_remb->update();
                     }
 

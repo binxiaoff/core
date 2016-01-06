@@ -2357,13 +2357,9 @@ class cronController extends bootstrap
 
                 $lien = 'ssh2.sftp://' . $sftp . '/home/sfpmei/receptions';
 
-                if (! file_exists($lien)) {
-                    if ($this->Config['env'] != "dev") {
-                        $this->oLogger->addRecord(ULogger::ERROR,
-                            'Cron : ' . __METHOD__ . ' Unilend error connexion ssh',
-                            array($this->Config['env']));
-                        mail($this->sDestinatairesDebug, '[Alert] Unilend error connexion ssh ' . $this->Config['env'], '[Alert] Unilend error connexion ssh ' . $this->Config['env'] . ' cron reception', $this->sHeadersDebug);
-                    }
+                if (false === file_exists($lien)) {
+                    $this->oLogger->addRecord(ULogger::ERROR, __METHOD__ . ': SSH connection error');
+                    mail($this->sDestinatairesDebug, '[Alert] Unilend error connexion ssh ' . $this->Config['env'], '[Alert] Unilend error connexion ssh ' . $this->Config['env'] . ' cron reception', $this->sHeadersDebug);
                     $this->stopCron();
                     die;
                 }
@@ -2498,11 +2494,7 @@ class cronController extends bootstrap
 
                         // Si on a un virement unilend offre de bienvenue
                         if ($r['unilend_bienvenue'] == true) {
-                            if ($this->Config['env'] != "dev") {
-                                $this->oLogger->addRecord(ULogger::INFO,
-                                    'Cron : ' . __METHOD__ . ' virement offre de bienvenue',
-                                    array($this->Config['env']));
-                            }
+                            $this->oLogger->addRecord(ULogger::INFO, __METHOD__ . ' virement offre de bienvenue');
 
                             $transactions->id_prelevement   = 0;
                             $transactions->id_client        = 0;
@@ -2616,7 +2608,7 @@ class cronController extends bootstrap
                                                             $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
                                                             $projects_remb->date_remb_preteurs        = $date_echeance_preteur[0]['date_echeance'];
                                                             $projects_remb->date_remb_preteurs_reel   = '0000-00-00 00:00:00';
-                                                            $projects_remb->status                    = 0; // nom remb aux preteurs
+                                                            $projects_remb->status                    = \projects_remb::STATUS_PENDING;
                                                             $projects_remb->create();
                                                         }
                                                     }
@@ -2961,7 +2953,7 @@ class cronController extends bootstrap
                         $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
                         $projects_remb->date_remb_preteurs        = $date_echeance_preteur[0]['date_echeance'];
                         $projects_remb->date_remb_preteurs_reel   = '0000-00-00 00:00:00';
-                        $projects_remb->status                    = 0; // nom remb aux preteurs
+                        $projects_remb->status                    = \projects_remb::STATUS_PENDING;
                         $projects_remb->create();
                     }
                 }
@@ -7463,7 +7455,7 @@ class cronController extends bootstrap
 
                             $projects_remb->get($r['id_project_remb'], 'id_project_remb');
                             $projects_remb->date_remb_preteurs_reel = date('Y-m-d H:i:s');
-                            $projects_remb->status                  = 1; // remb aux preteurs
+                            $projects_remb->status                  = \projects_remb::STATUS_REFUNDED;
                             $projects_remb->update();
 
                             $projects_remb_log->fin              = date('Y-m-d H:i:s');
