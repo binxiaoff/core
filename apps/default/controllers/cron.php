@@ -1091,19 +1091,14 @@ class cronController extends bootstrap
                             $montant_prelevements_sociaux         = 0;
                             $montant_retenues_source              = round($retenues_source * $e['interest'], 2);
                         } else {
-                            if ($this->lenders_accounts->exonere == 1) {
-
-                                /// exo date debut et fin ///
-                                if ($this->lenders_accounts->debut_exoneration != '0000-00-00' && $this->lenders_accounts->fin_exoneration != '0000-00-00') {
-                                    if (strtotime($dateEcheance) >= strtotime($this->lenders_accounts->debut_exoneration) && strtotime($dateEcheance) <= strtotime($this->lenders_accounts->fin_exoneration)) {
-                                        $montant_prelevements_obligatoires = 0;
-                                    } else {
-                                        $montant_prelevements_obligatoires = round($prelevements_obligatoires * $e['interest'], 2);
-                                    }
-                                } /////////////////////////////
-                                else {
-                                    $montant_prelevements_obligatoires = 0;
-                                }
+                            if (
+                                $this->lenders_accounts->exonere == 1 // @todo should not be usefull and field should be deleted from DB but as long as it exists and BO interface is based on it, we must use it
+                                && $this->lenders_accounts->debut_exoneration != '0000-00-00'
+                                && $this->lenders_accounts->fin_exoneration != '0000-00-00'
+                                && date('Y-m-d', strtotime($dateEcheance)) >= $this->lenders_accounts->debut_exoneration
+                                && date('Y-m-d', strtotime($dateEcheance)) <= $this->lenders_accounts->fin_exoneration
+                            ) {
+                                $montant_prelevements_obligatoires = 0;
                             } else {
                                 $montant_prelevements_obligatoires = round($prelevements_obligatoires * $e['interest'], 2);
                             }
