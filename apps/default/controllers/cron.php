@@ -5461,19 +5461,21 @@ class cronController extends bootstrap
             $companies   = $this->loadData('companies');
             $emprunteurs = $this->loadData('clients');
 
-            foreach ($factures->selectEcheancesRembAndNoFacture() as $r) {
+            $aRepaymentNoInvoice = $factures->selectEcheancesRembAndNoFacture();
+            foreach ($aRepaymentNoInvoice as $r) {
                 $oCommandPdf = new Command('pdf', 'facture_ER', array($r['hash'], $r['id_project'], $r['ordre']), $this->language);
-                    $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                    $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre']);
-                }
+                $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
+                $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre'], false);
+            }
 
-            foreach ($projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT) as $projet) {
-                if (false === $factures->get($projet['id_project'], 'type_commission = 1 AND id_project')) {
+            $aProjectsInRepayment = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
+            foreach ($aProjectsInRepayment as $projet) {
+                if (false === $factures->exist($projet['id_project'], 'type_commission = 1 AND id_project')) {
                     $companies->get($projet['id_company'], 'id_company');
                     $emprunteurs->get($companies->id_client_owner, 'id_client');
                     $oCommandPdf = new Command('pdf', 'facture_EF', array($emprunteurs->hash, $r['id_project']), $this->language);
                     $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                    $oPdf->_facture_EF($emprunteurs->hash, $r['id_project']);
+                    $oPdf->_facture_EF($emprunteurs->hash, $r['id_project'], false);
                 }
             }
 
@@ -6235,11 +6237,24 @@ class cronController extends bootstrap
                         $this->clients_gestion_mails_notif->update();
 
                         $liste_projets .= '
-								<tr style="color:#b20066;">
-									<td  style="font-family:Arial;font-size:14px;height: 25px;"><a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->projects->amount, 0) . ' &euro;</td>
-									<td align="right" style="font-family:Arial;font-size:14px;">' . $this->projects->period . ' mois</td>
-								</tr>';
+                            <tr class="unProjet">
+                                <div style="line-height: 18px;" class="description">
+                                    <td style="font-family:Arial;font-size:11px;height: 25px; padding-top:15px; padding-bottom:15px; width:360px; line-height: 15px;">
+                                        <a href="'. $this->lurl . "/projects/detail/" . $this->projects->slug . '">
+                                            <img style="border: 2px solid #fff; box-shadow: 0 0 3px rgba(0,0,0,0.4); float: left; width: 108px;height: 72px; margin-right: 5px;" src="'. "https://www.unilend.fr/images/dyn/projets/72/" . $this->projects->photo_projet .'" alt="'. $this->projects->photo_projet .'" class="thumb">
+                                        </a>
+                                        <p style="margin-top:0; margin-bottom:0; font-size:11px; font-weight:bold; color:#b20066;" href="' . $this->lurl . "/projects/detail/" . $this->projects->slug . '">'. $this->projects->title .'</p>
+                                        <p style="margin-top:0; margin-bottom:0; font-size:11px; color:#b20066; ">'. $this->companies->city . ($this->companies->zip != '' ? ', ' : '') . $this->companies->zip .'</p>
+                                        <p style="margin-top:0;">'. $this->projects->nature_project .'</p>
+                                    </td>
+                                    <td style="white-space:nowrap;font-family:Arial;font-size:11px;height: 25px; padding-bottom:15px; padding-right:8px; width:54px;">
+                                        <div class="cadreEtoiles"><div class="etoile '. $this->lNotes[$this->projects->risk] .'"></div></div>
+                                    </td>
+                                    <td align="right" style="white-space:nowrap;font-family:Arial;font-size:11px;height: 25px; padding-top:15px; padding-bottom:15px; width: 54px;">' . $this->ficelle->formatNumber($this->projects->amount, 0) . ' &euro;</td>
+                                    <td align="right" style="white-space:nowrap;font-family:Arial;font-size:11px;height: 25px; padding-top:15px; padding-bottom:15px; width: 54px;">' . $this->projects->period . ' mois</td>
+                                    <td><a href="'. $this->lurl .'/projects/detail/'. $this->projects->slug .'" class="btn btn-info btn-small" style="font-weight:bold;height:20px;text-decoration:none; margin-left:10px; padding:9px;">PRÊTez</a>
+                                </div>
+                            </tr>';
                     }
                     if ($goMail == true) {// (BT 18180 04/08/2015)
                         if ($type == 'quotidienne') {
@@ -7884,42 +7899,58 @@ class cronController extends bootstrap
         $projects->get($id_project, 'id_project');
         $companies->get($projects->id_company, 'id_company');
 
+        $sPathNoZip        = $this->path . 'protected/sftp_groupama_nozip/';
+        $sPath             = $this->path . 'protected/sftp_groupama/';
+
+        if (!is_dir($sPathNoZip . $companies->siren)) {
+            mkdir($sPathNoZip . $companies->siren);
+        }
+
         /** @var attachment_helper $oAttachmentHelper */
         $oAttachmentHelper = $this->loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->path));
         $aAttachments      = $projects->getAttachments();
-        $path_cni          = $oAttachmentHelper->getFullPath(attachment::PROJECT, attachment_type::CNI_PASSPORTE_DIRIGEANT) . $aAttachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]['path'];
-        $path_kbis         = $oAttachmentHelper->getFullPath(attachment::PROJECT, attachment_type::KBIS) . $aAttachments[attachment_type::KBIS]['path'];
 
-        $ext_cni           = substr(strrchr($aAttachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]['path'], '.'), 1);
-        $ext_kbis          = substr(strrchr($aAttachments[attachment_type::KBIS]['path'], '.'), 1);
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_PASSPORTE_DIRIGEANT, 'CNI-#', $companies->siren, $sPathNoZip);
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_PASSPORTE_VERSO, 'CNI-VERSO-#', $companies->siren, $sPathNoZip);
 
-        $new_nom_cni       = 'CNI-#' . $companies->siren . '.' . $ext_cni;
-        $new_nom_kbis      = 'KBIS-#' . $companies->siren . '.' . $ext_kbis;
-        $path_nozip        = $this->path . 'protected/sftp_groupama_nozip/';
-        $path              = $this->path . 'protected/sftp_groupama/';
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::KBIS, 'KBIS-#', $companies->siren, $sPathNoZip);
 
-        $nom_dossier = $companies->siren;
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_1, 'CNI-25-1-#', $companies->siren, $sPathNoZip);
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1, 'CNI-25-1-VERSO-#', $companies->siren, $sPathNoZip);
 
-        if (!is_dir($path_nozip . $nom_dossier)) {
-            mkdir($path_nozip . $nom_dossier);
-        }
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_2, 'CNI-25-2-#', $companies->siren, $sPathNoZip);
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2, 'CNI-25-2-VERSO-#', $companies->siren, $sPathNoZip);
 
-        copy($path_cni, $path_nozip . $nom_dossier . '/' . $new_nom_cni);
-        copy($path_kbis, $path_nozip . $nom_dossier . '/' . $new_nom_kbis);
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_3, 'CNI-25-3-#', $companies->siren, $sPathNoZip);
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3, 'CNI-25-3-VERSO-#', $companies->siren, sPathNoZip);
 
         $zip = new ZipArchive();
-        if (is_dir($path_nozip . $nom_dossier)) {
-            if ($zip->open($path . $nom_dossier . '.zip', ZipArchive::CREATE) == TRUE) {
-                $fichiers = scandir($path_nozip . $nom_dossier);
+        if (is_dir($sPathNoZip . $companies->siren)) {
+            if ($zip->open($sPath . $companies->siren . '.zip', ZipArchive::CREATE) == TRUE) {
+                $fichiers = scandir($sPathNoZip . $companies->siren);
                 unset($fichiers[0], $fichiers[1]);
                 foreach ($fichiers as $f) {
-                    $zip->addFile($path_nozip . $nom_dossier . '/' . $f, $f);
+                    $zip->addFile($sPathNoZip . $companies->siren . '/' . $f, $f);
                 }
                 $zip->close();
             }
         }
 
         $this->deleteOldFichiers();
+    }
+
+    private function copyAttachment($oAttachmentHelper, $aAttachments, $sAttachmentType, $sPrefix, $sSiren, $sPathNoZip)
+    {
+        if (! isset($aAttachments[$sAttachmentType]['path'])) {
+            return;
+        }
+
+        $sFromPath =  $oAttachmentHelper->getFullPath(attachment::PROJECT, $sAttachmentType) . $aAttachments[$sAttachmentType]['path'];
+        $aPathInfo = pathinfo($sFromPath);
+        $sExtension = isset($aPathInfo['extension']) ? $aPathInfo['extension'] : '';
+        $sNewName = $sPrefix . $sSiren . '.' . $sExtension;
+
+        copy($sFromPath, $sPathNoZip . $sSiren . '/' . $sNewName);
     }
 
     /**
