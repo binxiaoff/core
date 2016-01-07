@@ -113,7 +113,6 @@ class cronController extends bootstrap
     public function _minute()
     {
         if (true === $this->startCron('correctionOffreAccepteAucuneDate', 5)) {
-
             $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
             $this->loans                   = $this->loadData('loans');
             $this->transactions            = $this->loadData('transactions');
@@ -2338,10 +2337,10 @@ class cronController extends bootstrap
             'R' => 9
         );
 
-        $url = $file;
-
-        $array  = array();
-        $handle = @fopen($url, "r"); //lecture du fichier
+        $url            = $file;
+        $array          = array();
+        $tabRestriction = array();
+        $handle         = @fopen($url, 'r');
 
         if ($handle) {
             $i = 0;
@@ -2351,7 +2350,6 @@ class cronController extends bootstrap
                     if ($codeEnregi == 04) {
                         $i++;
                     }
-                    //echo $i.' '.$ligne.'<br>';
                     $tabRestriction[$i] = $i;
                 } else {
                     $codeEnregi = substr($ligne, 0, 2);
@@ -2360,7 +2358,6 @@ class cronController extends bootstrap
                         $i++;
                         $laligne = 1;
 
-                        // On check si on a la restriction "BIENVENUE"
                         if (strpos($ligne, 'BIENVENUE') == true) {
                             $array[$i]['unilend_bienvenue'] = true;
                         }
@@ -2389,17 +2386,13 @@ class cronController extends bootstrap
                             $array[$i]['libelleOpe1'] = substr($ligne, 48, 31);
                         }
 
-                        // on recup le champ montant
-                        $montant = substr($ligne, 90, 14);
-                        // on retire les zeros du debut et le dernier caractere
-                        $Debutmontant = ltrim(substr($montant, 0, 13), '0');
-                        // On recup le dernier caractere
+                        $montant              = substr($ligne, 90, 14);
+                        $Debutmontant         = ltrim(substr($montant, 0, 13), '0');
                         $dernier              = substr($montant, -1, 1);
                         $array[$i]['montant'] = $Debutmontant . $tablemontant[$dernier];
                     }
 
                     if ($codeEnregi == 05) {
-
                         // On check si on a la restriction "BIENVENUE"
                         if (strpos($ligne, 'BIENVENUE') == true) {
                             $array[$i]['unilend_bienvenue'] = true;
@@ -2422,15 +2415,12 @@ class cronController extends bootstrap
             }
             if (! feof($handle)) {
                 $this->stopCron();
-                return "Erreur: fgets() a échoué\n";
             }
             fclose($handle);
 
             // on retire les indésirables
-            if ($tabRestriction != false) {
-                foreach ($tabRestriction as $r) {
-                    unset($array[$r]);
-                }
+            foreach ($tabRestriction as $r) {
+                unset($array[$r]);
             }
             return $array;
         }
@@ -2472,8 +2462,8 @@ class cronController extends bootstrap
                 $lien = 'ssh2.sftp://' . $sftp . '/home/sfpmei/receptions';
 
                 if (false === file_exists($lien)) {
-                    $this->oLogger->addRecord(ULogger::ERROR, __METHOD__ . ': SSH connection error');
-                    mail($this->sDestinatairesDebug, '[Alert] Unilend error connexion ssh ' . $this->Config['env'], '[Alert] Unilend error connexion ssh ' . $this->Config['env'] . ' cron reception', $this->sHeadersDebug);
+                    $this->oLogger->addRecord(ULogger::ERROR, __METHOD__ . ': SFTP connection error');
+                    mail($this->sDestinatairesDebug, '[Alert] Unilend SFTP connection error', '[Alert] Unilend SFTP connection error - cron reception', $this->sHeadersDebug);
                     $this->stopCron();
                     die;
                 }
@@ -2559,14 +2549,13 @@ class cronController extends bootstrap
                   [libelleOpe2] => NPYDELERY HELENE
                   [libelleOpe3] => LCC004927HDELERY
                   [libelleOpe4] => RCNZZ0X4VY7PFE69K8VD
+                */
 
-                 */
-                // on regarde si on a deja des truc d'aujourd'hui
-                $recep = $receptions->select('LEFT(added,10) = "' . date('Y-m-d') . '"'); // <------------------------------------------------------------ a remettre
+                $recep = $receptions->select('DATE(added) = "' . date('Y-m-d') . '"');
                 // si on a un fichier et qu'il n'est pas deja present en bdd
                 // on enregistre qu'une fois par jour
                 if ($lrecus != false && ($recep == false || isset($this->params[0]) && $this->params[0] === 'forceReplay')) {
-                    file_put_contents($this->path . 'protected/sftp/reception/UNILEND-00040631007-' . date('Ymd') . '.txt', $file); // <------------------ a remettre
+                    file_put_contents($this->path . 'protected/sftp/reception/UNILEND-00040631007-' . date('Ymd') . '.txt', $file);
 
                     foreach ($lrecus as $r) {
                         $code = $r['codeOpInterbancaire'];
@@ -2601,13 +2590,13 @@ class cronController extends bootstrap
 
                         $motif = '';
                         for ($i = 1; $i <= 5; $i++) {
-                            if ($r['libelleOpe' . $i] != false) {
+                            if (false === empty($r['libelleOpe' . $i])) {
                                 $motif .= trim($r['libelleOpe' . $i]) . '<br>';
                             }
                         }
 
                         // Si on a un virement unilend offre de bienvenue
-                        if ($r['unilend_bienvenue'] == true) {
+                        if (isset($r['unilend_bienvenue'])) {
                             $this->oLogger->addRecord(ULogger::INFO, __METHOD__ . ' virement offre de bienvenue');
 
                             $transactions->id_prelevement   = 0;
@@ -2640,381 +2629,264 @@ class cronController extends bootstrap
                             $receptions->ligne              = $r['ligne1'];
                             $receptions->create();
 
-                            /////////////////////////////// ATTRIBUTION AUTO PRELEVEMENT (VIREMENTS EMPRUNTEUR) /////////////////////////////
-                            if ($type == 1 && $status_prelevement == 2) {
-                                // On cherche une suite de chiffres
+                            if ($type == 1 && $status_prelevement == 2) { // Virements émis
                                 preg_match_all('#[0-9]+#', $motif, $extract);
-                                $nombre = (int) $extract[0][0]; // on retourne un int pour retirer les zeros devant
-
+                                $nombre   = (int) $extract[0][0]; // on retourne un int pour retirer les zeros devant
                                 $listPrel = $prelevements->select('id_project = ' . $nombre . ' AND status = 0');
 
-                                // on regarde si on a une corespondance
-                                if (count($listPrel) > 0) {
-                                    // on compare les 2 motif
-                                    $mystring = trim($motif);
-                                    $findme   = $listPrel[0]['motif'];
-                                    $pos      = strpos($mystring, $findme);
+                                if (
+                                    count($listPrel) > 0
+                                    && false !== strpos($motif, $listPrel[0]['motif'])
+                                    && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND type_transaction = 6 AND id_prelevement')
+                                ) {
+                                    $projects->get($nombre, 'id_project');
+                                    $companies->get($projects->id_company, 'id_company');
+                                    $clients->get($companies->id_client_owner, 'id_client');
 
-                                    // on laisse en manuel
-                                    if ($pos === false) {
-                                    } // Automatique (on attribue le prelevement au preteur)
-                                    else {
-                                        if ($transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND type_transaction = 6 AND id_prelevement') == false) {
-                                            $projects->get($nombre, 'id_project');
+                                    $receptions->id_client  = $clients->id_client;
+                                    $receptions->id_project = $projects->id_project;
+                                    $receptions->status_bo  = 2;
+                                    $receptions->remb       = 1;
+                                    $receptions->update();
+
+                                    $transactions->id_prelevement   = $receptions->id_reception;
+                                    $transactions->id_client        = $clients->id_client;
+                                    $transactions->montant          = $receptions->montant;
+                                    $transactions->id_langue        = 'fr';
+                                    $transactions->date_transaction = date('Y-m-d H:i:s');
+                                    $transactions->status           = 1;
+                                    $transactions->etat             = 1;
+                                    $transactions->transaction      = 1;
+                                    $transactions->type_transaction = 6; // remb emprunteur
+                                    $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                                    $transactions->create();
+
+                                    $bank_unilend->id_transaction = $transactions->id_transaction;
+                                    $bank_unilend->id_project     = $projects->id_project;
+                                    $bank_unilend->montant        = $receptions->montant;
+                                    $bank_unilend->type           = 1;
+                                    $bank_unilend->create();
+
+                                    $this->updateEcheances($projects->id_project, $receptions->montant, $projects->remb_auto);
+                                }
+                            } elseif ($type == 2 && $status_virement == 1) { // Virements reçus
+                                if (
+                                    1 === preg_match('/RA-([0-9]+)/', $r['libelleOpe3'], $aMatches)
+                                    && $this->projects->get((int) $aMatches[1])
+                                    && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement')
+                                ) {
+                                    $receptions->id_project    = $this->projects->id_project;
+                                    $receptions->remb_anticipe = 1;
+                                    $receptions->status_bo     = 2; // attri auto
+                                    $receptions->update();
+
+                                    $transactions->id_virement      = $receptions->id_reception;
+                                    $transactions->id_project       = $this->projects->id_project;
+                                    $transactions->montant          = $receptions->montant;
+                                    $transactions->id_langue        = 'fr';
+                                    $transactions->date_transaction = date('Y-m-d H:i:s');
+                                    $transactions->status           = 1;
+                                    $transactions->etat             = 1;
+                                    $transactions->transaction      = 1;
+                                    $transactions->type_transaction = 22; // remboursement anticipe
+                                    $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                                    $transactions->create();
+
+                                    $bank_unilend                 = $this->loadData('bank_unilend');
+                                    $bank_unilend->id_transaction = $transactions->id_transaction;
+                                    $bank_unilend->id_project     = $this->projects->id_project;
+                                    $bank_unilend->montant        = $receptions->montant;
+                                    $bank_unilend->type           = 1; // remb emprunteur
+                                    $bank_unilend->status         = 0; // chez unilend
+                                    $bank_unilend->create();
+
+                                    $this->settings->get('Adresse notification nouveau remboursement anticipe', 'type');
+                                    $destinataire = $this->settings->value;
+
+                                    $this->mails_text->get('notification-nouveau-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
+
+                                    $surl       = $this->surl;
+                                    $url        = $this->lurl;
+                                    $id_projet  = $this->projects->id_project;
+                                    $montant    = $transactions->montant / 100;
+                                    $nom_projet = $this->projects->title;
+
+                                    $sujetMail = $this->mails_text->subject;
+                                    eval("\$sujetMail = \"$sujetMail\";");
+
+                                    $texteMail = $this->mails_text->content;
+                                    eval("\$texteMail = \"$texteMail\";");
+
+                                    $this->email = $this->loadLib('email');
+                                    $this->email->setFrom($this->mails_text->exp_email, $this->mails_text->exp_name);
+                                    $this->email->addRecipient(trim($destinataire));
+                                    $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
+                                    $this->email->setHTMLBody($texteMail);
+                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                } elseif (strstr($r['libelleOpe3'], 'REGULARISATION')) { // Régularisation
+                                    preg_match_all('#[0-9]+#', $r['libelleOpe3'], $extract);
+
+                                    foreach ($extract[0] as $nombre) {
+                                        if ($projects->get((int) $nombre, 'id_project')) {
                                             $companies->get($projects->id_company, 'id_company');
-                                            $clients->get($companies->id_client_owner, 'id_client');
 
-                                            $receptions->get($receptions->id_reception, 'id_reception');
-                                            $receptions->id_client  = $clients->id_client;
+                                            $receptions->motif      = $motif;
+                                            $receptions->id_client  = $companies->id_client_owner;
                                             $receptions->id_project = $projects->id_project;
                                             $receptions->status_bo  = 2;
+                                            $receptions->type_remb  = 2;
                                             $receptions->remb       = 1;
                                             $receptions->update();
 
-                                            $transactions->id_prelevement   = $receptions->id_reception;
-                                            $transactions->id_client        = $clients->id_client;
-                                            $transactions->montant          = $receptions->montant;
+                                            $receptionPrelev                     = $this->loadData('receptions');
+                                            $receptionPrelev->id_parent          = $receptions->id_reception; // fils d'une reception virement
+                                            $receptionPrelev->motif              = $motif;
+                                            $receptionPrelev->montant            = $receptions->montant;
+                                            $receptionPrelev->type               = 1; // prelevement
+                                            $receptionPrelev->type_remb          = 2; // regularisation
+                                            $receptionPrelev->status_prelevement = 2; // émis
+                                            $receptionPrelev->status_bo          = 2; // attr manu
+                                            $receptionPrelev->remb               = 1; // remboursé oui
+                                            $receptionPrelev->id_client          = $companies->id_client_owner;
+                                            $receptionPrelev->id_project         = $projects->id_project;
+                                            $receptionPrelev->ligne              = $receptions->ligne;
+                                            $receptionPrelev->create();
+
+                                            $transactions->id_prelevement   = $receptionPrelev->id_reception;
+                                            $transactions->id_client        = $companies->id_client_owner;
+                                            $transactions->montant          = $receptionPrelev->montant;
                                             $transactions->id_langue        = 'fr';
                                             $transactions->date_transaction = date('Y-m-d H:i:s');
                                             $transactions->status           = 1;
                                             $transactions->etat             = 1;
                                             $transactions->transaction      = 1;
-                                            $transactions->type_transaction = 6; // remb emprunteur
+                                            $transactions->type_transaction = \transactions_types::TYPE_REGULATION_BANK_TRANSFER;
                                             $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                             $transactions->create();
 
                                             $bank_unilend->id_transaction = $transactions->id_transaction;
                                             $bank_unilend->id_project     = $projects->id_project;
-                                            $bank_unilend->montant        = $receptions->montant;
+                                            $bank_unilend->montant        = $receptionPrelev->montant;
                                             $bank_unilend->type           = 1;
                                             $bank_unilend->create();
 
-                                            $eche    = $echeanciers_emprunteur->select('status_emprunteur = 0 AND id_project = ' . $projects->id_project, 'ordre ASC');
-                                            $sumRemb = ($receptions->montant / 100);
-
-                                            $newsum = $sumRemb;
-                                            foreach ($eche as $e) {
-                                                $ordre = $e['ordre'];
-
-                                                // on récup le montant que l'emprunteur doit rembourser
-                                                $montantDuMois = $echeanciers->getMontantRembEmprunteur($e['montant'] / 100, $e['commission'] / 100, $e['tva'] / 100);
-                                                // On verifie si le montant a remb est inferieur ou égale a la somme récupéré
-                                                if ($montantDuMois <= $newsum) {
-                                                    // On met a jour les echeances du mois
-                                                    $echeanciers->updateStatusEmprunteur($projects->id_project, $ordre);
-
-                                                    $echeanciers_emprunteur->get($projects->id_project, 'ordre = ' . $ordre . ' AND id_project');
-                                                    $echeanciers_emprunteur->status_emprunteur             = 1;
-                                                    $echeanciers_emprunteur->date_echeance_emprunteur_reel = date('Y-m-d H:i:s');
-                                                    $echeanciers_emprunteur->update();
-
-                                                    // et on retire du wallet unilend
-                                                    $newsum = $newsum - $montantDuMois;
-
-                                                    if ($projects_remb->counter('id_project = "' . $projects->id_project . '" AND ordre = "' . $ordre . '" AND status IN(0,1)') <= 0) {
-                                                        $date_echeance_preteur = $echeanciers->select('id_project = "' . $projects->id_project . '" AND ordre = "' . $ordre . '"', '', 0, 1);
-
-                                                        // On regarde si le remb preteur auto est autorisé (eclatement preteur auto)
-                                                        if ($projects->remb_auto == 0) {
-                                                            // file d'attente pour les remb auto preteurs
-                                                            $projects_remb->id_project                = $projects->id_project;
-                                                            $projects_remb->ordre                     = $ordre;
-                                                            $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
-                                                            $projects_remb->date_remb_preteurs        = $date_echeance_preteur[0]['date_echeance'];
-                                                            $projects_remb->date_remb_preteurs_reel   = '0000-00-00 00:00:00';
-                                                            $projects_remb->status                    = \projects_remb::STATUS_PENDING;
-                                                            $projects_remb->create();
-                                                        }
-                                                    }
-                                                } else {
-                                                    break;
-                                                }
-                                            }
+                                            $this->updateEcheances($projects->id_project, $receptionPrelev->montant, $projects->remb_auto);
+                                            break;
                                         }
                                     }
-                                }
-                            }
-
-                            ////////////////////////// VIREMENT AUTOMATIQUE PRETEUR //////////////////////////////////////
-                            // on fait ca que pour les virements recu
-                            elseif ($type == 2 && $status_virement == 1) {
-                                $is_remboursement_anticipe = false;
-                                $regularisation            = false;
-
-                                // On gère ici le Remboursement anticipé
-                                if (strstr($r['libelleOpe3'], 'RA-')) {
-                                    // on récupère l'id_projet
-                                    $tab_id_projet = explode('RA-', $r['libelleOpe3']);
-                                    $id_projet     = $tab_id_projet[1];
-
-                                    // on check si on trouve le projet
-                                    $this->projects = $this->loadData('projects');
-                                    if ($this->projects->get($id_projet)) {
-                                        $retour_auto = true;
-                                    }
-                                    $is_remboursement_anticipe = true;
-                                } elseif (strstr($r['libelleOpe3'], 'REGULARISATION')) {
-                                    $retour_auto    = true;
-                                    $regularisation = true;
-                                } else {
-                                    // DEBUT RECHERCHE DU MOTIF EN BDD //
-                                    // On cherche une suite de chiffres
+                                } else { // Virement prêteur
                                     preg_match_all('#[0-9]+#', $motif, $extract);
-                                    //$nombre = (int)$extract[0][0]; // on retourne un int pour retirer les zeros devant
 
-                                    $retour_auto = false;
                                     foreach ($extract[0] as $nombre) {
-                                        // ajout de la condition pour ne pas rerentrer dedans une fois qu'on a déjà trouvé
-                                        if ($retour_auto != true) {
-                                            // si existe en bdd
-                                            if ($clients->get($nombre, 'id_client')) {
-                                                // on créer le motif qu'on devrait avoir
-                                                $p           = substr($this->ficelle->stripAccents(utf8_decode(trim($clients->prenom))), 0, 1);
-                                                $nom         = $this->ficelle->stripAccents(utf8_decode(trim($clients->nom)));
-                                                $id_client   = str_pad($clients->id_client, 6, 0, STR_PAD_LEFT);
-                                                $returnMotif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+                                        if ($clients->get((int) $nombre, 'id_client')) {
+                                            $sLenderPattern = str_replace(' ', '', $clients->getLenderPattern($clients->id_client));
 
-                                                $mystring = str_replace(' ', '', $motif); // retire les espaces au cas ou le motif soit mal ecrit
-                                                $findme   = str_replace(' ', '', $returnMotif);
-                                                $pos      = strpos($mystring, $findme);
-
-                                                // on laisse en manuel
-                                                if ($pos === false) {
-                                                    $retour_auto = false;
-                                                } else { // Automatique (on attribue le virement au preteur)
-                                                    $retour_auto = true;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                if ($retour_auto == true) {
-                                    if ($regularisation == true) {
-                                        preg_match_all('#[0-9]+#', $r['libelleOpe3'], $extractId_project);
-
-                                        foreach ($extractId_project[0] as $nombre) {
-                                            if ($projects->get($nombre, 'id_project')) {
-                                                $companies          = $this->loadData('companies');
-                                                $receptionPrelev    = $this->loadData('receptions');
-
-                                                $companies->get($projects->id_company, 'id_company');
-
+                                            if (
+                                                false !== strpos(str_replace(' ', '', $motif), $sLenderPattern)
+                                                && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement')
+                                            ) {
                                                 $receptions->get($receptions->id_reception, 'id_reception');
-                                                $receptions->motif      = $motif;
-                                                $receptions->id_client  = $companies->id_client_owner;
-                                                $receptions->id_project = $nombre;
-                                                $receptions->status_bo  = 2;
-                                                $receptions->type_remb  = 2;
-                                                $receptions->remb       = 1;
+                                                $receptions->id_client = $clients->id_client;
+                                                $receptions->status_bo = 2;
+                                                $receptions->remb      = 1;
                                                 $receptions->update();
 
-                                                $receptionPrelev->id_parent          = $receptions->id_reception; // fils d'une reception virement
-                                                $receptionPrelev->motif              = $motif;
-                                                $receptionPrelev->montant            = $receptions->montant;
-                                                $receptionPrelev->type               = 1; // prelevement
-                                                $receptionPrelev->type_remb          = 2; // regularisation
-                                                $receptionPrelev->status_prelevement = 2; // émis
-                                                $receptionPrelev->status_bo          = 2; // attr manu
-                                                $receptionPrelev->remb               = 1; // remboursé oui
-                                                $receptionPrelev->id_client          = $companies->id_client_owner;
-                                                $receptionPrelev->id_project         = $nombre;
-                                                $receptionPrelev->ligne              = $receptions->ligne;
-                                                $receptionPrelev->create();
+                                                $lenders->get($clients->id_client, 'id_client_owner');
+                                                $lenders->status = 1;
+                                                $lenders->update();
 
-                                                if ($transactions->get($receptionPrelev->id_reception, 'status = 1 AND etat = 1 AND type_transaction = 24 AND id_prelevement') == false) {
-                                                    $transactions->id_prelevement   = $receptionPrelev->id_reception;
-                                                    $transactions->id_client        = $companies->id_client_owner;
-                                                    $transactions->montant          = $receptionPrelev->montant;
-                                                    $transactions->id_langue        = 'fr';
-                                                    $transactions->date_transaction = date('Y-m-d H:i:s');
-                                                    $transactions->status           = 1;
-                                                    $transactions->etat             = 1;
-                                                    $transactions->transaction      = 1;
-                                                    $transactions->type_transaction = 24; // Virement de régularisation (remb emprunteur)
-                                                    $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                                                    $transactions->create();
+                                                $transactions->id_virement      = $receptions->id_reception;
+                                                $transactions->id_client        = $lenders->id_client_owner;
+                                                $transactions->montant          = $receptions->montant;
+                                                $transactions->id_langue        = 'fr';
+                                                $transactions->date_transaction = date('Y-m-d H:i:s');
+                                                $transactions->status           = 1;
+                                                $transactions->etat             = 1;
+                                                $transactions->transaction      = 1;
+                                                $transactions->type_transaction = \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT;
+                                                $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                                                $transactions->create();
 
-                                                    $bank_unilend->id_transaction = $transactions->id_transaction;
-                                                    $bank_unilend->id_project     = $projects->id_project;
-                                                    $bank_unilend->montant        = $receptionPrelev->montant;
-                                                    $bank_unilend->type           = 1;
-                                                    $bank_unilend->create();
+                                                $wallets->id_lender                = $lenders->id_lender_account;
+                                                $wallets->type_financial_operation = 30; // alimenation
+                                                $wallets->id_transaction           = $transactions->id_transaction;
+                                                $wallets->type                     = 1; // physique
+                                                $wallets->amount                   = $receptions->montant;
+                                                $wallets->status                   = 1;
+                                                $wallets->create();
 
-                                                    $this->updateEcheances($projects->id_project, $receptionPrelev->montant, $projects->remb_auto);
+                                                $bank->id_wallet_line    = $wallets->id_wallet_line;
+                                                $bank->id_lender_account = $lenders->id_lender_account;
+                                                $bank->status            = 1;
+                                                $bank->amount            = $receptions->montant;
+                                                $bank->create();
+
+                                                if ($clients->etape_inscription_preteur < 3) {
+                                                    $clients->etape_inscription_preteur = 3;
+                                                    $clients->update();
                                                 }
-                                                break;
-                                            }
-                                        }
-                                    } elseif ($transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement') == false) {
-                                        if ($is_remboursement_anticipe) {
-                                            $receptions->get($receptions->id_reception, 'id_reception');
-                                            $receptions->id_project    = $this->projects->id_project;
-                                            $receptions->remb_anticipe = 1;
-                                            $receptions->status_bo     = 2; // attri auto
-                                            $receptions->update();
-
-                                            $transactions->id_virement      = $receptions->id_reception;
-                                            $transactions->id_project       = $this->projects->id_project;
-                                            $transactions->montant          = $receptions->montant;
-                                            $transactions->id_langue        = 'fr';
-                                            $transactions->date_transaction = date('Y-m-d H:i:s');
-                                            $transactions->status           = 1;
-                                            $transactions->etat             = 1;
-                                            $transactions->transaction      = 1;
-                                            $transactions->type_transaction = 22; // remboursement anticipe
-                                            $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                                            $transactions->create();
-
-                                            $bank_unilend                 = $this->loadData('bank_unilend');
-                                            $bank_unilend->id_transaction = $transactions->id_transaction;
-                                            $bank_unilend->id_project     = $this->projects->id_project;
-                                            $bank_unilend->montant        = $receptions->montant;
-                                            $bank_unilend->type           = 1; // remb emprunteur
-                                            $bank_unilend->status         = 0; // chez unilend
-                                            $bank_unilend->create();
-
-                                            // on pousse un mail à Unilend pour les prévenir du virement
-                                            //************************************//
-                                            //*** ENVOI DU MAIL Remboursement-anticipe ***//
-                                            //************************************//
-                                            $this->settings->get('Adresse notification nouveau remboursement anticipe', 'type');
-                                            $destinataire = $this->settings->value;
-
-                                            $this->mails_text->get('notification-nouveau-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
-
-                                            $surl       = $this->surl;
-                                            $url        = $this->lurl;
-                                            $id_projet  = $this->projects->id_project;
-                                            $montant    = $transactions->montant / 100;
-                                            $nom_projet = $this->projects->title;
-
-                                            $sujetMail = $this->mails_text->subject;
-                                            eval("\$sujetMail = \"$sujetMail\";");
-
-                                            $texteMail = $this->mails_text->content;
-                                            eval("\$texteMail = \"$texteMail\";");
-
-                                            $exp_name = $this->mails_text->exp_name;
-                                            eval("\$exp_name = \"$exp_name\";");
-
-                                            $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                                            $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                                            $this->email = $this->loadLib('email');
-                                            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                            $this->email->addRecipient(trim($destinataire));
-                                            $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-                                            $this->email->setHTMLBody($texteMail);
-                                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                        } else {
-                                            $receptions->get($receptions->id_reception, 'id_reception');
-                                            $receptions->id_client = $clients->id_client;
-                                            $receptions->status_bo = 2;
-                                            $receptions->remb      = 1;
-                                            $receptions->update();
-
-                                            $lenders->get($clients->id_client, 'id_client_owner');
-                                            $lenders->status = 1;
-                                            $lenders->update();
-
-                                            $transactions->id_virement      = $receptions->id_reception;
-                                            $transactions->id_client        = $lenders->id_client_owner;
-                                            $transactions->montant          = $receptions->montant;
-                                            $transactions->id_langue        = 'fr';
-                                            $transactions->date_transaction = date('Y-m-d H:i:s');
-                                            $transactions->status           = 1;
-                                            $transactions->etat             = 1;
-                                            $transactions->transaction      = 1;
-                                            $transactions->type_transaction = 4; // alimentation virement
-                                            $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                                            $transactions->create();
-
-                                            $wallets->id_lender                = $lenders->id_lender_account;
-                                            $wallets->type_financial_operation = 30; // alimenation
-                                            $wallets->id_transaction           = $transactions->id_transaction;
-                                            $wallets->type                     = 1; // physique
-                                            $wallets->amount                   = $receptions->montant;
-                                            $wallets->status                   = 1;
-                                            $wallets->create();
-
-                                            $bank->id_wallet_line    = $wallets->id_wallet_line;
-                                            $bank->id_lender_account = $lenders->id_lender_account;
-                                            $bank->status            = 1;
-                                            $bank->amount            = $receptions->montant;
-                                            $bank->create();
-
-                                            $this->notifications->type      = 5; // alim virement
-                                            $this->notifications->id_lender = $lenders->id_lender_account;
-                                            $this->notifications->amount    = $receptions->montant;
-                                            $this->notifications->create();
-
-                                            $this->clients_gestion_mails_notif->id_client       = $lenders->id_client_owner;
-                                            $this->clients_gestion_mails_notif->id_notif        = 6; // alim virement
-                                            $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
-                                            $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                                            $this->clients_gestion_mails_notif->id_transaction  = $transactions->id_transaction;
-                                            $this->clients_gestion_mails_notif->create();
-
-                                            // on met l'etape inscription a 3
-                                            if ($clients->etape_inscription_preteur < 3) {
-                                                $clients->etape_inscription_preteur = 3; // etape 3 ok
-                                                $clients->update();
-                                            }
-
-                                            // envoi email virement maintenant ou non
-                                            if ($this->clients_gestion_notifications->getNotif($lenders->id_client_owner, 6, 'immediatement') == true) {
-                                                $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                                                $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
-                                                $this->clients_gestion_mails_notif->update();
-
-                                                //******************************//
-                                                //*** ENVOI DU MAIL preteur-alimentation ***//
-                                                //******************************//
-                                                $this->mails_text->get('preteur-alimentation', 'lang = "' . $this->language . '" AND type');
-
-                                                $this->settings->get('Facebook', 'type');
-                                                $lien_fb = $this->settings->value;
-
-                                                $this->settings->get('Twitter', 'type');
-                                                $lien_tw = $this->settings->value;
-
-                                                $solde = $transactions->getSolde($receptions->id_client);
-
-                                                $varMail = array(
-                                                    'surl'            => $this->surl,
-                                                    'url'             => $this->lurl,
-                                                    'prenom_p'        => utf8_decode($clients->prenom),
-                                                    'fonds_depot'     => $this->ficelle->formatNumber($receptions->montant / 100),
-                                                    'solde_p'         => $this->ficelle->formatNumber($solde),
-                                                    'motif_virement'  => $returnMotif,
-                                                    'projets'         => $this->lurl . '/projets-a-financer',
-                                                    'gestion_alertes' => $this->lurl . '/profile',
-                                                    'lien_fb'         => $lien_fb,
-                                                    'lien_tw'         => $lien_tw
-                                                );
-
-                                                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                                                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                                                $this->email = $this->loadLib('email');
-                                                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                                $this->email->setSubject(stripslashes($sujetMail));
-                                                $this->email->setHTMLBody(stripslashes($texteMail));
 
                                                 if ($clients->status == 1) {
-                                                    if ($this->Config['env'] === 'prod') {
-                                                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
-                                                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                                    } else {
-                                                        $this->email->addRecipient(trim($clients->email));
-                                                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                                    $this->notifications->type      = \notifications::TYPE_BANK_TRANSFER_CREDIT;
+                                                    $this->notifications->id_lender = $lenders->id_lender_account;
+                                                    $this->notifications->amount    = $receptions->montant;
+                                                    $this->notifications->create();
+
+                                                    $this->clients_gestion_mails_notif->id_client       = $lenders->id_client_owner;
+                                                    $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT;
+                                                    $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                                                    $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                                                    $this->clients_gestion_mails_notif->id_transaction  = $transactions->id_transaction;
+                                                    $this->clients_gestion_mails_notif->create();
+
+                                                    if ($this->clients_gestion_notifications->getNotif($lenders->id_client_owner, \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, 'immediatement') == true) {
+                                                        $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
+                                                        $this->clients_gestion_mails_notif->immediatement = 1;
+                                                        $this->clients_gestion_mails_notif->update();
+
+                                                        $this->mails_text->get('preteur-alimentation', 'lang = "' . $this->language . '" AND type');
+
+                                                        $this->settings->get('Facebook', 'type');
+                                                        $lien_fb = $this->settings->value;
+
+                                                        $this->settings->get('Twitter', 'type');
+                                                        $lien_tw = $this->settings->value;
+
+                                                        $varMail = array(
+                                                            'surl'            => $this->surl,
+                                                            'url'             => $this->lurl,
+                                                            'prenom_p'        => utf8_decode($clients->prenom),
+                                                            'fonds_depot'     => $this->ficelle->formatNumber($receptions->montant / 100),
+                                                            'solde_p'         => $this->ficelle->formatNumber($transactions->getSolde($receptions->id_client)),
+                                                            'motif_virement'  => $sLenderPattern,
+                                                            'projets'         => $this->lurl . '/projets-a-financer',
+                                                            'gestion_alertes' => $this->lurl . '/profile',
+                                                            'lien_fb'         => $lien_fb,
+                                                            'lien_tw'         => $lien_tw
+                                                        );
+
+                                                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                                                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                                                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                                                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                                                        $this->email = $this->loadLib('email');
+                                                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                                                        $this->email->setSubject(stripslashes($sujetMail));
+                                                        $this->email->setHTMLBody(stripslashes($texteMail));
+
+                                                        if ($this->Config['env'] === 'prod') {
+                                                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
+                                                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                                        } else {
+                                                            $this->email->addRecipient(trim($clients->email));
+                                                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                                        }
                                                     }
                                                 }
                                             }
+                                            break;
                                         }
                                     }
                                 }
@@ -3028,25 +2900,20 @@ class cronController extends bootstrap
         }
     }
 
-    // Utilisé pour mettre a jours les echeances emprunteurs et preteurs suite a un prelevement emprunteur
     private function updateEcheances($id_project, $montant, $remb_auto)
     {
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $echeanciers            = $this->loadData('echeanciers');
         $projects_remb          = $this->loadData('projects_remb');
 
-        $eche    = $echeanciers_emprunteur->select('status_emprunteur = 0 AND id_project = ' . $id_project, 'ordre ASC');
-        $sumRemb = ($montant / 100);
-        $newsum  = $sumRemb;
+        $eche   = $echeanciers_emprunteur->select('status_emprunteur = 0 AND id_project = ' . $id_project, 'ordre ASC');
+        $newsum = $montant / 100;
 
         foreach ($eche as $e) {
-            $ordre = $e['ordre'];
-
-            // on récup le montant que l'emprunteur doit rembourser
+            $ordre         = $e['ordre'];
             $montantDuMois = $echeanciers->getMontantRembEmprunteur($e['montant'] / 100, $e['commission'] / 100, $e['tva'] / 100);
-            // On verifie si le montant a remb est inferieur ou égale a la somme récupéré
+
             if ($montantDuMois <= $newsum) {
-                // On met a jour les echeances du mois
                 $echeanciers->updateStatusEmprunteur($id_project, $ordre);
 
                 $echeanciers_emprunteur->get($id_project, 'ordre = ' . $ordre . ' AND id_project');
@@ -3054,14 +2921,12 @@ class cronController extends bootstrap
                 $echeanciers_emprunteur->date_echeance_emprunteur_reel = date('Y-m-d H:i:s');
                 $echeanciers_emprunteur->update();
 
-                // et on retire du wallet unilend
                 $newsum = $newsum - $montantDuMois;
 
                 if ($projects_remb->counter('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" AND status IN(0,1)') <= 0) {
                     $date_echeance_preteur = $echeanciers->select('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '"', '', 0, 1);
-                    // On regarde si le remb preteur auto est autorisé (eclatement preteur auto)
+
                     if ($remb_auto == 0) {
-                        // file d'attente pour les remb auto preteurs
                         $projects_remb->id_project                = $id_project;
                         $projects_remb->ordre                     = $ordre;
                         $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');

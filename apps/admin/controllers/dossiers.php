@@ -124,10 +124,6 @@ class dossiersController extends bootstrap
 
             $this->companies->get($this->projects->id_company, 'id_company');
 
-            $this->settings->get('Statut problème J+X', 'type');
-            $this->nb_jour_statut_probleme = $this->settings->value;
-
-            // On recup le detail de l'entreprise
             if (! $this->companies_details->get($this->projects->id_company, 'id_company')) {
                 $this->companies_details->id_company               = $this->projects->id_company;
                 $this->companies_details->date_dernier_bilan       = (date('Y') - 1) . '-12-31';
