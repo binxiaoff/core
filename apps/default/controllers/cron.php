@@ -8256,7 +8256,7 @@ class cronController extends bootstrap
                     $oLendersAccountStats->create();
 
                 } catch (Exception $e) {
-                    $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). $e->getTraceAsString());
+                    $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage());
                 }
 
                 $this->oLogger->addRecord(ULogger::INFO, 'Temps calcul TRI : ' . round(microtime(true) - $fTimeStart, 2));
