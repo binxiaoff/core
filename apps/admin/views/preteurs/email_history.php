@@ -1,4 +1,12 @@
 <script type="text/javascript">
+        $(document).ready(function(){
+
+            $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
+            $("#datepik_1").datepicker({showOn: 'both', buttonImage: '<?=$this->surl?>/images/admin/calendar.gif', buttonImageOnly: true,changeMonth: true,changeYear: true,yearRange: '<?=(date('Y')-10)?>:<?=(date('Y')+10)?>'});
+            $("#datepik_2").datepicker({showOn: 'both', buttonImage: '<?=$this->surl?>/images/admin/calendar.gif', buttonImageOnly: true,changeMonth: true,changeYear: true,yearRange: '<?=(date('Y')-10)?>:<?=(date('Y')+10)?>'});
+
+        });
+
     <?php
     if(isset($_SESSION['freeow'])) : ?>
     $(document).ready(function () {
@@ -95,7 +103,7 @@
                             </td>
                             <td>
                                 <?php
-                                    if (false === in_array($aNotificationType['id_client_gestion_type_notif'], array(\clients_gestion_type_notif::TYPE_BID_PLACED, \clients_gestion_type_notif::TYPE_BID_REJECTED))) : ?>
+                                if (false === in_array($aNotificationType['id_client_gestion_type_notif'], array(\clients_gestion_type_notif::TYPE_BID_PLACED, \clients_gestion_type_notif::TYPE_BID_REJECTED))) : ?>
                                     <input type="checkbox"
                                         <?= ($this->aClientsNotifications[ $aNotificationType['id_client_gestion_type_notif'] ]['hebdomadaire'] == 1 ? 'checked' : '') ?>
                                            disabled/>
@@ -103,7 +111,7 @@
                             </td>
                             <td>
                                 <?php
-                                    if ((int)$aNotificationType['id_client_gestion_type_notif'] === \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED) : ?>
+                                if ((int)$aNotificationType['id_client_gestion_type_notif'] === \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED) : ?>
                                     <input type="checkbox"
                                         <?= $this->aClientsNotifications[ $aNotificationType['id_client_gestion_type_notif'] ]['mensuelle'] == 1 ? 'checked' : '' ?>
                                            disabled/>
@@ -190,5 +198,52 @@
 
 
     <H2>Historique des Emails</H2>
-    Et ici viedra la vue des l'historique des mails
-    avec une lightbox preview à droite
+    <p>(envoyés à l'adresse email : <?= $this->clients->email ?>)</p>
+
+    <div class="date_picker_email_history">
+        <form method="post" name="history_dates" id="history_dates" enctype="multipart/form-data" action="" target="_parent">
+            <fieldset>
+                <table class="formColor">
+                    <tr>
+                        <th><label for="datepik_1">Debut :</label></th>
+                        <td><input type="text" name="debut" id="datepik_1" class="input_dp" value="<?=$this->sDisplayDateTimeStart?>"/></td>
+                        <th><label for="datepik_2">Fin :</label></th>
+                        <td><input type="text" name="fin" id="datepik_2" class="input_dp" value="<?=$this->sDisplayDateTimeEnd?>"/></td>
+                        <td><input type="submit" value="Filtrer par date" title="Filtrer par date" name="send_dates" id="send_dates" class="btn" /></td>
+                    </tr>
+                    <tr>
+                        <th colspan="5">
+                            <input type="hidden" name="form_send_dates" id="form_send_dates" />
+                        </th>
+                    </tr>
+                </table>
+            </fieldset>
+        </form>
+    </div>
+    <table class="tablesorter">
+        <thead>
+        <tr>
+            <th>Type de Mail</th>
+            <th>Sujet</th>
+            <th>Date d'envoi</th>
+            <th>Visualiser</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php
+        foreach ($this->aEmailsSentToClient as $aEmail) { ?>
+            <tr>
+                <td><?= $aEmail['name'] ?></td>
+                <td><?= str_replace("_", " ", utf8_encode(mb_decode_mimeheader($aEmail['subject']))) ?></td>
+                <td><?= $this->dates->formatDateMysqltoFr_HourIn($aEmail['added']) ?></td>
+                <td style="text-align: center"><a
+                        href="<?= $this->lurl ?>/preteurs/email_history_preview/<?= $aEmail['id_filermails'] ?>"
+                        class="thickbox"><img src="<?= $this->surl ?>/images/admin/mail.png" alt="previsualiser"
+                                              height="13px" width="20px"/></a></td>
+            </tr>
+            <?php
+        }
+        ?>
+        </tbody>
+    </table>
+<?php unset($_SESSION['freeow']); ?>
