@@ -197,11 +197,6 @@ class espace_emprunteurController extends Bootstrap
 
     }
 
-    public function _profil2()
-    {
-
-    }
-
     public function _operations()
     {
         $this->aClientsProjects      = $this->getProjectsPostFunding();
@@ -230,8 +225,6 @@ class espace_emprunteurController extends Bootstrap
                         $this->aClientsProjects[ $iKey ]['mandat'][ $iMandatKey ]['status-trad'] = 'mandat-en-cours';
                         break;
                     case clients_mandats::STATUS_SIGNE:
-                        $this->aClientsProjects[ $iKey ]['mandat'][ $iMandatKey ]['status-trad'] = 'mandat-signe';
-                        break;
                     case clients_mandats::STATUS_ANNULE:
                     case clients_mandats::STATUS_FAIL:
                         $this->aClientsProjects[ $iKey ]['mandat'][ $iMandatKey ]['status-trad'] = 'void';

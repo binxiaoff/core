@@ -66,7 +66,7 @@
                     else : ?>
                         <a href="<?= $this->lurl . '/pdf/pouvoir/' . $this->clients->hash . '/' . $aProject['id_project'] ?>">
                             <img src="<?= $this->lurl . '/styles/default/images/pdf50.png' ?>"></a>
-                        <?= ($aProject['pouvoir'][0]['status'] > 0) ? $this->lng['espace-emprunteur']['pouvoir-signe'] : $this->lng['espace-emprunteur']['pouvoir-a-signer'] ?>
+                        <?= ($aProject['pouvoir'][0]['status'] = 0) ? $this->lng['espace-emprunteur']['pouvoir-a-signer'] : '' ?>
                     <?php endif; ?>
                 </td>
                 <td>
