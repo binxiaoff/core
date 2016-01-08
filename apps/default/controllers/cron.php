@@ -2629,7 +2629,7 @@ class cronController extends bootstrap
                             $receptions->ligne              = $r['ligne1'];
                             $receptions->create();
 
-                            if ($type == 1 && $status_prelevement == 2) { // Virements émis
+                            if ($type == 1 && $status_prelevement == 2) { // Prélèvements
                                 preg_match_all('#[0-9]+#', $motif, $extract);
                                 $nombre   = (int) $extract[0][0]; // on retourne un int pour retirer les zeros devant
                                 $listPrel = $prelevements->select('id_project = ' . $nombre . ' AND status = 0');
@@ -2657,7 +2657,7 @@ class cronController extends bootstrap
                                     $transactions->status           = 1;
                                     $transactions->etat             = 1;
                                     $transactions->transaction      = 1;
-                                    $transactions->type_transaction = 6; // remb emprunteur
+                                    $transactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT;
                                     $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                     $transactions->create();
 
@@ -2688,7 +2688,7 @@ class cronController extends bootstrap
                                     $transactions->status           = 1;
                                     $transactions->etat             = 1;
                                     $transactions->transaction      = 1;
-                                    $transactions->type_transaction = 22; // remboursement anticipe
+                                    $transactions->type_transaction = \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT;
                                     $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                     $transactions->create();
 
@@ -2730,6 +2730,7 @@ class cronController extends bootstrap
                                         if ($projects->get((int) $nombre, 'id_project')) {
                                             $companies->get($projects->id_company, 'id_company');
 
+                                            // @todo duplicate code in transferts::_non_attribues()
                                             $receptions->motif      = $motif;
                                             $receptions->id_client  = $companies->id_client_owner;
                                             $receptions->id_project = $projects->id_project;
@@ -2738,23 +2739,8 @@ class cronController extends bootstrap
                                             $receptions->remb       = 1;
                                             $receptions->update();
 
-                                            $receptionPrelev                     = $this->loadData('receptions');
-                                            $receptionPrelev->id_parent          = $receptions->id_reception; // fils d'une reception virement
-                                            $receptionPrelev->motif              = $motif;
-                                            $receptionPrelev->montant            = $receptions->montant;
-                                            $receptionPrelev->type               = 1; // prelevement
-                                            $receptionPrelev->type_remb          = 2; // regularisation
-                                            $receptionPrelev->status_prelevement = 2; // émis
-                                            $receptionPrelev->status_bo          = 2; // attr manu
-                                            $receptionPrelev->remb               = 1; // remboursé oui
-                                            $receptionPrelev->id_client          = $companies->id_client_owner;
-                                            $receptionPrelev->id_project         = $projects->id_project;
-                                            $receptionPrelev->ligne              = $receptions->ligne;
-                                            $receptionPrelev->create();
-
-                                            $transactions->id_prelevement   = $receptionPrelev->id_reception;
-                                            $transactions->id_client        = $companies->id_client_owner;
-                                            $transactions->montant          = $receptionPrelev->montant;
+                                            $transactions->id_virement      = $receptions->id_reception;
+                                            $transactions->montant          = $receptions->montant;
                                             $transactions->id_langue        = 'fr';
                                             $transactions->date_transaction = date('Y-m-d H:i:s');
                                             $transactions->status           = 1;
@@ -2766,11 +2752,11 @@ class cronController extends bootstrap
 
                                             $bank_unilend->id_transaction = $transactions->id_transaction;
                                             $bank_unilend->id_project     = $projects->id_project;
-                                            $bank_unilend->montant        = $receptionPrelev->montant;
+                                            $bank_unilend->montant        = $receptions->montant;
                                             $bank_unilend->type           = 1;
                                             $bank_unilend->create();
 
-                                            $this->updateEcheances($projects->id_project, $receptionPrelev->montant, $projects->remb_auto);
+                                            $this->updateEcheances($projects->id_project, $receptions->montant, $projects->remb_auto);
                                             break;
                                         }
                                     }
@@ -2923,7 +2909,7 @@ class cronController extends bootstrap
 
                 $newsum = $newsum - $montantDuMois;
 
-                if ($projects_remb->counter('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" AND status IN(0,1)') <= 0) {
+                if ($projects_remb->counter('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" AND status IN(0, 1)') <= 0) {
                     $date_echeance_preteur = $echeanciers->select('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '"', '', 0, 1);
 
                     if ($remb_auto == 0) {
