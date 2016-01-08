@@ -101,6 +101,7 @@
         $('#switch-lender').removeClass('btnDisabled');
         $('#switch-project').addClass('btnDisabled');
         $('#project-form-container').hide(0);
+        $('#response').hide(0);
         $('#lender-form-container').show(0, function() {
             $.colorbox.resize();
         });
@@ -110,6 +111,7 @@
         $('#switch-lender').addClass('btnDisabled');
         $('#switch-project').removeClass('btnDisabled');
         $('#lender-form-container').hide(0);
+        $('#response').hide(0);
         $('#project-form-container').show(0, function() {
             $.colorbox.resize();
         });
