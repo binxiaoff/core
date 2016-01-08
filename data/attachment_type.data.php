@@ -70,6 +70,10 @@ class attachment_type extends attachment_type_crud
     const CNI_BENEFICIAIRE_EFFECTIF_VERSO_3    = 49;
     const SITUATION_COMPTABLE_INTERMEDIAIRE    = 50;
     const DERNIERS_COMPTES_CONSOLIDES          = 51;
+    const PRESENTATION_PROJET                  = 52;
+    const DERNIERE_LIASSE_FISCAL_HOLDING       = 53;
+    const KBIS_HOLDING                         = 54;
+    const PHOTOS_ACTIVITE                      = 55;
 
     public function __construct($bdd, $params = '')
     {
@@ -152,7 +156,12 @@ class attachment_type extends attachment_type_crud
             self::AUTRE1,
             self::AUTRE2,
             self::AUTRE3,
-            self::AUTRE4
+            self::AUTRE4,
+            self::STATUTS,
+            self::PRESENTATION_PROJET,
+            self::DERNIERE_LIASSE_FISCAL_HOLDING,
+            self::KBIS_HOLDING,
+            self::PHOTOS_ACTIVITE
         );
 
         $oTextes = new \textes($this->bdd);
