@@ -12,16 +12,10 @@ class transfertsController extends bootstrap
 
         $this->menu_admin = 'transferts';
 
-        $this->types_remb = array(
-            0 => '',
-            1 => 'Remboursement anticipé',
-            2 => 'Régularisation',
-            3 => 'Recouvrement'
-        );
-        $this->statusVirement = $this->statusPrelevement = array(
+        $this->statusOperations = array(
             0 => 'Reçu',
-            1 => 'Attribué manu',
-            2 => 'Attribué auto',
+            1 => 'Manu',
+            2 => 'Auto',
             3 => 'Rejeté',
             4 => 'Rejet'
         );
@@ -35,14 +29,26 @@ class transfertsController extends bootstrap
 
     public function _preteurs()
     {
-        $this->receptions  = $this->loadData('receptions');
-        $this->aOperations = $this->receptions->select('id_client != 0 AND id_project = 0 AND (type = 1 AND status_prelevement = 2 OR type = 2 AND status_virement = 1)', 'id_reception DESC');
+        $oUsers            = $this->loadData('users');
+        $oReceptions       = $this->loadData('receptions');
+        $this->aOperations = $oReceptions->select('id_client != 0 AND id_project = 0 AND (type = 1 AND status_prelevement = 2 OR type = 2 AND status_virement = 1)', 'id_reception DESC');
+        $this->aUsers      = array();
+
+        foreach ($oUsers->select('id_user IN (' . implode(', ', array_unique(array_column($this->aOperations, 'id_user'))) . ')') as $aUser) {
+            $this->aUsers[$aUser['id_user']] = $aUser;
+        }
     }
 
     public function _emprunteurs()
     {
-        $this->receptions  = $this->loadData('receptions');
-        $this->aOperations = $this->receptions->select('id_project != 0 AND (type = 1 AND status_prelevement = 2 OR type = 2 AND status_virement = 1)', 'id_reception DESC');
+        $oUsers            = $this->loadData('users');
+        $oReceptions       = $this->loadData('receptions');
+        $this->aOperations = $oReceptions->select('id_project != 0 AND (type = 1 AND status_prelevement = 2 OR type = 2 AND status_virement = 1)', 'id_reception DESC');
+        $this->aUsers      = array();
+
+        foreach ($oUsers->select('id_user IN (' . implode(', ', array_unique(array_column($this->aOperations, 'id_user'))) . ')') as $aUser) {
+            $this->aUsers[$aUser['id_user']] = $aUser;
+        }
     }
 
     public function _non_attribues()
@@ -69,12 +75,13 @@ class transfertsController extends bootstrap
             $companies->get($this->projects->id_company, 'id_company');
 
             if ($_POST['type_remb'] === 'remboursement_anticipe') {
-                $this->receptions->id_client     = $companies->id_client_owner;
-                $this->receptions->id_project    = $this->projects->id_project;
-                $this->receptions->remb_anticipe = 1;
-                $this->receptions->status_bo     = 1;
-                $this->receptions->type_remb     = 1;
-                $this->receptions->remb          = 1;
+                $this->receptions->id_project      = $this->projects->id_project;
+                $this->receptions->remb_anticipe   = 1;
+                $this->receptions->status_bo       = 1;
+                $this->receptions->type_remb       = 1;
+                $this->receptions->remb            = 1;
+                $this->receptions->id_user         = $_SESSION['user']['id_user'];
+                $this->receptions->assignment_date = date('Y-m-d H:i:s');
                 $this->receptions->update();
 
                 $transactions->id_virement      = $this->receptions->id_reception;
@@ -106,11 +113,12 @@ class transfertsController extends bootstrap
                     $montant          = $this->receptions->montant / (1 - ($commission_ht * (1 + $tva)));// Montant avec la com + tva (on enregistre le prelevement avec la com et pareille chez unilend)
                 }
 
-                $this->receptions->id_client  = $companies->id_client_owner;
-                $this->receptions->id_project = $this->projects->id_project;
-                $this->receptions->status_bo  = 1;
-                $this->receptions->type_remb  = $type_remb;
-                $this->receptions->remb       = 1;
+                $this->receptions->id_project      = $this->projects->id_project;
+                $this->receptions->status_bo       = 1;
+                $this->receptions->type_remb       = $type_remb;
+                $this->receptions->remb            = 1;
+                $this->receptions->id_user         = $_SESSION['user']['id_user'];
+                $this->receptions->assignment_date = date('Y-m-d H:i:s');
                 $this->receptions->update();
 
                 $transactions->id_virement      = $this->receptions->id_reception;
@@ -201,7 +209,7 @@ class transfertsController extends bootstrap
         if (isset($_POST['id'], $_POST['nom'], $_POST['prenom'], $_POST['email'], $_POST['raison_sociale'], $_POST['id_reception'])) {
             $_SESSION['controlDoubleAttr'] = md5($_SESSION['user']['id_user']);
 
-            $this->lPreteurs = $this->clients->searchPreteursV2($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale']);
+            $this->lPreteurs    = $this->clients->searchPreteursV2($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale']);
             $this->id_reception = $_POST['id_reception'];
         }
     }
@@ -659,6 +667,8 @@ class transfertsController extends bootstrap
         $this->notifications                 = $this->loadData('notifications');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+        $this->loadData('clients_gestion_type_notif'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
+        $this->loadData('transactions_types'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
 
         if (
             isset($_POST['id_client'], $_POST['id_reception'], $_SESSION['controlDoubleAttr'])
@@ -681,7 +691,7 @@ class transfertsController extends bootstrap
             $transactions->status           = 1;
             $transactions->etat             = 1;
             $transactions->transaction      = 1;
-            $transactions->type_transaction = 4; // alimentation virement
+            $transactions->type_transaction = \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT;
             $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
             $transactions->create();
 
@@ -699,9 +709,11 @@ class transfertsController extends bootstrap
             $bank->amount            = $receptions->montant;
             $bank->create();
 
-            $receptions->id_client = $lenders->id_client_owner;
-            $receptions->status_bo = 1;
-            $receptions->remb      = 1;
+            $receptions->id_client       = $lenders->id_client_owner;
+            $receptions->status_bo       = 1;
+            $receptions->remb            = 1;
+            $receptions->id_user         = $_SESSION['user']['id_user'];
+            $receptions->assignment_date = date('Y-m-d H:i:s');
             $receptions->update();
 
             $this->notifications->type      = \notifications::TYPE_BANK_TRANSFER_CREDIT;
@@ -804,95 +816,6 @@ class transfertsController extends bootstrap
         }
     }
 
-    public function _attribuer_projet()
-    {
-        $this->hideDecoration();
-        $this->autoFireView = false;
-
-        $projects               = $this->loadData('projects');
-        $receptions             = $this->loadData('receptions');
-        $companies              = $this->loadData('companies');
-        $clients                = $this->loadData('clients');
-        $transactions           = $this->loadData('transactions');
-        $echeanciers            = $this->loadData('echeanciers');
-        $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-        $bank_unilend           = $this->loadData('bank_unilend');
-        $projects_remb          = $this->loadData('projects_remb');
-
-        if (isset($_POST['id_project']) && isset($_POST['id_reception']) && $projects->get($_POST['id_project'], 'id_project') && $receptions->get($_POST['id_reception'], 'id_reception') && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = 6 AND id_prelevement') == false) {
-            $companies->get($projects->id_company, 'id_company');
-            $clients->get($companies->id_client_owner, 'id_client');
-
-            $transactions->id_prelevement   = $receptions->id_reception;
-            $transactions->id_client        = $clients->id_client;
-            $transactions->montant          = $receptions->montant;
-            $transactions->id_langue        = 'fr';
-            $transactions->date_transaction = date('Y-m-d H:i:s');
-            $transactions->status           = 1;
-            $transactions->etat             = 1;
-            $transactions->transaction      = 1;
-            $transactions->type_transaction = 6; // remb emprunteur
-            $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-            $transactions->create();
-
-            $bank_unilend->id_transaction = $transactions->id_transaction;
-            $bank_unilend->id_project     = $projects->id_project;
-            $bank_unilend->montant        = $receptions->montant;
-            $bank_unilend->type           = 1;
-            $bank_unilend->create();
-
-            $receptions->id_client  = $clients->id_client;
-            $receptions->status_bo  = 1;
-            $receptions->remb       = 1;
-            $receptions->id_project = $projects->id_project;
-            $receptions->update();
-
-            $eche   = $echeanciers_emprunteur->select('status_emprunteur = 0 AND id_project = ' . $projects->id_project, 'ordre ASC');
-            $newsum = $receptions->montant / 100;
-
-            foreach ($eche as $e) {
-                $ordre = $e['ordre'];
-
-                // on récup le montant que l'emprunteur doit rembourser
-                $montantDuMois = $echeanciers->getMontantRembEmprunteur($e['montant'] / 100, $e['commission'] / 100, $e['tva'] / 100);
-                // On verifie si le montant a remb est inferieur ou égale a la somme récupéré
-                if ($montantDuMois <= $newsum) {
-                    // On met a jour les echeances du mois
-                    $echeanciers->updateStatusEmprunteur($projects->id_project, $ordre);
-
-                    $echeanciers_emprunteur->get($_POST['id_project'], 'ordre = ' . $ordre . ' AND id_project');
-                    $echeanciers_emprunteur->status_emprunteur             = 1;
-                    $echeanciers_emprunteur->date_echeance_emprunteur_reel = date('Y-m-d H:i:s');
-                    $echeanciers_emprunteur->update();
-
-                    // et on retire du wallet unilend
-                    $newsum = $newsum - $montantDuMois;
-
-                    if ($projects_remb->counter('id_project = "' . $projects->id_project . '" AND ordre = "' . $ordre . '" AND status IN(0,1)') <= 0) {
-                        $date_echeance_preteur = $echeanciers->select('id_project = "' . $projects->id_project . '" AND ordre = "' . $ordre . '"', '', 0, 1);
-                        // On regarde si le remb preteur auto est autorisé (eclatement preteur auto)
-                        if ($projects->remb_auto == 0) {
-                            // file d'attente pour les remb auto preteurs
-                            $projects_remb->id_project                = $projects->id_project;
-                            $projects_remb->ordre                     = $ordre;
-                            $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
-                            $projects_remb->date_remb_preteurs        = $date_echeance_preteur[0]['date_echeance'];
-                            $projects_remb->date_remb_preteurs_reel   = '0000-00-00 00:00:00';
-                            $projects_remb->status                    = \projects_remb::STATUS_PENDING;
-                            $projects_remb->create();
-                        }
-                    }
-                } else {
-                    break;
-                }
-            }
-
-            echo json_encode(array('id_client' => $receptions->id_client, 'id_project' => $receptions->id_project));
-        } else {
-            echo 'nok';
-        }
-    }
-
     public function _annuler_attribution_projet()
     {
         $this->hideDecoration();
@@ -990,7 +913,7 @@ class transfertsController extends bootstrap
             $new_transactions->status           = 1;
             $new_transactions->etat             = 1;
             $new_transactions->transaction      = 1;
-            $new_transactions->type_transaction = 15; // rejet remb emprunteur
+            $new_transactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION;
             $new_transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
             $new_transactions->id_user          = $_SESSION['user']['id_user'];
             $new_transactions->create();

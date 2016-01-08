@@ -67,13 +67,13 @@
     <table class="tablesorter">
         <thead>
             <tr>
-                <th>ID</th>
+                <th style="width:50px">ID</th>
                 <th>Motif</th>
-                <th>Montant</th>
-                <th>Statut</th>
-                <th>ID projet</th>
-                <th>Date</th>
-                <th>&nbsp;</th>
+                <th style="width:150px">Montant</th>
+                <th style="width:150px">Attribution</th>
+                <th style="width:100px">ID client</th>
+                <th style="width:100px">Date</th>
+                <th style="width:100px">&nbsp;</th>
             </tr>
         </thead>
         <tbody>
@@ -82,8 +82,15 @@
                 <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $aOperation['id_reception'] ?></td>
                     <td><?= $aOperation['motif'] ?></td>
-                    <td><?= $this->ficelle->formatNumber($aOperation['montant'] / 100) ?> €</td>
-                    <td class="statut_operation_<?= $aOperation['id_reception'] ?>"><?= $this->statusPrelevement[$aOperation['status_bo']] ?></td>
+                    <td style="text-align:right"><?= $this->ficelle->formatNumber($aOperation['montant'] / 100) ?> €</td>
+                    <td class="statut_operation_<?= $aOperation['id_reception'] ?>">
+                        <?php if (1 == $aOperation['status_bo'] && isset($this->aUsers[$aOperation['id_user']])): ?>
+                            <?= $this->aUsers[$aOperation['id_user']]['firstname'] . ' ' . $this->aUsers[$aOperation['id_user']]['name'] ?><br/>
+                            <?= date('d/m/Y à H:i:s', strtotime($aOperation['assignment_date'])) ?>
+                        <?php else: ?>
+                            <?= $this->statusOperations[$aOperation['status_bo']] ?>
+                        <?php endif; ?>
+                    </td>
                     <td class="num_project_<?= $aOperation['id_reception'] ?>"><a href="/dossiers/edit/<?= $aOperation['id_project'] ?>"><?= $aOperation['id_project'] ?></a></td>
                     <td><?= date('d/m/Y', strtotime($aOperation['added'])) ?></td>
                     <td align="center">

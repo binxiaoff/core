@@ -52,7 +52,7 @@
                     <td><?= $aOperation['id_reception'] ?></td>
                     <td><?= $aOperation['motif'] ?></td>
                     <td><?= $this->ficelle->formatNumber($aOperation['montant'] / 100) ?> €</td>
-                    <td class="statut_operation_<?= $aOperation['id_reception'] ?>"><?= $this->statusVirement[$aOperation['status_bo']] ?></td>
+                    <td class="statut_operation_<?= $aOperation['id_reception'] ?>"><?= $this->statusOperations[$aOperation['status_bo']] ?></td>
                     <td><?= date('d/m/Y', strtotime($aOperation['added'])) ?></td>
                     <td align="center">
                         <a class="thickbox ajouter_<?= $aOperation['id_reception'] ?>" href="<?= $this->lurl ?>/transferts/attribution/<?= $aOperation['id_reception'] ?>"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Attribuer"/></a>

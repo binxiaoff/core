@@ -51,6 +51,7 @@ class bootstrap extends Controller
         $this->accept_cookies          = $this->loadData('accept_cookies');
         $this->companies               = $this->loadData('companies');
         $this->projects                = $this->loadData('projects');
+        $this->projects_status         = $this->loadData('projects_status');
 
         $this->ficelle = $this->loadLib('ficelle');
         $this->photos  = $this->loadLib('photos', array($this->spath, $this->surl));

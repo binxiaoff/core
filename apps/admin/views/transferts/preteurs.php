@@ -52,13 +52,13 @@
     <table class="tablesorter">
         <thead>
             <tr>
-                <th>ID</th>
+                <th style="width:50px">ID</th>
                 <th>Motif</th>
-                <th>Montant</th>
-                <th>Statut</th>
-                <th>ID client</th>
-                <th>Date</th>
-                <th>&nbsp;</th>
+                <th style="width:150px">Montant</th>
+                <th style="width:150px">Attribution</th>
+                <th style="width:100px">ID client</th>
+                <th style="width:100px">Date</th>
+                <th style="width:100px">&nbsp;</th>
             </tr>
         </thead>
         <tbody>
@@ -67,9 +67,16 @@
                 <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $aOperation['id_reception'] ?></td>
                     <td><?= $aOperation['motif'] ?></td>
-                    <td><?= $this->ficelle->formatNumber($aOperation['montant'] / 100) ?> €</td>
-                    <td class="statut_operation_<?= $aOperation['id_reception'] ?>"><?= $this->statusVirement[$aOperation['status_bo']] ?></td>
-                    <td class="num_client_<?= $aOperation['id_reception'] ?>"><a href="/preteurs/edit/<?= $aOperation['id_client'] ?>"><?= $aOperation['id_client'] ?></a></td>
+                    <td style="text-align:right"><?= $this->ficelle->formatNumber($aOperation['montant'] / 100) ?> €</td>
+                    <td class="statut_operation_<?= $aOperation['id_reception'] ?>">
+                        <?php if (1 == $aOperation['status_bo'] && isset($this->aUsers[$aOperation['id_user']])): ?>
+                            <?= $this->aUsers[$aOperation['id_user']]['firstname'] . ' ' . $this->aUsers[$aOperation['id_user']]['name'] ?><br/>
+                            <?= date('d/m/Y à H:i:s', strtotime($aOperation['assignment_date'])) ?>
+                        <?php else: ?>
+                            <?= $this->statusOperations[$aOperation['status_bo']] ?>
+                        <?php endif; ?>
+                    </td>
+                    <td class="num_client_<?= $aOperation['id_reception'] ?>"><?= $aOperation['id_client'] ?></td>
                     <td><?= date('d/m/Y', strtotime($aOperation['added'])) ?></td>
                     <td align="center">
                         <img class="annuler_<?= $aOperation['id_reception'] ?>" style="cursor:pointer;" onclick="annulerAttribution(<?= $aOperation['id_client'] ?>, <?= $aOperation['id_reception'] ?>)" src="<?= $this->surl ?>/images/admin/delete.png" alt="Annuler"/>
@@ -77,7 +84,7 @@
                             <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Afficher la ligne de réception"/>
                         </a>
                         <div style="display:none;">
-                            <div id="inline_content_<?= $aOperation['id_reception'] ?>" style="white-space: nowrap; padding:10px; background:#fff;"><?= $aOperation['ligne'] ?></div>
+                            <div id="inline_content_<?= $aOperation['id_reception'] ?>" style="white-space:nowrap; padding:10px; background:#fff;"><?= $aOperation['ligne'] ?></div>
                         </div>
                     </td>
                 </tr>

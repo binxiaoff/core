@@ -2439,13 +2439,11 @@ class cronController extends bootstrap
             $projects                            = $this->loadData('projects');
             $companies                           = $this->loadData('companies');
             $prelevements                        = $this->loadData('prelevements');
-            $echeanciers                         = $this->loadData('echeanciers');
-            $echeanciers_emprunteur              = $this->loadData('echeanciers_emprunteur');
             $bank_unilend                        = $this->loadData('bank_unilend');
-            $projects_remb                       = $this->loadData('projects_remb');
             $this->notifications                 = $this->loadData('notifications');
             $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
             $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+            $this->loadData('transactions_types'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
 
             $statusVirementRecu  = array(05, 18, 45, 13);
             $statusVirementEmis  = array(06, 21);
