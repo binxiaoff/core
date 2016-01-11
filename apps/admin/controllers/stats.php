@@ -1437,27 +1437,39 @@ class statsController extends bootstrap
 
         while ($record = $this->bdd->fetch_array($resultat)) {
             if ('1' === $record['type'] || '3' === $record['type']) {
-                $sql = "SELECT id_pays, resident_etranger FROM lenders_imposition_history
-                    WHERE id_lender = {$record['id_lender_account']}
-                    AND added <= '{$record['date_echeance_reel']}'
-                    ORDER BY added DESC LIMIT 1";
+                $bForeigner = false;
+                $bZoneB040Country = false;
 
-                $oQueryResident = $this->bdd->query($sql);
-                $aRow = $this->bdd->fetch_array($oQueryResident);
+                if ($record['retenues_source'] == 0) { // French, or the interest is too small, so the retenue rounded to 0
+                    $sSqlResident = "SELECT id_pays, resident_etranger FROM lenders_imposition_history
+                            WHERE id_lender = {$record['id_lender_account']}
+                            AND added <= '{$record['date_echeance_reel']}'
+                            ORDER BY added DESC LIMIT 1";
+                    $oQueryResident = $this->bdd->query($sSqlResident);
+                    $aRow = $this->bdd->fetch_array($oQueryResident);
+
+                    if (0 !== $this->bdd->num_rows() && 0 < $aRow['resident_etranger']) {
+                        $bForeigner = true;
+                        if (in_array($aRow['id_pays'], $aZoneB040CountryIds)) {
+                            $bZoneB040Country = true;
+                        }
+                    }
+                    unset($oQueryResident, $aRow);
+                } else {
+                    $bForeigner = true;
+                }
                 // Exclude "remboursement anticipé" for calculating interests
                 if('0' === $record['status_ra']) {
-                    if(0 === $this->bdd->num_rows() || '0' === $aRow['resident_etranger']) { //code 66
+                    if(false === $bForeigner) { //code 66
                         $iSum66 += $record['interets'];
-
-                    } else if (in_array($aRow['id_pays'], $aZoneB040CountryIds)) {
+                    } else if (true === $bZoneB040Country) {
                         $iSum81 += $record['interets'] - $record['retenues_source']*100;
                     }
                 }
 
-                if (1 === $this->bdd->num_rows() && '0' !== $aRow['resident_etranger'] && in_array($aRow['id_pays'], $aZoneB040CountryIds)) {
+                if (true === $bZoneB040Country) {
                     $iSum82 += $record['capital'];
                 }
-                unset($oQueryResident, $aRow);
             }
             $iSum118 += $record['capital'];
 
