@@ -336,9 +336,17 @@ class dossiersController extends bootstrap
 
             $this->completude_wording = array();
             $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
+            $oTextes                  = $this->loadData('textes');
+            $aTranslations            = $oTextes->selectFront('projet', $this->language);
+
             foreach ($this->attachment_type->changeLabelTaxPackageAddYear($aAttachmentTypes) as $aAttachment) {
-                $this->completude_wording[] = $aAttachment['label'];
+                if ((int)$aAttachment['id'] === \attachment_type::PHOTOS_ACTIVITE) {
+                    $this->completude_wording[] = $aAttachment['label'] . ' ' . $aTranslations['completude-photos'];
+                } else {
+                    $this->completude_wording[] = $aAttachment['label'];
+                }
             }
+            $this->completude_wording[] = $aTranslations['completude-charge-affaires'];
 
             $this->aEmails = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'added DESC');
 
