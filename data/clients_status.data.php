@@ -38,33 +38,6 @@ class clients_status extends clients_status_crud
     const CLOSED_LENDER_REQUEST = 70;
     const CLOSED_BY_UNILEND     = 80;
 
-    public function clients_status($bdd, $params = '')
-    {
-        parent::clients_status($bdd, $params);
-    }
-
-    public function get($id, $field = 'id_client_status')
-    {
-        return parent::get($id, $field);
-    }
-
-    public function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    public function delete($id, $field = 'id_client_status')
-    {
-        parent::delete($id, $field);
-    }
-
-    public function create($cs = '')
-    {
-        $id = parent::create($cs);
-
-        return $id;
-    }
-
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {

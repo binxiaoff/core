@@ -259,7 +259,7 @@ class preteursController extends bootstrap
         $lElements = $this->blocs_elements->select('id_bloc = 9 AND id_langue = "' . $this->language . '"');
         foreach ($lElements as $b_elt) {
             $this->elements->get($b_elt['id_element']);
-            $this->completude_wording[ $this->elements->slug ] = $b_elt['value'];
+            $this->completude_wording[$this->elements->slug] = $b_elt['value'];
         }
         $this->nbWordingCompletude = count($this->completude_wording);
 
@@ -276,7 +276,6 @@ class preteursController extends bootstrap
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
         if (in_array($this->clients->type, array(clients::TYPE_BORROWER_LEGAL_ENTITY, clients::TYPE_BORROWER_LEGAL_ENTITY_FOREIGNER))) {
-
             $this->companies = $this->loadData('companies');
             $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
 
@@ -366,7 +365,7 @@ class preteursController extends bootstrap
             $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::COMPLETENESS, $this->clients->id_client, utf8_encode($_SESSION['content_email_completude'][ $this->clients->id_client ]));
 
             // On vide la session
-            unset($_SESSION['content_email_completude'][ $this->clients->id_client ]);
+            unset($_SESSION['content_email_completude'][$this->clients->id_client]);
 
             $_SESSION['email_completude_confirm'] = true;
 
@@ -416,7 +415,6 @@ class preteursController extends bootstrap
                 $this->clients->nom_usage = $this->ficelle->majNom($_POST['nom-usage']);
                 $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
 
-
                 //// check doublon mail ////
                 $aLenderStatusForQuery = array(
                     \clients_status::TO_BE_CHECKED,
@@ -463,16 +461,13 @@ class preteursController extends bootstrap
                 $this->clients->fonction  = '';
 
                 $this->lenders_accounts->id_company_owner = 0;
-
-
                 $this->lenders_accounts->bic = str_replace(' ', '', strtoupper($_POST['bic']));
 
                 $iban = '';
                 for ($i = 1; $i <= 7; $i++) {
-                    $iban .= strtoupper($_POST[ 'iban' . $i ]);
+                    $iban .= strtoupper($_POST['iban' . $i]);
                 }
                 $this->lenders_accounts->iban = str_replace(' ', '', $iban);
-
                 $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
                 if ($this->lenders_accounts->origine_des_fonds == '1000000') {
                     $this->lenders_accounts->precision = $_POST['preciser'];
@@ -707,7 +702,8 @@ class preteursController extends bootstrap
                             'prenom'  => $this->clients->prenom,
                             'projets' => $this->furl . '/projets-a-financer',
                             'lien_fb' => $lien_fb,
-                            'lien_tw' => $lien_tw);
+                            'lien_tw' => $lien_tw
+                        );
                         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
                         $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
@@ -1024,7 +1020,8 @@ class preteursController extends bootstrap
                             'prenom'  => $this->clients->prenom,
                             'projets' => $this->furl . '/projets-a-financer',
                             'lien_fb' => $lien_fb,
-                            'lien_tw' => $lien_tw);
+                            'lien_tw' => $lien_tw
+                        );
                         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
                         $this->email = $this->loadLib('email');
@@ -1169,10 +1166,11 @@ class preteursController extends bootstrap
             'url'           => $this->lurl,
             'prenom_p'      => $this->clients->prenom,
             'date_creation' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
-            'content'       => utf8_encode($_SESSION['content_email_completude'][ $this->clients->id_client ]),
+            'content'       => utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]),
             'lien_upload'   => $this->furl . '/profile/' . $lapage,
             'lien_fb'       => $lien_fb,
-            'lien_tw'       => $lien_tw);
+            'lien_tw'       => $lien_tw
+        );
 
         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
@@ -1606,7 +1604,7 @@ class preteursController extends bootstrap
         }
 
         $sNewName = '';
-        if (isset($_FILES[ $field ]['name']) && $aFileInfo = pathinfo($_FILES[ $field ]['name'])) {
+        if (isset($_FILES[$field]['name']) && $aFileInfo = pathinfo($_FILES[$field]['name'])) {
             $sNewName = mb_substr($aFileInfo['filename'], 0, 30) . '_' . $iOwnerId;
         }
 
@@ -1753,7 +1751,6 @@ class preteursController extends bootstrap
     private function changeClientStatus($iClientId, $iStatus, $iOrigin)
     {
         if ($this->clients->isBorrower($this->loadData('projects'), $this->loadData('companies'), $iClientId) === false) {
-
             $this->clients->get($iClientId, 'id_client');
             $this->clients->status = $iStatus;
             $this->clients->update();
@@ -1776,9 +1773,7 @@ class preteursController extends bootstrap
                     $_SESSION['freeow']['message'] = 'Le statut du preteur non inscrit a bien &eacute;t&eacute; modifi&eacute; !';
                     break;
             }
-
         } else {
-
             $_SESSION['freeow']['title']   = 'Statut du preteur non modifiable';
             $_SESSION['freeow']['message'] = 'Le client est &eacute;galement un emprunteur et ne peux &ecirc;tre mis hors ligne !';
 
@@ -1788,7 +1783,6 @@ class preteursController extends bootstrap
             header('location:' . $this->lurl . '/preteurs/edit/' . $oLendersAccounts->id_lender_account);
             die;
         }
-
     }
 
     private function sendEmailClosedAccount()
@@ -1806,7 +1800,8 @@ class preteursController extends bootstrap
             'url'     => $this->furl,
             'prenom'  => $this->clients->prenom,
             'lien_fb' => $sFB,
-            'lien_tw' => $sTW);
+            'lien_tw' => $sTW
+        );
         $tabVars        = $this->tnmp->constructionVariablesServeur($aVariablesMail);
 
         $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
@@ -1846,10 +1841,11 @@ class preteursController extends bootstrap
             'url'           => $this->lurl,
             'prenom_p'      => $this->clients->prenom,
             'date_creation' => date('d', $timeCreate) . ' ' . $month . ' ' . date('Y', $timeCreate),
-            'content'       => utf8_encode($_SESSION['content_email_completude'][ $this->clients->id_client ]),
+            'content'       => utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]),
             'lien_upload'   => $this->furl . '/profile/' . $lapage,
             'lien_fb'       => $lien_fb,
-            'lien_tw'       => $lien_tw);
+            'lien_tw'       => $lien_tw
+        );
         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
         $this->email = $this->loadLib('email');

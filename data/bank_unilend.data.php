@@ -40,29 +40,7 @@ class bank_unilend extends bank_unilend_crud
         parent::bank_unilend($bdd, $params);
     }
 
-    function get($id, $field = 'id_unilend')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_unilend')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -81,7 +59,7 @@ class bank_unilend extends bank_unilend_crud
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -94,7 +72,7 @@ class bank_unilend extends bank_unilend_crud
         return (int)($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id, $field = 'id_unilend')
+    public function exist($id, $field = 'id_unilend')
     {
         $sql    = 'SELECT * FROM `bank_unilend` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
@@ -102,7 +80,7 @@ class bank_unilend extends bank_unilend_crud
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    function sum($date, $where = '', $sum = 'montant')
+    public function sum($date, $where = '', $sum = 'montant')
     {
         if ($where != '') {
             $where = ' AND ' . $where;
@@ -124,7 +102,7 @@ class bank_unilend extends bank_unilend_crud
         return $solde;
     }
 
-    function sumMontant($where = '')
+    public function sumMontant($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -137,7 +115,7 @@ class bank_unilend extends bank_unilend_crud
         return (int)($this->bdd->result($result, 0, 0));
     }
 
-    function sumMontantEtat($where = '')
+    public function sumMontantEtat($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -150,7 +128,7 @@ class bank_unilend extends bank_unilend_crud
         return (int)($this->bdd->result($result, 0, 0));
     }
 
-    function sumMontantByDay($where = '')
+    public function sumMontantByDay($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -167,7 +145,7 @@ class bank_unilend extends bank_unilend_crud
         return $result;
     }
 
-    function sumMontantByDayMonths($where = '', $month, $year)
+    public function sumMontantByDayMonths($where = '', $month, $year)
     {
         if ($where != '') {
             $where = ' AND ' . $where;
@@ -178,14 +156,14 @@ class bank_unilend extends bank_unilend_crud
         $resultat = $this->bdd->query($sql);
         $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[ $record['date'] ]['montant'] = str_replace('-', '', $record['montant'] / 100);
-            $result[ $record['date'] ]['etat']    = $record['etat'] / 100;
+            $result[$record['date']]['montant'] = str_replace('-', '', $record['montant'] / 100);
+            $result[$record['date']]['etat']    = $record['etat'] / 100;
         }
 
         return $result;
     }
 
-    function ListEcheancesByDayMonths($where = '', $month, $year)
+    public function ListEcheancesByDayMonths($where = '', $month, $year)
     {
         if ($where != '') {
             $where = ' AND ' . $where;
@@ -199,9 +177,9 @@ class bank_unilend extends bank_unilend_crud
         while ($record = $this->bdd->fetch_array($resultat)) {
             if ($record['id_echeance_emprunteur'] != '0') {
                 if ($record['date'] == $ladate) {
-                    $result[ $ladate ] .= ',' . $record['id_echeance_emprunteur'];
+                    $result[$ladate] .= ',' . $record['id_echeance_emprunteur'];
                 } else {
-                    $result[ $record['date'] ] = $record['id_echeance_emprunteur'];
+                    $result[$record['date']] = $record['id_echeance_emprunteur'];
                 }
 
                 $ladate = $record['date'];

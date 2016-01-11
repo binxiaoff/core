@@ -78,7 +78,6 @@
     <?php
     // a controler
     switch ($this->clients_status->status) {
-
         case \clients_status::TO_BE_CHECKED : ?>
             <div class="attention">
                 Attention : compte non validé - créé le <?= date('d/m/Y', $this->timeCreate) ?>
@@ -678,7 +677,6 @@
                 <table class="tablesorter histo_status_client">
                 <?php
                 foreach ($this->lActions as $a) {
-
                     $this->clients_status->get($a['id_client_status'], 'id_client_status');
                     $this->users->get($a['id_user'], 'id_user');
 

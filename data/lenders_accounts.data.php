@@ -423,8 +423,8 @@ class lenders_accounts extends lenders_accounts_crud
                 WHERE
                     NOT EXISTS (SELECT * FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
                     AND NOT EXISTS (SELECT * FROM transactions t WHERE t.id_type = 16)
-                    AND DATE(la.added) >= '.$sStartDate.'
-                    AND DATE(la.added) <= '.$sEndDate.' '.$sWhereID;
+                    AND DATE(la.added) >= ' . $sStartDate . '
+                    AND DATE(la.added) <= ' . $sEndDate . ' ' . $sWhereID;
 
         //TODO replace transaction type ID by const TYPE_WELCOME_OFFER = 16 once the code is available (Commit [Unilend/release-statuts-emprunteurs] 24d6d5036026: [DEV-131])
         $resultat = $this->bdd->query($sql);
@@ -433,7 +433,6 @@ class lenders_accounts extends lenders_accounts_crud
         while ($record = $this->bdd->fetch_assoc($resultat)) {
             $aLenders[] = $record;
         }
-
         return $aLenders;
     }
 
@@ -455,6 +454,5 @@ class lenders_accounts extends lenders_accounts_crud
         $iWalletLines = $oWalletLines->counter('id_lender = ' . $iLenderId . ' AND type_financial_operation IN (' . implode($aTransactionTypes, ',') . ')');
 
         return ($iBids + $iPayments + $iWalletLines > 0);
-
     }
 }

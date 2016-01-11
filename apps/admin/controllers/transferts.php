@@ -2,7 +2,6 @@
 
 class transfertsController extends bootstrap
 {
-    public $Command;
 
     public function __construct($command, $config, $app)
     {
@@ -129,8 +128,7 @@ class transfertsController extends bootstrap
 
     public function _rattrapage_offre_bienvenue()
     {
-        $this->dates      = $this->loadLib('dates');
-
+        $this->dates             = $this->loadLib('dates');
         $this->offres_bienvenues = $this->loadData('offres_bienvenues');
         $this->clients           = $this->loadData('clients');
         $this->companies         = $this->loadData('companies');
@@ -153,7 +151,6 @@ class transfertsController extends bootstrap
 
         if (isset($_POST['spy_search'])) {
             if (empty($_POST['dateStart']) === false && empty($_POST['dateEnd']) === false) {
-
                 $oDateTimeStart                     = datetime::createFromFormat('d/m/Y', $_POST['dateStart']);
                 $oDateTimeEnd                       = datetime::createFromFormat('d/m/Y', $_POST['dateEnd']);
                 $sStartDateSQL                      = '"' . $oDateTimeStart->format('Y-m-d') . ' 00:00:00"';
@@ -161,20 +158,18 @@ class transfertsController extends bootstrap
                 $_SESSION['forms']['sStartDateSQL'] = $sStartDateSQL;
                 $_SESSION['forms']['sEndDateSQL']   = $sEndDateSQL;
 
-                $this->aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer($iLenderId = null, $sStartDateSQL, $sEndDateSQL);
-            }
-            elseif (empty($_POST['id']) === false) {
+                $this->aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer($iLenderId = null, $sStartDateSQL,
+                    $sEndDateSQL);
+            } elseif (empty($_POST['id']) === false) {
                 $this->aLenders          = $oLendersAccounts->getLendersWithNoWelcomeOffer($iLenderId = $_POST['id']);
                 $_SESSION['forms']['id'] = $_POST['id'];
-
             } else {
-                $_SESSION['freeow']['title'] = 'Recherche non abouti';
+                $_SESSION['freeow']['title']   = 'Recherche non abouti';
                 $_SESSION['freeow']['message'] = 'Il faut une date de d&eacutebut et de fin ou ID(s)!';
             }
         }
 
         if (isset($_POST['affect_welcome_offer']) && isset($this->params[0]) && isset($this->params[1])) {
-
             $this->clients->get($this->params[0]);
             $this->offres_bienvenues->get($this->params[1]);
 
@@ -193,20 +188,18 @@ class transfertsController extends bootstrap
             if ($oStartWelcomeOffer <= $oToday && $oEndWelcomeOffer >= $oToday) {
                 $bOfferValid = true;
             } else {
-                $_SESSION['freeow']['title'] = 'Offre de bienvenue non cr&eacute;dit&eacute;';
+                $_SESSION['freeow']['title']   = 'Offre de bienvenue non cr&eacute;dit&eacute;';
                 $_SESSION['freeow']['message'] = 'Il n\'y a plus d\'offre valide en cours !';
             }
 
             if ($iSumOfAllWelcomeOffersDistributed <= $this->offres_bienvenues->montant_limit && $iAvailableAmountForWelcomeOffers >= $this->offres_bienvenue->montant) {
                 $bEnoughMoneyLeft = true;
             } else {
-                $_SESSION['freeow']['title'] = 'Offre de bienvenue non cr&eacute;dit&eacute;';
+                $_SESSION['freeow']['title']   = 'Offre de bienvenue non cr&eacute;dit&eacute;';
                 $_SESSION['freeow']['message'] = 'Il n\'y a plus assez d\'argent disponible !';
             }
 
-
             if ($bOfferValid && $bEnoughMoneyLeft) {
-
                 $oWelcomeOfferDetails->id_offre_bienvenue        = $this->offres_bienvenues->id_offre_bienvenue;
                 $oWelcomeOfferDetails->motif                     = $sMotifOffreBienvenue;
                 $oWelcomeOfferDetails->id_client                 = $this->clients->id_client;
@@ -291,11 +284,9 @@ class transfertsController extends bootstrap
         }
 
         $sFilename = 'ratrappage_offre_bienvenue';
-
         $aColumnHeaders = array('ID Lender', 'Nom ou Raison Sociale', 'Prénom', 'Date de création', 'Date de validation');
 
         foreach ($this->aLenders as $key =>$aLender) {
-
             $aData[] = array(
                 $aLender['id_lender'],
                 empty($aLender['company']) ? $aLender['nom'] : $aLender['company'],
@@ -329,7 +320,6 @@ class transfertsController extends bootstrap
         header('Content-Length: '. strlen($sEncodedCSV));
         echo chr(255) . chr(254) . $sEncodedCSV;
         exit;
-
     }
 
     public function _affect_welcome_offer()
@@ -349,8 +339,5 @@ class transfertsController extends bootstrap
 
         $this->clients->get($oLendersAccounts->id_client_owner);
         $this->companies->get($oLendersAccounts->id_company_owner);
-
     }
-
-
 }

@@ -8321,11 +8321,9 @@ class cronController extends bootstrap
         }
     }
 
-
     public function _checkWelcomeOfferValidity()
     {
         if (true === $this->startCron('Validité Offre de Bienvenue', 5)) {
-
             $oSettings            = $this->loadData('settings');
             $oWelcomeOfferDetails = $this->loadData('offres_bienvenues_details');
             $oTransactions        = $this->loadData('transactions');
@@ -8342,12 +8340,10 @@ class cronController extends bootstrap
             $iNumberOfUnusedWelcomeOffers = 0;
 
             foreach ($aUnusedWelcomeOffers as $aWelcomeOffer) {
-
                 $oAdded    = DateTime::createFromFormat('Y-m-d H:m:s', $aWelcomeOffer['added']);
                 $oInterval = $oDateTime->diff($oAdded);
 
                 if ($oInterval->days >= $sOfferValidity) {
-
                     $oWelcomeOfferDetails->get($aWelcomeOffer['id_offre_bienvenue_detail']);
                     $oWelcomeOfferDetails->status = 2;
                     $oWelcomeOfferDetails->update();
@@ -8380,7 +8376,6 @@ class cronController extends bootstrap
                     $oBankUnilend->create();
 
                     $iNumberOfUnusedWelcomeOffers +=1;
-
                 }
             }
             $this->oLogger->addRecord(ULogger::INFO, 'Nombre d\'offres de Bienvenue retirées : ' . $iNumberOfUnusedWelcomeOffers);

@@ -33,36 +33,13 @@ class wallets_lines extends wallets_lines_crud
      * Types of financial operations
      */
     const TYPE_LENDER_SUBSCRIPTION = 10;
-    const TYPE_BID= 20;
-    const TYPE_MONEY_SUPPLY= 30;
-    const TYPE_REPAYMENT = 40;
-
+    const TYPE_BID                 = 20;
+    const TYPE_MONEY_SUPPLY        = 30;
+    const TYPE_REPAYMENT           = 40;
 
     public function __construct($bdd, $params = '')
     {
         parent::wallets_lines($bdd, $params);
-    }
-
-    public function get($id, $field = 'id_wallet_line')
-    {
-        return parent::get($id, $field);
-    }
-
-    public function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    public function delete($id, $field = 'id_wallet_line')
-    {
-        parent::delete($id, $field);
-    }
-
-    public function create($cs = '')
-    {
-        $id = parent::create($cs);
-
-        return $id;
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -117,9 +94,6 @@ class wallets_lines extends wallets_lines_crud
         } else {
             $montant = $montant / 100;
         }
-
         return $montant;
     }
-
-
 }

@@ -754,32 +754,28 @@ class clients extends clients_crud
 
     public function checkIfClientAlreadyExists($sName, $sFirstname, $sBirthdate, $aReplace)
     {
-        $sReplaceSQL = '';
+        $sReplaceSQL        = '';
         $sReplaceCharacters = '';
 
         foreach ($aReplace as $character) {
-
             $sReplaceSQL .= 'REPLACE(';
-            $sReplaceCharacters .= ',\''.addslashes($character).'\', \'\')';
-
+            $sReplaceCharacters .= ',\'' . addslashes($character) . '\', \'\')';
         }
 
-        $sql = 'SELECT * FROM clients c WHERE '.$sReplaceSQL.'nom'.$sReplaceCharacters.' LIKE \'%'.$sName.'%\'
-            AND '.$sReplaceSQL.'prenom'.$sReplaceCharacters.' LIKE \'%'.$sFirstname.'%\'
-            AND naissance = DATE(\''.$sBirthdate.'\')
+        $sql = 'SELECT * FROM clients c WHERE ' . $sReplaceSQL . 'nom' . $sReplaceCharacters . ' LIKE \'%' . $sName . '%\'
+            AND ' . $sReplaceSQL . 'prenom' . $sReplaceCharacters . ' LIKE \'%' . $sFirstname . '%\'
+            AND naissance = DATE(\'' . $sBirthdate . '\')
             AND status = 1
-            AND (SELECT cs.status FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) IN ('.\clients_status::VALIDATED.')';
+            AND (SELECT cs.status FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) IN (' . \clients_status::VALIDATED . ')';
 
 
         $oQuery = $this->bdd->query($sql);
-        $result   = array();
+        $result = array();
 
         while ($record = $this->bdd->fetch_array($oQuery)) {
             $result[] = $record;
         }
 
         return $result;
-
-
     }
 }
