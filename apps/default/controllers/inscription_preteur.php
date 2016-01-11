@@ -301,11 +301,9 @@ class inscription_preteurController extends bootstrap
             }
 
             // check_etranger
-            /*if($this->etranger > 0){*/
-            if(isset($_POST['check_etranger']) && $_POST['check_etranger'] == false){
+            if(isset($_POST['check_etranger']) && $_POST['check_etranger'] != on){
                 $this->form_ok = false;
             }
-            /*}*/
 
             // age (+18ans)
             if($this->dates->ageplus18($this->clients->naissance) == false){
@@ -1297,7 +1295,9 @@ class inscription_preteurController extends bootstrap
 
                 $this->lenders_accounts->bic = trim(strtoupper($_POST['bic']));// Bic
                 $this->lenders_accounts->iban = ''; // Iban
-                for($i=1;$i<=7;$i++){ $this->lenders_accounts->iban .= trim(strtoupper($_POST['iban-'.$i]));}
+                for($i=1; $i<=7; $i++) {
+                    $this->lenders_accounts->iban .= (true === isset($_POST['iban-'.$i]) ? trim(strtoupper($_POST['iban-'.$i])) : '');
+                }
 
                 if($this->lenders_accounts->iban != '')
                 {
