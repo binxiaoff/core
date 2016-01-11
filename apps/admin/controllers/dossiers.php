@@ -335,7 +335,8 @@ class dossiersController extends bootstrap
             $this->aAttachments     = $this->projects->getAttachments();
 
             $this->completude_wording = array();
-            foreach ($this->attachment_type->getAllTypesForProjects($this->language, false) as $aAttachment) {
+            $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
+            foreach ($this->attachment_type->changeLabelTaxPackageAddYear($aAttachmentTypes) as $aAttachment) {
                 $this->completude_wording[] = $aAttachment['label'];
             }
 

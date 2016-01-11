@@ -4,7 +4,7 @@
         <div class="register-form">
             <form action="<?= $_SERVER['REQUEST_URI'] ?>" method="post" id="form_espace_emprunteur" enctype="multipart/form-data">
                 <?php if (empty($this->sAttachmentList)) { ?>
-                    <div class="row"><?= $this->lng['espace-emprunteur']['liste-des-docs-procedure-rapide'] ?></div>
+                    <div class="row"><?php printf($this->lng['espace-emprunteur']['liste-des-docs-procedure-rapide'], $this->sYearLessTwo, $this->sYearLessThree) ?></div>
                 <?php } else { ?>
                     <div class="row"><?= $this->lng['espace-emprunteur']['documents-demandes'] ?></div>
                     <div class="row"><?= $this->sAttachmentList ?></div>

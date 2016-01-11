@@ -221,4 +221,35 @@ class attachment_type extends attachment_type_crud
         }
         return $result;
     }
+
+    /**
+     * @param $aTypes array with attachments
+     * @return $aTypes array with attachments
+     * Changes the label of tax package (Liasse fiscal) N-1, N-2
+     * to the concerned year
+     */
+    public function changeLabelTaxPackageAddYear($aTypes)
+    {
+        foreach ($aTypes as $iKey => $aAttachmentType) {
+            if (in_array($aAttachmentType['id'], array(
+                \attachment_type::DERNIERE_LIASSE_FISCAL,
+                \attachment_type::LIASSE_FISCAL_N_1,
+                \attachment_type::LIASSE_FISCAL_N_2
+            ))) {
+                switch ((int)$aAttachmentType['id']) {
+                    case \attachment_type::DERNIERE_LIASSE_FISCAL:
+                        $aTypes[$iKey]['label'] = 'Liasse fiscale ' . (date('Y') - 1);
+                        break;
+                    case \attachment_type::LIASSE_FISCAL_N_1:
+                        $aTypes[$iKey]['label'] = 'Liasse fiscale ' . (date('Y') - 2);
+                        break;
+                    case \attachment_type::LIASSE_FISCAL_N_2:
+                        $aTypes[$iKey]['label'] = 'Liasse fiscale ' . (date('Y') - 3);
+                        break;
+                }
+            }
+        }
+
+        return $aTypes;
+    }
 }
