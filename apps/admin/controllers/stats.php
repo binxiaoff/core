@@ -1436,7 +1436,7 @@ class statsController extends bootstrap
         $resultat = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($resultat)) {
-            if ('1' === $record['type']) {
+            if ('1' === $record['type'] || '3' === $record['type']) {
                 $sql = "SELECT id_pays, resident_etranger FROM lenders_imposition_history
                     WHERE id_lender = {$record['id_lender_account']}
                     AND added <= '{$record['date_echeance_reel']}'
