@@ -1440,24 +1440,21 @@ class statsController extends bootstrap
                 $bForeigner = false;
                 $bZoneB040Country = false;
 
-                if ($record['retenues_source'] == 0) { // French, or the interest is too small, so the retenue rounded to 0
-                    $sSqlResident = "SELECT id_pays, resident_etranger FROM lenders_imposition_history
-                            WHERE id_lender = {$record['id_lender_account']}
-                            AND added <= '{$record['date_echeance_reel']}'
-                            ORDER BY added DESC LIMIT 1";
-                    $oQueryResident = $this->bdd->query($sSqlResident);
-                    $aRow = $this->bdd->fetch_array($oQueryResident);
+                $sSqlResident = "SELECT id_pays, resident_etranger FROM lenders_imposition_history
+                        WHERE id_lender = {$record['id_lender_account']}
+                        AND added <= '{$record['date_echeance_reel']}'
+                        ORDER BY added DESC LIMIT 1";
+                $oQueryResident = $this->bdd->query($sSqlResident);
+                $aRow = $this->bdd->fetch_array($oQueryResident);
 
-                    if (0 !== $this->bdd->num_rows() && 0 < $aRow['resident_etranger']) {
-                        $bForeigner = true;
-                        if (in_array($aRow['id_pays'], $aZoneB040CountryIds)) {
-                            $bZoneB040Country = true;
-                        }
-                    }
-                    unset($oQueryResident, $aRow);
-                } else {
+                if (0 !== $this->bdd->num_rows() && 0 < $aRow['resident_etranger']) {
                     $bForeigner = true;
+                    if (in_array($aRow['id_pays'], $aZoneB040CountryIds)) {
+                        $bZoneB040Country = true;
+                    }
                 }
+                unset($oQueryResident, $aRow);
+
                 // Exclude "remboursement anticipé" for calculating interests
                 if('0' === $record['status_ra']) {
                     if(false === $bForeigner) { //code 66
