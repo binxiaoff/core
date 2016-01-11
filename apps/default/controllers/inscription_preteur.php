@@ -300,11 +300,6 @@ class inscription_preteurController extends bootstrap
                 $this->form_ok = false;
             }
 
-            // check_etranger
-            if(isset($_POST['check_etranger']) && $_POST['check_etranger'] != on){
-                $this->form_ok = false;
-            }
-
             // age (+18ans)
             if($this->dates->ageplus18($this->clients->naissance) == false){
                 $this->form_ok = false;
@@ -1336,6 +1331,11 @@ class inscription_preteurController extends bootstrap
                     $this->form_ok = false;
                 }
                 elseif($_POST['origine_des_fonds'] == 1000000 && in_array($_POST['preciser'],array($this->lng['etape2']['autre-preciser'],''))){
+                    $this->form_ok = false;
+                }
+
+                // US Person
+                if(isset($_POST['check_etranger']) && $_POST['check_etranger'] != 'on') {
                     $this->form_ok = false;
                 }
 
