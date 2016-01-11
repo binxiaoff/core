@@ -1291,7 +1291,7 @@ class inscription_preteurController extends bootstrap
                 $this->lenders_accounts->bic = trim(strtoupper($_POST['bic']));// Bic
                 $this->lenders_accounts->iban = ''; // Iban
                 for($i=1; $i<=7; $i++) {
-                    $this->lenders_accounts->iban .= (true === isset($_POST['iban-'.$i]) ? trim(strtoupper($_POST['iban-'.$i])) : '');
+                    $this->lenders_accounts->iban .= trim(strtoupper($_POST['iban-'.$i]));
                 }
 
                 if($this->lenders_accounts->iban != '')
