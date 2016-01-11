@@ -656,6 +656,10 @@ class echeanciers extends echeanciers_crud
         $anneemois = explode('-', $date1);
         $anneemois = $anneemois[0] . '-' . $anneemois[1];
 
+        if (is_array($morale)) {
+            $morale = implode(',', $morale);
+        }
+
         $sql = 'SELECT
 		SUM(montant) as montant,
 		SUM(capital) as capital,
@@ -674,7 +678,7 @@ class echeanciers extends echeanciers_crud
 		LEFT JOIN clients c ON l.id_client_owner = c.id_client
 		WHERE e.status_emprunteur = 1
                 AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
-		' . ($morale != '' ? ' AND c.type = ' . $morale : '');
+		' . ($morale != '' ? ' AND c.type in (' . $morale . ')' : '');
         if ($exonere == 1) {
             $sql .= '
 			 AND l.exonere = 1
@@ -696,9 +700,6 @@ class echeanciers extends echeanciers_crud
 
     function getEcheanceBetweenDatesEtranger($date1, $date2)
     {
-        $anneemois = explode('-', $date1);
-        $anneemois = $anneemois[0] . '-' . $anneemois[1];
-
         $sql = 'SELECT
 			SUM(montant) as montant,
 			SUM(capital) as capital,
@@ -717,7 +718,7 @@ class echeanciers extends echeanciers_crud
 			LEFT JOIN clients c ON l.id_client_owner = c.id_client
 			WHERE e.status_emprunteur = 1
                         AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
-			AND c.type = 1
+			AND c.type in (1,3)
 			AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = l.id_lender_account AND LEFT(lih.added,10) <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0
 			AND LEFT(date_echeance_reel,10) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
 
@@ -730,10 +731,14 @@ class echeanciers extends echeanciers_crud
         return $result[0];
     }
 
-    function getEcheanceBetweenDates($date1, $date2, $exonere = '', $morale = '', $etranger = '')
+    function getEcheanceBetweenDates($date1, $date2, $exonere = '', $morale = '')
     {
         $anneemois = explode('-', $date1);
         $anneemois = $anneemois[0] . '-' . $anneemois[1];
+
+        if (is_array($morale)) {
+            $morale = implode(',', $morale);
+        }
 
         $sql = 'SELECT
 			SUM(montant) as montant,
@@ -753,43 +758,20 @@ class echeanciers extends echeanciers_crud
 			LEFT JOIN clients c ON l.id_client_owner = c.id_client
 			WHERE e.status_emprunteur = 1
                         AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
-			' . ($morale != '' ? ' AND c.type = ' . $morale : '');
+			' . ($morale != '' ? ' AND c.type in (' . $morale . ')' : '');
 
         if ($exonere != '') {
             if ($exonere == '1') {
                 $sql .= '
-					 AND l.exonere = 1
-					 AND "' . $anneemois . '" BETWEEN LEFT(l.debut_exoneration,7) AND LEFT(l.fin_exoneration,7)';
+                    AND l.exonere = 1
+                    AND "' . $anneemois . '" BETWEEN LEFT(l.debut_exoneration,7) AND LEFT(l.fin_exoneration,7)';
             } else {
                 $sql .= ' AND l.exonere = ' . $exonere;
             }
         }
 
         $sql .= '
-			AND LEFT(date_echeance_reel,10) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
-
-
-        /*}
-            else{
-            $sql='SELECT
-            SUM(montant) as montant,
-            SUM(capital) as capital,
-            SUM(interets) as interets,
-            SUM(commission) as commission,
-            SUM(tva) as tva,
-            SUM(prelevements_obligatoires) as prelevements_obligatoires,
-            SUM(retenues_source) as retenues_source,
-            SUM(csg) as csg,
-            SUM(prelevements_sociaux) as prelevements_sociaux,
-            SUM(contributions_additionnelles) as contributions_additionnelles,
-            SUM(prelevements_solidarite) as prelevements_solidarite,
-            SUM(crds) as crds
-            FROM echeanciers e
-            LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
-            LEFT JOIN clients c ON l.id_client_owner = c.id_client
-            WHERE e.status_emprunteur = 1'.($exonere != ''?' AND l.exonere = '.$exonere:'').($morale != ''?' AND c.type = '.$morale:'').' AND LEFT(date_echeance_reel,10) BETWEEN "'.$date1.'" AND "'.$date2.'"';
-        }*/
-
+            AND LEFT(date_echeance_reel,10) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -810,18 +792,6 @@ class echeanciers extends echeanciers_crud
         $sql = 'UPDATE echeanciers SET date_echeance = "' . $date_echeance . '", date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE status_emprunteur = 0 AND id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" ';
         $this->bdd->query($sql);
     }
-
-    /*// mise à jour remb exoneration preteur
-    function update_prelevements_obligatoires($id_lender,$exonere,$prelevements_obligatoires='')
-    {
-        if($exonere == 1){
-            $sql='UPDATE echeanciers SET prelevements_obligatoires = 0, updated = "'.date('Y-m-d H:i:s').'" WHERE id_lender = '.$id_lender.' AND status = 0';
-        }
-        elseif($exonere == 0 && $prelevements_obligatoires != ''){
-            $sql='UPDATE echeanciers SET prelevements_obligatoires = ROUND((interets/100) * '.$prelevements_obligatoires.',2), updated = "'.date('Y-m-d H:i:s').'" WHERE id_lender = '.$id_lender.' AND status = 0';
-        }
-        $this->bdd->query($sql);
-    }*/
 
     // mise à jour remb exoneration preteur
     function update_prelevements_obligatoires($id_lender, $exonere, $prelevements_obligatoires = '', $debut = '', $fin = '')
