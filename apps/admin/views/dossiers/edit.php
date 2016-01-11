@@ -1066,7 +1066,7 @@
                     </tr>
                     <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
                         <td colspan="4">
-                            <a id="btn_add_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/add_client" target="_blank">Créer un prescripteur</a>
+                            <a id="btn_add_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/add_client/<?= $this->projects->id_project ?>" target="_blank">Créer un prescripteur</a>
                         </td>
                     </tr>
                     <input type="hidden" id="id_prescripteur" name="id_prescripteur" value="<?= $this->prescripteurs->id_prescripteur ?>" />

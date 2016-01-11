@@ -153,15 +153,15 @@ class attachment_type extends attachment_type_crud
             self::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3,
             self::SITUATION_COMPTABLE_INTERMEDIAIRE,
             self::DERNIERS_COMPTES_CONSOLIDES,
-            self::AUTRE1,
-            self::AUTRE2,
-            self::AUTRE3,
-            self::AUTRE4,
             self::STATUTS,
             self::PRESENTATION_PROJET,
             self::DERNIERE_LIASSE_FISCAL_HOLDING,
             self::KBIS_HOLDING,
-            self::PHOTOS_ACTIVITE
+            self::PHOTOS_ACTIVITE,
+            self::AUTRE1,
+            self::AUTRE2,
+            self::AUTRE3,
+            self::AUTRE4
         );
 
         $oTextes = new \textes($this->bdd);

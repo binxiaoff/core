@@ -199,6 +199,7 @@
                     <th style="width:10%">Statut</th>
                     <th style="width:10%">Commercial</th>
                     <th style="width:10%">Analyste</th>
+                    <th style="width:1%">Presc.</th>
                     <th style="width:1%">&nbsp;</th>
                 </tr>
             </thead>
@@ -220,6 +221,7 @@
                     <td><?= $p['label'] ?></td>
                     <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
                     <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
+                    <td><?= empty($p['id_prescripteur']) === false ? '<img src="'. $this->surl .'/images/admin/check.png" alt="a prescripteur"/>' : '' ?></td>
                     <td align="center">
                         <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
                             <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>

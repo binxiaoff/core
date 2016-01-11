@@ -145,7 +145,8 @@ class prescripteursController extends bootstrap
             $serialize = serialize(array('id_prescripteur' => $oPrescripteurs->id_prescripteur, 'post' => $_POST, 'files' => $_FILES));
             $this->users_history->histo(5, 'add prescripteur', $_SESSION['user']['id_user'], $serialize);
 
-            echo 'OK';
+            $sPrescripteurJson = json_encode(array('result' => 'OK', 'id_prescripteur' => $oPrescripteurs->id_prescripteur));
+            echo $sPrescripteurJson;
         }
     }
 
