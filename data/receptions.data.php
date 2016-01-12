@@ -29,6 +29,11 @@
 
 class receptions extends receptions_crud
 {
+    const REPAYMENT_TYPE_NORMAL         = 0;
+    const REPAYMENT_TYPE_EARLY          = 1;
+    const REPAYMENT_TYPE_REGULARISATION = 2;
+    const REPAYMENT_TYPE_RECOVERY       = 3;
+
     public function __construct($bdd, $params = '')
     {
         parent::receptions($bdd, $params);

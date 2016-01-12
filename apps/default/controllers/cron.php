@@ -2673,9 +2673,9 @@ class cronController extends bootstrap
                                     && $this->projects->get((int) $aMatches[1])
                                     && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement')
                                 ) {
-                                    $receptions->id_project    = $this->projects->id_project;
-                                    $receptions->remb_anticipe = 1;
-                                    $receptions->status_bo     = 2; // attri auto
+                                    $receptions->id_project = $this->projects->id_project;
+                                    $receptions->type_remb  = \receptions::REPAYMENT_TYPE_EARLY;
+                                    $receptions->status_bo  = 2; // attri auto
                                     $receptions->update();
 
                                     $transactions->id_virement      = $receptions->id_reception;

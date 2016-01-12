@@ -3501,7 +3501,7 @@ class dossiersController extends bootstrap
 
             if ($dernierStatut[0]['id_project_status'] == $this->projects_status->id_project_status) {
                 //récupération du montant de la transaction du CRD pour afficher la ligne en fin d'échéancier
-                $this->receptions->get($this->projects->id_project, 'remb_anticipe = 1 AND status_virement = 1 AND type = 2 AND id_project');
+                $this->receptions->get($this->projects->id_project, 'type_remb = ' . \receptions::REPAYMENT_TYPE_EARLY . ' AND status_virement = 1 AND type = 2 AND id_project');
                 $this->montant_ra = ($this->receptions->montant / 100);
                 $this->date_ra    = $dernierStatut[0]['added'];
 
@@ -3603,7 +3603,7 @@ class dossiersController extends bootstrap
 
         // on verifie si on a recu un virement anticipé pour ce projet
         $this->receptions = $this->loadData('receptions');
-        $L_vrmt_anticipe  = $this->receptions->select("id_project = " . $this->projects->id_project . " AND status_bo IN(1,2) AND remb_anticipe = 1 AND type = 2 AND status_virement = 1");
+        $L_vrmt_anticipe  = $this->receptions->select('id_project = ' . $this->projects->id_project . ' AND status_bo IN(1, 2) AND type_remb = ' . \receptions::REPAYMENT_TYPE_EARLY . ' AND type = 2 AND status_virement = 1');
 
         $this->virement_recu = false;
 

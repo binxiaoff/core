@@ -86,9 +86,8 @@ class transfertsController extends bootstrap
 
             if ($_POST['type_remb'] === 'remboursement_anticipe') {
                 $this->receptions->id_project      = $this->projects->id_project;
-                $this->receptions->remb_anticipe   = 1;
                 $this->receptions->status_bo       = 1;
-                $this->receptions->type_remb       = 1;
+                $this->receptions->type_remb       = \receptions::REPAYMENT_TYPE_EARLY;
                 $this->receptions->remb            = 1;
                 $this->receptions->id_user         = $_SESSION['user']['id_user'];
                 $this->receptions->assignment_date = date('Y-m-d H:i:s');
@@ -114,11 +113,11 @@ class transfertsController extends bootstrap
                 $bank_unilend->create();
             } elseif (in_array($_POST['type_remb'], array('regularisation', 'recouvrement'))) {
                 if ($_POST['type_remb'] === 'regularisation') {
-                    $type_remb        = 2;
+                    $type_remb        = \receptions::REPAYMENT_TYPE_REGULARISATION;
                     $type_transaction = \transactions_types::TYPE_REGULATION_BANK_TRANSFER;
                     $montant          = $this->receptions->montant;
                 } else {
-                    $type_remb        = 3;
+                    $type_remb        = \receptions::REPAYMENT_TYPE_RECOVERY;
                     $type_transaction = \transactions_types::TYPE_RECOVERY_BANK_TRANSFER;
                     $montant          = $this->receptions->montant / (1 - ($commission_ht * (1 + $tva)));// Montant avec la com + tva (on enregistre le prelevement avec la com et pareille chez unilend)
                 }
