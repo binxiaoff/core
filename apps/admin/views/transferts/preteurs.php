@@ -49,6 +49,9 @@
         <li>Virements prêteurs</li>
     </ul>
     <h1>Virements prêteurs</h1>
+    <div class="btnDroite">
+        <a href="<?= $this->lurl ?>/transferts/preteurs/csv" class="btn_link">Export CSV</a>
+    </div>
     <table class="tablesorter">
         <thead>
             <tr>

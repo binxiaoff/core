@@ -37,6 +37,11 @@ class transfertsController extends bootstrap
         foreach ($oUsers->select('id_user IN (' . implode(', ', array_unique(array_column($this->aOperations, 'id_user'))) . ')') as $aUser) {
             $this->aUsers[$aUser['id_user']] = $aUser;
         }
+
+        if (isset($this->params[0]) && 'csv' === $this->params[0]) {
+            $this->hideDecoration();
+            $this->view = 'csv';
+        }
     }
 
     public function _emprunteurs()
@@ -48,6 +53,11 @@ class transfertsController extends bootstrap
 
         foreach ($oUsers->select('id_user IN (' . implode(', ', array_unique(array_column($this->aOperations, 'id_user'))) . ')') as $aUser) {
             $this->aUsers[$aUser['id_user']] = $aUser;
+        }
+
+        if (isset($this->params[0]) && 'csv' === $this->params[0]) {
+            $this->hideDecoration();
+            $this->view = 'csv';
         }
     }
 
