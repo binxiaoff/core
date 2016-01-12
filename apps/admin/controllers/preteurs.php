@@ -2209,4 +2209,216 @@ class preteursController extends bootstrap
         $oLenders = $this->loadData('lenders_accounts');
         $this->aLenders = $oLenders->getLendersToMatchBirthCity(200);
     }
+
+    public function _modify_passed_repaymet_schedule()
+    {
+        $aMatch                  = array();
+        $aNonMatch               = array();
+        $this->aChangesRepayment = array();
+        $aFieldCanBeModified = array(
+            'montant',
+            'capital',
+            'interets',
+            'commission',
+            'tva',
+            'prelevements_obligatoires',
+            'retenues_source',
+            'csg',
+            'prelevements_sociaux',
+            'contributions_additionnelles',
+            'prelevements_solidarite',
+            'crds'
+        );
+
+
+        if (isset($_FILES['echeances_csv']) && 'text/csv' === $_FILES['echeances_csv']['type']) {
+            $rFile = fopen($_FILES['echeances_csv']['tmp_name'], 'r');
+            if ($aKeys = fgetcsv($rFile, 0, ';')) {
+                /** @var echeanciers $oEcheanciers */
+                $oEcheanciers = $this->loadData('echeanciers');
+                /** @var transactions $oTransactionsLender */
+                $oTransactionsLender = $this->loadData('transactions');
+                /** @var wallets_lines $oWalletLine */
+                $oWalletLine = $this->loadData('wallets_lines');
+                /** @var echeanciers_emprunteur $oEcheanciersEmprunteur */
+                $oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
+                /** @var transactions $oTransactionsUnilend */
+                $oTransactionsUnilend = $this->loadData('transactions');
+                /** @var bank_unilend $oBankUnilend */
+                $oBankUnilend = $this->loadData('bank_unilend');
+                while (($aRow = fgetcsv($rFile, 0, ';')) !== false) {
+                    $oEcheanciers->unsetData();
+                    $oTransactionsLender->unsetData();
+                    $oWalletLine->unsetData();
+                    $oEcheanciersEmprunteur->unsetData();
+                    $oTransactionsUnilend->unsetData();
+                    $oBankUnilend->unsetData();
+
+                    $aRepayment = array_combine($aKeys, $aRow);
+                    if ('' === $aRepayment['id_echeancier']
+                        || false === $oEcheanciers->get($aRepayment['id_echeancier'])
+                        || $oEcheanciers->id_lender != $aRepayment['id_lender']
+                        || $oEcheanciers->id_project != $aRepayment['id_project']
+                        || $oEcheanciers->id_loan != $aRepayment['id_loan']
+                    ) {
+                        $aNonMatch[] = $aRepayment;
+                        continue;
+                    }
+                    $aRepaymentOld = array_shift($oEcheanciers->selectEcheances_a_remb('id_echeancier = ' . $aRepayment['id_echeancier']));
+
+                    foreach ($aRepayment as $sKey => &$sValue) {
+                        if (false === in_array($sKey, $aFieldCanBeModified)) {
+                            continue;
+                        }
+                        $sValue                     = str_replace(',', '.', $sValue);
+                        $aRepayment[$sKey . '_old'] = $oEcheanciers->$sKey;
+                        $oEcheanciers->$sKey        = $sValue;
+                        $aMatch[$aRepayment['id_echeancier']] = $aRepayment;
+                    }
+                    $oEcheanciers->update();
+
+                    $aRepaymentNew = array_shift($oEcheanciers->selectEcheances_a_remb('id_echeancier = ' . $aRepayment['id_echeancier']));
+
+                    $iRepaymentNetDiff = ($aRepaymentNew['rembNet'] - $aRepaymentOld['rembNet']) * 100;
+                    $iRepaymentTaxDiff = ($aRepaymentNew['etat'] - $aRepaymentOld['etat']) * 100;
+
+                    if (0 != $iRepaymentNetDiff) {
+                        // Update transaction type "Remboursement prêteur"
+                        if (false === $oTransactionsLender->get($aRepayment['id_echeancier'], 'type_transaction = 5 AND id_echeancier')) {
+                            $aTransaction = array_shift($oTransactionsLender->select('type_transaction = 5 AND id_echeancier = ' . $aRepayment['id_echeancier']));
+                            if (null === $aTransaction || false === $oTransactionsLender->get($aTransaction['id_transaction'])) {
+                                //Rollback repayment
+                                $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
+                                $aNonMatch[] = $aRepayment;
+                                unset($aMatch[$aRepayment['id_echeancier']]);
+                                continue;
+                            }
+                        }
+                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'transactions', $oTransactionsLender->id_transaction, 'montant', $oTransactionsLender->montant . ' + (' . $iRepaymentNetDiff . ')');
+
+                        $oTransactionsLender->montant += $iRepaymentNetDiff;
+                        $oTransactionsLender->update();
+
+
+                        // Update lender's wallet line
+                        if (false === $oWalletLine->get($oTransactionsLender->id_transaction, 'id_transaction')) {
+                            $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
+                            $this->rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff);
+                            $this->removeLogChangesSchedule($aRepayment['id_echeancier']);
+                            $aNonMatch[] = $aRepayment;
+                            unset($aMatch[$aRepayment['id_echeancier']]);
+                            continue;
+                        }
+                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'wallets_lines', $oWalletLine->id_wallet_line, 'amount', $oWalletLine->amount . ' + (' . $iRepaymentNetDiff . ')');
+
+                        $oWalletLine->amount += $iRepaymentNetDiff;
+                        $oWalletLine->update();
+                    }
+
+                    if (0 != $iRepaymentNetDiff || 0 != $iRepaymentTaxDiff) {
+                        // Update transaction type "Remboursement Unilend"
+                        $aPaymentSchedule = array_shift($oEcheanciersEmprunteur->select('id_project = ' . $aRepayment['id_project'] . ' AND ordre = ' . $aRepayment['ordre']));
+                        if (null === $aPaymentSchedule) {
+                            $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
+                            $this->rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff);
+                            $this->rollbackWalletLine($oWalletLine, $iRepaymentNetDiff);
+                            $this->removeLogChangesSchedule($aRepayment['id_echeancier']);
+                            $aNonMatch[] = $aRepayment;
+                            unset($aMatch[$aRepayment['id_echeancier']]);
+                            continue;
+                        }
+                        if (false === $oTransactionsUnilend->get($aPaymentSchedule['id_echeancier_emprunteur'], 'type_transaction = 10 AND id_echeancier_emprunteur')) {
+                            $aTransactionUnilend = array_shift($oTransactionsUnilend->select('type_transaction = 10 AND id_echeancier_emprunteur = ' . $aPaymentSchedule['id_echeancier_emprunteur']));
+                            if (null === $aTransactionUnilend || false === $oTransactionsUnilend->get($aTransactionUnilend['id_transaction'])) {
+                                $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
+                                $this->rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff);
+                                $this->rollbackWalletLine($oWalletLine, $iRepaymentNetDiff);
+                                $this->removeLogChangesSchedule($aRepayment['id_echeancier']);
+                                $aNonMatch[] = $aRepayment;
+                                unset($aMatch[$aRepayment['id_echeancier']]);
+                                continue;
+                            }
+                        }
+                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'transactions', $oTransactionsUnilend->id_transaction, 'montant_unilend', $oTransactionsUnilend->montant_unilend . ' + (' . -1 * $iRepaymentNetDiff . ')');
+                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'transactions', $oTransactionsUnilend->id_transaction, 'montant_etat', $oTransactionsUnilend->montant_etat . ' + (' . $iRepaymentTaxDiff . ')');
+
+                        $oTransactionsUnilend->montant_unilend += -1 * $iRepaymentNetDiff;
+                        $oTransactionsUnilend->montant_etat    += $iRepaymentTaxDiff;
+                        $oTransactionsUnilend->update();
+
+                        // Update bank unilend type "Remboursement prêteur"
+                        if (false === $oBankUnilend->get($oTransactionsUnilend->id_transaction, 'type = 2 AND id_transaction')) {
+                            $aBankUnilend = array_shift($oBankUnilend->select('type = 2 and id_transaction = ' . $oTransactionsUnilend->id_transaction));
+                            if (null === $aBankUnilend || false === $oBankUnilend->get($aBankUnilend['id_unilend'])) {
+                                $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
+                                $this->rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff);
+                                $this->rollbackWalletLine($oWalletLine, $iRepaymentNetDiff);
+                                $this->rollbackTransactionUnilend($oTransactionsUnilend, $iRepaymentNetDiff, $iRepaymentTaxDiff);
+                                $this->removeLogChangesSchedule($aRepayment['id_echeancier']);
+                                $aNonMatch[] = $aRepayment;
+                                unset($aMatch[$aRepayment['id_echeancier']]);
+                                continue;
+                            }
+                        }
+                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'bank_unilend', $oBankUnilend->id_unilend, 'montant', $oBankUnilend->montant . ' + (' . -1 * $iRepaymentNetDiff . ')');
+                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'bank_unilend', $oBankUnilend->id_unilend, 'etat', $oBankUnilend->etat . ' + (' . $iRepaymentTaxDiff . ')');
+
+                        $oBankUnilend->montant += -1 * $iRepaymentNetDiff;
+                        $oBankUnilend->etat += $iRepaymentTaxDiff;
+                        $oBankUnilend->update();
+                    }
+                }
+            }
+            $this->aTemplateVariables = array(
+                'aMatch'    => $aMatch,
+                'aNonMatch' => $aNonMatch,
+                'aChanges'  => $this->aChangesRepayment
+            );
+        }
+    }
+
+    private function rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified)
+    {
+        foreach ($aRepayment as $sKey => $sValue) {
+            if (false === in_array($sKey, $aFieldCanBeModified)) {
+                continue;
+            }
+            $oEcheanciers->$sKey = $aRepayment[$sKey . '_old'];
+        }
+        $oEcheanciers->update();
+    }
+
+    private function rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff)
+    {
+        $oTransactionsLender->montant -= $iRepaymentNetDiff;
+        $oTransactionsLender->update();
+    }
+
+    private function rollbackWalletLine($oWalletLine, $iRepaymentNetDiff)
+    {
+        $oWalletLine->amount -= $iRepaymentNetDiff;
+        $oWalletLine->update();
+    }
+
+    private function rollbackTransactionUnilend($oTransactionsUnilend, $iRepaymentNetDiff, $iRepaymentTaxDiff)
+    {
+        $oTransactionsUnilend->montant      -= (-1 * $iRepaymentNetDiff);
+        $oTransactionsUnilend->montant_etat -= $iRepaymentTaxDiff;
+        $oTransactionsUnilend->update();
+    }
+
+    private function addLogChangesSchedule($iIdSchedule, $sTable, $iId, $sColumn, $sMovement)
+    {
+        $this->aChangesRepayment[$iIdSchedule][] = array(
+            'table' => $sTable,
+            'id'    => $iId,
+            'column' => $sColumn,
+            'movement' => $sMovement
+        );
+    }
+
+    private  function removeLogChangesSchedule($iIdSchedule)
+    {
+        unset($this->aChangesRepayment[$iIdSchedule]);
+    }
 }
