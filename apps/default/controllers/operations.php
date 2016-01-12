@@ -337,9 +337,10 @@ class operationsController extends bootstrap
                 <th>Contributions additionnelles</th>
                 <th>Pr&eacute;l&egrave;vements solidarit&eacute;</th>
                 <th>CRDS</th>
+                <?php /* Recouvrement
                 <th>Commission HT</th>
                 <th>Commission TVA</th>
-                <th>Commission TTC</th>
+                <th>Commission TTC</th> */ ?>
                 <th><?= $this->lng['preteur-operations-pdf']['solde-de-votre-compte'] ?></th>
                 <td></td>
             </tr>
@@ -406,9 +407,10 @@ class operationsController extends bootstrap
                         <td><?= $this->ficelle->formatNumber($this->echeanciers->contributions_additionnelles) ?></td>
                         <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_solidarite) ?></td>
                         <td><?= $this->ficelle->formatNumber($this->echeanciers->crds) ?></td>
+                        <?php /* Recouvrement
                         <td><?= $this->ficelle->formatNumber($t['commission_ht'] / 100) ?></td>
                         <td><?= $this->ficelle->formatNumber($t['commission_tva'] / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber($t['commission_ttc'] / 100) ?></td>
+                        <td><?= $this->ficelle->formatNumber($t['commission_ttc'] / 100) ?></td> */ ?>
                         <td><?= $this->ficelle->formatNumber($solde / 100) ?></td>
                         <td></td>
                     </tr>
@@ -463,9 +465,10 @@ class operationsController extends bootstrap
                         <td></td>
                         <td></td>
                         <td></td>
+                        <?php /* Recouvrement
                         <td></td>
                         <td></td>
-                        <td></td>
+                        <td></td> */ ?>
                         <td><?= $this->ficelle->formatNumber($solde / 100) ?></td>
                         <td></td>
                     </tr>
@@ -500,9 +503,10 @@ class operationsController extends bootstrap
                         <td></td>
                         <td></td>
                         <td></td>
+                        <?php /* Recouvrement
                         <td></td>
                         <td></td>
-                        <td></td>
+                        <td></td> */ ?>
                         <td><?= $this->ficelle->formatNumber($t['solde'] / 100) ?></td>
                         <td><?= $asterix ?></td>
                     </tr>

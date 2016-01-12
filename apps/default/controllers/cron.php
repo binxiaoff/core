@@ -161,7 +161,7 @@ class cronController extends bootstrap
                 echo 'today : ' . $today . '<br><br>';
 
                 if ($datePublication == $today) {// on lance en fonction de l'heure definie dans le bo
-                    $this->projects_status_history->addStatus(-1, \projects_status::EN_FUNDING, $projects['id_project']);
+                    $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $projects['id_project']);
 
                     // Zippage pour groupama
                     $this->zippage($projects['id_project']);
@@ -234,7 +234,7 @@ class cronController extends bootstrap
                 // Fundé
                 if ($solde >= $projects['amount']) {
                     // on passe le projet en fundé
-                    $this->projects_status_history->addStatus(-1, \projects_status::FUNDE, $projects['id_project']);
+                    $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::FUNDE, $projects['id_project']);
 
                     $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' is now changed to status funded.');
 
@@ -767,7 +767,7 @@ class cronController extends bootstrap
                     }
                 } else {// Funding KO (le solde demandé n'a pas ete atteint par les encheres)
                     // On passe le projet en funding ko
-                    $this->projects_status_history->addStatus(-1, 70, $projects['id_project']);
+                    $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::FUNDING_KO, $projects['id_project']);
 
                     $this->projects->get($projects['id_project'], 'id_project');
                     $this->companies->get($this->projects->id_company, 'id_company');
@@ -800,7 +800,7 @@ class cronController extends bootstrap
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
                     if ($this->clients->status == 1) {
-                        if ($this->Config['env'] == 'prod') {
+                        if ($this->Config['env'] === 'prod') {
                             Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                             $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                         } else {
@@ -1299,11 +1299,11 @@ class cronController extends bootstrap
                     // probleme
                     if ($type == 'probleme') {
                         echo 'probleme<br>';
-                        $projects_status_history->addStatus(-1, \projects_status::PROBLEME, $p['id_project']);
+                        $projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::PROBLEME, $p['id_project']);
                     } // recouvrement
                     else {
                         echo 'recouvrement<br>';
-                        $projects_status_history->addStatus(-1, \projects_status::RECOUVREMENT, $p['id_project']);
+                        $projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::RECOUVREMENT, $p['id_project']);
 
                         // date du probleme
                         $statusProbleme = $projects_status_history->select('id_project = ' . $p['id_project'] . ' AND  	id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::PROBLEME . ')', 'added DESC');
@@ -2942,7 +2942,7 @@ class cronController extends bootstrap
                                         }
                                     }
 
-                                    $oProjectsStatusHistory->addStatus(-1, \projects_status::PROBLEME, $this->projects->id_project);
+                                    $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::PROBLEME, $this->projects->id_project);
                                 }
                             }
                         }
@@ -4033,7 +4033,7 @@ class cronController extends bootstrap
                     // add the withdraw unilend
                     $oAccountUnilend->id_transaction = $transactions->id_transaction;
                     $oAccountUnilend->type           = platform_account_unilend::TYPE_WITHDRAW;
-                    $oAccountUnilend->amount         = -1 * $total;
+                    $oAccountUnilend->amount         = - $total;
                     $oAccountUnilend->create();
                 }
             }
@@ -4971,7 +4971,7 @@ class cronController extends bootstrap
             $projects_check = $this->loadData('projects_check');
 
             // 60 : fundé | on recup que ceux qui se sont terminé le jour meme
-            $lProjets = $projects->selectProjectsByStatus(\projects_status::FUNDE, ' AND LEFT(p.date_fin,10) = "' . date('Y-m-d') . '"');
+            $lProjets = $projects->selectProjectsByStatus(\projects_status::FUNDE, ' AND DATE(p.date_fin) = "' . date('Y-m-d') . '"');
 
             foreach ($lProjets as $p) {
                 if ($projects_check->get($p['id_project'], 'id_project')) {
@@ -5130,7 +5130,7 @@ class cronController extends bootstrap
                             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                         }
                     }
-                    $this->clients_status_history->addStatus('-1', 30, $p['id_client'], $this->clients_status_history->content);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $this->clients_status_history->content);
                 }
             }
 
@@ -5148,13 +5148,13 @@ class cronController extends bootstrap
                 $timestamp_date              = $this->dates->formatDateMySqlToTimeStamp($p['added_status']);
                 if ($timestamp_date <= $timeMoins8 && $numero_relance == 0 && date('w') == 6) {// Relance J+15 && samedi
                     $op_pour_relance = true;
-                    $this->clients_status_history->addStatus('-1', 30, $p['id_client'], $data_clients_status_history['content'], 2);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $data_clients_status_history['content'], 2);
                 } elseif ($timestamp_date <= $timeMoins8 && $numero_relance == 2 && date('w') == 6) {// Relance J+30
                     $op_pour_relance = true;
-                    $this->clients_status_history->addStatus('-1', 30, $p['id_client'], $data_clients_status_history['content'], 3);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $data_clients_status_history['content'], 3);
                 } elseif ($timestamp_date <= $timeMoins30 && $numero_relance == 3 && date('w') == 6) {// Relance J+60
                     $op_pour_relance = true;
-                    $this->clients_status_history->addStatus('-1', 30, $p['id_client'], $data_clients_status_history['content'], 4);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $data_clients_status_history['content'], 4);
                 }
 
                 if ($op_pour_relance) {
@@ -7937,9 +7937,9 @@ class cronController extends bootstrap
                                  * When project is pending documents, abort status is not automatic and must be set manually in BO
                                  */
                                 if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::EN_ATTENTE_PIECES) {
-                                    $this->projects_status_history->addStatus(-1, \projects_status::ABANDON, $iProjectId, $iReminderIndex, $this->projects_status_history->content);
+                                    $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::ABANDON, $iProjectId, $iReminderIndex, $this->projects_status_history->content);
                                 } else {
-                                    $this->projects_status_history->addStatus(-1, $iStatus, $iProjectId, $iReminderIndex, $this->projects_status_history->content);
+                                    $this->projects_status_history->addStatus(\users::USER_ID_CRON, $iStatus, $iProjectId, $iReminderIndex, $this->projects_status_history->content);
                                 }
                             }
                         }
@@ -7959,7 +7959,7 @@ class cronController extends bootstrap
             $this->projects_status_history = $this->loadData('projects_status_history');
 
             foreach ($this->projects->getFastProcessStep3() as $iProjectId) {
-                $this->projects_status_history->addStatus(-1, \projects_status::A_TRAITER, $iProjectId);
+                $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $iProjectId);
             }
 
             $this->stopCron();
