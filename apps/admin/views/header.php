@@ -113,7 +113,6 @@
                     <li><a href="<?=$this->lurl?>/preteurs/offres_de_bienvenue" title="Gestion offre de bienvenue">Gestion offre de bienvenue</a></li>
                     <li><a href="<?=$this->lurl?>/preteurs/control_fiscal_city" title="Matching ville fiscale">Matching ville fiscale</a></li>
                     <li><a href="<?=$this->lurl?>/preteurs/control_birth_city" title="Matching ville de naissance">Matching ville de naissance</a></li>
-                    <li><a href="<?=$this->lurl?>/preteurs/modify_passed_repaymet_schedule" title="Rattrapage des échéanciers">Rattrapage des échéanciers</a></li>
                 </ul>
             </li>
         <?
