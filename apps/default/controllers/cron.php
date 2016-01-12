@@ -71,7 +71,7 @@ class cronController extends bootstrap
         }
 
         if ($this->oSemaphore->value == 1) {
-            $this->oSemaphore->value = 0;
+//            $this->oSemaphore->value = 0;
             $this->oSemaphore->update();
 
             $this->oLogger->addRecord(ULogger::INFO, 'Start cron', array('ID' => $this->iStartTime));
@@ -2605,7 +2605,7 @@ class cronController extends bootstrap
                             $transactions->status           = 1;
                             $transactions->etat             = 1;
                             $transactions->transaction      = 1;
-                            $transactions->type_transaction = 18; // Unilend virement offre de bienvenue
+                            $transactions->type_transaction = \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER;
                             $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                             $transactions->create();
 
@@ -2627,7 +2627,7 @@ class cronController extends bootstrap
                             $receptions->ligne              = $r['ligne1'];
                             $receptions->create();
 
-                            if ($type == 1 && $status_prelevement == 2) { // Prélèvements
+                            if ($type === 1 && $status_prelevement === 2) { // Prélèvements
                                 preg_match_all('#[0-9]+#', $motif, $extract);
                                 $nombre   = (int) $extract[0][0]; // on retourne un int pour retirer les zeros devant
                                 $listPrel = $prelevements->select('id_project = ' . $nombre . ' AND status = 0');
@@ -2667,7 +2667,7 @@ class cronController extends bootstrap
 
                                     $this->updateEcheances($projects->id_project, $receptions->montant, $projects->remb_auto);
                                 }
-                            } elseif ($type == 2 && $status_virement == 1) { // Virements reçus
+                            } elseif ($type === 2 && $status_virement === 1) { // Virements reçus
                                 if (
                                     1 === preg_match('/RA-([0-9]+)/', $r['libelleOpe3'], $aMatches)
                                     && $this->projects->get((int) $aMatches[1])
@@ -2873,6 +2873,76 @@ class cronController extends bootstrap
                                             break;
                                         }
                                     }
+                                }
+                            } elseif ($type === 1 && $status_prelevement === 3) {
+                                $oCompanies             = $this->loadData('companies');
+                                $oEcheanciers           = $this->loadData('echeanciers');
+                                $oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
+                                $oPrelevements          = $this->loadData('prelevements');
+                                $oProjectsRemb          = $this->loadData('projects_remb');
+                                $oProjectsStatusHistory = $this->loadData('projects_status_history');
+                                $oTransactions          = $this->loadData('transactions');
+
+                                if (
+                                    1 === preg_match('#^RUMUNILEND([0-9]+)#', $r['libelleOpe3'], $aMatches)
+                                    && $this->projects->get((int) $aMatches[1])
+                                    && 1 === preg_match('#^RCNUNILEND/([0-9]{8})/([0-9]+)#', $r['libelleOpe4'], $aMatches)
+                                    && $oPrelevements->get((int) $aMatches[2])
+                                    && $this->projects->id_project == $oPrelevements->id_project
+                                    && $oCompanies->get($this->projects->id_company)
+                                    && $this->transactions->get($r['montant'], 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND DATE(date_transaction) >= STR_TO_DATE("' . $aMatches[1] . '", "%Y%m%d") AND id_client = ' . $oCompanies->id_client_owner . ' AND montant')
+                                    && false === $oTransactions->get($this->transactions->id_prelevement, 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION . ' AND id_prelevement')
+                                ) {
+                                    // @todo duplicate code of transferts::_rejeter_prelevement_projet()
+                                    $oTransactions->id_prelevement   = $this->transactions->id_prelevement;
+                                    $oTransactions->id_client        = $oCompanies->id_client_owner;
+                                    $oTransactions->montant          = - $receptions->montant;
+                                    $oTransactions->id_langue        = 'fr';
+                                    $oTransactions->date_transaction = date('Y-m-d H:i:s');
+                                    $oTransactions->status           = 1;
+                                    $oTransactions->etat             = 1;
+                                    $oTransactions->transaction      = 1;
+                                    $oTransactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION;
+                                    $oTransactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                                    $oTransactions->create();
+
+                                    $bank_unilend->id_transaction = $oTransactions->id_transaction;
+                                    $bank_unilend->id_project     = $this->projects->id_project;
+                                    $bank_unilend->montant        = - $receptions->montant;
+                                    $bank_unilend->type           = 1;
+                                    $bank_unilend->create();
+
+                                    $receptions->get($this->transactions->id_prelevement);
+                                    $receptions->status_bo = 3; // rejeté
+                                    $receptions->remb      = 0;
+                                    $receptions->update();
+
+                                    $newsum = $receptions->montant / 100;
+
+                                    foreach ($oEcheanciersEmprunteur->select('status_emprunteur = 1 AND id_project = ' . $this->projects->id_project, 'ordre DESC') as $e) {
+                                        $montantDuMois = $oEcheanciers->getMontantRembEmprunteur($e['montant'] / 100, $e['commission'] / 100, $e['tva'] / 100);
+
+                                        if ($montantDuMois <= $newsum) {
+                                            $oEcheanciers->updateStatusEmprunteur($this->projects->id_project, $e['ordre'], 'annuler');
+
+                                            $oEcheanciersEmprunteur->get($this->projects->id_project, 'ordre = ' . $e['ordre'] . ' AND id_project');
+                                            $oEcheanciersEmprunteur->status_emprunteur             = 0;
+                                            $oEcheanciersEmprunteur->date_echeance_emprunteur_reel = '0000-00-00 00:00:00';
+                                            $oEcheanciersEmprunteur->update();
+
+                                            $newsum = $newsum - $montantDuMois;
+
+                                            if ($oProjectsRemb->counter('id_project = "' . $this->projects->id_project . '" AND ordre = "' . $e['ordre'] . '" AND status = 0') > 0) {
+                                                $oProjectsRemb->get($e['ordre'], 'status = 0 AND id_project = "' . $this->projects->id_project . '" AND ordre');
+                                                $oProjectsRemb->status = \projects_remb::STATUS_REJECTED;
+                                                $oProjectsRemb->update();
+                                            }
+                                        } else {
+                                            break;
+                                        }
+                                    }
+
+                                    $oProjectsStatusHistory->addStatus(-1, \projects_status::PROBLEME, $this->projects->id_project);
                                 }
                             }
                         }
