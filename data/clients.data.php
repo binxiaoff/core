@@ -834,28 +834,27 @@ class clients extends clients_crud
         }
 
         usort($aDataForBorrowerOperations, function ($aFirstArray, $aSecondArray) {
-
             if ($aFirstArray['date'] === $aSecondArray['date']) {
-
                 if ($aFirstArray['type'] == 'prelevement-mensualite') {
                     return 1;
                 } elseif ($aFirstArray['type'] == 'commission-mensuelle') {
                     return -1;
                 }
-
                 if ($aFirstArray['type'] == 'commission-deblocage') {
-                    return -1;
+                    if ($aSecondArray['type'] == 'virement'){
+                        return 1;
+                    } else {
+                        return -1;
+                    }
                 } elseif ($aFirstArray['type'] == 'virement') {
-                    return 1;
+                    return -1;
                 } elseif ($aFirstArray['type'] == 'financement') {
                     return 1;
                 }
-
             } else {
                 return $aFirstArray['date'] < $aSecondArray['date'];
             }
         });
-
         return $aDataForBorrowerOperations;
     }
 
@@ -864,7 +863,7 @@ class clients extends clients_crud
         $aDataForBorrowerOperations = array();
         $sql = 'SELECT
                     sum(l.amount)/100 AS montant,
-                    psh.added AS date,
+                    DATE(psh.added) AS date,
                     l.id_project,
                     "financement" AS type
                 FROM
@@ -891,7 +890,7 @@ class clients extends clients_crud
         $aDataForBorrowerOperations = array();
         $sql = 'SELECT
                     montant/100 AS montant,
-                    `date_transaction` AS date,
+                    DATE(date_transaction) AS date,
                     id_project,
                     "virement" AS type
                 FROM
@@ -908,7 +907,6 @@ class clients extends clients_crud
         while ($record = $this->bdd->fetch_assoc($result)) {
             $aDataForBorrowerOperations[] = $record;
         }
-
         return $aDataForBorrowerOperations;
     }
 
@@ -920,7 +918,7 @@ class clients extends clients_crud
                     SUM(montant + commission + tva)/100 AS montant,
                     -`commission`/100 AS commission,
                     -`tva`/100 AS tva,
-                    `date_echeance_emprunteur_reel` AS date
+                    DATE(date_echeance_emprunteur_reel) AS date
                 FROM
                     `echeanciers_emprunteur`
                 WHERE
@@ -954,7 +952,6 @@ class clients extends clients_crud
                 );
             }
         }
-
         return $aDataForBorrowerOperations;
     }
 
@@ -964,7 +961,7 @@ class clients extends clients_crud
         $sql = 'SELECT
                     `id_project`,
                     -SUM(`capital` + `interets`)/100 AS montant,
-                    `date_echeance_reel` AS date,
+                    DATE(date_echeance_reel) AS date,
                     `ordre`,
                     "affectation-preteurs" AS type
                 FROM
@@ -991,7 +988,7 @@ class clients extends clients_crud
         $sql = 'SELECT
                         `id_project`,
                         montant/100 AS montant,
-                        added as date,
+                        DATE(added) as date,
                         "remboursement-anticipe" AS type
                     FROM
                         `receptions`
@@ -1015,7 +1012,7 @@ class clients extends clients_crud
         $sql = 'SELECT
                     `id_project`,
                     - SUM(`capital`)/100 AS montant,
-                    date_echeance_reel AS date,
+                    DATE(date_echeance)_reel AS date,
                     "affectation-ra-preteur" AS type
                 FROM
                     `echeanciers`
@@ -1033,7 +1030,6 @@ class clients extends clients_crud
         }
 
         return $aDataForBorrowerOperations;
-
     }
 
     private function getBorrowerOperationCommissionOnFinancing($aProjects, $sStartDate, $sEndDate)
@@ -1060,6 +1056,5 @@ class clients extends clients_crud
         }
 
         return $aDataForBorrowerOperations;
-
     }
 }

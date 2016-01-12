@@ -332,7 +332,6 @@ class espace_emprunteurController extends Bootstrap
             \projects_status::REJET_COMITE,
             \projects_status::REVUE_ANALYSTE
         );
-
         $aProjectsPreFunding = $this->companies->getProjectsForCompany($this->companies->id_company, $aStatusPreFunding);
 
         foreach ($aProjectsPreFunding as $iKey => $aProject) {
@@ -356,7 +355,6 @@ class espace_emprunteurController extends Bootstrap
                     break;
             }
         }
-
         return $aProjectsPreFunding;
     }
 
@@ -376,7 +374,6 @@ class espace_emprunteurController extends Bootstrap
             $oDateTimeEnd                                  = DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
             $aProjectsFunding[ $iKey ]['oInterval']        = $oDateTimeEnd->diff($this->oDateTimeNow);
         }
-
         return $aProjectsFunding;
     }
 
@@ -396,7 +393,6 @@ class espace_emprunteurController extends Bootstrap
         $oRepaymentSchedule     = $this->loadData('echeanciers_emprunteur');
         $oBids                  = $this->loadData('bids');
         $oLoans                 = $this->loadData('loans');
-
 
         foreach ($aProjectsPostFunding as $iKey => $aProject) {
             $aProjectsPostFunding[ $iKey ]['AverageIR']              = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $aProject['id_project'], $aProject['project_status']);
@@ -481,12 +477,21 @@ class espace_emprunteurController extends Bootstrap
                 $sFilename      = 'details_prets';
                 break;
             case 'e':
-                $aColumnHeaders = array('ID Préteur', 'Nom ou Raison Sociale', 'Prénom', 'Mouvement', 'Montant', 'Capital', 'Intérets', 'Date');
+                $aColumnHeaders = array(
+                    'ID Préteur',
+                    'Nom ou Raison Sociale',
+                    'Prénom',
+                    'Mouvement',
+                    'Montant',
+                    'Capital',
+                    'Intérets',
+                    'Date'
+                );
                 $sType          = $this->lng['espace-emprunteur']['mouvement-remboursement'];
                 $aData          = $this->projects->getDuePaymentsAndLenders($this->projects->id_project, $this->params[2]);
-                $oDateTime = DateTime::createFromFormat('Y-m-d H:i:s',$aData[0]['date']);
-                $sDate = $oDateTime->format('mY');
-                $sFilename      = 'details_remboursements_'.$this->params[1].'_'.$sDate;
+                $oDateTime      = DateTime::createFromFormat('Y-m-d H:i:s', $aData[0]['date']);
+                $sDate          = $oDateTime->format('mY');
+                $sFilename      = 'details_remboursements_' . $this->params[1] . '_' . $sDate;
                 break;
             default:
                 break;
@@ -501,13 +506,13 @@ class espace_emprunteurController extends Bootstrap
             $aData[ $key ]['date'] = $this->dates->formatDate($row['date']);
 
             if (empty($row['amount']) === false) {
-                $aData[ $key ]['amount'] = $this->ficelle->formatnumber($row['amount'] / 100);
+                $aData[ $key ]['amount'] = $row['amount'] / 100;
             }
 
             if (empty($row['montant']) === false) {
-                $aData[ $key ]['montant'] = $this->ficelle->formatnumber($row['montant'] / 100);
-                $aData[ $key ]['capital'] = $this->ficelle->formatnumber($row['capital'] / 100);
-                $aData[ $key ]['interets'] = $this->ficelle->formatnumber($row['interets'] / 100);
+                $aData[ $key ]['montant'] = $row['montant'] / 100;
+                $aData[ $key ]['capital'] = $row['capital'] / 100;
+                $aData[ $key ]['interets'] = $row['interets'] / 100;
             }
         }
 
@@ -533,7 +538,9 @@ class espace_emprunteurController extends Bootstrap
                 $this->lng['espace-emprunteur'][ 'operations-type-' . $aOperation['type'] ],
                 $aOperation['id_project'],
                 $this->dates->formatDateMysqltoShortFR($aOperation['date']),
+//                $aOperation['montant'],
                 number_format($aOperation['montant'], 2, ',', ''),
+//                (empty($aOperation['tva']) === false) ? $aOperation['tva'] : '0'
                 (empty($aOperation['tva']) === false) ? number_format($aOperation['tva'], 2, ',', '') : '0'
             );
         }

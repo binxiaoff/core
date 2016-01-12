@@ -33,6 +33,11 @@
         text-align: center;
         padding-top: 10px;
     }
+    .table_projects td.nature {
+        text-align: left;
+        padding-top: 10px;
+    }
+
 </style>
 
 <div class="main">
@@ -69,7 +74,7 @@
                     <?php foreach ($this->aProjectsPreFunding as $aProject) : ?>
                         <tr>
                             <td><?= $aProject['id_project'] ?></td>
-                            <td><?= $aProject['nature_project'] ?></td>
+                            <td class="nature"><?= $aProject['nature_project'] ?></td>
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> € /  <?= $aProject['period'] ?>
                                 <?= $this->lng['espace-emprunteur']['mois'] ?></td>
                             <td><?= $this->lng['espace-emprunteur'][ $aProject['project_status_label'] ] ?></td>
@@ -104,7 +109,7 @@
                     <?php foreach ($this->aProjectsFunding as $aProject) : ?>
                         <tr>
                             <td><?= $aProject['id_project'] ?></td>
-                            <td><?= $aProject['nature_project'] ?></td>
+                            <td class="nature"><?= $aProject['nature_project'] ?></td>
                             <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> €
                                 <br> <?= $aProject['period'] ?> <?= $this->lng['espace-emprunteur']['mois'] ?></td>
                             <td><?= $this->dates->formatDateMysqltoFr($aProject['date_retrait']) ?></td>
@@ -146,7 +151,7 @@
                     <?php foreach ($this->aProjectsPostFunding as $aProject) : ?>
                         <tr>
                             <td><?= $aProject['id_project'] ?></td>
-                            <td><?= $aProject['nature_project'] ?></td>
+                            <td class="nature"><?= $aProject['nature_project'] ?></td>
                             <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> €
                                 <br> <?= $aProject['period'] ?> <?= $this->lng['espace-emprunteur']['mois'] ?></td>
                             <td><?= $this->dates->formatDateMysqltoFr($aProject['date_retrait']) ?></td>
