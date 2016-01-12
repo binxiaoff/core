@@ -4203,7 +4203,7 @@ class cronController extends bootstrap
             /////////////////////
             //////////////////////////
             // Physique non exoneré //
-            $PhysiqueNoExo     = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '0', '1');
+            $PhysiqueNoExo     = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '0', array(1, 3));
             $PhysiqueNoExoInte = ($PhysiqueNoExo['interets'] / 100) - ($etranger['interets'] / 100);
 
             // prelevements pour physiques non exonéré
@@ -4212,7 +4212,7 @@ class cronController extends bootstrap
             ////////////////////////
             /////////////////////////////////////////
             // Physique non exoneré dans la peride //
-            $PhysiqueNonExoPourLaPeriode = $echeanciers->getEcheanceBetweenDates_exonere_mais_pas_dans_les_dates($dateDebutSql, $dateFinSql, '1', '1');
+            $PhysiqueNonExoPourLaPeriode = $echeanciers->getEcheanceBetweenDates_exonere_mais_pas_dans_les_dates($dateDebutSql, $dateFinSql, '1', array(1, 3));
             $PhysiqueNoExoInte += ($PhysiqueNonExoPourLaPeriode['interets'] / 100);
 
             // prelevements pour physiques non exonéré
@@ -4221,7 +4221,7 @@ class cronController extends bootstrap
             ////////////////////////
             //////////////////////
             // Physique exoneré //
-            $PhysiqueExo     = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '1', '1');
+            $PhysiqueExo     = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '1', array(1, 3));
             $PhysiqueExoInte = ($PhysiqueExo['interets'] / 100);
 
             // prelevements pour physiques exonéré
@@ -4230,7 +4230,7 @@ class cronController extends bootstrap
             //////////////////////
             //////////////
             // Physique //
-            $Physique     = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '', '1');
+            $Physique     = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '', array(1, 3));
             $PhysiqueInte = ($Physique['interets'] / 100) - ($etranger['interets'] / 100);
 
             // prelevements pour physiques

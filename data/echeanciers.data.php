@@ -632,6 +632,10 @@ class echeanciers extends echeanciers_crud
         $anneemois = explode('-', $date1);
         $anneemois = $anneemois[0] . '-' . $anneemois[1];
 
+        if (is_array($morale)) {
+            $morale = implode(',', $morale);
+        }
+
         $sql = 'SELECT
         SUM(montant) as montant,
         SUM(capital) as capital,
@@ -650,7 +654,7 @@ class echeanciers extends echeanciers_crud
         LEFT JOIN clients c ON l.id_client_owner = c.id_client
         WHERE e.status_emprunteur = 1
                 AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
-        ' . ($morale != '' ? ' AND c.type = ' . $morale : '');
+        ' . ($morale != '' ? ' AND c.type IN (' . $morale . ')' : '');
         if ($exonere == 1) {
             $sql .= '
              AND l.exonere = 1
@@ -672,9 +676,6 @@ class echeanciers extends echeanciers_crud
 
     public function getEcheanceBetweenDatesEtranger($date1, $date2)
     {
-        $anneemois = explode('-', $date1);
-        $anneemois = $anneemois[0] . '-' . $anneemois[1];
-
         $sql = 'SELECT
             SUM(montant) as montant,
             SUM(capital) as capital,
@@ -693,9 +694,9 @@ class echeanciers extends echeanciers_crud
             LEFT JOIN clients c ON l.id_client_owner = c.id_client
             WHERE e.status_emprunteur = 1
                         AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
-            AND c.type = 1
-            AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = l.id_lender_account AND LEFT(lih.added,10) <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0
-            AND LEFT(date_echeance_reel,10) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
+            AND c.type IN (1, 3)
+            AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = l.id_lender_account AND DATE(lih.added) <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0
+            AND DATE(date_echeance_reel) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
 
 
         $resultat = $this->bdd->query($sql);
@@ -706,10 +707,14 @@ class echeanciers extends echeanciers_crud
         return $result[0];
     }
 
-    public function getEcheanceBetweenDates($date1, $date2, $exonere = '', $morale = '', $etranger = '')
+    public function getEcheanceBetweenDates($date1, $date2, $exonere = '', $morale = '')
     {
         $anneemois = explode('-', $date1);
         $anneemois = $anneemois[0] . '-' . $anneemois[1];
+
+        if (is_array($morale)) {
+            $morale = implode(',', $morale);
+        }
 
         $sql = '
             SELECT
@@ -730,7 +735,7 @@ class echeanciers extends echeanciers_crud
             LEFT JOIN clients c ON l.id_client_owner = c.id_client
             WHERE e.status_emprunteur = 1
                         AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
-            ' . ($morale != '' ? ' AND c.type = ' . $morale : '');
+            ' . ($morale != '' ? ' AND c.type IN (' . $morale . ')' : '');
 
         if ($exonere != '') {
             if ($exonere == '1') {
