@@ -341,7 +341,7 @@ class loans extends loans_crud
                 (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) AS project_status,
                 (SELECT psh.added FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) AS status_change,
                 SUM(ROUND(l.amount / 100, 2)) AS amount,
-                ROUND(AVG(rate), 2) AS rate,
+                ROUND(SUM(rate * l.amount) / SUM(l.amount), 2) AS rate,
                 COUNT(l.id_loan) AS nb_loan,
                 l.id_loan AS id_loan_if_one_loan,
                 DATE((SELECT MIN(e.date_echeance) FROM echeanciers e WHERE e.id_loan = l.id_loan AND e.ordre = 1)) AS debut,
