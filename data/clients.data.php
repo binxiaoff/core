@@ -377,73 +377,18 @@ class clients extends clients_crud
     public function searchPreteurs($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $emprunteur = '', $start = '', $nb = '')
     {
         $where = 'WHERE 1 = 1 ';
-
-        if ($ref != '') {
-            $where .= ' AND c.id_client IN(' . $ref . ')';
-        }
-        if ($nom != '') {
-            $where .= ' AND c.nom LIKE "%' . $nom . '%"';
-        }
-        if ($email != '') {
-            $where .= ' AND c.email LIKE "%' . $email . '%"';
-        }
-        if ($prenom != '') {
-            $where .= ' AND c.prenom LIKE "%' . $prenom . '%"';
-        }
-        if ($name != '') {
-            $where .= ' AND co.name LIKE "%' . $name . '%"';
-        }
-
-        if ($emprunteur != '') {
-            $where .= ' AND c.status_pre_emp IN (2,3)';
-        } else {
-            if ($noValide != '') {
-                $where .= ' AND c.status_pre_emp NOT IN (2,3)';
-            } else {
-                $where .= ' AND YEAR(NOW()) - YEAR(c.naissance) >= 18 AND c.status_pre_emp IN (1,3) AND status_inscription_preteur = 1';
-            }
-        }
-
-        $sql = 'SELECT l.*,c.*,co.*
-        FROM lenders_accounts l
-        LEFT JOIN clients c ON c.id_client = l.id_client_owner
-        LEFT JOIN companies co ON co.id_company = l.id_company_owner
-        ' . $where . '
-        GROUP BY l.id_lender_account
-        ORDER BY l.id_lender_account DESC' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-
-        $i = 0;
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[$i] = $record;
-
-            if ($record['status'] == '0' && $noValide != '') {
-                $result[$i]['novalid'] = 1;
-            } else {
-                $result[$i]['novalid'] = '0';
-            }
-            $i++;
-        }
-        return $result;
-    }
-
-    public function searchPreteursV2($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $emprunteur = '', $start = '', $nb = '')
-    {
-        $where = 'WHERE 1 = 1 ';
         $and   = '';
         if ($ref != '') {
             $and .= ' AND c.id_client IN(' . $ref . ')';
         }
         if ($email != '') {
-            $and .= ' AND c.email LIKE "%' . $email . '%"';
+            $and .= ' AND c.email LIKE "' . $email . '%"';
         }
         if ($prenom != '') {
-            $and .= ' AND c.prenom LIKE "%' . $prenom . '%"';
+            $and .= ' AND c.prenom LIKE "' . $prenom . '%"';
         }
         if ($name != '') {
-            $and .= ' AND co.name LIKE "%' . $name . '%"';
+            $and .= ' AND co.name LIKE "' . $name . '%"';
         }
 
         if ($emprunteur != '') {
@@ -462,47 +407,44 @@ class clients extends clients_crud
 
         // pour le OR on rajoute la condition derriere
         if ($nom != '') {
-            $and .= ' AND c.nom LIKE "%' . $nom . '%" OR c.nom_usage LIKE "%' . $nom . '%" ' . $and;
+            $and .= ' AND c.nom LIKE "' . $nom . '%" OR c.nom_usage LIKE "' . $nom . '%" ' . $and;
         }
 
         $where .= $and;
 
         $sql = "
-        SELECT
-            la.id_lender_account as id_lender_account,
-            c.id_client as id_client,
-            c.status as status,
-            c.email as email,
-            c.telephone as telephone,
-            c.status_inscription_preteur as status_inscription_preteur,
-            (SELECT ROUND(SUM(t.montant/100),2) FROM transactions t WHERE t.etat = 1 AND t.status = 1 AND t.id_client = c.id_client AND t.type_transaction NOT IN (9,6)) as solde,
-            (SELECT COUNT(amount) FROM loans l WHERE l.id_lender = la.id_lender_account) as bids_valides,
-            (SELECT COUNT(amount) FROM bids b WHERE b.id_lender_account = la.id_lender_account AND b.status = 0) as bids_encours,
+SELECT
+    la.id_lender_account as id_lender_account,
+    c.id_client as id_client,
+    c.status as status,
+    c.email as email,
+    c.telephone as telephone,
+    c.status_inscription_preteur as status_inscription_preteur,
 
-            CASE la.id_company_owner
-                WHEN 0 THEN c.prenom
-                ELSE
-                    (SELECT
-                        CASE co.status_client
-                            WHEN 1 THEN CONCAT(c.prenom,' ',c.nom)
-                            ELSE CONCAT(co.prenom_dirigeant,' ',co.nom_dirigeant)
-                        END as dirigeant
-                     FROM companies co WHERE co.id_company = la.id_company_owner)
-            END as prenom_ou_dirigeant,
-            CASE la.id_company_owner
-                WHEN 0 THEN c.nom
-                ELSE (SELECT co.name FROM companies co WHERE co.id_company = la.id_company_owner)
-            END as nom_ou_societe,
-            CASE la.id_company_owner
-                WHEN 0 THEN REPLACE(c.nom_usage,'Nom D\'usage','')
-                ELSE ''
-            END as nom_usage
-        FROM lenders_accounts la
-        LEFT JOIN clients c ON c.id_client = la.id_client_owner
-        LEFT JOIN companies co ON co.id_company = la.id_company_owner
-        " . $where . "
-        GROUP BY la.id_lender_account
-        ORDER BY la.id_lender_account DESC " . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+    CASE la.id_company_owner
+        WHEN 0 THEN c.prenom
+        ELSE
+            (SELECT
+                CASE co.status_client
+                    WHEN 1 THEN CONCAT(c.prenom,' ',c.nom)
+                    ELSE CONCAT(co.prenom_dirigeant,' ',co.nom_dirigeant)
+                END as dirigeant
+             FROM companies co WHERE co.id_company = la.id_company_owner)
+    END as prenom_ou_dirigeant,
+    CASE la.id_company_owner
+        WHEN 0 THEN c.nom
+        ELSE (SELECT co.name FROM companies co WHERE co.id_company = la.id_company_owner)
+    END as nom_ou_societe,
+    CASE la.id_company_owner
+        WHEN 0 THEN REPLACE(c.nom_usage,'Nom D\'usage','')
+        ELSE ''
+    END as nom_usage
+FROM lenders_accounts la
+LEFT JOIN clients c ON c.id_client = la.id_client_owner
+    LEFT JOIN companies co ON co.id_company = la.id_company_owner
+" . $where . "
+GROUP BY la.id_lender_account
+ORDER BY la.id_lender_account DESC " . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
