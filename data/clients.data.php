@@ -30,19 +30,19 @@
 class clients extends clients_crud
 {
 
-    const OCTROI_FINANCMENT = 1;
-    const VIREMENT = 2;
-    const COMMISSION_DEBLOCAGE = 3;
-    const PRLV_MENSUALITE = 4;
-    const AFF_MENSUALITE_PRETEURS = 5;
-    const COMMISSION_MENSUELLE = 6;
-    const REMBOURSEMENT_ANTICIPE = 7;
-    const AFFECTATION_RA_PRETEURS = 8;
+    const OCTROI_FINANCMENT           = 1;
+    const VIREMENT                    = 2;
+    const COMMISSION_DEBLOCAGE        = 3;
+    const PRLV_MENSUALITE             = 4;
+    const AFF_MENSUALITE_PRETEURS     = 5;
+    const COMMISSION_MENSUELLE        = 6;
+    const REMBOURSEMENT_ANTICIPE      = 7;
+    const AFFECTATION_RA_PRETEURS     = 8;
 
-    const TYPE_BORROWER_PERSON = 1;
-    const TYPE_BORROWER_LEGAL_ENTITY = 2;
-    const TYPE_BORROWER_PERSON_FOREIGNER = 3;
-    const TYPE_BORROWER_LEGAL_ENTITY_FOREIGNER = 4;
+    const TYPE_PERSON                 = 1;
+    const TYPE_LEGAL_ENTITY           = 2;
+    const TYPE_PERSON_FOREIGNER       = 3;
+    const TYPE_LEGAL_ENTITY_FOREIGNER = 4;
 
 
     public function __construct($bdd, $params = '')

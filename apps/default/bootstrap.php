@@ -602,7 +602,7 @@ class bootstrap extends Controller
             $this->clients_status->getLastStatut($_SESSION['client']['id_client']);
             if (in_array($this->clients_status->status, array(clients_status::COMPLETENESS, clients_status::COMPLETENESS_REMINDER))) {
 
-                if (in_array($_SESSION['client']['type'], array(clients::TYPE_BORROWER_PERSON, clients::TYPE_BORROWER_PERSON_FOREIGNER))) {
+                if (in_array($_SESSION['client']['type'], array(clients::TYPE_PERSON, clients::TYPE_PERSON_FOREIGNER))) {
                     $lapage = 'particulier_doc';
                 } else {
                     $lapage = 'societe_doc';
@@ -612,7 +612,7 @@ class bootstrap extends Controller
             } else {
 
                 $this->clients->get($_SESSION['client']['id_client'], 'id_client');
-                if (in_array($this->clients->type, array(clients::TYPE_BORROWER_LEGAL_ENTITY, clients::TYPE_BORROWER_LEGAL_ENTITY_FOREIGNER))) {
+                if (in_array($this->clients->type, array(clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
                     $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
                     $this->lienConditionsGenerales = $this->settings->value;
                 }
