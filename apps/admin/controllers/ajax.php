@@ -2679,7 +2679,12 @@ class ajaxController extends bootstrap
                 // validé (prep Funding)
                 if ($_POST['status'] == 1) {
                     // on maj le statut
-                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], 35, $this->projects->id_project);
+                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects->id_project);
+
+                    $aExistingStatus = $this->projects_status_history->select('id_project = '.$this->projects->id_project.' AND id_project_status = '.projects_status::PREP_FUNDING);
+                    if (empty($aExistingStatus)) {
+                        $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein', $this->clients);
+                    }
 
                     $content_risk = '
                         <th><label for="risk">Niveau de risque* :</label></th>
@@ -2977,4 +2982,21 @@ class ajaxController extends bootstrap
 
         echo $sResult;
     }
-}
+
+    public function _send_email_borrower_area()
+    {
+        $this->autoFireView = false;
+
+        if (isset($_POST['id_client']) && isset($_POST['type'])) {
+
+            $oClients = $this->loadData('clients');
+            $oClients->get($_POST['id_client'], 'id_client');
+
+            switch ($_POST['type']) {
+                case 'open':
+                    $sTypeEmail = 'ouverture-espace-emprunteur';
+                    break;
+                case 'initialize':
+                    $sTypeEmail = 'mot-de-passe-oublie-emprunteur';
+                    break;
+            }

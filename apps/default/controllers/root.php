@@ -835,7 +835,7 @@ class rootController extends bootstrap
             } // on redirige sur le compte emprunteur
             else {
                 $_SESSION['status_pre_emp'] = 2;
-                header('Location:' . $this->lurl . '/synthese_emprunteur');
+                header('Location:' . $this->lurl . '/espace_emprunteur');
                 die;
             }
         }
