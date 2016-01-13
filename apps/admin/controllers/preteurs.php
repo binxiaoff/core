@@ -1541,7 +1541,6 @@ class preteursController extends bootstrap
                     $backup_clients->lastlogin                  = $this->clients->lastlogin;
                     $backup_clients->create();
 
-                    mail('unilend@equinoa.fr', '[ALERTE] Compte supprime', 'Un compte (' . $this->clients->id_client . ') avec des encheres a ete supprime.');
                 }
 
                 $this->clients->delete($this->clients->id_client, 'id_client');

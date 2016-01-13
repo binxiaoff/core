@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\librairies\Altares;
+use Unilend\librairies\ULogger;
 
 class dossiersController extends bootstrap
 {
@@ -773,7 +774,7 @@ class dossiersController extends bootstrap
                                 // To send HTML mail, the Content-type header must be set
                                 $headers = 'MIME-Version: 1.0' . "\r\n";
                                 $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-                                $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
+                                $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
                                 mail($to, $subject, $message, $headers);
                             }
                         }
@@ -1125,9 +1126,12 @@ class dossiersController extends bootstrap
                         $this->projects_pouvoir->status_remb = $_POST['satut_pouvoir'];
                         $this->projects_pouvoir->update();
 
+                        $oLogger = new ULogger('Statut_remboursement', $this->logPath, 'dossiers');
+
                         // si on a validé le pouvoir
                         if ($this->projects_pouvoir->status_remb == 1) {
-                            mail('unilend@equinoa.fr', '[ALERTE] Controle statut remboursement Debut', '[ALERTE] Controle statut remboursement pour le projet : ' . $this->projects->id_project . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
+                            $oLogger->addRecord(ULogger::ALERT, 'Controle statut remboursement pour le projet : ' . $this->projects->id_project . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
+
                             // debut processe chagement statut remboursement //
                             // On recup le param
                             $settingsControleRemb = $this->loadData('settings');
@@ -1487,7 +1491,6 @@ class dossiersController extends bootstrap
                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                 if ($this->Config['env'] == 'prod') {
                                     $this->email->addBCCRecipient('nicolas.lesur@unilend.fr');
-                                    $this->email->addBCCRecipient('d.nandji@equinoa.com');
                                 }
                                 $this->email->setSubject(stripslashes($sujetMail));
                                 $this->email->setHTMLBody(stripslashes($texteMail));
@@ -1502,7 +1505,8 @@ class dossiersController extends bootstrap
 
                                 $settingsControleRemb->value = 1;
                                 $settingsControleRemb->update();
-                                mail('unilend@equinoa.fr', '[ALERTE] Controle statut remboursement OK', '[ALERTE] Controle statut remboursement est bien passe pour le projet : ' . $this->projects->id_project . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
+
+                                $oLogger->addRecord(ULogger::ALERT, 'Controle statut remboursement est bien passe pour le projet : ' . $this->projects->id_project . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
                             }
                         }
                     }
@@ -2961,7 +2965,6 @@ class dossiersController extends bootstrap
                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                 if ($this->Config['env'] == 'prod') {
                                     $this->email->addBCCRecipient('nicolas.lesur@unilend.fr');
-                                    $this->email->addBCCRecipient('d.nandji@equinoa.com');
                                 }
 
                                 $this->email->setSubject(stripslashes($sujetMail));
