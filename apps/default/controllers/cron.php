@@ -593,7 +593,6 @@ class cronController extends bootstrap
                     $this->email->setHTMLBody($texteMail);
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
 
-                    //End emails to lenders with accepted bids that became loans
                     $aLendersIds      = $this->loans->getPreteurs($this->projects->id_project);
                     $oClient          = $this->loadData('clients');
                     $oLender          = $this->loadData('lenders_accounts');
@@ -607,12 +606,10 @@ class cronController extends bootstrap
                     $oLogger->addRecord(ULogger::INFO, 'project : ' .  $iNbLenders . ' lenders to send email');
 
                     foreach ($aLendersIds as $aLenderID) {
-
                         $oLender->get($aLenderID['id_lender'], 'id_lender_account');
                         $oClient->get($oLender->id_client_owner, 'id_client');
                         $oCompanies->get($this->projects->id_company, 'id_company');
 
-                        // Motif virement
                         $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($oClient->prenom))), 0, 1);
                         $nom       = $this->ficelle->stripAccents(utf8_decode(trim($oClient->nom)));
                         $id_client = str_pad($oClient->id_client, 6, 0, STR_PAD_LEFT);
@@ -621,95 +618,76 @@ class cronController extends bootstrap
                         $bLenderIsNaturalPerson   = $oLender->isNaturalPerson($oLender->id_lender_account);
                         $aLoansOfLender           = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, '`id_type_contract` DESC');
                         $iNumberOfLoansForLender  = count($aLoansOfLender);
-                        $iSumLoansOfLender        = ($this->loans->sum('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, 'amount') / 100);
-                        $iAvgInterestRateOfLender = $this->loans->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $this->projects->id_project);
                         $iNumberOfAcceptedBids    = $oAcceptedBids->getDistinctBidsForLenderAndProject($oLender->id_lender_account, $this->projects->id_project);
                         $sLoansDetails            = '';
+                        $sLinkExplication         = '';
+                        $sStyleTD                 = 'border: 1px solid; padding: 5px; text-align: center; text-decoration:none;';
 
                         if ($bLenderIsNaturalPerson) {
                             $aLoanIFP               = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
                             $iNumberOfBidsInLoanIFP = $oAcceptedBids->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
 
                             if ($iNumberOfBidsInLoanIFP > 1) {
-                                $sLoansDetails .= 'L&rsquo;ensemble de vos offres &agrave;
-                                                   concurrence de 1 000 euros sont regroup&eacute;es sous la forme
-                                                   d&rsquo;un seul contrat de pr&ecirc;t.
-                                                   Son taux d&rsquo;int&eacute;r&ecirc;t correspond donc &agrave; la moyenne
-                                                   pond&eacute;r&eacute;e de vos <span style="color:#b20066;">' . $iNumberOfBidsInLoanIFP . ' offres de pr&ecirc;t</span>. ';
+                                $sContract        = '<br>L&rsquo;ensemble de vos offres &agrave; concurrence de 1 000 euros seront regroup&eacute;es sous la forme d&rsquo;un seul contrat de pr&ecirc;t. Son taux d&rsquo;int&eacute;r&ecirc;t correspondra donc &agrave; la moyenne pond&eacute;r&eacute;e de vos <span style="color:#b20066;">' . $iNumberOfBidsInLoanIFP . ' offres de pr&ecirc;t</span>. ';
+
+                                $sLinkExplication = '<br><br>Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a style="color:#b20066;" href="' . $this->surl . '/document-de-pret">cette page</a>.';
                             }
                         }
 
                         if ($iNumberOfAcceptedBids > 1) {
-                            $sAcceptedOffers            = 'vos offres ont &eacute;t&eacute; accept&eacute;es';
+                            $sSelectedOffers            = 'vos offres ont &eacute;t&eacute; s&eacute;lectionn&eacute;es';
                             $sOffers                    = 'vos offres';
                             $sDoes                      = 'font';
                         } else {
-                            $sAcceptedOffers            = 'votre offre a &eacute;t&eacute; accept&eacute;e';
+                            $sSelectedOffers            = 'votre offre a &eacute;t&eacute; s&eacute;lectionn&eacute;e';
                             $sOffers                    = 'votre offre';
                             $sDoes                      = 'fait';
                         }
 
-                        if ($bLenderIsNaturalPerson && $iNumberOfLoansForLender <= 1) {
-                            $sLoansDetails .= 'Nous sommes heureux de vous annoncer que <span style="color:#b20066;">' . $sOffers . '
-                                                de pr&ecirc;t </span> pour un montant total de <span style="color:#b20066;">' . $iSumLoansOfLender . ' euros </span>
-                                                &agrave; <span style="color:#b20066;"> ' . $this->ficelle->formatNumber($iAvgInterestRateOfLender) . ' % </span>
-                                                pendant <span style="color:#b20066;"> ' . $this->projects->period . ' mois </span> ' . $sDoes . '
-                                                partie des meilleures offres s&eacute;lectionn&eacute;es. <br>';
+                        $sLoans = ($iNumberOfLoansForLender > 1) ? 'vos pr&ecirc;ts': 'votre pr&ecirc;t';
 
+                        foreach ($aLoansOfLender as $aLoan) {
+                            $aFirstPayment = $oPaymentSchedule->getPremiereEcheancePreteurByLoans($aLoan['id_project'], $aLoan['id_lender'], $aLoan['id_loan']);
 
-                        } elseif ($bLenderIsNaturalPerson && $iNumberOfLoansForLender > 1 || $bLenderIsNaturalPerson === false) {
-
-                            $sLoansDetails .= 'Voici la synth&egrave;se de ' . $sOffers . ' de pr&ecirc;t &agrave; <span style="color:#b20066;"> ' . $oCompanies->name . ' </span> : <br><br>';
-                            $sLoansDetails .= '<table style="border: 1px solid; border-collapse: collapse; width:100%; table-layout: fixed;"><tr>
-                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Montant pr&ecirc;t&eacute;</th>
-                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Taux d&rsquo;interet</th>
-                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Dur&eacute;e</th>
-                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Mensualit&eacute;s</th>
-                                                                    <th style="border: 1px solid; padding: 5px; color:#727272; text-align: center; ">Documents</th></tr>';
-
-                            foreach ($aLoansOfLender as $aLoan) {
-
-                                $aFirstPayment = $oPaymentSchedule->getPremiereEcheancePreteurByLoans($aLoan['id_project'], $aLoan['id_lender'], $aLoan['id_loan']);
-
-                                switch ($aLoan['id_type_contract']) {
-                                    case \loans::TYPE_CONTRACT_BDC:
-                                        $sContractType = 'Bon de caisse';
-                                        break;
-                                    case \loans::TYPE_CONTRACT_IFP:
-                                        $sContractType = 'Contrat de pr&ecirc;t';
-                                        break;
-                                    default:
-                                        $sContractType = '';
-                                        break;
-                                }
-                                $sLoansDetails .= '<tr><td style="border: 1px solid; padding: 5px; text-align: center;">' . $this->ficelle->formatNumber($aLoan['amount']/100) . ' &euro;</td>
-                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aLoan['rate']) . ' %</td>
-                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->projects->period . ' mois</td>
-                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $this->ficelle->formatNumber($aFirstPayment['montant']/100) . ' &euro;</td>
-                                                                        <td style="border: 1px solid; padding: 5px; text-align: center; ">' . $sContractType . '</td></tr>';
+                            switch ($aLoan['id_type_contract']) {
+                                case \loans::TYPE_CONTRACT_BDC:
+                                    $sContractType = 'Bon de caisse';
+                                    break;
+                                case \loans::TYPE_CONTRACT_IFP:
+                                    $sContractType = 'Contrat de pr&ecirc;t';
+                                    break;
+                                default:
+                                    $sContractType = '';
+                                    break;
                             }
-                            $sLoansDetails .= '</table>';
+                            $sLoansDetails .= '<tr>
+                                               <td style="' . $sStyleTD . '">' . $this->ficelle->formatNumber($aLoan['amount'] / 100) . ' &euro;</td>
+                                               <td style="' . $sStyleTD . '">' . $this->ficelle->formatNumber($aLoan['rate']) . ' %</td>
+                                               <td style="' . $sStyleTD . '">' . $this->projects->period . ' mois</td>
+                                               <td style="' . $sStyleTD . '">' . $this->ficelle->formatNumber($aFirstPayment['montant'] / 100) . ' &euro;</td>
+                                               <td style="' . $sStyleTD . '">' . $sContractType . '</td>
+                                               </tr>';
                         }
-
-                        $sLinkExplication = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t,
-                                            vous pouvez consulter <a style="color:#b20066;" href="'.$this->surl.'/document-de-pret">cette page</a>. ': '';
 
                         $this->mails_text->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
 
                         $varMail = array(
                             'surl'                        => $this->surl,
                             'url'                         => $this->furl,
-                            'offre_s_acceptee_s'          => $sAcceptedOffers,
+                            'offre_s_selectionne_s'       => $sSelectedOffers,
                             'prenom_p'                    => $oClient->prenom,
                             'nom_entreprise'              => $oCompanies->name,
                             'fait'                        => $sDoes,
+                            'contrat_pret'                => $sContract,
                             'detail_loans'                => $sLoansDetails,
                             'offre_s'                     => $sOffers,
+                            'pret_s'                      => $sLoans,
                             'projet-p'                    => $this->furl . '/projects/detail/' . $this->projects->slug,
                             'link_explication'            => $sLinkExplication,
                             'motif_virement'              => $sMotif,
                             'lien_fb'                     => $lien_fb,
-                            'lien_tw'                     => $lien_tw
+                            'lien_tw'                     => $lien_tw,
+                            'annee'                       => date('Y')
                         );
 
                         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
