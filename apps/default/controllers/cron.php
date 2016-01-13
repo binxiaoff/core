@@ -96,6 +96,106 @@ class cronController extends bootstrap
         die;
     }
 
+    public function _mail_echeance_emprunteur()
+    {
+        if (true === $this->startCron('mail_echeance_emprunteur', 1)) {
+
+
+            $projects                = $this->loadData('projects');
+            $projects_status         = $this->loadData('projects_status');
+            $echeanciers             = $this->loadData('echeanciers');
+            $echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
+            $projects_status_history = $this->loadData('projects_status_history');
+            $projects_status         = $this->loadData('projects_status');
+            $loans                   = $this->loadData('loans');
+            $preteur                 = $this->loadData('clients');
+            $lender                  = $this->loadData('lenders_accounts');
+            $companies               = $this->loadData('companies');
+            $bids                    = $this->loadData('bids');
+
+            $this->clients->get($this->companies->id_client_owner, 'id_client');
+            $this->companies->get($this->projects->id_company, 'id_company');
+
+            // FB
+            $this->settings->get('Facebook', 'type');
+
+            // Twitter
+            $this->settings->get('Twitter', 'type');
+
+            // Date du jour
+            $today = date('Y-m-d');
+
+            // projets en remboursement
+            $lProjects = $projects->selectProjectsByStatus('80');
+
+            foreach ($lProjects as $p) {
+                $this->projects->get($p['id_project'],'id_project');
+                $lEcheancesEmp = $echeanciers_emprunteur->select('id_project = ' . $p['id_project'] . ' AND  	status_emprunteur = 0 AND date_echeance_emprunteur < "' . $today . ' 00:00:00"');
+                $lEcheances = array();
+                foreach ($lEcheancesEmp as $e) {
+                    $dateRemb = strtotime($e['date_echeance_emprunteur']);
+                    $laDate   = mktime(0, 0, 0, date("m", $dateRemb), date("d", $dateRemb) + 8, date("Y", $dateRemb));
+                    $lEcheances[] = $e['montant'] / 100;
+                }
+
+                $echeance = array_shift($lEcheances);
+                // en cas de retard de paiement sur les mois precedents, les afficher
+                $i = 0;
+                $appendecheances = '';
+                foreach ($lEcheances as $e) {
+                    if (++$i === 1) {
+                        $appendecheances = '<div>Vous avez des mensualit&eacute;s non-r&egrave;gl&eacute;es pour les mois suivants :</div>';
+                    }
+                    $appendecheances .= '<div>';
+                    $appendecheances .= 'Mois de xxxxxx, ';
+                    $appendecheances .= 'montant : ' . $e . ' euros.';
+                    $appendecheances .= '</div><br/><br/>';
+                }
+
+                $this->mails_text->get('mail-prelevement-mensuel', 'lang = "' . $this->language . '" AND type'); // creer le html
+                $destinaire = $this->settings->value; // idem
+
+                $bidsValides = $bids->select('id_project = ' . $p['id_project'] . ' AND status = 1'); // non
+                $varMail = array(
+                    'retardpaiement' => $appendecheances,
+                    'bids'           => count($bidsValides),
+                    'echeance'       => $echeance,
+                    'nextmonth'      => strftime("1er %B", date("m") + 1),
+                    'surl'           => $this->surl,
+                    'url'            => $this->furl,
+                    'nom_entreprise' => $this->projects->title_bo,
+                    'projet_p'       => $this->furl . '/projects/detail/' . $this->projects->slug,
+                    'montant'        => $this->ficelle->formatNumber((double) $this->projects->amount, 0),
+                    'duree'          => $this->projects->period,
+                    'prenom_e'       => $this->clients->prenom,
+                    'lien_fb'        => $this->like_fb,
+                    'lien_tw'        => $this->twitter
+                );
+                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                $sujetMail  = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                $texteMail  = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                $exp_name   = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                $this->email = $this->loadLib('email');
+                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                $this->email->setSubject(stripslashes($sujetMail));
+                $this->email->setHTMLBody(stripslashes($texteMail));
+
+                if ($this->Config['env'] == 'prod') {
+                    //Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                    //$this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $this->email->addRecipient(trim($destinaire));
+                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                }
+
+            }
+
+            $this->stopCron();
+        }
+        die;
+    }
+
     // toutes les minute on check //
     // on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
     public function _check_projet_a_funder()
