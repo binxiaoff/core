@@ -100,19 +100,8 @@ class cronController extends bootstrap
     {
         if (true === $this->startCron('mail_echeance_emprunteur', 1)) {
             $projects                = $this->loadData('projects');
-            $projects_status         = $this->loadData('projects_status');
-            $echeanciers             = $this->loadData('echeanciers');
             $echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
-            $projects_status_history = $this->loadData('projects_status_history');
-            $projects_status         = $this->loadData('projects_status');
-            $loans                   = $this->loadData('loans');
-            $preteur                 = $this->loadData('clients');
-            $lender                  = $this->loadData('lenders_accounts');
-            $companies               = $this->loadData('companies');
             $bids                    = $this->loadData('bids');
-
-            $this->clients->get($this->companies->id_client_owner, 'id_client');
-            $this->companies->get($this->projects->id_company, 'id_company');
 
             // FB
             $this->settings->get('Facebook', 'type');
@@ -124,10 +113,11 @@ class cronController extends bootstrap
             $today = date('Y-m-d');
 
             // projets en remboursement
-            $lProjects = $projects->selectProjectsByStatus('80');
-
+            $lProjects = $projects->selectProjectsByStatus('80'); // non, le filtre se fait sur le status = 4 de la table prelevements
             foreach ($lProjects as $p) {
                 $this->projects->get($p['id_project'],'id_project');
+                $this->companies->get($this->projects->id_company, 'id_company');
+                $this->clients->get($this->companies->id_client_owner, 'id_client');
                 $lEcheancesEmp = $echeanciers_emprunteur->select('id_project = ' . $p['id_project'] . ' AND  	status_emprunteur = 0 AND date_echeance_emprunteur < "' . $today . ' 00:00:00"');
                 $echeance = array_shift($lEcheancesEmp);
 
@@ -162,7 +152,7 @@ class cronController extends bootstrap
                     'lien_fb'        => $this->like_fb,
                     'lien_tw'        => $this->twitter
                 );
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                $tabVars    = $this->tnmp->constructionVariablesServeur($varMail);
                 $sujetMail  = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                 $texteMail  = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name   = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
@@ -173,8 +163,8 @@ class cronController extends bootstrap
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
                 if ($this->Config['env'] == 'prod') {
-                    //Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                    //$this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                 } else {
                     $this->email->addRecipient(trim($destinaire));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
