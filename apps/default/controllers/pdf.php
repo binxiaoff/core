@@ -780,12 +780,13 @@ class pdfController extends bootstrap
 
         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-        if ($this->factures->get($this->projects->id_project, 'type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
-            $this->num_facture = $this->factures->num_facture;
-            $this->dateRemb    = $this->factures->date;
-            $this->ht          = $this->factures->montant_ht / 100;
-            $this->taxes       = $this->factures->tva / 100;
-            $this->ttc         = $this->factures->montant_ttc / 100;
+        if ($this->factures->exist($this->projects->id_project, 'type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
+            $aInvoices                = $this->factures->select('type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project = ' . $this->projects->id_project);
+            $this->num_facture        = $aInvoices[0]['num_facture'];
+            $this->ht                 = $aInvoices[0]['montant_ht'] / 100;
+            $this->taxes              = $aInvoices[0]['tva'] / 100;
+            $this->ttc                = $aInvoices[0]['montant_ttc'] / 100;
+            $this->date_echeance_reel = $aInvoices[0]['date'];
 
         } else {
             if ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
@@ -869,12 +870,13 @@ class pdfController extends bootstrap
 
         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-        if ($this->factures->get($this->projects->id_project, 'ordre = ' . $iOrdre . ' AND  type_commission = 2 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
-            $this->num_facture        = $this->factures->num_facture;
-            $this->ht                 = $this->factures->montant_ht / 100;
-            $this->taxes              = $this->factures->tva / 100;
-            $this->ttc                = $this->factures->montant_ttc / 100;
-            $this->date_echeance_reel = $this->factures->date;
+        if ($this->factures->exist($this->projects->id_project, 'ordre = ' . $iOrdre . ' AND  type_commission = 2 AND id_company = ' . $this->companies->id_company . ' AND id_project' )) {
+            $aInvoices                = $this->factures->select('ordre = ' . $iOrdre . ' AND  type_commission = 2 AND id_company = ' . $this->companies->id_company . ' AND id_project = ' . $this->projects->id_project);
+            $this->num_facture        = $aInvoices[0]['num_facture'];
+            $this->ht                 = $aInvoices[0]['montant_ht'] / 100;
+            $this->taxes              = $aInvoices[0]['tva'] / 100;
+            $this->ttc                = $aInvoices[0]['montant_ttc'] / 100;
+            $this->date_echeance_reel = $aInvoices[0]['date'];
 
         } else {
             if ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
