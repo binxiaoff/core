@@ -99,8 +99,6 @@ class cronController extends bootstrap
     public function _mail_echeance_emprunteur()
     {
         if (true === $this->startCron('mail_echeance_emprunteur', 1)) {
-
-
             $projects                = $this->loadData('projects');
             $projects_status         = $this->loadData('projects_status');
             $echeanciers             = $this->loadData('echeanciers');
@@ -131,24 +129,17 @@ class cronController extends bootstrap
             foreach ($lProjects as $p) {
                 $this->projects->get($p['id_project'],'id_project');
                 $lEcheancesEmp = $echeanciers_emprunteur->select('id_project = ' . $p['id_project'] . ' AND  	status_emprunteur = 0 AND date_echeance_emprunteur < "' . $today . ' 00:00:00"');
-                $lEcheances = array();
-                foreach ($lEcheancesEmp as $e) {
-                    $dateRemb = strtotime($e['date_echeance_emprunteur']);
-                    $laDate   = mktime(0, 0, 0, date("m", $dateRemb), date("d", $dateRemb) + 8, date("Y", $dateRemb));
-                    $lEcheances[] = $e['montant'] / 100;
-                }
+                $echeance = array_shift($lEcheancesEmp);
 
-                $echeance = array_shift($lEcheances);
                 // en cas de retard de paiement sur les mois precedents, les afficher
                 $i = 0;
                 $appendecheances = '';
-                foreach ($lEcheances as $e) {
+                foreach ($lEcheancesEmp as $e) {
                     if (++$i === 1) {
-                        $appendecheances = '<div>Vous avez des mensualit&eacute;s non-r&egrave;gl&eacute;es pour les mois suivants :</div>';
+                        $appendecheances = '<div>Vous avez des mensualit&eacute;s non-r&eacute;gl&eacute;es pour les mois suivants :</div>';
                     }
                     $appendecheances .= '<div>';
-                    $appendecheances .= 'Mois de xxxxxx, ';
-                    $appendecheances .= 'montant : ' . $e . ' euros.';
+                    $appendecheances .= 'Mois de '. strftime("%B %Y", strtotime($e['date_echeance_emprunteur'])) .', montant : ' . $e['montant'] / 100 . ' euros.';
                     $appendecheances .= '</div><br/><br/>';
                 }
 
@@ -159,7 +150,7 @@ class cronController extends bootstrap
                 $varMail = array(
                     'retardpaiement' => $appendecheances,
                     'bids'           => count($bidsValides),
-                    'echeance'       => $echeance,
+                    'echeance'       => $echeance['montant'] / 100,
                     'nextmonth'      => strftime("1er %B", date("m") + 1),
                     'surl'           => $this->surl,
                     'url'            => $this->furl,
@@ -188,7 +179,6 @@ class cronController extends bootstrap
                     $this->email->addRecipient(trim($destinaire));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
-
             }
 
             $this->stopCron();
