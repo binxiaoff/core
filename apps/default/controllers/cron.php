@@ -5397,18 +5397,24 @@ class cronController extends bootstrap
             $oBids      = $this->loadData('bids');
             $oLoans     = $this->loadData('loans');
 
-            $lProjets = $oProjects->selectProjectsByStatus('50, 60, 70, 80, 100');
+            $aProjectStatuses = array(
+                \projects_status::REMBOURSEMENT,
+                \projects_status::PROBLEME,
+                \projects_status::FUNDE,
+                \projects_status::FUNDING_KO
+            );
+            $aProjets = $oProjects->selectProjectsByStatus(implode($aProjectStatuses, ','));
 
             $xml = '<?xml version="1.0" encoding="UTF-8"?>';
             $xml .= '<partenaire>';
 
-            foreach ($lProjets as $p) {
+            foreach ($aProjets as $p) {
                 $oCompanies->get($p['id_company'], 'id_company');
 
-                $monantRecolt = $oBids->sum('id_project = ' . $p['id_project'] . ' AND status = 1', 'amount');
-                $monantRecolt = ($monantRecolt / 100);
-                if ($monantRecolt > $p['amount']) {
-                    $monantRecolt = $p['amount'];
+                $sumBids = $oBids->sum('id_project = ' . $p['id_project'] . ' AND status = 1', 'amount');
+                $sumBids = ($sumBids / 100);
+                if ($sumBids > $p['amount']) {
+                    $sumBids = $p['amount'];
                 }
 
                 $nbLenders = $oLoans->getNbPreteurs($p['id_project']);
@@ -5425,6 +5431,11 @@ class cronController extends bootstrap
                         $success = "";
                         break ;
                 }
+
+                if ($oCompanies->sector < 10) {
+                    $oCompanies->sector = '0'.$oCompanies->sector;
+                }
+
                 $xml .= '<projet>';
                 $xml .= '<reference_partenaire>045</reference_partenaire>';
                 $xml .= '<date_export>' . date('Y-m-d') . '</date_export>';
@@ -5433,7 +5444,7 @@ class cronController extends bootstrap
                 $xml .= '<impact_environnemental>NON</impact_environnemental>';
                 $xml .= '<impact_culturel>NON</impact_culturel>';
                 $xml .= '<impact_eco>OUI</impact_eco>';
-                $xml .= '<categorie><categorie1>'. $oCompanies->sector .'</categorie1></categorie>';
+                $xml .= '<categorie><categorie1>'. $oCompanies->sector .'</categorie1></categorie>'; // 2 chiffres
                 $xml .= '<mots_cles_nomenclature_operateur></mots_cles_nomenclature_operateur>';
                 $xml .= '<mode_financement>PRR</mode_financement>';
                 $xml .= '<type_porteur_projet>ENT</type_porteur_projet>';
@@ -5447,7 +5458,7 @@ class cronController extends bootstrap
                 $xml .= '<date_debut_collecte>' . $p['date_publication'] . '</date_debut_collecte>';
                 $xml .= '<date_fin_collecte>' . $p['date_retrait'] . '</date_fin_collecte>';
                 $xml .= '<montant_recherche>' . $p['amount'] . '</montant_recherche>';
-                $xml .= '<montant_collecte>' . $this->ficelle->formatNumber($monantRecolt, 0) . '</montant_collecte>';
+                $xml .= '<montant_collecte>' . $this->ficelle->formatNumber($sumBids, 0) . '</montant_collecte>';
                 $xml .= '<nb_contributeurs>'. $nbLenders .'</nb_contributeurs>';
                 $xml .= '<succes>'. $success .'</succes>';
                 $xml .= '</projet>';
