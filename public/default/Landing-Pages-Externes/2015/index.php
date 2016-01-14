@@ -31,7 +31,6 @@
 
     <!--[if IE]><script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 
-    <script>var dataLayer = [<?= json_encode($this->aDataLayer) ?>];</script>
     <!-- Google Tag Manager -->
     <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
                       height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
