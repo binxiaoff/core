@@ -1342,6 +1342,7 @@ class dossiersController extends bootstrap
 
                                             $sLoansDetails            = '';
                                             $sLinkExplication         = '';
+                                            $sContract                = '';
                                             $sStyleTD                 = 'border: 1px solid; padding: 5px; text-align: center; text-decoration:none;';
 
                                             if ($bLenderIsNaturalPerson) {

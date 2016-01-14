@@ -621,6 +621,7 @@ class cronController extends bootstrap
                         $iNumberOfAcceptedBids    = $oAcceptedBids->getDistinctBidsForLenderAndProject($oLender->id_lender_account, $this->projects->id_project);
                         $sLoansDetails            = '';
                         $sLinkExplication         = '';
+                        $sContract                = '';
                         $sStyleTD                 = 'border: 1px solid; padding: 5px; text-align: center; text-decoration:none;';
 
                         if ($bLenderIsNaturalPerson) {
