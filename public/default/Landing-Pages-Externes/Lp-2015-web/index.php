@@ -813,7 +813,7 @@ if ($page == 'lexpress') {
         </ul>
         <div class="conditions" id="bloc_mentions">Conditions de l'offre</div>
         <div class="mentions">
-            Offre valable jusqu’au 31/12/2015 réservée aux personnes physiques, capables, majeures.
+            Offre valable jusqu’au 31/01/2016 réservée aux personnes physiques, capables, majeures.
             L’offre est réservée aux nouveaux inscrits dont l’inscription est validée par Unilend. Seules les personnes physiques de nationalité française, ou possédant une nationalité d’un pays de l’Espace Economique Européen, et disposant d’un compte bancaire en euros en France pourront bénéficier de l’offre.
             Les 20 € seront versés sur le compte Unilend du client dans le mois suivant la validation du compte et ne pourront servir qu’à prêter sur Unilend. Le client pourra prêter cette somme à l’entreprise de son choix parmi les entreprises présentées sur le site et ce dans un délai de 3 mois suivant la validation de son inscription. En cas de non utilisation de cette somme dans ce délai pour un prêt, Unilend se réserve le droit de reprendre ce montant non utilisé.
             Une seule prime de 20 € par personne et par compte Unilend est octroyée. Offre non cumulable avec toute offre commerciale ou de parrainage en cours. Cette offre est régie par la loi française.
@@ -967,7 +967,9 @@ if ($page == 'lexpress') {
             <li>Aux épargnants de prêter de l'argent directement aux entreprises en recevant des intérêts.</li>
         </ul>
         <p>
-            <span>Unilend</span> est édité par la Société française pour le financement des PME, SAS au capital de 515 350 euros - RCS Paris 790 766 034, agent prestataire de services de paiement mandaté par la SFPMEI et enregistré auprès de l'Autorité de contrôle prudentiel et de résolution (ACPR) sous le numéro 790 766 034.
+            <span>Unilend</span> est intermédiaire en financement participatif (IFP) inscrit à l’ORIAS (www.orias.fr) sous le numéro 15006955.<br>
+            Le service de paiement Unilend est distribué par la Société française pour le financement des PME - SFF PME SAS, agent prestataire de services de paiement mandaté par la SFPMEI et enregistré auprès de l'Autorité de contrôle prudentiel et de résolution (ACPR) sous le numéro 790766034. Les informations d'enregistrement sont disponibles sur le site du registre des agents financiers en cliquant <a href="https://www.regafi.fr/spip.php?rubrique1">ici</a>.<br>
+            Le service de paiement Unilend est fourni par la Société financière du porte-monnaie électronique interbancaire (SFPMEI), société par actions simplifiée au capital de 3 732 089 euros, dont le siège social est situé 29 rue du Louvre - 75002 Paris, immatriculée au registre du commerce et des sociétés de Paris sous le numéro 422 721 274. La SFPMEI est un établissement de crédit (code établissement 14378) agréé en date du 30 décembre 1999 par l’Autorité de contrôle prudentiel et de résolution (ACPR).
         </p>
         <br/>
         <br/>
@@ -1484,14 +1486,12 @@ if ($page == 'lexpress') {
                             if (parsedDate.reponse == 'OK') {
                                 var url = parsedDate.URL;
 
-
                                 dataLayer.push({
                                     'email_lead': email,
                                     'source1_lead': utm_source,
                                     'source2_lead': utm_source2,
                                     'event': 'signupPreteurStep2OK'
                                 });
-                                console.log('email_lead:' + email + ' source1_lead:' + utm_source + ' source2_lead:' + utm_source2 + ' event:signupPreteurStep2OK');
 
                                 setTimeout(function () {
 

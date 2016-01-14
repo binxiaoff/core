@@ -1026,7 +1026,9 @@ if ($page == 'lexpress') {
             <li>Aux &eacute;pargnants de pr&ecirc;ter de l'argent directement aux entreprises en recevant des int&eacute;r&ecirc;ts.</li>
         </ul>
         <p>
-            Le service de paiement <span>Unilend</span> est distribu&eacute; par la Soci&eacute;t&eacute; fran&ccedil;aise pour le financement des PME - SFF PME SAS, agent prestataire de services de paiement mandat&eacute; par la SFPMEI et d&eacute;clar&eacute; aupr&egrave;s de l'Autorit&eacute; de contr&ocirc;le prudentiel et de r&eacute;solution (ACPR).
+            <span>Unilend</span> est intermédiaire en financement participatif (IFP) inscrit à l’ORIAS (www.orias.fr) sous le numéro 15006955.<br>
+            Le service de paiement Unilend est distribué par la Société française pour le financement des PME - SFF PME SAS, agent prestataire de services de paiement mandaté par la SFPMEI et enregistré auprès de l'Autorité de contrôle prudentiel et de résolution (ACPR) sous le numéro 790766034. Les informations d'enregistrement sont disponibles sur le site du registre des agents financiers en cliquant <a href="https://www.regafi.fr/spip.php?rubrique1">ici</a>.<br>
+            Le service de paiement Unilend est fourni par la Société financière du porte-monnaie électronique interbancaire (SFPMEI), société par actions simplifiée au capital de 3 732 089 euros, dont le siège social est situé 29 rue du Louvre - 75002 Paris, immatriculée au registre du commerce et des sociétés de Paris sous le numéro 422 721 274. La SFPMEI est un établissement de crédit (code établissement 14378) agréé en date du 30 décembre 1999 par l’Autorité de contrôle prudentiel et de résolution (ACPR).
         </p>
         <br/>
         <p>
