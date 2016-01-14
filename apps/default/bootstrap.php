@@ -670,7 +670,7 @@ class bootstrap extends Controller
     {
         $this->bDisplayLender = true;
         // particulier
-        if ($this->clients->type == clients::TYPE_BORROWER_PERSON) {
+        if ($this->clients->type == clients::TYPE_PERSON) {
             // cgu particulier
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $this->lienConditionsGenerales = $this->settings->value;
