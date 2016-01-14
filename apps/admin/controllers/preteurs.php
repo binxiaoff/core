@@ -1802,15 +1802,18 @@ class preteursController extends bootstrap
 
         $oLenderAccountStats = $this->loadData('lenders_account_stats');
 
-        $this->IRR = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
+        $aIRR = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
 
-        if (empty($this->IRR)) {
+        if ($aIRR) {
+            $this->IRRValue = $aIRR['tri_value'];
+            $this->IRRDate = $aIRR['tri_date'];
+        } else {
             try {
-                $this->IRR['tri_value'] = $this->lenders_accounts->calculateIRR($this->lenders_accounts->id_lender_account);
-            } catch (Exception $e) {
+                $this->IRRValue = $oLenderAccountStats->calculateIRR($this->lenders_accounts->id_lender_account);
+                $this->IRRDate = '';
+            } catch (Exception $e){
                 $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
-                $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: ' . $e->getMessage() .  ' ' . $e->getTraceAsString());
-                $this->IRR = 'non calculable';
+                $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
             }
         }
 
