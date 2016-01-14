@@ -2150,31 +2150,31 @@ class preteursController extends bootstrap
     {
         // EQ-Acompte d'impôt sur le revenu
         $this->settings->get("EQ-Acompte d'impôt sur le revenu", 'type');
-        $prelevements_obligatoires = $this->settings->value;
+        $sPrelevementsObligatoires = $this->settings->value;
 
         // EQ-Contribution additionnelle au Prélèvement Social
         $this->settings->get('EQ-Contribution additionnelle au Prélèvement Social', 'type');
-        $contributions_additionnelles = $this->settings->value;
+        $sContributionsAdditionnelles = $this->settings->value;
 
         // EQ-CRDS
         $this->settings->get('EQ-CRDS', 'type');
-        $crds = $this->settings->value;
+        $sCrds = $this->settings->value;
 
         // EQ-CSG
         $this->settings->get('EQ-CSG', 'type');
-        $csg = $this->settings->value;
+        $sCsg = $this->settings->value;
 
         // EQ-Prélèvement de Solidarité
         $this->settings->get('EQ-Prélèvement de Solidarité', 'type');
-        $prelevements_solidarite = $this->settings->value;
+        $sPrelevementsSolidarite = $this->settings->value;
 
         // EQ-Prélèvement social
         $this->settings->get('EQ-Prélèvement social', 'type');
-        $prelevements_sociaux = $this->settings->value;
+        $sPrelevementsSociaux = $this->settings->value;
 
         // EQ-Retenue à la source
         $this->settings->get('EQ-Retenue à la source', 'type');
-        $retenues_source = $this->settings->value;
+        $sRetenuesSource = $this->settings->value;
 
         $iForeigner = 0;
         // fr/resident etranger
@@ -2196,13 +2196,13 @@ class preteursController extends bootstrap
         $oLendersImpositionHistory->create();
 
         $tabImpo = array(
-            'prelevements_obligatoires'    => $prelevements_obligatoires,
-            'contributions_additionnelles' => $contributions_additionnelles,
-            'crds'                         => $crds,
-            'csg'                          => $csg,
-            'prelevements_solidarite'      => $prelevements_solidarite,
-            'prelevements_sociaux'         => $prelevements_sociaux,
-            'retenues_source'              => $retenues_source
+            'prelevements_obligatoires'    => $sPrelevementsObligatoires,
+            'contributions_additionnelles' => $sContributionsAdditionnelles,
+            'crds'                         => $sCrds,
+            'csg'                          => $sCsg,
+            'prelevements_solidarite'      => $sPrelevementsSolidarite,
+            'prelevements_sociaux'         => $sPrelevementsSociaux,
+            'retenues_source'              => $sRetenuesSource
         );
 
         $this->loadData('echeanciers')->update_imposition_etranger($oLendersAccounts->id_lender_account, $iForeigner, $tabImpo, $oLendersAccounts->exonere, $oLendersAccounts->debut_exoneration, $oLendersAccounts->fin_exoneration);
