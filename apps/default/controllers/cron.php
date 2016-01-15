@@ -5866,24 +5866,26 @@ class cronController extends bootstrap
         $this->email = $this->loadLib('email');
 
         $iOffset = 0;
-        $iLimit = 100;
+        $iLimit  = 100;
 
-        while ($lPreteurs = $this->clients->selectPreteursByStatus(60, 'c.status = 1', '', $iOffset, $iLimit))
-        {
+        while ($lPreteurs = $this->clients->selectPreteursByStatus(60, 'c.status = 1', '', $iOffset, $iLimit)) {
             $iOffset += $iLimit;
 
             foreach ($lPreteurs as $preteur) {
-                $this->notifications->type            = 8; // nouveau projet
-                $this->notifications->id_lender       = $preteur['id_lender'];
-                $this->notifications->id_project      = $id_project;
+                $this->notifications->type       = 8; // nouveau projet
+                $this->notifications->id_lender  = $preteur['id_lender'];
+                $this->notifications->id_project = $id_project;
                 $this->notifications->create();
-                $this->clients_gestion_mails_notif->id_client                      = $preteur['id_client'];
-                $this->clients_gestion_mails_notif->id_notif                       = 1; // type nouveau projet
-                $this->clients_gestion_mails_notif->id_notification                = $this->notifications->id_notification;
-                $this->clients_gestion_mails_notif->id_project                     = $id_project;
-                $this->clients_gestion_mails_notif->date_notif                     = $this->projects->date_publication_full;
+
+                $this->clients_gestion_mails_notif->id_client       = $preteur['id_client'];
+                $this->clients_gestion_mails_notif->id_notif        = 1; // type nouveau projet
+                $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                $this->clients_gestion_mails_notif->id_project      = $id_project;
+                $this->clients_gestion_mails_notif->date_notif      = $this->projects->date_publication_full;
+
                 if ($this->clients_gestion_notifications->getNotif($preteur['id_client'], 1, 'immediatement') == true) {
                     $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+
                     $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($preteur['prenom']))), 0, 1);
                     $nom       = $this->ficelle->stripAccents(utf8_decode(trim($preteur['nom'])));
                     $id_client = str_pad($preteur['id_client'], 6, 0, STR_PAD_LEFT);
