@@ -5607,7 +5607,10 @@ class cronController extends bootstrap
             $dateDebutOffreAcceptee = mktime(20, 30, 0, date('m'), date('d'), date('Y'));
             $dateFinOffreAcceptee   = mktime(21, 0, 0, date('m'), date('d'), date('Y'));
 
-            if (time() >= $dateDebutNewProject && time() < $dateFinNewProject) {
+            if (
+                time() >= $dateDebutNewProject && time() < $dateFinNewProject
+                || 'prod' !== $this->Config['env'] && isset($_GET['force'])
+            ) {
                 $id_notif = 1;
 
                 //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
@@ -5712,8 +5715,10 @@ class cronController extends bootstrap
 
             $dateDebutRemboursement = mktime(10, 0, 0, date('m'), date('d'), date('Y'));
             $dateFinRemboursement   = mktime(10, 30, 0, date('m'), date('d'), date('Y'));
-            if (time() >= $dateDebutNewProject && time() < $dateFinNewProject) {
-                $id_notif = 1;
+            if (
+                time() >= $dateDebutNewProject && time() < $dateFinNewProject
+                || 'prod' !== $this->Config['env'] && isset($_GET['force'])
+            ) {                $id_notif = 1;
 
                 //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
                 $lPreteurs = $clients->selectPreteursByStatusSlim(60);
@@ -5792,7 +5797,10 @@ class cronController extends bootstrap
             $dateDebutRemboursement = mktime(11, 0, 0, date('m'), date('d'), date('Y'));
             $dateFinRemboursement   = mktime(11, 30, 0, date('m'), date('d'), date('Y'));
 
-            if (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee ) {
+            if (
+                time() >= $dateDebutNewProject && time() < $dateFinNewProject
+                || 'prod' !== $this->Config['env'] && isset($_GET['force'])
+            ) {
                 $id_notif = 4;
             } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
                 $id_notif = 5;
