@@ -5403,22 +5403,22 @@ class cronController extends bootstrap
                 \projects_status::FUNDE,
                 \projects_status::FUNDING_KO
             );
-            $aProjets = $oProjects->selectProjectsByStatus(implode($aProjectStatuses, ','));
+            $aProjects = $oProjects->selectProjectsByStatus(implode($aProjectStatuses, ','));
 
             $xml = '<?xml version="1.0" encoding="UTF-8"?>';
             $xml .= '<partenaire>';
 
-            foreach ($aProjets as $aProjet) {
-                $oCompanies->get($aProjet['id_company'], 'id_company');
+            foreach ($aProjects as $aProject) {
+                $oCompanies->get($aProject['id_company'], 'id_company');
 
-                $sumBids = $oBids->sum('id_project = ' . $aProjet['id_project'] . ' AND status = 1', 'amount');
+                $sumBids = $oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 1', 'amount');
                 $sumBids = ($sumBids / 100);
-                if ($sumBids > $aProjet['amount']) {
-                    $sumBids = $aProjet['amount'];
+                if ($sumBids > $aProject['amount']) {
+                    $sumBids = $aProject['amount'];
                 }
 
-                $nbLenders = $oLoans->getNbPreteurs($aProjet['id_project']);
-                switch ($aProjet['status']) {
+                $nbLenders = $oLoans->getNbPreteurs($aProject['id_project']);
+                switch ($aProject['status']) {
                     case projects_status::PROBLEME:
                     case projects_status::REMBOURSEMENT:
                     case projects_status::FUNDE:
@@ -5439,7 +5439,7 @@ class cronController extends bootstrap
                 $xml .= '<projet>';
                 $xml .= '<reference_partenaire>045</reference_partenaire>';
                 $xml .= '<date_export>' . date('Y-m-d') . '</date_export>';
-                $xml .= '<reference_projet>' . $aProjet['id_project'] . '</reference_projet>';
+                $xml .= '<reference_projet>' . $aProject['id_project'] . '</reference_projet>';
                 $xml .= '<impact_social>NON</impact_social>';
                 $xml .= '<impact_environnemental>NON</impact_environnemental>';
                 $xml .= '<impact_culturel>NON</impact_culturel>';
@@ -5452,12 +5452,12 @@ class cronController extends bootstrap
                 $xml .= '<code_postal>' . $oCompanies->zip . '</code_postal>';
                 $xml .= '<ville><![CDATA["' . utf8_encode($oCompanies->city) . '"]]></ville>';
                 $xml .= '<titre><![CDATA["' . $oCompanies->name . '"]]></titre>';
-                $xml .= '<description><![CDATA["' . $aProjet['nature_project'] . '"]]></description>';
-                $xml .= '<url><![CDATA["' . $this->lurl . '/projects/detail/' . $aProjet['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent"]]></url>';
-                $xml .= '<url_photo><![CDATA["' . $this->surl . '/images/dyn/projets/169/' . $aProjet['photo_projet'] . '"]]></url_photo>';
-                $xml .= '<date_debut_collecte>' . $aProjet['date_publication'] . '</date_debut_collecte>';
-                $xml .= '<date_fin_collecte>' . $aProjet['date_retrait'] . '</date_fin_collecte>';
-                $xml .= '<montant_recherche>' . $aProjet['amount'] . '</montant_recherche>';
+                $xml .= '<description><![CDATA["' . $aProject['nature_project'] . '"]]></description>';
+                $xml .= '<url><![CDATA["' . $this->lurl . '/projects/detail/' . $aProject['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent"]]></url>';
+                $xml .= '<url_photo><![CDATA["' . $this->surl . '/images/dyn/projets/169/' . $aProject['photo_projet'] . '"]]></url_photo>';
+                $xml .= '<date_debut_collecte>' . $aProject['date_publication'] . '</date_debut_collecte>';
+                $xml .= '<date_fin_collecte>' . $aProject['date_retrait'] . '</date_fin_collecte>';
+                $xml .= '<montant_recherche>' . $aProject['amount'] . '</montant_recherche>';
                 $xml .= '<montant_collecte>' . $sumBids . '</montant_collecte>';
                 $xml .= '<nb_contributeurs>'. $nbLenders .'</nb_contributeurs>';
                 $xml .= '<succes>'. $sProjectsuccess .'</succes>';
