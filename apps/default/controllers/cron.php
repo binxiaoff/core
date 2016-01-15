@@ -5798,7 +5798,7 @@ class cronController extends bootstrap
             $dateFinRemboursement   = mktime(11, 30, 0, date('m'), date('d'), date('Y'));
 
             if (
-                time() >= $dateDebutNewProject && time() < $dateFinNewProject
+                time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee
                 || 'prod' !== $this->Config['env'] && isset($_GET['force'])
             ) {
                 $id_notif = 4;
