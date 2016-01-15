@@ -5408,17 +5408,17 @@ class cronController extends bootstrap
             $xml = '<?xml version="1.0" encoding="UTF-8"?>';
             $xml .= '<partenaire>';
 
-            foreach ($aProjets as $value) {
-                $oCompanies->get($value['id_company'], 'id_company');
+            foreach ($aProjets as $aProjet) {
+                $oCompanies->get($aProjet['id_company'], 'id_company');
 
-                $sumBids = $oBids->sum('id_project = ' . $value['id_project'] . ' AND status = 1', 'amount');
+                $sumBids = $oBids->sum('id_project = ' . $aProjet['id_project'] . ' AND status = 1', 'amount');
                 $sumBids = ($sumBids / 100);
-                if ($sumBids > $value['amount']) {
-                    $sumBids = $value['amount'];
+                if ($sumBids > $aProjet['amount']) {
+                    $sumBids = $aProjet['amount'];
                 }
 
-                $nbLenders = $oLoans->getNbPreteurs($value['id_project']);
-                switch ($value['status']) {
+                $nbLenders = $oLoans->getNbPreteurs($aProjet['id_project']);
+                switch ($aProjet['status']) {
                     case projects_status::PROBLEME:
                     case projects_status::REMBOURSEMENT:
                     case projects_status::FUNDE:
@@ -5439,7 +5439,7 @@ class cronController extends bootstrap
                 $xml .= '<projet>';
                 $xml .= '<reference_partenaire>045</reference_partenaire>';
                 $xml .= '<date_export>' . date('Y-m-d') . '</date_export>';
-                $xml .= '<reference_projet>' . $value['id_project'] . '</reference_projet>';
+                $xml .= '<reference_projet>' . $aProjet['id_project'] . '</reference_projet>';
                 $xml .= '<impact_social>NON</impact_social>';
                 $xml .= '<impact_environnemental>NON</impact_environnemental>';
                 $xml .= '<impact_culturel>NON</impact_culturel>';
@@ -5452,12 +5452,12 @@ class cronController extends bootstrap
                 $xml .= '<code_postal>' . $oCompanies->zip . '</code_postal>';
                 $xml .= '<ville><![CDATA["' . utf8_encode($oCompanies->city) . '"]]></ville>';
                 $xml .= '<titre><![CDATA["' . $oCompanies->name . '"]]></titre>';
-                $xml .= '<description><![CDATA["' . $value['nature_project'] . '"]]></description>';
-                $xml .= '<url><![CDATA["' . $this->lurl . '/projects/detail/' . $value['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent"]]></url>';
-                $xml .= '<url_photo><![CDATA["' . $this->surl . '/images/dyn/projets/169/' . $value['photo_projet'] . '"]]></url_photo>';
-                $xml .= '<date_debut_collecte>' . $value['date_publication'] . '</date_debut_collecte>';
-                $xml .= '<date_fin_collecte>' . $value['date_retrait'] . '</date_fin_collecte>';
-                $xml .= '<montant_recherche>' . $value['amount'] . '</montant_recherche>';
+                $xml .= '<description><![CDATA["' . $aProjet['nature_project'] . '"]]></description>';
+                $xml .= '<url><![CDATA["' . $this->lurl . '/projects/detail/' . $aProjet['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent"]]></url>';
+                $xml .= '<url_photo><![CDATA["' . $this->surl . '/images/dyn/projets/169/' . $aProjet['photo_projet'] . '"]]></url_photo>';
+                $xml .= '<date_debut_collecte>' . $aProjet['date_publication'] . '</date_debut_collecte>';
+                $xml .= '<date_fin_collecte>' . $aProjet['date_retrait'] . '</date_fin_collecte>';
+                $xml .= '<montant_recherche>' . $aProjet['amount'] . '</montant_recherche>';
                 $xml .= '<montant_collecte>' . $sumBids . '</montant_collecte>';
                 $xml .= '<nb_contributeurs>'. $nbLenders .'</nb_contributeurs>';
                 $xml .= '<succes>'. $sProjectsuccess .'</succes>';
