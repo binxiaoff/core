@@ -5413,13 +5413,13 @@ class cronController extends bootstrap
                 $oCompanies->get($aProject['id_company'], 'id_company');
 
                 if ($aProject['status'] === \projects_status::EN_FUNDING) {
-                    $sumBids = $oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 0', 'amount');
+                    $iTotalbids = $oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 0', 'amount');
                 } else {
-                    $sumBids = $oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 1', 'amount');
+                    $iTotalbids = $oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 1', 'amount');
                 }
-                $sumBids = ($sumBids / 100);
-                if ($sumBids > $aProject['amount']) {
-                    $sumBids = $aProject['amount'];
+                $iTotalbids = ($iTotalbids / 100);
+                if ($iTotalbids > $aProject['amount']) {
+                    $iTotalbids = $aProject['amount'];
                 }
 
                 $iLenders = $oLoans->getNbPreteurs($aProject['id_project']);
@@ -5465,7 +5465,7 @@ class cronController extends bootstrap
                 $xml .= '<date_debut_collecte>' . $aProject['date_publication'] . '</date_debut_collecte>';
                 $xml .= '<date_fin_collecte>' . $aProject['date_retrait'] . '</date_fin_collecte>';
                 $xml .= '<montant_recherche>' . $aProject['amount'] . '</montant_recherche>';
-                $xml .= '<montant_collecte>' . $sumBids . '</montant_collecte>';
+                $xml .= '<montant_collecte>' . $iTotalbids . '</montant_collecte>';
                 $xml .= '<nb_contributeurs>'. $iLenders .'</nb_contributeurs>';
                 $xml .= '<succes>'. $sProjectsuccess .'</succes>';
                 $xml .= '</projet>';
