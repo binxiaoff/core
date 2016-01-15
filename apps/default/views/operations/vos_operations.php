@@ -42,7 +42,7 @@
 
     .vos_operations tr:nth-child(even) td{background-color:white;}
     .vos_operations tr:hover td{background-color:white;}
-    .vos_operations tr.odd td{background:#fafafa;}
+    .vos_operations tr.odd td{background:#f4f4f4;}
     .vos_operations .icon-arrows{cursor:pointer;}
     .vos_operations .companieleft{text-align:left;}
     .soustable .detail_left{text-align:left;}
@@ -521,7 +521,7 @@
 </div>
 
 <script type="text/javascript">
-    $("input,select").change(function () {
+    $('.vos_operations .table-filter input, .vos_operations .table-filter select').change(function() {
         $(".c2-sb-wrap").removeClass('populated');
 
         $(".load_table_vos_operations").fadeIn();

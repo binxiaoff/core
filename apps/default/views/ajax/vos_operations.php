@@ -28,7 +28,9 @@ $html_filtre .= '
     </div>
 
     <script type="text/javascript">
-        $("input,select").change(function() {
+        $(".vos_operations .table-filter input, .vos_operations .table-filter select").change(function() {
+            $(this).unbind();
+
             $(".c2-sb-wrap").removeClass("populated");
             $(".load_table_vos_operations").fadeIn();
 
