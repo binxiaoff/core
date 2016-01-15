@@ -64,7 +64,7 @@
             </tr>
         </thead>
         <tbody>
-        <?php foreach ($this->lSumLoans as $iLoanIndex => $aProjectLoans): ?>
+        <?php foreach ($this->lSumLoans as $aProjectLoans): ?>
             <tr>
                 <td><?= $this->lng['preteur-operations-detail']['filter-status-' . $aProjectLoans['project_status']] ?></td>
                 <td class="description"><?= $aProjectLoans['name'] ?></td>

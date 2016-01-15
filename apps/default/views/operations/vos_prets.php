@@ -187,12 +187,12 @@
 <div class="export">
     <div class="vos_operations_ligne" style="text-align:center;">
         Imprimer<br/>
-        <a href="<?= $this->lurl ?>/pdf/loans" target="_blank"><img class="print" src="<?= $this->surl ?>/styles/default/preteurs/images/icon-print.png"/></a>
+        <a href="<?= $this->lurl ?>/pdf/loans"><img class="print" src="<?= $this->surl ?>/styles/default/preteurs/images/icon-print.png"/></a>
     </div>
     <div style="width:30px;display:inline-block;"></div>
     <div class="vos_operations_ligne" style="text-align:center;">
         Exporter<br/>
-        <a href="<?= $this->lurl ?>/operations/loans_csv" target="_blank"><img class="xls" src="<?= $this->surl ?>/images/default/xls_hd.png"/></a>
+        <a href="<?= $this->lurl ?>/operations/loans_csv"><img class="xls" src="<?= $this->surl ?>/images/default/xls_hd.png"/></a>
     </div>
 </div>
 <div class="summary">
