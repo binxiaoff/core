@@ -319,17 +319,10 @@ class loans extends loans_crud
     }
 
     // On recup la liste des loans d'un preteur en les regoupant par projet
-    public function getSumLoansByProject($id_lender, $year = '', $order = '')
+    public function getSumLoansByProject($iLenderAccountId, $sOrder = null, $iYear = null, $iProjectStatus = null)
     {
-        if ($order == '') {
-            $order = 'l.added DESC';
-        }
-
-        if ($year != '') {
-            $year = ' AND YEAR(l.added) = "' . $year . '"';
-        }
-
-        $sql = '
+        $result   = array();
+        $resultat = $this->bdd->query('
             SELECT
                 l.id_project,
                 p.title,
@@ -338,12 +331,14 @@ class loans extends loans_crud
                 c.city,
                 c.zip,
                 p.risk,
-                (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) AS project_status,
-                (SELECT psh.added FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) AS status_change,
+                ps.status AS project_status,
+                psh.added AS status_change,
                 SUM(ROUND(l.amount / 100, 2)) AS amount,
                 ROUND(SUM(rate * l.amount) / SUM(l.amount), 2) AS rate,
                 COUNT(l.id_loan) AS nb_loan,
                 l.id_loan AS id_loan_if_one_loan,
+                YEAR(l.added) AS loan_year,
+                l.id_type_contract,
                 DATE((SELECT MIN(e.date_echeance) FROM echeanciers e WHERE e.id_loan = l.id_loan AND e.ordre = 1)) AS debut,
                 DATE((SELECT MAX(e1.date_echeance) FROM echeanciers e1 WHERE e1.id_loan = l.id_loan)) AS fin,
                 DATE((SELECT MIN(e2.date_echeance) FROM echeanciers e2 WHERE e2.id_loan = l.id_loan AND e2.status = 0)) AS next_echeance,
@@ -351,13 +346,17 @@ class loans extends loans_crud
             FROM loans l
             LEFT JOIN projects p ON l.id_project = p.id_project
             LEFT JOIN companies c ON p.id_company = c.id_company
-            WHERE id_lender = ' . $id_lender . ' AND l.status = 0 ' . $year . '
+            LEFT JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
+            LEFT JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
+            LEFT JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+            WHERE id_lender = ' . $iLenderAccountId . '
+                AND l.status = 0
+                ' . (null === $iYear ? '' : 'AND YEAR(l.added) = "' . $iYear . '"') . '
+                ' . (null === $iProjectStatus ? '' : 'AND ps.status = ' . $iProjectStatus) . '
             GROUP BY l.id_project
-            ORDER BY ' . $order;
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+            ORDER BY ' . (null === $sOrder ? 'l.added DESC' : $sOrder)
+        );
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;

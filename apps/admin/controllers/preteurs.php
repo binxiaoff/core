@@ -1797,7 +1797,7 @@ class preteursController extends bootstrap
             $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
         }
 
-        $this->lSumLoans               = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, '', 'next_echeance ASC');
+        $this->lSumLoans               = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, 'next_echeance ASC');
         $this->arrayDeclarationCreance = $this->projects->getProjectsInDebt();
 
         $oLenderAccountStats = $this->loadData('lenders_account_stats');

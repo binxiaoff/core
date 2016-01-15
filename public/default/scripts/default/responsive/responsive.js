@@ -26,7 +26,7 @@
             $html.toggleClass('show-search').removeClass('show-nav show-login');
         });
 
-        
+
 
         $('.popup-link').colorbox({
             maxWidth: '90%',
@@ -50,10 +50,6 @@
 
         $win.on('load resize', function () {
             if ($win.width() < 768) {
-                
-                //$('.detail-ope .th-wrap').show();
-                //$('.detail-ope .th-wrap.th-wrap-v2').parent().show();
-                
                 if ($('#pie-chart').length) {
                     pieChart = $('#pie-chart').highcharts();
                     pieChartOpts = pieChart.options;
@@ -75,15 +71,6 @@
 
                     $('#bar-chart').highcharts(barChartOpts);
                 }
-            }
-            else{
-                
-                
-                //$('.detail-ope .th-wrap.th-wrap-v2').parent().hide();
-                //$('.detail-ope .th-wrap').hide();
-                
-                //$('.detail-ope th .th-wrap').show();
-               //$('.detail-ope th .th-wrap.th-wrap-v2').parent().show();
             }
         });
 

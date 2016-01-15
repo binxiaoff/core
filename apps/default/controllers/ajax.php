@@ -1787,77 +1787,6 @@ class ajaxController extends bootstrap
         $this->lProjectsLoans          = $this->indexage_vos_operations->get_liste_libelle_projet('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"');
     }
 
-    public function _detail_op()
-    {
-        $this->autoFireView = true;
-
-        if (isset($_POST['annee']) && strlen($_POST['annee']) == 4 && is_numeric($_POST['annee'])) {
-            $this->transactions    = $this->loadData('transactions');
-            $this->wallets_lines   = $this->loadData('wallets_lines');
-            $this->bids            = $this->loadData('bids');
-            $this->loans           = $this->loadData('loans');
-            $this->echeanciers     = $this->loadData('echeanciers');
-            $this->projects        = $this->loadData('projects');
-            $this->companies       = $this->loadData('companies');
-            $this->projects_status = $this->loadData('projects_status');
-
-            $this->lng['preteur-operations']                = $this->ln->selectFront('preteur-operations', $this->language, $this->App);
-            $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
-            $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
-            $this->lng['preteur-operations-detail']         = $this->ln->selectFront('preteur-operations-detail', $this->language, $this->App);
-            $this->lng['profile']                           = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
-
-            $annee = $_POST['annee'];
-
-            $this->type  = $_POST['type'];
-            $this->order = $_POST['order'];
-
-            if ($this->type == "order_titre") {
-                $tri = 1;
-            } elseif ($this->type == "order_note") {
-                $tri = 2;
-            } elseif ($this->type == "order_montant") {
-                $tri = 3;
-            } elseif ($this->type == "order_interet") {
-                $tri = 4;
-            } elseif ($this->type == "order_debut") {
-                $tri = 5;
-            } elseif ($this->type == "order_prochaine") {
-                $tri = 6;
-            } elseif ($this->type == "order_fin") {
-                $tri = 7;
-            } elseif ($this->type == "order_mensualite") {
-                $tri = 8;
-            }
-
-            $arrayTri = array(
-                0 => 'next_echeance',
-                1 => 'p.title',
-                2 => 'p.risk',
-                3 => 'amount',
-                4 => 'rate',
-                5 => 'debut',
-                6 => 'next_echeance',
-                7 => 'fin',
-                8 => 'mensuel'
-            );
-
-            if ($this->order == "") {
-                $this->order = "ASC";
-            }
-
-            if (false === isset($tri) || $tri == "") {
-                $tri = 1;
-            }
-
-            $this->lSumLoans               = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, $annee, $arrayTri[$tri] . " " . $this->order);
-            $this->arrayDeclarationCreance = $this->projects->getProjectsInDebt();
-        } else {
-            echo 'nok';
-            die;
-        }
-    }
-
     public function _acceptCookies()
     {
         $accept_cookies = $this->loadData('accept_cookies');
@@ -1873,18 +1802,5 @@ class ajaxController extends bootstrap
         echo json_encode(array('reponse' => $create));
 
         die;
-    }
-
-    public function _reordrePays()
-    {
-        $pays = $this->loadData('pays_v2');
-        $i    = 1;
-        foreach ($pays->select('id_pays <> 1', 'fr ASC') as $p) {
-            $i++;
-            echo $p['fr'] . "-$i<br/>";
-            $pays->get($p['id_pays']);
-            $pays->ordre = $i;
-            $pays->update();
-        }
     }
 }

@@ -31,7 +31,6 @@ class operationsController extends bootstrap
         $this->wallets_lines           = $this->loadData('wallets_lines');
         $this->bids                    = $this->loadData('bids');
         $this->loans                   = $this->loadData('loans');
-        $this->echeanciers             = $this->loadData('echeanciers');
         $this->projects                = $this->loadData('projects');
         $this->companies               = $this->loadData('companies');
         $this->projects_status         = $this->loadData('projects_status');
@@ -44,8 +43,8 @@ class operationsController extends bootstrap
         $this->lng['profile']                           = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
 
         // conf par defaut pour la date (1M)
-        $date_debut_time = mktime(0, 0, 0, date("m") - 1, date("d"), date('Y')); // date debut
-        $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date fin
+        $date_debut_time = mktime(0, 0, 0, date('m') - 1, date('d'), date('Y'));
+        $date_fin_time   = mktime(0, 0, 0, date('m'), date('d'), date('Y'));
 
         // dates pour la requete
         $this->date_debut = date('Y-m-d', $date_debut_time);
@@ -55,38 +54,12 @@ class operationsController extends bootstrap
         $this->date_debut_display = date('d/m/Y', $date_debut_time);
         $this->date_fin_display   = date('d/m/Y', $date_fin_time);
 
-        $array_type_transactions = array(
-            1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            2  => array(1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'], 2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'], 3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']),
-            3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            5  => array(1 => $this->lng['preteur-operations-vos-operations']['remboursement'], 2 => $this->lng['preteur-operations-vos-operations']['recouvrement']),
-            7  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            8  => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
-            16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
-            17 => $this->lng['preteur-operations-vos-operations']['retrait-offre'],
-            19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
-            20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
-            22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
-            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur']);
-
-        $array_type_transactions_liste_deroulante = array(
-            1 => '1,2,3,4,5,7,8,16,17,19,20,23',
-            2 => '3,4,7,8',
-            3 => '3,4,7',
-            4 => '8',
-            5 => '2',
-            6 => '5,23'
-        );
-
-        // on va chercker si il n'y a pas de nouvelle indexation à faire
         $this->indexation_client($this->clients->id_client);
 
-        // On va chercher ce qu'on a dans la table d'indexage
-        $this->lTrans = $this->indexage_vos_operations->select('id_client= ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"', 'date_operation DESC, id_projet DESC');
-
-        // filtre secondaire
-        $this->lProjectsLoans = $this->indexage_vos_operations->get_liste_libelle_projet('id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"');
+        $this->lTrans         = $this->indexage_vos_operations->select('id_client= ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"', 'date_operation DESC, id_projet DESC');
+        $this->lProjectsLoans = $this->indexage_vos_operations->get_liste_libelle_projet('id_client = ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"');
+        $this->lLoans         = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = ' . date('Y') . ' AND status = 0', 'added DESC');
+        $this->liste_docs     = $this->ifu->select('id_client =' . $this->clients->id_client . ' AND statut = 1', 'annee ASC');
 
         unset($_SESSION['filtre_vos_operations']);
         unset($_SESSION['id_last_action']);
@@ -101,51 +74,144 @@ class operationsController extends bootstrap
         $_SESSION['filtre_vos_operations']['type']             = '';
         $_SESSION['filtre_vos_operations']['id_client']        = $this->clients->id_client;
 
-        $year                          = date('Y');
-        $this->lLoans                  = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = ' . $year . ' AND status = 0', 'added DESC');
-        $this->lSumLoans               = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, $year, 'next_echeance ASC');
-        $this->arrayDeclarationCreance = $this->projects->getProjectsInDebt();
-        $this->liste_docs              = $this->ifu->select('id_client =' . $this->clients->id_client . ' AND statut = 1', 'annee ASC');
+        $this->commonLoans();
+
+        $this->aFilterStatuses = $this->projects_status->select('status >= ' . \projects_status::REMBOURSEMENT, 'status ASC');
+        $this->aLoansYears     = array_count_values(array_column($this->lSumLoans, 'loan_year'));
+        krsort($this->aLoansYears);
+    }
+
+    public function _loans()
+    {
+        $this->hideDecoration();
+
+        $this->lng['preteur-operations-detail'] = $this->ln->selectFront('preteur-operations-detail', $this->language, $this->App);
+
+        $this->commonLoans();
+    }
+
+    private function commonLoans()
+    {
+        $this->echeanciers = $this->loadData('echeanciers');
+
+        $this->sOrderField     = isset($_POST['type']) ? $_POST['type'] : 'start';
+        $this->sOrderDirection = isset($_POST['order']) && 'asc' === $_POST['order'] ? 'ASC' : 'DESC';
+
+        switch ($this->sOrderField) {
+            case 'status':
+                $this->sOrderField = 'status';
+                $sOrderBy = 'project_status ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                break;
+            case 'title':
+                $this->sOrderField = 'title';
+                $sOrderBy = 'p.title ' . $this->sOrderDirection . ', debut DESC';
+                break;
+            case 'note':
+                $this->sOrderField = 'note';
+                $sOrderBy = 'p.risk ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                break;
+            case 'amount':
+                $this->sOrderField = 'amount';
+                $sOrderBy = 'amount ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                break;
+            case 'interest':
+                $this->sOrderField = 'interest';
+                $sOrderBy = 'rate ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                break;
+            case 'next':
+                $this->sOrderField = 'next';
+                $sOrderBy = 'next_echeance ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                break;
+            case 'end':
+                $this->sOrderField = 'end';
+                $sOrderBy = 'fin ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                break;
+            case 'repayment':
+                $this->sOrderField = 'repayment';
+                $sOrderBy = 'mensuel ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                break;
+            case 'start':
+            default:
+                $this->sOrderField = 'start';
+                $sOrderBy = 'debut ' . $this->sOrderDirection . ', p.title ASC';
+                break;
+        }
+
+        $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
+        $this->lSumLoans       = $this->loans->getSumLoansByProject(
+            $this->lenders_accounts->id_lender_account,
+            $sOrderBy,
+            isset($_POST['year']) && is_numeric($_POST['year']) ? (int) $_POST['year'] : null,
+            isset($_POST['status']) && is_numeric($_POST['status']) ? (int) $_POST['status'] : null
+        );
+
+        $this->aLoansStatuses = array(
+            'no-problem'            => 0,
+            'late-repayment'        => 0,
+            'recovery'              => 0,
+            'collective-proceeding' => 0,
+            'default'               => 0,
+            'refund-finished'       => 0,
+        );
+
+        foreach ($this->lSumLoans as $iLoandIndex => $aProjectLoans) {
+            switch ($aProjectLoans['project_status']) {
+                case \projects_status::PROBLEME:
+                case \projects_status::PROBLEME_J_X:
+                    $this->lSumLoans[$iLoandIndex]['status-color'] = 'warning';
+                    ++$this->aLoansStatuses['late-repayment'];
+                    break;
+                case \projects_status::RECOUVREMENT:
+                    $this->lSumLoans[$iLoandIndex]['status-color'] = 'problem';
+                    ++$this->aLoansStatuses['recovery'];
+                    break;
+                case \projects_status::PROCEDURE_SAUVEGARDE:
+                case \projects_status::REDRESSEMENT_JUDICIAIRE:
+                case \projects_status::LIQUIDATION_JUDICIAIRE:
+                    $this->lSumLoans[$iLoandIndex]['status-color'] = 'problem';
+                    ++$this->aLoansStatuses['collective-proceeding'];
+                    break;
+                case \projects_status::DEFAUT:
+                    $this->lSumLoans[$iLoandIndex]['status-color'] = 'default';
+                    ++$this->aLoansStatuses['default'];
+                    break;
+                case \projects_status::REMBOURSE:
+                case \projects_status::REMBOURSEMENT_ANTICIPE:
+                    $this->lSumLoans[$iLoandIndex]['status-color'] = '';
+                    ++$this->aLoansStatuses['refund-finished'];
+                    break;
+                case \projects_status::REMBOURSEMENT:
+                default:
+                    $this->lSumLoans[$iLoandIndex]['status-color'] = '';
+                    ++$this->aLoansStatuses['no-problem'];
+                    break;
+            }
+        }
     }
 
     public function _vos_operations()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
     }
 
     public function _vos_prets()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
     }
 
     public function _histo_transac()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
     }
 
     public function _doc_fiscaux()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
     }
 
     public function _vos_operation_csv()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $this->transactions                      = $this->loadData('transactions');
         $this->wallets_lines                     = $this->loadData('wallets_lines');
@@ -175,7 +241,6 @@ class operationsController extends bootstrap
 
         // tri debut/fin
         if (isset($post_id_last_action) && in_array($post_id_last_action, array('debut', 'fin'))) {
-
             $debutTemp = explode('/', $post_debut);
             $finTemp   = explode('/', $post_fin);
 
@@ -307,7 +372,7 @@ class operationsController extends bootstrap
         }
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
 
-        $this->lTrans = $this->indexage_vos_operations->select('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"' . $tri_project, $order);
+        $this->lTrans = $this->indexage_vos_operations->select('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"' . $tri_project, $order);
 
         header("Content-type: application/vnd.ms-excel; charset=utf-8");
         header("Expires: 0");
