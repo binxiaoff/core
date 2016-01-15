@@ -2060,7 +2060,6 @@ class ajaxController extends bootstrap
                 } else {
                     $update = false;
                 }
-
                 // On recup le title du projet
                 $title = $this->projects->title;
 
