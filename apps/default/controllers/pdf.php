@@ -1023,6 +1023,72 @@ class pdfController extends bootstrap
         }
     }
 
+    public function _loans()
+    {
+        $sPath          = '/tmp/' . uniqid() . '/';
+        $sNamePdfClient = 'vos_prets_' . date('Y-m-d_H:i:s') . '.pdf';
+
+        $this->lng['preteur-operations-detail'] = $this->ln->selectFront('preteur-operations-detail', $this->language, $this->App);
+        $this->lng['preteur-operations-pdf']    = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
+
+        $this->GenerateLoansHtml();
+        $this->WritePdf($sPath . $sNamePdfClient, 'operations');
+        $this->ReadPdf($sPath . $sNamePdfClient, $sNamePdfClient);
+    }
+
+    private function GenerateLoansHtml()
+    {
+        $this->echeanciers = $this->loadData('echeanciers');
+
+        $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
+        $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, 'debut DESC, p.title ASC');
+
+        $this->aLoansStatuses = array(
+            'no-problem'            => 0,
+            'late-repayment'        => 0,
+            'recovery'              => 0,
+            'collective-proceeding' => 0,
+            'default'               => 0,
+            'refund-finished'       => 0,
+        );
+
+        foreach ($this->lSumLoans as $iLoandIndex => $aProjectLoans) {
+            switch ($aProjectLoans['project_status']) {
+                case \projects_status::PROBLEME:
+                case \projects_status::PROBLEME_J_X:
+                    $this->lSumLoans[$iLoandIndex]['status-color'] = 'warning';
+                    ++$this->aLoansStatuses['late-repayment'];
+                    break;
+                case \projects_status::RECOUVREMENT:
+                    $this->lSumLoans[$iLoandIndex]['status-color'] = 'problem';
+                    ++$this->aLoansStatuses['recovery'];
+                    break;
+                case \projects_status::PROCEDURE_SAUVEGARDE:
+                case \projects_status::REDRESSEMENT_JUDICIAIRE:
+                case \projects_status::LIQUIDATION_JUDICIAIRE:
+                    $this->lSumLoans[$iLoandIndex]['status-color'] = 'problem';
+                    ++$this->aLoansStatuses['collective-proceeding'];
+                    break;
+                case \projects_status::DEFAUT:
+                    $this->lSumLoans[$iLoandIndex]['status-color'] = 'default';
+                    ++$this->aLoansStatuses['default'];
+                    break;
+                case \projects_status::REMBOURSE:
+                case \projects_status::REMBOURSEMENT_ANTICIPE:
+                    $this->lSumLoans[$iLoandIndex]['status-color'] = '';
+                    ++$this->aLoansStatuses['refund-finished'];
+                    break;
+                case \projects_status::REMBOURSEMENT:
+                default:
+                    $this->lSumLoans[$iLoandIndex]['status-color'] = '';
+                    ++$this->aLoansStatuses['no-problem'];
+                    break;
+            }
+        }
+
+        $this->setDisplay('loans');
+    }
+
     public function _vos_operations_pdf_indexation()
     {
         if (isset($_SESSION['filtre_vos_operations']['id_client'])) {
