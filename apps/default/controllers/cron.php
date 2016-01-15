@@ -5408,17 +5408,17 @@ class cronController extends bootstrap
             $xml = '<?xml version="1.0" encoding="UTF-8"?>';
             $xml .= '<partenaire>';
 
-            foreach ($aProjets as $p) {
-                $oCompanies->get($p['id_company'], 'id_company');
+            foreach ($aProjets as $value) {
+                $oCompanies->get($value['id_company'], 'id_company');
 
-                $sumBids = $oBids->sum('id_project = ' . $p['id_project'] . ' AND status = 1', 'amount');
+                $sumBids = $oBids->sum('id_project = ' . $value['id_project'] . ' AND status = 1', 'amount');
                 $sumBids = ($sumBids / 100);
-                if ($sumBids > $p['amount']) {
-                    $sumBids = $p['amount'];
+                if ($sumBids > $value['amount']) {
+                    $sumBids = $value['amount'];
                 }
 
-                $nbLenders = $oLoans->getNbPreteurs($p['id_project']);
-                switch ($p['status']) {
+                $nbLenders = $oLoans->getNbPreteurs($value['id_project']);
+                switch ($value['status']) {
                     case projects_status::PROBLEME:
                     case projects_status::REMBOURSEMENT:
                     case projects_status::FUNDE:
@@ -5439,7 +5439,7 @@ class cronController extends bootstrap
                 $xml .= '<projet>';
                 $xml .= '<reference_partenaire>045</reference_partenaire>';
                 $xml .= '<date_export>' . date('Y-m-d') . '</date_export>';
-                $xml .= '<reference_projet>' . $p['id_project'] . '</reference_projet>';
+                $xml .= '<reference_projet>' . $value['id_project'] . '</reference_projet>';
                 $xml .= '<impact_social>NON</impact_social>';
                 $xml .= '<impact_environnemental>NON</impact_environnemental>';
                 $xml .= '<impact_culturel>NON</impact_culturel>';
@@ -5451,14 +5451,14 @@ class cronController extends bootstrap
                 $xml .= '<qualif_ESS>NON</qualif_ESS>';
                 $xml .= '<code_postal>' . $oCompanies->zip . '</code_postal>';
                 $xml .= '<ville><![CDATA["' . utf8_encode($oCompanies->city) . '"]]></ville>';
-                $xml .= '<titre><![CDATA["' . $p['title'] . '"]]></titre>';
-                $xml .= '<description><![CDATA["' . $p['nature_project'] . '"]]></description>';
-                $xml .= '<url><![CDATA["' . $this->lurl . '/projects/detail/' . $p['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent"]]></url>';
-                $xml .= '<url_photo><![CDATA["' . $this->surl . '/images/dyn/projets/169/' . $p['photo_projet'] . '"]]></url_photo>';
-                $xml .= '<date_debut_collecte>' . $p['date_publication'] . '</date_debut_collecte>';
-                $xml .= '<date_fin_collecte>' . $p['date_retrait'] . '</date_fin_collecte>';
-                $xml .= '<montant_recherche>' . $p['amount'] . '</montant_recherche>';
-                $xml .= '<montant_collecte>' . $this->ficelle->formatNumber($sumBids, 0) . '</montant_collecte>';
+                $xml .= '<titre><![CDATA["' . $value['title'] . '"]]></titre>';
+                $xml .= '<description><![CDATA["' . $value['nature_project'] . '"]]></description>';
+                $xml .= '<url><![CDATA["' . $this->lurl . '/projects/detail/' . $value['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent"]]></url>';
+                $xml .= '<url_photo><![CDATA["' . $this->surl . '/images/dyn/projets/169/' . $value['photo_projet'] . '"]]></url_photo>';
+                $xml .= '<date_debut_collecte>' . $value['date_publication'] . '</date_debut_collecte>';
+                $xml .= '<date_fin_collecte>' . $value['date_retrait'] . '</date_fin_collecte>';
+                $xml .= '<montant_recherche>' . $value['amount'] . '</montant_recherche>';
+                $xml .= '<montant_collecte>' . $sumBids . '</montant_collecte>';
                 $xml .= '<nb_contributeurs>'. $nbLenders .'</nb_contributeurs>';
                 $xml .= '<succes>'. $success .'</succes>';
                 $xml .= '</projet>';
