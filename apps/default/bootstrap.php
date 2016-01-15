@@ -14,6 +14,11 @@ class bootstrap extends Controller
      */
     public $projects;
 
+    /**
+     * @var array
+     */
+    public $aDataLayer = array();
+
     public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
@@ -339,6 +344,9 @@ class bootstrap extends Controller
 
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
+
+            $this->addDataLayer('id_client', $this->clients->id_client);
+            $this->addDataLayer('email_client', $this->clients->email);
 
             $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
             $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
@@ -720,7 +728,13 @@ class bootstrap extends Controller
         $this->oCompanyDisplay->get($this->clients->id_client, 'id_client_owner');
 
     }
+
+    /**
+     * @param string $sKey DataLayer parameter name
+     * @param mixed $mValue Parameter value
+     */
+    protected function addDataLayer($sKey, $mValue)
+    {
+        $this->aDataLayer[$sKey] = $mValue;
+    }
 }
-
-
-
