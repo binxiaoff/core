@@ -5422,13 +5422,13 @@ class cronController extends bootstrap
                     case projects_status::PROBLEME:
                     case projects_status::REMBOURSEMENT:
                     case projects_status::FUNDE:
-                        $success = "OUI";
+                        $sProjectsuccess = "OUI";
                         break ;
                     case projects_status::FUNDING_KO:
-                        $success = "NON";
+                        $sProjectsuccess = "NON";
                         break ;
                     default:
-                        $success = "";
+                        $sProjectsuccess = "";
                         break ;
                 }
 
@@ -5451,7 +5451,7 @@ class cronController extends bootstrap
                 $xml .= '<qualif_ESS>NON</qualif_ESS>';
                 $xml .= '<code_postal>' . $oCompanies->zip . '</code_postal>';
                 $xml .= '<ville><![CDATA["' . utf8_encode($oCompanies->city) . '"]]></ville>';
-                $xml .= '<titre><![CDATA["' . $value['title'] . '"]]></titre>';
+                $xml .= '<titre><![CDATA["' . $oCompanies->name . '"]]></titre>';
                 $xml .= '<description><![CDATA["' . $value['nature_project'] . '"]]></description>';
                 $xml .= '<url><![CDATA["' . $this->lurl . '/projects/detail/' . $value['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent"]]></url>';
                 $xml .= '<url_photo><![CDATA["' . $this->surl . '/images/dyn/projets/169/' . $value['photo_projet'] . '"]]></url_photo>';
@@ -5460,7 +5460,7 @@ class cronController extends bootstrap
                 $xml .= '<montant_recherche>' . $value['amount'] . '</montant_recherche>';
                 $xml .= '<montant_collecte>' . $sumBids . '</montant_collecte>';
                 $xml .= '<nb_contributeurs>'. $nbLenders .'</nb_contributeurs>';
-                $xml .= '<succes>'. $success .'</succes>';
+                $xml .= '<succes>'. $sProjectsuccess .'</succes>';
                 $xml .= '</projet>';
             }
             $xml .= '</partenaire>';
