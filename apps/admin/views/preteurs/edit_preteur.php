@@ -131,7 +131,7 @@
         <h2>Etape 1</h2>
         <table class="form" style="margin: auto;">
             <?
-            if (in_array($this->clients->type, array(\clients::TYPE_BORROWER_PERSON, \clients::TYPE_BORROWER_PERSON_FOREIGNER))) {
+            if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
                 ?>
                 <tr class="particulier">
                     <th>Civilite :</th>
@@ -279,7 +279,7 @@
 
             <?
             // particulier
-            if (in_array($this->clients->type, array(\clients::TYPE_BORROWER_PERSON, \clients::TYPE_BORROWER_PERSON_FOREIGNER))) {
+            if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
                 ?>
                 <tr>
                     <th><label for="id_pays_fiscal">Pays fiscal :</label></th>
@@ -323,7 +323,7 @@
             </tr>
             <?
             // particulier
-            if (in_array($this->clients->type, array(\clients::TYPE_BORROWER_PERSON, \clients::TYPE_BORROWER_PERSON_FOREIGNER))) {
+            if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
                 ?>
                 <tr class="meme-adresse" style="display:none;">
                     <th><label for="id_pays">Pays :</label></th>
@@ -348,7 +348,7 @@
 
             <!-- particulier -->
             <?
-            if (in_array($this->clients->type, array(\clients::TYPE_BORROWER_PERSON, \clients::TYPE_BORROWER_PERSON_FOREIGNER))) {
+            if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
                 ?>
                 <tr class="particulier">
                     <th><label for="phone">Téléphone :</label></th>
@@ -585,7 +585,7 @@
             </tr>
             <?
             if ($this->origine_fonds[0] != false) {
-                if (in_array($this->clients->type, array(\clients::TYPE_BORROWER_PERSON, \clients::TYPE_BORROWER_PERSON_FOREIGNER, \clients::TYPE_BORROWER_LEGAL_ENTITY, \clients::TYPE_BORROWER_LEGAL_ENTITY_FOREIGNER))) {
+                if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER, \clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
                     ?>
                     <tr class="particulier">
                         <th colspan="2" style="text-align:left;"><label for="origines">Quelle est l'origine des fonds
@@ -759,7 +759,7 @@
                     <td>
                         <?php if (in_array($this->clients_status->status, array(\clients_status::CLOSED_LENDER_REQUEST)) === false) : ?>
                         <input type="button"
-                               onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur ?')){window.location = '<?= $this->lurl ?>/preteurs/gestion/desactivate/<?= $this->clients->id_client ?>/<?= \clients::STATUS_OFFLINE ?>';}"
+                               onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur ?')){window.location = '<?= $this->lurl ?>/preteurs/gestion/deactivate/<?= $this->clients->id_client ?>/<?= \clients::STATUS_OFFLINE ?>';}"
                                class="btnRouge" value="Clôturer le compte">
                         <?php endif; ?>
                     </td>

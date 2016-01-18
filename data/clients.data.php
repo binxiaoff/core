@@ -28,10 +28,10 @@
 
 class clients extends clients_crud
 {
-    const TYPE_BORROWER_PERSON = 1;
-    const TYPE_BORROWER_LEGAL_ENTITY = 2;
-    const TYPE_BORROWER_PERSON_FOREIGNER = 3;
-    const TYPE_BORROWER_LEGAL_ENTITY_FOREIGNER = 4;
+    const TYPE_PERSON = 1;
+    const TYPE_LEGAL_ENTITY = 2;
+    const TYPE_PERSON_FOREIGNER = 3;
+    const TYPE_LEGAL_ENTITY_FOREIGNER = 4;
 
     const STATUS_OFFLINE = 0;
     const STATUS_ONLINE = 1;
@@ -752,12 +752,17 @@ class clients extends clients_crud
         return $oProjects->exist($oCompanies->id_company, 'id_company');
     }
 
-    public function checkIfClientAlreadyExists($sName, $sFirstname, $sBirthdate, $aReplace)
+    public function getDuplicates($sFirstName, $sLastName, $sBirthdate)
     {
+        $aCharactersToReplace = array(' ', '-', '_', '*', ',', '^', '`', ':', ';', ',', '.', '!', '&', '"', '\'', '<', '>', '(', ')', '@');
+
+        $sFirstName     = str_replace($aCharactersToReplace, '', htmlspecialchars_decode($sFirstName));
+        $sLastName      = str_replace($aCharactersToReplace, '', htmlspecialchars_decode($sLastName));
+
         $sReplaceSQL        = '';
         $sReplaceCharacters = '';
 
-        foreach ($aReplace as $character) {
+        foreach ($aCharactersToReplace as $character) {
             $sReplaceSQL .= 'REPLACE(';
             $sReplaceCharacters .= ',\'' . addslashes($character) . '\', \'\')';
         }

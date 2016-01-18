@@ -87,7 +87,7 @@ class transfertsController extends bootstrap
         $this->receptions->get($this->params[0], 'id_reception');
 
         if ($this->receptions->id_client != 0) {
-            header('location:' . $this->lurl . '/transferts');
+            header('Location: ' . $this->lurl . '/transferts');
             die;
         }
     }
@@ -104,7 +104,7 @@ class transfertsController extends bootstrap
         $this->receptions->get($this->params[0], 'id_reception');
 
         if ($this->receptions->id_project != 0) {
-            header('location:' . $this->lurl . '/transferts');
+            header('Location: ' . $this->lurl . '/transferts');
             die;
         }
     }
@@ -121,7 +121,7 @@ class transfertsController extends bootstrap
         $this->receptions->get($this->params[0], 'id_reception');
 
         if ($this->receptions->id_client != 0) {
-            header('location:' . $this->lurl . '/transferts/prelevements');
+            header('Location: ' . $this->lurl . '/transferts/prelevements');
             die;
         }
     }
@@ -142,24 +142,25 @@ class transfertsController extends bootstrap
         $this->offres_bienvenues->get(1, 'status = 0 AND id_offre_bienvenue');
 
         $this->settings->get('Offre de bienvenue motif', 'type');
-        $sMotifOffreBienvenue = $this->settings->value;
+        $sWelcomeOfferMotive = $this->settings->value;
 
         $this->clients->get($oLendersAccounts->id_client_owner);
         $this->companies->get($oLendersAccounts->id_company_owner);
 
-        unset($_SESSION['forms']);
+        unset($_SESSION['forms']['rattrapage_offre_bienvenue']);
 
         if (isset($_POST['spy_search'])) {
             if (empty($_POST['dateStart']) === false && empty($_POST['dateEnd']) === false) {
-                $oDateTimeStart                     = datetime::createFromFormat('d/m/Y', $_POST['dateStart']);
-                $oDateTimeEnd                       = datetime::createFromFormat('d/m/Y', $_POST['dateEnd']);
-                $sStartDateSQL                      = '"' . $oDateTimeStart->format('Y-m-d') . ' 00:00:00"';
-                $sEndDateSQL                        = '"' . $oDateTimeEnd->format('Y-m-d') . ' 23:59:59"';
-                $_SESSION['forms']['sStartDateSQL'] = $sStartDateSQL;
-                $_SESSION['forms']['sEndDateSQL']   = $sEndDateSQL;
+                $oDateTimeStart                                                   = \DateTime::createFromFormat('d/m/Y', $_POST['dateStart']);
+                $oDateTimeEnd                                                     = \DateTime::createFromFormat('d/m/Y', $_POST['dateEnd']);
+//                $sStartDateSQL                                                    = '"' . $oDateTimeStart->format('Y-m-d') . ' 00:00:00"';
+//                $sEndDateSQL                                                      = '"' . $oDateTimeEnd->format('Y-m-d') . ' 23:59:59"';
+                $sStartDateSQL                                                    = $oDateTimeStart->format('Y-m-d');
+                $sEndDateSQL                                                      = $oDateTimeEnd->format('Y-m-d');
+                $_SESSION['forms']['rattrapage_offre_bienvenue']['sStartDateSQL'] = $sStartDateSQL;
+                $_SESSION['forms']['rattrapage_offre_bienvenue']['sEndDateSQL']   = $sEndDateSQL;
 
-                $this->aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer($iLenderId = null, $sStartDateSQL,
-                    $sEndDateSQL);
+                $this->aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer($iLenderId = null, $sStartDateSQL, $sEndDateSQL);
             } elseif (empty($_POST['id']) === false) {
                 $this->aLenders          = $oLendersAccounts->getLendersWithNoWelcomeOffer($iLenderId = $_POST['id']);
                 $_SESSION['forms']['id'] = $_POST['id'];
@@ -181,8 +182,8 @@ class transfertsController extends bootstrap
             $iSumOfVirtualWelcomeOfferTransactions  = $oTransactions->sum('status = 1 AND etat = 1 AND type_transaction IN(16,17)', 'montant');
             $iAvailableAmountForWelcomeOffers       = $iSumOfPhysicalWelcomeOfferTransactions - $iSumOfVirtualWelcomeOfferTransactions;
 
-            $oStartWelcomeOffer = Datetime::createFromFormat('Y-m-d H:m:s', $this->offres_bienvenues->debut);
-            $oEndWelcomeOffer   = Datetime::createFromFormat('Y-m-d H:m:s', $this->offres_bienvenues->fin);
+            $oStartWelcomeOffer = \DateTime::createFromFormat('Y-m-d H:m:s', $this->offres_bienvenues->debut);
+            $oEndWelcomeOffer   = \DateTime::createFromFormat('Y-m-d H:m:s', $this->offres_bienvenues->fin);
             $oToday             = new \DateTime();
 
             if ($oStartWelcomeOffer <= $oToday && $oEndWelcomeOffer >= $oToday) {
@@ -201,7 +202,7 @@ class transfertsController extends bootstrap
 
             if ($bOfferValid && $bEnoughMoneyLeft) {
                 $oWelcomeOfferDetails->id_offre_bienvenue        = $this->offres_bienvenues->id_offre_bienvenue;
-                $oWelcomeOfferDetails->motif                     = $sMotifOffreBienvenue;
+                $oWelcomeOfferDetails->motif                     = $sWelcomeOfferMotive;
                 $oWelcomeOfferDetails->id_client                 = $this->clients->id_client;
                 $oWelcomeOfferDetails->montant                   = $this->offres_bienvenues->montant;
                 $oWelcomeOfferDetails->status                    = 0;
@@ -274,12 +275,12 @@ class transfertsController extends bootstrap
         if (isset($_SESSION['forms']['sStartDateSQL']) && isset($_SESSION['forms']['sEndDateSQL'])) {
             $this->aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer(
                 $iLenderId = null,
-                $_SESSION['forms']['sStartDateSQL'],
-                $_SESSION['forms']['sEndDateSQL']
+                $_SESSION['forms']['rattrapage_offre_bienvenue']['sStartDateSQL'],
+                $_SESSION['forms']['rattrapage_offre_bienvenue']['sEndDateSQL']
             );
         }
 
-        if (isset($_SESSION['forms']['id'])) {
+        if (isset($_SESSION['forms']['rattrapage_offre_bienvenue']['id'])) {
             $this->aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer($_SESSION['forms']['id']);
         }
 

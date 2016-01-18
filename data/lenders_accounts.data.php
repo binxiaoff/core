@@ -426,7 +426,6 @@ class lenders_accounts extends lenders_accounts_crud
                     AND DATE(la.added) >= ' . $sStartDate . '
                     AND DATE(la.added) <= ' . $sEndDate . ' ' . $sWhereID;
 
-        //TODO replace transaction type ID by const TYPE_WELCOME_OFFER = 16 once the code is available (Commit [Unilend/release-statuts-emprunteurs] 24d6d5036026: [DEV-131])
         $resultat = $this->bdd->query($sql);
 
         $aLenders   = array();
@@ -451,7 +450,7 @@ class lenders_accounts extends lenders_accounts_crud
 
         $iBids        = $oBids->counter('id_lender_account = ' . $iLenderId);
         $iPayments    = $oPaymentSchedule->counter('id_lender = ' . $iLenderId);
-        $iWalletLines = $oWalletLines->counter('id_lender = ' . $iLenderId . ' AND type_financial_operation IN (' . implode($aTransactionTypes, ',') . ')');
+        $iWalletLines = $oWalletLines->counter('id_lender = ' . $iLenderId . ' AND type_financial_operation IN (' . implode(',', $aTransactionTypes) . ')');
 
         return ($iBids + $iPayments + $iWalletLines > 0);
     }
