@@ -26,8 +26,25 @@
 //
 // **************************************************************************************************** //
 
+
 class clients extends clients_crud
 {
+
+    const OCTROI_FINANCMENT           = 1;
+    const VIREMENT                    = 2;
+    const COMMISSION_DEBLOCAGE        = 3;
+    const PRLV_MENSUALITE             = 4;
+    const AFF_MENSUALITE_PRETEURS     = 5;
+    const COMMISSION_MENSUELLE        = 6;
+    const REMBOURSEMENT_ANTICIPE      = 7;
+    const AFFECTATION_RA_PRETEURS     = 8;
+
+    const TYPE_PERSON                 = 1;
+    const TYPE_LEGAL_ENTITY           = 2;
+    const TYPE_PERSON_FOREIGNER       = 3;
+    const TYPE_LEGAL_ENTITY_FOREIGNER = 4;
+
+
     public function __construct($bdd, $params = '')
     {
         parent::clients($bdd, $params);
@@ -360,73 +377,18 @@ class clients extends clients_crud
     public function searchPreteurs($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $emprunteur = '', $start = '', $nb = '')
     {
         $where = 'WHERE 1 = 1 ';
-
-        if ($ref != '') {
-            $where .= ' AND c.id_client IN(' . $ref . ')';
-        }
-        if ($nom != '') {
-            $where .= ' AND c.nom LIKE "%' . $nom . '%"';
-        }
-        if ($email != '') {
-            $where .= ' AND c.email LIKE "%' . $email . '%"';
-        }
-        if ($prenom != '') {
-            $where .= ' AND c.prenom LIKE "%' . $prenom . '%"';
-        }
-        if ($name != '') {
-            $where .= ' AND co.name LIKE "%' . $name . '%"';
-        }
-
-        if ($emprunteur != '') {
-            $where .= ' AND c.status_pre_emp IN (2,3)';
-        } else {
-            if ($noValide != '') {
-                $where .= ' AND c.status_pre_emp NOT IN (2,3)';
-            } else {
-                $where .= ' AND YEAR(NOW()) - YEAR(c.naissance) >= 18 AND c.status_pre_emp IN (1,3) AND status_inscription_preteur = 1';
-            }
-        }
-
-        $sql = 'SELECT l.*,c.*,co.*
-        FROM lenders_accounts l
-        LEFT JOIN clients c ON c.id_client = l.id_client_owner
-        LEFT JOIN companies co ON co.id_company = l.id_company_owner
-        ' . $where . '
-        GROUP BY l.id_lender_account
-        ORDER BY l.id_lender_account DESC' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-
-        $i = 0;
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[$i] = $record;
-
-            if ($record['status'] == '0' && $noValide != '') {
-                $result[$i]['novalid'] = 1;
-            } else {
-                $result[$i]['novalid'] = '0';
-            }
-            $i++;
-        }
-        return $result;
-    }
-
-    public function searchPreteursV2($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $emprunteur = '', $start = '', $nb = '')
-    {
-        $where = 'WHERE 1 = 1 ';
         $and   = '';
         if ($ref != '') {
             $and .= ' AND c.id_client IN(' . $ref . ')';
         }
         if ($email != '') {
-            $and .= ' AND c.email LIKE "%' . $email . '%"';
+            $and .= ' AND c.email LIKE "' . $email . '%"';
         }
         if ($prenom != '') {
-            $and .= ' AND c.prenom LIKE "%' . $prenom . '%"';
+            $and .= ' AND c.prenom LIKE "' . $prenom . '%"';
         }
         if ($name != '') {
-            $and .= ' AND co.name LIKE "%' . $name . '%"';
+            $and .= ' AND co.name LIKE "' . $name . '%"';
         }
 
         if ($emprunteur != '') {
@@ -445,47 +407,44 @@ class clients extends clients_crud
 
         // pour le OR on rajoute la condition derriere
         if ($nom != '') {
-            $and .= ' AND c.nom LIKE "%' . $nom . '%" OR c.nom_usage LIKE "%' . $nom . '%" ' . $and;
+            $and .= ' AND c.nom LIKE "' . $nom . '%" OR c.nom_usage LIKE "' . $nom . '%" ' . $and;
         }
 
         $where .= $and;
 
         $sql = "
-        SELECT
-            la.id_lender_account as id_lender_account,
-            c.id_client as id_client,
-            c.status as status,
-            c.email as email,
-            c.telephone as telephone,
-            c.status_inscription_preteur as status_inscription_preteur,
-            (SELECT ROUND(SUM(t.montant/100),2) FROM transactions t WHERE t.etat = 1 AND t.status = 1 AND t.id_client = c.id_client AND t.type_transaction NOT IN (9,6)) as solde,
-            (SELECT COUNT(amount) FROM loans l WHERE l.id_lender = la.id_lender_account) as bids_valides,
-            (SELECT COUNT(amount) FROM bids b WHERE b.id_lender_account = la.id_lender_account AND b.status = 0) as bids_encours,
+SELECT
+    la.id_lender_account as id_lender_account,
+    c.id_client as id_client,
+    c.status as status,
+    c.email as email,
+    c.telephone as telephone,
+    c.status_inscription_preteur as status_inscription_preteur,
 
-            CASE la.id_company_owner
-                WHEN 0 THEN c.prenom
-                ELSE
-                    (SELECT
-                        CASE co.status_client
-                            WHEN 1 THEN CONCAT(c.prenom,' ',c.nom)
-                            ELSE CONCAT(co.prenom_dirigeant,' ',co.nom_dirigeant)
-                        END as dirigeant
-                     FROM companies co WHERE co.id_company = la.id_company_owner)
-            END as prenom_ou_dirigeant,
-            CASE la.id_company_owner
-                WHEN 0 THEN c.nom
-                ELSE (SELECT co.name FROM companies co WHERE co.id_company = la.id_company_owner)
-            END as nom_ou_societe,
-            CASE la.id_company_owner
-                WHEN 0 THEN REPLACE(c.nom_usage,'Nom D\'usage','')
-                ELSE ''
-            END as nom_usage
-        FROM lenders_accounts la
-        LEFT JOIN clients c ON c.id_client = la.id_client_owner
-        LEFT JOIN companies co ON co.id_company = la.id_company_owner
-        " . $where . "
-        GROUP BY la.id_lender_account
-        ORDER BY la.id_lender_account DESC " . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+    CASE la.id_company_owner
+        WHEN 0 THEN c.prenom
+        ELSE
+            (SELECT
+                CASE co.status_client
+                    WHEN 1 THEN CONCAT(c.prenom,' ',c.nom)
+                    ELSE CONCAT(co.prenom_dirigeant,' ',co.nom_dirigeant)
+                END as dirigeant
+             FROM companies co WHERE co.id_company = la.id_company_owner)
+    END as prenom_ou_dirigeant,
+    CASE la.id_company_owner
+        WHEN 0 THEN c.nom
+        ELSE (SELECT co.name FROM companies co WHERE co.id_company = la.id_company_owner)
+    END as nom_ou_societe,
+    CASE la.id_company_owner
+        WHEN 0 THEN REPLACE(c.nom_usage,'Nom D\'usage','')
+        ELSE ''
+    END as nom_usage
+FROM lenders_accounts la
+LEFT JOIN clients c ON c.id_client = la.id_client_owner
+    LEFT JOIN companies co ON co.id_company = la.id_company_owner
+" . $where . "
+GROUP BY la.id_lender_account
+ORDER BY la.id_lender_account DESC " . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -730,5 +689,314 @@ class clients extends clients_crud
         }
 
         return $oPrescripteurs->exist($iClientId, 'id_client');
+    }
+
+    public function isLender(lenders_accounts $oLendersAccounts, $iClientId = null)
+    {
+        if (null === $iClientId) {
+            $iClientId = $this->id_client;
+        }
+
+        return $oLendersAccounts->exist($iClientId, 'id_client_owner');
+
+    }
+
+    public function isBorrower(projects $oProjects, companies $oCompanies, $iClientId = null)
+    {
+        if (null === $iClientId) {
+            $iClientId = $this->id_client;
+        }
+
+        $oCompanies->get($iClientId, 'id_client_owner');
+
+        return $oProjects->exist($oCompanies->id_company, 'id_company');
+
+    }
+
+
+    public function getDataForBorrowerOperations(array $aProjects, DateTime $oStartDate, DateTime $oEndDate, $iOperation = null, $iClientId = null)
+    {
+        if (null === $iClientId) {
+            $iClientId = $this->id_client;
+        }
+
+        if ($iOperation == 0) {
+            $aOperations = array(
+                self::AFF_MENSUALITE_PRETEURS,
+                self::AFFECTATION_RA_PRETEURS,
+                self::COMMISSION_DEBLOCAGE,
+                self::COMMISSION_MENSUELLE,
+                self::OCTROI_FINANCMENT,
+                self::PRLV_MENSUALITE,
+                self::REMBOURSEMENT_ANTICIPE,
+                self::VIREMENT
+            );
+        } else {
+            $aOperations = array($iOperation);
+        }
+
+        $sStartDate = '"' . $oStartDate->format('Y-m-d') . ' 00:00:00"';
+        $sEndDate   = '"' . $oEndDate->format('Y-m-d') . ' 23:59:59"';
+
+        $aDataForBorrowerOperations = array();
+
+        foreach ($aOperations as $iOperation) {
+            switch ($iOperation) {
+                case self::COMMISSION_DEBLOCAGE:
+                    $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationCommissionOnFinancing($aProjects, $sStartDate, $sEndDate));
+                    break;
+                case self::OCTROI_FINANCMENT:
+                    $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationAllLoans($aProjects, $sStartDate, $sEndDate));
+                    break;
+                case self::VIREMENT:
+                    $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationTransferFinancing($iClientId, $aProjects, $sStartDate, $sEndDate));
+                    break;
+                case self::PRLV_MENSUALITE:
+                    if (false === in_array(self::COMMISSION_MENSUELLE, $aOperations)) {
+                        $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationMonthlyDueAndCommission($aProjects, $sStartDate, $sEndDate, self::PRLV_MENSUALITE));
+                    } else {
+                        $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationMonthlyDueAndCommission($aProjects, $sStartDate, $sEndDate));
+                    }
+                    break;
+                case self::COMMISSION_MENSUELLE:
+                    if (false === in_array(self::PRLV_MENSUALITE, $aOperations)) {
+                        $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationMonthlyDueAndCommission($aProjects, $sStartDate, $sEndDate, self::COMMISSION_MENSUELLE));
+                    }
+                    break;
+                case self::AFF_MENSUALITE_PRETEURS:
+                    $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationMonthlyDueToLenders($aProjects, $sStartDate, $sEndDate));
+                    break;
+                case self::REMBOURSEMENT_ANTICIPE:
+                    $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationEarlyRefunding($aProjects, $sStartDate, $sEndDate));
+                    break;
+                case self::AFFECTATION_RA_PRETEURS:
+                    $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationEarlyRefundingToLenders($aProjects, $sStartDate, $sEndDate));
+                    break;
+            }
+        }
+
+        usort($aDataForBorrowerOperations, function ($aFirstArray, $aSecondArray) {
+            if ($aFirstArray['date'] === $aSecondArray['date']) {
+                if ($aFirstArray['type'] == 'prelevement-mensualite') {
+                    return 1;
+                } elseif ($aFirstArray['type'] == 'commission-mensuelle') {
+                    return -1;
+                }
+                if ($aFirstArray['type'] == 'commission-deblocage') {
+                    if ($aSecondArray['type'] == 'virement'){
+                        return 1;
+                    } else {
+                        return -1;
+                    }
+                } elseif ($aFirstArray['type'] == 'virement') {
+                    return -1;
+                } elseif ($aFirstArray['type'] == 'financement') {
+                    return 1;
+                }
+            } else {
+                return $aFirstArray['date'] < $aSecondArray['date'];
+            }
+        });
+        return $aDataForBorrowerOperations;
+    }
+
+    private function getBorrowerOperationAllLoans($aProjects, $sStartDate, $sEndDate)
+    {
+        $aDataForBorrowerOperations = array();
+        $sql = 'SELECT
+                    sum(l.amount)/100 AS montant,
+                    DATE(psh.added) AS date,
+                    l.id_project,
+                    "financement" AS type
+                FROM
+                    `loans` l
+                    INNER JOIN projects_status_history psh ON l.id_project = psh.id_project
+                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                WHERE
+                    l.id_project IN (' . implode(',', $aProjects) . ')
+                    AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                    AND psh.added BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
+                GROUP BY
+                    id_project';
+
+        $result = $this->bdd->query($sql);
+
+            while ($record = $this->bdd->fetch_assoc($result)) {
+                $aDataForBorrowerOperations[] = $record;
+            }
+        return $aDataForBorrowerOperations;
+    }
+
+    private function getBorrowerOperationTransferFinancing($iClientId, $aProjects, $sStartDate, $sEndDate)
+    {
+        $aDataForBorrowerOperations = array();
+        $sql = 'SELECT
+                    montant/100 AS montant,
+                    DATE(date_transaction) AS date,
+                    id_project,
+                    "virement" AS type
+                FROM
+                    `transactions`
+                WHERE
+                    `id_project` IN (' . implode(',', $aProjects) . ')
+                    AND id_client = ' . $iClientId . '
+                    AND date_transaction BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
+                    AND `type_transaction` = 9
+                GROUP BY
+                    id_project';
+
+        $result = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aDataForBorrowerOperations[] = $record;
+        }
+        return $aDataForBorrowerOperations;
+    }
+
+    private function getBorrowerOperationMonthlyDueAndCommission($aProjects, $sStartDate, $sEndDate, $iType = null)
+    {
+        $aDataForBorrowerOperations = array();
+        $sql = 'SELECT
+                    `id_project`,
+                    SUM(montant + commission + tva)/100 AS montant,
+                    -`commission`/100 AS commission,
+                    -`tva`/100 AS tva,
+                    DATE(date_echeance_emprunteur_reel) AS date
+                FROM
+                    `echeanciers_emprunteur`
+                WHERE
+                    `id_project` IN (' . implode(',', $aProjects) . ')
+                    AND DATE(`date_echeance_emprunteur_reel`) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
+                    AND `status_emprunteur` = 1
+                    AND `status_ra` = 0
+                GROUP BY
+                    `id_project`,
+                    DATE(`date_echeance_emprunteur_reel`)';
+
+        $result = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($result)) {
+
+            if ($iType === self::PRLV_MENSUALITE || $iType === null ) {
+                $aDataForBorrowerOperations[] = array(
+                    'id_project' => $record['id_project'],
+                    'montant'    => $record['montant'],
+                    'date'       => $record['date'],
+                    'type'       => 'prelevement-mensualite'
+                );
+            }
+            if ($iType === self::COMMISSION_MENSUELLE || $iType === null) {
+                $aDataForBorrowerOperations[] = array(
+                    'id_project' => $record['id_project'],
+                    'montant'    => $record['commission'] + $record['tva'],
+                    'commission' => $record['commission'],
+                    'tva'        => $record['tva'],
+                    'date'       => $record['date'],
+                    'type'       => 'commission-mensuelle'
+                );
+            }
+        }
+        return $aDataForBorrowerOperations;
+    }
+
+    private function getBorrowerOperationMonthlyDueToLenders($aProjects, $sStartDate, $sEndDate)
+    {
+        $aDataForBorrowerOperations = array();
+        $sql = 'SELECT
+                    `id_project`,
+                    -SUM(`capital` + `interets`)/100 AS montant,
+                    DATE(date_echeance_reel) AS date,
+                    `ordre`,
+                    "affectation-preteurs" AS type
+                FROM
+                    `echeanciers`
+                WHERE
+                    `id_project` IN (' . implode(',', $aProjects) . ')
+                    AND DATE(`date_echeance_reel`) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
+                    AND `status` = 1
+                    AND `status_ra` = 0
+                GROUP BY
+                    `id_project`,
+                    DATE(`date_echeance`)';
+
+        $result = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aDataForBorrowerOperations[] = $record;
+        }
+        return $aDataForBorrowerOperations;
+    }
+
+    private function getBorrowerOperationEarlyRefunding($aProjects, $sStartDate, $sEndDate)
+    {
+        $aDataForBorrowerOperations = array();
+        $sql = 'SELECT
+                        `id_project`,
+                        montant/100 AS montant,
+                        DATE(added) as date,
+                        "remboursement-anticipe" AS type
+                    FROM
+                        `receptions`
+                    WHERE
+                        `remb_anticipe` = 1
+                        AND `id_project` IN (' . implode(',', $aProjects) . ')
+                        AND added BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
+                    GROUP BY `id_project`';
+
+        $result = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aDataForBorrowerOperations[] = $record;
+        }
+
+        return $aDataForBorrowerOperations;
+    }
+
+    private function getBorrowerOperationEarlyRefundingToLenders($aProjects, $sStartDate, $sEndDate)
+    {
+        $aDataForBorrowerOperations = array();
+        $sql = 'SELECT
+                    `id_project`,
+                    - SUM(`capital`)/100 AS montant,
+                    DATE(date_echeance)_reel AS date,
+                    "affectation-ra-preteur" AS type
+                FROM
+                    `echeanciers`
+                WHERE
+                    `id_project` IN (' . implode(',', $aProjects) . ')
+                    AND `date_echeance_reel` BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
+                    AND `status` = 1
+                    AND `status_ra` = 1
+                GROUP BY
+                    `date_echeance_reel`';
+
+        $result = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aDataForBorrowerOperations[] = $record;
+        }
+
+        return $aDataForBorrowerOperations;
+    }
+
+    private function getBorrowerOperationCommissionOnFinancing($aProjects, $sStartDate, $sEndDate)
+    {
+        $aDataForBorrowerOperations = array();
+
+        $sql = 'SELECT
+                        id_project,
+                        -montant_ttc/100 AS montant,
+                        -montant_ht/100 AS commission,
+                        -tva/100 AS tva,
+                        date,
+                        \'commission-deblocage\' AS type
+                    FROM
+                        `factures`
+                    WHERE
+                        `id_project` IN (' . implode(',', $aProjects) . ')
+                        AND `date` BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
+                        AND type_commission = 1';
+
+        $result = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aDataForBorrowerOperations[] = $record;
+        }
+
+        return $aDataForBorrowerOperations;
     }
 }

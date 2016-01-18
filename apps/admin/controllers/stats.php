@@ -1412,6 +1412,7 @@ class statsController extends bootstrap
         header('Expires: 0');
 
         $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
+        $oWriter->setUseBOM(true);
         $oWriter->setDelimiter(';');
         $oWriter->save('php://output');
 
