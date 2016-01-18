@@ -312,9 +312,13 @@ class projects extends projects_crud
 
         $result   = array();
         $resultat = $this->bdd->query('
-            SELECT p.*,
-                co.*,
-                c.*,
+            SELECT p.id_project,
+                p.title_bo,
+                p.remb_auto,
+                c.nom,
+                c.prenom,
+                c.email,
+                co.name AS company,
                 ps.label AS status_label
             FROM projects p
             INNER JOIN projects_last_status_history plsh ON (p.id_project = plsh.id_project)

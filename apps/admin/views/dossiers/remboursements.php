@@ -99,39 +99,32 @@
             </tr>
             </thead>
             <tbody>
-            <?php
-            $i = 1;
-            foreach ($this->lProjects as $r) {
-                $this->projects->get($r['id_project'], 'id_project');
-                $this->companies->get($this->projects->id_company, 'id_company');
-                $this->clients->get($this->companies->id_client_owner, 'id_client');
+            <?php foreach ($this->lProjects as $iIndex => $aProject): ?>
+                <?php
 
-                $datePremiereEcheance = $this->echeanciers->getDatePremiereEcheance($r['id_project']);
-                $rembTotal            = $this->echeanciers->getRembTotalEmprunteur($r['id_project']);
-                $prochainRemb         = $this->echeanciers_emprunteur->select('id_project = ' . $r['id_project'] . ' AND status_emprunteur = 0', 'ordre ASC');
+                $datePremiereEcheance = $this->echeanciers->getDatePremiereEcheance($aProject['id_project']);
+                $rembTotal            = $this->echeanciers->getRembTotalEmprunteur($aProject['id_project']);
+                $prochainRemb         = $this->echeanciers_emprunteur->select('id_project = ' . $aProject['id_project'] . ' AND status_emprunteur = 0', 'ordre ASC');
 
                 ?>
-                <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                    <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>"><?= $this->projects->id_project ?></a></td>
-                    <td><?= $this->clients->nom ?></td>
-                    <td><?= $this->clients->prenom ?></td>
-                    <td><?= $this->clients->email ?></td>
-                    <td><?= $this->companies->name ?></td>
-                    <td><?= $this->projects->title_bo ?></td>
-                    <td><?= $r['status_label'] ?></td>
+                <tr<?= ($iIndex % 2 == 1 ? '' : ' class="odd"') ?>>
+                    <td><a href="<?= $this->lurl ?>/dossiers/edit/<?= $aProject['id_project'] ?>"><?= $aProject['id_project'] ?></a></td>
+                    <td><?= $aProject['nom'] ?></td>
+                    <td><?= $aProject['prenom'] ?></td>
+                    <td><?= $aProject['email'] ?></td>
+                    <td><?= $aProject['company'] ?></td>
+                    <td><?= $aProject['title_bo'] ?></td>
+                    <td><?= $aProject['status_label'] ?></td>
                     <td style="text-align:right; white-space:nowrap;"><?= $this->ficelle->formatNumber(($prochainRemb[0]['montant'] + $prochainRemb[0]['commission'] + $prochainRemb[0]['tva']) / 100) ?> €</td>
                     <td><?= $this->dates->formatDate($prochainRemb[0]['date_echeance_emprunteur'], 'd/m/Y') ?></td>
-                    <td><?= ($this->projects->remb_auto == 1 ? 'Non' : 'Oui') ?></td>
+                    <td><?= ($aProject['remb_auto'] == 1 ? 'Non' : 'Oui') ?></td>
                     <td align="center">
-                        <a href="<?= $this->lurl ?>/dossiers/detail_remb/<?= $this->projects->id_project ?>">
+                        <a href="<?= $this->lurl ?>/dossiers/detail_remb/<?= $aProject['id_project'] ?>">
                             <img src="<?= $this->surl ?>/images/admin/modif.png" alt="detail"/>
                         </a>
                     </td>
                 </tr>
-                <?php
-                $i++;
-            }
-            ?>
+            <?php endforeach; ?>
             </tbody>
         </table>
         <?php if ($this->nb_lignes != ''): ?>
