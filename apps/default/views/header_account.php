@@ -13,9 +13,22 @@
             <?= $this->fireView('../blocs/header-account') ?>
         </div>
     </div>
-    <?php
 
-    if ($this->clients->status_pre_emp == 1): // preteur
+    <?php if ($this->bIsBorrowerAndLender): ?>
+        <script type="text/javascript">
+            $(function() {
+                $.colorbox({
+                    href: "-<?= $this->lurl ?>/thickbox/pop_up_lender_and_borrower",
+                    fixed: true,
+                    maxWidth: '90%',
+                    onClosed: function() {}
+                });
+            });
+        </script>
+    <?php endif; ?>
+
+    <?php
+    if ($this->bDisplayLender):
         if (in_array($this->clients->type, array(2, 4))) { // societe
             $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
             $this->lienConditionsGenerales_header = $this->settings->value;
@@ -126,40 +139,20 @@
                 })
             </script>
         </div>
-    <?php else: ?>
+    <?php elseif ($this->bDisplayBorrower): ?>
         <style type="text/css">
-            .navigation .styled-nav {
-                width: 713px;
-            }
+            .navigation .styled-nav{width: 100%;}
         </style>
-
-        <?php if ($this->etape_transition == true): ?>
-            <div class="navigation ">
-                <div class="shell">
-                    <h1><?= $this->tree->title ?></h1>
-                </div>
-            </div>
-        <?php else: ?>
             <div class="navigation ">
                 <div class="shell clearfix">
-                    <ul class="styled-nav">
-                        <li>
-                            <a<?= ($this->page == 'synthese' ? ' class="active"' : '') ?> href="<?= $this->lurl ?>/synthese_emprunteur"><?= $this->lng['header']['synthese'] ?></a>
-                        </li>
-                        <?php if ($this->nbProjets > 1): ?>
-                            <li>
-                                <a<?= ($this->page == 'projects' ? ' class="active"' : '') ?> href="<?= $this->lurl ?>/projects_emprunteur"><?= $this->lng['header']['projets'] ?></a>
-                            </li>
-                        <?php endif; ?>
-                        <li>
-                            <a<?= ($this->page == 'societe' ? ' class="active"' : '') ?> href="<?= $this->lurl ?>/societe_emprunteur"><?= $this->lng['header']['societe'] ?></a>
-                        </li>
-                        <li>
-                            <a<?= ($this->page == 'unilend_emprunteur' ? ' class="active"' : '') ?> href="<?= $this->lurl ?>/unilend_emprunteur"><?= $this->lng['header']['unilend'] ?></a>
-                        </li>
+                    <ul class="styled-nav" style="margin-top: 10px;">
+                        <li class="active nav-item-home" style="position: relative;top: 10px;height: 16px;overflow:hidden;"><a href="<?= $this->lurl ?>/espace_emprunteur/projets"><i class="icon-home"></i></a></li>
+                        <li><a <?= ($this->page == 'projets' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/espace_emprunteur/projets"><?= $this->lng['header']['vos-projets'] ?></a></li>
+                        <li><a <?= ($this->page == 'operations' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/espace_emprunteur/operations"><?= $this->lng['header']['vos-operations'] ?></a></li>
+                        <li><a <?= ($this->page == 'profil' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/espace_emprunteur/profil"><?= $this->lng['header']['votre-profil'] ?></a></li>
+                        <li><a <?= ($this->page == 'faq' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/espace_emprunteur/faq"><?= $this->lng['header']['faq'] ?></a></li>
+                        <li><a <?= ($this->page == 'contact' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/espace_emprunteur/contact"><?= $this->lng['header']['contact'] ?></a></li>
                     </ul>
-                    <a class="outnav right" href="<?= $this->lurl ?>/create_project_emprunteur"><span><?= $this->lng['header']['nouveau-projet'] ?></span></a>
                 </div>
             </div>
-        <?php endif; ?>
     <?php endif; ?>

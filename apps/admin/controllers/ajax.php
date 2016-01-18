@@ -210,7 +210,13 @@ class ajaxController extends bootstrap
         if (isset($this->params[0]) && $this->params[0] != '') {
             $this->produits_crosseling = $this->loadData('produits_crosseling');
             $this->produits_elements   = $this->loadData('produits_elements');
-            $this->produits            = $this->loadData('produits', array('url' => $this->url, 'surl' => $this->surl, 'produits_elements' => $this->produits_elements, 'upload' => $this->upload, 'spath' => $this->spath));
+            $this->produits            = $this->loadData('produits', array(
+                'url'               => $this->url,
+                'surl'              => $this->surl,
+                'produits_elements' => $this->produits_elements,
+                'upload'            => $this->upload,
+                'spath'             => $this->spath
+            ));
 
             // Ajout du produit complementaire pour le produit
             $this->produits_crosseling->id_produit    = $this->params[0];
@@ -219,7 +225,8 @@ class ajaxController extends bootstrap
             $this->produits_crosseling->create();
 
             // Recuperation de la liste des produits complementaires
-            $this->lProduitCrosseling = $this->produits_crosseling->select('id_produit = "' . $this->params[0] . '"', 'ordre ASC');
+            $this->lProduitCrosseling = $this->produits_crosseling->select('id_produit = "' . $this->params[0] . '"',
+                'ordre ASC');
 
             // Chargement de la vue
             $this->setView('produitComplementaire');
@@ -232,7 +239,13 @@ class ajaxController extends bootstrap
         if (isset($this->params[0]) && $this->params[0] != '') {
             $this->produits_crosseling = $this->loadData('produits_crosseling');
             $this->produits_elements   = $this->loadData('produits_elements');
-            $this->produits            = $this->loadData('produits', array('url' => $this->url, 'surl' => $this->surl, 'produits_elements' => $this->produits_elements, 'upload' => $this->upload, 'spath' => $this->spath));
+            $this->produits            = $this->loadData('produits', array(
+                'url'               => $this->url,
+                'surl'              => $this->surl,
+                'produits_elements' => $this->produits_elements,
+                'upload'            => $this->upload,
+                'spath'             => $this->spath
+            ));
 
             // en fonction du mouvement on applique la fonction
             if ($this->params[2] == 'up') {
@@ -242,7 +255,8 @@ class ajaxController extends bootstrap
             }
 
             // Recuperation de la liste des produits complementaires
-            $this->lProduitCrosseling = $this->produits_crosseling->select('id_produit = "' . $this->params[0] . '"', 'ordre ASC');
+            $this->lProduitCrosseling = $this->produits_crosseling->select('id_produit = "' . $this->params[0] . '"',
+                'ordre ASC');
 
             // Chargement de la vue
             $this->setView('produitComplementaire');
@@ -255,16 +269,26 @@ class ajaxController extends bootstrap
         if (isset($this->params[0]) && $this->params[0] != '') {
             $this->produits_crosseling = $this->loadData('produits_crosseling');
             $this->produits_elements   = $this->loadData('produits_elements');
-            $this->produits            = $this->loadData('produits', array('url' => $this->url, 'surl' => $this->surl, 'produits_elements' => $this->produits_elements, 'upload' => $this->upload, 'spath' => $this->spath));
+            $this->produits            = $this->loadData('produits', array(
+                'url'               => $this->url,
+                'surl'              => $this->surl,
+                'produits_elements' => $this->produits_elements,
+                'upload'            => $this->upload,
+                'spath'             => $this->spath
+            ));
 
             // Ajout du produit complementaire pour le produit
-            $this->produits_crosseling->delete(array('id_produit' => $this->params[0], 'id_crosseling' => $this->params[1]));
+            $this->produits_crosseling->delete(array(
+                'id_produit'    => $this->params[0],
+                'id_crosseling' => $this->params[1]
+            ));
 
             // Reordenancement des produits comp
             $this->produits->reordreComp($this->params[0]);
 
             // Recuperation de la liste des produits complementaires
-            $this->lProduitCrosseling = $this->produits_crosseling->select('id_produit = "' . $this->params[0] . '"', 'ordre ASC');
+            $this->lProduitCrosseling = $this->produits_crosseling->select('id_produit = "' . $this->params[0] . '"',
+                'ordre ASC');
 
             // Chargement de la vue
             $this->setView('produitComplementaire');
@@ -277,7 +301,13 @@ class ajaxController extends bootstrap
         if (isset($this->params[0]) && $this->params[0] != '') {
             $this->produits_images   = $this->loadData('produits_images');
             $this->produits_elements = $this->loadData('produits_elements');
-            $this->produits          = $this->loadData('produits', array('url' => $this->url, 'surl' => $this->surl, 'produits_elements' => $this->produits_elements, 'upload' => $this->upload, 'spath' => $this->spath));
+            $this->produits          = $this->loadData('produits', array(
+                'url'               => $this->url,
+                'surl'              => $this->surl,
+                'produits_elements' => $this->produits_elements,
+                'upload'            => $this->upload,
+                'spath'             => $this->spath
+            ));
 
             // On recupere l'image
             $this->produits_images->get($this->params[1], 'id_image');
@@ -305,7 +335,13 @@ class ajaxController extends bootstrap
         if (isset($this->params[0]) && $this->params[0] != '') {
             $this->produits_images   = $this->loadData('produits_images');
             $this->produits_elements = $this->loadData('produits_elements');
-            $this->produits          = $this->loadData('produits', array('url' => $this->url, 'surl' => $this->surl, 'produits_elements' => $this->produits_elements, 'upload' => $this->upload, 'spath' => $this->spath));
+            $this->produits          = $this->loadData('produits', array(
+                'url'               => $this->url,
+                'surl'              => $this->surl,
+                'produits_elements' => $this->produits_elements,
+                'upload'            => $this->upload,
+                'spath'             => $this->spath
+            ));
 
             // Attribution de l'ordre zero pour l'img
             $this->produits_images->get($this->params[1], 'id_image');
@@ -527,7 +563,7 @@ class ajaxController extends bootstrap
 
                             // Additional headers
 
-                            $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
+                            $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
                             //$headers .= 'From: Unilend <courtier.damien@gmail.com>' . "\r\n";
 
                             // Mail it
@@ -1002,7 +1038,10 @@ class ajaxController extends bootstrap
                 }
                 //echo ($error == true?'nok':'ok');
                 //echo $this->clients->id_client;
-                echo json_encode(array('id_client' => $this->clients->id_client, 'error' => ($error == true ? 'nok' : 'ok')));
+                echo json_encode(array(
+                    'id_client' => $this->clients->id_client,
+                    'error'     => ($error == true ? 'nok' : 'ok')
+                ));
             } else {
                 echo json_encode(array('id_client' => '0', 'error' => 'nok'));
             }
@@ -1038,7 +1077,7 @@ class ajaxController extends bootstrap
             $lien_tw = $this->settings->value;
 
             $varMail = array(
-                'prenom'               => $this->clients->prenom ,
+                'prenom'               => $this->clients->prenom,
                 'raison_sociale'       => $this->companies->name,
                 'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
                 'lien_fb'              => $lien_fb,
@@ -1381,7 +1420,7 @@ class ajaxController extends bootstrap
         $wallets_lines  = $this->loadData('wallets_lines');
         $this->projects = $this->loadData('projects');
 
-        if (isset($_POST['id_lender']) && isset($_POST['id_bid']) && $bids->get($_POST['id_bid'], 'id_bid') && $lender->get($_POST['id_lender'], 'id_lender_account')) {
+        if (isset($_POST['id_lender'], $_POST['id_bid']) && $bids->get($_POST['id_bid'], 'id_bid') && $lender->get($_POST['id_lender'], 'id_lender_account')) {
             $serialize = serialize($_POST);
             $this->users_history->histo(4, 'Bid en cours delete', $_SESSION['user']['id_user'], $serialize);
 
@@ -1408,17 +1447,24 @@ class ajaxController extends bootstrap
         $this->projects     = $this->loadData('projects');
         $this->companies    = $this->loadData('companies');
 
-        if (isset($_POST['year']) && isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
+        if (isset($_POST['year'], $_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
 
             $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
 
             $year = $_POST['year'];
 
-            $this->lTrans = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17) AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $year, 'added DESC');
-
-
-            $this->lesStatuts = array(1 => $this->lng['profile']['versement-initial'], 3 => $this->lng['profile']['alimentation-cb'], 4 => $this->lng['profile']['alimentation-virement'], 5 => 'Remboursement', 7 => $this->lng['profile']['alimentation-prelevement'], 8 => $this->lng['profile']['retrait'], 14 => 'Régularisation prêteur', 16 => 'Offre de bienvenue', 17 => 'Retrait offre de bienvenue');
-
+            $this->lTrans     = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17) AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $year, 'added DESC');
+            $this->lesStatuts = array(
+                1  => $this->lng['profile']['versement-initial'],
+                3  => $this->lng['profile']['alimentation-cb'],
+                4  => $this->lng['profile']['alimentation-virement'],
+                5  => 'Remboursement',
+                7  => $this->lng['profile']['alimentation-prelevement'],
+                8  => $this->lng['profile']['retrait'],
+                14 => 'Régularisation prêteur',
+                16 => 'Offre de bienvenue',
+                17 => 'Retrait offre de bienvenue'
+            );
         }
     }
 
@@ -1529,7 +1575,7 @@ class ajaxController extends bootstrap
         $this->clients_history         = $this->loadData('clients_history');
 
         // on check si on a les posts
-        if (isset($_POST['status']) && isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
+        if (isset($_POST['status'], $_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $form_ok = true;
 
             // on verifie que les infos sont good
@@ -1550,7 +1596,6 @@ class ajaxController extends bootstrap
                 } else {
                     $update = false;
                 }
-
                 // On recup le title du projet
                 $title = $this->projects->title;
 
@@ -2165,6 +2210,11 @@ class ajaxController extends bootstrap
                 if ($_POST['status'] == 1) {
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects->id_project);
 
+                    $aExistingStatus = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = ' . projects_status::PREP_FUNDING);
+                    if (empty($aExistingStatus)) {
+                        $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein', $this->clients);
+                    }
+
                     $content_risk = '
                         <th><label for="risk">Niveau de risque* :</label></th>
                         <td>
@@ -2445,7 +2495,7 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        $_POST  = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+        $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
 
         $sResult = 'nok';
 
@@ -2456,7 +2506,7 @@ class ajaxController extends bootstrap
 
                 if ($oClientAddress->get($this->params[0], 'id_client')) {
 
-                    $oClientAddress->cp_fiscal = $_POST['zip'];
+                    $oClientAddress->cp_fiscal    = $_POST['zip'];
                     $oClientAddress->ville_fiscal = $_POST['city'];
                     $oClientAddress->update();
                     $sResult = 'ok';
@@ -2496,5 +2546,66 @@ class ajaxController extends bootstrap
         }
 
         echo $sResult;
+    }
+
+    public function _send_email_borrower_area()
+    {
+        $this->autoFireView = false;
+
+        if (isset($_POST['id_client'], $_POST['type'])) {
+            $oClients = $this->loadData('clients');
+            $oClients->get($_POST['id_client'], 'id_client');
+
+            switch ($_POST['type']) {
+                case 'open':
+                    $sTypeEmail = 'ouverture-espace-emprunteur';
+                    break;
+                case 'initialize':
+                    $sTypeEmail = 'mot-de-passe-oublie-emprunteur';
+                    break;
+            }
+            $this->sendEmailBorrowerArea($sTypeEmail, $oClients);
+        }
+    }
+
+    private function sendEmailBorrowerArea($sTypeEmail, clients $oClients)
+    {
+        $oMailsText = $this->loadData('mails_text');
+        $oMailsText->get($sTypeEmail, 'lang = "fr" AND type');
+
+        $this->settings->get('Facebook', 'type');
+        $sFacebookURL = $this->settings->value;
+
+        $this->settings->get('Twitter', 'type');
+        $sTwitterURL = $this->settings->value;
+
+        $oTemporaryLink = $this->loadData('temporary_links_login');
+        $sTemporaryLink = $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($oClients->id_client);
+
+        $aVariables = array(
+            'surl'                   => $this->surl,
+            'url'                    => $this->url,
+            'link_compte_emprunteur' => $sTemporaryLink,
+            'lien_fb'                => $sFacebookURL,
+            'lien_tw'                => $sTwitterURL,
+            'prenom'                 => $oClients->prenom
+        );
+
+        $sRecipient = $oClients->email;
+
+        $this->email = $this->loadLib('email');
+        $this->email->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
+        $this->email->setSubject(stripslashes(utf8_decode($oMailsText->subject)));
+        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($oMailsText->content),
+
+        $this->tnmp->constructionVariablesServeur($aVariables))));
+
+        if ($this->Config['env'] == 'prod') {
+            Mailer::sendNMP($this->email, $this->mails_filer, $oMailsText->id_textemail, $sRecipient, $aNMPResponse);
+            $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $oMailsText->nmp_secure, $oMailsText->id_nmp, $oMailsText->nmp_unique, $oMailsText->mode);
+        } else {
+            $this->email->addRecipient($sRecipient);
+            Mailer::send($this->email, $this->mails_filer, $oMailsText->id_textemail);
+        }
     }
 }

@@ -42,7 +42,6 @@ class echeanciers extends echeanciers_crud
             $order = ' ORDER BY ' . $order;
         }
         $sql = 'SELECT * FROM `echeanciers`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
         $resultat = $this->bdd->query($sql);
         $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
@@ -345,7 +344,7 @@ class echeanciers extends echeanciers_crud
 
         $result = $this->bdd->query($sql);
         $res    = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_array($result)) {
             $d          = explode('-', $record['date']);
             $retenues   = $record['prelevements_obligatoires'] + $record['retenues_source'] + $record['csg'] + $record['prelevements_sociaux'] + $record['contributions_additionnelles'] + $record['prelevements_solidarite'] + $record['crds'];
             $res[$d[1]] = $retenues;
@@ -693,7 +692,7 @@ class echeanciers extends echeanciers_crud
             LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
             LEFT JOIN clients c ON l.id_client_owner = c.id_client
             WHERE e.status_emprunteur = 1
-                        AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
+                AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
             AND c.type IN (1, 3)
             AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = l.id_lender_account AND DATE(lih.added) <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0
             AND DATE(date_echeance_reel) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
@@ -734,7 +733,7 @@ class echeanciers extends echeanciers_crud
             LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
             LEFT JOIN clients c ON l.id_client_owner = c.id_client
             WHERE e.status_emprunteur = 1
-                        AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
+                AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
             ' . ($morale != '' ? ' AND c.type IN (' . $morale . ')' : '');
 
         if ($exonere != '') {
@@ -976,7 +975,7 @@ class echeanciers extends echeanciers_crud
         return $result;
     }
 
-    // retourne la somme total a rembourser pour un porjet
+    // retourne la somme total a rembourser pour un projet
     public function getSumRestanteARembByProject_only($id_project = '', $date_debut = "")
     {
         $sql = '
@@ -990,7 +989,7 @@ class echeanciers extends echeanciers_crud
     }
 
 
-    // retourne la somme total a rembourser pour un porjet
+    // retourne la somme total a rembourser pour un projet
     public function get_liste_preteur_on_project($id_project = '')
     {
         $sql = 'SELECT * FROM `echeanciers`
@@ -1005,22 +1004,7 @@ class echeanciers extends echeanciers_crud
         return $result;
     }
 
-    // retourne la somme total a rembourser pour un porjet
-    public function get_liste_preteur_on_project_old($id_project = '')
-    {
-        $sql = 'SELECT id_lender FROM `echeanciers`
-                      WHERE id_project = ' . $id_project . '
-                      GROUP BY id_lender';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-    // retourne la somme total a rembourser pour un porjet
+     // retourne la somme total a rembourser pour un projet
     public function reste_a_payer_ra($id_project = '', $ordre = '')
     {
         $sql = 'SELECT SUM(capital) FROM `echeanciers`
@@ -1053,5 +1037,21 @@ class echeanciers extends echeanciers_crud
         $result = $this->bdd->query($sql);
         $sum    = (int)($this->bdd->result($result, 0, 0));
         return ($sum / 100);
+    }
+
+    public function getLastOrder($iProjectID, $sDate = 'NOW()', $sInterval = 3)
+    {
+        $resultat = $this->bdd->query('
+            SELECT *
+            FROM `echeanciers`
+            WHERE id_project = ' . $iProjectID . '
+                AND DATE_ADD(date_echeance, INTERVAL ' . $sInterval . ' DAY) > ' . $sDate . '
+            GROUP BY id_project
+            ORDER BY ordre ASC
+            LIMIT 1'
+        );
+        $result = $this->bdd->fetch_assoc($resultat);
+
+        return $result;
     }
 }

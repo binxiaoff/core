@@ -561,4 +561,134 @@ class projects extends projects_crud
 
         return $aProjects;
     }
+
+    public function calculateAvgInterestRate(bids $oBids, loans $oLoans, $iProjectId = null, $iProjectStatus = null)
+    {
+        if ($iProjectId === null) {
+            $iProjectId = $this->id_project;
+        }
+
+        if ($iProjectStatus === null) {
+            $oProject_status = new \projects_status($this->bdd);
+            $oProject_status->getLastStatut($iProjectId);
+            $iProjectStatus = $oProject_status->status;
+        }
+
+        $iUpperValue = 0;
+        $iLowerValue = 0;
+
+        switch ((int) $iProjectStatus) {
+            case \projects_status::FUNDE:
+            case \projects_status::REMBOURSEMENT:
+            case \projects_status::REMBOURSE:
+            case \projects_status::PROBLEME:
+            case \projects_status::RECOUVREMENT:
+            case \projects_status::REMBOURSEMENT_ANTICIPE:
+                foreach ($oLoans->select('id_project = ' . $iProjectId) as $aLoan) {
+                    $iUpperValue += ($aLoan['rate'] * ($aLoan['amount']));
+                    $iLowerValue += ($aLoan['amount']);
+                }
+                break;
+            case \projects_status::EN_FUNDING:
+                foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status = 0') as $aBid) {
+                    $iUpperValue += ($aBid['rate'] * ($aBid['amount']));
+                    $iLowerValue += ($aBid['amount']);
+                }
+                break;
+            case \projects_status::FUNDING_KO:
+            foreach ($oBids->select('id_project = ' . $iProjectId) as $aBid) {
+                $iUpperValue += ($aBid['rate'] * ($aBid['amount']));
+                $iLowerValue += ($aBid['amount']);
+            }
+            break;
+            case \projects_status::PRET_REFUSE:
+            case \projects_status::DEFAUT:
+            foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status = 1') as $aBid) {
+                $iUpperValue += ($aBid['rate'] * ($aBid['amount']));
+                $iLowerValue += ($aBid['amount']);
+            }
+            break;
+            default:
+                trigger_error('Unknown project status. Could not calculate amounts', E_USER_WARNING);
+                break;
+        }
+
+        $fAvgRate = $iUpperValue > 0 && $iLowerValue > 0 ? round(($iUpperValue / $iLowerValue), 2) : 0;
+
+        return $fAvgRate;
+    }
+
+    public function getLoansAndLendersForProject($iProjectId = null)
+    {
+
+        if ($iProjectId === null) {
+            $iProjectId = $this->id_project;
+        }
+
+        $sql = 'SELECT
+                        l.id_lender,
+                        c.nom,
+                        c.prenom,
+                        com.name,
+                        l.amount,
+                        l.added as date
+                    FROM
+                        `loans` l
+                        LEFT JOIN lenders_accounts la ON l.id_lender = la.id_lender_account
+                        LEFT JOIN clients c ON la.id_client_owner = c.id_client
+                        LEFT JOIN companies com ON la.id_company_owner = com.id_company
+                    WHERE
+                        id_project = ' . $iProjectId;
+
+        $result           = $this->bdd->query($sql);
+        $aLoansAndLenders = array();
+
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aLoansAndLenders[] = $record;
+        }
+
+        return $aLoansAndLenders;
+
+
+    }
+
+    public function getDuePaymentsAndLenders($iProjectId = null, $iOrder = null)
+    {
+
+        if ($iProjectId === null) {
+            $iProjectId = $this->id_project;
+        }
+
+        $sOrder = (isset($iOrder)) ? ' AND ordre = ' . $iOrder : null;
+
+        $sql = 'SELECT
+                    e.id_lender,
+                    c.nom,
+                    c.prenom,
+                    com.name,
+                    e.montant,
+                    e.capital,
+                    e.interets,
+                    e.date_echeance_emprunteur_reel as date
+                FROM
+                    `echeanciers` e
+                    LEFT JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
+                    LEFT JOIN clients c ON la.id_client_owner = c.id_client
+                    LEFT JOIN companies com ON la.id_company_owner = com.id_company
+                WHERE
+                    id_project = ' . $iProjectId . $sOrder;
+
+        $result                 = $this->bdd->query($sql);
+        $aDuePaymentsAndLenders = array();
+
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aDuePaymentsAndLenders[] = $record;
+        }
+
+        return $aDuePaymentsAndLenders;
+
+    }
+
+
+
 }

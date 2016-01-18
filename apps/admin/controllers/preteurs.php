@@ -153,7 +153,7 @@ class preteursController extends bootstrap
             else $nonValide = '';
 
             // Recuperation de la liste des clients searchPreteurs
-            $this->lPreteurs = $this->clients->searchPreteursV2($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
+            $this->lPreteurs = $this->clients->searchPreteurs($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
 
             // Mise en session du message
             $_SESSION['freeow']['title']   = 'Recherche d\'un prêteur';
@@ -163,7 +163,7 @@ class preteursController extends bootstrap
             else $nonValide = '';
 
             // On recupera les 10 derniers clients
-            $this->lPreteurs = $this->clients->searchPreteursV2('', '', '', '', '', $nonValide, '', '0', '300');
+            $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', $nonValide, '', '0', '300');
         }
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
@@ -496,7 +496,9 @@ class preteursController extends bootstrap
                     }
 
                     $_SESSION['error_email_exist'] = 'Impossible de modifier l\'adresse email. Cette adresse est déjà utilisé par le compte id ' . $les_id_client_email_exist;
-                } else $this->clients->email = $_POST['email'];
+                } else {
+                    $this->clients->email = $_POST['email'];
+                }
 
                 //// fin check doublon mail ////
 
@@ -532,8 +534,11 @@ class preteursController extends bootstrap
                 $this->lenders_accounts->iban = str_replace(' ', '', $iban);
 
                 $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
-                if ($this->lenders_accounts->origine_des_fonds == '1000000') $this->lenders_accounts->precision = $_POST['preciser'];
-                else $this->lenders_accounts->precision = '';
+                if ($this->lenders_accounts->origine_des_fonds == '1000000') {
+                    $this->lenders_accounts->precision = $_POST['preciser'];
+                } else {
+                    $this->lenders_accounts->precision = '';
+                }
 
                 // debut fichiers //
                 foreach ($_FILES as $field => $file) {
@@ -564,12 +569,9 @@ class preteursController extends bootstrap
                     }
                 }
 
-                $old_exonere                     = $this->lenders_accounts->exonere;
                 $this->lenders_accounts->exonere = $_POST['exonere'];
-                $new_exonere                     = $this->lenders_accounts->exonere;
 
                 /////////////////////////// EXONERATION MISE A JOUR SUR LES ECHEANCES ////////////////////////////////////////
-                //if($old_exonere != $new_exonere){
 
                 $this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
                 $this->echeanciers                = $this->loadData('echeanciers');
@@ -589,7 +591,7 @@ class preteursController extends bootstrap
 
                 // On garde une trace de l'action
                 $this->lenders_imposition_history->id_lender         = $this->lenders_accounts->id_lender_account;
-                $this->lenders_imposition_history->exonere           = $new_exonere;
+                $this->lenders_imposition_history->exonere           = $this->lenders_accounts->exonere;
                 $this->lenders_imposition_history->resident_etranger = $this->etranger;
                 $this->lenders_imposition_history->id_pays           = $this->clients_adresses->id_pays;
                 $this->lenders_imposition_history->id_user           = $_SESSION['user']['id_user'];
@@ -598,38 +600,33 @@ class preteursController extends bootstrap
 
                 if ($this->etranger == 0) {
                     // on retire les prelevements sur les futures echeances
-                    if ($new_exonere == 1) {
-
+                    if ($this->lenders_accounts->exonere == 1) {
                         if (isset($_POST['debut']) && $_POST['debut'] != '') {
                             $debut     = explode('/', $_POST['debut']);
                             $debut_exo = $debut[2] . '-' . $debut[1] . '-' . $debut[0];
-                        } else $debut_exo = '';
+                        } else {
+                            $debut_exo = '';
+                        }
 
                         if (isset($_POST['fin']) && $_POST['fin'] != '') {
                             $fin     = explode('/', $_POST['fin']);
                             $fin_exo = $fin[2] . '-' . $fin[1] . '-' . $fin[0];
-                        } else $fin_exo = '';
-
+                        } else {
+                            $fin_exo = '';
+                        }
 
                         $this->lenders_accounts->debut_exoneration = $debut_exo;
                         $this->lenders_accounts->fin_exoneration   = $fin_exo;
 
                         $this->echeanciers->update_prelevements_obligatoires($this->lenders_accounts->id_lender_account, 1, '', $debut_exo, $fin_exo);
-                    } // on ajoute les prelevements sur les futures echeances
-                    elseif ($new_exonere == 0) {
-
+                    } elseif ($this->lenders_accounts->exonere == 0) { // on ajoute les prelevements sur les futures echeances
                         $this->lenders_accounts->debut_exoneration = '0000-00-00';
                         $this->lenders_accounts->fin_exoneration   = '0000-00-00';
 
                         $this->echeanciers->update_prelevements_obligatoires($this->lenders_accounts->id_lender_account, 0, $prelevements_obligatoires);
                     }
-
                 }
-                //}
                 ///////////////////////////////////////////////////////////////////
-
-
-                $this->lenders_accounts->exonere = $_POST['exonere'];
 
                 // mise a jour
                 $this->clients->update();
@@ -661,18 +658,6 @@ class preteursController extends bootstrap
 
                     $this->clients_status_history->addStatus($_SESSION['user']['id_user'], '60', $this->clients->id_client);
 
-
-                    // modif ou inscription
-                    if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) $modif = true;
-                    else $modif = false;
-
-                    // Validation inscription
-                    if ($modif == false) {
-                        ///////////// OFFRE DE BIENVENUE /////////////
-                        //$this->create_offre_bienvenue($this->clients->id_client); /// <------------------------------
-                        /////////// FIN OFFRE DE BIENVENUE ///////////
-                    }
-
                     // gestion alert notification //
                     $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
                     $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
@@ -687,20 +672,23 @@ class preteursController extends bootstrap
                             $this->clients_gestion_notifications->id_notif  = $n['id_client_gestion_type_notif'];
                             $id_notif                                       = $n['id_client_gestion_type_notif'];
                             // immediatement
-                            if (in_array($id_notif, array(3, 6, 7, 8)))
+                            if (in_array($id_notif, array(3, 6, 7, 8))) {
                                 $this->clients_gestion_notifications->immediatement = 1;
-                            else
+                            } else {
                                 $this->clients_gestion_notifications->immediatement = 0;
+                            }
                             // quotidienne
-                            if (in_array($id_notif, array(1, 2, 4, 5)))
+                            if (in_array($id_notif, array(1, 2, 4, 5))) {
                                 $this->clients_gestion_notifications->quotidienne = 1;
-                            else
+                            } else {
                                 $this->clients_gestion_notifications->quotidienne = 0;
+                            }
                             // hebdomadaire
-                            if (in_array($id_notif, array(1, 4)))
+                            if (in_array($id_notif, array(1, 4))) {
                                 $this->clients_gestion_notifications->hebdomadaire = 1;
-                            else
+                            } else {
                                 $this->clients_gestion_notifications->hebdomadaire = 0;
+                            }
                             // mensuelle
                             $this->clients_gestion_notifications->mensuelle = 0;
                             $this->clients_gestion_notifications->create();
@@ -712,10 +700,12 @@ class preteursController extends bootstrap
 
                     // Mail au client particulier //
                     // Recuperation du modele de mail
-                    if ($modif == true)
+                    // modif ou inscription
+                    if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
                         $this->mails_text->get('preteur-validation-modification-compte', 'lang = "' . $this->language . '" AND type');
-                    else
+                    } else {
                         $this->mails_text->get('preteur-confirmation-activation', 'lang = "' . $this->language . '" AND type');
+                    }
 
                     $surl = $this->surl;
                     $url  = $this->furl;
@@ -758,71 +748,14 @@ class preteursController extends bootstrap
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
-                    ////////////////////
 
-
-                    /////////////////// IMPOSITION ETRANGER ////////////////////
-
-                    $this->echeanciers                = $this->loadData('echeanciers');
-                    $this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
-
-                    // EQ-Acompte d'impôt sur le revenu
-                    $this->settings->get("EQ-Acompte d'impôt sur le revenu", 'type');
-                    $prelevements_obligatoires = $this->settings->value;
-
-                    // EQ-Contribution additionnelle au Prélèvement Social
-                    $this->settings->get('EQ-Contribution additionnelle au Prélèvement Social', 'type');
-                    $contributions_additionnelles = $this->settings->value;
-
-                    // EQ-CRDS
-                    $this->settings->get('EQ-CRDS', 'type');
-                    $crds = $this->settings->value;
-
-                    // EQ-CSG
-                    $this->settings->get('EQ-CSG', 'type');
-                    $csg = $this->settings->value;
-
-                    // EQ-Prélèvement de Solidarité
-                    $this->settings->get('EQ-Prélèvement de Solidarité', 'type');
-                    $prelevements_solidarite = $this->settings->value;
-
-                    // EQ-Prélèvement social
-                    $this->settings->get('EQ-Prélèvement social', 'type');
-                    $prelevements_sociaux = $this->settings->value;
-
-                    // EQ-Retenue à la source
-                    $this->settings->get('EQ-Retenue à la source', 'type');
-                    $retenues_source = $this->settings->value;
-
-                    $this->etranger = 0;
-                    // fr/resident etranger
-                    if ($this->clients->id_nationalite <= 1 && $this->clients_adresses->id_pays_fiscal > 1) {
-                        $this->etranger = 1;
-                    } // no fr/resident etranger
-                    elseif ($this->clients->id_nationalite > 1 && $this->clients_adresses->id_pays_fiscal > 1) {
-                        $this->etranger = 2;
-                    }
-
-                    // On garde une trace de l'action
-                    $this->lenders_imposition_history->id_lender         = $this->lenders_accounts->id_lender_account;
-                    $this->lenders_imposition_history->exonere           = $this->lenders_accounts->exonere;
-                    $this->lenders_imposition_history->resident_etranger = $this->etranger;
-                    $this->lenders_imposition_history->id_pays           = $this->clients_adresses->id_pays_fiscal; // add 18/06/2015
-                    $this->lenders_imposition_history->id_user           = $_SESSION['user']['id_user'];
-                    $this->lenders_imposition_history->create();
-
-                    $tabImpo = array(
-                        'prelevements_obligatoires'    => $prelevements_obligatoires,
-                        'contributions_additionnelles' => $contributions_additionnelles,
-                        'crds'                         => $crds,
-                        'csg'                          => $csg,
-                        'prelevements_solidarite'      => $prelevements_solidarite,
-                        'prelevements_sociaux'         => $prelevements_sociaux,
-                        'retenues_source'              => $retenues_source);
-
-                    $this->echeanciers->update_imposition_etranger($this->lenders_accounts->id_lender_account, $this->etranger, $tabImpo, $this->lenders_accounts->exonere, $this->lenders_accounts->debut_exoneration, $this->lenders_accounts->fin_exoneration);
+                    $this->foreignerTax($this->clients, $this->lenders_accounts, $this->clients_adresses);
 
                     $_SESSION['compte_valide'] = true;
+                }
+
+                if (isset($_POST['valider_pays']) && '' !== $_POST['valider_pays']) {
+                    $this->foreignerTax($this->clients, $this->lenders_accounts, $this->clients_adresses);
                 }
 
                 $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
@@ -1111,14 +1044,14 @@ class preteursController extends bootstrap
 
         if (isset($_POST['form_search_preteur'])) {
             // Recuperation de la liste des clients searchPreteurs
-            $this->lPreteurs = $this->clients->searchPreteursV2($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
+            $this->lPreteurs = $this->clients->searchPreteurs($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
 
             // Mise en session du message
             $_SESSION['freeow']['title']   = 'Recherche d\'un prêteur non inscript';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         } else {
             // On recupera les 10 derniers clients
-            $this->lPreteurs = $this->clients->searchPreteursV2('', '', '', '', '', $nonValide, '', '0', '300');
+            $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', $nonValide, '', '0', '300');
         }
 
 
@@ -1433,7 +1366,6 @@ class preteursController extends bootstrap
                     $backup_clients->lastlogin                  = $this->clients->lastlogin;
                     $backup_clients->create();
 
-                    mail('unilend@equinoa.fr', '[ALERTE] Compte supprime', 'Un compte (' . $this->clients->id_client . ') avec des encheres a ete supprime.');
                 }
 
                 $this->clients->delete($this->clients->id_client, 'id_client');
@@ -1874,5 +1806,278 @@ class preteursController extends bootstrap
         /** @var lenders_accounts $oLenders */
         $oLenders = $this->loadData('lenders_accounts');
         $this->aLenders = $oLenders->getLendersToMatchBirthCity(200);
+    }
+
+    private function foreignerTax($oClients, $oLendersAccounts, $oClientsAdresses)
+    {
+        // EQ-Acompte d'impôt sur le revenu
+        $this->settings->get("EQ-Acompte d'impôt sur le revenu", 'type');
+        $sPrelevementsObligatoires = $this->settings->value;
+
+        // EQ-Contribution additionnelle au Prélèvement Social
+        $this->settings->get('EQ-Contribution additionnelle au Prélèvement Social', 'type');
+        $sContributionsAdditionnelles = $this->settings->value;
+
+        // EQ-CRDS
+        $this->settings->get('EQ-CRDS', 'type');
+        $sCrds = $this->settings->value;
+
+        // EQ-CSG
+        $this->settings->get('EQ-CSG', 'type');
+        $sCsg = $this->settings->value;
+
+        // EQ-Prélèvement de Solidarité
+        $this->settings->get('EQ-Prélèvement de Solidarité', 'type');
+        $sPrelevementsSolidarite = $this->settings->value;
+
+        // EQ-Prélèvement social
+        $this->settings->get('EQ-Prélèvement social', 'type');
+        $sPrelevementsSociaux = $this->settings->value;
+
+        // EQ-Retenue à la source
+        $this->settings->get('EQ-Retenue à la source', 'type');
+        $sRetenuesSource = $this->settings->value;
+
+        $iForeigner = 0;
+        // fr/resident etranger
+        if ($oClients->id_nationalite <= 1 && $oClientsAdresses->id_pays_fiscal > 1) {
+            $iForeigner = 1;
+        } // no fr/resident etranger
+        elseif ($oClients->id_nationalite > 1 && $oClientsAdresses->id_pays_fiscal > 1) {
+            $iForeigner = 2;
+        }
+
+        // On garde une trace de l'action
+        $oLendersImpositionHistory = $this->loadData('lenders_imposition_history');
+
+        $oLendersImpositionHistory->id_lender         = $oLendersAccounts->id_lender_account;
+        $oLendersImpositionHistory->exonere           = $oLendersAccounts->exonere;
+        $oLendersImpositionHistory->resident_etranger = $iForeigner;
+        $oLendersImpositionHistory->id_pays           = $oClientsAdresses->id_pays_fiscal;
+        $oLendersImpositionHistory->id_user           = $_SESSION['user']['id_user'];
+        $oLendersImpositionHistory->create();
+
+        $tabImpo = array(
+            'prelevements_obligatoires'    => $sPrelevementsObligatoires,
+            'contributions_additionnelles' => $sContributionsAdditionnelles,
+            'crds'                         => $sCrds,
+            'csg'                          => $sCsg,
+            'prelevements_solidarite'      => $sPrelevementsSolidarite,
+            'prelevements_sociaux'         => $sPrelevementsSociaux,
+            'retenues_source'              => $sRetenuesSource
+        );
+
+        $this->loadData('echeanciers')->update_imposition_etranger($oLendersAccounts->id_lender_account, $iForeigner, $tabImpo, $oLendersAccounts->exonere, $oLendersAccounts->debut_exoneration, $oLendersAccounts->fin_exoneration);
+    }
+
+    public function _modify_passed_repaymet_schedule()
+    {
+        $aMatch                  = array();
+        $aNonMatch               = array();
+        $this->aChangesRepayment = array();
+        $aFieldCanBeModified     = array(
+            'montant',
+            'capital',
+            'interets',
+            'commission',
+            'tva',
+            'prelevements_obligatoires',
+            'retenues_source',
+            'csg',
+            'prelevements_sociaux',
+            'contributions_additionnelles',
+            'prelevements_solidarite',
+            'crds'
+        );
+
+        if (isset($_FILES['echeances_csv']) && 'text/csv' === $_FILES['echeances_csv']['type']) {
+            $rFile = fopen($_FILES['echeances_csv']['tmp_name'], 'r');
+            if ($aKeys = fgetcsv($rFile, 0, ';')) {
+                /** @var echeanciers $oEcheanciers */
+                $oEcheanciers = $this->loadData('echeanciers');
+                /** @var transactions $oTransactionsLender */
+                $oTransactionsLender = $this->loadData('transactions');
+                /** @var wallets_lines $oWalletLine */
+                $oWalletLine = $this->loadData('wallets_lines');
+                /** @var echeanciers_emprunteur $oEcheanciersEmprunteur */
+                $oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
+                /** @var transactions $oTransactionsUnilend */
+                $oTransactionsUnilend = $this->loadData('transactions');
+                /** @var bank_unilend $oBankUnilend */
+                $oBankUnilend = $this->loadData('bank_unilend');
+                while (($aRow = fgetcsv($rFile, 0, ';')) !== false) {
+                    $oEcheanciers->unsetData();
+                    $oTransactionsLender->unsetData();
+                    $oWalletLine->unsetData();
+                    $oEcheanciersEmprunteur->unsetData();
+                    $oTransactionsUnilend->unsetData();
+                    $oBankUnilend->unsetData();
+
+                    $aRepayment = array_combine($aKeys, $aRow);
+                    if ('' === $aRepayment['id_echeancier']
+                        || false === $oEcheanciers->get($aRepayment['id_echeancier'])
+                        || $oEcheanciers->id_lender != $aRepayment['id_lender']
+                        || $oEcheanciers->id_project != $aRepayment['id_project']
+                        || $oEcheanciers->id_loan != $aRepayment['id_loan']
+                    ) {
+                        $aNonMatch[] = $aRepayment;
+                        continue;
+                    }
+                    $aRepaymentOld = array_shift($oEcheanciers->selectEcheances_a_remb('id_echeancier = ' . $aRepayment['id_echeancier']));
+
+                    foreach ($aRepayment as $sKey => &$sValue) {
+                        if (false === in_array($sKey, $aFieldCanBeModified)) {
+                            continue;
+                        }
+                        $sValue                     = str_replace(',', '.', $sValue);
+                        $aRepayment[$sKey . '_old'] = $oEcheanciers->$sKey;
+                        $oEcheanciers->$sKey        = $sValue;
+                        $aMatch[$aRepayment['id_echeancier']] = $aRepayment;
+                    }
+                    $oEcheanciers->update();
+
+                    $aRepaymentNew = array_shift($oEcheanciers->selectEcheances_a_remb('id_echeancier = ' . $aRepayment['id_echeancier']));
+
+                    $iRepaymentNetDiff = ($aRepaymentNew['rembNet'] - $aRepaymentOld['rembNet']) * 100;
+                    $iRepaymentTaxDiff = ($aRepaymentNew['etat'] - $aRepaymentOld['etat']) * 100;
+
+                    if (0 != $iRepaymentNetDiff) {
+                        // Update transaction type "Remboursement prêteur"
+                        if (false === $oTransactionsLender->get($aRepayment['id_echeancier'], 'type_transaction = 5 AND id_echeancier')) {
+                            $aTransaction = array_shift($oTransactionsLender->select('type_transaction = 5 AND id_echeancier = ' . $aRepayment['id_echeancier']));
+                            if (null === $aTransaction || false === $oTransactionsLender->get($aTransaction['id_transaction'])) {
+                                //Rollback repayment
+                                $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
+                                $aNonMatch[] = $aRepayment;
+                                unset($aMatch[$aRepayment['id_echeancier']]);
+                                continue;
+                            }
+                        }
+                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'transactions', $oTransactionsLender->id_transaction, 'montant', $oTransactionsLender->montant . ' + (' . $iRepaymentNetDiff . ')');
+
+                        $oTransactionsLender->montant += $iRepaymentNetDiff;
+                        $oTransactionsLender->update();
+
+
+                        // Update lender's wallet line
+                        if (false === $oWalletLine->get($oTransactionsLender->id_transaction, 'id_transaction')) {
+                            $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
+                            $this->rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff);
+                            $this->removeLogChangesSchedule($aRepayment['id_echeancier']);
+                            $aNonMatch[] = $aRepayment;
+                            unset($aMatch[$aRepayment['id_echeancier']]);
+                            continue;
+                        }
+                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'wallets_lines', $oWalletLine->id_wallet_line, 'amount', $oWalletLine->amount . ' + (' . $iRepaymentNetDiff . ')');
+
+                        $oWalletLine->amount += $iRepaymentNetDiff;
+                        $oWalletLine->update();
+                    }
+
+                    if (0 != $iRepaymentNetDiff || 0 != $iRepaymentTaxDiff) {
+                        // Update transaction type "Remboursement Unilend"
+                        $aPaymentSchedule = array_shift($oEcheanciersEmprunteur->select('id_project = ' . $aRepayment['id_project'] . ' AND ordre = ' . $aRepayment['ordre']));
+                        if (null === $aPaymentSchedule) {
+                            $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
+                            $this->rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff);
+                            $this->rollbackWalletLine($oWalletLine, $iRepaymentNetDiff);
+                            $this->removeLogChangesSchedule($aRepayment['id_echeancier']);
+                            $aNonMatch[] = $aRepayment;
+                            unset($aMatch[$aRepayment['id_echeancier']]);
+                            continue;
+                        }
+                        if (false === $oTransactionsUnilend->get($aPaymentSchedule['id_echeancier_emprunteur'], 'type_transaction = 10 AND id_echeancier_emprunteur')) {
+                            $aTransactionUnilend = array_shift($oTransactionsUnilend->select('type_transaction = 10 AND id_echeancier_emprunteur = ' . $aPaymentSchedule['id_echeancier_emprunteur']));
+                            if (null === $aTransactionUnilend || false === $oTransactionsUnilend->get($aTransactionUnilend['id_transaction'])) {
+                                $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
+                                $this->rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff);
+                                $this->rollbackWalletLine($oWalletLine, $iRepaymentNetDiff);
+                                $this->removeLogChangesSchedule($aRepayment['id_echeancier']);
+                                $aNonMatch[] = $aRepayment;
+                                unset($aMatch[$aRepayment['id_echeancier']]);
+                                continue;
+                            }
+                        }
+                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'transactions', $oTransactionsUnilend->id_transaction, 'montant_unilend', $oTransactionsUnilend->montant_unilend . ' + (' . -1 * $iRepaymentNetDiff . ')');
+                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'transactions', $oTransactionsUnilend->id_transaction, 'montant_etat', $oTransactionsUnilend->montant_etat . ' + (' . $iRepaymentTaxDiff . ')');
+
+                        $oTransactionsUnilend->montant_unilend += -1 * $iRepaymentNetDiff;
+                        $oTransactionsUnilend->montant_etat    += $iRepaymentTaxDiff;
+                        $oTransactionsUnilend->update();
+
+                        // Update bank unilend type "Remboursement prêteur"
+                        if (false === $oBankUnilend->get($oTransactionsUnilend->id_transaction, 'type = 2 AND id_transaction')) {
+                            $aBankUnilend = array_shift($oBankUnilend->select('type = 2 and id_transaction = ' . $oTransactionsUnilend->id_transaction));
+                            if (null === $aBankUnilend || false === $oBankUnilend->get($aBankUnilend['id_unilend'])) {
+                                $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
+                                $this->rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff);
+                                $this->rollbackWalletLine($oWalletLine, $iRepaymentNetDiff);
+                                $this->rollbackTransactionUnilend($oTransactionsUnilend, $iRepaymentNetDiff, $iRepaymentTaxDiff);
+                                $this->removeLogChangesSchedule($aRepayment['id_echeancier']);
+                                $aNonMatch[] = $aRepayment;
+                                unset($aMatch[$aRepayment['id_echeancier']]);
+                                continue;
+                            }
+                        }
+                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'bank_unilend', $oBankUnilend->id_unilend, 'montant', $oBankUnilend->montant . ' + (' . -1 * $iRepaymentNetDiff . ')');
+                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'bank_unilend', $oBankUnilend->id_unilend, 'etat', $oBankUnilend->etat . ' + (' . $iRepaymentTaxDiff . ')');
+
+                        $oBankUnilend->montant += -1 * $iRepaymentNetDiff;
+                        $oBankUnilend->etat += $iRepaymentTaxDiff;
+                        $oBankUnilend->update();
+                    }
+                }
+            }
+            $this->aTemplateVariables = array(
+                'aMatch'    => $aMatch,
+                'aNonMatch' => $aNonMatch,
+                'aChanges'  => $this->aChangesRepayment
+            );
+        }
+    }
+
+    private function rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified)
+    {
+        foreach ($aRepayment as $sKey => $sValue) {
+            if (false === in_array($sKey, $aFieldCanBeModified)) {
+                continue;
+            }
+            $oEcheanciers->$sKey = $aRepayment[$sKey . '_old'];
+        }
+        $oEcheanciers->update();
+    }
+
+    private function rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff)
+    {
+        $oTransactionsLender->montant -= $iRepaymentNetDiff;
+        $oTransactionsLender->update();
+    }
+
+    private function rollbackWalletLine($oWalletLine, $iRepaymentNetDiff)
+    {
+        $oWalletLine->amount -= $iRepaymentNetDiff;
+        $oWalletLine->update();
+    }
+
+    private function rollbackTransactionUnilend($oTransactionsUnilend, $iRepaymentNetDiff, $iRepaymentTaxDiff)
+    {
+        $oTransactionsUnilend->montant      -= (-1 * $iRepaymentNetDiff);
+        $oTransactionsUnilend->montant_etat -= $iRepaymentTaxDiff;
+        $oTransactionsUnilend->update();
+    }
+
+    private function addLogChangesSchedule($iIdSchedule, $sTable, $iId, $sColumn, $sMovement)
+    {
+        $this->aChangesRepayment[$iIdSchedule][] = array(
+            'table' => $sTable,
+            'id'    => $iId,
+            'column' => $sColumn,
+            'movement' => $sMovement
+        );
+    }
+
+    private  function removeLogChangesSchedule($iIdSchedule)
+    {
+        unset($this->aChangesRepayment[$iIdSchedule]);
     }
 }

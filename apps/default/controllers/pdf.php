@@ -779,22 +779,30 @@ class pdfController extends bootstrap
 
         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-        if ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
-            $histoRemb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added DESC', 0, 1);
+        if ($this->factures->exist($this->projects->id_project, 'type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
+            $aInvoices                = $this->factures->select('type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project = ' . $this->projects->id_project);
+            $this->num_facture        = $aInvoices[0]['num_facture'];
+            $this->ht                 = $aInvoices[0]['montant_ht'] / 100;
+            $this->taxes              = $aInvoices[0]['tva'] / 100;
+            $this->ttc                = $aInvoices[0]['montant_ttc'] / 100;
+            $this->date_echeance_reel = $aInvoices[0]['date'];
 
-            if ($histoRemb != false) {
-                $this->transactions->get($this->projects->id_project, 'type_transaction = 9 AND status = 1 AND etat = 1 AND id_project');
+        } else {
+            if ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
+                $histoRemb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added DESC', 0, 1);
 
-                $this->dateRemb    = $histoRemb[0]['added'];
-                $this->num_facture = 'FR-E' . date('Ymd', strtotime($this->dateRemb)) . str_pad($this->compteur_factures->compteurJournalier($this->projects->id_project, $this->dateRemb), 5, "0", STR_PAD_LEFT);
-                $this->ttc         = ($this->transactions->montant_unilend / 100);
-                $cm                = ($this->tva + 1); // CM
-                $this->ht          = ($this->ttc / $cm); // HT
-                $this->taxes       = ($this->ttc - $this->ht); // TVA
-                $montant           = ((str_replace('-', '', $this->transactions->montant) + $this->transactions->montant_unilend) / 100); // Montant pret
-                $txCom             = (0 < $montant) ? round(($this->ht / $montant) * 100, 0) : 0; // taux commission
+                if ($histoRemb != false) {
+                    $this->transactions->get($this->projects->id_project, 'type_transaction = 9 AND status = 1 AND etat = 1 AND id_project');
 
-                if (!$this->factures->exist($this->projects->id_project, 'type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
+                    $this->dateRemb    = $histoRemb[0]['added'];
+                    $this->num_facture = 'FR-E' . date('Ymd', strtotime($this->dateRemb)) . str_pad($this->compteur_factures->compteurJournalier($this->projects->id_project, $this->dateRemb), 5, "0", STR_PAD_LEFT);
+                    $this->ttc         = ($this->transactions->montant_unilend / 100);
+                    $cm                = ($this->tva + 1); // CM
+                    $this->ht          = ($this->ttc / $cm); // HT
+                    $this->taxes       = ($this->ttc - $this->ht); // TVA
+                    $montant           = ((str_replace('-', '', $this->transactions->montant) + $this->transactions->montant_unilend) / 100); // Montant pret
+                    $txCom             = (0 < $montant) ? round(($this->ht / $montant) * 100, 0) : 0; // taux commission
+
                     $this->factures->num_facture     = $this->num_facture;
                     $this->factures->date            = $this->dateRemb;
                     $this->factures->id_company      = $this->companies->id_company;
@@ -808,12 +816,11 @@ class pdfController extends bootstrap
                     $this->factures->create();
                 }
             }
-
-            $this->setDisplay('facture_EF_html');
-            $sDisplayInvoice = $this->sDisplay;
-            $this->GenerateFooterInvoice();
-            $this->sDisplay = $sDisplayInvoice . $this->sDisplay;
         }
+        $this->setDisplay('facture_EF_html');
+        $sDisplayInvoice = $this->sDisplay;
+        $this->GenerateFooterInvoice();
+        $this->sDisplay = $sDisplayInvoice . $this->sDisplay;
     }
 
     public function _facture_ER($sHash = null, $iProjectId = null, $iOrder = null, $bRead = true)
@@ -861,19 +868,27 @@ class pdfController extends bootstrap
 
         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-        if ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
-            $uneEcheancePreteur       = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . $iOrdre, '', 0, 1);
-            $this->date_echeance_reel = $uneEcheancePreteur[0]['date_echeance_reel'];
+        if ($this->factures->exist($this->projects->id_project, 'ordre = ' . $iOrdre . ' AND  type_commission = 2 AND id_company = ' . $this->companies->id_company . ' AND id_project' )) {
+            $aInvoices                = $this->factures->select('ordre = ' . $iOrdre . ' AND  type_commission = 2 AND id_company = ' . $this->companies->id_company . ' AND id_project = ' . $this->projects->id_project);
+            $this->num_facture        = $aInvoices[0]['num_facture'];
+            $this->ht                 = $aInvoices[0]['montant_ht'] / 100;
+            $this->taxes              = $aInvoices[0]['tva'] / 100;
+            $this->ttc                = $aInvoices[0]['montant_ttc'] / 100;
+            $this->date_echeance_reel = $aInvoices[0]['date'];
 
-            if ($this->oEcheanciersEmprunteur->get($this->projects->id_project, 'ordre = ' . $iOrdre . '  AND id_project')) {
-                $compteur = $this->compteur_factures->compteurJournalier($this->projects->id_project, $this->date_echeance_reel);
+        } else {
+            if ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
+                $uneEcheancePreteur       = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . $iOrdre, '', 0, 1);
+                $this->date_echeance_reel = $uneEcheancePreteur[0]['date_echeance_reel'];
 
-                $this->num_facture = 'FR-E' . date('Ymd', strtotime($this->date_echeance_reel)) . str_pad($compteur, 5, "0", STR_PAD_LEFT);
-                $this->ht          = ($this->oEcheanciersEmprunteur->commission / 100);
-                $this->taxes       = ($this->oEcheanciersEmprunteur->tva / 100);
-                $this->ttc         = ($this->ht + $this->taxes);
+                if ($this->oEcheanciersEmprunteur->get($this->projects->id_project, 'ordre = ' . $iOrdre . '  AND id_project')) {
+                    $compteur = $this->compteur_factures->compteurJournalier($this->projects->id_project, $this->date_echeance_reel);
 
-                if (!$this->factures->exist($this->projects->id_project, 'ordre = ' . $iOrdre . ' AND  type_commission = 2 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
+                    $this->num_facture = 'FR-E' . date('Ymd', strtotime($this->date_echeance_reel)) . str_pad($compteur, 5, "0", STR_PAD_LEFT);
+                    $this->ht          = ($this->oEcheanciersEmprunteur->commission / 100);
+                    $this->taxes       = ($this->oEcheanciersEmprunteur->tva / 100);
+                    $this->ttc         = ($this->ht + $this->taxes);
+
                     $this->factures->num_facture     = $this->num_facture;
                     $this->factures->date            = $this->date_echeance_reel;
                     $this->factures->id_company      = $this->companies->id_company;
@@ -887,12 +902,12 @@ class pdfController extends bootstrap
                     $this->factures->create();
                 }
             }
-
-            $this->setDisplay('facture_ER_html');
-            $sDisplayInvoice = $this->sDisplay;
-            $this->GenerateFooterInvoice();
-            $this->sDisplay = $sDisplayInvoice . $this->sDisplay;
         }
+        $this->setDisplay('facture_ER_html');
+        $sDisplayInvoice = $this->sDisplay;
+        $this->GenerateFooterInvoice();
+        $this->sDisplay = $sDisplayInvoice . $this->sDisplay;
+
     }
 
     // Mise a jour des dates echeances preteurs et emprunteur (utilisé pour se baser sur la date de creation du pouvoir)

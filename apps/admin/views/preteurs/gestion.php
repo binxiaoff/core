@@ -43,8 +43,6 @@
                 <th>Prénom / Dirigeant</th>
                 <th>Email</th>
                 <th>Téléphone</th>
-                <th>Montant sur Unilend</th>
-                <th>Nbre d'enchères en cours</th>
                 <th>Status</th>
                 <th>&nbsp;</th>
             </tr>
@@ -59,8 +57,6 @@
                     <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['prenom_ou_dirigeant'] ?></td>
                     <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['email'] ?></td>
                     <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['telephone'] ?></td>
-                    <td class="leLender<?= $c['id_lender_account'] ?>"><?= $this->ficelle->formatNumber($c['solde']) ?> €</td>
-                    <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['bids_encours'] ?></td>
                     <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['status'] == 1 ? 'en ligne' : 'hors ligne' ?></td>
                     <td align="center">
                         <?php if ($c['novalid'] == 1): ?>
