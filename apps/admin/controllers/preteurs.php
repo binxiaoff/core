@@ -1801,8 +1801,7 @@ class preteursController extends bootstrap
         $this->arrayDeclarationCreance = $this->projects->getProjectsInDebt();
 
         $oLenderAccountStats = $this->loadData('lenders_account_stats');
-
-        $aIRR = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
+        $aIRR                = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
 
         if ($aIRR) {
             $this->IRRValue = $aIRR['tri_value'];
