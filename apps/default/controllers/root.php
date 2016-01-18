@@ -822,7 +822,7 @@ class rootController extends bootstrap
     {
         // On check si y a un compte
         if (! $this->clients->checkAccess()) {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->lurl);
             die;
         }
 
@@ -830,12 +830,12 @@ class rootController extends bootstrap
             // on redirige sur le compte preteur
             if ($this->params[0] == 1) {
                 $_SESSION['status_pre_emp'] = 1;
-                header('Location:' . $this->lurl . '/synthese');
+                header('Location: ' . $this->lurl . '/synthese');
                 die;
             } // on redirige sur le compte emprunteur
             else {
                 $_SESSION['status_pre_emp'] = 2;
-                header('Location:' . $this->lurl . '/espace_emprunteur');
+                header('Location: ' . $this->lurl . '/espace_emprunteur');
                 die;
             }
         }

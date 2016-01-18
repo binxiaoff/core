@@ -1335,25 +1335,22 @@ class inscription_preteurController extends bootstrap
                 }
 
                 // US Person
-                if(isset($_POST['check_etranger']) && $_POST['check_etranger'] != 'on') {
+                if (isset($_POST['check_etranger']) && $_POST['check_etranger'] != 'on') {
                     $this->form_ok = false;
                 }
 
-                if($this->form_ok == true){
-
+                if ($this->form_ok == true) {
                     $this->clients->etape_inscription_preteur = 2; // etape 2 ok
 
-                    // On met à jour en BDD
                     $this->lenders_accounts->update();
                     $this->clients->update();
 
-                    if($this->clients_status_history->counter('id_client = '.$this->clients->id_client.' AND id_client_status = 1') <= 0){
+                    if ($this->clients_status_history->counter('id_client = '.$this->clients->id_client.' AND id_client_status = 1') <= 0){
                         // creation du statut "a contrôler"
                         $this->clients_status_history->addStatus('-2','10',$this->clients->id_client);
 
                         $serialize = serialize(array('id_client' => $this->clients->id_client,'post' => $_POST));
                         $this->clients_history_actions->histo(17,'inscription etape 2 particulier',$this->clients->id_client,$serialize);
-                        ////////////////
 
                         //********************************************//
                         //*** ENVOI DU MAIL NOTIFICATION notification-nouveaux-preteurs ***//
@@ -1368,17 +1365,16 @@ class inscription_preteurController extends bootstrap
                         $this->mails_text->get('notification-nouveaux-preteurs','lang = "'.$this->language.'" AND type');
 
                         // Variables du mailing
-                        $surl = $this->surl;
-                        $url = $this->lurl;
-                        $id_preteur = $this->clients->id_client;
-                        $nom = utf8_decode($this->clients->nom);
-                        $prenom = utf8_decode($this->clients->prenom);
-                        //$montant = 'virement';
-                        $montant = '';
-                        $date = date('d').' '.$lemois.' '.date('Y');
+                        $surl         = $this->surl;
+                        $url          = $this->lurl;
+                        $id_preteur   = $this->clients->id_client;
+                        $nom          = utf8_decode($this->clients->nom);
+                        $prenom       = utf8_decode($this->clients->prenom);
+                        $montant      = '';
+                        $date         = date('d').' '.$lemois.' '.date('Y');
                         $heure_minute = date('h:m');
-                        $email = $this->clients->email;
-                        $lien = $this->aurl.'/preteurs/edit_preteur/'.$this->lenders_accounts->id_lender_account;
+                        $email        = $this->clients->email;
+                        $lien         = $this->aurl.'/preteurs/edit_preteur/'.$this->lenders_accounts->id_lender_account;
 
                         // Attribution des données aux variables
                         $sujetMail = htmlentities($this->mails_text->subject);

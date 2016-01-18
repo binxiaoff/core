@@ -551,10 +551,10 @@ class bootstrap extends Controller
                     in_array(
                         $id_notif,
                         array(
-                            \clients_gestion_type_notif::OFFRES_REFUSEES,
-                            \clients_gestion_type_notif::ALIMENTATION_VIREMENT,
-                            \clients_gestion_type_notif::ALIMENTATION_CB,
-                            \clients_gestion_type_notif::RETRAIT
+                            \clients_gestion_type_notif::TYPE_BID_REJECTED,
+                            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT,
+                            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT,
+                            \clients_gestion_type_notif::TYPE_DEBIT
                         )
                     )
                 ) {
@@ -567,10 +567,10 @@ class bootstrap extends Controller
                     in_array(
                         $id_notif,
                         array(
-                            \clients_gestion_type_notif::ANNONCE_NOUVEAUX_PROJETS,
-                            \clients_gestion_type_notif::OFFRES_REALISEES,
-                            \clients_gestion_type_notif::OFFRES_ACCEPTEES,
-                            \clients_gestion_type_notif::REMBOURSEMENT
+                            \clients_gestion_type_notif::TYPE_NEW_PROJECT,
+                            \clients_gestion_type_notif::TYPE_BID_PLACED,
+                            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
+                            \clients_gestion_type_notif::TYPE_REPAYMENT
                         )
                     )
                 ) {
@@ -583,8 +583,8 @@ class bootstrap extends Controller
                     in_array(
                         $id_notif,
                         array(
-                            \clients_gestion_type_notif::ANNONCE_NOUVEAUX_PROJETS,
-                            \clients_gestion_type_notif::OFFRES_ACCEPTEES
+                            \clients_gestion_type_notif::TYPE_NEW_PROJECT,
+                            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED
                         )
                     )
                 ) {

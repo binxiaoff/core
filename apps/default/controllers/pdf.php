@@ -786,7 +786,6 @@ class pdfController extends bootstrap
             $this->taxes              = $aInvoices[0]['tva'] / 100;
             $this->ttc                = $aInvoices[0]['montant_ttc'] / 100;
             $this->date_echeance_reel = $aInvoices[0]['date'];
-
         } else {
             if ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
                 $histoRemb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added DESC', 0, 1);
@@ -817,6 +816,7 @@ class pdfController extends bootstrap
                 }
             }
         }
+
         $this->setDisplay('facture_EF_html');
         $sDisplayInvoice = $this->sDisplay;
         $this->GenerateFooterInvoice();
@@ -875,7 +875,6 @@ class pdfController extends bootstrap
             $this->taxes              = $aInvoices[0]['tva'] / 100;
             $this->ttc                = $aInvoices[0]['montant_ttc'] / 100;
             $this->date_echeance_reel = $aInvoices[0]['date'];
-
         } else {
             if ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
                 $uneEcheancePreteur       = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . $iOrdre, '', 0, 1);
@@ -907,7 +906,6 @@ class pdfController extends bootstrap
         $sDisplayInvoice = $this->sDisplay;
         $this->GenerateFooterInvoice();
         $this->sDisplay = $sDisplayInvoice . $this->sDisplay;
-
     }
 
     // Mise a jour des dates echeances preteurs et emprunteur (utilisé pour se baser sur la date de creation du pouvoir)

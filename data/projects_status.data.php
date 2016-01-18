@@ -63,16 +63,6 @@ class projects_status extends projects_status_crud
         parent::projects_status($bdd, $params);
     }
 
-    public function get($id, $field = 'id_project_status')
-    {
-        return parent::get($id, $field);
-    }
-
-    public function delete($id, $field = 'id_project_status')
-    {
-        parent::delete($id, $field);
-    }
-
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {

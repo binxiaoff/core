@@ -32,8 +32,6 @@
         </form>
     </div>
 </div>
-<!-- /popup-cnt -->
-
 
 <script type="text/javascript">
     $("#non").click(function () {

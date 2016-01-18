@@ -342,8 +342,8 @@ class echeanciers extends echeanciers_crud
         AND YEAR(date_echeance_reel) = ' . $year . '
         GROUP BY LEFT(date_echeance_reel,7)';
 
-        $result = $this->bdd->query($sql);
         $res    = array();
+        $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($result)) {
             $d          = explode('-', $record['date']);
             $retenues   = $record['prelevements_obligatoires'] + $record['retenues_source'] + $record['csg'] + $record['prelevements_sociaux'] + $record['contributions_additionnelles'] + $record['prelevements_solidarite'] + $record['crds'];

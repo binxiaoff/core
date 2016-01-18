@@ -1665,7 +1665,8 @@ class cronController extends bootstrap
             //$sum = $this->prelevements->sum('type = 1 AND type_prelevement = 1');
             //$TotalmontantsPreteurRecu = round($sum/100,2);
 
-            $nbPermanent = 0;
+            $nbPermanent      = 0;
+            $montantPermanent = 0;
             foreach ($lPrelevementsEnCoursPeteurRecu as $p) {
                 //si jamais eu de prelevement avant
                 if ($p['status'] == 0) {
@@ -4475,7 +4476,7 @@ class cronController extends bootstrap
                 $a          = 0;
                 $lesProjets = '';
                 foreach ($lProjects as $p) {
-                    $lesProjets .= ($     a == 0 ? '' : ',') . $p['id_project'];
+                    $lesProjets .= ($a == 0 ? '' : ',') . $p['id_project'];
                     $a++;
                 }
 
@@ -5534,11 +5535,11 @@ class cronController extends bootstrap
 
             $dateDebutRemboursement = mktime(10, 0, 0, date('m'), date('d'), date('Y'));
             $dateFinRemboursement   = mktime(10, 30, 0, date('m'), date('d'), date('Y'));
+
             if (
                 time() >= $dateDebutNewProject && time() < $dateFinNewProject
                 || 'prod' !== $this->Config['env'] && isset($_GET['force'])
             ) {                $id_notif = 1;
-
                 //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
                 $lPreteurs = $clients->selectPreteursByStatusSlim(60);
                 $lProjects = $projects->selectProjectsByStatusSlim(\projects_status::EN_FUNDING);
@@ -5728,7 +5729,6 @@ class cronController extends bootstrap
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
@@ -5743,6 +5743,7 @@ class cronController extends bootstrap
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
                 }
+
                 $this->clients_gestion_mails_notif->create();
             }
         }
@@ -7560,7 +7561,7 @@ class cronController extends bootstrap
                                 'crdpreteur'           => $this->ficelle->formatNumber($reste_a_payer_pour_preteur) . (($reste_a_payer_pour_preteur >= 2) ? ' euros' : ' euro'),
                                 'Datera'               => date('d/m/Y'),
                                 'solde_p'              => $this->ficelle->formatNumber($getsolde) . (($getsolde >= 2) ? ' euros' : ' euro'),
-                                'motif_virement'       => $motif,
+                                'motif_virement'       => $this->clients->getLenderPattern($this->clients->id_client),
                                 'lien_fb'              => $lien_fb,
                                 'lien_tw'              => $lien_tw
                             );

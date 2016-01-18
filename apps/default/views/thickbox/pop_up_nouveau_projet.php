@@ -30,37 +30,36 @@
         <h2><?=$this->lng['espace-emprunteur']['pop-up-nouvelle-demande-de-projet']?></h2>
     </div>
     <div class="popup-cnt">
-            <div class="notification-body">
-                    <form action="<?= $this->lurl ?>/espace_emprunteur/projets" method="post">
-                        <div class="form-row">
-                            <input type="text" name="montant" id="montant"
-                                   placeholder="&euro; <?= $this->lng['espace-emprunteur']['pop-up-nouveau-projet-montant-souhaite'] ?>"
-                                   class="field field-large required"
-                                   data-validators="Presence&amp;Numericality, {maximum:<?= $this->sommeMax ?>}&amp;Numericality, {minimum: <?= $this->sommeMin ?>}"
-                                   onkeyup="lisibilite_nombre(this.value,this.id);">
-                            <em class="jusqua"><?= $this->lng['espace-emprunteur']['pop-up-nouveau-projet-montant-jusqua'] ?></em>
-                        </div>
-                        <div class="form-row">
-                            <select name="duree" id="duree" class="field field-large required custom-select">
-                                <option value="0"><?= $this->lng['espace-emprunteur']['duree'] ?></option>
-                                <?php foreach ($this->dureePossible as $duree): ?>
-                                    <option
-                                        value="<?= $duree ?>"<?= $duree == $this->aForm['duree'] ? ' selected' : '' ?>><?= $duree . ' ' . $this->lng['espace-emprunteur']['mois'] ?>
-                                    </option>
-                                <?php endforeach ?>
-                            </select>
-                        </div>
-                        <div class="form-row">
-                              <textarea name="commentaires" id="commentaires" cols="35" rows="25"
-                              placeholder="<?= $this->lng['espace-emprunteur']['pop-up-nouveau-projet-toutes-informations-utiles'] ?>"
-                              class="field"></textarea>
-                            <em><?= $this->lng['espace-emprunteur']['champs-obligatoires']?></em>
-                        </div>
-                        <input type="submit" class="btn"
-                               value="<?= $this->lng['espace-emprunteur']['valider']?>"
-                               name="valider_demande_projet">
-                    </form>
-            </div><!-- /.notification-body -->
+        <div class="notification-body">
+            <form action="<?= $this->lurl ?>/espace_emprunteur/projets" method="post">
+                <div class="form-row">
+                    <input type="text" name="montant" id="montant"
+                           placeholder="&euro; <?= $this->lng['espace-emprunteur']['pop-up-nouveau-projet-montant-souhaite'] ?>"
+                           class="field field-large required"
+                           data-validators="Presence&amp;Numericality, {maximum:<?= $this->sommeMax ?>}&amp;Numericality, {minimum: <?= $this->sommeMin ?>}"
+                           onkeyup="lisibilite_nombre(this.value,this.id);">
+                    <em class="jusqua"><?= $this->lng['espace-emprunteur']['pop-up-nouveau-projet-montant-jusqua'] ?></em>
+                </div>
+                <div class="form-row">
+                    <select name="duree" id="duree" class="field field-large required custom-select">
+                        <option value="0"><?= $this->lng['espace-emprunteur']['duree'] ?></option>
+                        <?php foreach ($this->dureePossible as $duree): ?>
+                            <option
+                                value="<?= $duree ?>"<?= $duree == $this->aForm['duree'] ? ' selected' : '' ?>><?= $duree . ' ' . $this->lng['espace-emprunteur']['mois'] ?>
+                            </option>
+                        <?php endforeach ?>
+                    </select>
+                </div>
+                <div class="form-row">
+                  <textarea name="commentaires" id="commentaires" cols="35" rows="25"
+                      placeholder="<?= $this->lng['espace-emprunteur']['pop-up-nouveau-projet-toutes-informations-utiles'] ?>"
+                      class="field"></textarea>
+                    <em><?= $this->lng['espace-emprunteur']['champs-obligatoires']?></em>
+                </div>
+                <input type="submit" class="btn"
+                       value="<?= $this->lng['espace-emprunteur']['valider']?>"
+                       name="valider_demande_projet">
+            </form>
+        </div>
     </div>
-    <!-- /popup-cnt -->
 </div>

@@ -103,7 +103,7 @@ class traductionsController extends bootstrap
                 $this->params[1] = '';
             } else {
                 foreach ($this->lLangues as $key => $lng) {
-                    $values[ $key ] = addslashes($_POST[ 'texte-' . $key ]);
+                    $values[$key] = addslashes($_POST[ 'texte-' . $key ]);
                 }
 
                 $this->ln->updateTextTranslations($_POST['section'], $_POST['nom'], $values);

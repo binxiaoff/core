@@ -99,7 +99,7 @@ class dossiersController extends bootstrap
                 sort($this->dureePossible);
             }
             $this->projects_notes->get($this->params[0], 'id_project');
-            //$this->project_cgv->get($this->params[0], 'id_project');
+            $this->project_cgv->get($this->params[0], 'id_project');
 
             $this->settings->get('Liste deroulante secteurs', 'type');
             $this->lSecteurs = explode(';', $this->settings->value);
@@ -3997,9 +3997,8 @@ class dossiersController extends bootstrap
         $oClients = $this->loadData('clients');
         $oClients->get($iClientId);
 
-        if (isset($oClients->secrete_question) && isset($oClients->secrete_reponse)) {
+        if (isset($oClients->secrete_question, $oClients->secrete_reponse)) {
             return 'depot-dossier-relance-status-20-1';
-
         } else {
             return 'depot-dossier-relance-status-20-1-avec-mdp';
         }
@@ -4007,7 +4006,6 @@ class dossiersController extends bootstrap
 
     private function sendEmailBorrowerArea($sTypeEmail)
     {
-
         $oMailsText = $this->loadData('mails_text');
         $oMailsText->get($sTypeEmail, 'lang = "fr" AND type');
 
@@ -4041,7 +4039,5 @@ class dossiersController extends bootstrap
             $this->email->addRecipient($sRecipient);
             Mailer::send($this->email, $this->mails_filer, $oMailsText->id_textemail);
         }
-
     }
-
 }

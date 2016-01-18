@@ -114,7 +114,6 @@ class thickboxController extends bootstrap
         }
     }
 
-
     public function _pop_up_fast_pret()
     {
         //Recuperation des element de traductions
@@ -308,7 +307,6 @@ class thickboxController extends bootstrap
 
         $fIR       = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $this->projects->id_project);
         $this->fIR = (is_null($fIR) === false) ? $fIR : 0;
-
     }
 
     public function _pop_up_nouveau_projet()
@@ -323,7 +321,5 @@ class thickboxController extends bootstrap
         $this->sommeMax = $this->settings->value;
 
         $this->lng['espace-emprunteur'] = $this->ln->selectFront('espace-emprunteur', $this->language, $this->App);
-
     }
-
 }

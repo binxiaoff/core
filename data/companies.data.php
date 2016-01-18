@@ -58,16 +58,13 @@ class companies extends companies_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `companies` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM `companies` ' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_company')
     {
-        $sql    = 'SELECT * FROM `companies` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT * FROM `companies` WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
@@ -89,25 +86,22 @@ class companies extends companies_crud
             $sStatus = '';
         }
 
-        $sql    = 'SELECT
-                      p.*,
-                      ps.status as project_status
-                  FROM
-                      projects p
-                      INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
-                      INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
-                      INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-                  WHERE
-                      p.id_company = '.$iCompanyId.$sStatus.'
-                      ORDER BY project_status DESC';
+        $sql = '
+            SELECT
+                p.*,
+                ps.status as project_status
+            FROM projects p
+            INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
+            INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            WHERE p.id_company = '.$iCompanyId.$sStatus.'
+            ORDER BY project_status DESC';
 
-        $resultat = $this->bdd->query($sql);
-        $aProjects   = array();
+        $resultat  = $this->bdd->query($sql);
+        $aProjects = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
             $aProjects[] = $record;
         }
         return $aProjects;
-
-
     }
 }

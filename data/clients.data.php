@@ -695,7 +695,6 @@ class clients extends clients_crud
         }
 
         return $oLendersAccounts->exist($iClientId, 'id_client_owner');
-
     }
 
     public function isBorrower(projects $oProjects, companies $oCompanies, $iClientId = null)
@@ -707,7 +706,6 @@ class clients extends clients_crud
         $oCompanies->get($iClientId, 'id_client_owner');
 
         return $oProjects->exist($oCompanies->id_company, 'id_company');
-
     }
 
 

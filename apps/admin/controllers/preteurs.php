@@ -710,11 +710,9 @@ class preteursController extends bootstrap
                     $surl = $this->surl;
                     $url  = $this->furl;
 
-                    // FB
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
 
-                    // Twitter
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
@@ -1054,7 +1052,6 @@ class preteursController extends bootstrap
             $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', $nonValide, '', '0', '300');
         }
 
-
         if (isset($this->params[0]) && $this->params[0] == 'status') {
             $this->clients->get($this->params[1], 'id_client');
             $this->clients->status = ($this->params[2] == 0 ? 1 : 0);
@@ -1365,7 +1362,6 @@ class preteursController extends bootstrap
                     $backup_clients->updated_backup             = $this->clients->updated;
                     $backup_clients->lastlogin                  = $this->clients->lastlogin;
                     $backup_clients->create();
-
                 }
 
                 $this->clients->delete($this->clients->id_client, 'id_client');
