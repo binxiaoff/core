@@ -59,22 +59,18 @@ class lenders_account_stats extends lenders_account_stats_crud
     {
         $aValuesIRR = array();
 
-        $sSqlLoans = 'SELECT  -l.amount AS loan,
-                        psh.added AS date
+        $sql = 'SELECT psh.added AS date,
+                       -l.amount AS montant
                 FROM loans l
                     INNER JOIN projects_status_history psh ON l.id_project = psh.id_project
                     INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                 WHERE ps.status = ' . \projects_status::REMBOURSEMENT . '
                     AND l.id_lender = ' . $iLendersAccountId . '
-                GROUP BY l.id_project,l.id_loan';
+                GROUP BY l.id_project,l.id_loan
 
-        $result = $this->bdd->query($sSqlLoans);
-        while ($record = $this->bdd->fetch_array($result)) {
-            $aValuesIRR[] = array($record["date"] => $record["loan"]);
+                UNION
 
-        }
-
-        $sSqlPayments = 'SELECT
+                SELECT
                     e.date_echeance_reel AS date,
                     CASE WHEN e.status_ra = 1 THEN e.capital ELSE e.capital + e.interets END AS montant
                 FROM
@@ -91,6 +87,22 @@ class lenders_account_stats extends lenders_account_stats_crud
 
                 SELECT
                     e.date_echeance AS date,
+                    e.capital + e.interets AS montant
+                FROM
+                    echeanciers e
+                    INNER JOIN projects p ON e.id_project = p.id_project
+                    INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
+                    INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
+                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                WHERE
+                    e.id_lender = ' . $iLendersAccountId . '
+                    AND e.status = 0
+                    AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+
+                UNION
+
+                SELECT
+                    e.date_echeance AS date,
                     CASE WHEN e.date_echeance < NOW() THEN "0" ELSE e.capital + e.interets END AS montant
                 FROM
                     echeanciers e
@@ -101,43 +113,27 @@ class lenders_account_stats extends lenders_account_stats_crud
                 WHERE
                     e.id_lender = ' . $iLendersAccountId . '
                     AND e.status = 0
-                    AND ps.status IN (' . implode(',', array(\projects_status::PROBLEME, \projects_status::PROBLEME_J_X)) . ')
+                    AND ps.status IN (' . implode(',',
+                array(\projects_status::PROBLEME, \projects_status::PROBLEME_J_X)) . ')
 
                 UNION
 
                 SELECT
                     e.date_echeance AS date,
-                    CASE WHEN e.date_echeance < NOW() THEN erp.capital + erp.interets ELSE e.capital + e.interets + erp.capital + erp.interets END AS montant
+                    CASE WHEN e.date_echeance < NOW() THEN "0" ELSE
+                        CASE WHEN DATEDIFF(e.date_echeance, NOW()) > 180 THEN "0" ELSE e.capital + e.interets END
+                    END
+                    AS montant
                 FROM
                     echeanciers e
                     INNER JOIN projects p ON e.id_project = p.id_project
                     INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
                     INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
                     INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                        INNER JOIN echeanciers_recouvrements_prorata erp ON e.id_echeancier = erp.id_echeancier
                 WHERE
                     e.id_lender = ' . $iLendersAccountId . '
                     AND e.status = 0
                     AND ps.status = ' . \projects_status::RECOUVREMENT . '
-                    AND DATEDIFF(e.date_echeance, NOW()) < 180
-
-                UNION
-
-                SELECT
-                    e.date_echeance AS date,
-                    erp.capital + erp.interets AS montant
-                FROM
-                    echeanciers e
-                    INNER JOIN projects p ON e.id_project = p.id_project
-                    INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
-                    INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
-                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                    LEFT JOIN echeanciers_recouvrements_prorata erp ON e.id_echeancier = erp.id_echeancier
-                WHERE
-                    e.id_lender = ' . $iLendersAccountId . '
-                    AND e.status = 0
-                    AND ps.status = ' . \projects_status::RECOUVREMENT . '
-                    AND DATEDIFF(e.date_echeance, NOW()) >= 180
 
                 UNION
 
@@ -160,10 +156,10 @@ class lenders_account_stats extends lenders_account_stats_crud
                 \projects_status::DEFAUT
             )) . ')';
 
-        $result = $this->bdd->query($sSqlPayments);
+        $result = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($result)) {
-                $aValuesIRR[] = array($record["date_echeance_reel"] => $record["montant"]);
+                $aValuesIRR[] = array($record['date'] => $record['montant']);
         }
         return $aValuesIRR;
     }
