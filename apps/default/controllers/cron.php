@@ -96,6 +96,7 @@ class cronController extends bootstrap
         die;
     }
 
+    // Crontab : 1 week before next payment
     public function _mail_echeance_emprunteur()
     {
         if (true === $this->startCron('mail_echeance_emprunteur', 1)) {
@@ -114,8 +115,9 @@ class cronController extends bootstrap
             $today = date('Y-m-d');
 
             // projets en remboursement
-            $aProjects = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT); // non, le filtre se fait sur le status = 4 de la table prelevements
+            $aProjects = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT); // non, les dossiers en procédure collective doivent etre exclus de ce mailing
             foreach ($aProjects as $project) {
+
                 $this->projects->get($project['id_project'],'id_project');
                 $this->companies->get($this->projects->id_company, 'id_company');
                 $this->clients->get($this->companies->id_client_owner, 'id_client');
@@ -134,11 +136,14 @@ class cronController extends bootstrap
                             $sEcheances = '<div>Vous n&apos;avez toujours pas r&eacute;gl&eacute; la mensualit&eacute; du mois suivant :</div>';
                         }
                     }
+                    $sGetmonth = strftime("%B %Y", strtotime($echeance['date_echeance_emprunteur'] . ' - '. $i .' month'));
+
                     $sEcheances .= '<div>';
-                    $sEcheances .= 'Mois de '. strftime("%B %Y", strtotime($echeance['date_echeance_emprunteur'] . ' - '. $i .' month')) .', montant : ' . $echeance['montant'] / 100 . ' euros.';
+                    $sEcheances .= 'Mois de '. $sGetmonth .', montant : ' . $echeance['montant'] / 100 . ' euros.';
                     $sEcheances .= '</div><br/><br/>';
                 }
 
+                $destinaire = $this->settings->value;
                 $this->mails_text->get('mail-prelevement-mensuel', 'lang = "' . $this->language . '" AND type');
 
                 $iBids = $bids->select('id_project = ' . $project['id_project'] . ' AND status = 1'); // non
