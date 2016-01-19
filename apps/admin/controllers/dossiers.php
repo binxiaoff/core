@@ -3781,12 +3781,9 @@ class dossiersController extends bootstrap
 
     private function sendEmailBorrowerArea($sTypeEmail)
     {
-
-        $oMailsText = $this->loadData('mails_text');
-        $oMailsText->get($sTypeEmail, 'lang = "fr" AND type');
-
         $this->settings->get('Facebook', 'type');
         $sFacebookURL = $this->settings->value;
+
         $this->settings->get('Twitter', 'type');
         $sTwitterURL = $this->settings->value;
 
@@ -3802,20 +3799,18 @@ class dossiersController extends bootstrap
             'prenom'                 => $this->clients->prenom
         );
 
-        $sRecipient = $this->clients->email;
+        /** @var unilend_email $oUnilendEmail */
+        $oUnilendEmail = $this->loadLib('unilend_email');
 
-        $this->email->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
-        $this->email->setSubject(stripslashes(utf8_decode($oMailsText->subject)));
-        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($oMailsText->content), $this->tnmp->constructionVariablesServeur($aVariables))));
-
-        if ($this->Config['env'] == 'prod') {
-            Mailer::sendNMP($this->email, $this->mails_filer, $oMailsText->id_textemail, $sRecipient, $aNMPResponse);
-            $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $oMailsText->nmp_secure, $oMailsText->id_nmp, $oMailsText->nmp_unique, $oMailsText->mode);
-        } else {
-            $this->email->addRecipient($sRecipient);
-            Mailer::send($this->email, $this->mails_filer, $oMailsText->id_textemail);
+        try {
+            $oUnilendEmail->addAllMailVars($aVariables);
+            $oUnilendEmail->setTemplate($sTypeEmail, $this->language);
+            $oUnilendEmail->addRecipient($this->clients->email);
+            $oUnilendEmail->sendFromTemplate();
+        } catch (\Exception $oException) {
+            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
         }
-
     }
 
 }

@@ -2238,10 +2238,10 @@ class ajaxController extends bootstrap
                         global = (Math.round(global*10)/10);
                         individuel = (Math.round(individuel*10)/10);
 
-                        var performance_fianciere = ((structure+rentabilite+tresorerie)/3)
+                        var performance_fianciere = ((structure+rentabilite+tresorerie)/3);
                         performance_fianciere = (Math.round(performance_fianciere*10)/10);
 
-                        var marche_opere = ((global+individuel)/2)
+                        var marche_opere = ((global+individuel)/2);
                         marche_opere = (Math.round(marche_opere*10)/10);
 
                         // --- Fin chiffre et marché ---
@@ -2564,11 +2564,11 @@ class ajaxController extends bootstrap
                             individuel = (Math.round(individuel*10)/10);
 
                             // Calcules
-                            var performance_fianciere = ((structure+rentabilite+tresorerie)/3)
+                            var performance_fianciere = ((structure+rentabilite+tresorerie)/3);
                             performance_fianciere = (Math.round(performance_fianciere*10)/10);
 
                             // Arrondis
-                            var marche_opere = ((global+individuel)/2)
+                            var marche_opere = ((global+individuel)/2);
                             marche_opere = (Math.round(marche_opere*10)/10);
 
                             // --- Fin chiffre et marché ---
@@ -3058,11 +3058,9 @@ class ajaxController extends bootstrap
 
     private function sendEmailBorrowerArea($sTypeEmail, clients $oClients)
     {
-        $oMailsText = $this->loadData('mails_text');
-        $oMailsText->get($sTypeEmail, 'lang = "fr" AND type');
-
         $this->settings->get('Facebook', 'type');
         $sFacebookURL = $this->settings->value;
+
         $this->settings->get('Twitter', 'type');
         $sTwitterURL = $this->settings->value;
 
@@ -3078,21 +3076,17 @@ class ajaxController extends bootstrap
             'prenom'                 => $oClients->prenom
         );
 
-        $sRecipient = $oClients->email;
+        /** @var unilend_email $oUnilendEmail */
+        $oUnilendEmail = $this->loadLib('unilend_email');
 
-        $this->email = $this->loadLib('email');
-        $this->email->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
-        $this->email->setSubject(stripslashes(utf8_decode($oMailsText->subject)));
-        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($oMailsText->content),
-            $this->tnmp->constructionVariablesServeur($aVariables))));
-
-        if ($this->Config['env'] == 'prod') {
-            Mailer::sendNMP($this->email, $this->mails_filer, $oMailsText->id_textemail, $sRecipient, $aNMPResponse);
-            $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $oMailsText->nmp_secure, $oMailsText->id_nmp,
-                $oMailsText->nmp_unique, $oMailsText->mode);
-        } else {
-            $this->email->addRecipient($sRecipient);
-            Mailer::send($this->email, $this->mails_filer, $oMailsText->id_textemail);
+        try {
+            $oUnilendEmail->addAllMailVars($aVariables);
+            $oUnilendEmail->setTemplate($sTypeEmail, $this->language);
+            $oUnilendEmail->addRecipient($oClients->email);
+            $oUnilendEmail->sendFromTemplate();
+        } catch (\Exception $oException) {
+            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
+            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
         }
     }
 }
