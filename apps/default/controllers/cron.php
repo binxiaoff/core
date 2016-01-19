@@ -114,28 +114,32 @@ class cronController extends bootstrap
             $today = date('Y-m-d');
 
             // projets en remboursement
-            $aProjects = $projects->selectProjectsByStatus('80'); // non, le filtre se fait sur le status = 4 de la table prelevements
+            $aProjects = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT); // non, le filtre se fait sur le status = 4 de la table prelevements
             foreach ($aProjects as $project) {
                 $this->projects->get($project['id_project'],'id_project');
                 $this->companies->get($this->projects->id_company, 'id_company');
                 $this->clients->get($this->companies->id_client_owner, 'id_client');
-                $lEcheancesEmp = $echeanciers_emprunteur->select('id_project = ' . $project['id_project'] . ' AND  	status_emprunteur = 0 AND date_echeance_emprunteur < "' . $today . ' 00:00:00"');
-                $echeance = array_shift($lEcheancesEmp);
+                $aEcheancesEmp = $echeanciers_emprunteur->select('id_project = ' . $project['id_project'] . ' AND  	status_emprunteur = 0 AND date_echeance_emprunteur < "' . $today . ' 00:00:00"');
+                $echeance = array_shift($aEcheancesEmp);
 
                 // en cas de retard de paiement sur les mois precedents, les afficher
                 $i = 0;
                 $sEcheances = '';
-                foreach ($lEcheancesEmp as $echeance) {
+                foreach ($aEcheancesEmp as $echeance) {
                     if (++$i === 1) {
-                        $sEcheances = '<div>Vous avez des mensualit&eacute;s non-r&eacute;gl&eacute;es pour les mois suivants :</div>';
+                        if (count($aEcheancesEmp) > 1) {
+                            $sEcheances = '<div>Vous n&apos;avez toujours pas r&eacute;gl&eacute; les mensualit&eacute;s des mois suivants :</div>';
+                        }
+                        else {
+                            $sEcheances = '<div>Vous n&apos;avez toujours pas r&eacute;gl&eacute; la mensualit&eacute; du mois suivant :</div>';
+                        }
                     }
                     $sEcheances .= '<div>';
                     $sEcheances .= 'Mois de '. strftime("%B %Y", strtotime($echeance['date_echeance_emprunteur'] . ' - '. $i .' month')) .', montant : ' . $echeance['montant'] / 100 . ' euros.';
                     $sEcheances .= '</div><br/><br/>';
                 }
 
-                $this->mails_text->get('mail-prelevement-mensuel', 'lang = "' . $this->language . '" AND type'); // creer le html
-                $destinaire = $this->settings->value; // idem
+                $this->mails_text->get('mail-prelevement-mensuel', 'lang = "' . $this->language . '" AND type');
 
                 $iBids = $bids->select('id_project = ' . $project['id_project'] . ' AND status = 1'); // non
                 $aMail = array(
