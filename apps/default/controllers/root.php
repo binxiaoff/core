@@ -11,27 +11,6 @@ class rootController extends bootstrap
 
     public function _default()
     {
-        $aVarEmail = array(
-            '$surl' => 'http://www.unilend.fr',
-            '$url' => 'http://www.unilend.fr',
-            '$id_preteur' => '12547',
-            '$nom' => 'Dupont',
-            '$prenom' => 'Laurant',
-            '$montant' => 125254,
-        );
-        /** @var unilend_email $oUnilendEmail */
-        $oUnilendEmail = $this->loadLib('unilend_email');
-
-        try {
-            $oUnilendEmail->addVariables($aVarEmail);
-            $oUnilendEmail->setTemplate('notification-nouveau-versement-dun-preteur', $this->language);
-            $oUnilendEmail->addRecipient('bin.xiao@uniled.fr');
-            $oUnilendEmail->sendToStaff();
-        } catch (\Exception $oException) {
-            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
-        }
-        die;
         // Activation du cache
         $this->fireCache();
 

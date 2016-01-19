@@ -3,12 +3,12 @@ namespace Unilend\librairies;
 
 class Data
 {
-    public static function loadData($object, $params = array(), $db = null)
+    public static function loadData($object, $params = array(), $db = '')
     {
         /* @var array $config */
         include __DIR__ . '/../config.php';
 
-        if ($db === null) {
+        if ($db == '') {
             $db = new \bdd($config['bdd_config'][$config['env']], $config['bdd_option'][$config['env']]);
         }
 
