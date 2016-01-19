@@ -1,10 +1,10 @@
-<?
+<?php
 // header personalisé pour l'express
 if (isset($_SESSION['lexpress']))
 {
     ?>
     <iframe name="lexpress" SRC="<?= $_SESSION['lexpress']['header'] ?>" scrolling="no" height="138px" width="100%" FRAMEBORDER="no"></iframe>
-    <?
+    <?php
 }
 ?>
 <div class="wrapper">
@@ -26,11 +26,26 @@ if (isset($_SESSION['lexpress']))
 
         </div><!-- /.shell -->
     </div><!-- /.header -->
-    <?
-// preteur
-    if ($this->clients->status_pre_emp == 1)
-    {
 
+<?php
+if ($this->bIsBorrowerAndLender) {
+ ?>
+    <script type="text/javascript">
+            $(document).ready(function () {
+                        $.colorbox({
+                        href: "-<?= $this->lurl ?>/thickbox/pop_up_lender_and_borrower",
+                        fixed: true,
+                        maxWidth: '90%',
+                        onClosed: function () {
+                            /*location.reload();*/
+                        }
+                    });
+            });
+    </script>
+<?php
+}
+    if ($this->bDisplayLender )
+    {
         //Affichage de la popup de CGV si on a pas encore valide
         // cgu societe
         if (in_array($this->clients->type, array(2, 4)))
@@ -95,7 +110,6 @@ if (isset($_SESSION['lexpress']))
                 <ul class="styled-nav">
                     <li class="active nav-item-home" style="position: relative;top: 10px;height: 16px;overflow:hidden;"><a href="<?= $this->lurl ?>/synthese"><i class="icon-home"></i></a></li>
 
-                    <?php /* ?><li><a <?=($this->page=='synthese'?'class="active"':'')?> href="<?=$this->lurl?>/synthese"><?=$this->lng['header']['synthese']?></a></li><?php */ ?>
                     <li><a <?= ($this->page == 'alimentation' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/alimentation"><?= $this->lng['header']['alimentation'] ?></a></li>
                     <li><a <?= ($this->page == 'projects' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/projects"><?= $this->lng['header']['projets'] ?></a></li>
                     <li><a <?= ($this->page == 'operations' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/operations"><?= $this->lng['header']['operations'] ?></a></li>
@@ -313,48 +327,24 @@ if (isset($_SESSION['lexpress']))
         </div><!-- /.navigation -->
         <?
     }
-// emprunteur
-    else
+    elseif ($this->bDisplayBorrower )
     {
         ?>
         <style type="text/css">
-            .navigation .styled-nav{width: 713px;}
+            .navigation .styled-nav{width: 100%;}
         </style>
-
-        <?
-        if ($this->etape_transition == true)
-        {
-            ?>
-            <div class="navigation ">
-                <div class="shell">
-                    <h1><?= $this->tree->title ?></h1>
-                </div>
-            </div>
-            <?
-        }
-        else
-        {
-            ?>
             <div class="navigation ">
                 <div class="shell clearfix">
-                    <ul class="styled-nav">
-                        <li><a <?= ($this->page == 'synthese' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/synthese_emprunteur"><?= $this->lng['header']['synthese'] ?></a></li>
-                        <?
-                        if ($this->nbProjets > 1)
-                        {
-                            ?>
-                            <li><a <?= ($this->page == 'projects' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/projects_emprunteur"><?= $this->lng['header']['projets'] ?></a></li>
-                            <?
-                        }
-                        ?>
-                        <li><a <?= ($this->page == 'societe' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/societe_emprunteur"><?= $this->lng['header']['societe'] ?></a></li>
-                        <li><a <?= ($this->page == 'unilend_emprunteur' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/unilend_emprunteur"><?= $this->lng['header']['unilend'] ?></a></li>
+                    <ul class="styled-nav" style="margin-top: 10px;">
+                        <li class="active nav-item-home" style="position: relative;top: 10px;height: 16px;overflow:hidden;"><a href="<?= $this->lurl ?>/espace_emprunteur/projets"><i class="icon-home"></i></a></li>
+                        <li><a <?= ($this->page == 'projets' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/espace_emprunteur/projets"><?= $this->lng['header']['vos-projets'] ?></a></li>
+                        <li><a <?= ($this->page == 'operations' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/espace_emprunteur/operations"><?= $this->lng['header']['vos-operations'] ?></a></li>
+                        <li><a <?= ($this->page == 'profil' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/espace_emprunteur/profil"><?= $this->lng['header']['votre-profil'] ?></a></li>
+                        <li><a <?= ($this->page == 'faq' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/espace_emprunteur/faq"><?= $this->lng['header']['faq'] ?></a></li>
+                        <li><a <?= ($this->page == 'contact' ? 'class="active"' : '') ?> href="<?= $this->lurl ?>/espace_emprunteur/contact"><?= $this->lng['header']['contact'] ?></a></li>
                     </ul><!-- /.nav-main -->
-
-                    <a class="outnav right" href="<?= $this->lurl ?>/create_project_emprunteur"><span><?= $this->lng['header']['nouveau-projet'] ?></span></a>
                 </div><!-- /.shell -->
             </div><!-- /.navigation -->
             <?
-        }
     }
     ?>

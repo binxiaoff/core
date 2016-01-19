@@ -108,7 +108,7 @@ class ficelle
 
     public function swift_validate($swift)
     {
-        if (! eregi("^([a-zA-Z]){4}([a-zA-Z]){2}([0-9a-zA-Z]){2}([0-9a-zA-Z]{3})?$", $swift)) {
+        if (! preg_match("#^([a-zA-Z]){4}([a-zA-Z]){2}([0-9a-zA-Z]){2}([0-9a-zA-Z]{3})?$#i", $swift)) {
             return false;
         } else {
             return true;

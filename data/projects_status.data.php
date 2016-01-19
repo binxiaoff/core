@@ -168,7 +168,7 @@ class projects_status extends projects_status_crud
                     $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . $this->status . ')';
                     break;
                 case self::PREP_FUNDING:
-                    $sPossibleStatus = 'status IN (' . self::PREP_FUNDING . ',' . self::A_FUNDER . ')';
+                    $sPossibleStatus = 'status IN (' . self::ABANDON . ',' . self::PREP_FUNDING . ',' . self::A_FUNDER . ')';
                     break;
                 case self::REJETE:
                 default:

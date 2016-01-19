@@ -366,62 +366,6 @@ function check_status_dossier(surl, status, id_project) {
         xhr_object.open('GET', add_url + '/ajax/check_status_dossier/' + status + '/' + id_project + '/' + date_pub + '/' + param, false);
         xhr_object.send(null);
 
-
-        /*xhr_object = AjaxObject();
-         var param = no_cache();
-
-         xhr_object.onreadystatechange = function()
-         {
-         if(xhr_object.readyState == 4 && xhr_object.status == 200)
-         {
-         var reponse = xhr_object.responseText;
-         if(reponse == 'nok')
-         {
-
-         }
-         else
-         {
-         document.getElementById('status_dossier').innerHTML = reponse;
-         }
-         }
-         }
-         xhr_object.open('GET',add_url + '/ajax/status_dossier/' + id_project + '/' + param ,false);
-         xhr_object.send(null);
-         */
-
-
-        /*xhr_object = AjaxObject();
-         var param = no_cache();
-
-         xhr_object.onreadystatechange = function()
-         {
-         if(xhr_object.readyState == 4 && xhr_object.status == 200)
-         {
-         var reponse = xhr_object.responseText;
-         if(reponse == 'nok')
-         {
-
-         }
-         else
-         {
-         document.getElementById('date_publication').innerHTML = reponse;
-
-         var demain=new Date();
-         demain.setTime(demain.getTime() + 24 * 3600 * 1000);
-
-         $("#date_pub").datepicker({
-         showOn: 'both',
-         buttonImage: surl+'/images/admin/calendar.gif',
-         buttonImageOnly: true,
-         changeMonth: true,
-         changeYear: true,
-         minDate: demain
-         });
-         }
-         }
-         }
-         xhr_object.open('GET',add_url + '/ajax/date_publication/' + id_project + '/' + param ,false);
-         xhr_object.send(null);*/
     }
 }
 
@@ -836,6 +780,24 @@ function generer_le_mdp(id_client) {
 
             setTimeout(function () {
                 $(".reponse").slideUp();
+            }, 3000);
+        }
+    });
+}
+
+function send_email_borrower_area(id_client, type) {
+
+    var val = {
+        id_client: id_client,
+        type: type
+    }
+    $.post(add_url + '/ajax/send_email_borrower_area', val).done(function (data) {
+        if (data != 'nok') {
+
+            $(".reponse_email").slideDown();
+
+            setTimeout(function () {
+                $(".reponse_email").slideUp();
             }, 3000);
         }
     });
