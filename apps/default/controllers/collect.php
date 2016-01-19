@@ -559,7 +559,7 @@ class collectController extends bootstrap
                 $oUnilendEmail = $this->loadLib('unilend_email');
 
                 try {
-                    $oUnilendEmail->addAllMailVars($varMail);
+                    $oUnilendEmail->addVariables($varMail);
                     $oUnilendEmail->setTemplate('confirmation-inscription-preteur', $this->language);
                     $oUnilendEmail->addRecipient($this->clients->email);
                     $oUnilendEmail->sendFromTemplate();

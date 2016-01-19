@@ -288,7 +288,7 @@ class clientsController extends bootstrap
                 $oUnilendEmail = $this->loadLib('unilend_email');
 
                 try {
-                    $oUnilendEmail->addAllMailVars($aVarEmail);
+                    $oUnilendEmail->addVariables($aVarEmail);
                     $oUnilendEmail->setTemplate('admin-confirmation-inscription-client', $this->language);
                     $oUnilendEmail->addRecipient($_POST['email']);
                     $oUnilendEmail->sendToStaff();

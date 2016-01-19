@@ -160,7 +160,7 @@ class devboxController extends bootstrap
                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('facture-emprunteur-remboursement', $this->language);
                         $oUnilendEmail->addRecipient($companies->email_facture);
                         $oUnilendEmail->sendFromTemplate();

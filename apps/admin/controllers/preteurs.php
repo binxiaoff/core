@@ -473,7 +473,7 @@ class preteursController extends bootstrap
             $oUnilendEmail = $this->loadLib('unilend_email');
 
             try {
-                $oUnilendEmail->addAllMailVars($varMail);
+                $oUnilendEmail->addVariables($varMail);
                 $oUnilendEmail->setTemplate('completude', $this->language);
                 $oUnilendEmail->addRecipient($this->clients->email);
                 $oUnilendEmail->sendFromTemplate();
@@ -775,7 +775,7 @@ class preteursController extends bootstrap
                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -1017,7 +1017,7 @@ class preteursController extends bootstrap
                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -1788,7 +1788,7 @@ class preteursController extends bootstrap
                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('offre-de-bienvenue', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -1902,7 +1902,7 @@ class preteursController extends bootstrap
                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('offre-de-bienvenue', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();

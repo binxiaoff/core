@@ -856,7 +856,7 @@ class dossiersController extends bootstrap
                                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                                     try {
-                                        $oUnilendEmail->addAllMailVars($varMail);
+                                        $oUnilendEmail->addVariables($varMail);
                                         $oUnilendEmail->setTemplate('preteur-erreur-remboursement', $this->language);
                                         $oUnilendEmail->addRecipient($this->clients->email);
                                         $oUnilendEmail->sendFromTemplate();
@@ -1095,7 +1095,7 @@ class dossiersController extends bootstrap
                                 $oUnilendEmail = $this->loadLib('unilend_email');
 
                                 try {
-                                    $oUnilendEmail->addAllMailVars($varMail);
+                                    $oUnilendEmail->addVariables($varMail);
                                     $oUnilendEmail->setTemplate('preteur-pret-refuse', $this->language);
                                     $oUnilendEmail->addRecipient($clients->email);
                                     $oUnilendEmail->sendFromTemplate();
@@ -1411,7 +1411,7 @@ class dossiersController extends bootstrap
                                             );
 
                                             try {
-                                                $oUnilendEmail->addAllMailVars($varMail);
+                                                $oUnilendEmail->addVariables($varMail);
                                                 $oUnilendEmail->setTemplate('preteur-contrat', $this->language);
                                                 $oUnilendEmail->addRecipient($oClient->email);
                                                 $oUnilendEmail->sendFromTemplate();
@@ -1470,7 +1470,7 @@ class dossiersController extends bootstrap
                                 $oUnilendEmail = $this->loadLib('unilend_email');
 
                                 try {
-                                    $oUnilendEmail->addAllMailVars($varMail);
+                                    $oUnilendEmail->addVariables($varMail);
                                     $oUnilendEmail->setTemplate('facture-emprunteur', $this->language);
                                     $oUnilendEmail->addRecipient($laCompanie->email_facture);
                                     if ($this->Config['env'] == 'prod') {
@@ -2684,7 +2684,7 @@ class dossiersController extends bootstrap
                                                 $oUnilendEmail = $this->loadLib('unilend_email');
 
                                                 try {
-                                                    $oUnilendEmail->addAllMailVars($varMail);
+                                                    $oUnilendEmail->addVariables($varMail);
                                                     $oUnilendEmail->setTemplate('preteur-dossier-recouvre', $this->language);
                                                     $oUnilendEmail->addRecipient($this->clients->email);
                                                     $oUnilendEmail->sendFromTemplate();
@@ -2744,7 +2744,7 @@ class dossiersController extends bootstrap
                                                 $oUnilendEmail = $this->loadLib('unilend_email');
 
                                                 try {
-                                                    $oUnilendEmail->addAllMailVars($varMail);
+                                                    $oUnilendEmail->addVariables($varMail);
                                                     $oUnilendEmail->setTemplate('preteur-regularisation-remboursement', $this->language);
                                                     $oUnilendEmail->addRecipient($this->clients->email);
                                                     $oUnilendEmail->sendFromTemplate();
@@ -2811,7 +2811,7 @@ class dossiersController extends bootstrap
                                                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                                                     try {
-                                                        $oUnilendEmail->addAllMailVars($varMail);
+                                                        $oUnilendEmail->addVariables($varMail);
                                                         $oUnilendEmail->setTemplate('preteur-remboursement', $this->language);
                                                         $oUnilendEmail->addRecipient($this->clients->email);
                                                         $oUnilendEmail->sendFromTemplate();
@@ -2911,7 +2911,7 @@ class dossiersController extends bootstrap
                                 $oUnilendEmail = $this->loadLib('unilend_email');
 
                                 try {
-                                    $oUnilendEmail->addAllMailVars($varMail);
+                                    $oUnilendEmail->addVariables($varMail);
                                     $oUnilendEmail->setTemplate('facture-emprunteur-remboursement', $this->language);
                                     $oUnilendEmail->addRecipient($companies->email_facture);
                                     if ($this->Config['env'] == 'prod') {
@@ -3527,7 +3527,7 @@ class dossiersController extends bootstrap
         $oUnilendEmail = $this->loadLib('unilend_email');
 
         try {
-            $oUnilendEmail->addAllMailVars($varMail);
+            $oUnilendEmail->addVariables($varMail);
             $oUnilendEmail->setTemplate('signature-universign-de-cgv', $this->language);
             $oUnilendEmail->addRecipient($oClients->email);
             $oUnilendEmail->sendFromTemplate();
@@ -3658,7 +3658,7 @@ class dossiersController extends bootstrap
             $oUnilendEmail = $this->loadLib('unilend_email');
 
             try {
-                $oUnilendEmail->addAllMailVars($varMail);
+                $oUnilendEmail->addVariables($varMail);
                 $oUnilendEmail->setTemplate($this->selectEmailCompleteness($oClients->id_client), $this->language);
                 $sRecipientEmail  = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($oClients->email));
                 $oUnilendEmail->addRecipient($sRecipientEmail);
@@ -3803,7 +3803,7 @@ class dossiersController extends bootstrap
         $oUnilendEmail = $this->loadLib('unilend_email');
 
         try {
-            $oUnilendEmail->addAllMailVars($aVariables);
+            $oUnilendEmail->addVariables($aVariables);
             $oUnilendEmail->setTemplate($sTypeEmail, $this->language);
             $oUnilendEmail->addRecipient($this->clients->email);
             $oUnilendEmail->sendFromTemplate();

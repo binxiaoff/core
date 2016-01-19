@@ -81,7 +81,7 @@ class universignController extends bootstrap
                         try {
                             /** @var unilend_email $oUnilendEmail */
                             $oUnilendEmail = $this->loadLib('unilend_email');
-                            $oUnilendEmail->addAllMailVars($aVarEmail);
+                            $oUnilendEmail->addVariables($aVarEmail);
                             $oUnilendEmail->setTemplate('notification-pouvoir-mandat-signe', $this->language);
                             $oUnilendEmail->addRecipient($sRecipient);
                             $oUnilendEmail->sendToStaff();
@@ -159,7 +159,7 @@ class universignController extends bootstrap
                         try {
                             /** @var unilend_email $oUnilendEmail */
                             $oUnilendEmail = $this->loadLib('unilend_email');
-                            $oUnilendEmail->addAllMailVars($aVarEmail);
+                            $oUnilendEmail->addVariables($aVarEmail);
                             $oUnilendEmail->setTemplate('notification-pouvoir-mandat-signe', $this->language);
                             $oUnilendEmail->addRecipient($sRecipient);
                             $oUnilendEmail->sendToStaff();
@@ -253,7 +253,7 @@ class universignController extends bootstrap
                     try {
                         /** @var unilend_email $oUnilendEmail */
                         $oUnilendEmail = $this->loadLib('unilend_email');
-                        $oUnilendEmail->addAllMailVars($aReplacements);
+                        $oUnilendEmail->addVariables($aReplacements);
                         $oUnilendEmail->setTemplate('notification-cgv-projet-signe', $this->language);
                         $oUnilendEmail->addRecipient($sRecipient);
                         $oUnilendEmail->sendToStaff();

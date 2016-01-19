@@ -52,18 +52,6 @@ abstract class Mailer
      */
     private static $transport;
 
-    /** @var \mails_filer */
-    private $oMailFiler = null;
-
-    /** @var \mails_text  */
-    private $oMailText = null;
-
-    /** @var \nmp  */
-    private $oNmp = null;
-
-    /** @var \nmp_desabo  */
-    private $oNmpDesabo = null;
-
     /**
      * Vérifie la validité syntaxique d'un email.
      * TODO: Amenée à être déplacée dans une autre classe.
@@ -163,69 +151,5 @@ abstract class Mailer
         }
 
         self::$transport->send($email);
-    }
-
-    /**
-     * @return \mails_filer
-     */
-    public function getMailFiler()
-    {
-        return $this->oMailFiler;
-    }
-
-    /**
-     * @param \mails_filer $oMailFiler
-     */
-    public function setMailFiler($oMailFiler)
-    {
-        $this->oMailFiler = $oMailFiler;
-    }
-
-    /**
-     * @return \mails_text
-     */
-    public function getMailText()
-    {
-        return $this->oMailText;
-    }
-
-    /**
-     * @param \mails_text $oMailText
-     */
-    public function setMailText($oMailText)
-    {
-        $this->oMailText = $oMailText;
-    }
-
-    /**
-     * @return \nmp
-     */
-    public function getNmp()
-    {
-        return $this->oNmp;
-    }
-
-    /**
-     * @param \nmp $oNmp
-     */
-    public function setNmp($oNmp)
-    {
-        $this->oNmp = $oNmp;
-    }
-
-    /**
-     * @return \nmp_desabo
-     */
-    public function getNmpDesabo()
-    {
-        return $this->oNmpDesabo;
-    }
-
-    /**
-     * @param \nmp_desabo $oNmpDesabo
-     */
-    public function setNmpDesabo($oNmpDesabo)
-    {
-        $this->oNmpDesabo = $oNmpDesabo;
     }
 }

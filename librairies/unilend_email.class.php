@@ -15,7 +15,7 @@ class unilend_email
     /** @var mails_text */
     private $oMailText = null;
 
-    private $aMailVar = array();
+    private $aVariables = array();
 
     /** @var Email */
     private $oEmail = null;
@@ -42,7 +42,7 @@ class unilend_email
         );
 
         if (ENVIRONMENT === 'prod') {
-            $aParams['mail_var']       = $this->aMailVar;
+            $aParams['mail_var']       = $this->aVariables;
             $aParams['mail_text_mode'] = $this->oMailText->mode;
             $aParams['nmp_secure']     = $this->oMailText->nmp_secure;
             $aParams['id_nmp']         = $this->oMailText->id_nmp;
@@ -75,14 +75,14 @@ class unilend_email
      * @param $sKey
      * @param $sValue
      */
-    public function addMailVar($sKey, $sValue)
+    public function addVariable($sKey, $sValue)
     {
-        $this->aMailVar[$sKey] = $sValue;
+        $this->aVariables[$sKey] = $sValue;
     }
 
-    public function addAllMailVars($aVariable)
+    public function addVariables($aVariable)
     {
-        $this->aMailVar = array_merge($this->aMailVar, $aVariable);
+        $this->aVariables = array_merge($this->aVariables, $aVariable);
     }
 
     /**
@@ -91,9 +91,8 @@ class unilend_email
      */
     private function wrapVariables($sPrefix = '[EMV DYN]', $sSuffix = '[EMV /DYN]')
     {
-        foreach ($this->aMailVar as $key => $value) {
-            $this->aMailVar[$sPrefix . $key . $sSuffix] = $value;
-            unset($this->aMailVar['$key']);
+        foreach ($this->aVariables as $key => $value) {
+            $this->aVariables[$sPrefix . $key . $sSuffix] = $value;
         }
     }
 
@@ -149,9 +148,9 @@ class unilend_email
             }
         }
 
-        $sMailSubject = strtr($this->oMailText->subject, $this->aMailVar);
-        $sMailContent = strtr($this->oMailText->content, $this->aMailVar);
-        $sMailFrom    = strtr($this->oMailText->exp_name, $this->aMailVar);
+        $sMailSubject = strtr($this->oMailText->subject, $this->aVariables);
+        $sMailContent = strtr($this->oMailText->content, $this->aVariables);
+        $sMailFrom    = strtr($this->oMailText->exp_name, $this->aVariables);
 
         $this->oEmail->setFrom($this->oMailText->exp_email, $sMailFrom);
         $this->oEmail->setSubject(stripslashes($sMailSubject));
@@ -163,7 +162,7 @@ class unilend_email
     private function send()
     {
         Mailer::send($this->oEmail);
-        $this->aMailVar = array();
+        $this->aVariables = array();
         $this->oEmail   = new Email();
     }
 

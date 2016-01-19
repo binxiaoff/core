@@ -530,7 +530,7 @@ class cronController extends bootstrap
                         );
 
                         try {
-                            $oUnilendEmail->addAllMailVars($varMail);
+                            $oUnilendEmail->addVariables($varMail);
                             $oUnilendEmail->setTemplate('emprunteur-dossier-funde-et-termine', $this->language);
                             $oUnilendEmail->addRecipient($e->email);
                             $oUnilendEmail->sendFromTemplate();
@@ -570,7 +570,7 @@ class cronController extends bootstrap
                     );
 
                     try {
-                        $oUnilendEmail->addAllMailVars($aVarEmail);
+                        $oUnilendEmail->addVariables($aVarEmail);
                         $oUnilendEmail->setTemplate('notification-projet-funde-a-100', $this->language);
                         $oUnilendEmail->addRecipient($destinataire);
                         $oUnilendEmail->sendToStaff();
@@ -677,7 +677,7 @@ class cronController extends bootstrap
 
                             try {
                                 $oUnilendEmail->setTemplate('preteur-bid-ok', $this->language);
-                                $oUnilendEmail->addAllMailVars($varMail);
+                                $oUnilendEmail->addVariables($varMail);
                                 $oUnilendEmail->addRecipient($oClient->email);
                                 $oUnilendEmail->sendFromTemplate();
                             } catch (\Exception $oException) {
@@ -713,7 +713,7 @@ class cronController extends bootstrap
                         );
 
                         try {
-                            $oUnilendEmail->addAllMailVars($varMail);
+                            $oUnilendEmail->addVariables($varMail);
                             $oUnilendEmail->setTemplate('emprunteur-dossier-funding-ko', $this->language);
                             $oUnilendEmail->addRecipient($this->clients->email);
                             $oUnilendEmail->sendFromTemplate();
@@ -833,7 +833,7 @@ class cronController extends bootstrap
                             );
 
                             try {
-                                $oUnilendEmail->addAllMailVars($varMail);
+                                $oUnilendEmail->addVariables($varMail);
                                 $oUnilendEmail->setTemplate('preteur-dossier-funding-ko', $this->language);
                                 $oUnilendEmail->addRecipient($this->clients->email);
                                 $oUnilendEmail->sendFromTemplate();
@@ -875,7 +875,7 @@ class cronController extends bootstrap
                     '$montant' => $montant_collect
                 );
                 try {
-                    $oUnilendEmail->addAllMailVars($aVarEmail);
+                    $oUnilendEmail->addVariables($aVarEmail);
                     $oUnilendEmail->setTemplate('notification-projet-fini', $this->language);
                     $oUnilendEmail->addRecipient($destinataire);
                     $oUnilendEmail->sendToStaff();
@@ -2088,7 +2088,7 @@ class cronController extends bootstrap
                     );
 
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('preteur-relance-paiement-inscription', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -2409,7 +2409,7 @@ class cronController extends bootstrap
                     );
 
                     try {
-                        $oUnilendEmail->addAllMailVars($aVarEmail);
+                        $oUnilendEmail->addVariables($aVarEmail);
                         $oUnilendEmail->setTemplate('notification-aucun-virement', $this->language);
                         $oUnilendEmail->addRecipient($destinataire);
                         $oUnilendEmail->sendToStaff();
@@ -2749,7 +2749,7 @@ class cronController extends bootstrap
                                             );
 
                                             try {
-                                                $oUnilendEmail->addAllMailVars($aVarEmail);
+                                                $oUnilendEmail->addVariables($aVarEmail);
                                                 $oUnilendEmail->setTemplate('notification-nouveau-remboursement-anticipe', $this->language);
                                                 $oUnilendEmail->addRecipient($destinataire);
                                                 $oUnilendEmail->sendToStaff();
@@ -2859,7 +2859,7 @@ class cronController extends bootstrap
                                                     );
 
                                                     try {
-                                                        $oUnilendEmail->addAllMailVars($varMail);
+                                                        $oUnilendEmail->addVariables($varMail);
                                                         $oUnilendEmail->setTemplate('preteur-alimentation', $this->language);
                                                         $oUnilendEmail->addRecipient($clients->email);
                                                         $oUnilendEmail->sendFromTemplate();
@@ -3846,7 +3846,7 @@ class cronController extends bootstrap
             $oUnilendEmail = $this->loadLib('unilend_email');
 
             try {
-                $oUnilendEmail->addAllMailVars($aVarEmail);
+                $oUnilendEmail->addVariables($aVarEmail);
                 $oUnilendEmail->setTemplate('notification-etat-quotidien', $this->language);
                 $oUnilendEmail->addRecipient($destinataire);
                 $oUnilendEmail->sendToStaff();
@@ -4241,7 +4241,7 @@ class cronController extends bootstrap
             $oUnilendEmail = $this->loadLib('unilend_email');
 
             try {
-                $oUnilendEmail->addAllMailVars($aVarEmail);
+                $oUnilendEmail->addVariables($aVarEmail);
                 $oUnilendEmail->setTemplate('notification-etat-fiscal', $this->language);
                 if ($this->Config['env'] == 'prod') {
                     $this->settings->get('Adresse notification etat fiscal', 'type');
@@ -4749,7 +4749,7 @@ class cronController extends bootstrap
                             );
 
                             try {
-                                $oUnilendEmail->addAllMailVars($varMail);
+                                $oUnilendEmail->addVariables($varMail);
                                 $oUnilendEmail->setTemplate('emprunteur-dossier-funde', $this->language);
                                 $oUnilendEmail->addRecipient($this->emprunteur->email);
                                 $oUnilendEmail->sendFromTemplate();
@@ -4775,7 +4775,7 @@ class cronController extends bootstrap
                         );
 
                         try {
-                            $oUnilendEmail->addAllMailVars($aVarEmail);
+                            $oUnilendEmail->addVariables($aVarEmail);
                             $oUnilendEmail->setTemplate('notification-projet-funde-a-100', $this->language);
                             $oUnilendEmail->addRecipient($destinataire);
                             $oUnilendEmail->sendToStaff();
@@ -4932,7 +4932,7 @@ class cronController extends bootstrap
                                 );
 
                                 try {
-                                    $oUnilendEmail->addAllMailVars($varMail);
+                                    $oUnilendEmail->addVariables($varMail);
                                     $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
                                     $oUnilendEmail->addRecipient($this->preteur->email);
                                     $oUnilendEmail->sendFromTemplate();
@@ -5098,7 +5098,7 @@ class cronController extends bootstrap
                         );
 
                         try {
-                            $oUnilendEmail->addAllMailVars($varMail);
+                            $oUnilendEmail->addVariables($varMail);
                             $oUnilendEmail->setTemplate('completude', $this->language);
                             $oUnilendEmail->addRecipient($p['email']);
                             $oUnilendEmail->sendFromTemplate();
@@ -5149,7 +5149,7 @@ class cronController extends bootstrap
                     );
 
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('completude', $this->language);
                         $oUnilendEmail->addRecipient($p['email']);
                         $oUnilendEmail->sendFromTemplate();
@@ -5392,7 +5392,7 @@ class cronController extends bootstrap
             $oUnilendEmail = $this->loadLib('unilend_email');
 
             try {
-                $oUnilendEmail->addAllMailVars($aVarEmail);
+                $oUnilendEmail->addVariables($aVarEmail);
                 $oUnilendEmail->setTemplate('notification-check-remboursements-preteurs', $this->language);
                 $oUnilendEmail->addRecipient($destinataire);
                 $oUnilendEmail->sendToStaff();
@@ -5731,7 +5731,7 @@ class cronController extends bootstrap
                     $varMail['motif_virement'] = $motif;
 
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('nouveau-projet', $this->language);
                         $oUnilendEmail->addRecipient($preteur['email']);
                         $oUnilendEmail->sendFromTemplate();
@@ -5869,7 +5869,7 @@ class cronController extends bootstrap
                         );
 
                         try {
-                            $oUnilendEmail->addAllMailVars($varMail);
+                            $oUnilendEmail->addVariables($varMail);
                             $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
                             $oUnilendEmail->addRecipient($this->clients->email);
                             $oUnilendEmail->sendFromTemplate();
@@ -6012,7 +6012,7 @@ class cronController extends bootstrap
                             );
 
                             try {
-                                $oUnilendEmail->addAllMailVars($varMail);
+                                $oUnilendEmail->addVariables($varMail);
                                 $oUnilendEmail->setTemplate('vos-offres-du-jour', $this->language);
                                 $oUnilendEmail->addRecipient($this->clients->email);
                                 $oUnilendEmail->sendFromTemplate();
@@ -6158,7 +6158,7 @@ class cronController extends bootstrap
 
 
                         try {
-                            $oUnilendEmail->addAllMailVars($varMail);
+                            $oUnilendEmail->addVariables($varMail);
                             $oUnilendEmail->setTemplate('synthese-quotidienne-offres-non-retenues', $this->language);
                             $oUnilendEmail->addRecipient($this->clients->email);
                             $oUnilendEmail->sendFromTemplate();
@@ -6354,7 +6354,7 @@ class cronController extends bootstrap
                             );
 
                             try {
-                                $oUnilendEmail->addAllMailVars($varMail);
+                                $oUnilendEmail->addVariables($varMail);
                                 $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
                                 $oUnilendEmail->addRecipient($this->clients->email);
                                 $oUnilendEmail->sendFromTemplate();
@@ -6570,7 +6570,7 @@ class cronController extends bootstrap
                         );
 
                         try {
-                            $oUnilendEmail->addAllMailVars($varMail);
+                            $oUnilendEmail->addVariables($varMail);
                             $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
                             $oUnilendEmail->addRecipient($this->clients->email);
                             $oUnilendEmail->sendFromTemplate();
@@ -6679,7 +6679,7 @@ class cronController extends bootstrap
                     );
 
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('confirmation-offre-parrain', $this->language);
                         $oUnilendEmail->addRecipient($parrain->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -6735,7 +6735,7 @@ class cronController extends bootstrap
                     );
 
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('confirmation-offre-filleul', $this->language);
                         $oUnilendEmail->addRecipient($filleul->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -6862,7 +6862,7 @@ class cronController extends bootstrap
                                 );
 
                                 try {
-                                    $oUnilendEmail->addAllMailVars($varMail);
+                                    $oUnilendEmail->addVariables($varMail);
                                     $oUnilendEmail->setTemplate('preteur-remboursement', $this->language);
                                     $oUnilendEmail->addRecipient($clients->email);
                                     $oUnilendEmail->sendFromTemplate();
@@ -7043,7 +7043,7 @@ class cronController extends bootstrap
                             );
 
                             try {
-                                $oUnilendEmail->addAllMailVars($varMail);
+                                $oUnilendEmail->addVariables($varMail);
                                 $oUnilendEmail->setTemplate('facture-emprunteur-remboursement', $this->language);
                                 $oUnilendEmail->addRecipient($companies->email_facture);
                                 $oUnilendEmail->sendFromTemplate();
@@ -7114,7 +7114,7 @@ class cronController extends bootstrap
             $oUnilendEmail = $this->loadLib('unilend_email');
 
             try {
-                $oUnilendEmail->addAllMailVars($aVarEmail);
+                $oUnilendEmail->addVariables($aVarEmail);
                 $oUnilendEmail->setTemplate('notification-prelevement-emprunteur', $this->language);
                 $oUnilendEmail->addRecipient($destinataire);
                 $oUnilendEmail->sendToStaff();
@@ -7510,7 +7510,7 @@ class cronController extends bootstrap
                             );
 
                             try {
-                                $oUnilendEmail->addAllMailVars($varMail);
+                                $oUnilendEmail->addVariables($varMail);
                                 $oUnilendEmail->setTemplate('preteur-remboursement-anticipe', $this->language);
                                 $oUnilendEmail->addRecipient($this->clients->email);
                                 $oUnilendEmail->sendFromTemplate();
@@ -7630,7 +7630,7 @@ class cronController extends bootstrap
                                     $sRecipientEmail  = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($this->clients->email));
 
                                     try {
-                                        $oUnilendEmail->addAllMailVars($aReplacements);
+                                        $oUnilendEmail->addVariables($aReplacements);
                                         $oUnilendEmail->setTemplate('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, $this->language);
                                         $oUnilendEmail->addRecipient($sRecipientEmail);
                                         $oUnilendEmail->sendFromTemplate();

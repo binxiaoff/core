@@ -55,7 +55,7 @@ class rootController extends bootstrap
                 $oUnilendEmail = $this->loadLib('unilend_email');
 
                 try {
-                    $oUnilendEmail->addAllMailVars($aVarEmail);
+                    $oUnilendEmail->addVariables($aVarEmail);
                     $oUnilendEmail->setTemplate('admin-nouveau-mot-de-passe', $this->language);
                     $oUnilendEmail->addRecipient($_POST['email']);
                     $oUnilendEmail->sendToStaff();
@@ -370,7 +370,7 @@ class rootController extends bootstrap
                                 $oUnilendEmail = $this->loadLib('unilend_email');
 
                                 try {
-                                    $oUnilendEmail->addAllMailVars($aVarEmail);
+                                    $oUnilendEmail->addVariables($aVarEmail);
                                     $oUnilendEmail->setTemplate('admin-nouveau-mot-de-passe', $this->language);
                                     $oUnilendEmail->addRecipient($_POST['email']);
                                     // ajout du tracking

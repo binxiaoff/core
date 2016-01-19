@@ -624,7 +624,7 @@ class depot_de_dossierController extends bootstrap
                 $oUnilendEmail = $this->loadLib('unilend_email');
 
                 try {
-                    $oUnilendEmail->addAllMailVars($aVariables);
+                    $oUnilendEmail->addVariables($aVariables);
                     $oUnilendEmail->setTemplate('confirmation-depot-de-dossier', $this->language);
                     $oUnilendEmail->addRecipient($sRecipient);
                     $oUnilendEmail->sendFromTemplate();
@@ -898,7 +898,7 @@ class depot_de_dossierController extends bootstrap
             $oUnilendEmail = $this->loadLib('unilend_email');
 
             try {
-                $oUnilendEmail->addAllMailVars($aReplacements);
+                $oUnilendEmail->addVariables($aReplacements);
                 $oUnilendEmail->setTemplate($sEmailType, $this->language);
                 $oUnilendEmail->addRecipient($this->users->email);
                 $oUnilendEmail->sendToStaff();

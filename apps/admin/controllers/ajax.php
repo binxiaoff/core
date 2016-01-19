@@ -636,7 +636,7 @@ class ajaxController extends bootstrap
                 $oUnilendEmail = $this->loadLib('unilend_email');
 
                 try {
-                    $oUnilendEmail->addAllMailVars($varMail);
+                    $oUnilendEmail->addVariables($varMail);
                     $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
                     $oUnilendEmail->addRecipient($this->clients->email);
                     $oUnilendEmail->sendFromTemplate();
@@ -1093,7 +1093,7 @@ class ajaxController extends bootstrap
             $oUnilendEmail = $this->loadLib('unilend_email');
 
             try {
-                $oUnilendEmail->addAllMailVars($varMail);
+                $oUnilendEmail->addVariables($varMail);
                 $oUnilendEmail->setTemplate('confirmation-depot-de-dossier', $this->language);
                 $oUnilendEmail->addRecipient($this->clients->email);
                 $oUnilendEmail->sendFromTemplate();
@@ -1182,7 +1182,7 @@ class ajaxController extends bootstrap
             $oUnilendEmail = $this->loadLib('unilend_email');
 
             try {
-                $oUnilendEmail->addAllMailVars($varMail);
+                $oUnilendEmail->addVariables($varMail);
                 $oUnilendEmail->setTemplate('mot-de-passe-oublie', $this->language);
                 $oUnilendEmail->addRecipient($clients->email);
                 $oUnilendEmail->sendFromTemplate();
@@ -1238,7 +1238,7 @@ class ajaxController extends bootstrap
             $oUnilendEmail = $this->loadLib('unilend_email');
 
             try {
-                $oUnilendEmail->addAllMailVars($varMail);
+                $oUnilendEmail->addVariables($varMail);
                 $oUnilendEmail->setTemplate('generation-mot-de-passe', $this->language);
                 $oUnilendEmail->addRecipient($this->clients->email);
                 $oUnilendEmail->sendFromTemplate();
@@ -1568,7 +1568,7 @@ class ajaxController extends bootstrap
                 $oUnilendEmail = $this->loadLib('unilend_email');
 
                 try {
-                    $oUnilendEmail->addAllMailVars($varMail);
+                    $oUnilendEmail->addVariables($varMail);
                     $oUnilendEmail->setTemplate('preteur-alimentation-manu', $this->language);
                     $oUnilendEmail->addRecipient($preteurs->email);
                     $oUnilendEmail->sendFromTemplate();
@@ -2289,7 +2289,7 @@ class ajaxController extends bootstrap
                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('emprunteur-dossier-rejete', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -2439,7 +2439,7 @@ class ajaxController extends bootstrap
                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('emprunteur-dossier-rejete', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -2790,7 +2790,7 @@ class ajaxController extends bootstrap
                     /** @var unilend_email $oUnilendEmail */
                     $oUnilendEmail = $this->loadLib('unilend_email');
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('emprunteur-dossier-rejete', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -3080,7 +3080,7 @@ class ajaxController extends bootstrap
         $oUnilendEmail = $this->loadLib('unilend_email');
 
         try {
-            $oUnilendEmail->addAllMailVars($aVariables);
+            $oUnilendEmail->addVariables($aVariables);
             $oUnilendEmail->setTemplate($sTypeEmail, $this->language);
             $oUnilendEmail->addRecipient($oClients->email);
             $oUnilendEmail->sendFromTemplate();

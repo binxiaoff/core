@@ -773,7 +773,7 @@ class profileController extends bootstrap
                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
-                        $oUnilendEmail->addAllMailVars($aVarEmail);
+                        $oUnilendEmail->addVariables($aVarEmail);
                         $oUnilendEmail->setTemplate('notification-modification-preteurs', $this->language);
                         $oUnilendEmail->addRecipient($destinataire);
                         $oUnilendEmail->sendToStaff();
@@ -806,7 +806,7 @@ class profileController extends bootstrap
                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('preteur-modification-compte', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -900,7 +900,7 @@ class profileController extends bootstrap
                 $oUnilendEmail = $this->loadLib('unilend_email');
 
                 try {
-                    $oUnilendEmail->addAllMailVars($varMail);
+                    $oUnilendEmail->addVariables($varMail);
                     $oUnilendEmail->setTemplate('generation-mot-de-passe', $this->language);
                     $oUnilendEmail->addRecipient($this->clients->email);
                     $oUnilendEmail->sendFromTemplate();
@@ -1674,7 +1674,7 @@ class profileController extends bootstrap
                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
-                        $oUnilendEmail->addAllMailVars($aVarEmail);
+                        $oUnilendEmail->addVariables($aVarEmail);
                         $oUnilendEmail->setTemplate('admin-nouveau-mot-de-passe', $this->language);
                         $oUnilendEmail->addRecipient($destinataire);
                         $oUnilendEmail->sendToStaff();
@@ -1708,7 +1708,7 @@ class profileController extends bootstrap
                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('preteur-modification-compte', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -1811,7 +1811,7 @@ class profileController extends bootstrap
                 $oUnilendEmail = $this->loadLib('unilend_email');
 
                 try {
-                    $oUnilendEmail->addAllMailVars($varMail);
+                    $oUnilendEmail->addVariables($varMail);
                     $oUnilendEmail->setTemplate('generation-mot-de-passe', $this->language);
                     $oUnilendEmail->addRecipient($this->clients->email);
                     $oUnilendEmail->sendFromTemplate();
@@ -2090,7 +2090,7 @@ class profileController extends bootstrap
                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
-                        $oUnilendEmail->addAllMailVars($aVarEmail);
+                        $oUnilendEmail->addVariables($aVarEmail);
                         $oUnilendEmail->setTemplate('notification-modification-preteurs', $this->language);
                         $oUnilendEmail->addRecipient($destinataire);
                         $oUnilendEmail->sendToStaff();
@@ -2127,7 +2127,7 @@ class profileController extends bootstrap
                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('preteur-modification-compte', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();
@@ -2316,7 +2316,7 @@ class profileController extends bootstrap
                     $oUnilendEmail = $this->loadLib('unilend_email');
 
                     try {
-                        $oUnilendEmail->addAllMailVars($aVarEmail);
+                        $oUnilendEmail->addVariables($aVarEmail);
                         $oUnilendEmail->setTemplate('notification-modification-preteurs', $this->language);
                         $oUnilendEmail->addRecipient($destinataire);
                         $oUnilendEmail->sendToStaff();
@@ -2353,7 +2353,7 @@ class profileController extends bootstrap
                     try {
                         /** @var unilend_email $oUnilendEmail */
                         $oUnilendEmail = $this->loadLib('unilend_email');
-                        $oUnilendEmail->addAllMailVars($varMail);
+                        $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('preteur-modification-compte', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);
                         $oUnilendEmail->sendFromTemplate();

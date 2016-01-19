@@ -589,7 +589,7 @@ class inscription_preteurController extends bootstrap
                         $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
-                            $oUnilendEmail->addAllMailVars($varMail);
+                            $oUnilendEmail->addVariables($varMail);
                             $oUnilendEmail->setTemplate('confirmation-inscription-preteur', $this->language);
                             $oUnilendEmail->addRecipient($this->clients->email);
                             $oUnilendEmail->sendFromTemplate();
@@ -1063,7 +1063,7 @@ class inscription_preteurController extends bootstrap
                         $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
-                            $oUnilendEmail->addAllMailVars($varMail);
+                            $oUnilendEmail->addVariables($varMail);
                             $oUnilendEmail->setTemplate('confirmation-inscription-preteur', $this->language);
                             $oUnilendEmail->addRecipient($this->clients->email);
                             $oUnilendEmail->sendFromTemplate();
@@ -1343,7 +1343,7 @@ class inscription_preteurController extends bootstrap
                         $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
-                            $oUnilendEmail->addAllMailVars($aVarEmail);
+                            $oUnilendEmail->addVariables($aVarEmail);
                             $oUnilendEmail->setTemplate('notification-nouveaux-preteurs', $this->language);
                             $oUnilendEmail->addRecipient($destinataire);
                             $oUnilendEmail->sendToStaff();
@@ -1425,7 +1425,7 @@ class inscription_preteurController extends bootstrap
                             $oUnilendEmail = $this->loadLib('unilend_email');
 
                             try {
-                                $oUnilendEmail->addAllMailVars($aVarEmail);
+                                $oUnilendEmail->addVariables($aVarEmail);
                                 $oUnilendEmail->setTemplate('notification-modification-preteurs', $this->language);
                                 $oUnilendEmail->addRecipient($destinataire);
                                 $oUnilendEmail->sendToStaff();
@@ -1550,7 +1550,7 @@ class inscription_preteurController extends bootstrap
                         $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
-                            $oUnilendEmail->addAllMailVars($aVarEmail);
+                            $oUnilendEmail->addVariables($aVarEmail);
                             $oUnilendEmail->setTemplate('notification-nouveaux-preteurs', $this->language);
                             $oUnilendEmail->addRecipient($destinataire);
                             $oUnilendEmail->sendToStaff();
@@ -1822,7 +1822,7 @@ class inscription_preteurController extends bootstrap
                 $oUnilendEmail = $this->loadLib('unilend_email');
 
                 try {
-                    $oUnilendEmail->addAllMailVars($varMail);
+                    $oUnilendEmail->addVariables($varMail);
                     $oUnilendEmail->setTemplate('confirmation-inscription-preteur-etape-3', $this->language);
                     $oUnilendEmail->addRecipient($this->clients->email);
                     $oUnilendEmail->sendFromTemplate();
@@ -2009,7 +2009,7 @@ class inscription_preteurController extends bootstrap
                         $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
-                            $oUnilendEmail->addAllMailVars($aVarEmail);
+                            $oUnilendEmail->addVariables($aVarEmail);
                             $oUnilendEmail->setTemplate('notification-nouveau-versement-dun-preteur', $this->language);
                             $oUnilendEmail->addRecipient($destinataire);
                             $oUnilendEmail->sendToStaff();
@@ -2057,7 +2057,7 @@ class inscription_preteurController extends bootstrap
                         $oUnilendEmail = $this->loadLib('unilend_email');
 
                         try {
-                            $oUnilendEmail->addAllMailVars($varMail);
+                            $oUnilendEmail->addVariables($varMail);
                             $oUnilendEmail->setTemplate('confirmation-inscription-preteur-etape-3', $this->language);
                             $oUnilendEmail->addRecipient($this->clients->email);
                             $oUnilendEmail->sendFromTemplate();
