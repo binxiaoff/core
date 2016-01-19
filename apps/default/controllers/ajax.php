@@ -395,14 +395,12 @@ class ajaxController extends bootstrap
             }
 
             // tri type
+            $restriction = '';
             if (isset($_SESSION['tri']['type'])) {
                 $this->type = $_SESSION['tri']['type'];
 
                 // tous les projets
-                if ($this->type == 1) {
-                    $restriction = '';
-                } // projets favoris
-                elseif ($this->type == 2) {
+                if ($this->type == 2) {
                     // favori
                     $listProjectFav = $this->favoris->select('id_client = ' . $this->clients->id_client);
 

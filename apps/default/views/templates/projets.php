@@ -65,7 +65,7 @@
                     </tr>
                     <?php
 
-                    $this->loans = $this->loadData('loans');
+                    $oLoans = $this->loadData('loans');
                     foreach ($this->lProjetsFunding as $pf) {
                         $this->projects_status->getLastStatut($pf['id_project']);
 
@@ -86,43 +86,10 @@
                         $mois_jour = $this->dates->formatDate($pf['date_retrait'], 'F d');
                         $annee = $this->dates->formatDate($pf['date_retrait'], 'Y');
 
-                        $CountEnchere = $this->bids->counter('id_project = ' . $pf['id_project']);
-                        //$avgRate = $this->bids->getAVG($pf['id_project'],'rate');
-                        // moyenne pondéré
-                        $montantHaut = 0;
-                        $montantBas = 0;
-                        // si fundé ou remboursement
-                        if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
-                            foreach ($this->loans->select('id_project = ' . $pf['id_project']) as $b) {
-                                $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                                $montantBas += ($b['amount'] / 100);
-                            }
-                        }
-                        // funding ko
-                        elseif ($this->projects_status->status == 70) {
-                            foreach ($this->bids->select('id_project = ' . $pf['id_project']) as $b) {
-                                $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                                $montantBas += ($b['amount'] / 100);
-                            }
-                        }
-                        // emprun refusé
-                        elseif ($this->projects_status->status == 75) {
-                            foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 1') as $b) {
-                                $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                                $montantBas += ($b['amount'] / 100);
-                            }
-                        } else {
-                            foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 0') as $b) {
-                                $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                                $montantBas += ($b['amount'] / 100);
-                            }
-                        }
 
-                        if ($montantHaut > 0 && $montantBas > 0) {
-                            $avgRate = ($montantHaut / $montantBas);
-                        } else {
-                            $avgRate = 0;
-                        }
+                        $iSumbids = $this->bids->counter('id_project = ' . $pf['id_project']);
+                        $oBids = $this->bids;
+                        $avgRate = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $pf['id_project'], $this->projects_status->status);
 
                         if ($this->favoris->get($this->clients->id_client, 'id_project = ' . $pf['id_project'] . ' AND id_client')) {
                             $favori = 'active';
@@ -133,7 +100,7 @@
                         <tr class="unProjet" id="project<?= $pf['id_project'] ?>">
                             <td>
                                 <?
-                                if ($this->projects_status->status >= 60) {
+                                if ($this->projects_status->status >= projects_status::FUNDE) {
                                     $dateRest = $this->lng['preteur-projets']['termine'];
                                 } else {
                                     $tab_date_retrait = explode(' ', $pf['date_retrait_full']);
@@ -175,7 +142,7 @@
                             </td>
                             <td>
                                 <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>">
-                                    <?php if ($CountEnchere > 0) { ?>
+                                    <?php if ($iSumbids > 0) { ?>
                                         <?= $this->ficelle->formatNumber($avgRate, 1) ?>%
                                     <?php } else { ?>
                                         <?= ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %')) ?>
@@ -188,7 +155,7 @@
                                 </a>
                             </td>
                             <td>
-                                <?php if ($this->projects_status->status >= 60) { ?>
+                                <?php if ($this->projects_status->status >= \projects_status::FUNDE) { ?>
                                     <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
                                 <?php } else { ?>
                                     <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small"><?= $this->lng['preteur-projets']['pretez'] ?></a>
@@ -228,41 +195,10 @@
                 else
                     $dateRest = '';
 
-                $CountEnchere = $this->bids->counter('id_project = ' . $pf['id_project']);
-                //$avgRate = $this->bids->getAVG($pf['id_project'],'rate');
-                // moyenne pondéré
-                $montantHaut = 0;
-                $montantBas = 0;
-                // si fundé ou remboursement
-                if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
-                    foreach ($this->loans->select('id_project = ' . $pf['id_project']) as $b) {
-                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                        $montantBas += ($b['amount'] / 100);
-                    }
-                }
-                // funding ko
-                elseif ($this->projects_status->status == 70) {
-                    foreach ($this->bids->select('id_project = ' . $pf['id_project']) as $b) {
-                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                        $montantBas += ($b['amount'] / 100);
-                    }
-                }
-                // emprun refusé
-                elseif ($this->projects_status->status == 75) {
-                    foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 1') as $b) {
-                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                        $montantBas += ($b['amount'] / 100);
-                    }
-                } else {
-                    foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 0') as $b) {
-                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                        $montantBas += ($b['amount'] / 100);
-                    }
-                }
-                if ($montantHaut > 0 && $montantBas > 0)
-                    $avgRate = ($montantHaut / $montantBas);
-                else
-                    $avgRate = 0;
+
+                $iSumbids = $this->bids->counter('id_project = ' . $pf['id_project']);
+                $oBids = $this->bids;
+                $avgRate = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $pf['id_project'], $this->projects_status->status);
 
                 // dates pour le js
                 $mois_jour = $this->dates->formatDate($pf['date_retrait'], 'F d');
@@ -297,9 +233,9 @@
                             <p>
                                 <?= $this->ficelle->formatNumber($pf['amount'], 0) ?>€ |
                                 <span class="cadreEtoiles" style="margin-right: 12px; top: 8px;display: inline-block;">
-                                    <span style="display: inline-block;" class="etoile <?= $this->lNotes[$pf['risk']] ?>"></span>
+                                    <span style="display: inline-block;" class="etoile<?= $this->lNotes[$pf['risk']] ?>"></span>
                                 </span> |
-                                <?php if ($CountEnchere > 0) { ?>
+                                <?php if ($iSumbids > 0) { ?>
                                     <?= $this->ficelle->formatNumber($avgRate, 1) ?>%
                                 <?php } else { ?>
                                     <?= ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %')) ?>
