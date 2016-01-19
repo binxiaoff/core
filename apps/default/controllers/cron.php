@@ -5413,9 +5413,9 @@ class cronController extends bootstrap
                 $oCompanies->get($aProject['id_company'], 'id_company');
 
                 if ($aProject['status'] === \projects_status::EN_FUNDING) {
-                    $iTotalbids = $oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 0', 'amount');
+                    $iTotalbids = $this->ficelle->formatNumber($oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 0', 'amount'));
                 } else {
-                    $iTotalbids = $oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 1', 'amount');
+                    $iTotalbids = $this->ficelle->formatNumber($oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 1', 'amount'));
                 }
                 $iTotalbids = ($iTotalbids / 100);
                 if ($iTotalbids > $aProject['amount']) {
@@ -5438,9 +5438,36 @@ class cronController extends bootstrap
                         break ;
                 }
 
-                $sSector = $oCompanies->sector;
-                if ($sSector < 10) {
-                    $sSector = '0'.$sSector;
+                switch ($oCompanies->sector) {
+                    case 2:
+                    case 5:
+                    case 7:
+                    case 18:
+                    case 20:
+                    case 29:
+                        $sSector = '23';
+                        break;
+                    case 17:
+                    case 22:
+                    case 23:
+                    case 25:
+                        $sSector = '21';
+                        break;
+                    case 4:
+                        $sSector = '44';
+                        break;
+                    case 15:
+                        $sSector = '63';
+                        break;
+                    case 16:
+                        $sSector = '61';
+                        break;
+                    case 27:
+                        $sSector = '03';
+                        break;
+                    default:
+                        $sSector = '22';
+                        break;
                 }
 
                 $xml .= '<projet>';
