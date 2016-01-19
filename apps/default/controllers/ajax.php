@@ -152,35 +152,21 @@ class ajaxController extends bootstrap
 
             if ($this->type == 2) {
                 // favori
-                $listProjectFav = $this->favoris->select('id_client = ' . $this->clients->id_client);
+                $aFavprojects = $this->favoris->select('id_client = ' . $this->clients->id_client);
 
-                $lesIdProjects = '';
-                $i             = 0;
-
-                if ($listProjectFav != false) {
-                    // On parcour les project en fav
-                    foreach ($listProjectFav as $f) {
-                        $lesIdProjects .= ($i == 0 ? '' : ',') . '"' . $f['id_project'] . '"';
-                        $i++;
-                    }
-                    // On crée la restriction
+                if ($aFavprojects != false) {
+                    $lesIdProjects = implode(",", $aFavprojects['id_project']);
                     $restriction = ' AND p.id_project IN(' . $lesIdProjects . ')';
                 }
 
             } elseif ($this->type == 3) {
-                $lesIdProjects = '';
-                $i             = 0;
-
                 $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
-                $lProjetAvecBids = $this->bids->getProjetAvecBid($this->lenders_accounts->id_lender_account);
-                foreach ($lProjetAvecBids as $f) {
-                    $lesIdProjects .= ($i == 0 ? '' : ',') . '"' . $f['id_project'] . '"';
-                    $i++;
-                }
+                $aBidprojects = $this->bids->getProjetAvecBid($this->lenders_accounts->id_lender_account);
+                $lesIdProjects = implode(",", $aBidprojects['id_project']);
                 $restriction = ' AND p.id_project IN(' . $lesIdProjects . ')';
             } elseif ($this->type == 4) {
-                $restriction = ' AND p.date_fin <> "0000-00-00 00:00:00"';
+                $restriction = ' AND p.date_fin < "'. date('Y-m-d') .'"';
             }
         }
 
@@ -382,8 +368,6 @@ class ajaxController extends bootstrap
 
             // tri taux
             if (isset($_SESSION['tri']['taux'])) {
-
-
                 $key = $_SESSION['tri']['taux'];
                 $val = explode('-', $this->triPartxInt[$key - 1]);
 
@@ -399,42 +383,29 @@ class ajaxController extends bootstrap
             if (isset($_SESSION['tri']['type'])) {
                 $this->type = $_SESSION['tri']['type'];
 
-                // tous les projets
+                // favorite projects
                 if ($this->type == 2) {
-                    // favori
-                    $listProjectFav = $this->favoris->select('id_client = ' . $this->clients->id_client);
+                    $aFavprojects = $this->favoris->select('id_client = ' . $this->clients->id_client);
 
-                    $restriction   = '';
-                    $lesIdProjects = '';
-                    $i             = 0;
 
-                    if ($listProjectFav != false) {
-                        foreach ($listProjectFav as $f) {
-                            $lesIdProjects .= ($i == 0 ? '' : ',') . '"' . $f['id_project'] . '"';
-                            $i++;
-                        }
+                    if ($aFavprojects != false) {
+                        $lesIdProjects = implode(",", $aFavprojects['id_project']);
                         $restriction = ' AND p.id_project IN(' . $lesIdProjects . ')';
                     } else {
                         $restriction = ' AND p.id_project IN(0)';
                     }
                 } // les projets avec au moins 1 bid
                 elseif ($this->type == 3) {
-                    $restriction   = '';
-                    $lesIdProjects = '';
-                    $i             = 0;
 
                     $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
-                    $lProjetAvecBids = $this->bids->getProjetAvecBid($this->lenders_accounts->id_lender_account);
-                    foreach ($lProjetAvecBids as $f) {
-                        $lesIdProjects .= ($i == 0 ? '' : ',') . '"' . $f['id_project'] . '"';
-                        $i++;
-                    }
+                    $aBidprojects = $this->bids->getProjetAvecBid($this->lenders_accounts->id_lender_account);
+                    $lesIdProjects = implode(",", $aBidprojects['id_project']);
                     $restriction = ' AND p.id_project IN(' . $lesIdProjects . ')';
 
                 } // les projets terminés
                 elseif ($this->type == 4) {
-                    $restriction = ' AND p.date_fin <> "0000-00-00 00:00:00"';
+                    $restriction = ' AND p.date_fin < "'. date('Y-m-d') .'"';
                 }
             }
 

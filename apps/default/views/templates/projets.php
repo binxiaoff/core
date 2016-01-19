@@ -66,15 +66,15 @@
                     <?php
 
                     $oLoans = $this->loadData('loans');
-                    foreach ($this->lProjetsFunding as $pf) {
-                        $this->projects_status->getLastStatut($pf['id_project']);
+                    foreach ($this->lProjetsFunding as $project) {
+                        $this->projects_status->getLastStatut($project['id_project']);
 
                         // On recupere les info companies
-                        $this->companies->get($pf['id_company'], 'id_company');
-                        $this->companies_details->get($pf['id_company'], 'id_company');
+                        $this->companies->get($project['id_company'], 'id_company');
+                        $this->companies_details->get($project['id_company'], 'id_company');
 
                         // date fin 21h a chaque fois
-                        $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $pf['date_retrait_full']);
+                        $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $project['date_retrait_full']);
 
                         if ($inter['mois'] > 0) {
                             $dateRest = $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'];
@@ -83,85 +83,85 @@
                         }
 
                         // dates pour le js
-                        $mois_jour = $this->dates->formatDate($pf['date_retrait'], 'F d');
-                        $annee = $this->dates->formatDate($pf['date_retrait'], 'Y');
+                        $mois_jour = $this->dates->formatDate($project['date_retrait'], 'F d');
+                        $annee = $this->dates->formatDate($project['date_retrait'], 'Y');
 
 
-                        $iSumbids = $this->bids->counter('id_project = ' . $pf['id_project']);
+                        $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
                         $oBids = $this->bids;
-                        $avgRate = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $pf['id_project'], $this->projects_status->status);
+                        $avgRate = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $project['id_project'], $this->projects_status->status);
 
-                        if ($this->favoris->get($this->clients->id_client, 'id_project = ' . $pf['id_project'] . ' AND id_client')) {
+                        if ($this->favoris->get($this->clients->id_client, 'id_project = ' . $project['id_project'] . ' AND id_client')) {
                             $favori = 'active';
                         } else {
                             $favori = '';
                         }
                         ?>
-                        <tr class="unProjet" id="project<?= $pf['id_project'] ?>">
+                        <tr class="unProjet" id="project<?= $project['id_project'] ?>">
                             <td>
                                 <?
                                 if ($this->projects_status->status >= projects_status::FUNDE) {
                                     $dateRest = $this->lng['preteur-projets']['termine'];
                                 } else {
-                                    $tab_date_retrait = explode(' ', $pf['date_retrait_full']);
+                                    $tab_date_retrait = explode(' ', $project['date_retrait_full']);
                                     $tab_date_retrait = explode(':', $tab_date_retrait[1]);
                                     $heure_retrait = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
                                     ?>
                                     <script>
-                                        var cible<?= $pf['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>:00');
-                                        var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
-                                        setTimeout('decompte(letime<?= $pf['id_project'] ?>,"val<?= $pf['id_project'] ?>")', 500);
+                                        var cible<?= $project['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>:00');
+                                        var letime<?= $project['id_project'] ?> = parseInt(cible<?= $project['id_project'] ?>.getTime() / 1000, 10);
+                                        setTimeout('decompte(letime<?= $project['id_project'] ?>,"val<?= $project['id_project'] ?>")', 500);
                                     </script>
                                     <?
                                 }
 
-                                if ($pf['photo_projet'] != '') {
-                                    ?><a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>"><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>" class="thumb"></a><?
+                                if ($project['photo_projet'] != '') {
+                                    ?><a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>"><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $project['photo_projet'] ?>" alt="<?= $project['photo_projet'] ?>" class="thumb"></a><?
                                 }
                                 ?>
                                 <div class="description">
-                                    <h5><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>"><?= $pf['title'] ?></a></h5>
+                                    <h5><a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>"><?= $project['title'] ?></a></h5>
                                     <h6><?= $this->companies->city . ($this->companies->zip != '' ? ', ' : '') . $this->companies->zip ?></h6>
-                                    <p><?= $pf['nature_project'] ?></p>
+                                    <p><?= $project['nature_project'] ?></p>
                                 </div>
                             </td>
                             <td>
-                                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>">
-                                    <div class="cadreEtoiles"><div class="etoile <?= $this->lNotes[$pf['risk']] ?>"></div></div>
+                                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>">
+                                    <div class="cadreEtoiles"><div class="etoile <?= $this->lNotes[$project['risk']] ?>"></div></div>
                                 </a>
                             </td>
                             <td style="white-space:nowrap;">
-                                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>">
-                                    <?= $this->ficelle->formatNumber($pf['amount'], 0) ?>€
+                                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>">
+                                    <?= $this->ficelle->formatNumber($project['amount'], 0) ?>€
                                 </a>
                             </td>
                             <td style="white-space:nowrap;">
-                                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>">
-                                    <?= ($pf['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $pf['period'] . ' ' . $this->lng['preteur-projets']['mois']) ?>
+                                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>">
+                                    <?= ($project['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $project['period'] . ' ' . $this->lng['preteur-projets']['mois']) ?>
                                 </a>
                             </td>
                             <td>
-                                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>">
+                                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>">
                                     <?php if ($iSumbids > 0) { ?>
                                         <?= $this->ficelle->formatNumber($avgRate, 1) ?>%
                                     <?php } else { ?>
-                                        <?= ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %')) ?>
+                                        <?= ($project['target_rate'] == '-' ? $project['target_rate'] : number_format($project['target_rate'], 1, ',', ' %')) ?>
                                     <?php } ?>
                                 </a>
                             </td>
                             <td>
-                                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>">
-                                    <strong id="val<?= $pf['id_project'] ?>"><?= $dateRest ?></strong>
+                                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>">
+                                    <strong id="val<?= $project['id_project'] ?>"><?= $dateRest ?></strong>
                                 </a>
                             </td>
                             <td>
                                 <?php if ($this->projects_status->status >= \projects_status::FUNDE) { ?>
-                                    <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
+                                    <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
                                 <?php } else { ?>
-                                    <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small"><?= $this->lng['preteur-projets']['pretez'] ?></a>
+                                    <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn btn-info btn-small"><?= $this->lng['preteur-projets']['pretez'] ?></a>
                                 <?php } ?>
                                 <?php if (isset($_SESSION['client'])) { ?>
-                                    <a class="fav-btn <?= $favori ?>" id="fav<?= $pf['id_project'] ?>" onclick="favori(<?= $pf['id_project'] ?>, 'fav<?= $pf['id_project'] ?>',<?= $this->clients->id_client ?>, 0);"><?= $this->lng['preteur-projets']['favori'] ?> <i></i></a>
+                                    <a class="fav-btn <?= $favori ?>" id="fav<?= $project['id_project'] ?>" onclick="favori(<?= $project['id_project'] ?>, 'fav<?= $project['id_project'] ?>',<?= $this->clients->id_client ?>, 0);"><?= $this->lng['preteur-projets']['favori'] ?> <i></i></a>
                                 <?php } ?>
                             </td>
                         </tr>
@@ -181,45 +181,44 @@
             <h3 class="section-projects-mobile-title">Liste des projets</h3>
             <?php
 
-            foreach ($this->lProjetsFunding as $pf) {
-                $this->projects_status->getLastStatut($pf['id_project']);
+            foreach ($this->lProjetsFunding as $project) {
+                $this->projects_status->getLastStatut($project['id_project']);
 
                 // On recupere les info companies
-                $this->companies->get($pf['id_company'], 'id_company');
-                $this->companies_details->get($pf['id_company'], 'id_company');
+                $this->companies->get($project['id_company'], 'id_company');
+                $this->companies_details->get($project['id_company'], 'id_company');
 
                 // date fin 21h a chaque fois
-                $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $pf['date_retrait_full']);
+                $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $project['date_retrait_full']);
                 if ($inter['mois'] > 0)
                     $dateRest = $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'];
                 else
                     $dateRest = '';
 
-
-                $iSumbids = $this->bids->counter('id_project = ' . $pf['id_project']);
+                $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
                 $oBids = $this->bids;
-                $avgRate = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $pf['id_project'], $this->projects_status->status);
+                $avgRate = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $project['id_project'], $this->projects_status->status);
 
                 // dates pour le js
-                $mois_jour = $this->dates->formatDate($pf['date_retrait'], 'F d');
-                $annee = $this->dates->formatDate($pf['date_retrait'], 'Y');
+                $mois_jour = $this->dates->formatDate($project['date_retrait'], 'F d');
+                $annee = $this->dates->formatDate($project['date_retrait'], 'Y');
 
                 // favori
-                if ($this->favoris->get($this->clients->id_client, 'id_project = ' . $pf['id_project'] . ' AND id_client')) {
+                if ($this->favoris->get($this->clients->id_client, 'id_project = ' . $project['id_project'] . ' AND id_client')) {
                     $favori = 'active';
                 } else {
                     $favori = '';
                 }
 
-                if ($this->projects_status->status >= 60) {
+                if ($this->projects_status->status >= projects_status::FUNDE) {
                     $dateRest = $this->lng['preteur-projets']['termine'];
                 } else {
-                    $heure_retrait = date('H:i', strtotime($pf['date_retrait_full']));
+                    $heure_retrait = date('H:i', strtotime($project['date_retrait_full']));
                     ?>
                     <script type="text/javascript">
-                        var cible<?= $pf['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>:00');
-                        var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
-                        setTimeout('decompte(letime<?= $pf['id_project'] ?>,"min_val<?= $pf['id_project'] ?>")', 500);
+                        var cible<?= $project['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>:00');
+                        var letime<?= $project['id_project'] ?> = parseInt(cible<?= $project['id_project'] ?>.getTime() / 1000, 10);
+                        setTimeout('decompte(letime<?= $project['id_project'] ?>,"min_val<?= $project['id_project'] ?>")', 500);
                     </script>
                     <?
                 }
@@ -227,37 +226,37 @@
 
                 <div class="project-mobile">
                     <div class="project-mobile-image">
-                        <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>" />
+                        <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $project['photo_projet'] ?>" alt="<?= $project['photo_projet'] ?>" />
 
                         <div class="project-mobile-image-caption">
                             <p>
-                                <?= $this->ficelle->formatNumber($pf['amount'], 0) ?>€ |
+                                <?= $this->ficelle->formatNumber($project['amount'], 0) ?>€ |
                                 <span class="cadreEtoiles" style="margin-right: 12px; top: 8px;display: inline-block;">
-                                    <span style="display: inline-block;" class="etoile<?= $this->lNotes[$pf['risk']] ?>"></span>
+                                    <span style="display: inline-block;" class="etoile<?= $this->lNotes[$project['risk']] ?>"></span>
                                 </span> |
                                 <?php if ($iSumbids > 0) { ?>
                                     <?= $this->ficelle->formatNumber($avgRate, 1) ?>%
                                 <?php } else { ?>
-                                    <?= ($pf['target_rate'] == '-' ? $pf['target_rate'] : number_format($pf['target_rate'], 1, ',', ' %')) ?>
+                                    <?= ($project['target_rate'] == '-' ? $project['target_rate'] : number_format($project['target_rate'], 1, ',', ' %')) ?>
                                 <?php } ?>
-                                | <?= ($pf['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $pf['period'] . ' ' . $this->lng['preteur-projets']['mois']) ?>
+                                | <?= ($project['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $project['period'] . ' ' . $this->lng['preteur-projets']['mois']) ?>
                             </p>
                         </div>
                     </div>
                     <div class="project-mobile-content">
-                        <h3><?= $pf['title'] ?></h3>
+                        <h3><?= $project['title'] ?></h3>
                         <h4><?= $this->companies->city . ($this->companies->zip != '' ? ', ' : '') . $this->companies->zip ?></h4>
                         <h5>
                             <i class="ico-clock"></i>
-                            <strong id="min_val<?= $pf['id_project'] ?>"><?= $dateRest ?></strong>
+                            <strong id="min_val<?= $project['id_project'] ?>"><?= $dateRest ?></strong>
                         </h5>
                         <p>
-                            <?php if ($this->projects_status->status >= 60) { ?>
-                                <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise" style="line-height: 14px;padding: 4px 11px;"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
+                            <?php if ($this->projects_status->status >= projects_status::FUNDE) { ?>
+                                <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise" style="line-height: 14px;padding: 4px 11px;"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
                             <?php } else { ?>
-                                <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn"><?= $this->lng['preteur-projets']['pretez'] ?></a>
+                                <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn"><?= $this->lng['preteur-projets']['pretez'] ?></a>
                             <?php } ?>
-                            <?= $pf['nature_project'] ?>
+                            <?= $project['nature_project'] ?>
                         </p>
                     </div>
                 </div>
