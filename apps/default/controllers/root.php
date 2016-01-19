@@ -1404,11 +1404,9 @@ class rootController extends bootstrap
                 'lien_tw'  => $lien_tw
             );
 
-            /** @var unilend_email $oUnilendEmail */
-
             try {
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
+                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                $oUnilendEmail = $this->get('UnilendEmail');
                 $oUnilendEmail->addVariables($varMail);
                 $oUnilendEmail->setTemplate('demande-de-contact', $this->language);
                 $oUnilendEmail->addRecipient($_POST['email']);
@@ -1444,8 +1442,8 @@ class rootController extends bootstrap
             $infos .= '</ul>';
 
             try {
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
+                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                $oUnilendEmail = $this->get('UnilendEmail');
                 $oUnilendEmail->addVariable('$surl', $this->surl);
                 $oUnilendEmail->addVariable('$infos', $infos);
                 $oUnilendEmail->setTemplate('notification-demande-de-contact', $this->language);

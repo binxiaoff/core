@@ -116,10 +116,7 @@ class projects_status_history extends projects_status_history_crud
         /* @var array $config */
         include __DIR__ . '/../config.php';
 
-        $oUnilendEmail = new \unilend_email(array(
-            new \mails_filer($this->bdd),
-            new \mails_text($this->bdd)
-        ));
+        $oUnilendEmail = new Unilend\Service\UnilendEmail();
 
         $oProjects = new \projects($this->bdd);
         $oProjects->get($iProjectId, 'id_project');

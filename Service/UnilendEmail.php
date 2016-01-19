@@ -1,4 +1,5 @@
 <?php
+namespace Unilend\Service;
 
 use Unilend\librairies\Mailer\Email;
 use Unilend\librairies\Mailer\Mailer;
@@ -10,9 +11,9 @@ use Unilend\librairies\Data;
  * Date: 30/11/2015
  * Time: 14:40
  */
-class unilend_email
+class UnilendEmail
 {
-    /** @var mails_text */
+    /** @var \mails_text */
     private $oMailText = null;
 
     private $aVariables = array();
@@ -21,7 +22,7 @@ class unilend_email
     private $oEmail = null;
 
     /**
-     * unilend_email constructor.
+     * \Unilend\Service\UnilendEmail constructor.
      *
      */
     public function __construct()
@@ -31,7 +32,7 @@ class unilend_email
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function sendFromTemplate()
     {
@@ -57,7 +58,7 @@ class unilend_email
     }
 
     /**
-     * @throws Exception
+     * @throws \Exception
      */
     public function sendToStaff()
     {
@@ -80,6 +81,9 @@ class unilend_email
         $this->aVariables[$sKey] = $sValue;
     }
 
+    /**
+     * @param $aVariable
+     */
     public function addVariables($aVariable)
     {
         $this->aVariables = array_merge($this->aVariables, $aVariable);
@@ -100,7 +104,7 @@ class unilend_email
      * @param $sMailType
      * @param $sLanguage
      *
-     * @throws Exception
+     * @throws \Exception
      */
     public function setTemplate($sMailType, $sLanguage)
     {
@@ -109,6 +113,10 @@ class unilend_email
         }
     }
 
+    /**
+     * @return Email
+     * @throws \Exception
+     */
     private function prepareEmailFromTemplate()
     {
         if (!$this->oMailText instanceof \mails_text) {
@@ -163,7 +171,7 @@ class unilend_email
     {
         Mailer::send($this->oEmail);
         $this->aVariables = array();
-        $this->oEmail   = new Email();
+        $this->oEmail     = new Email();
     }
 
     /**
@@ -171,12 +179,12 @@ class unilend_email
      * @param $aArgument
      *
      * @return mixed
-     * @throws Exception
+     * @throws \Exception
      */
     public function __call($sMethod, $aArgument)
     {
         if (!method_exists($this->oEmail, $sMethod)) {
-            throw new Exception("The [$sMethod] is not defined in Email class");
+            throw new \Exception("The [$sMethod] is not defined in Email class");
         }
 
         return call_user_func_array(

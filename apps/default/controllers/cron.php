@@ -168,8 +168,8 @@ class cronController extends bootstrap
         $this->settings->get('Twitter', 'type');
         $lien_tw = $this->settings->value;
 
-        /** @var unilend_email $oUnilendEmail */
-        $oUnilendEmail = $this->loadLib('unilend_email');
+        /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+        $oUnilendEmail = $this->get('UnilendEmail');
 
         $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
@@ -2014,8 +2014,8 @@ class cronController extends bootstrap
         // date du jour
         $time = date('Y-m-d H');
 
-        /** @var unilend_email $oUnilendEmail */
-        $oUnilendEmail = $this->loadLib('unilend_email');
+        /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+        $oUnilendEmail = $this->get('UnilendEmail');
         $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
         // test //
@@ -2321,8 +2321,8 @@ class cronController extends bootstrap
     // reception virements/prelevements (toutes les 30 min)
     public function _reception()
     {
-        /** @var unilend_email $oUnilendEmail */
-        $oUnilendEmail = $this->loadLib('unilend_email');
+        /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+        $oUnilendEmail = $this->get('UnilendEmail');
         $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
         if (true === $this->startCron('reception', 5)) {
@@ -3842,8 +3842,8 @@ class cronController extends bootstrap
                 '$surl'     => $this->surl,
                 '$url'      => $this->lurl,
             );
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
 
             try {
                 $oUnilendEmail->addVariables($aVarEmail);
@@ -4237,8 +4237,8 @@ class cronController extends bootstrap
                 '$surl'     => $this->surl,
                 '$url'      => $this->lurl,
             );
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
 
             try {
                 $oUnilendEmail->addVariables($aVarEmail);
@@ -4570,8 +4570,8 @@ class cronController extends bootstrap
             ini_set('max_execution_time', '300');
             ini_set('memory_limit', '1G');
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
             $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             $this->projects                      = $this->loadData('projects');
@@ -4841,8 +4841,8 @@ class cronController extends bootstrap
                 $iBidsUpdated = 0;
                 $lBidsKO = $this->bids->select('status = 2 AND status_email_bid_ko = 0');
 
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
+                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                $oUnilendEmail = $this->get('UnilendEmail');
                 $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
                 foreach ($lBidsKO as $e) {
@@ -5071,8 +5071,8 @@ class cronController extends bootstrap
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
             $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             foreach ($lPreteurs as $p) {
@@ -5388,8 +5388,8 @@ class cronController extends bootstrap
                 '$surl'       => $this->surl,
                 '$liste_remb' => $liste_remb
             );
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
 
             try {
                 $oUnilendEmail->addVariables($aVarEmail);
@@ -5697,8 +5697,8 @@ class cronController extends bootstrap
             'lien_tw'         => $lien_tw
         );
 
-        /** @var unilend_email $oUnilendEmail */
-        $oUnilendEmail = $this->loadLib('unilend_email');
+        /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+        $oUnilendEmail = $this->get('UnilendEmail');
         $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
         $iOffset = 0;
@@ -5773,8 +5773,8 @@ class cronController extends bootstrap
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
             $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             foreach ($array_mail_nouveaux_projects as $id_client => $mails_notif) {
@@ -5922,8 +5922,8 @@ class cronController extends bootstrap
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
             $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             foreach ($array_offres_placees as $id_client => $mails_notif) {
@@ -6068,8 +6068,8 @@ class cronController extends bootstrap
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
             $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             foreach ($array_offres_refusees as $id_client => $mails_notif) {
@@ -6214,8 +6214,8 @@ class cronController extends bootstrap
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
             $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             foreach ($array_offres_acceptees as $id_client => $mails_notif) {
@@ -6411,8 +6411,8 @@ class cronController extends bootstrap
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
             $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             foreach ($array_remb as $id_client => $mails_notif) {
@@ -6613,8 +6613,8 @@ class cronController extends bootstrap
         $parrain = $this->loadData('clients');
         $filleul = $this->loadData('clients');
 
-        /** @var unilend_email $oUnilendEmail */
-        $oUnilendEmail = $this->loadLib('unilend_email');
+        /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+        $oUnilendEmail = $this->get('UnilendEmail');
         $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
         if ($offres_parrains_filleuls->get(1, 'status = 0 AND id_offre_parrain_filleul')) {
@@ -6771,8 +6771,8 @@ class cronController extends bootstrap
             $settingsControleRemb = $this->loadData('settings');
             $settingsControleRemb->get('Controle remboursements auto', 'type');
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
             $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             // on rentre dans le cron si statut égale 1
@@ -6909,8 +6909,8 @@ class cronController extends bootstrap
             $timeDebut = strtotime(date('Y-m-d') . ' ' . $paramDebut . ':00'); // on commence le traitement du cron a l'heure demandé
             $timeFin   = mktime(0, 0, 0, date("m"), date("d") + 1, date("Y")); // on termine le cron a minuit
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
             $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             if (date('H:i') == $paramDebut) {
@@ -7110,8 +7110,8 @@ class cronController extends bootstrap
                 '$url'        => $this->lurl,
                 '$liste_remb' => $liste_remb
             );
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
 
             try {
                 $oUnilendEmail->addVariables($aVarEmail);
@@ -7433,8 +7433,8 @@ class cronController extends bootstrap
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
             $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             foreach ($L_mail_ra_en_attente as $ra_email) {
@@ -7574,8 +7574,8 @@ class cronController extends bootstrap
                 'lien_tw'              => $sTwitterURL,
             );
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
             $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
             foreach ($aReminderIntervals as $sStatus => $aIntervals) {

@@ -41,9 +41,6 @@ abstract class Mailer
      */
     private static $transports = array(
         'mail' => 'Mail',
-        'smtp' => 'Smtp',
-        'handler' => 'Handler',
-        'sendmail' => 'Sendmail',
         'sendnmp' => 'SendNMP',
     );
 

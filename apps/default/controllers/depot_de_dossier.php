@@ -620,8 +620,8 @@ class depot_de_dossierController extends bootstrap
                 $sRecipient = empty($this->clients_prescripteur->id_client) ? $this->clients->email : $this->clients_prescripteur->email;
                 $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
 
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
+                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                $oUnilendEmail = $this->get('UnilendEmail');
 
                 try {
                     $oUnilendEmail->addVariables($aVariables);
@@ -894,8 +894,8 @@ class depot_de_dossierController extends bootstrap
                 '[RAISON_SOCIALE]' => utf8_decode($this->companies->name),
                 '[SURL]'           => $this->surl
             );
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
 
             try {
                 $oUnilendEmail->addVariables($aReplacements);

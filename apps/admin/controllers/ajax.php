@@ -632,8 +632,8 @@ class ajaxController extends bootstrap
                     'lien_fb'                          => $lien_fb,
                     'lien_tw'                          => $lien_tw
                 );
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
+                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                $oUnilendEmail = $this->get('UnilendEmail');
 
                 try {
                     $oUnilendEmail->addVariables($varMail);
@@ -1089,8 +1089,8 @@ class ajaxController extends bootstrap
                 'url'                  => $this->url,
             );
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
 
             try {
                 $oUnilendEmail->addVariables($varMail);
@@ -1178,8 +1178,8 @@ class ajaxController extends bootstrap
                 'lien_tw'       => $lien_tw
             );
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
 
             try {
                 $oUnilendEmail->addVariables($varMail);
@@ -1234,8 +1234,8 @@ class ajaxController extends bootstrap
                 'lien_tw'  => $lien_tw
             );
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
 
             try {
                 $oUnilendEmail->addVariables($varMail);
@@ -1564,8 +1564,8 @@ class ajaxController extends bootstrap
                     'lien_tw'         => $lien_tw
                 );
 
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
+                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                $oUnilendEmail = $this->get('UnilendEmail');
 
                 try {
                     $oUnilendEmail->addVariables($varMail);
@@ -2285,8 +2285,8 @@ class ajaxController extends bootstrap
                         'lien_tw'                => $lien_tw
                     );
 
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
+                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                    $oUnilendEmail = $this->get('UnilendEmail');
 
                     try {
                         $oUnilendEmail->addVariables($varMail);
@@ -2435,8 +2435,8 @@ class ajaxController extends bootstrap
                         'lien_tw'                => $lien_tw
                     );
 
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
+                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                    $oUnilendEmail = $this->get('UnilendEmail');
 
                     try {
                         $oUnilendEmail->addVariables($varMail);
@@ -2787,8 +2787,8 @@ class ajaxController extends bootstrap
                         'lien_tw'                => $lien_tw
                     );
 
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
+                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                    $oUnilendEmail = $this->get('UnilendEmail');
                     try {
                         $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('emprunteur-dossier-rejete', $this->language);
@@ -3076,8 +3076,8 @@ class ajaxController extends bootstrap
             'prenom'                 => $oClients->prenom
         );
 
-        /** @var unilend_email $oUnilendEmail */
-        $oUnilendEmail = $this->loadLib('unilend_email');
+        /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+        $oUnilendEmail = $this->get('UnilendEmail');
 
         try {
             $oUnilendEmail->addVariables($aVariables);

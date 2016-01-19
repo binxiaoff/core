@@ -852,8 +852,8 @@ class dossiersController extends bootstrap
                                         'lien_tw'           => $lien_tw
                                     );
 
-                                    /** @var unilend_email $oUnilendEmail */
-                                    $oUnilendEmail = $this->loadLib('unilend_email');
+                                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                                    $oUnilendEmail = $this->get('UnilendEmail');
 
                                     try {
                                         $oUnilendEmail->addVariables($varMail);
@@ -1091,8 +1091,8 @@ class dossiersController extends bootstrap
                                     'lien_tw'           => $lien_tw
                                 );
 
-                                /** @var unilend_email $oUnilendEmail */
-                                $oUnilendEmail = $this->loadLib('unilend_email');
+                                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                                $oUnilendEmail = $this->get('UnilendEmail');
 
                                 try {
                                     $oUnilendEmail->addVariables($varMail);
@@ -1302,8 +1302,8 @@ class dossiersController extends bootstrap
                                     $this->settings->get('Twitter', 'type');
                                     $sLienTW = $this->settings->value;
 
-                                    /** @var unilend_email $oUnilendEmail */
-                                    $oUnilendEmail = $this->loadLib('unilend_email');
+                                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                                    $oUnilendEmail = $this->get('UnilendEmail');
                                     $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
 
                                     foreach ($aLendersIds as $aLenderID) {
@@ -1466,8 +1466,8 @@ class dossiersController extends bootstrap
                                     'lien_tw'         => $lien_tw
                                 );
 
-                                /** @var unilend_email $oUnilendEmail */
-                                $oUnilendEmail = $this->loadLib('unilend_email');
+                                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                                $oUnilendEmail = $this->get('UnilendEmail');
 
                                 try {
                                     $oUnilendEmail->addVariables($varMail);
@@ -2680,8 +2680,8 @@ class dossiersController extends bootstrap
                                                     'lien_tw'          => $lien_tw
                                                 );
 
-                                                /** @var unilend_email $oUnilendEmail */
-                                                $oUnilendEmail = $this->loadLib('unilend_email');
+                                                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                                                $oUnilendEmail = $this->get('UnilendEmail');
 
                                                 try {
                                                     $oUnilendEmail->addVariables($varMail);
@@ -2740,8 +2740,8 @@ class dossiersController extends bootstrap
                                                     'lien_tw'               => $lien_tw
                                                 );
 
-                                                /** @var unilend_email $oUnilendEmail */
-                                                $oUnilendEmail = $this->loadLib('unilend_email');
+                                                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                                                $oUnilendEmail = $this->get('UnilendEmail');
 
                                                 try {
                                                     $oUnilendEmail->addVariables($varMail);
@@ -2807,8 +2807,8 @@ class dossiersController extends bootstrap
                                                         'lien_tw'               => $lien_tw
                                                     );
 
-                                                    /** @var unilend_email $oUnilendEmail */
-                                                    $oUnilendEmail = $this->loadLib('unilend_email');
+                                                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                                                    $oUnilendEmail = $this->get('UnilendEmail');
 
                                                     try {
                                                         $oUnilendEmail->addVariables($varMail);
@@ -2907,8 +2907,8 @@ class dossiersController extends bootstrap
                                     'lien_tw'         => $lien_tw
                                 );
 
-                                /** @var unilend_email $oUnilendEmail */
-                                $oUnilendEmail = $this->loadLib('unilend_email');
+                                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                                $oUnilendEmail = $this->get('UnilendEmail');
 
                                 try {
                                     $oUnilendEmail->addVariables($varMail);
@@ -3523,8 +3523,8 @@ class dossiersController extends bootstrap
             'lien_fb'             => $lien_fb,
         );
 
-        /** @var unilend_email $oUnilendEmail */
-        $oUnilendEmail = $this->loadLib('unilend_email');
+        /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+        $oUnilendEmail = $this->get('UnilendEmail');
 
         try {
             $oUnilendEmail->addVariables($varMail);
@@ -3654,8 +3654,8 @@ class dossiersController extends bootstrap
             $varMail = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
             $varMail['sujet'] = htmlentities($this->mails_text->subject, null, 'UTF-8');
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
 
             try {
                 $oUnilendEmail->addVariables($varMail);
@@ -3799,8 +3799,8 @@ class dossiersController extends bootstrap
             'prenom'                 => $this->clients->prenom
         );
 
-        /** @var unilend_email $oUnilendEmail */
-        $oUnilendEmail = $this->loadLib('unilend_email');
+        /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+        $oUnilendEmail = $this->get('UnilendEmail');
 
         try {
             $oUnilendEmail->addVariables($aVariables);

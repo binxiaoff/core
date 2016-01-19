@@ -362,8 +362,8 @@ class projectsController extends bootstrap
                         );
 
                         try {
-                            /** @var unilend_email $oUnilendEmail */
-                            $oUnilendEmail = $this->loadLib('unilend_email');
+                            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                            $oUnilendEmail = $this->get('UnilendEmail');
                             $oUnilendEmail->addVariables($varMail);
                             $oUnilendEmail->setTemplate('confirmation-bid', $this->language);
                             $oUnilendEmail->addRecipient($this->clients->email);

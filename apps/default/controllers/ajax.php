@@ -722,8 +722,8 @@ class ajaxController extends bootstrap
                     'lien_tw'  => $lien_tw
                 );
 
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
+                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                $oUnilendEmail = $this->get('UnilendEmail');
 
                 try {
                     $oUnilendEmail->addVariables($varMail);
@@ -763,8 +763,8 @@ class ajaxController extends bootstrap
                 'lien_tw'       => $lien_tw
             );
 
-            /** @var unilend_email $oUnilendEmail */
-            $oUnilendEmail = $this->loadLib('unilend_email');
+            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+            $oUnilendEmail = $this->get('UnilendEmail');
 
             try {
                 $oUnilendEmail->addVariables($varMail);
@@ -992,8 +992,8 @@ class ajaxController extends bootstrap
                         'lien_tw'         => $lien_tw
                     );
 
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
+                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                    $oUnilendEmail = $this->get('UnilendEmail');
 
                     try {
                         $oUnilendEmail->addVariables($varMail);
@@ -1039,8 +1039,8 @@ class ajaxController extends bootstrap
                     '$montantRetirePlateforme'          => $this->ficelle->formatNumber($montant),
                     '$solde'                            => $this->ficelle->formatNumber($transac->getSolde($this->clients->id_client)),
                 );
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
+                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                $oUnilendEmail = $this->get('UnilendEmail');
 
                 try {
                     $oUnilendEmail->addVariables($aVarEmail);
@@ -1195,8 +1195,8 @@ class ajaxController extends bootstrap
                     'lien_tw'  => $lien_tw
                 );
 
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
+                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                $oUnilendEmail = $this->get('UnilendEmail');
 
                 try {
                     $oUnilendEmail->addVariables($varMail);
@@ -1229,8 +1229,8 @@ class ajaxController extends bootstrap
                 $infos .= '<li>Message : ' . utf8_decode($this->demande_contact->message) . '</li>';
                 $infos .= '</ul>';
 
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
+                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                $oUnilendEmail = $this->get('UnilendEmail');
 
                 try {
                     $oUnilendEmail->addVariable('$surl', $this->surl);

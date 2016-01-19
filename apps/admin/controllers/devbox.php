@@ -935,8 +935,8 @@ class devboxController extends bootstrap
         // on veut recup le nb d'echeances restantes
         $sum_ech_restant = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');
 
-        /** @var unilend_email $oUnilendEmail */
-        $oUnilendEmail = $this->loadLib('unilend_email');
+        /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+        $oUnilendEmail = $this->get('UnilendEmail');
 
         $oUnilendEmail->setTemplate('preteur-remboursement-anticipe', $this->language);
 

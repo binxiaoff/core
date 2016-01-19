@@ -769,8 +769,8 @@ class profileController extends bootstrap
                         '$email' => $this->clients->email,
                         '$lien' => $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account,
                     );
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
+                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                    $oUnilendEmail = $this->get('UnilendEmail');
 
                     try {
                         $oUnilendEmail->addVariables($aVarEmail);
@@ -802,8 +802,8 @@ class profileController extends bootstrap
                         'lien_tw' => $lien_tw
                     );
 
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
+                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                    $oUnilendEmail = $this->get('UnilendEmail');
 
                     try {
                         $oUnilendEmail->addVariables($varMail);
@@ -896,8 +896,8 @@ class profileController extends bootstrap
                     'lien_tw'  => $lien_tw
                 );
 
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
+                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                $oUnilendEmail = $this->get('UnilendEmail');
 
                 try {
                     $oUnilendEmail->addVariables($varMail);
@@ -1670,8 +1670,8 @@ class profileController extends bootstrap
                         '$email'        => $this->clients->email,
                         '$lien'         => $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account,
                     );
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
+                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                    $oUnilendEmail = $this->get('UnilendEmail');
 
                     try {
                         $oUnilendEmail->addVariables($aVarEmail);
@@ -1704,8 +1704,8 @@ class profileController extends bootstrap
                         'lien_tw' => $lien_tw
                     );
 
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
+                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                    $oUnilendEmail = $this->get('UnilendEmail');
 
                     try {
                         $oUnilendEmail->addVariables($varMail);
@@ -1807,8 +1807,8 @@ class profileController extends bootstrap
                     'lien_fb'  => $lien_fb,
                     'lien_tw'  => $lien_tw
                 );
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
+                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                $oUnilendEmail = $this->get('UnilendEmail');
 
                 try {
                     $oUnilendEmail->addVariables($varMail);
@@ -2086,8 +2086,8 @@ class profileController extends bootstrap
                         '$email'        => $this->clients->email,
                         '$lien'         => $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account,
                     );
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
+                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                    $oUnilendEmail = $this->get('UnilendEmail');
 
                     try {
                         $oUnilendEmail->addVariables($aVarEmail);
@@ -2123,8 +2123,8 @@ class profileController extends bootstrap
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw
                     );
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
+                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                    $oUnilendEmail = $this->get('UnilendEmail');
 
                     try {
                         $oUnilendEmail->addVariables($varMail);
@@ -2312,8 +2312,8 @@ class profileController extends bootstrap
                         '$email'        => $this->clients->email,
                         '$lien'         => $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account,
                     );
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
+                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                    $oUnilendEmail = $this->get('UnilendEmail');
 
                     try {
                         $oUnilendEmail->addVariables($aVarEmail);
@@ -2351,8 +2351,8 @@ class profileController extends bootstrap
                     );
 
                     try {
-                        /** @var unilend_email $oUnilendEmail */
-                        $oUnilendEmail = $this->loadLib('unilend_email');
+                        /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                        $oUnilendEmail = $this->get('UnilendEmail');
                         $oUnilendEmail->addVariables($varMail);
                         $oUnilendEmail->setTemplate('preteur-modification-compte', $this->language);
                         $oUnilendEmail->addRecipient($this->clients->email);

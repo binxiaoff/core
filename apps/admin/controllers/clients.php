@@ -284,8 +284,8 @@ class clientsController extends bootstrap
                     '$password' => $this->new_password,
                 );
 
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
+                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                $oUnilendEmail = $this->get('UnilendEmail');
 
                 try {
                     $oUnilendEmail->addVariables($aVarEmail);

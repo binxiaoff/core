@@ -51,8 +51,8 @@ class rootController extends bootstrap
                     '$password' => $this->new_password,
                 );
 
-                /** @var unilend_email $oUnilendEmail */
-                $oUnilendEmail = $this->loadLib('unilend_email');
+                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                $oUnilendEmail = $this->get('UnilendEmail');
 
                 try {
                     $oUnilendEmail->addVariables($aVarEmail);
@@ -366,8 +366,8 @@ class rootController extends bootstrap
                                     '$email'    => trim($this->users->email),
                                     '$password' => $_POST['new_pass'],
                                 );
-                                /** @var unilend_email $oUnilendEmail */
-                                $oUnilendEmail = $this->loadLib('unilend_email');
+                                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                                $oUnilendEmail = $this->get('UnilendEmail');
 
                                 try {
                                     $oUnilendEmail->addVariables($aVarEmail);

@@ -156,8 +156,8 @@ class devboxController extends bootstrap
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw);
 
-                    /** @var unilend_email $oUnilendEmail */
-                    $oUnilendEmail = $this->loadLib('unilend_email');
+                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
+                    $oUnilendEmail = $this->get('UnilendEmail');
 
                     try {
                         $oUnilendEmail->addVariables($varMail);
