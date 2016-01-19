@@ -484,6 +484,19 @@ class Controller
         }
     }
 
+    public function get($sService, $aParams = array()) {
+        $sService = trim($sService, "/ \t\n\r\0\x0B");
+        if (!file_exists($this->path . 'Service/' . $sService . '.php')) {
+            call_user_func(array(
+                &$this, '_error'
+            ), 'Service not found : ' . $this->path . 'Service/' . $sService . '.php');
+            return false;
+        } else {
+            $sClassName = 'Unilend\Service\\' . $sService;
+            return new $sClassName($aParams);
+        }
+    }
+
     //Charge un fichier js dans le tableau des js
     public function loadJs($js, $ieonly = 0, $version = '')
     {
