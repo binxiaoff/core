@@ -147,27 +147,9 @@ class ajaxController extends bootstrap
             $this->where = '';
         }
 
-        if (isset($_POST['type']) && $_POST['type'] != '') {
-            $this->type = $_POST['type'];
-
-            if ($this->type == 2) {
-                // favori
-                $aFavprojects = $this->favoris->select('id_client = ' . $this->clients->id_client);
-
-                if ($aFavprojects != false) {
-                    $lesIdProjects = implode(",", $aFavprojects['id_project']);
-                    $restriction = ' AND p.id_project IN(' . $lesIdProjects . ')';
-                }
-
-            } elseif ($this->type == 3) {
-                $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-
-                $aBidprojects = $this->bids->getProjetAvecBid($this->lenders_accounts->id_lender_account);
-                $lesIdProjects = implode(",", $aBidprojects['id_project']);
-                $restriction = ' AND p.id_project IN(' . $lesIdProjects . ')';
-            } elseif ($this->type == 4) {
-                $restriction = ' AND p.date_fin < "'. date('Y-m-d') .'"';
-            }
+        // filter completed projects
+        if (isset($_POST['type']) && $_POST['type'] == 4) {
+            $restriction = ' AND p.date_fin < "'. date('Y-m-d') .'"';
         }
 
         // statut
@@ -195,13 +177,6 @@ class ajaxController extends bootstrap
             // dates pour le js
             $mois_jour = $this->dates->formatDate($pf['date_retrait'], 'F d');
             $annee     = $this->dates->formatDate($pf['date_retrait'], 'Y');
-
-            // favori
-            if ($this->favoris->get($this->clients->id_client, 'id_project = ' . $pf['id_project'] . ' AND id_client')) {
-                $favori = 'active';
-            } else {
-                $favori = '';
-            }
 
             $CountEnchere = $this->bids->counter('id_project = ' . $pf['id_project']);
 
@@ -378,35 +353,10 @@ class ajaxController extends bootstrap
                 $this->where = $key;
             }
 
-            // tri type
+            // filter completed projects
             $restriction = '';
-            if (isset($_SESSION['tri']['type'])) {
-                $this->type = $_SESSION['tri']['type'];
-
-                // favorite projects
-                if ($this->type == 2) {
-                    $aFavprojects = $this->favoris->select('id_client = ' . $this->clients->id_client);
-
-
-                    if ($aFavprojects != false) {
-                        $lesIdProjects = implode(",", $aFavprojects['id_project']);
-                        $restriction = ' AND p.id_project IN(' . $lesIdProjects . ')';
-                    } else {
-                        $restriction = ' AND p.id_project IN(0)';
-                    }
-                } // les projets avec au moins 1 bid
-                elseif ($this->type == 3) {
-
-                    $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-
-                    $aBidprojects = $this->bids->getProjetAvecBid($this->lenders_accounts->id_lender_account);
-                    $lesIdProjects = implode(",", $aBidprojects['id_project']);
-                    $restriction = ' AND p.id_project IN(' . $lesIdProjects . ')';
-
-                } // les projets terminés
-                elseif ($this->type == 4) {
+            if (isset($_SESSION['tri']['type']) && $_SESSION['tri']['type'] == 4) {
                     $restriction = ' AND p.date_fin < "'. date('Y-m-d') .'"';
-                }
             }
 
             $_SESSION['ordreProject'] = $this->ordreProject;
