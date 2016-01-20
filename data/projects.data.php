@@ -679,4 +679,25 @@ class projects extends projects_crud
 
         return $aDuePaymentsAndLenders;
     }
+
+    public function getProblematicProjectsWithUpcomingRepayment()
+    {
+        $aProjects = array();
+        $rResult   = $this->bdd->query('
+            SELECT p.*
+            FROM projects p
+            INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
+            INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            INNER JOIN (SELECT id_project, MIN(date_echeance_emprunteur) AS date_echeance_emprunteur FROM echeanciers_emprunteur WHERE status_emprunteur = 0 GROUP BY id_project) min_unpaid ON min_unpaid.id_project = p.id_project
+            INNER JOIN echeanciers_emprunteur prev ON prev.id_project = p.id_project AND prev.date_echeance_emprunteur = min_unpaid.date_echeance_emprunteur
+            INNER JOIN echeanciers_emprunteur next ON next.id_project = p.id_project AND next.ordre = prev.ordre + 1 AND next.status_emprunteur = 0
+            WHERE ps.status = ' . \projects_status::PROBLEME_J_X . '
+                AND DATE(next.date_echeance_emprunteur) = DATE(ADDDATE(NOW(), INTERVAL 7 DAY))'
+        );
+        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
+            $aProjects[] = $aRecord;
+        }
+        return $aProjects;
+    }
 }

@@ -2325,7 +2325,7 @@ class cronController extends bootstrap
         if ($handle) {
             $i = 0;
             while (($ligne = fgets($handle)) !== false) {
-                if (strpos($ligne, 'CANTONNEMENT') == true || strpos($ligne, 'DECANTON') == true) {
+                if (false !== stripos($ligne, 'CANTONNEMENT') || false !== stripos($ligne, 'DECANTON')) {
                     $codeEnregi = substr($ligne, 0, 2);
                     if ($codeEnregi == 04) {
                         $i++;
@@ -7731,6 +7731,91 @@ class cronController extends bootstrap
                 $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $iProjectId);
             }
 
+            $this->stopCron();
+        }
+    }
+
+    public function _emprunteur_impaye_avant_echeance()
+    {
+        if ($this->startCron('emprunteur impaye avant echeance', 5)) {
+            $oProjects = $this->loadData('projects');
+            $aProjects = $oProjects->getProblematicProjectsWithUpcomingRepayment();
+
+            if (false === empty($aProjects)) {
+                $oClients               = $this->loadData('clients');
+                $oCompanies             = $this->loadData('companies');
+                $oEcheanciers           = $this->loadData('echeanciers');
+                $oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
+                $oLoans                 = $this->loadData('loans');
+                $oMailsText             = $this->loadData('mails_text');
+
+                $oMailsText->get('emprunteur-projet-statut-probleme-j-x-before-next-repayment', 'lang = "' . $this->language . '" AND type');
+
+                $this->settings->get('Facebook', 'type');
+                $sFacebookURL = $this->settings->value;
+
+                $this->settings->get('Twitter', 'type');
+                $sTwitterURL = $this->settings->value;
+
+                $this->settings->get('Virement - BIC', 'type');
+                $sBIC = $this->settings->value;
+
+                $this->settings->get('Virement - IBAN', 'type');
+                $sIBAN = $this->settings->value;
+
+                $this->settings->get('Téléphone emprunteur', 'type');
+                $sBorrowerPhoneNumber = $this->settings->value;
+
+                $this->settings->get('Adresse emprunteur', 'type');
+                $sBorrowerEmail = $this->settings->value;
+
+                $aCommonReplacements = array(
+                    'url'              => $this->furl,
+                    'surl'             => $this->surl,
+                    'lien_fb'          => $sFacebookURL,
+                    'lien_tw'          => $sTwitterURL,
+                    'sujet'            => htmlentities($oMailsText->subject, null, 'UTF-8'),
+                    'bic_sfpmei'       => $sBIC,
+                    'iban_sfpmei'      => $sIBAN,
+                    'tel_emprunteur'   => $sBorrowerPhoneNumber,
+                    'email_emprunteur' => $sBorrowerEmail
+                );
+
+                foreach ($aProjects as $aProject) {
+                    $oProjects->get($aProject['id_project']);
+                    $oCompanies->get($oProjects->id_company);
+                    $oClients->get($oCompanies->id_client_owner);
+
+                    $aNextRepayment = $oEcheanciersEmprunteur->select('id_project = ' . $oProjects->id_project . ' AND date_echeance_emprunteur > DATE(NOW())', 'date_echeance_emprunteur ASC', 0, 1);
+
+                    $aReplacements = $aCommonReplacements + array(
+                            'entreprise'                         => htmlentities($oCompanies->name, null, 'UTF-8'),
+                            'civilite_e'                         => $oClients->civilite,
+                            'nom_e'                              => htmlentities($oClients->nom, null, 'UTF-8'),
+                            'mensualite_e'                       => $this->ficelle->formatNumber(($aNextRepayment[0]['montant'] + $aNextRepayment[0]['commission'] + $aNextRepayment[0]['tva']) / 100),
+                            'num_dossier'                        => $oProjects->id_project,
+                            'nb_preteurs'                        => $oLoans->getNbPreteurs($oProjects->id_project),
+                            'CRD'                                => $this->ficelle->formatNumber($oEcheanciers->sum('id_project = ' . $oProjects->id_project . ' AND status = 0', 'capital')),
+                            'date_prochaine_echeance_emprunteur' => $this->dates->formatDate($aNextRepayment[0]['date_echeance_emprunteur'], 'd/m/Y'), // @todo Intl
+                        );
+
+                    $aDYNReplacements                             = $this->tnmp->constructionVariablesServeur($aReplacements);
+                    $aDYNReplacements['[EMV DYN]sujet[EMV /DYN]'] = strtr($aReplacements['sujet'], $aDYNReplacements);
+
+                    $this->email = $this->loadLib('email');
+                    $this->email->setFrom($oMailsText->exp_email, $oMailsText->exp_name);
+                    $this->email->setSubject(stripslashes(strtr(utf8_decode(html_entity_decode($aReplacements['sujet'], null, 'UTF-8')), $aDYNReplacements)));
+                    $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($oMailsText->content), $aDYNReplacements)));
+
+                    if ($this->Config['env'] === 'prod') {
+                        Mailer::sendNMP($this->email, $this->mails_filer, $oMailsText->id_textemail, trim($oClients->email), $aNMPFilters);
+                        $this->tnmp->sendMailNMP($aNMPFilters, $aReplacements, $oMailsText->nmp_secure, $oMailsText->id_nmp, $oMailsText->nmp_unique, $oMailsText->mode);
+                    } else {
+                        $this->email->addRecipient(trim($oClients->email));
+                        Mailer::send($this->email, $this->mails_filer, $oMailsText->id_textemail);
+                    }
+                }
+            }
             $this->stopCron();
         }
     }
