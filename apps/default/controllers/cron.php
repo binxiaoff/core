@@ -2873,6 +2873,9 @@ class cronController extends bootstrap
                                     && $this->transactions->get($r['montant'], 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND DATE(date_transaction) >= STR_TO_DATE("' . $aMatches[1] . '", "%Y%m%d") AND id_client = ' . $oCompanies->id_client_owner . ' AND montant')
                                     && false === $oTransactions->get($this->transactions->id_prelevement, 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION . ' AND id_prelevement')
                                 ) {
+                                    $this->projects->remb_auto = 1;
+                                    $this->projects->update();
+
                                     // @todo duplicate code of transferts::_rejeter_prelevement_projet()
                                     $oTransactions->id_prelevement   = $this->transactions->id_prelevement;
                                     $oTransactions->id_client        = $oCompanies->id_client_owner;
