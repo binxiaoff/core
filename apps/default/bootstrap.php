@@ -368,7 +368,8 @@ class bootstrap extends Controller
         $this->tabOrdreProject = array(
             '',
             'lestatut ASC, IF(lestatut = 2, p.date_retrait_full ,"") DESC, IF(lestatut = 1, p.date_retrait_full ,"") ASC, projects_status.status DESC',
-            'p.date_publication DESC'
+            'p.date_publication DESC',
+            'avg_rate DESC'
         );
 
         // Afficher les projets terminés ? (1 : oui | 0 : non)

@@ -243,7 +243,7 @@ class ajaxController extends bootstrap
             $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'><strong id='val" . $pf['id_project'] . "'>" . $dateRest . "</strong></a></td>
                 <td>";
 
-            if ($this->projects_status->status >= 60) {
+            if ($this->projects_status->status >= \projects_status::FUNDE) {
                 $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "' class='btn btn-info btn-small multi grise1 btn-grise'>" . $this->lng['preteur-projets']['voir-le-projet'] . "</a>";
             } else {
                 $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "' class='btn btn-info btn-small'>" . $this->lng['preteur-projets']['pretez'] . "</a>";
@@ -322,9 +322,10 @@ class ajaxController extends bootstrap
             if (isset($_SESSION['tri']['taux'])) {
                 $key = $_SESSION['tri']['taux'];
                 $val = explode('-', $this->triPartxInt[$key - 1]);
+                $this->ordreProject = 3;
 
                 // where pour la requete
-                $where .= ' AND p.target_rate BETWEEN "' . $val[0] . '" AND "' . $val[1] . '" ';
+                // $where .= ' AND p.target_rate BETWEEN "' . $val[0] . '" AND "' . $val[1] . '" ';
 
                 // where pour le js
                 $this->where = $key;
@@ -333,7 +334,8 @@ class ajaxController extends bootstrap
             // filter completed projects
             $restriction = '';
             if (isset($_SESSION['tri']['type']) && $_SESSION['tri']['type'] == 4) {
-                    $restriction = ' AND p.date_fin < "'. date('Y-m-d') .'"';
+                $restriction = ' AND p.date_fin < "'. date('Y-m-d') .'"';
+                $sStatusproject = substr($this->tabProjectDisplay, -23); // non
             }
 
             $_SESSION['ordreProject'] = $this->ordreProject;
@@ -347,8 +349,8 @@ class ajaxController extends bootstrap
             $_SESSION['ordreProject'] = $this->ordreProject;
 
             $this->where           = '';
-            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusproject, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusproject . ', 75' . ' AND p.status = 0');
+            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
+            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', 75' . ' AND p.status = 0');
         }
     }
 

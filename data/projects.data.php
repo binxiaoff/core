@@ -219,6 +219,10 @@ class projects extends projects_crud
 
     public function selectProjectsByStatus($status, $where = '', $order = '', $start = '', $nb = '')
     {
+        $iInterestorder = 0;
+        if (0 === strcmp($order, "avg_rate DESC")) { // non
+            $iInterestorder = 1;
+        }
         $sWhereClause = 'projects_status.status IN (' . $status . ')';
 
         if ('' !== trim($where)) {
@@ -229,19 +233,33 @@ class projects extends projects_crud
             $order = 'lestatut ASC, p.date_retrait DESC';
         }
 
-        $sql = '
-          SELECT p.*,
+        $sql = 'SELECT p.*,
               projects_status.status,
               CASE WHEN projects_status.status = 50
                 THEN "1"
                 ELSE "2"
-              END AS lestatut
-            FROM projects p
+              END AS lestatut ';
+
+        if ($iInterestorder) {
+            $sql .= ', ROUND(SUM(b.amount * b.rate) / SUM(b.amount), 1) AS avg_rate';
+        }
+
+        $sql .= " FROM projects p
             INNER JOIN projects_last_status_history USING (id_project)
             INNER JOIN projects_status_history USING (id_project_status_history)
-            INNER JOIN projects_status USING (id_project_status)
-            WHERE ' . $sWhereClause . '
-            ORDER BY ' . $order .
+            INNER JOIN projects_status USING (id_project_status) ";
+
+        if ($iInterestorder) {
+            $sql .= "LEFT JOIN bids b ON b.id_project = p.id_project AND b.status IN (0 ,1) ";
+        }
+
+        $sql .= 'WHERE '. $sWhereClause;
+
+        if ($iInterestorder) {
+            $sql .= ' GROUP BY p.id_project' ;
+        }
+
+        $sql .= " ORDER BY " . $order .
             ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $result        = array();
@@ -626,13 +644,13 @@ class projects extends projects_crud
         if ($iProjectStatus === null) {
             $oProject_status = new \projects_status($this->bdd);
             $oProject_status->getLastStatut($iProjectId);
-            $iProjectStatus = $oProject_status->status;
+            $iProjectStatus = (int) $oProject_status->status;
         }
 
         $iUpperValue = 0;
         $iLowerValue = 0;
 
-        switch ((int) $iProjectStatus) {
+        switch ($iProjectStatus) {
             case \projects_status::FUNDE:
             case \projects_status::REMBOURSEMENT:
             case \projects_status::REMBOURSE:
@@ -640,27 +658,22 @@ class projects extends projects_crud
             case \projects_status::RECOUVREMENT:
             case \projects_status::REMBOURSEMENT_ANTICIPE:
                 foreach ($oLoans->select('id_project = ' . $iProjectId) as $aLoan) {
-                    $iUpperValue += ($aLoan['rate'] * ($aLoan['amount']));
-                    $iLowerValue += ($aLoan['amount']);
+                    $iUpperValue += $aLoan['rate'] * $aLoan['amount'];
+                    $iLowerValue += $aLoan['amount'];
                 }
                 break;
+            case \projects_status::PRET_REFUSE:
+            case \projects_status::DEFAUT:
             case \projects_status::EN_FUNDING:
-                foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status = 0') as $aBid) {
-                    $iUpperValue += ($aBid['rate'] * ($aBid['amount']));
-                    $iLowerValue += ($aBid['amount']);
+                foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status IN (0, 1)') as $aBid) {
+                    $iUpperValue += $aBid['rate'] * $aBid['amount'];
+                    $iLowerValue += $aBid['amount'];
                 }
                 break;
             case \projects_status::FUNDING_KO:
             foreach ($oBids->select('id_project = ' . $iProjectId) as $aBid) {
-                $iUpperValue += ($aBid['rate'] * ($aBid['amount']));
-                $iLowerValue += ($aBid['amount']);
-            }
-            break;
-            case \projects_status::PRET_REFUSE:
-            case \projects_status::DEFAUT:
-            foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status = 1') as $aBid) {
-                $iUpperValue += ($aBid['rate'] * ($aBid['amount']));
-                $iLowerValue += ($aBid['amount']);
+                $iUpperValue += $aBid['rate'] * $aBid['amount'];
+                $iLowerValue += $aBid['amount'];
             }
             break;
             default:

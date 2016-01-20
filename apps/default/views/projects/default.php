@@ -353,7 +353,6 @@
 <script type="text/javascript">
 
     $(document).ready(function () {
-
         var load = false;
         var offset = $('.unProjet:last').offset();
 
