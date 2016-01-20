@@ -7850,20 +7850,19 @@ class cronController extends bootstrap
             $oDateTime               = new DateTime('NOW');
             $fTimeStart              = microtime(true);
             $oLoggerIRR              = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
-            $oLendersAccounts        = $this->loadData('lenders_accounts');
             $oLendersAccountStats    = $this->loadData('lenders_account_stats');
-            $aLendersAccounts        = $oLendersAccounts->selectLendersForIRR($iAmountOfLenderAccounts);
+            $aLendersAccounts        = $oLendersAccountStats->selectLendersForIRR($iAmountOfLenderAccounts);
 
             foreach ($aLendersAccounts as $aLender) {
                 try {
-                    $fXIRR                                   = $oLendersAccounts->calculateIRR($aLender['id_lender_account']);
+                    $fXIRR                                   = $oLendersAccountStats->calculateIRR($aLender['id_lender_account']);
                     $oLendersAccountStats->id_lender_account = $aLender['id_lender_account'];
                     $oLendersAccountStats->tri_date          = $oDateTime->format('Y-m-d H:i:s');
                     $oLendersAccountStats->tri_value         = $fXIRR;
                     $oLendersAccountStats->create();
 
                 } catch (Exception $e) {
-                    $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: ' . $e->getMessage() . $e->getTraceAsString());
+                    $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage());
                 }
 
                 $this->oLogger->addRecord(ULogger::INFO, 'Temps calcul TRI : ' . round(microtime(true) - $fTimeStart, 2));
