@@ -51,36 +51,34 @@
     <br/><br/>
 
     <table class="table vos_operations detail-ope finances">
-        <thead>
-            <tr>
-                <th>Statut</th>
-                <th>Projet</th>
-                <th>Montant prêté</th>
-                <th>Taux d'intérêts</th>
-                <th>Date de première échéance</th>
-                <th>Prochaine échéance</th>
-                <th>Date de dernière échéance</th>
-                <th>Mensualité</th>
-            </tr>
-        </thead>
-        <tbody>
+        <tr>
+            <th>Statut</th>
+            <th>Projet</th>
+            <th>Montant prêté</th>
+            <th>Taux d'intérêts</th>
+            <th>Date de première échéance</th>
+            <th>Prochaine échéance</th>
+            <th>Date de dernière échéance</th>
+            <th>Mensualité</th>
+        </tr>
         <?php foreach ($this->lSumLoans as $aProjectLoans): ?>
-            <tr>
-                <td><?= $this->lng['preteur-operations-detail']['filter-status-' . $aProjectLoans['project_status']] ?></td>
-                <td class="description"><?= $aProjectLoans['name'] ?></td>
-                <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProjectLoans['amount'], 0) ?> €</td>
-                <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProjectLoans['rate'], 1) ?> %</td>
-                <td><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
-                <?php if (in_array($aProjectLoans['project_status'], array(\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE))) { ?>
-                    <td colspan="2">Remboursé intégralement <br /> le <?= $this->dates->formatDate($aProjectLoans['status_change'], 'd/m/Y')?></td>
-                <?php } else { ?>
-                    <td><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
-                    <td><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
-                <?php } ?>
-                <td><?= $this->ficelle->formatNumber($aProjectLoans['mensuel']) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
-            </tr>
+            <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
+                <tr>
+                    <td><?= $this->lng['preteur-operations-detail']['filter-status-' . $aProjectLoans['project_status']] ?></td>
+                    <td class="description"><?= $aProjectLoans['name'] ?></td>
+                    <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProjectLoans['amount'], 0) ?> €</td>
+                    <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProjectLoans['rate'], 1) ?> %</td>
+                    <td><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
+                    <?php if (in_array($aProjectLoans['project_status'], array(\projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE))) { ?>
+                        <td colspan="2">Remboursé intégralement <br /> le <?= $this->dates->formatDate($aProjectLoans['status_change'], 'd/m/Y')?></td>
+                    <?php } else { ?>
+                        <td><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
+                        <td><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
+                    <?php } ?>
+                    <td><?= $this->ficelle->formatNumber($aProjectLoans['mensuel']) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
+                </tr>
+            <?php endif; ?>
         <?php endforeach; ?>
-        </tbody>
     </table>
 
     <br/><br/>
