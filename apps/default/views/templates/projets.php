@@ -100,7 +100,7 @@
                         <tr class="unProjet" id="project<?= $project['id_project'] ?>">
                             <td>
                                 <?
-                                if ($this->projects_status->status >= projects_status::FUNDE) {
+                                if ($this->projects_status->status >= \projects_status::FUNDE) {
                                     $dateRest = $this->lng['preteur-projets']['termine'];
                                 } else {
                                     $tab_date_retrait = explode(' ', $project['date_retrait_full']);
@@ -210,7 +210,7 @@
                     $favori = '';
                 }
 
-                if ($this->projects_status->status >= projects_status::FUNDE) {
+                if ($this->projects_status->status >= \projects_status::FUNDE) {
                     $dateRest = $this->lng['preteur-projets']['termine'];
                 } else {
                     $heure_retrait = date('H:i', strtotime($project['date_retrait_full']));
@@ -251,7 +251,7 @@
                             <strong id="min_val<?= $project['id_project'] ?>"><?= $dateRest ?></strong>
                         </h5>
                         <p>
-                            <?php if ($this->projects_status->status >= projects_status::FUNDE) { ?>
+                            <?php if ($this->projects_status->status >= \projects_status::FUNDE) { ?>
                                 <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise" style="line-height: 14px;padding: 4px 11px;"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
                             <?php } else { ?>
                                 <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn"><?= $this->lng['preteur-projets']['pretez'] ?></a>

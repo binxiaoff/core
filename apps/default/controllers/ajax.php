@@ -178,44 +178,14 @@ class ajaxController extends bootstrap
             $mois_jour = $this->dates->formatDate($pf['date_retrait'], 'F d');
             $annee     = $this->dates->formatDate($pf['date_retrait'], 'Y');
 
-            $CountEnchere = $this->bids->counter('id_project = ' . $pf['id_project']);
-
-            $montantHaut = 0;
-            $montantBas  = 0;
-            // si fundé ou remboursement
-            if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
-                foreach ($this->loans->select('id_project = ' . $pf['id_project']) as $b) {
-                    $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                    $montantBas += ($b['amount'] / 100);
-                }
-            } // funding ko
-            elseif ($this->projects_status->status == 70) {
-                foreach ($this->bids->select('id_project = ' . $pf['id_project']) as $b) {
-                    $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                    $montantBas += ($b['amount'] / 100);
-                }
-            } // emprun refusé
-            elseif ($this->projects_status->status == 75) {
-                foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 1') as $b) {
-                    $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                    $montantBas += ($b['amount'] / 100);
-                }
-            } else {
-                foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 0') as $b) {
-                    $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                    $montantBas += ($b['amount'] / 100);
-                }
-            }
-            if ($montantHaut > 0 && $montantBas > 0) {
-                $avgRate = ($montantHaut / $montantBas);
-            } else {
-                $avgRate = 0;
-            }
+            $iSumbids = $this->bids->counter('id_project = ' . $pf['id_project']);
+            $oBids = $this->bids;
+            $avgRate = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $pf['id_project'], $this->projects_status->status);
 
             $affichage .= "
             <tr class='unProjet' id='project" . $pf['id_project'] . "'>
                 <td>";
-            if ($this->projects_status->status >= 60) {
+            if ($this->projects_status->status >= \projects_status::FUNDE) {
                 $dateRest = 'Terminé';
             } else {
                 $tab_date_retrait = explode(' ', $pf['date_retrait_full']);
@@ -262,7 +232,7 @@ class ajaxController extends bootstrap
                 </td>";
 
             $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'>";
-            if ($CountEnchere > 0) {
+            if ($iSumbids > 0) {
                 $affichage .= $this->ficelle->formatNumber($avgRate, 1) . "%";
             } else {
                 $affichage .= ($pf['target_rate'] == '-' ? $pf['target_rate'] : $this->ficelle->formatNumber($pf['target_rate'], 1)) . "%";
@@ -341,6 +311,13 @@ class ajaxController extends bootstrap
                 $this->ordreProject = 1;
             }
 
+            if (1 === $this->ordreProject) {
+                $sStatusproject = $this->tabProjectDisplay;
+            }
+            else {
+                $sStatusproject = \projects_status::EN_FUNDING;
+            }
+
             // tri taux
             if (isset($_SESSION['tri']['taux'])) {
                 $key = $_SESSION['tri']['taux'];
@@ -361,8 +338,8 @@ class ajaxController extends bootstrap
 
             $_SESSION['ordreProject'] = $this->ordreProject;
 
-            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . $restriction . ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', 75', $where . $restriction . ' AND p.status = 0 AND p.display = 0');
+            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusproject, $where . $restriction . ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
+            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusproject . ', 75', $where . $restriction . ' AND p.status = 0 AND p.display = 0');
         } else {
             $this->ordreProject = 1;
             $this->type         = 0;
@@ -370,8 +347,8 @@ class ajaxController extends bootstrap
             $_SESSION['ordreProject'] = $this->ordreProject;
 
             $this->where           = '';
-            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', 75' . ' AND p.status = 0');
+            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusproject, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
+            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusproject . ', 75' . ' AND p.status = 0');
         }
     }
 
