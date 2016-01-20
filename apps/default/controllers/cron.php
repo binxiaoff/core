@@ -7749,7 +7749,7 @@ class cronController extends bootstrap
                 $oLoans                 = $this->loadData('loans');
                 $oMailsText             = $this->loadData('mails_text');
 
-                $oMailsText->get('emprunteur-projet-statut-probleme-j-x-before-next-repayment', 'lang = "' . $this->language . '" AND type');
+                $oMailsText->get('emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance', 'lang = "' . $this->language . '" AND type');
 
                 $this->settings->get('Facebook', 'type');
                 $sFacebookURL = $this->settings->value;
@@ -7774,7 +7774,6 @@ class cronController extends bootstrap
                     'surl'             => $this->surl,
                     'lien_fb'          => $sFacebookURL,
                     'lien_tw'          => $sTwitterURL,
-                    'sujet'            => htmlentities($oMailsText->subject, null, 'UTF-8'),
                     'bic_sfpmei'       => $sBIC,
                     'iban_sfpmei'      => $sIBAN,
                     'tel_emprunteur'   => $sBorrowerPhoneNumber,
@@ -7789,6 +7788,7 @@ class cronController extends bootstrap
                     $aNextRepayment = $oEcheanciersEmprunteur->select('id_project = ' . $oProjects->id_project . ' AND date_echeance_emprunteur > DATE(NOW())', 'date_echeance_emprunteur ASC', 0, 1);
 
                     $aReplacements = $aCommonReplacements + array(
+                            'sujet'                              => htmlentities($oMailsText->subject, null, 'UTF-8'),
                             'entreprise'                         => htmlentities($oCompanies->name, null, 'UTF-8'),
                             'civilite_e'                         => $oClients->civilite,
                             'nom_e'                              => htmlentities($oClients->nom, null, 'UTF-8'),

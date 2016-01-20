@@ -1481,7 +1481,9 @@ class dossiersController extends bootstrap
         $aReplacements['sujet'] = htmlentities($sujetMail, null, 'UTF-8');
 
         $tabVars = $this->tnmp->constructionVariablesServeur($aReplacements);
+        $tabVars['[EMV DYN]sujet[EMV /DYN]'] = strtr($aReplacements['sujet'], $tabVars);
 
+        $sujetMail = strtr(utf8_decode($sujetMail), $tabVars);
         $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
         $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
