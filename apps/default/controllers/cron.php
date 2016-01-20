@@ -6867,15 +6867,19 @@ class cronController extends bootstrap
             // ajout KLE - 28-07-15 BT : 18157 *** pour ne pas envoyer de mail tant que le remb auto n'est pas terminé
             // On recup le param du remb auto
             $settingsControleRemb = $this->loadData('settings');
-            $settingsControleRemb->get('Controle remboursements auto', 'type');
+            $settingsControleRemb->get('Controle cron remboursements auto', 'type');
 
             // on rentre dans le cron si statut égale 1
             if ($settingsControleRemb->value == 1) {
                 // BIEN PRENDRE EN COMPTE LA DATE DE DEBUT DE LA REQUETE POUR NE PAS TRATER LES ANCIENS PROJETS REMB <------------------------------------| !!!!!!!!!
-                $lEcheances = $echeanciers->selectEcheances_a_remb('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1 AND LEFT(date_echeance,10) > "2015-06-30"', '', 0, 300); // on limite a 300 mails par executions
+                $lEcheances = $echeanciers->selectEcheances_a_remb('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1 AND DATE(date_echeance) > "2015-06-30"', '', 0, 300); // on limite a 300 mails par executions
 
                 foreach ($lEcheances as $e) {
-                    if ($transactions->get($e['id_echeancier'], 'id_echeancier') == true) {
+                    if (
+                        $transactions->get($e['id_echeancier'], 'id_echeancier')
+                        && $clients->get($lenders->id_client_owner, 'id_client')
+                        && $clients->status == 1
+                    ) {
                         $dernierStatut     = $projects_status_history->select('id_project = ' . $e['id_project'], 'added DESC', 0, 1);
                         $dateDernierStatut = $dernierStatut[0]['added'];
 
@@ -6890,11 +6894,6 @@ class cronController extends bootstrap
                         $clients->get($lenders->id_client_owner, 'id_client');
                         $projects->get($e['id_project'], 'id_project');
                         $companies->get($projects->id_company, 'id_company');
-
-                        $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($clients->prenom))), 0, 1);
-                        $nom       = $this->ficelle->stripAccents(utf8_decode(trim($clients->nom)));
-                        $id_client = str_pad($clients->id_client, 6, 0, STR_PAD_LEFT);
-                        $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
 
                         $this->mails_text->get('preteur-remboursement', 'lang = "' . $this->language . '" AND type');
 
@@ -6931,7 +6930,7 @@ class cronController extends bootstrap
                             'date_bid_accepte'      => $day . ' ' . $month . ' ' . $year,
                             'nbre_prets'            => $nbpret,
                             'solde_p'               => $solde,
-                            'motif_virement'        => $motif,
+                            'motif_virement'        => $clients->getLenderPattern($clients->id_client),
                             'lien_fb'               => $lien_fb,
                             'lien_tw'               => $lien_tw
                         );
@@ -6947,19 +6946,19 @@ class cronController extends bootstrap
                         $this->email->setSubject(stripslashes($sujetMail));
                         $this->email->setHTMLBody(stripslashes($texteMail));
 
-                        $notifications->type            = 2; // remb
+                        $notifications->type            = \notifications::TYPE_REPAYMENT;
                         $notifications->id_lender       = $e['id_lender'];
                         $notifications->id_project      = $e['id_project'];
-                        $notifications->amount          = ($rembNet * 100);
-                        $notifications->id_notification = $notifications->create();
+                        $notifications->amount          = $rembNet * 100;
+                        $notifications->create();
 
-                        $this->clients_gestion_mails_notif                                 = $this->loadData('clients_gestion_mails_notif');
-                        $this->clients_gestion_mails_notif->id_client                      = $lenders->id_client_owner;
-                        $this->clients_gestion_mails_notif->id_notif                       = 5; // remb preteur
-                        $this->clients_gestion_mails_notif->date_notif                     = date('Y-m-d H:i:s');
-                        $this->clients_gestion_mails_notif->id_notification                = $notifications->id_notification;
-                        $this->clients_gestion_mails_notif->id_transaction                 = $transactions->id_transaction;
-                        $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
+                        $this->clients_gestion_mails_notif                  = $this->loadData('clients_gestion_mails_notif');
+                        $this->clients_gestion_mails_notif->id_client       = $lenders->id_client_owner;
+                        $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_REPAYMENT;
+                        $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                        $this->clients_gestion_mails_notif->id_notification = $notifications->id_notification;
+                        $this->clients_gestion_mails_notif->id_transaction  = $transactions->id_transaction;
+                        $this->clients_gestion_mails_notif->create();
 
                         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
 
@@ -6968,20 +6967,18 @@ class cronController extends bootstrap
                             $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                             $this->clients_gestion_mails_notif->update();
 
-                            if ($clients->status == 1) {
-                                if ($this->Config['env'] == 'prod') {
-                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
-                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else {
-                                    $this->email->addRecipient(trim($clients->email));
-                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                }
+                            if ($this->Config['env'] == 'prod') {
+                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
+                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                            } else {
+                                $this->email->addRecipient(trim($clients->email));
+                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                             }
                         }
                         $echeanciers->get($e['id_echeancier'], 'id_echeancier');
                         $echeanciers->status_email_remb = 1;
                         $echeanciers->update();
-                    } // fin check transasction existante
+                    }
                 }
             }
 

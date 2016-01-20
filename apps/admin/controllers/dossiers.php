@@ -2608,7 +2608,7 @@ class dossiersController extends bootstrap
             if (isset($this->params[1]) && $this->params[1] == 'remb') {
                 // On recup le param
                 $settingsControleRemb = $this->loadData('settings');
-                $settingsControleRemb->get('Controle remboursements', 'type');
+                $settingsControleRemb->get('Controle cron remboursements auto', 'type');
 
                 // on rentre dans le cron si statut égale 1
                 if ($settingsControleRemb->value == 1) {
@@ -2635,8 +2635,6 @@ class dossiersController extends bootstrap
 
                     if ($lEcheancesRembEmprunteur != false) {
                         foreach ($lEcheancesRembEmprunteur as $RembEmpr) {
-
-                            // On déclare les variables
                             $montant                      = 0;
                             $capital                      = 0;
                             $interets                     = 0;
@@ -2650,13 +2648,6 @@ class dossiersController extends bootstrap
                             $prelevements_solidarite      = 0;
                             $crds                         = 0;
 
-                            $rembNet = 0;
-                            $etat    = 0;
-
-                            $rembNetTotal = 0;
-                            $TotalEtat    = 0;
-
-                            // On recup les echeanches non remboursé aux preteurs mais remb par l'emprunteur
                             $lEcheances = $this->echeanciers->select('id_project = ' . $RembEmpr['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $RembEmpr['ordre'] . ' AND status = 0');
 
                             if ($lEcheances == false) {
@@ -2929,8 +2920,6 @@ class dossiersController extends bootstrap
 
                             // On evite de créer une ligne qui sert a rien
                             if ($rembNetTotal != 0) {
-
-                                // On enregistre la transaction
                                 $this->transactions->montant                  = 0;
                                 $this->transactions->id_echeancier            = 0; // on reinitialise
                                 $this->transactions->id_client                = 0; // on reinitialise
@@ -2942,12 +2931,10 @@ class dossiersController extends bootstrap
                                 $this->transactions->status                   = '1';
                                 $this->transactions->etat                     = '1';
                                 $this->transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
-                                $this->transactions->type_transaction         = 10; // remb unilend pour les preteurs
+                                $this->transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
                                 $this->transactions->transaction              = 2; // transaction virtuelle
+                                $this->transactions->create();
 
-                                $this->transactions->id_transaction = $this->transactions->create();
-
-                                // bank_unilend (on retire l'argent redistribué)
                                 $this->bank_unilend->id_transaction         = $this->transactions->id_transaction;
                                 $this->bank_unilend->id_project             = $this->projects->id_project;
                                 $this->bank_unilend->montant                = '-' . $rembNetTotal * 100;
@@ -2958,32 +2945,23 @@ class dossiersController extends bootstrap
                                 $this->bank_unilend->create();
 
                                 // MAIL FACTURE REMBOURSEMENT EMPRUNTEUR //
-                                // Chargement des datas
-                                $echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
                                 $projects                = $this->loadData('projects');
                                 $companies               = $this->loadData('companies');
                                 $emprunteur              = $this->loadData('clients');
                                 $projects_status_history = $this->loadData('projects_status_history');
 
-                                // On recup les infos de l'emprunteur
                                 $projects->get($e['id_project'], 'id_project');
                                 $companies->get($projects->id_company, 'id_company');
                                 $emprunteur->get($companies->id_client_owner, 'id_client');
 
-                                $link = $this->furl . '/pdf/facture_ER/' . $emprunteur->hash . '/' . $e['id_project'] . '/' . $e['ordre'];
-
                                 $dateRemb = $projects_status_history->select('id_project = ' . $projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')');
-                                //print_r($projects->id_project);
-
-                                $timeAdd = strtotime($dateRemb[0]['added']);
-                                $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
-
+                                $timeAdd  = strtotime($dateRemb[0]['added']);
+                                $month    = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
                                 $dateRemb = date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd);
 
                                 //********************************//
                                 //*** ENVOI DU MAIL FACTURE ER ***//
                                 //********************************//
-                                // Recuperation du modele de mail
                                 $this->mails_text->get('facture-emprunteur-remboursement', 'lang = "' . $this->language . '" AND type');
 
                                 $varMail = array(
@@ -2995,7 +2973,7 @@ class dossiersController extends bootstrap
                                     'projet-title'    => $projects->title,
                                     'compte-p'        => $this->furl,
                                     'projet-p'        => $this->furl . '/projects/detail/' . $projects->slug,
-                                    'link_facture'    => $link,
+                                    'link_facture'    => $this->furl . '/pdf/facture_ER/' . $emprunteur->hash . '/' . $e['id_project'] . '/' . $e['ordre'],
                                     'datedelafacture' => $dateRemb,
                                     'mois'            => strtolower($this->dates->tableauMois['fr'][date('n')]),
                                     'annee'           => date('Y'),
@@ -3025,33 +3003,13 @@ class dossiersController extends bootstrap
                                     $this->email->addRecipient(trim($companies->email_facture));
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 }
-                                //////////////////////////////////////////////
-                                // creation pdf facture ER //
 
-                                /* $hashclient = $emprunteur->hash;
-                                  $id_project = $projects->id_project;
-                                  $ordre = $e['ordre'];
-
-                                  // Nom du fichier
-                                  $vraisNom = 'FACTURE-UNILEND-'.$projects->slug.'-'.$ordre;
-
-                                  $url = $this->furl.'/pdf/facture_ER_html/'.$hashclient.'/'.$id_project.'/'.$ordre;
-
-                                  $path = $this->path.'protected/pdf/facture/';
-                                  $footer = $this->furl.'/pdf/footer_facture/';
-
-                                  // fonction pdf
-                                  $this->Web2Pdf->convert($path,$hashclient,$url,'facture_ER',$vraisNom,$id_project.'-'.$ordre,'','',$footer,'nodisplay'); */
-
-                                /////////////////////////////
-                                // Mise en session du message
-                                $_SESSION['freeow']['title']   = 'Remboursement preteur';
+                                $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                                 $_SESSION['freeow']['message'] = 'Les preteurs ont bien &eacute;t&eacute; rembours&eacute; !';
                             } else {
                                 //En cas de double Echeance en attente, si on traite la premiere la deuxieme sera a rembNetTotal = 0
                                 if (! $deja_passe) {
-                                    // Mise en session du message
-                                    $_SESSION['freeow']['title']   = 'Remboursement preteur';
+                                    $_SESSION['freeow']['title']   = 'Remboursement prêteur';
                                     $_SESSION['freeow']['message'] = "Aucun remboursement n'a &eacute;t&eacute; effectu&eacute; aux preteurs !";
                                 }
                             }
@@ -3060,16 +3018,11 @@ class dossiersController extends bootstrap
                                 $oAccountUnilend = $this->loadData('platform_account_unilend');
                                 $oAccountUnilend->addDueDateCommssion($RembEmpr['id_echeancier_emprunteur']);
                             }
-                            /* echo '---------------------<br>';
-                              echo 'etat : '.$TotalEtat.'<br>';
-                              echo 'total a remb : '.$rembNetTotal.'<br>';
-                              echo 'montant : '.$montant.'<br>';
-                              echo '---------------------<br>'; */
                         }
                     }
-                    // bank_unilend
+
                     $lesRembEmprun = $this->bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $this->projects->id_project, 'id_unilend ASC', 0, 1); // on ajoute la restriction pour BT 17882
-                    // On parcourt les remb non reversé aux preteurs dans bank unilend et on met a jour le satut pour dire que c'est remb
+
                     foreach ($lesRembEmprun as $r) {
                         $this->bank_unilend->get($r['id_unilend'], 'id_unilend');
                         $this->bank_unilend->status = 1;
@@ -3083,12 +3036,12 @@ class dossiersController extends bootstrap
 
                     $settingsControleRemb->value = 1;
                     $settingsControleRemb->update();
+                } else {
+                    $_SESSION['freeow']['title']   = 'Remboursement prêteur';
+                    $_SESSION['freeow']['message'] = 'Impossible de rembourser les prêteurs, un remboursement automatique est en cours';
                 }
-                header('Location:' . $this->lurl . '/dossiers/detail_remb/' . $this->params[0]);
-
+                header('Location: ' . $this->lurl . '/dossiers/detail_remb/' . $this->params[0]);
                 die;
-
-                ///////////////////////////////// fin ///////////////////////////////
             }
             // REMB ANTICIPE
             //on gère ici la réception du formulaire qui déclenche le remb anticipe aux preteurs
