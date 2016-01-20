@@ -1734,14 +1734,6 @@ class preteursController extends bootstrap
         if ($aIRR) {
             $this->IRRValue = $aIRR['tri_value'];
             $this->IRRDate = $aIRR['tri_date'];
-        } else {
-            try {
-                $this->IRRValue = $oLenderAccountStats->calculateIRR($this->lenders_accounts->id_lender_account);
-                $this->IRRDate = '';
-            } catch (Exception $e){
-                $oLoggerIRR    = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
-                $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
-            }
         }
 
         $statusOk                = array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::PRET_REFUSE, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE);

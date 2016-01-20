@@ -7843,6 +7843,13 @@ class cronController extends bootstrap
     {
         if (true === $this->startCron('LendersStats', 30)) {
             set_time_limit(2000);
+            $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
+            $this->bdd->query('INSERT INTO projects_last_status_history_materialized
+                                    SELECT MAX(id_project_status_history) AS id_project_status_history, id_project
+                                    FROM projects_status_history
+                                    GROUP BY id_project');
+            $this->bdd->query('OPTIMIZE TABLE projects_last_status_history_materialized');
+
             $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 800;
             $oDateTime               = new DateTime('NOW');
             $fTimeStart              = microtime(true);
@@ -7864,6 +7871,7 @@ class cronController extends bootstrap
 
                 $this->oLogger->addRecord(ULogger::INFO, 'Temps calcul TRI : ' . round(microtime(true) - $fTimeStart, 2));
             }
+            $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
             $this->stopCron();
         }
     }

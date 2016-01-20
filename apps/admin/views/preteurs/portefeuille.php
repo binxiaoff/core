@@ -44,8 +44,8 @@
     <div>
         <h2>Portefeuille</h2>
 
-        <h3>TRI du portefeuille : <?= empty($this->IRRValue) === false ? $this->IRRValue.'%' : 'non calculable' ?>
-            à date <?= empty($this->IRRdate) === false ? $this->dates->formatDateMysqltoShortFR($this->IRRdate): 'd\'aujourd\'hui' ?></h3>
+        <h3>TRI du portefeuille : <?= empty($this->IRRValue) === false ? $this->IRRValue.'%' : 'Ce prêteur est trop récent. Son TRI n\'a pas encore été calculé.' ?>
+            à date <?= empty($this->IRRdate) === false ? $this->dates->formatDateMysqltoShortFR($this->IRRdate): '' ?></h3>
 
         <h3>Nombre de projets à probleme dans le portefeuille :  <?= $this->problProjects ?></h3>
         <h3>Nombre de projets total dans le portefeuille : <?= $this->totalProjects ?></h3>
