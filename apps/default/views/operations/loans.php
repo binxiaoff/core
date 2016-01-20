@@ -57,10 +57,11 @@
     <tbody>
     <?php foreach ($this->lSumLoans as $iLoanIndex => $aProjectLoans): ?>
         <tr class="<?= ($iLoanIndex % 2 ? '' : 'odd') ?>">
-            <td>
+            <td class="status">
                 <div
                     <?php if (false === empty($this->lng['preteur-operations-detail']['info-status-' . $aProjectLoans['project_status']])): ?>title="<?= $this->lng['preteur-operations-detail']['info-status-' . $aProjectLoans['project_status']] ?>"<?php endif; ?>
                     class="status-color<?= empty($aProjectLoans['status-color']) ? '' : ' status-' . $aProjectLoans['status-color'] ?><?php if (false === empty($this->lng['preteur-operations-detail']['info-status-' . $aProjectLoans['project_status']])): ?> tooltip-status<?php endif; ?>">&nbsp;</div>
+                <span class="title"><br/><?php if (false === empty($this->lng['preteur-operations-detail']['info-status-' . $aProjectLoans['project_status']])): ?><?= $this->lng['preteur-operations-detail']['info-status-' . $aProjectLoans['project_status']] ?><?php endif; ?></span>
             </td>
             <td class="description">
                 <h5><a href="<?= $this->lurl ?>/projects/detail/<?= $aProjectLoans['slug'] ?>" target="_blank"><?= $aProjectLoans['name'] ?></a></h5>

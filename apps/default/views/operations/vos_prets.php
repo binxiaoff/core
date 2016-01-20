@@ -50,12 +50,17 @@
         vertical-align: middle;
     }
 
-    .detail-ope.table td:first-child {
+    .detail-ope.table td.status {
         padding: 0;
+    }
+
+    .detail-ope.table td.status > .title {
+        display: none;
     }
 
     .detail-ope.table td .status-color {
         background-color: #00A000;
+        float: left;
         margin: 6px;
         height: 55px;
         width: 8px;
@@ -181,17 +186,30 @@
     .vos_prets .print{margin-top: 8px;width:50px;}
     .vos_prets .xls{margin-top: 6px;width:50px;}
 
+    .vos_prets .export > .spacer {width: 30px; display: inline-block;}
+
+    #filter-status-container {display: block; float: left;}
+    #filter-year-container {display: block; float: right;}
+
+    @media only screen and (max-width: 767px) {
+        #filter-status-container, #filter-year-container {float: inherit;}
+        #filter-status-container:after {content:"\a\a"; white-space: pre;}
+        .vos_prets .export > .spacer,
+        .vos_prets .export > .vos_operations_ligne > span {display: none;}
+        .detail-ope.table td.status > .title {display: inline; line-height: 16px;}
+    }
+
     .summary ul {color: #727272; padding-left: 17px;}
 </style>
 <h2><?= $this->lng['preteur-operations']['titre-3'] ?></h2>
 <div class="export">
     <div class="vos_operations_ligne" style="text-align:center;">
-        Imprimer<br/>
+        <span>Imprimer<br/></span>
         <a href="<?= $this->lurl ?>/pdf/loans"><img class="print" src="<?= $this->surl ?>/styles/default/preteurs/images/icon-print.png"/></a>
     </div>
-    <div style="width:30px;display:inline-block;"></div>
+    <div class="spacer"></div>
     <div class="vos_operations_ligne" style="text-align:center;">
-        Exporter<br/>
+        <span>Exporter<br/></span>
         <a href="<?= $this->lurl ?>/operations/loans_csv"><img class="xls" src="<?= $this->surl ?>/images/default/xls_hd.png"/></a>
     </div>
 </div>
@@ -213,17 +231,7 @@
 <?php if (false === empty($this->lSumLoans)): ?>
 <p><?= $this->lng['profile']['contenu-partie-4'] ?></p>
 <div class="table-filter clearfix">
-    <?php if (count($this->aLoansYears) > 1): ?>
-        <div class="right">
-            <select id="filter-year" class="custom-select field-small">
-                <option value=""><?= $this->lng['preteur-operations-detail']['filter-placeholder-date'] ?></option>
-                <?php foreach ($this->aLoansYears as $iYear => $iLoansByYear): ?>
-                    <option value="<?= $iYear ?>"><?= $this->lng['profile']['annee'] ?> <?= $iYear ?></option>
-                <?php endforeach; ?>
-            </select>
-        </div>
-    <?php endif; ?>
-    <div class="left">
+    <div id="filter-status-container">
         <select id="filter-status" class="custom-select field-small">
             <option value=""><?= $this->lng['preteur-operations-detail']['filter-placeholder-status'] ?></option>
             <?php foreach ($this->aFilterStatuses as $aStatus): ?>
@@ -233,6 +241,16 @@
             <?php endforeach; ?>
         </select>
     </div>
+    <?php if (count($this->aLoansYears) > 1): ?>
+        <div id="filter-year-container">
+            <select id="filter-year" class="custom-select field-small">
+                <option value=""><?= $this->lng['preteur-operations-detail']['filter-placeholder-date'] ?></option>
+                <?php foreach ($this->aLoansYears as $iYear => $iLoansByYear): ?>
+                    <option value="<?= $iYear ?>"><?= $this->lng['profile']['annee'] ?> <?= $iYear ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+    <?php endif; ?>
 </div>
 
 <div class="load">

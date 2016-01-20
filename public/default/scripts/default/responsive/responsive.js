@@ -26,8 +26,6 @@
             $html.toggleClass('show-search').removeClass('show-nav show-login');
         });
 
-
-
         $('.popup-link').colorbox({
             maxWidth: '90%',
             onComplete: function () {
