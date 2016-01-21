@@ -219,10 +219,11 @@ class projects extends projects_crud
 
     public function selectProjectsByStatus($status, $where = '', $order = '', $start = '', $nb = '')
     {
-        $iInterestorder = 0;
+        $iInterestsort = 0;
         if (0 === strcmp($order, "avg_rate DESC")) { // non
-            $iInterestorder = 1;
+            $iInterestsort = 1;
         }
+
         $sWhereClause = 'projects_status.status IN (' . $status . ')';
 
         if ('' !== trim($where)) {
@@ -240,7 +241,7 @@ class projects extends projects_crud
                 ELSE "2"
               END AS lestatut ';
 
-        if ($iInterestorder) {
+        if (1 === $iInterestsort) {
             $sql .= ', ROUND(SUM(b.amount * b.rate) / SUM(b.amount), 1) AS avg_rate';
         }
 
@@ -249,15 +250,11 @@ class projects extends projects_crud
             INNER JOIN projects_status_history USING (id_project_status_history)
             INNER JOIN projects_status USING (id_project_status) ";
 
-        if ($iInterestorder) {
+        if (1 === $iInterestsort) {
             $sql .= "LEFT JOIN bids b ON b.id_project = p.id_project AND b.status IN (0 ,1) ";
         }
 
         $sql .= 'WHERE '. $sWhereClause;
-
-        if ($iInterestorder) {
-            $sql .= ' GROUP BY p.id_project' ;
-        }
 
         $sql .= " ORDER BY " . $order .
             ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));

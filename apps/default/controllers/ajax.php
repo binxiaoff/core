@@ -160,14 +160,12 @@ class ajaxController extends bootstrap
         $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . $restriction . ' AND p.status = 0 AND p.display = 0', $ordre, $_POST['positionStart'], 10);
         $affichage             = '';
 
-        foreach ($this->lProjetsFunding as $k => $pf) {
+        foreach ($this->lProjetsFunding as $project) {
+            $this->projects_status->getLastStatut($project['id_project']);
+            $this->companies->get($project['id_company'], 'id_company');
+            $this->companies_details->get($project['id_company'], 'id_company');
 
-            $this->projects_status->getLastStatut($pf['id_project']);
-
-            $this->companies->get($pf['id_company'], 'id_company');
-            $this->companies_details->get($pf['id_company'], 'id_company');
-
-            $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $pf['date_retrait_full']); // date fin 21h a chaque fois
+            $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $project['date_retrait_full']); // date fin 21h a chaque fois
             if ($inter['mois'] > 0) {
                 $dateRest = $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'];
             } else {
@@ -175,82 +173,82 @@ class ajaxController extends bootstrap
             }
 
             // dates pour le js
-            $mois_jour = $this->dates->formatDate($pf['date_retrait'], 'F d');
-            $annee     = $this->dates->formatDate($pf['date_retrait'], 'Y');
+            $mois_jour = $this->dates->formatDate($project['date_retrait'], 'F d');
+            $annee     = $this->dates->formatDate($project['date_retrait'], 'Y');
 
-            $iSumbids = $this->bids->counter('id_project = ' . $pf['id_project']);
+            $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
             $oBids = $this->bids;
-            $avgRate = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $pf['id_project'], $this->projects_status->status);
+            $avgRate = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $project['id_project'], $this->projects_status->status);
 
             $affichage .= "
-            <tr class='unProjet' id='project" . $pf['id_project'] . "'>
+            <tr class='unProjet' id='project" . $project['id_project'] . "'>
                 <td>";
             if ($this->projects_status->status >= \projects_status::FUNDE) {
                 $dateRest = 'Terminé';
             } else {
-                $tab_date_retrait = explode(' ', $pf['date_retrait_full']);
+                $tab_date_retrait = explode(' ', $project['date_retrait_full']);
                 $tab_date_retrait = explode(':', $tab_date_retrait[1]);
                 $heure_retrait    = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
 
                 $affichage .= "
                         <script>
-                            var cible" . $pf['id_project'] . " = new Date('" . $mois_jour . ", " . $annee . " " . $heure_retrait . ":00');
-                            var letime" . $pf['id_project'] . " = parseInt(cible" . $pf['id_project'] . ".getTime() / 1000, 10);
-                            setTimeout('decompte(letime" . $pf['id_project'] . ",\"val" . $pf['id_project'] . "\")', 500);
+                            var cible" . $project['id_project'] . " = new Date('" . $mois_jour . ", " . $annee . " " . $heure_retrait . ":00');
+                            var letime" . $project['id_project'] . " = parseInt(cible" . $project['id_project'] . ".getTime() / 1000, 10);
+                            setTimeout('decompte(letime" . $project['id_project'] . ",\"val" . $project['id_project'] . "\")', 500);
                         </script>";
             }
 
-            if ($pf['photo_projet'] != '') {
-                $affichage .= "<a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'><img src='" . $this->surl . '/images/dyn/projets/72/' . $pf['photo_projet'] . "' alt='" . $pf['photo_projet'] . "' class='thumb'></a>";
+            if ($project['photo_projet'] != '') {
+                $affichage .= "<a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'><img src='" . $this->surl . '/images/dyn/projets/72/' . $project['photo_projet'] . "' alt='" . $project['photo_projet'] . "' class='thumb'></a>";
             }
 
             $affichage .= "
                     <div class='description'>";
             if ($_SESSION['page_projet'] == 'projets_fo') {
-                $affichage .= "<h5><a href='" . $this->lurl . '/projects/detail/' . $pf['slug'] . "'>" . $pf['title'] . "</a></h5>";
+                $affichage .= "<h5><a href='" . $this->lurl . '/projects/detail/' . $project['slug'] . "'>" . $project['title'] . "</a></h5>";
             } else {
-                $affichage .= "<h5><a href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'>" . $pf['title'] . "</a></h5>";
+                $affichage .= "<h5><a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>" . $project['title'] . "</a></h5>";
             }
             $affichage .= "<h6>" . $this->companies->city . ($this->companies->zip != '' ? ', ' : '') . $this->companies->zip . "</h6>
-                        <p>" . $pf['nature_project'] . "</p>
+                        <p>" . $project['nature_project'] . "</p>
                     </div><!-- /.description -->
                 </td>
                 <td>
-                    <a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'>
-                        <div class='cadreEtoiles'><div class='etoile " . $this->lNotes[$pf['risk']] . "'></div></div>
+                    <a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>
+                        <div class='cadreEtoiles'><div class='etoile " . $this->lNotes[$project['risk']] . "'></div></div>
                     </a>
                 </td>
                 <td style='white-space:nowrap;'>
-                    <a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'>
-                        " . $this->ficelle->formatNumber($pf['amount'], 0) . "€
+                    <a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>
+                        " . $this->ficelle->formatNumber($project['amount'], 0) . "€
                     </a>
                 </td>
                 <td style='white-space:nowrap;'>
-                <a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'>
-                    " . ($pf['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $pf['period'] . ' ' . $this->lng['preteur-projets']['mois']) . "
+                <a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>
+                    " . ($project['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $project['period'] . ' ' . $this->lng['preteur-projets']['mois']) . "
                     </a>
                 </td>";
 
-            $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'>";
+            $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>";
             if ($iSumbids > 0) {
                 $affichage .= $this->ficelle->formatNumber($avgRate, 1) . "%";
             } else {
-                $affichage .= ($pf['target_rate'] == '-' ? $pf['target_rate'] : $this->ficelle->formatNumber($pf['target_rate'], 1)) . "%";
+                $affichage .= ($project['target_rate'] == '-' ? $project['target_rate'] : $this->ficelle->formatNumber($project['target_rate'], 1)) . "%";
             }
             $affichage .= "</a></td>";
 
 
-            $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'><strong id='val" . $pf['id_project'] . "'>" . $dateRest . "</strong></a></td>
+            $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'><strong id='val" . $project['id_project'] . "'>" . $dateRest . "</strong></a></td>
                 <td>";
 
             if ($this->projects_status->status >= \projects_status::FUNDE) {
-                $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "' class='btn btn-info btn-small multi grise1 btn-grise'>" . $this->lng['preteur-projets']['voir-le-projet'] . "</a>";
+                $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small multi grise1 btn-grise'>" . $this->lng['preteur-projets']['voir-le-projet'] . "</a>";
             } else {
-                $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "' class='btn btn-info btn-small'>" . $this->lng['preteur-projets']['pretez'] . "</a>";
+                $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small'>" . $this->lng['preteur-projets']['pretez'] . "</a>";
             }
 
             if (isset($_SESSION['client'])) {
-                $affichage .= "<a class='fav-btn " . $favori . "' id='fav" . $pf['id_project'] . "' onclick=\"favori(" . $pf['id_project'] . ",'fav" . $pf['id_project'] . "'," . $this->clients->id_client . ",0);\">" . $this->lng['preteur-projets']['favori'] . " <i></i></a>";
+                $affichage .= "<a class='fav-btn " . $favori . "' id='fav" . $project['id_project'] . "' onclick=\"favori(" . $project['id_project'] . ",'fav" . $project['id_project'] . "'," . $this->clients->id_client . ",0);\">" . $this->lng['preteur-projets']['favori'] . " <i></i></a>";
             }
             $affichage .= "</td>
             </tr>
@@ -303,32 +301,15 @@ class ajaxController extends bootstrap
         if (isset($_SESSION['tri'])) {
             $where       = '';
             $this->where = '';
+            $count       = '';
 
             // tri temps
             if (isset($_SESSION['tri']['temps'])) {
                 $this->ordreProject = $_SESSION['tri']['temps'];
+                $sStatusproject = \projects_status::EN_FUNDING;
             } else {
                 $this->ordreProject = 1;
-            }
-
-            if (1 === $this->ordreProject) {
                 $sStatusproject = $this->tabProjectDisplay;
-            }
-            else {
-                $sStatusproject = \projects_status::EN_FUNDING;
-            }
-
-            // tri taux
-            if (isset($_SESSION['tri']['taux'])) {
-                $key = $_SESSION['tri']['taux'];
-                $val = explode('-', $this->triPartxInt[$key - 1]);
-                $this->ordreProject = 3;
-
-                // where pour la requete
-                $where .= ' AND p.target_rate BETWEEN "' . $val[0] . '" AND "' . $val[1] . '" ';
-
-                // where pour le js
-                $this->where = $key;
             }
 
             // filter completed projects
@@ -340,8 +321,25 @@ class ajaxController extends bootstrap
 
             $_SESSION['ordreProject'] = $this->ordreProject;
 
-            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusproject, $where . $restriction . ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusproject . ', 75', $where . $restriction . ' AND p.status = 0 AND p.display = 0');
+            $where .= $restriction;
+            $count .= $restriction;
+            $where .= ' AND p.status = 0 AND p.display = 0';
+
+            // tri taux
+            if (isset($_SESSION['tri']['taux'])) {
+                $key = $_SESSION['tri']['taux'];
+                $val = explode('-', $this->triPartxInt[$key - 1]);
+                $this->ordreProject = 3;
+
+                $where .= ' GROUP BY p.id_project';
+                $where .= ' HAVING ROUND(SUM(b.amount * b.rate) / SUM(b.amount), 1) BETWEEN "'. $val[0] .'" AND "'. $val[1] .'"';
+
+                // where pour le js
+                $this->where = $key;
+            }
+
+            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusproject, $where , $this->tabOrdreProject[$this->ordreProject], 0, 10);
+            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusproject . ', 75', $count . ' AND p.status = 0 AND p.display = 0');
         } else {
             $this->ordreProject = 1;
             $this->type         = 0;
