@@ -62,7 +62,6 @@ class clients_status_history extends clients_status_history_crud
 		if($order != '')
 			$order = ' ORDER BY '.$order;
 		$sql = 'SELECT * FROM `clients_status_history`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
-var_dump($sql);
 		$resultat = $this->bdd->query($sql);
 		$result = array();
 		while($record = $this->bdd->fetch_array($resultat))
