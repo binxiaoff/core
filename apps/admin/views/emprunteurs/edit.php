@@ -121,19 +121,16 @@ if (isset($_SESSION['freeow'])) {
                 <td colspan="3"><input type="text" name="bic" id="bic" style="width: 620px;" class="input_big" value="<?= $this->companies->bic ?>" onKeyUp="verif(this.id, 1);"/></td>
             </tr>
             <tr>
-               	<th><label for="email_facture">Email de facturation :</label></th>
-                <td><input type="text" name="email_facture" id="email_facture" class="input_large" value="<?= $this->companies->email_facture ?>"/></td>
-
-                <th></th>
-                <td></td>
+                <th><label for="email_facture">Email de facturation :</label></th>
+                <td colspan="3"><input type="text" name="email_facture" id="email_facture" class="input_large" value="<?= $this->companies->email_facture ?>"/></td>
             </tr>
             <tr>
                 <th></th>
                 <td><input style="font-size: 11px; height: 25px;" type="button" id="initialiser_espace_emprunteur" name="initialiser_espace_emprunteur" value="Reinitialiser Espace Emprunteur" class="btn" onclick="send_email_borrower_area('<?= $this->clients->id_client ?>', 'initialize')"/></td>
                 <?php if (empty($this->clients->secrete_question) && empty($this->clients->secrete_reponse)): ?>
-                <td colspan="2"><input style="font-size: 11px; height: 25px;" type="button" id="ouvrir_espace_emprunteur" name="ouvrir_espace_emprunteur" value="Envoyer Email Ouverture Espace Emprunteur" class="btn" onclick="send_email_borrower_area('<?= $this->clients->id_client ?>', 'open')"/></td>
+                    <td colspan="2"><input style="font-size: 11px; height: 25px;" type="button" id="ouvrir_espace_emprunteur" name="ouvrir_espace_emprunteur" value="Envoyer Email Ouverture Espace Emprunteur" class="btn" onclick="send_email_borrower_area('<?= $this->clients->id_client ?>', 'open')"/></td>
                 <?php endif ?>
-                   <td><span style="margin-left:5px;color:green; display:none;" class="reponse_email" >Email Envoyé</span></td>
+               <td><span style="margin-left:5px;color:green; display:none;" class="reponse_email" >Email Envoyé</span></td>
             </tr>
             <tr>
                 <th><label for="cni_passeport">CNI/Passeport :</label></th>
@@ -148,18 +145,7 @@ if (isset($_SESSION['freeow'])) {
                     <input type="file" name="signature" id="signature" value="<?= $this->clients->signature ?>"/>
                 </td>
             </tr>
-            <?php /* ?><tr>
-              <th><label for="mandat">Mandat :</label></th>
-              <td>
-
-              <a href="<?=$this->furl.$this->clients_mandats->url_pdf?>"><?=$this->clients_mandats->name?></a><br>
-              <input type="file" name="mandat" id="mandat" value="<?=$this->clients_mandats->name?>"/></td>
-
-              <th></th>
-              <td></td>
-              </tr><?php */ ?>
             <tr>
-
                 <th colspan="4">
                     <input type="hidden" name="form_edit_emprunteur" id="form_edit_emprunteur" />
                     <input type="submit" value="Valider" title="Valider" name="send_edit_emprunteur" onclick="return RIBediting();" id="send_edit_emprunteur" class="btn" />
@@ -170,12 +156,7 @@ if (isset($_SESSION['freeow'])) {
 
     <br /><br />
 
-    <?
-    if ($this->clients->history != '')
-    {
-        ?>
-
-        <!--        <a onclick="document.getElementById('edit_history').style.display = 'block';this.style.display = 'none';" class="btn" style="float:right;" >Afficher l'historique</a>-->
+    <?php if ($this->clients->history != ''): ?>
         <div id="edit_history" >
             <h2>Historique :</h2>
             <table class="histo_status_client tablesorter">
@@ -185,8 +166,7 @@ if (isset($_SESSION['freeow'])) {
             </table>
         </div>
         <br /><br />
-    <? }
-    ?>
+    <?php endif; ?>
 
     <h2>Liste des projets</h2>
     <?
@@ -309,7 +289,7 @@ if (isset($_SESSION['freeow'])) {
 
                 $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox/<?= $this->clients->id_client ?>'});
                     return false;
-            }
+            };;
         }
         else
         {
@@ -353,9 +333,8 @@ if (isset($_SESSION['freeow'])) {
         var form_ok = true;
 
         if (check_bic($("#bic").val()) == false && $("#bic").val() != "")
-        //if($("#bic").val().length < 8 || $("#bic").val().length > 11)
         {
-            form_ok = false
+            form_ok = false;
             $("#bic").css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
 
         }
@@ -363,9 +342,8 @@ if (isset($_SESSION['freeow'])) {
         var iban = document.getElementById('iban1').value + document.getElementById('iban2').value + document.getElementById('iban3').value + document.getElementById('iban4').value + document.getElementById('iban5').value + document.getElementById('iban6').value + document.getElementById('iban7').value;
 
         if (validateIban(iban) == false && iban != "")
-        //if($("#iban").val().length != 27)
         {
-            form_ok = false
+            form_ok = false;
             $("#iban1").css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
             $("#iban2").css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
             $("#iban3").css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
@@ -373,7 +351,6 @@ if (isset($_SESSION['freeow'])) {
             $("#iban5").css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
             $("#iban6").css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
             $("#iban7").css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-
         }
 
         if (form_ok == false)
@@ -381,5 +358,4 @@ if (isset($_SESSION['freeow'])) {
             event.preventDefault();
         }
     });
-
 </script>

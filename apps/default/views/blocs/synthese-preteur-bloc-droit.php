@@ -363,7 +363,7 @@
                 <div class="post-box clearfix">
                     <h3><?= $f['title'] ?>, <small><?= $this->companies->city ?><?= ($this->companies->city != '' ? ',' : '') ?> <?= $this->companies->zip ?></small></h3>
                     <?php
-                    if ($this->projects_status->status > 50) {
+                    if ($this->projects_status->status > \projects_status::EN_FUNDING) {
                         $dateRest = $this->lng['preteur-synthese']['termine'];
                         $reste    = '';
                     } else {

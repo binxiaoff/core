@@ -120,14 +120,6 @@
     <form action="" method="post" enctype="multipart/form-data" id="form_etape1">
         <h2>Etape 1</h2>
         <table class="form" style="margin: auto;">
-            <?php /*?><tr>
-            <th>Vous êtes : </th>
-            <td colspan="3">
-            	<input type="radio" name="type" id="type1" value="1" <?=($this->clients->type == 1?'checked':'')?>><label for="type1">Particulier</label>
-                <input type="radio" name="type" id="type2" value="2" <?=($this->clients->type == 2?'checked':'')?>><label for="type2">Société</label>
-            </td>
-
-		</tr><?php */ ?>
             <!-- particulier -->
             <?php
             if (in_array($this->clients->type, array(1, 3))) {
@@ -158,16 +150,11 @@
                     <th></th>
                     <td><input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp2" name="generer_mdp2" value="Générer mdp" class="btn"
                                onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/><span style="margin-left:5px;color:green; display:none;" class="reponse">mdp généré</span></td>
-
                     <th><label for="exonere">Exonéré :</label></th>
-                    <td><input id="exonere" class="radio_exonere" type="radio" <?= ($this->lenders_accounts->exonere == 1 ? 'checked' : '') ?> name="exonere" value="1">Oui
-                        <?php
-                        //if($this->lenders_accounts->exonere==0)
-                        //{
-                        ?><input id="exonere2" class="radio_exonere" type="radio" <?= ($this->lenders_accounts->exonere == 0 ? 'checked' : '') ?> name="exonere" value="0">Non
-                    </td><?php
-                    //}
-                    ?>
+                    <td>
+                        <input id="exonere" class="radio_exonere" type="radio" <?= ($this->lenders_accounts->exonere == 1 ? 'checked' : '') ?> name="exonere" value="1">Oui
+                        <input id="exonere2" class="radio_exonere" type="radio" <?= ($this->lenders_accounts->exonere == 0 ? 'checked' : '') ?> name="exonere" value="0">Non
+                    </td>
                 </tr>
                 <tr class="exo"<?= ($this->lenders_accounts->exonere == 1 ? '' : 'style="display:none;"') ?> >
                     <th></th>
@@ -909,23 +896,15 @@
         }
     });
 
-
     $("#origine_des_fonds").change(function () {
         if ($(this).val() == '1000000') {
             $("#row_precision").show();
-        }
-        else {
+        } else {
             $("#row_precision").hide();
         }
     });
-</script>
 
-<?php
-if ($this->lenders_accounts->origine_des_fonds == 1000000) {
-    ?>
-    <script>
+    <?php if ($this->lenders_accounts->origine_des_fonds == 1000000): ?>
         $("#row_precision").show();
-    </script><?php
-}
-?>
-
+    <?php endif; ?>
+</script>

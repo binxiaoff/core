@@ -12,16 +12,13 @@ class ajaxController extends bootstrap
         $this->autoFireDebug  = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
-
     }
 
     /* Modification de la modifcation des traductions à la volée */
     public function _activeModificationsTraduction()
     {
-        // On desactive la vue qui sert à rien
         $this->autoFireView = false;
 
-        // On renseigne la session avec l'etat demandé
         $_SESSION['modification'] = $this->params[0];
     }
 
@@ -222,19 +219,19 @@ class ajaxController extends bootstrap
             $montantHaut = 0;
             $montantBas  = 0;
             // si fundé ou remboursement
-            if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
+            if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) {
                 foreach ($this->loans->select('id_project = ' . $pf['id_project']) as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
                 }
             } // funding ko
-            elseif ($this->projects_status->status == 70) {
+            elseif ($this->projects_status->status == \projects_status::FUNDING_KO) {
                 foreach ($this->bids->select('id_project = ' . $pf['id_project']) as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
                 }
             } // emprun refusé
-            elseif ($this->projects_status->status == 75) {
+            elseif ($this->projects_status->status == \projects_status::PRET_REFUSE) {
                 foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 1') as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
@@ -254,7 +251,7 @@ class ajaxController extends bootstrap
             $affichage .= "
             <tr class='unProjet' id='project" . $pf['id_project'] . "'>
                 <td>";
-            if ($this->projects_status->status >= 60) {
+            if ($this->projects_status->status >= \projects_status::FUNDE) {
                 $dateRest = 'Terminé';
             } else {
                 $tab_date_retrait = explode(' ', $pf['date_retrait_full']);
@@ -312,7 +309,7 @@ class ajaxController extends bootstrap
             $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "'><strong id='val" . $pf['id_project'] . "'>" . $dateRest . "</strong></a></td>
                 <td>";
 
-            if ($this->projects_status->status >= 60) {
+            if ($this->projects_status->status >= \projects_status::FUNDE) {
                 $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "' class='btn btn-info btn-small multi grise1 btn-grise'>" . $this->lng['preteur-projets']['voir-le-projet'] . "</a>";
             } else {
                 $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "' class='btn btn-info btn-small'>" . $this->lng['preteur-projets']['pretez'] . "</a>";
@@ -443,7 +440,7 @@ class ajaxController extends bootstrap
             $_SESSION['ordreProject'] = $this->ordreProject;
 
             $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . $restriction . ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', 75', $where . $restriction . ' AND p.status = 0 AND p.display = 0');
+            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE, $where . $restriction . ' AND p.status = 0 AND p.display = 0');
         } else {
             $this->ordreProject = 1;
             $this->type         = 0;
@@ -452,7 +449,7 @@ class ajaxController extends bootstrap
 
             $this->where           = '';
             $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', 75' . ' AND p.status = 0');
+            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE . ' AND p.status = 0');
         }
     }
 
@@ -1587,7 +1584,6 @@ class ajaxController extends bootstrap
                 $_SESSION['nbNotifdisplay'] = $_POST['compteur_notif'];
             }
 
-            $id_lender = $_POST['id_lender'];
             $debut     = $_SESSION['nbNotifdisplay'];
             $nbDisplay = 10;
 
@@ -1651,29 +1647,19 @@ class ajaxController extends bootstrap
         //echo $_SESSION['id_last_action'];
         // tri debut/fin
         if (isset($_POST['id_last_action']) && in_array($_POST['id_last_action'], array('debut', 'fin'))) {
-
-            $debutTemp = explode('/', $_POST['debut']);
-            $finTemp   = explode('/', $_POST['fin']);
-
+            $debutTemp       = explode('/', $_POST['debut']);
+            $finTemp         = explode('/', $_POST['fin']);
             $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');    // date debut
             $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');            // date fin
 
-            // On sauvegarde la derniere action
             $_SESSION['id_last_action'] = $_POST['id_last_action'];
-
-        } // NB mois
-        elseif (isset($_POST['id_last_action']) && $_POST['id_last_action'] == 'nbMois') {
-
-            $nbMois = $_POST['nbMois'];
-
+        } elseif (isset($_POST['id_last_action']) && $_POST['id_last_action'] == 'nbMois') {
+            $nbMois          = $_POST['nbMois'];
             $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y')); // date debut
             $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date fin
 
-            // On sauvegarde la derniere action
             $_SESSION['id_last_action'] = $_POST['id_last_action'];
-        } // Annee
-        elseif (isset($_POST['id_last_action']) && $_POST['id_last_action'] == 'annee') {
-
+        } elseif (isset($_POST['id_last_action']) && $_POST['id_last_action'] == 'annee') {
             $year = $_POST['annee'];
 
             $date_debut_time = mktime(0, 0, 0, 1, 1, $year);    // date debut
@@ -1685,47 +1671,33 @@ class ajaxController extends bootstrap
                 $date_fin_time = mktime(0, 0, 0, 12, 31, $year);
             } // date fin
 
-            // On sauvegarde la derniere action
             $_SESSION['id_last_action'] = $_POST['id_last_action'];
-
         } // si on a une session
         elseif (isset($_SESSION['id_last_action'])) {
-
             if (in_array($_SESSION['id_last_action'], array('debut', 'fin'))) {
-                //echo 'toto';
-                $debutTemp = explode('/', $_POST['debut']);
-                $finTemp   = explode('/', $_POST['fin']);
-
+                $debutTemp       = explode('/', $_POST['debut']);
+                $finTemp         = explode('/', $_POST['fin']);
                 $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');    // date debut
                 $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');            // date fin
             } elseif ($_SESSION['id_last_action'] == 'nbMois') {
-                //echo 'titi';
-                $nbMois = $_POST['nbMois'];
-
+                $nbMois          = $_POST['nbMois'];
                 $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y')); // date debut
                 $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date fin
             } elseif ($_SESSION['id_last_action'] == 'annee') {
-                //echo 'tata';
-                $year = $_POST['annee'];
-
+                $year            = $_POST['annee'];
                 $date_debut_time = mktime(0, 0, 0, 1, 1, $year);    // date debut
                 $date_fin_time   = mktime(0, 0, 0, 12, 31, $year); // date fin
             }
         } // Par defaut (on se base sur le 1M)
         else {
-            //echo 'cc';
             $date_debut_time = mktime(0, 0, 0, date("m") - 1, date("d"), date('Y')); // date debut
             $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date fin
         }
 
-        // on recup au format sql
-        $this->date_debut = date('Y-m-d', $date_debut_time);
-        $this->date_fin   = date('Y-m-d', $date_fin_time);
-
-        // affichage dans le filtre
+        $this->date_debut         = date('Y-m-d', $date_debut_time);
+        $this->date_fin           = date('Y-m-d', $date_fin_time);
         $this->date_debut_display = date('d/m/Y', $date_debut_time);
         $this->date_fin_display   = date('d/m/Y', $date_fin_time);
-        //////////// FIN PARTIE DATES //////////////
 
         $array_type_transactions = array(
             1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
@@ -1736,7 +1708,7 @@ class ajaxController extends bootstrap
             ),
             3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            5  => $this->lng['preteur-operations-vos-operations']['remboursement'],
+            5  => array(1 => $this->lng['preteur-operations-vos-operations']['remboursement'], 2 => $this->lng['preteur-operations-vos-operations']['recouvrement']),
             7  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             8  => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
             16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
@@ -1761,7 +1733,6 @@ class ajaxController extends bootstrap
             $tri_type_transac = $array_type_transactions_liste_deroulante[$_POST['tri_type_transac']];
         }
 
-        ////////// DEBUT TRI PAR PROJET /////////////
         if (isset($_POST['tri_projects'])) {
             if (in_array($_POST['tri_projects'], array(0, 1))) {
                 $tri_project = '';
@@ -1770,7 +1741,6 @@ class ajaxController extends bootstrap
                 $tri_project = ' AND id_projet = ' . $_POST['tri_projects'];
             }
         }
-        ////////// FIN TRI PAR PROJET /////////////
 
         $order = 'date_operation DESC, id_transaction DESC';
         if (isset($_POST['type']) && isset($_POST['order'])) {
@@ -1817,77 +1787,6 @@ class ajaxController extends bootstrap
         $this->lProjectsLoans          = $this->indexage_vos_operations->get_liste_libelle_projet('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"');
     }
 
-    public function _detail_op()
-    {
-        $this->autoFireView = true;
-
-        if (isset($_POST['annee']) && strlen($_POST['annee']) == 4 && is_numeric($_POST['annee'])) {
-            $this->transactions    = $this->loadData('transactions');
-            $this->wallets_lines   = $this->loadData('wallets_lines');
-            $this->bids            = $this->loadData('bids');
-            $this->loans           = $this->loadData('loans');
-            $this->echeanciers     = $this->loadData('echeanciers');
-            $this->projects        = $this->loadData('projects');
-            $this->companies       = $this->loadData('companies');
-            $this->projects_status = $this->loadData('projects_status');
-
-            $this->lng['preteur-operations']                = $this->ln->selectFront('preteur-operations', $this->language, $this->App);
-            $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
-            $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
-            $this->lng['preteur-operations-detail']         = $this->ln->selectFront('preteur-operations-detail', $this->language, $this->App);
-            $this->lng['profile']                           = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
-
-            $annee = $_POST['annee'];
-
-            $this->type  = $_POST['type'];
-            $this->order = $_POST['order'];
-
-            if ($this->type == "order_titre") {
-                $tri = 1;
-            } elseif ($this->type == "order_note") {
-                $tri = 2;
-            } elseif ($this->type == "order_montant") {
-                $tri = 3;
-            } elseif ($this->type == "order_interet") {
-                $tri = 4;
-            } elseif ($this->type == "order_debut") {
-                $tri = 5;
-            } elseif ($this->type == "order_prochaine") {
-                $tri = 6;
-            } elseif ($this->type == "order_fin") {
-                $tri = 7;
-            } elseif ($this->type == "order_mensualite") {
-                $tri = 8;
-            }
-
-            $arrayTri = array(
-                0 => 'next_echeance',
-                1 => 'p.title',
-                2 => 'p.risk',
-                3 => 'amount',
-                4 => 'rate',
-                5 => 'debut',
-                6 => 'next_echeance',
-                7 => 'fin',
-                8 => 'mensuel'
-            );
-
-            if ($this->order == "") {
-                $this->order = "ASC";
-            }
-
-            if (false === isset($tri) || $tri == "") {
-                $tri = 1;
-            }
-
-            $this->lSumLoans               = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, $annee, $arrayTri[$tri] . " " . $this->order);
-            $this->arrayDeclarationCreance = array(1456, 1009, 1614, 3089, 10971, 970, 7727, 374, 679, 1011);
-        } else {
-            echo 'nok';
-            die;
-        }
-    }
-
     public function _acceptCookies()
     {
         $accept_cookies = $this->loadData('accept_cookies');
@@ -1905,19 +1804,6 @@ class ajaxController extends bootstrap
         die;
     }
 
-    public function _reordrePays()
-    {
-        $pays = $this->loadData('pays_v2');
-        $i    = 1;
-        foreach ($pays->select('id_pays <> 1', 'fr ASC') as $p) {
-            $i++;
-            echo $p['fr'] . "-$i<br/>";
-            $pays->get($p['id_pays']);
-            $pays->ordre = $i;
-            $pays->update();
-        }
-    }
-
     public function _operations_emprunteur()
     {
         $this->autoFireView = true;
@@ -1930,8 +1816,7 @@ class ajaxController extends bootstrap
         $oClients->get($this->clients->id_client);
         $oCompanies->get($oClients->id_client, 'id_client_owner');
 
-        if (isset($_POST['id_last_action']) && in_array($_POST['id_last_action'], array('debut', 'fin', 'nbMois', 'annee'))){
-
+        if (isset($_POST['id_last_action']) && in_array($_POST['id_last_action'], array('debut', 'fin', 'nbMois', 'annee'))) {
             switch ($_POST['id_last_action']) {
                 case 'debut':
                 case 'fin' :
@@ -1952,9 +1837,7 @@ class ajaxController extends bootstrap
                     $_SESSION['id_last_action'] = $_POST['id_last_action'];
                     break;
             }
-
-        } elseif (isset ($_SESSION['id_last_action'])) {
-
+        } elseif (isset($_SESSION['id_last_action'])) {
             switch ($_SESSION['id_last_action']) {
                 case 'debut':
                 case 'fin' :
@@ -1973,12 +1856,11 @@ class ajaxController extends bootstrap
                     break;
             }
         } else {
-                $oStartTime = new \datetime('NOW - 1 month');
-                $oEndTime = new \datetime();
+            $oStartTime = new \datetime('NOW - 1 month');
+            $oEndTime = new \datetime();
         }
 
-
-        if ($_POST['tri_projects'] == 0 || $_POST['tri_projects'] == 99 ) {
+        if ($_POST['tri_projects'] == 0 || $_POST['tri_projects'] == 99) {
             $aClientsProjects = $oProjects->select('id_company = ' . $oCompanies->id_company);
         } else {
             $aClientsProjects = $oProjects->select('id_project =' . $_POST['tri_projects']);
@@ -1995,7 +1877,5 @@ class ajaxController extends bootstrap
         $this->aBorrowerOperations = $oClients->getDataForBorrowerOperations($aClientProjectIDs, $oStartTime, $oEndTime, $iTransaction, $oClients->id_client);
         $this->sDisplayDateTimeStart = $oStartTime->format('d/m/Y');
         $this->sDisplayDateTimeEnd = $oEndTime->format('d/m/Y');
-
     }
-
 }

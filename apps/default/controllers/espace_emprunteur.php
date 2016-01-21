@@ -1,9 +1,7 @@
 <?php
 
-
 class espace_emprunteurController extends Bootstrap
 {
-
     public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
@@ -538,9 +536,7 @@ class espace_emprunteurController extends Bootstrap
                 $this->lng['espace-emprunteur'][ 'operations-type-' . $aOperation['type'] ],
                 $aOperation['id_project'],
                 $this->dates->formatDateMysqltoShortFR($aOperation['date']),
-//                $aOperation['montant'],
                 number_format($aOperation['montant'], 2, ',', ''),
-//                (empty($aOperation['tva']) === false) ? $aOperation['tva'] : '0'
                 (empty($aOperation['tva']) === false) ? number_format($aOperation['tva'], 2, ',', '') : '0'
             );
         }

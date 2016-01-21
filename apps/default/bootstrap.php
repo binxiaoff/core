@@ -59,7 +59,6 @@ class bootstrap extends Controller
         $this->lenders_accounts        = $this->loadData('lenders_accounts');
         $this->projects_status         = $this->loadData('projects_status');
 
-
         $this->ficelle = $this->loadLib('ficelle');
         $this->photos  = $this->loadLib('photos', array($this->spath, $this->surl));
         $this->tnmp    = $this->loadLib('tnmp', array($this->nmp, $this->nmp_desabo, $this->Config['env']));
@@ -71,7 +70,7 @@ class bootstrap extends Controller
         // Formulaire de modification d'un texte de traduction
         if (isset($_POST['form_mod_traduction'])) {
             foreach ($this->lLangues as $key => $lng) {
-                $values[ $key ] = $_POST[ 'texte-' . $key ];
+                $values[$key] = $_POST['texte-' . $key];
             }
 
             $this->ln->updateTextTranslations($_POST['section'], $_POST['nom'], $values);
@@ -107,7 +106,7 @@ class bootstrap extends Controller
         // Lutte contre le XSS
         if (is_array($_POST)) {
             foreach ($_POST as $key => $value) {
-                $_POST[ $key ] = htmlspecialchars(strip_tags($value));
+                $_POST[$key] = htmlspecialchars(strip_tags($value));
             }
         }
 
@@ -196,8 +195,8 @@ class bootstrap extends Controller
             $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
             foreach ($lElements as $b_elt) {
                 $this->elements->get($b_elt['id_element']);
-                $this->bloc_partenaires[ $this->elements->slug ]           = $b_elt['value'];
-                $this->bloc_partenairesComplement[ $this->elements->slug ] = $b_elt['complement'];
+                $this->bloc_partenaires[$this->elements->slug]           = $b_elt['value'];
+                $this->bloc_partenairesComplement[$this->elements->slug] = $b_elt['complement'];
             }
 
             $aElements = array(
@@ -257,9 +256,7 @@ class bootstrap extends Controller
                 $this->login_log->create();
 
                 $_SESSION['login']['displayCaptchaError'] = $this->displayCaptchaError;
-
             } else {
-
                 $bErrorLogin = false;
 
                 if ($_POST['login'] == '' || $_POST['password'] == '') {
@@ -271,9 +268,7 @@ class bootstrap extends Controller
                 }
 
                 if ($bErrorLogin === false) {
-
                     if ($this->clients->handleLogin('connect', 'login', 'password')) {
-
                         unset($_SESSION['login']);
 
                         if (isset($_COOKIE['acceptCookies'])) {
@@ -294,19 +289,15 @@ class bootstrap extends Controller
                         $this->clients_history->status    = 1; // statut login
                         $this->clients_history->create();
 
-
                         if ($this->bIsLender) {
                             $this->loginLender();
-
                         } elseif ($this->bIsBorrower) {
                             $this->loginBorrower();
                         }
-
                     } else {
                         $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
                     }
                 } else {
-
                     $oDateTime           = new \datetime('NOW - 10 minutes');
                     $sNowMinusTenMinutes = $oDateTime->format('Y-m-d H:i:s');
 
@@ -315,8 +306,7 @@ class bootstrap extends Controller
                     $this->iWaitingPeriod = 0;
                     $iPreviousResult      = 1;
 
-                    if ($this->iPreviousTrys > 0 && $this->iPreviousTrys < 1000) // 1000 pour ne pas bloquer le site
-                    {
+                    if ($this->iPreviousTrys > 0 && $this->iPreviousTrys < 1000) { // 1000 pour ne pas bloquer le site
                         for ($i = 1; $i <= $this->iPreviousTrys; $i++) {
                             $this->iWaitingPeriod = $iPreviousResult * 2;
                             $iPreviousResult      = $this->iWaitingPeriod;
@@ -341,7 +331,6 @@ class bootstrap extends Controller
         }
 
         if ($this->clients->checkAccess()) {
-
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
@@ -374,9 +363,9 @@ class bootstrap extends Controller
         // Afficher les projets terminés ? (1 : oui | 0 : non)
         $this->settings->get('Afficher les projets termines', 'type');
         if ($this->settings->value == 1) {
-            $this->tabProjectDisplay = '50,60,70,80,90,100,110,130';
+            $this->tabProjectDisplay = implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE));
         } else {
-            $this->tabProjectDisplay = '50';
+            $this->tabProjectDisplay = \projects_status::EN_FUNDING;
         }
 
         $this->create_cookies = true;
@@ -451,7 +440,6 @@ class bootstrap extends Controller
             }
         }
     }
-
 
     public function handlePartenaire($params)
     {
@@ -543,64 +531,72 @@ class bootstrap extends Controller
         }
     }
 
-
     private function loginLender()
     {
         $this->bDisplayLender = true;
 
-        /// creation de champs en bdd pour la gestion des mails de notifiaction ////
-
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
 
-        ////// Liste des notifs //////
         $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
         $this->lNotifs     = $this->clients_gestion_notifications->select('id_client = ' . $_SESSION['client']['id_client']);
 
         if ($this->lNotifs == false) {
-
             foreach ($this->lTypeNotifs as $n) {
                 $this->clients_gestion_notifications->id_client = $_SESSION['client']['id_client'];
                 $this->clients_gestion_notifications->id_notif  = $n['id_client_gestion_type_notif'];
                 $id_notif                                       = $n['id_client_gestion_type_notif'];
-                // immediatement
-                if (in_array($id_notif, array(
-                    \clients_gestion_type_notif::OFFRES_REFUSEES,
-                    \clients_gestion_type_notif::ALIMENTATION_VIREMENT,
-                    \clients_gestion_type_notif::ALIMENTATION_CB,
-                    \clients_gestion_type_notif::RETRAIT
-                ))) {
+
+                if (
+                    in_array(
+                        $id_notif,
+                        array(
+                            \clients_gestion_type_notif::TYPE_BID_REJECTED,
+                            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT,
+                            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT,
+                            \clients_gestion_type_notif::TYPE_DEBIT
+                        )
+                    )
+                ) {
                     $this->clients_gestion_notifications->immediatement = 1;
                 } else {
                     $this->clients_gestion_notifications->immediatement = 0;
                 }
-                // quotidienne
-                if (in_array($id_notif, array(
-                    \clients_gestion_type_notif::ANNONCE_NOUVEAUX_PROJETS,
-                    \clients_gestion_type_notif::OFFRES_REALISEES,
-                    \clients_gestion_type_notif::OFFRES_ACCEPTEES,
-                    \clients_gestion_type_notif::REMBOURSEMENT
-                ))) {
+
+                if (
+                    in_array(
+                        $id_notif,
+                        array(
+                            \clients_gestion_type_notif::TYPE_NEW_PROJECT,
+                            \clients_gestion_type_notif::TYPE_BID_PLACED,
+                            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
+                            \clients_gestion_type_notif::TYPE_REPAYMENT
+                        )
+                    )
+                ) {
                     $this->clients_gestion_notifications->quotidienne = 1;
                 } else {
                     $this->clients_gestion_notifications->quotidienne = 0;
                 }
-                // hebdomadaire
-                if (in_array($id_notif, array(
-                    \clients_gestion_type_notif::ANNONCE_NOUVEAUX_PROJETS,
-                    \clients_gestion_type_notif::OFFRES_ACCEPTEES
-                ))) {
+
+                if (
+                    in_array(
+                        $id_notif,
+                        array(
+                            \clients_gestion_type_notif::TYPE_NEW_PROJECT,
+                            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED
+                        )
+                    )
+                ) {
                     $this->clients_gestion_notifications->hebdomadaire = 1;
                 } else {
                     $this->clients_gestion_notifications->hebdomadaire = 0;
                 }
-                // mensuelle
+
                 $this->clients_gestion_notifications->mensuelle = 0;
                 $this->clients_gestion_notifications->create();
             }
         }
-
-        ////////////////////////////////////////////////////////////////////////////
 
         if ($_SESSION['client']['etape_inscription_preteur'] < 3) {
             $etape = ($_SESSION['client']['etape_inscription_preteur'] + 1);

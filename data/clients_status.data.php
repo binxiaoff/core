@@ -28,7 +28,6 @@
 
 class clients_status extends clients_status_crud
 {
-
     const TO_BE_CHECKED         = 10;
     const COMPLETENESS          = 20;
     const COMPLETENESS_REMINDER = 30;
@@ -36,31 +35,9 @@ class clients_status extends clients_status_crud
     const MODIFICATION          = 50;
     const VALIDATED             = 60;
 
-    public function clients_status($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::clients_status($bdd, $params);
-    }
-
-    public function get($id, $field = 'id_client_status')
-    {
-        return parent::get($id, $field);
-    }
-
-    public function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    public function delete($id, $field = 'id_client_status')
-    {
-        parent::delete($id, $field);
-    }
-
-    public function create($cs = '')
-    {
-        $id = parent::create($cs);
-
-        return $id;
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -88,18 +65,13 @@ class clients_status extends clients_status_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `clients_status` ' . $where;
-
-        $result = $this->bdd->query($sql);
-
-        return (int)($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM `clients_status` ' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_client_status')
     {
-        $sql    = 'SELECT * FROM `clients_status` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
-
+        $result = $this->bdd->query('SELECT * FROM `clients_status` WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
@@ -140,5 +112,4 @@ class clients_status extends clients_status_crud
 
         return $result;
     }
-
 }

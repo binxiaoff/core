@@ -1,4 +1,3 @@
-<!--#include virtual="ssi-header.shtml"  -->
 <div class="main">
     <div class="shell">
         <h1><?=$this->tree->title?></h1>
@@ -25,6 +24,5 @@
 
         <h3><a name="titre-rubrique-7"><?= $this->content['titre-rubrique-7'] ?></a></h3>
         <?= $this->content['contenu-rubrique-7'] ?>
-    </div><!-- /.shell -->
-</div><!-- /.main -->
-<!--#include virtual="ssi-footer.shtml"  -->
+    </div>
+</div>

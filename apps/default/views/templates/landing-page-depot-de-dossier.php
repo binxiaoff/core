@@ -173,5 +173,8 @@
         <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-7-239'], '', 'partenaires_landing_page') ?>"/></span>
     </section>
 </div>
+<!--[if lte IE 9]>
+<script type="text/javascript" src="<?= $this->surl ?>/scripts/default/placeholders.jquery.min.js"></script>
+<![endif]-->
 </body>
 </html>

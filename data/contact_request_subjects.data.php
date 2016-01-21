@@ -1,20 +1,16 @@
 <?php
 
-
 class contact_request_subjects extends contact_request_subjects_crud
 {
-
-    public function __construct($bdd,$params='')
+    public function __construct($bdd, $params = '')
     {
-        parent::contact_request_subjects($bdd,$params);
+        parent::contact_request_subjects($bdd, $params);
     }
 
     public function getAllSubjects($sLanguage)
     {
         $result   = array();
-        $resultat = $this->bdd->query('
-            SELECT *
-            FROM contact_request_subjects');
+        $resultat = $this->bdd->query('SELECT * FROM contact_request_subjects');
 
         while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[$record['id_contact_request_subject']] = $record;
@@ -33,5 +29,4 @@ class contact_request_subjects extends contact_request_subjects_crud
 
         return $aSubjects;
     }
-
 }
