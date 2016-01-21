@@ -1539,14 +1539,14 @@ class cronController extends bootstrap
                 $id_lot  = $titulaire . '/' . $dateColle . '/' . $v['id_virement'];
                 $montant = round($v['montant'] / 100, 2);
                 if (strncmp('FR', strtoupper(str_replace(' ', '', $ibanDestinataire)), 2) == 0) {
+                    $bicFr = '';
+                } else {
                     $bicFr = '
                     <CdtrAgt>
                         <FinInstnId>
                             <BIC>' . str_replace(' ', '', $bicDestinataire) . '</BIC>
                         </FinInstnId>
                     </CdtrAgt>';
-                } else {
-                    $bicFr = '';
                 }
                 $xml .= '
                 <CdtTrfTxInf>
