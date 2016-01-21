@@ -90,7 +90,7 @@ if ($page == 'lexpress') {
     <section class="wrapper">
         <form action="#" method="post" id="form_inscription" class="etape1" novalidate>
             <div id="form_header">
-                <h1><a style="text-decoration: none; color: white;" href="<?= $url_site ?>/inscription_preteur/etape1" >Inscrivez-vous</a></h1>
+                <h1>Inscrivez-vous</h1>
                 <h2>Et d&eacute;couvrez Unilend</h2>
             </div>
             <div class="form_content etape1">
