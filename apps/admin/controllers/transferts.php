@@ -153,10 +153,8 @@ class transfertsController extends bootstrap
             if (empty($_POST['dateStart']) === false && empty($_POST['dateEnd']) === false) {
                 $oDateTimeStart                                                   = \DateTime::createFromFormat('d/m/Y', $_POST['dateStart']);
                 $oDateTimeEnd                                                     = \DateTime::createFromFormat('d/m/Y', $_POST['dateEnd']);
-//                $sStartDateSQL                                                    = '"' . $oDateTimeStart->format('Y-m-d') . ' 00:00:00"';
-//                $sEndDateSQL                                                      = '"' . $oDateTimeEnd->format('Y-m-d') . ' 23:59:59"';
-                $sStartDateSQL                                                    = $oDateTimeStart->format('Y-m-d');
-                $sEndDateSQL                                                      = $oDateTimeEnd->format('Y-m-d');
+                $sStartDateSQL                                                    = str_pad($oDateTimeStart->format('Y-m-d'),12,'"', STR_PAD_BOTH);
+                $sEndDateSQL                                                      = str_pad($oDateTimeEnd->format('Y-m-d'),12,'"', STR_PAD_BOTH);
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['sStartDateSQL'] = $sStartDateSQL;
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['sEndDateSQL']   = $sEndDateSQL;
 
@@ -182,8 +180,8 @@ class transfertsController extends bootstrap
             $iSumOfVirtualWelcomeOfferTransactions  = $oTransactions->sum('status = 1 AND etat = 1 AND type_transaction IN(16,17)', 'montant');
             $iAvailableAmountForWelcomeOffers       = $iSumOfPhysicalWelcomeOfferTransactions - $iSumOfVirtualWelcomeOfferTransactions;
 
-            $oStartWelcomeOffer = \DateTime::createFromFormat('Y-m-d H:m:s', $this->offres_bienvenues->debut);
-            $oEndWelcomeOffer   = \DateTime::createFromFormat('Y-m-d H:m:s', $this->offres_bienvenues->fin);
+            $oStartWelcomeOffer = \DateTime::createFromFormat('Y-m-d H:i:s', $this->offres_bienvenues->debut);
+            $oEndWelcomeOffer   = \DateTime::createFromFormat('Y-m-d H:i:s', $this->offres_bienvenues->fin);
             $oToday             = new \DateTime();
 
             if ($oStartWelcomeOffer <= $oToday && $oEndWelcomeOffer >= $oToday) {
@@ -206,7 +204,7 @@ class transfertsController extends bootstrap
                 $oWelcomeOfferDetails->id_client                 = $this->clients->id_client;
                 $oWelcomeOfferDetails->montant                   = $this->offres_bienvenues->montant;
                 $oWelcomeOfferDetails->status                    = 0;
-                $oWelcomeOfferDetails->id_offre_bienvenue_detail = $oWelcomeOfferDetails->create();
+                $oWelcomeOfferDetails->create();
 
                 $oTransactions->id_client                        = $this->clients->id_client;
                 $oTransactions->montant                          = $oWelcomeOfferDetails->montant;
@@ -218,7 +216,7 @@ class transfertsController extends bootstrap
                 $oTransactions->ip_client                        = $_SERVER['REMOTE_ADDR'];
                 $oTransactions->type_transaction                 = 16; // TODO use constant once available
                 $oTransactions->transaction                      = 2;
-                $oTransactions->id_transaction                   = $oTransactions->create();
+                $oTransactions->create();
 
                 $oWalletsLines->id_lender                        = $oLendersAccounts->id_lender_account;
                 $oWalletsLines->type_financial_operation         = \wallets_lines::TYPE_MONEY_SUPPLY;
@@ -226,7 +224,7 @@ class transfertsController extends bootstrap
                 $oWalletsLines->status                           = 1;
                 $oWalletsLines->type                             = 1;
                 $oWalletsLines->amount                           = $oWelcomeOfferDetails->montant;
-                $oWalletsLines->id_wallet_line                   = $oWalletsLines->create();
+                $oWalletsLines->create();
 
                 $oBankUnilend->id_transaction                    = $oTransactions->id_transaction;
                 $oBankUnilend->montant                           = '-' . $oWelcomeOfferDetails->montant;
@@ -274,7 +272,7 @@ class transfertsController extends bootstrap
 
         if (isset($_SESSION['forms']['sStartDateSQL']) && isset($_SESSION['forms']['sEndDateSQL'])) {
             $this->aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer(
-                $iLenderId = null,
+                null,
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['sStartDateSQL'],
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['sEndDateSQL']
             );
