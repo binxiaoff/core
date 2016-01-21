@@ -105,7 +105,7 @@ class lenders_account_stats extends lenders_account_stats_crud
                 FROM
                     echeanciers e
                     INNER JOIN projects_last_status_history_materialized plshm ON e.id_project = plshm.id_project
-                    INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_historyy
+                    INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
                     INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                 WHERE
                     e.id_lender = ' . $iLendersAccountId . '

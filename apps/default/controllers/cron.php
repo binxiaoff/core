@@ -7862,8 +7862,8 @@ class cronController extends bootstrap
 
             foreach ($aLendersAccounts as $aLender) {
                 try {
-                    $fXIRR                                   = $oLendersAccountStats->calculateIRR($aLender['id_lender_account']);
-                    $oLendersAccountStats->id_lender_account = $aLender['id_lender_account'];
+                    $fXIRR                                   = $oLendersAccountStats->calculateIRR($aLender['id_lender']);
+                    $oLendersAccountStats->id_lender_account = $aLender['id_lender'];
                     $oLendersAccountStats->tri_date          = $oDateTime->format('Y-m-d H:i:s');
                     $oLendersAccountStats->tri_value         = $fXIRR;
                     $oLendersAccountStats->create();
