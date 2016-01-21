@@ -325,7 +325,7 @@ class ajaxController extends bootstrap
                 $this->ordreProject = 3;
 
                 // where pour la requete
-                // $where .= ' AND p.target_rate BETWEEN "' . $val[0] . '" AND "' . $val[1] . '" ';
+                $where .= ' AND p.target_rate BETWEEN "' . $val[0] . '" AND "' . $val[1] . '" ';
 
                 // where pour le js
                 $this->where = $key;
@@ -335,7 +335,7 @@ class ajaxController extends bootstrap
             $restriction = '';
             if (isset($_SESSION['tri']['type']) && $_SESSION['tri']['type'] == 4) {
                 $restriction = ' AND p.date_fin < "'. date('Y-m-d') .'"';
-                $sStatusproject = substr($this->tabProjectDisplay, -23); // non
+                $sStatusproject = "60,70,80,90,100,110,130";
             }
 
             $_SESSION['ordreProject'] = $this->ordreProject;
