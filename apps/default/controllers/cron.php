@@ -8358,7 +8358,7 @@ class cronController extends bootstrap
                     $oTransactions->ip_client                 = $_SERVER['REMOTE_ADDR'];
                     $oTransactions->type_transaction          = 17; // TODO use constant once available
                     $oTransactions->transaction               = 2;
-                    $oTransactions->id_transaction            = $oTransactions->create();
+                    $oTransactions->create();
 
                     $oLendersAccounts->get($aWelcomeOffer['id_client'], 'id_client_owner');
 
@@ -8368,7 +8368,7 @@ class cronController extends bootstrap
                     $oWalletsLines->status                   = 1;
                     $oWalletsLines->type                     = 1;
                     $oWalletsLines->amount                   = -$aWelcomeOffer['montant'];
-                    $oWalletsLines->id_wallet_line           = $oWalletsLines->create();
+                    $oWalletsLines->create();
 
                     $oBankUnilend->id_transaction = $oTransactions->id_transaction;
                     $oBankUnilend->montant        = '+' . $oWelcomeOfferDetails->montant;

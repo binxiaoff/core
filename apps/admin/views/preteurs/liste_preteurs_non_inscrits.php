@@ -73,7 +73,7 @@
                     <img
                         onclick="if(confirm('Voulez vous <?= ((int)$c['status'] ===  \clients::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?> ce preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/liste_preteurs_non_inscrits/status/<?= $c['id_client'] ?>/<?= ((int)$c['status'] === \clients::STATUS_ONLINE ? \clients::STATUS_OFFLINE : \clients::STATUS_ONLINE ) ?>';}"
                         src="<?= $this->surl ?>/images/admin/<?= ((int)$c['status'] === \clients::STATUS_ONLINE ? 'offline' : 'online') ?>.png"
-                        alt="<?= ((int)$c['status'] === \clients::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?>"/>
+                        alt="<?= ($c['status'] === \clients::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?>"/>
 
                     <a href="<?= $this->lurl ?>/preteurs/edit/<?= $c['id_lender_account'] ?>">
                         <img src="<?= $this->surl ?>/images/admin/edit.png"

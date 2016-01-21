@@ -751,7 +751,7 @@
 
             <table class="tabLesStatuts">
                 <tr>
-                    <?php if (((int)$this->clients_status->status === clients_status::VALIDATED) === false ) : ?>
+                    <?php if ($this->clients_status->status != clients_status::VALIDATED) : ?>
                         <td><input type="button" id="valider_preteur" class="btn" value="Valider le prêteur"></td>
                     <?php endif; ?>
                 </tr>
