@@ -92,41 +92,38 @@
                 // moyenne pondéré
                 $montantHaut = 0;
                 $montantBas = 0;
-                // si fundé ou remboursement
-                if($this->projects_status->status==60 || $this->projects_status->status==80){
-                    foreach($this->loans->select('id_project = '.$f['id_project']) as $b){
-                        $montantHaut += ($b['rate']*($b['amount']/100));
-                        $montantBas += ($b['amount']/100);
+
+                if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status == \projects_status::REMBOURSEMENT) {
+                    foreach ($this->loans->select('id_project = ' . $f['id_project']) as $b) {
+                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                        $montantBas += ($b['amount'] / 100);
                     }
-                }
-                // funding ko
-                elseif($this->projects_status->status==70){
-                    foreach($this->bids->select('id_project = '.$f['id_project']) as $b){
-                        $montantHaut += ($b['rate']*($b['amount']/100));
-                        $montantBas += ($b['amount']/100);
+                } elseif ($this->projects_status->status == \projects_status::FUNDING_KO) {
+                    foreach ($this->bids->select('id_project = ' . $f['id_project']) as $b) {
+                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                        $montantBas += ($b['amount'] / 100);
                     }
-                }
-                // emprun refusé
-                elseif($this->projects_status->status==75){
-                    foreach($this->bids->select('id_project = '.$f['id_project'].' AND status = 1') as $b){
-                        $montantHaut += ($b['rate']*($b['amount']/100));
-                        $montantBas += ($b['amount']/100);
+                } elseif ($this->projects_status->status == \projects_status::PRET_REFUSE) {
+                    foreach ($this->bids->select('id_project = ' . $f['id_project'] . ' AND status = 1') as $b) {
+                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                        $montantBas += ($b['amount'] / 100);
                     }
-                }
-                else{
-                    foreach($this->bids->select('id_project = '.$f['id_project'].' AND status = 0') as $b){
-                        $montantHaut += ($b['rate']*($b['amount']/100));
-                        $montantBas += ($b['amount']/100);
+                } else {
+                    foreach ($this->bids->select('id_project = ' . $f['id_project'] . ' AND status = 0') as $b) {
+                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                        $montantBas += ($b['amount'] / 100);
                     }
                 }
 
-                if($montantHaut > 0 && $montantBas > 0) $avgRate = ($montantHaut/$montantBas);
+                if ($montantHaut > 0 && $montantBas > 0) {
+                    $avgRate = ($montantHaut / $montantBas);
+                }
 
                 ?>
                 <div class="post-box clearfix">
                     <h3><?=$f['title']?>, <small><?=$this->companies->city?><?=($this->companies->city!=''?',':'')?> <?=$this->companies->zip?></small></h3>
                     <?
-                    if($this->projects_status->status > 50){
+                    if($this->projects_status->status > \projects_status::EN_FUNDING){
                         $dateRest = $this->lng['preteur-synthese']['termine'];
                         $reste = '';
                         ;
@@ -221,47 +218,42 @@
                 // moyenne pondéré
                 $montantHaut = 0;
                 $montantBas = 0;
-                // si fundé ou remboursement
-                if($this->projects_status->status==60 || $this->projects_status->status==80){
-                    foreach($this->loans->select('id_project = '.$f['id_project']) as $b){
-                        $montantHaut += ($b['rate']*($b['amount']/100));
-                        $montantBas += ($b['amount']/100);
+
+                if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status == \projects_status::REMBOURSEMENT) {
+                    foreach ($this->loans->select('id_project = ' . $f['id_project']) as $b) {
+                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                        $montantBas += ($b['amount'] / 100);
                     }
-                }
-                // funding ko
-                elseif($this->projects_status->status==70){
-                    foreach($this->bids->select('id_project = '.$f['id_project']) as $b){
-                        $montantHaut += ($b['rate']*($b['amount']/100));
-                        $montantBas += ($b['amount']/100);
+                } elseif ($this->projects_status->status == \projects_status::FUNDING_KO) {
+                    foreach ($this->bids->select('id_project = ' . $f['id_project']) as $b) {
+                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                        $montantBas += ($b['amount'] / 100);
                     }
-                }
-                // emprun refusé
-                elseif($this->projects_status->status==75){
-                    foreach($this->bids->select('id_project = '.$f['id_project'].' AND status = 1') as $b){
-                        $montantHaut += ($b['rate']*($b['amount']/100));
-                        $montantBas += ($b['amount']/100);
+                } elseif ($this->projects_status->status == \projects_status::PRET_REFUSE) {
+                    foreach ($this->bids->select('id_project = ' . $f['id_project'] . ' AND status = 1') as $b) {
+                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                        $montantBas += ($b['amount'] / 100);
                     }
-                }
-                else{
-                    foreach($this->bids->select('id_project = '.$f['id_project'].' AND status = 0') as $b){
-                        $montantHaut += ($b['rate']*($b['amount']/100));
-                        $montantBas += ($b['amount']/100);
+                } else {
+                    foreach ($this->bids->select('id_project = ' . $f['id_project'] . ' AND status = 0') as $b) {
+                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
+                        $montantBas += ($b['amount'] / 100);
                     }
                 }
 
-                if($montantHaut > 0 && $montantBas > 0) $avgRate = ($montantHaut/$montantBas);
+                if ($montantHaut > 0 && $montantBas > 0) {
+                    $avgRate = ($montantHaut / $montantBas);
+                }
 
                 ?>
                 <div class="post-box clearfix">
                     <h3><?=$f['title']?>, <small><?=$this->companies->city?><?=($this->companies->city!=''?',':'')?> <?=$this->companies->zip?></small></h3>
-                    <?
-                    if($this->projects_status->status > 50){
+                    <?php
+                    if ($this->projects_status->status > \projects_status::EN_FUNDING) {
                         $dateRest = $this->lng['preteur-synthese']['termine'];
-                        $reste = '';
-                        ;
-                    }
-                    else{
-                        $reste = $this->lng['preteur-synthese']['reste'].' ';
+                        $reste    = '';;
+                    } else {
+                        $reste = $this->lng['preteur-synthese']['reste'] . ' ';
                         ?>
                         <script>
                             var cible<?=$f['id_project']?> = new Date('<?=$mois_jour?>, <?=$annee?> <?=$this->heureFinFunding?>:00');

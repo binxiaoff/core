@@ -25,29 +25,28 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-
 class --classe-- extends --classe--_crud
 {
-    public function __construct($bdd,$params='')
+    public function __construct($bdd, $params = '')
     {
-        parent::--table--($bdd,$params);
+        parent::--table--($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
-            $where = ' WHERE '.$where;
+            $where = ' WHERE ' . $where;
         }
 
         if ($order != '') {
-            $order = ' ORDER BY '.$order;
+            $order = ' ORDER BY ' . $order;
         }
 
-        $sql = 'SELECT * FROM `--table--`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+        $sql = 'SELECT * FROM `--table--`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
+        $result   = array();
         $resultat = $this->bdd->query($sql);
-        $result = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -56,19 +55,16 @@ class --classe-- extends --classe--_crud
     public function counter($where = '')
     {
         if ($where != '') {
-            $where = ' WHERE '.$where;
+            $where = ' WHERE ' . $where;
         }
 
-        $sql='SELECT count(*) FROM `--table--` '.$where;
-
-        $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM `--table--` ' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = '--id--')
     {
-        $sql = 'SELECT * FROM `--table--` WHERE '.$field.'="'.$id.'"';
-        $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0)>0);
+        $result = $this->bdd->query('SELECT * FROM `--table--` WHERE ' . $field . ' = "' . $id . '"');
+        return ($this->bdd->fetch_assoc($result, 0, 0) > 0);
     }
 }
