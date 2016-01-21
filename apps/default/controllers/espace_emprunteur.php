@@ -1,5 +1,5 @@
 <?php
-use Unilend\librairies\ULogger;
+
 
 class espace_emprunteurController extends Bootstrap
 {
@@ -161,6 +161,7 @@ class espace_emprunteurController extends Bootstrap
             die;
         } else {
             $this->contactEmailClient();
+            $this->mails_text->get('notification-demande-de-contact-emprunteur', 'lang = "' . $this->language . '" AND type');
             $this->settings->get('Adresse emprunteur', 'type');
 
             $aReplacements = array(
@@ -175,21 +176,18 @@ class espace_emprunteurController extends Bootstrap
                 '[SURL]'      => $this->surl
             );
 
-            try {
-                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-                $oUnilendEmail = $this->get('UnilendEmail');
-                $oUnilendEmail->addVariables($aReplacements);
-                $oUnilendEmail->setTemplate('notification-demande-de-contact-emprunteur', $this->language);
-                $oUnilendEmail->addRecipient($this->settings->value);
-                if (isset($sFilePath) && '' !== $sFilePath) {
-                    $oUnilendEmail->attach($sFilePath);
-                    @unlink($sFilePath);
-                }
-                $oUnilendEmail->sendToStaff();
-            } catch (\Exception $oException) {
-                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+            $this->email = $this->loadLib('email', array());
+            $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
+            $this->email->addRecipient(trim($this->settings->value));
+            $this->email->setReplyTo(utf8_decode($_POST['email']), utf8_decode($_POST['nom']) . ' ' . utf8_decode($_POST['prenom']));
+            $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
+            $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->mails_text->content));
+
+            if (empty($sFilePath) === false) {
+                $this->email->attach($sFilePath);
             }
+            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            @unlink($sFilePath);
             $this->bSuccessMessage = true;
         }
     }
@@ -441,16 +439,30 @@ class espace_emprunteurController extends Bootstrap
             'lien_tw'  => $sTwitterURL
         );
 
-        try {
-            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-            $oUnilendEmail = $this->get('UnilendEmail');
-            $oUnilendEmail->addVariables($aVariables);
-            $oUnilendEmail->setTemplate('demande-de-contact', $this->language);
-            $oUnilendEmail->addRecipient($_POST['email']);
-            $oUnilendEmail->sendFromTemplate();
-        } catch (\Exception $oException) {
-            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+        $this->email = $this->loadLib('email', array());
+        $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
+        $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
+        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $this->tnmp->constructionVariablesServeur($aVariables))));
+
+        $sRecipient = $_POST['email'];
+
+        if ($this->Config['env'] == 'prod') {
+            Mailer::sendNMP(
+                $this->email,
+                $this->mails_filer,
+                $this->mails_text->id_textemail,
+                $sRecipient,
+                $aNMPResponse);
+            $this->tnmp->sendMailNMP(
+                $aNMPResponse,
+                $aVariables,
+                $this->mails_text->nmp_secure,
+                $this->mails_text->id_nmp,
+                $this->mails_text->nmp_unique,
+                $this->mails_text->mode);
+        } else {
+            $this->email->addRecipient($sRecipient);
+            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
         }
     }
 

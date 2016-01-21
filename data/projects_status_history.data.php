@@ -26,8 +26,6 @@
 //
 // **************************************************************************************************** //
 
-use Unilend\librairies\ULogger;
-
 class projects_status_history extends projects_status_history_crud
 {
     public function __construct($bdd, $params = '')
@@ -116,7 +114,9 @@ class projects_status_history extends projects_status_history_crud
         /* @var array $config */
         include __DIR__ . '/../config.php';
 
-        $oUnilendEmail = new Unilend\Service\UnilendEmail();
+        // @todo intl
+        $oMailsText = new \mails_text($this->bdd);
+        $oMailsText->get($sNotificationType, 'lang = "fr" AND type');
 
         $oProjects = new \projects($this->bdd);
         $oProjects->get($iProjectId, 'id_project');
@@ -133,15 +133,13 @@ class projects_status_history extends projects_status_history_crud
             '[LIEN_BO_PROJET]' => $config['url'][ENVIRONMENT]['admin'] . '/dossiers/edit/' . $iProjectId
         );
 
-        try {
-            $oUnilendEmail->addVariables($aReplacements);
-            $oUnilendEmail->setTemplate($sNotificationType, 'fr');
-            $oUnilendEmail->addRecipient($sRecipient);
-            $oUnilendEmail->sendToStaff();
-        } catch (\Exception $oException) {
-            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
-        }
+        $oEmail = new \email();
+        $oEmail->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
+        $oEmail->setSubject(utf8_decode($oMailsText->subject));
+        $oEmail->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $oMailsText->content));
+        $oEmail->addRecipient($sRecipient);
+
+        Mailer::send($oEmail, new \mails_filer($this->bdd), $oMailsText->id_textemail);
     }
 
     public function getBeforeLastStatus($iProjectId)

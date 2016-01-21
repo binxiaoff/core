@@ -1,7 +1,5 @@
 <?php
 
-use Unilend\librairies\ULogger;
-
 class ajaxController extends bootstrap
 {
     public function ajaxController($command, $config, $app)
@@ -451,6 +449,7 @@ class ajaxController extends bootstrap
                 // Recuperation du modele de mail
                 // validé
                 if ($this->params[0] == 40) {
+
                     // Si statut a funder, en funding ou fundé
                     if (in_array($this->params[0], array(40, 50, 60))) {
                         /////////////////////////////////////
@@ -594,10 +593,17 @@ class ajaxController extends bootstrap
                     $this->clients->status = 1;
                     // on retire l'etape de transition
                     $this->clients->status_transition = 0;
-                    $sEmailTemplate = 'emprunteur-dossier-valide';
+
+                    // Creation du mot de passe client
+                    //$lemotdepasse = $this->ficelle->generatePassword(8);
+                    //$this->clients->password = md5($lemotdepasse);
+
+
+                    $this->mails_text->get('emprunteur-dossier-valide', 'lang = "' . $this->language . '" AND type');
                 } // rejeté
                 elseif ($this->params[0] == 30) {
-                    $sEmailTemplate = 'emprunteur-dossier-rejete';
+                    $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
+
                     // statut emprunteur offline
                     $this->clients->status = 0;
                     //$lemotdepasse = '';
@@ -632,17 +638,26 @@ class ajaxController extends bootstrap
                     'lien_fb'                          => $lien_fb,
                     'lien_tw'                          => $lien_tw
                 );
-                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-                $oUnilendEmail = $this->get('UnilendEmail');
 
-                try {
-                    $oUnilendEmail->addVariables($varMail);
-                    $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
-                    $oUnilendEmail->addRecipient($this->clients->email);
-                    $oUnilendEmail->sendFromTemplate();
-                } catch (\Exception $oException) {
-                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                $this->email = $this->loadLib('email');
+                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                $this->email->setSubject(stripslashes($sujetMail));
+                $this->email->setHTMLBody(stripslashes($texteMail));
+
+                if ($this->Config['env'] === 'prod') {
+                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail,
+                        $this->clients->email, $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure,
+                        $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $this->email->addRecipient(trim($this->clients->email));
+                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
 
                 //on recup le statut courant
@@ -1072,6 +1087,9 @@ class ajaxController extends bootstrap
             //**********************************************//
             //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION ***//
             //**********************************************//
+
+            $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
+
             $this->settings->get('Facebook', 'type');
             $lien_fb = $this->settings->value;
 
@@ -1089,17 +1107,25 @@ class ajaxController extends bootstrap
                 'url'                  => $this->url,
             );
 
-            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-            $oUnilendEmail = $this->get('UnilendEmail');
+            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-            try {
-                $oUnilendEmail->addVariables($varMail);
-                $oUnilendEmail->setTemplate('confirmation-depot-de-dossier', $this->language);
-                $oUnilendEmail->addRecipient($this->clients->email);
-                $oUnilendEmail->sendFromTemplate();
-            } catch (\Exception $oException) {
-                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+            $this->email = $this->loadLib('email');
+            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+            $this->email->setSubject(stripslashes($sujetMail));
+            $this->email->setHTMLBody(stripslashes($texteMail));
+
+            if ($this->Config['env'] === 'prod') {
+                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail,
+                    $this->clients->email, $tabFiler);
+                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp,
+                    $this->mails_text->nmp_unique, $this->mails_text->mode);
+            } else {
+                $this->email->addRecipient(trim($this->clients->email));
+                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
 
             $this->clients->password = md5($this->ficelle->generatePassword(8));
@@ -1159,6 +1185,9 @@ class ajaxController extends bootstrap
             //*** ENVOI DU MAIL MDP ***//
             //*************************//
 
+            // Recuperation du modele de mail
+            $this->mails_text->get('mot-de-passe-oublie', 'lang = "' . $this->language . '" AND type');
+
             // FB
             $this->settings->get('Facebook', 'type');
             $lien_fb = $this->settings->value;
@@ -1178,17 +1207,25 @@ class ajaxController extends bootstrap
                 'lien_tw'       => $lien_tw
             );
 
-            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-            $oUnilendEmail = $this->get('UnilendEmail');
+            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-            try {
-                $oUnilendEmail->addVariables($varMail);
-                $oUnilendEmail->setTemplate('mot-de-passe-oublie', $this->language);
-                $oUnilendEmail->addRecipient($clients->email);
-                $oUnilendEmail->sendFromTemplate();
-            } catch (\Exception $oException) {
-                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+            $this->email = $this->loadLib('email');
+            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+            $this->email->setSubject(stripslashes($sujetMail));
+            $this->email->setHTMLBody(stripslashes($texteMail));
+
+            if ($this->Config['env'] === 'prod') {
+                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email,
+                    $tabFiler);
+                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp,
+                    $this->mails_text->nmp_unique, $this->mails_text->mode);
+            } else {
+                $this->email->addRecipient(trim($clients->email));
+                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
 
             echo 'ok';
@@ -1213,6 +1250,9 @@ class ajaxController extends bootstrap
             //*** ENVOI DU MAIL GENERATION MDP ***//
             //************************************//
 
+            // Recuperation du modele de mail
+            $this->mails_text->get('generation-mot-de-passe', 'lang = "' . $this->language . '" AND type');
+
             $surl  = $this->surl;
             $url   = $this->furl;
             $login = $this->clients->email;
@@ -1234,17 +1274,25 @@ class ajaxController extends bootstrap
                 'lien_tw'  => $lien_tw
             );
 
-            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-            $oUnilendEmail = $this->get('UnilendEmail');
+            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-            try {
-                $oUnilendEmail->addVariables($varMail);
-                $oUnilendEmail->setTemplate('generation-mot-de-passe', $this->language);
-                $oUnilendEmail->addRecipient($this->clients->email);
-                $oUnilendEmail->sendFromTemplate();
-            } catch (\Exception $oException) {
-                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+            $this->email = $this->loadLib('email');
+            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+            $this->email->setSubject(stripslashes($sujetMail));
+            $this->email->setHTMLBody(stripslashes($texteMail));
+
+            if ($this->Config['env'] === 'prod') {
+                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail,
+                    $this->clients->email, $tabFiler);
+                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp,
+                    $this->mails_text->nmp_unique, $this->mails_text->mode);
+            } else {
+                $this->email->addRecipient(trim($this->clients->email));
+                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
         }
     }
@@ -1534,6 +1582,15 @@ class ajaxController extends bootstrap
                 //*** ENVOI DU MAIL preteur-alimentation ***//
                 //******************************//
 
+                // Recuperation du modele de mail
+                $this->mails_text->get('preteur-alimentation-manu', 'lang = "' . $this->language . '" AND type');
+
+                $surl    = $this->surl;
+                $url     = $this->furl;
+                $email   = $preteurs->email;
+                $prenom  = $preteurs->prenom;
+                $message = 'Virement valide';
+
                 // FB
                 $this->settings->get('Facebook', 'type');
                 $lien_fb = $this->settings->value;
@@ -1554,7 +1611,7 @@ class ajaxController extends bootstrap
                 $varMail = array(
                     'surl'            => $this->surl,
                     'url'             => $this->furl,
-                    'prenom_p'        => utf8_decode($preteurs->prenom),
+                    'prenom_p'        => utf8_decode($clients->prenom),
                     'fonds_depot'     => $this->ficelle->formatNumber($receptions->montant / 100),
                     'solde_p'         => $this->ficelle->formatNumber($solde),
                     'motif_virement'  => $motif,
@@ -1564,17 +1621,25 @@ class ajaxController extends bootstrap
                     'lien_tw'         => $lien_tw
                 );
 
-                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-                $oUnilendEmail = $this->get('UnilendEmail');
+                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                try {
-                    $oUnilendEmail->addVariables($varMail);
-                    $oUnilendEmail->setTemplate('preteur-alimentation-manu', $this->language);
-                    $oUnilendEmail->addRecipient($preteurs->email);
-                    $oUnilendEmail->sendFromTemplate();
-                } catch (\Exception $oException) {
-                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                $this->email = $this->loadLib('email');
+                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                $this->email->setSubject(stripslashes($sujetMail));
+                $this->email->setHTMLBody(stripslashes($texteMail));
+
+                if ($this->Config['env'] === 'prod') {
+                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteurs->email,
+                        $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure,
+                        $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $this->email->addRecipient(trim($preteurs->email));
+                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
             }
 
@@ -2238,10 +2303,10 @@ class ajaxController extends bootstrap
                         global = (Math.round(global*10)/10);
                         individuel = (Math.round(individuel*10)/10);
 
-                        var performance_fianciere = ((structure+rentabilite+tresorerie)/3);
+                        var performance_fianciere = ((structure+rentabilite+tresorerie)/3)
                         performance_fianciere = (Math.round(performance_fianciere*10)/10);
 
-                        var marche_opere = ((global+individuel)/2);
+                        var marche_opere = ((global+individuel)/2)
                         marche_opere = (Math.round(marche_opere*10)/10);
 
                         // --- Fin chiffre et marché ---
@@ -2268,6 +2333,9 @@ class ajaxController extends bootstrap
                     /// MAIL emprunteur-dossier-rejete ///
                     //////////////////////////////////////
 
+                    $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
+
+
                     // FB
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
@@ -2285,17 +2353,25 @@ class ajaxController extends bootstrap
                         'lien_tw'                => $lien_tw
                     );
 
-                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-                    $oUnilendEmail = $this->get('UnilendEmail');
+                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    try {
-                        $oUnilendEmail->addVariables($varMail);
-                        $oUnilendEmail->setTemplate('emprunteur-dossier-rejete', $this->language);
-                        $oUnilendEmail->addRecipient($this->clients->email);
-                        $oUnilendEmail->sendFromTemplate();
-                    } catch (\Exception $oException) {
-                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                    $this->email = $this->loadLib('email');
+                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                    $this->email->setSubject(stripslashes($sujetMail));
+                    $this->email->setHTMLBody(stripslashes($texteMail));
+
+                    if ($this->Config['env'] == 'prod') {
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail,
+                            $this->clients->email, $tabFiler);
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure,
+                            $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                    } else {
+                        $this->email->addRecipient(trim($this->clients->email));
+                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
                     // on passe l'emprunteur en offline
                     $this->clients->status = 0;
@@ -2435,18 +2511,27 @@ class ajaxController extends bootstrap
                         'lien_tw'                => $lien_tw
                     );
 
-                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-                    $oUnilendEmail = $this->get('UnilendEmail');
+                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    try {
-                        $oUnilendEmail->addVariables($varMail);
-                        $oUnilendEmail->setTemplate('emprunteur-dossier-rejete', $this->language);
-                        $oUnilendEmail->addRecipient($this->clients->email);
-                        $oUnilendEmail->sendFromTemplate();
-                    } catch (\Exception $oException) {
-                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                    $this->email = $this->loadLib('email');
+                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                    $this->email->setSubject(stripslashes($sujetMail));
+                    $this->email->setHTMLBody(stripslashes($texteMail));
+
+                    if ($this->Config['env'] == 'prod') {
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail,
+                            $this->clients->email, $tabFiler);
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure,
+                            $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                    } else {
+                        $this->email->addRecipient(trim($this->clients->email));
+                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
+
                     // on passe l'emprunteur en offline
                     $this->clients->status = 0;
                     $this->clients->update();
@@ -2564,11 +2649,11 @@ class ajaxController extends bootstrap
                             individuel = (Math.round(individuel*10)/10);
 
                             // Calcules
-                            var performance_fianciere = ((structure+rentabilite+tresorerie)/3);
+                            var performance_fianciere = ((structure+rentabilite+tresorerie)/3)
                             performance_fianciere = (Math.round(performance_fianciere*10)/10);
 
                             // Arrondis
-                            var marche_opere = ((global+individuel)/2);
+                            var marche_opere = ((global+individuel)/2)
                             marche_opere = (Math.round(marche_opere*10)/10);
 
                             // --- Fin chiffre et marché ---
@@ -2772,6 +2857,8 @@ class ajaxController extends bootstrap
                     /// MAIL emprunteur-dossier-rejete ///
                     //////////////////////////////////////
 
+                    $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
+
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
 
@@ -2787,16 +2874,23 @@ class ajaxController extends bootstrap
                         'lien_tw'                => $lien_tw
                     );
 
-                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-                    $oUnilendEmail = $this->get('UnilendEmail');
-                    try {
-                        $oUnilendEmail->addVariables($varMail);
-                        $oUnilendEmail->setTemplate('emprunteur-dossier-rejete', $this->language);
-                        $oUnilendEmail->addRecipient($this->clients->email);
-                        $oUnilendEmail->sendFromTemplate();
-                    } catch (\Exception $oException) {
-                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                    $this->email = $this->loadLib('email');
+                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                    $this->email->setSubject(stripslashes($sujetMail));
+                    $this->email->setHTMLBody(stripslashes($texteMail));
+
+                    if ($this->Config['env'] == 'prod') {
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                    } else {
+                        $this->email->addRecipient(trim($this->clients->email));
+                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
 
                     // on passe l'emprunteur en offline
@@ -3058,9 +3152,11 @@ class ajaxController extends bootstrap
 
     private function sendEmailBorrowerArea($sTypeEmail, clients $oClients)
     {
+        $oMailsText = $this->loadData('mails_text');
+        $oMailsText->get($sTypeEmail, 'lang = "fr" AND type');
+
         $this->settings->get('Facebook', 'type');
         $sFacebookURL = $this->settings->value;
-
         $this->settings->get('Twitter', 'type');
         $sTwitterURL = $this->settings->value;
 
@@ -3076,17 +3172,21 @@ class ajaxController extends bootstrap
             'prenom'                 => $oClients->prenom
         );
 
-        /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-        $oUnilendEmail = $this->get('UnilendEmail');
+        $sRecipient = $oClients->email;
 
-        try {
-            $oUnilendEmail->addVariables($aVariables);
-            $oUnilendEmail->setTemplate($sTypeEmail, $this->language);
-            $oUnilendEmail->addRecipient($oClients->email);
-            $oUnilendEmail->sendFromTemplate();
-        } catch (\Exception $oException) {
-            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+        $this->email = $this->loadLib('email');
+        $this->email->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
+        $this->email->setSubject(stripslashes(utf8_decode($oMailsText->subject)));
+        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($oMailsText->content),
+            $this->tnmp->constructionVariablesServeur($aVariables))));
+
+        if ($this->Config['env'] == 'prod') {
+            Mailer::sendNMP($this->email, $this->mails_filer, $oMailsText->id_textemail, $sRecipient, $aNMPResponse);
+            $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $oMailsText->nmp_secure, $oMailsText->id_nmp,
+                $oMailsText->nmp_unique, $oMailsText->mode);
+        } else {
+            $this->email->addRecipient($sRecipient);
+            Mailer::send($this->email, $this->mails_filer, $oMailsText->id_textemail);
         }
     }
 }

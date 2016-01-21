@@ -1,5 +1,4 @@
 <?php
-use Unilend\librairies\ULogger;
 
 class projectsController extends bootstrap
 {
@@ -337,6 +336,9 @@ class projectsController extends bootstrap
                         //*********************************//
                         //*** ENVOI DU MAIL CONFIRM BID ***//
                         //*********************************//
+
+                        $this->mails_text->get('confirmation-bid', 'lang = "' . $this->language . '" AND type');
+
                         $this->settings->get('Facebook', 'type');
                         $lien_fb = $this->settings->value;
 
@@ -361,16 +363,23 @@ class projectsController extends bootstrap
                             'lien_tw'        => $lien_tw
                         );
 
-                        try {
-                            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-                            $oUnilendEmail = $this->get('UnilendEmail');
-                            $oUnilendEmail->addVariables($varMail);
-                            $oUnilendEmail->setTemplate('confirmation-bid', $this->language);
-                            $oUnilendEmail->addRecipient($this->clients->email);
-                            $oUnilendEmail->sendFromTemplate();
-                        } catch (\Exception $oException) {
-                            $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                            $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                        $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                        $this->email = $this->loadLib('email');
+                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                        $this->email->setSubject(stripslashes($sujetMail));
+                        $this->email->setHTMLBody(stripslashes($texteMail));
+
+                        if ($this->Config['env'] === 'prod') {
+                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                        } else {
+                            $this->email->addRecipient(trim($this->clients->email));
+                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                         }
                         // fin mail confirmation bid //
 

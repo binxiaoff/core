@@ -600,6 +600,8 @@ class depot_de_dossierController extends bootstrap
 
                 $this->redirect(self::PAGE_NAME_FILES);
             } else {
+                $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
+
                 $this->settings->get('Facebook', 'type');
                 $sFacebookURL = $this->settings->value;
 
@@ -617,20 +619,20 @@ class depot_de_dossierController extends bootstrap
                     'url'                  => $this->url,
                 );
 
+                $this->email = $this->loadLib('email');
+                $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
+                $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
+                $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $this->tnmp->constructionVariablesServeur($aVariables))));
+
                 $sRecipient = empty($this->clients_prescripteur->id_client) ? $this->clients->email : $this->clients_prescripteur->email;
                 $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
 
-                /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-                $oUnilendEmail = $this->get('UnilendEmail');
-
-                try {
-                    $oUnilendEmail->addVariables($aVariables);
-                    $oUnilendEmail->setTemplate('confirmation-depot-de-dossier', $this->language);
-                    $oUnilendEmail->addRecipient($sRecipient);
-                    $oUnilendEmail->sendFromTemplate();
-                } catch (\Exception $oException) {
-                    $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                    $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                if ($this->Config['env'] == 'prod') {
+                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipient, $aNMPResponse);
+                    $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $this->email->addRecipient($sRecipient);
+                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
 
                 $this->clients->status = 1;
@@ -888,24 +890,22 @@ class depot_de_dossierController extends bootstrap
             $this->users = $this->loadData('users');
             $this->users->get($this->projects->id_commercial, 'id_user');
 
+            $this->mails_text->get($sEmailType, 'lang = "' . $this->language . '" AND type');
+
             $aReplacements = array(
                 '[ID_PROJET]'      => $this->projects->id_project,
                 '[LIEN_BO_PROJET]' => $this->aurl . '/dossiers/edit/' . $this->projects->id_project,
                 '[RAISON_SOCIALE]' => utf8_decode($this->companies->name),
                 '[SURL]'           => $this->surl
             );
-            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-            $oUnilendEmail = $this->get('UnilendEmail');
 
-            try {
-                $oUnilendEmail->addVariables($aReplacements);
-                $oUnilendEmail->setTemplate($sEmailType, $this->language);
-                $oUnilendEmail->addRecipient($this->users->email);
-                $oUnilendEmail->sendToStaff();
-            } catch (\Exception $oException) {
-                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
-            }
+            $oEmail = $this->loadLib('email');
+            $oEmail->setFrom($this->mails_text->exp_email, $this->mails_text->exp_name);
+            $oEmail->setSubject(stripslashes(utf8_decode(str_replace('[ID_PROJET]', $this->projects->id_project, $this->mails_text->subject))));
+            $oEmail->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->mails_text->content));
+            $oEmail->addRecipient(trim($this->users->email));
+
+            Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
         }
     }
 

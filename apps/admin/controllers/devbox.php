@@ -1,5 +1,4 @@
 <?php
-use Unilend\librairies\ULogger;
 
 // Controller de developpement, aucun accès client autorisé, fonctions en BETA
 class devboxController extends bootstrap
@@ -879,6 +878,20 @@ class devboxController extends bootstrap
                 $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                 $this->clients_gestion_mails_notif->update();
                 //////// FIN GESTION ALERTES //////////
+
+                // Pas de mail si le compte est desactivé
+                /*if ($this->clients->status == 1)
+                {
+                    if ($this->Config['env'] === 'prod') {
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                        // Injection du mail NMP dans la queue
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                    } else {
+                        $this->email->addRecipient(trim($this->clients->email));
+                        $this->email->addBCCRecipient('k1@david.equinoa.net');
+                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                    }
+                }*/
             }//End si notif ok
         }
         die;
@@ -935,11 +948,6 @@ class devboxController extends bootstrap
         // on veut recup le nb d'echeances restantes
         $sum_ech_restant = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');
 
-        /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-        $oUnilendEmail = $this->get('UnilendEmail');
-
-        $oUnilendEmail->setTemplate('preteur-remboursement-anticipe', $this->language);
-
         // par loan
         foreach ($L_preteur_on_projet as $preteur) {
             // pour chaque preteur on calcule le total qui restait à lui payer (sum capital par loan)
@@ -960,6 +968,7 @@ class devboxController extends bootstrap
             //*** ENVOI DU MAIL REMBOURSEMENT PRETEUR ***//
             //*******************************************//
             // Recuperation du modele de mail
+            $this->mails_text->get('preteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
 
             $nbpret = $loans->counter('id_lender = ' . $preteur['id_lender'] . ' AND id_project = ' . $this->projects->id_project);
 
@@ -998,6 +1007,36 @@ class devboxController extends bootstrap
 
             $this->transactions->get($preteur['id_loan'], 'id_loan_remb');
 
+
+            $varMail = array(
+                'surl'                 => $this->surl,
+                'url'                  => $this->furl,
+                'prenom_p'             => $this->clients->prenom,
+                'nomproject'           => $this->projects->title,
+                'nom_entreprise'       => $this->companies->name,
+                'taux_bid'             => $this->ficelle->formatNumber($loans->rate),
+                'nbecheancesrestantes' => $sum_ech_restant,
+                'interetsdejaverses'   => $this->ficelle->formatNumber($sum_interet),
+                'crdpreteur'           => $rembNetEmail,
+                'Datera'               => date('d/m/Y'), // @todo intl
+                'solde_p'              => $solde,
+                'motif_virement'       => $motif,
+                'lien_fb'              => $lien_fb,
+                'lien_tw'              => $lien_tw
+            );
+
+            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+
+            $this->email = $this->loadLib('email');
+            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+            $this->email->setSubject(stripslashes($sujetMail));
+            $this->email->setHTMLBody(stripslashes($texteMail));
+
             $notifications                  = $this->loadData('notifications');
             $notifications->type            = 2; // remb
             $notifications->id_lender       = $preteur['id_lender'];
@@ -1029,30 +1068,14 @@ class devboxController extends bootstrap
 
                 // Pas de mail si le compte est desactivé
                 if ($this->clients->status == 1) {
-                    $varMail = array(
-                        'surl'                 => $this->surl,
-                        'url'                  => $this->furl,
-                        'prenom_p'             => $this->clients->prenom,
-                        'nomproject'           => $this->projects->title,
-                        'nom_entreprise'       => $this->companies->name,
-                        'taux_bid'             => $this->ficelle->formatNumber($loans->rate),
-                        'nbecheancesrestantes' => $sum_ech_restant,
-                        'interetsdejaverses'   => $this->ficelle->formatNumber($sum_interet),
-                        'crdpreteur'           => $rembNetEmail,
-                        'Datera'               => date('d/m/Y'), // @todo intl
-                        'solde_p'              => $solde,
-                        'motif_virement'       => $motif,
-                        'lien_fb'              => $lien_fb,
-                        'lien_tw'              => $lien_tw
-                    );
-
-                    try {
-                        $oUnilendEmail->addVariables($varMail);
-                        $oUnilendEmail->addRecipient($this->clients->email);
-                        $oUnilendEmail->sendFromTemplate();
-                    } catch (\Exception $oException) {
-                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    if ($this->Config['env'] === 'prod') {
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                        // Injection du mail NMP dans la queue
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                    } else {
+                        $this->email->addRecipient(trim($this->clients->email));
+                        $this->email->addBCCRecipient('k1@david.equinoa.net');
+                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
                 }
             }//End si notif ok

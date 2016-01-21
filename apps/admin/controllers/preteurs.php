@@ -439,6 +439,9 @@ class preteursController extends bootstrap
 
 
         if (isset($_POST['send_completude'])) {
+            // Recuperation du modele de mail
+            $this->mails_text->get('completude', 'lang = "' . $this->language . '" AND type');
+
             $surl = $this->surl;
             $url  = $this->lurl;
 
@@ -450,11 +453,8 @@ class preteursController extends bootstrap
             $this->settings->get('Twitter', 'type');
             $lien_tw = $this->settings->value;
 
-            if (in_array($this->clients->type, array(1, 3))) {
-                $lapage = 'particulier_doc';
-            } else {
-                $lapage = 'societe_doc';
-            }
+            if (in_array($this->clients->type, array(1, 3))) $lapage = 'particulier_doc';
+            else $lapage = 'societe_doc';
 
             $month = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
 
@@ -468,19 +468,26 @@ class preteursController extends bootstrap
                 'lien_upload'   => $this->furl . '/profile/' . $lapage,
                 'lien_fb'       => $lien_fb,
                 'lien_tw'       => $lien_tw);
+            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-            /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-            $oUnilendEmail = $this->get('UnilendEmail');
+            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-            try {
-                $oUnilendEmail->addVariables($varMail);
-                $oUnilendEmail->setTemplate('completude', $this->language);
-                $oUnilendEmail->addRecipient($this->clients->email);
-                $oUnilendEmail->sendFromTemplate();
-            } catch (\Exception $oException) {
-                $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+            $this->email = $this->loadLib('email');
+            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+            $this->email->setSubject(stripslashes($sujetMail));
+            $this->email->setHTMLBody(stripslashes($texteMail));
+
+            if ($this->Config['env'] === 'prod') {
+                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                // Injection du mail NMP dans la queue
+                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+            } else {
+                $this->email->addRecipient(trim($this->clients->email));
+                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
+
 
             $this->clients_status_history->addStatus($_SESSION['user']['id_user'], '20', $this->clients->id_client, utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]));
 
@@ -744,12 +751,17 @@ class preteursController extends bootstrap
                         }
                     }
 
+                    /////////////////////////////////
+
+
                     // Mail au client particulier //
                     // Recuperation du modele de mail
+                    // modif ou inscription
                     if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
-                        $sEmailTemplate = 'preteur-validation-modification-compte';
-                    } else {
-                        $sEmailTemplate = 'preteur-confirmation-activation';
+                        $this->mails_text->get('preteur-validation-modification-compte', 'lang = "' . $this->language . '" AND type');
+                    }
+                    else {
+                        $this->mails_text->get('preteur-confirmation-activation', 'lang = "' . $this->language . '" AND type');
                     }
 
                     $surl = $this->surl;
@@ -763,6 +775,11 @@ class preteursController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
+                    if (in_array($this->clients->type, array(1, 3))) $lapage = 'particulier_doc';
+                    else $lapage = 'societe_doc';
+
+                    $month = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
+
                     $varMail = array(
                         'surl'    => $surl,
                         'url'     => $url,
@@ -770,19 +787,27 @@ class preteursController extends bootstrap
                         'projets' => $this->furl . '/projets-a-financer',
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw);
+                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-                    $oUnilendEmail = $this->get('UnilendEmail');
+                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    try {
-                        $oUnilendEmail->addVariables($varMail);
-                        $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
-                        $oUnilendEmail->addRecipient($this->clients->email);
-                        $oUnilendEmail->sendFromTemplate();
-                    } catch (\Exception $oException) {
-                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $this->email = $this->loadLib('email');
+                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                    $this->email->setSubject(stripslashes($sujetMail));
+                    $this->email->setHTMLBody(stripslashes($texteMail));
+
+                    if ($this->Config['env'] === 'prod') {
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                        // Injection du mail NMP dans la queue
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                    } else {
+                        $this->email->addRecipient(trim($this->clients->email));
+                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
+                    ////////////////////
+
 
                     /////////////////// IMPOSITION ETRANGER ////////////////////
                     $this->foreignerTax($this->clients, $this->lenders_accounts, $this->clients_adresses);
@@ -988,11 +1013,10 @@ class preteursController extends bootstrap
                         /////////// FIN OFFRE DE BIENVENUE ///////////
                     }
 
-                    if ($modif == true) {
-                        $sEmailTemplate = 'preteur-validation-modification-compte';
-                    } else {
-                        $sEmailTemplate = 'preteur-confirmation-activation';
-                    }
+                    if ($modif == true)
+                        $this->mails_text->get('preteur-validation-modification-compte', 'lang = "' . $this->language . '" AND type');
+                    else
+                        $this->mails_text->get('preteur-confirmation-activation', 'lang = "' . $this->language . '" AND type');
 
                     $surl = $this->surl;
                     $url  = $this->furl;
@@ -1005,6 +1029,11 @@ class preteursController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
+                    if (in_array($this->clients->type, array(1, 3))) $lapage = 'particulier_doc';
+                    else $lapage = 'societe_doc';
+
+                    $month = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
+
                     $varMail = array(
                         'surl'    => $surl,
                         'url'     => $url,
@@ -1012,19 +1041,26 @@ class preteursController extends bootstrap
                         'projets' => $this->furl . '/projets-a-financer',
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw);
+                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-                    $oUnilendEmail = $this->get('UnilendEmail');
+                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    try {
-                        $oUnilendEmail->addVariables($varMail);
-                        $oUnilendEmail->setTemplate($sEmailTemplate, $this->language);
-                        $oUnilendEmail->addRecipient($this->clients->email);
-                        $oUnilendEmail->sendFromTemplate();
-                    } catch (\Exception $oException) {
-                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $this->email = $this->loadLib('email');
+                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                    $this->email->setSubject(stripslashes($sujetMail));
+                    $this->email->setHTMLBody(stripslashes($texteMail));
+
+                    if ($this->Config['env'] === 'prod') {
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                        // Injection du mail NMP dans la queue
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                    } else {
+                        $this->email->addRecipient(trim($this->clients->email));
+                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
+                    ////////////////////
 
                     $_SESSION['compte_valide'] = true;
 
@@ -1767,6 +1803,10 @@ class preteursController extends bootstrap
                     $bank_unilend->type           = 4; // Unilend offre de bienvenue
                     $bank_unilend->create();
 
+
+                    // EMAIL //
+                    $this->mails_text->get('offre-de-bienvenue', 'lang = "' . $this->language . '" AND type');
+
                     // FB
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
@@ -1783,19 +1823,28 @@ class preteursController extends bootstrap
                         'offre_bienvenue' => $this->ficelle->formatNumber($offres_bienvenues->montant / 100),
                         'lien_fb'         => $lien_fb,
                         'lien_tw'         => $lien_tw);
+                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-                    $oUnilendEmail = $this->get('UnilendEmail');
+                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                    try {
-                        $oUnilendEmail->addVariables($varMail);
-                        $oUnilendEmail->setTemplate('offre-de-bienvenue', $this->language);
-                        $oUnilendEmail->addRecipient($this->clients->email);
-                        $oUnilendEmail->sendFromTemplate();
-                    } catch (\Exception $oException) {
-                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $this->email = $this->loadLib('email');
+                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                    $this->email->setSubject(stripslashes($sujetMail));
+                    $this->email->setHTMLBody(stripslashes($texteMail));
+
+                    if ($this->Config['env'] === 'prod') {
+                        print_r(" -> #4.1");
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                        // Injection du mail NMP dans la queue
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                    } else {
+                        print_r(" -> #4.2");
+                        $this->email->addRecipient(trim($this->clients->email));
+                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
+                    ////////////////////
 
                 }
             }
@@ -1880,6 +1929,10 @@ class preteursController extends bootstrap
                     $bank_unilend->type           = 4; // Unilend offre de bienvenue
                     $bank_unilend->create();
 
+
+                    // EMAIL //
+                    $this->mails_text->get('offre-de-bienvenue', 'lang = "' . $this->language . '" AND type');
+
                     // FB
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
@@ -1898,18 +1951,27 @@ class preteursController extends bootstrap
                         'lien_tw'         => $lien_tw
                     );
 
-                    /** @var \Unilend\Service\UnilendEmail $oUnilendEmail */
-                    $oUnilendEmail = $this->get('UnilendEmail');
+                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    try {
-                        $oUnilendEmail->addVariables($varMail);
-                        $oUnilendEmail->setTemplate('offre-de-bienvenue', $this->language);
-                        $oUnilendEmail->addRecipient($this->clients->email);
-                        $oUnilendEmail->sendFromTemplate();
-                    } catch (\Exception $oException) {
-                        $oMailLogger = new ULogger('mail', $this->logPath, 'mail.log');
-                        $oMailLogger->addRecord(ULogger::CRITICAL, 'Caught Exception: ' . $oException->getMessage() . ' ' . $oException->getTraceAsString());
+                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                    $this->email = $this->loadLib('email');
+                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                    $this->email->setSubject(stripslashes($sujetMail));
+                    $this->email->setHTMLBody(stripslashes($texteMail));
+
+                    if ($this->Config['env'] === 'prod') {
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                        // Injection du mail NMP dans la queue
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                    } else {
+                        $this->email->addRecipient(trim($this->clients->email));
+                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
+                    ////////////////////
+
                 }
             }
         }
@@ -2345,9 +2407,9 @@ class preteursController extends bootstrap
     private function addLogChangesSchedule($iIdSchedule, $sTable, $iId, $sColumn, $sMovement)
     {
         $this->aChangesRepayment[$iIdSchedule][] = array(
-            'table'    => $sTable,
-            'id'       => $iId,
-            'column'   => $sColumn,
+            'table' => $sTable,
+            'id'    => $iId,
+            'column' => $sColumn,
             'movement' => $sMovement
         );
     }
