@@ -227,7 +227,7 @@ class lenders_account_stats extends lenders_account_stats_crud
         $fRemainingDueCapital = ($this->bdd->result($result, 0, 0) / 100);
 
         if ($iSumOfLoans > 0) {
-            $fLossRate = round($fRemainingDueCapital / $iSumOfLoans, 2);
+            $fLossRate = round($fRemainingDueCapital / $iSumOfLoans, 2) * 100;
         } else {
             $fLossRate = null ;
         }

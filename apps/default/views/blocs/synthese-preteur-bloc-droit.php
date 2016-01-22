@@ -35,7 +35,7 @@
 </script>
 
 <!-- start - rendement box html -->
-<div class="graphic-box rd-box lvl<?= $this->iDiversificationLevel ?>">
+<div class="graphic-box rd-box lvl0">
     <!-- lvl class is specified here, impacted by the JS function change_rd(lvl) -->
     <header>
         <h2><?= $this->lng['preteur-synthese']['rendement-portefeuille'] ?></h2>

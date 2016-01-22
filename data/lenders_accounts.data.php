@@ -254,7 +254,7 @@ class lenders_accounts extends lenders_accounts_crud
                     INNER JOIN loans l ON p.id_project = l.id_project
                     INNER JOIN projects_status_history psh ON l.id_project = psh.id_project
                     INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
-                WHERE ps.status = ' . \projects_status::REMBOURSEMENT . '
+                WHERE ps.status >= ' . \projects_status::REMBOURSEMENT . '
                 AND
                     l.id_lender = ' . $iLendersAccountId;
 
@@ -273,10 +273,10 @@ class lenders_accounts extends lenders_accounts_crud
                     INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                 WHERE
                     l.status = "0"
-                    AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                    AND ps.status >= ' . \projects_status::REMBOURSEMENT . '
                     AND l.id_lender = ' . $iLendersAccountId;
 
         $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int)($this->bdd->result($result, 0, 0) / 100);
     }
 }
