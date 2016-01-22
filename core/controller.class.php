@@ -451,62 +451,20 @@ class Controller
     }
 
     //Cree une nouvelle instance d'un objet
-    public function loadData($object, $params = '', $db = '')
+    public function loadData($object, $params = array(), $db = '')
     {
-        if ($db == '') {
-            $db = $this->bdd;
-        }
-
-        if ($params == '') {
-            $params = array();
-        }
-
-        //On regarde si la classe mere existe, si elle n'existe pas, on la genere
-        if (!file_exists($this->path . 'data/crud/' . $object . '.crud.php')) {
-            //generation de la classe mere
-            if (!$this->generateCRUD($object)) {
-                return;
-            }
-        }
-        //On include la classe mere
-        include_once($this->path . 'data/crud/' . $object . '.crud.php');
-
-        //On regarde si la classe fille existe, si elle n'existe pas, on la genere
-        if (!file_exists($this->path . 'data/' . $object . '.data.php')) {
-            //generation de la classe mere
-            $this->generateDATA($object);
-        }
-        //On include la classe fille
-        include_once($this->path . 'data/' . $object . '.data.php');
-
-        return new $object($db, $params);
+        return \Unilend\core\Loader::loadData($object, $params, $db);
     }
 
     //Cree une nouvelle instance d'une librairie
-    public function loadLib($library, $params = '', $instanciate = true)
+    public function loadLib($library, $params = array(), $instanciate = true)
     {
-        if ($params == '') {
-            $params = array();
-        }
-        $path    = '';
-        $tableau = explode("/", $library);
-        if (count($tableau) > 1) {
-            $library = $tableau[count($tableau) - 1];
-            unset($tableau[count($tableau) - 1]);
-            $path = implode("/", $tableau) . '/';
-        }
-        if (!file_exists($this->path . 'librairies/' . $path . $library . '.class.php')) {
-            call_user_func(array(
-                &$this, '_error'
-            ), 'library not found : ' . $this->path . 'librairies/' . $path . $library . '.class.php');
-            return false;
-        } else {
-            include_once($this->path . 'librairies/' . $path . $library . '.class.php');
+        return \Unilend\core\Loader::loadLib($library, $params, $instanciate);
+    }
 
-            if ($instanciate) {
-                return new $library($params);
-            }
-        }
+    public function get($sService, $aParams = array())
+    {
+        return \Unilend\core\Loader::loadService($sService, $aParams);
     }
 
     //Charge un fichier js dans le tableau des js

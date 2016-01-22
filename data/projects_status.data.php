@@ -43,6 +43,7 @@ class projects_status extends projects_status_crud
     const REJET_COMITE            = 34;
     const PREP_FUNDING            = 35;
     const A_FUNDER                = 40;
+    const AUTO_BID                = 45;
     const EN_FUNDING              = 50;
     const FUNDE                   = 60;
     const FUNDING_KO              = 70;

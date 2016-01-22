@@ -147,6 +147,8 @@ class cronController extends bootstrap
             $this->projects                = $this->loadData('projects');
             $this->projects_status         = $this->loadData('projects_status');
             $this->projects_status_history = $this->loadData('projects_status_history');
+            /** @var \Unilend\Service\AutoBid $oAutoBid */
+            $oAutoBid = $this->get('AutoBid');
 
             $this->settings->get('Heure debut periode funding', 'type');
             $this->heureDebutFunding = $this->settings->value;
@@ -156,11 +158,15 @@ class cronController extends bootstrap
             foreach ($this->lProjects as $projects) {
                 $tabdatePublication = explode(':', $projects['date_publication_full']);
                 $datePublication    = $tabdatePublication[0] . ':' . $tabdatePublication[1];
-                $today              = date('Y-m-d H:i');
+                $today              = '2015-08-14 13:00';
                 echo 'datePublication : ' . $datePublication . '<br>';
                 echo 'today : ' . $today . '<br><br>';
-
                 if ($datePublication == $today) {// on lance en fonction de l'heure definie dans le bo
+                    $this->projects_status_history->addStatus(\users::USER_ID_CRON, projects_status::AUTO_BID, $projects['id_project']);
+
+                    $this->projects->get($projects['id_project']);
+                    $oAutoBid::autoBid($this->projects);
+
                     $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $projects['id_project']);
 
                     // Zippage pour groupama
@@ -329,6 +335,7 @@ class cronController extends bootstrap
 
                             $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : The bid (' . $e['id_bid'] . ') status has been updated to 1');
                         } else {// Pour les encheres qui depassent on rend l'argent
+                            // Todo: reject also the autobids, add it in the queue
                             $this->bids->get($e['id_bid'], 'id_bid');
 
                             // On regarde si on a pas deja un remb pour ce bid
@@ -4552,67 +4559,72 @@ class cronController extends bootstrap
                             $bids_logs = true;
                             $this->bids->get($e['id_bid'], 'id_bid');
 
-                            $this->bids->status = 2; // statut bid ko
-                            $this->bids->update();
+                            if (0 == $this->bids->id_autobid) { // non-auto-bid
+                                $this->bids->status = \bids::STATUS_BID_REJECTED;
 
-                            $this->lenders_accounts->get($e['id_lender_account'], 'id_lender_account');
-                            $this->preteur->get($this->lenders_accounts->id_client_owner, 'id_client');
+                                $this->lenders_accounts->get($e['id_lender_account'], 'id_lender_account');
+                                $this->preteur->get($this->lenders_accounts->id_client_owner, 'id_client');
 
-                            $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
-                            $this->transactions->montant          = $e['amount'];
-                            $this->transactions->id_langue        = 'fr';
-                            $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                            $this->transactions->status           = '1';
-                            $this->transactions->etat             = '1';
-                            $this->transactions->id_project       = $p['id_project'];
-                            $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                            $this->transactions->type_transaction = 2;
-                            $this->transactions->id_bid_remb      = $e['id_bid'];
-                            $this->transactions->transaction      = 2; // transaction virtuelle
-                            $this->transactions->create();
+                                $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
+                                $this->transactions->montant          = $e['amount'];
+                                $this->transactions->id_langue        = 'fr';
+                                $this->transactions->date_transaction = date('Y-m-d H:i:s');
+                                $this->transactions->status           = '1';
+                                $this->transactions->etat             = '1';
+                                $this->transactions->id_project       = $p['id_project'];
+                                $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                                $this->transactions->type_transaction = 2;
+                                $this->transactions->id_bid_remb      = $e['id_bid'];
+                                $this->transactions->transaction      = 2; // transaction virtuelle
+                                $this->transactions->create();
 
-                            $this->wallets_lines->id_lender                = $e['id_lender_account'];
-                            $this->wallets_lines->type_financial_operation = 20;
-                            $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
-                            $this->wallets_lines->status                   = 1;
-                            $this->wallets_lines->type                     = 2;
-                            $this->wallets_lines->id_bid_remb              = $e['id_bid'];
-                            $this->wallets_lines->amount                   = $e['amount'];
-                            $this->wallets_lines->id_project               = $p['id_project'];
-                            $this->wallets_lines->create();
+                                $this->wallets_lines->id_lender                = $e['id_lender_account'];
+                                $this->wallets_lines->type_financial_operation = 20;
+                                $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
+                                $this->wallets_lines->status                   = 1;
+                                $this->wallets_lines->type                     = 2;
+                                $this->wallets_lines->id_bid_remb              = $e['id_bid'];
+                                $this->wallets_lines->amount                   = $e['amount'];
+                                $this->wallets_lines->id_project               = $p['id_project'];
+                                $this->wallets_lines->create();
 
-                            $this->notifications->type       = 1; // rejet
-                            $this->notifications->id_lender  = $e['id_lender_account'];
-                            $this->notifications->id_project = $p['id_project'];
-                            $this->notifications->amount     = $e['amount'];
-                            $this->notifications->id_bid     = $e['id_bid'];
-                            $this->notifications->create();
+                                $this->notifications->type       = 1; // rejet
+                                $this->notifications->id_lender  = $e['id_lender_account'];
+                                $this->notifications->id_project = $p['id_project'];
+                                $this->notifications->amount     = $e['amount'];
+                                $this->notifications->id_bid     = $e['id_bid'];
+                                $this->notifications->create();
 
-                            $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
-                            $this->clients_gestion_mails_notif->id_notif        = 3; // rejet
-                            $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
-                            $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                            $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
-                            $this->clients_gestion_mails_notif->create();
+                                $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
+                                $this->clients_gestion_mails_notif->id_notif        = 3; // rejet
+                                $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                                $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                                $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
+                                $this->clients_gestion_mails_notif->create();
 
-                            $sumOffres = $this->offres_bienvenues_details->sum('id_client = ' . $this->lenders_accounts->id_client_owner . ' AND id_bid = ' . $e['id_bid'], 'montant');
-                            if ($sumOffres > 0) {
-                                // sum des offres inferieur au montant a remb
-                                if ($sumOffres <= $e['amount']) {
-                                    $this->offres_bienvenues_details->montant = $sumOffres;
-                                } else {// Si montant des offres superieur au remb on remb le montant a crediter
-                                    $this->offres_bienvenues_details->montant = $e['amount'];
+                                $sumOffres = $this->offres_bienvenues_details->sum('id_client = ' . $this->lenders_accounts->id_client_owner . ' AND id_bid = ' . $e['id_bid'], 'montant');
+                                if ($sumOffres > 0) {
+                                    // sum des offres inferieur au montant a remb
+                                    if ($sumOffres <= $e['amount']) {
+                                        $this->offres_bienvenues_details->montant = $sumOffres;
+                                    } else {// Si montant des offres superieur au remb on remb le montant a crediter
+                                        $this->offres_bienvenues_details->montant = $e['amount'];
+                                    }
+
+                                    $this->offres_bienvenues_details->id_offre_bienvenue = 0;
+                                    $this->offres_bienvenues_details->id_client          = $this->lenders_accounts->id_client_owner;
+                                    $this->offres_bienvenues_details->id_bid             = 0;
+                                    $this->offres_bienvenues_details->id_bid_remb        = $e['id_bid'];
+                                    $this->offres_bienvenues_details->status             = 0;
+                                    $this->offres_bienvenues_details->type               = 2;
+                                    $this->offres_bienvenues_details->create();
                                 }
-
-                                $this->offres_bienvenues_details->id_offre_bienvenue = 0;
-                                $this->offres_bienvenues_details->id_client          = $this->lenders_accounts->id_client_owner;
-                                $this->offres_bienvenues_details->id_bid             = 0;
-                                $this->offres_bienvenues_details->id_bid_remb        = $e['id_bid'];
-                                $this->offres_bienvenues_details->status             = 0;
-                                $this->offres_bienvenues_details->type               = 2;
-                                $this->offres_bienvenues_details->create();
+                            } else {
+                                $this->bids->status = \bids::STATUS_AUTOBID_REJECTED;
                             }
+
                             $nb_bids_ko++;
+                            $this->bids->update();
                         }
 
                         if (1 != $this->bids->checked) {
@@ -4620,6 +4632,9 @@ class cronController extends bootstrap
                             $this->bids->update();
                         }
                     }
+                    /** @var \Unilend\Service\AutoBid $oAutoBid */
+                    $oAutoBid = \Unilend\core\Loader::loadService('AutoBid');
+                    $oAutoBid::autoBid();
 
                     $aLogContext['Project ID']    = $p['id_project'];
                     $aLogContext['Balance']       = $soldeBid;

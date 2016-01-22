@@ -28,9 +28,10 @@
 
 class bids extends bids_crud
 {
-    const STATUS_BID_PENDING    = 0;
-    const STATUS_BID_ACCEPTED   = 1;
-    const STATUS_BID_REJECTED   = 2;
+    const STATUS_BID_PENDING      = 0;
+    const STATUS_BID_ACCEPTED     = 1;
+    const STATUS_BID_REJECTED     = 2;
+    const STATUS_AUTOBID_REJECTED = 3;
 
     public function __construct($bdd, $params = '')
     {
@@ -64,7 +65,7 @@ class bids extends bids_crud
         $sql = 'SELECT count(*) FROM `bids` ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int)($this->bdd->result($result, 0, 0));
     }
 
     public function exist($id, $field = 'id_bid')
@@ -192,7 +193,7 @@ class bids extends bids_crud
         $sql = 'SELECT SUM(amount) FROM `bids` WHERE id_lender_account = ' . $id_lender . ' AND status = 0';
 
         $result  = $this->bdd->query($sql);
-        $montant = (int) ($this->bdd->result($result, 0, 0));
+        $montant = (int)($this->bdd->result($result, 0, 0));
         return $montant / 100;
     }
 
@@ -202,7 +203,7 @@ class bids extends bids_crud
         $sql = 'SELECT SUM(amount) FROM `bids` WHERE MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year;
 
         $result  = $this->bdd->query($sql);
-        $montant = (int) ($this->bdd->result($result, 0, 0));
+        $montant = (int)($this->bdd->result($result, 0, 0));
         return $montant / 100;
     }
 
@@ -212,7 +213,7 @@ class bids extends bids_crud
         $sql = 'SELECT SUM(amount) FROM `bids` WHERE MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year . ' AND status = 0';
 
         $result  = $this->bdd->query($sql);
-        $montant = (int) ($this->bdd->result($result, 0, 0));
+        $montant = (int)($this->bdd->result($result, 0, 0));
         return $montant / 100;
     }
 
@@ -223,7 +224,7 @@ class bids extends bids_crud
         $sql = 'SELECT SUM(amount) FROM `bids` WHERE id_lender_account = ' . $id_lender . ' AND status = "1" AND LEFT(added,7) = "' . $year . '-' . $month . '"';
 
         $result  = $this->bdd->query($sql);
-        $montant = (int) ($this->bdd->result($result, 0, 0));
+        $montant = (int)($this->bdd->result($result, 0, 0));
         if ($montant > 0) {
             $montant = $montant / 100;
         } else {
@@ -241,7 +242,7 @@ class bids extends bids_crud
         $sql = 'SELECT SUM(' . $champ . ') FROM `bids` ' . $where;
 
         $result = $this->bdd->query($sql);
-        $return = (int) ($this->bdd->result($result, 0, 0));
+        $return = (int)($this->bdd->result($result, 0, 0));
 
         return $return;
     }
@@ -251,7 +252,7 @@ class bids extends bids_crud
         $sql = 'SELECT count(DISTINCT id_lender_account) FROM `bids` WHERE id_project = ' . $id_project . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int)($this->bdd->result($result, 0, 0));
     }
 
     public function getProjectMaxRate($iProjectId)
@@ -263,7 +264,7 @@ class bids extends bids_crud
     public function getLenders($iProjectId, $aStatus = array())
     {
         $iProjectId = $this->bdd->escape_string($iProjectId);
-        $sStatus = '';
+        $sStatus    = '';
         if (false === empty($aStatus)) {
             $sStatus = implode(',', $aStatus);
             $sStatus = $this->bdd->escape_string($sStatus);
@@ -276,12 +277,28 @@ class bids extends bids_crud
 
         $sQuery .= 'Group BY id_lender_account';
 
-        $rQuery = $this->bdd->query($sQuery);
+        $rQuery   = $this->bdd->query($sQuery);
         $aLenders = array();
         while ($aRow = $this->bdd->fetch_array($rQuery)) {
             $aLenders[] = $aRow;
         }
 
         return $aLenders;
+    }
+
+    public function getRefusedAutoBids($iProjectId)
+    {
+        $sQuery = 'SELECT * FROM `bids` b
+                   INNER JOIN autobid ab ON ab.id_autobid = b.id_autobid
+                   WHERE b.id_project = ' . $iProjectId . '
+                   AND b.status = ' . self::STATUS_AUTOBID_REJECTED;
+
+        $rQuery   = $this->bdd->query($sQuery);
+        $aBids = array();
+        while ($aRow = $this->bdd->fetch_array($rQuery)) {
+            $aBids[] = $aRow;
+        }
+
+        return $aBids;
     }
 }

@@ -26,14 +26,14 @@
 //
 // **************************************************************************************************** //
 
-class client_setting_type extends client_setting_type_crud
+class autobid_queue extends autobid_queue_crud
 {
-    const TYPE_AUTO_BID_SWITCH   = 1;
-    const TYPE_BETA_TESTER = 2;
+    const STATUS_NEW = 0;
+    const STATUS_TOP = 1;
 
     public function __construct($bdd, $params = '')
     {
-        parent::client_setting_type($bdd, $params);
+        parent::autobid_queue($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -46,7 +46,7 @@ class client_setting_type extends client_setting_type_crud
             $order = ' ORDER BY ' . $order;
         }
 
-        $sql = 'SELECT * FROM `client_setting_type`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM `autobid_queue`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -62,16 +62,64 @@ class client_setting_type extends client_setting_type_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `client_setting_type` ' . $where;
+        $sql = 'SELECT count(*) FROM `autobid_queue` ' . $where;
 
         $result = $this->bdd->query($sql);
         return (int)($this->bdd->result($result, 0, 0));
     }
 
-    public function exist($id, $field = 'id_type')
+    public function exist($id, $field = 'id_queue')
     {
-        $sql    = 'SELECT * FROM `client_setting_type` WHERE ' . $field . '="' . $id . '"';
+        $sql    = 'SELECT * FROM `autobid_queue` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
+    }
+
+    public function getAutoBids($iPeriod, $fEvaluation, $fRate, $iOffset = 0, $iLimit = 100)
+    {
+        $sQuery = 'SELECT * FROM (
+                    SELECT a.*, la.id_client_owner as id_client
+                    FROM autobid_queue aq
+                      INNER JOIN autobid a ON a.id_lender = aq.id_lender
+                      INNER JOIN autobid_periods ap ON ap.id_period = a.id_autobid_period
+                      INNER JOIN lenders_accounts la ON la.id_lender_account = aq.id_lender
+                    WHERE ' . $iPeriod . ' BETWEEN ap.min AND ap.max
+                      AND a.evaluation = ' . $fEvaluation . '
+                      AND a.rate_min <= ' . $fRate . '
+                      AND aq.status = ' . self::STATUS_TOP . '
+                    ORDER BY aq.id_queue DESC
+                  ) top_queue
+
+                  UNION
+
+                  SELECT * FROM (
+                    SELECT a.*, la.id_client_owner as id_client
+                    FROM autobid_queue aq
+                      INNER JOIN autobid a ON a.id_lender = aq.id_lender
+                      INNER JOIN autobid_periods ap ON ap.id_period = a.id_autobid_period
+                      INNER JOIN lenders_accounts la ON la.id_lender_account = aq.id_lender
+                    WHERE ' . $iPeriod . ' BETWEEN ap.min AND ap.max
+                      AND a.evaluation = ' . $fEvaluation . '
+                      AND a.rate_min <= ' . $fRate . '
+                      AND aq.status = ' . self::STATUS_NEW . '
+                    ORDER BY aq.id_queue DESC
+                  ) low_queue
+                  LIMIT ' . $iLimit . ' OFFSET ' . $iOffset;
+
+        $rQuery= $this->bdd->query($sQuery);
+        $aResult   = array();
+        while ($aRow = $this->bdd->fetch_array($rQuery)) {
+            $aResult[] = $aRow;
+        }
+        return $aResult;
+    }
+
+    public function addToQueue($iLenderId, $iStatus)
+    {
+        $this->delete($iLenderId, 'id_lender');
+
+        $this->id_lender = $iLenderId;
+        $this->status = $iStatus;
+        $this->create();
     }
 }

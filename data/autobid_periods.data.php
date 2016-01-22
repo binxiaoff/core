@@ -28,6 +28,9 @@
 
 class autobid_periods extends autobid_periods_crud
 {
+    const STATUS_INACTIVE = 0;
+    const STATUS_ACTIVE   = 1;
+
     public function __construct($bdd, $params = '')
     {
         parent::autobid_periods($bdd, $params);

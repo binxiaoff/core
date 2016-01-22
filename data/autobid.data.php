@@ -29,7 +29,7 @@
 class autobid extends autobid_crud
 {
     const STATUS_INACTIVE = 0;
-    const STATUS_ACTIVE = 1;
+    const STATUS_ACTIVE   = 1;
     const STATUS_ARCHIVED = 2;
 
     public function __construct($bdd, $params = '')
