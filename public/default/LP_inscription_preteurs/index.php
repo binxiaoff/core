@@ -889,6 +889,13 @@ if ($page == 'lexpress') {
     </section>
 </div><!-- projet_analyse -->
 
+<div class="wrapper100">
+    <section class="wrapper">
+        <div id="dc_slider-step"></div>
+        <div class="clear"></div>
+    </section>
+</div><!-- Slider -->
+
 <div id="presse" class="wrapper100">
     <section class="wrapper">
         <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos int&eacute;r&ecirc;ts se rencontrent" width="252" height="60"></a>
