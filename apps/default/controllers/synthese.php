@@ -253,5 +253,63 @@ class syntheseController extends bootstrap
 
         // statut client
         $this->clients_status->getLastStatut($this->clients->id_client);
+
+        $this->fIRRUnilend           = '';
+        $this->iDiversificationLevel = '';
+        $this->sDisplayedValue       = '';
+        $this->sTypeMessageTooltip   = '';
+        $this->sDisplayedMessage     = '';
+        $this->iNumberOfCompanies    = $this->lenders_accounts->countCompaniesLenderInvestedIn($this->lenders_accounts->id_lender_account);
+        $oLenderAccountStats         = $this->loadData('lenders_account_stats');
+
+        if ($this->iNumberOfCompanies === 0) {
+            $this->iDiversificationLevel = 0;
+            $this->ssDisplayedMessage    = str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-niveau-0']);
+        }
+
+        if ($this->iNumberOfCompanies >= 1 && $this->iNumberOfCompanies <= 19) {
+            $this->iDiversificationLevel = 1;
+        }
+
+        if ($this->iNumberOfCompanies >= 20 && $this->iNumberOfCompanies <= 49) {
+            $this->iDiversificationLevel = 2;
+        }
+
+        if ($this->iNumberOfCompanies >= 50 && $this->iNumberOfCompanies <= 79) {
+            $this->iDiversificationLevel = 3;
+        }
+
+        if ($this->iNumberOfCompanies >= 80 && $this->iNumberOfCompanies <= 119) {
+            $this->iDiversificationLevel = 4;
+        }
+
+        if ($this->iNumberOfCompanies >= 120) {
+            $this->iDiversificationLevel = 5;
+        }
+
+        if ($this->iNumberOfCompanies > 0) {
+            $aLastIRR = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
+            if ($aLastIRR) {
+                $this->sDateValue          = $this->dates->formatDateMysqltoFrTxtMonth($aLastIRR['tri_date']);
+                $this->sDisplayedValue     = ($aLastIRR['tri_value'] > 0) ? '+ ' . $aLastIRR['tri_value'] . '%' : $aLastIRR['tri_value'] . '%';
+                $this->bIRRIsNegative      = ($aLastIRR['tri_value'] > 0) ? false : true;
+                $this->sTypeMessageTooltip = 'tri';
+                $this->sDisplayedMessage   = $this->lng['preteur-synthese']['tri-' . (($aLastIRR['tri_value'] > 0) ? 'positif-niveau-' : 'negatif-niveau-' ) . $this->iDiversificationLevel];
+            } else {
+                $this->sDateValue = $this->dates->formatDateMysqltoFrTxtMonth(date('Y-m-d'));
+                $fLossRate        = $oLenderAccountStats->getLossRate($this->lenders_accounts->id_lender_account, $this->lenders_accounts);
+
+                if ($fLossRate > 0) {
+                    $this->sDisplayedValue     = $fLossRate;
+                    $this->bHasIRR             = false;
+                    $this->sTypeMessageTooltip = 'taux-de-perte';
+                    $this->sDisplayedMessage   = str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-non-calculable']);
+                } else {
+                    $this->sDisplayedValue     = '';
+                    $this->sTypeMessageTooltip = 'tri';
+                    $this->sDisplayedMessage   = $this->lng['preteur-synthese']['tri-pas-encore-calcule'];
+                }
+            }
+        }
     }
 }

@@ -244,4 +244,39 @@ class lenders_accounts extends lenders_accounts_crud
         }
         return false;
     }
+
+    public function countCompaniesLenderInvestedIn($iLendersAccountId)
+    {
+        $sql = 'SELECT
+                    COUNT(DISTINCT p.id_company)
+                FROM
+                    projects p
+                    INNER JOIN loans l ON p.id_project = l.id_project
+                    INNER JOIN projects_status_history psh ON l.id_project = psh.id_project
+                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                WHERE ps.status = ' . \projects_status::REMBOURSEMENT . '
+                AND
+                    l.id_lender = ' . $iLendersAccountId;
+
+        $result = $this->bdd->query($sql);
+        return (int)($this->bdd->result($result, 0, 0));
+    }
+
+    public function sumLoansOfProjectsInRepayment($iLendersAccountId)
+    {
+        $sql = 'SELECT
+                    SUM(l.amount)
+                FROM
+                    `loans` l
+                    INNER JOIN projects_last_status_history plsh ON l.id_project = plsh.id_project
+                    INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
+                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                WHERE
+                    l.status = "0"
+                    AND ps.status = ' . \projects_status::REMBOURSEMENT . '
+                    AND l.id_lender = ' . $iLendersAccountId;
+
+        $result = $this->bdd->query($sql);
+        return (int)($this->bdd->result($result, 0, 0));
+    }
 }

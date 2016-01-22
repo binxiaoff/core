@@ -1,3 +1,245 @@
+<!-- UNILEND - A.PEREIRA -->
+<style>
+    .rd-box .body{
+        width:90%;
+        margin: 10px auto;
+    }
+
+    .rd-box .body .post-box p{
+        text-align: left;
+    }
+    .rd-box .body .post-box small{
+        font-weight: normal;
+        font-size: 10px;
+        text-transform: none;
+        font-style: italic;
+        color: #a1a5a7;
+    }
+
+    .rd-box .body p{
+        font-size: 12px;
+        text-align: center;
+    }
+
+    .rd-meter{
+        position: relative;
+        margin-bottom: 10px;
+    }
+
+    .rd-data .rd-lvl{
+        position: relative;
+        overflow: hidden;
+        height: 130px;
+        width: 130px;
+        margin: 0 auto;
+    }
+
+    .rd-data .rd-lvl .rd-fill{
+        width: 130px;
+        height: 0px;
+        display: block;
+        background: #e14650;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        -webkit-transition: height 2s 2s, background 2s 2s, opacity 2s 2s;
+        transition: height 2s 2s, background 2s 2s, opacity 2s 2s;
+    }
+
+    .rd-fill-marker{
+        position: absolute;
+        display: block;
+        height: 1px;
+        width: 178px;
+        bottom: 0;
+        right: 0;
+        background: #727272;
+        /*visibility: hidden;*/
+        z-index: 2;
+
+        -webkit-transition: bottom 2s 2s, width 2s 2s, opacity 2s 2s;
+        transition: bottom 2s 2s, width 2s 2s, opacity 2s 2s;
+    }
+
+    .rd-desc{
+        position: absolute;
+        /*visibility: hidden;*/
+        white-space: nowrap;
+        right: 0;
+        bottom: 0;
+        margin-top: -20px;
+        margin-bottom: 0px;
+        padding: 0;
+
+        width: 32%;
+        max-width: 32%;
+        font-size: 12px;
+
+        -webkit-transition: bottom 2s 2s, opacity 2s 2s;
+        transition: bottom 2s 2s, opacity 2s 2s;
+    }
+
+    .rd-desc span{
+        font-weight: bold;
+        display: block;
+        text-align: center;
+
+        -webkit-transition: color 2s 2s;
+        transition: color 2s 2s;
+    }
+
+    .rd-mask-cnt,
+    .rd-mask,
+    .rd-pct{
+        position: absolute;
+        height: 130px;
+        width: 130px;
+        top: 0;
+        left: 50%;
+        -webkit-transform: translateX(-50%);
+        transform: translateX(-50%);
+        display: block;
+        z-index: 1;
+        -webkit-transition: opacity 2s 2s;
+        transition: opacity 2s 2s;
+    }
+
+    .rd-mask-cnt{
+        padding: 0 15px;
+    }
+
+    .rd-pct{
+        vertical-align: middle;
+        line-height: 130px;
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        font-style: italic;
+        color: #A0A0A0;
+    }
+
+    .rd-info{
+        width: 100%;
+        border: solid 2px #B20066;
+        padding: 10px 0;
+        margin: 10px 0;
+        background: rgba(178,0,102,0.1);
+    }
+    .rd-info span{
+        font-weight: bold;
+        display: block;
+    }
+
+    .rd-box.lvl0 .rd-mask{ background: url(<?= $this->path . '/images/bar_mask_unilend.png' ?>); }
+    .rd-box.lvl0 .rd-fill,
+    .rd-box.lvl0 .rd-fill-marker,
+    .rd-box.lvl0 .rd-desc{ opacity: 0 ;}
+
+    .rd-box.lvl1 header p>strong{ color: #FFC000; }
+    .rd-box.lvl1 .rd-fill{ height: 20px; background: #FFC000; }
+    .rd-box.lvl1 .rd-fill-marker{ bottom: 20px; width: 162px; }
+    .rd-box.lvl1 .rd-desc{ bottom: 20px; }
+    .rd-box.lvl1 .rd-desc span{ color: #FFC000; }
+
+    .rd-box.lvl2 header p>strong{ color: #0DB200; }
+    .rd-box.lvl2 .rd-fill{ height: 40px; background: #0DB200; }
+    .rd-box.lvl2 .rd-fill-marker{ bottom: 40px; width: 154px; }
+    .rd-box.lvl2 .rd-desc{ bottom: 40px; }
+    .rd-box.lvl2 .rd-desc span{ color: #0DB200; }
+
+    .rd-box.lvl3 header p>strong{ color: #00B2A5; }
+    .rd-box.lvl3 .rd-fill{ height: 55px; background: #00B2A5; }
+    .rd-box.lvl3 .rd-fill-marker{ bottom: 55px; width: 144px; }
+    .rd-box.lvl3 .rd-desc{ bottom: 55px; }
+    .rd-box.lvl3 .rd-desc span{ color: #00B2A5; }
+
+    .rd-box.lvl4 header p>strong{ color: #0066B2; }
+    .rd-box.lvl4 .rd-fill{ height: 80px; background: #0066B2; }
+    .rd-box.lvl4 .rd-fill-marker{ bottom: 80px; width: 146px; }
+    .rd-box.lvl4 .rd-desc{ bottom: 80px; }
+    .rd-box.lvl4 .rd-desc span{ color: #0066B2; }
+    .rd-box.lvl4 .rd-pct {color: #D0D0D0  }
+
+    .rd-box.lvl5 header p>strong{ color: #B20066; }
+    .rd-box.lvl5 .rd-fill{ height: 100px; background: #B20066; }
+    .rd-box.lvl5 .rd-fill-marker{ bottom: 100px; width: 155px; }
+    .rd-box.lvl5 .rd-desc{ bottom: 100px; }
+    .rd-box.lvl5 .rd-desc span{ color: #B20066; }
+    .rd-box.lvl5 .rd-pct {color: #D0D0D0  }
+
+    /* Fix on the tooltip override, to be placed after the line 602 of styles/default/style.css */
+    .tooltip.left .tooltip-arrow {
+        top: 50%;
+        left: 100%;
+        margin-top: -8px;
+        margin-left: 0px;
+        border-width: 8px 0 8px 8px;
+        border-color: transparent;
+        border-left-color: #a1a5a7;
+        border-style:solid;
+    }
+</style>
+
+<script>
+    /**
+     * change_rd - change the rendement chart to a targeted lvl
+     * @param {integer} lvl - level 0 to 5
+     */
+
+    var change_rd = function(lvl){
+        $('.rd-box').removeClass('lvl0 lvl1 lvl2 lvl3 lvl4 lvl5').addClass('lvl'+lvl);
+    }
+
+    // example of change rendement autoload at page load
+    setTimeout(function(){
+        change_rd(<?= $this->iDiversificationLevel ?>);
+    },200);
+
+    // tooltip init
+    $(function(){
+        $('[data-toggle="tooltip"]').tooltip({ placement : 'left' });
+    })
+</script>
+
+<!-- start - rendement box html -->
+<div class="graphic-box rd-box lvl<?= $this->iDiversificationLevel ?>">
+    <!-- lvl class is specified here, impacted by the JS function change_rd(lvl) -->
+    <header>
+        <h2><?= $this->lng['preteur-synthese']['rendement-portefeuille'] ?></h2>
+        <p><?= $this->lng['preteur-synthese']['nombre-entreprises'] ?><strong><?= $this->iNumberOfCompanies ?></strong>
+        </p>
+    </header>
+    <div class="body">
+        <div class="post-box">
+            <p>
+                <small><?= $this->sDateValue ?></small>
+            </p>
+        </div>
+        <div class="rd-meter">
+            <div class="rd-data">
+                <div class="rd-lvl">
+                    <span class="rd-fill"></span>
+                </div>
+                <em class="rd-fill-marker"></em>
+                <p class="rd-desc"><?= $this->lng['preteur-synthese']['niveau-diversification'] ?>
+                    <span><?= $this->lng['preteur-synthese']['niveau-' . $this->iDiversificationLevel] ?></span></p>
+            </div>
+            <div class="rd-mask-cnt"
+                 data-toggle="tooltip"
+                 title="<?= $this->lng['preteur-synthese']['info-' . $this->sTypeMessageTooltip] ?>">
+                <img class="rd-mask" alt="" src="<?= $this->surl . '/styles/default/images/round_mask_unilend.png' ?>">
+                <span class="rd-pct"><?= $this->sDisplayedValue ?></span>
+            </div>
+        </div>
+        <p><?= $this->lng['preteur-synthese']['tri-unilend'] ?></p>
+        <p class="rd-info"><?= $this->sDisplayedMessage  ?></p>
+        <p><?= str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-explication-lien']) ?></p>
+    </div>
+</div>
+<!-- end - rendement box html -->
+<!-- END OF UNILEND -->
+
+
 <div class="graphic-box le-bar-chart">
     <header>
         <h2><?= $this->lng['preteur-synthese']['synthese-de-vos-mouvement'] ?></h2>

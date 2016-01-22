@@ -1,4 +1,5 @@
 <?php
+use Unilend\librairies\ULogger;
 
 class lenders_account_stats extends lenders_account_stats_crud
 {
@@ -197,9 +198,9 @@ class lenders_account_stats extends lenders_account_stats_crud
         return $fXIRR;
     }
 
-    public function getLossRate($iLendersAccountId, loans $oLoans)
+    public function getLossRate($iLendersAccountId, lenders_accounts $oLendersAccounts)
     {
-        $iSumOfLoans = $oLoans->sumPrets($iLendersAccountId);
+        $iSumOfLoans = $oLendersAccounts->sumLoansOfProjectsInRepayment($iLendersAccountId);
 
         $aProjectStatusCollectiveProceeding = array(
             \projects_status::PROCEDURE_SAUVEGARDE,
@@ -221,9 +222,16 @@ class lenders_account_stats extends lenders_account_stats_crud
                     AND e.status = 0
                     AND (ps.status IN (' . implode(',', $aProjectStatusCollectiveProceeding) . ')
                         OR (ps.status = ' . \projects_status::RECOUVREMENT . ' AND DATEDIFF(NOW(), e.date_echeance) > 180))';
-        $result = $this->bdd->query($sql);
-        $fRemainingDueCapital =  ($this->bdd->result($result, 0, 0)/100);;
 
-        return round($fRemainingDueCapital / $iSumOfLoans, 2);
+        $result               = $this->bdd->query($sql);
+        $fRemainingDueCapital = ($this->bdd->result($result, 0, 0) / 100);
+
+        if ($iSumOfLoans > 0) {
+            $fLossRate = round($fRemainingDueCapital / $iSumOfLoans, 2);
+        } else {
+            $fLossRate = null ;
+        }
+
+        return $fLossRate;
     }
 }
