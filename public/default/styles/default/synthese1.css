@@ -203,7 +203,7 @@
 .rd-info{
     width: 100%;
     border: solid 2px #B20066;
-    padding: 10px 0;
+    padding: 10px 10px;
     margin: 10px 0;
     background: rgba(178,0,102,0.1);
 }
