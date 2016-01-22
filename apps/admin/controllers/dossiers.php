@@ -1476,20 +1476,18 @@ class dossiersController extends bootstrap
 
         $this->mails_text->get($sMailType, 'lang = "' . $this->language . '" AND type');
 
-        $sujetMail = utf8_decode($this->mails_text->subject);
-
-        $aReplacements['sujet'] = htmlentities($sujetMail, null, 'UTF-8');
+        $aReplacements['sujet'] = htmlentities($this->mails_text->subject, null, 'UTF-8');
 
         $tabVars = $this->tnmp->constructionVariablesServeur($aReplacements);
         $tabVars['[EMV DYN]sujet[EMV /DYN]'] = strtr($aReplacements['sujet'], $tabVars);
 
-        $sujetMail = strtr(utf8_decode($sujetMail), $tabVars);
+        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
         $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
         $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
         $this->email = $this->loadLib('email');
         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-        $this->email->setSubject(stripslashes($sujetMail));
+        $this->email->setSubject('=?UTF-8?B?' . base64_encode(utf8_encode($sujetMail)) . '?=');
         $this->email->setHTMLBody(stripslashes($texteMail));
 
         if ($this->Config['env'] === 'prod') {
@@ -1617,31 +1615,34 @@ class dossiersController extends bootstrap
                     $this->clients_gestion_mails_notif->immediatement   = 1;
                     $this->clients_gestion_mails_notif->create();
 
+                    $aNextRepayment = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND date_echeance > "' . date('Y-m-d') . '"', 'date_echeance ASC', 0, 1);
+
                     $aReplacements = $aCommonReplacements + array(
-                            'prenom_p'          => $this->clients->prenom,
-                            'entreprise'        => $this->companies->name,
-                            'montant_pret'      => $this->ficelle->formatNumber($fLoansAmount / 100),
-                            'montant_rembourse' => $this->ficelle->formatNumber($fTotalPayedBack),
-                            'nombre_prets'      => $iLoansCount . ' ' . (($iLoansCount > 1) ? 'pr&ecirc;ts' : 'pr&ecirc;t'), // @todo intl
-                            'motif_virement'    => $this->clients->getLenderPattern($this->clients->id_client),
+                            'prenom_p'                    => $this->clients->prenom,
+                            'entreprise'                  => $this->companies->name,
+                            'montant_pret'                => $this->ficelle->formatNumber($fLoansAmount / 100, 0),
+                            'montant_rembourse'           => $this->ficelle->formatNumber($fTotalPayedBack),
+                            'nombre_prets'                => $iLoansCount . ' ' . (($iLoansCount > 1) ? 'pr&ecirc;ts' : 'pr&ecirc;t'), // @todo intl
+                            'date_prochain_remboursement' => $this->dates->formatDate($aNextRepayment[0]['date_echeance'], 'd/m/Y'), // @todo intl
+                            'CRD'                         => $this->ficelle->formatNumber($fLoansAmount / 100 - $fTotalPayedBack)
                         );
 
                     $sMailType = (in_array($this->clients->type, array(1, 3))) ? $sEmailTypePerson : $sEmailTypeSociety;
 
                     $this->mails_text->get($sMailType, 'lang = "' . $this->language . '" AND type');
 
-                    $sujetMail = utf8_decode($this->mails_text->subject);
-
-                    $aReplacements['sujet'] = htmlentities($sujetMail, null, 'UTF-8');
+                    $aReplacements['sujet'] = htmlentities($this->mails_text->subject, null, 'UTF-8');
 
                     $tabVars = $this->tnmp->constructionVariablesServeur($aReplacements);
+                    $tabVars['[EMV DYN]sujet[EMV /DYN]'] = strtr($aReplacements['sujet'], $tabVars);
 
+                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                     $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                     $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
                     $this->email = $this->loadLib('email');
                     $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
+                    $this->email->setSubject('=?UTF-8?B?' . base64_encode(utf8_encode($sujetMail)) . '?=');
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
                     if ($this->Config['env'] === 'prod') {
