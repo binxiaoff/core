@@ -45,7 +45,7 @@
     <div class="body">
         <div class="post-box">
             <p>
-                <small><?= $this->sDateValue ?></small>
+                <small><?= $this->lng['preteur-synthese']['donnees-actualisees'] . $this->sDateValue ?></small>
             </p>
         </div>
         <div class="rd-meter">

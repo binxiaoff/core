@@ -264,7 +264,7 @@ class syntheseController extends bootstrap
 
         if ($this->iNumberOfCompanies === 0) {
             $this->iDiversificationLevel = 0;
-            $this->ssDisplayedMessage    = str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-niveau-0']);
+            $this->sDisplayedMessage    = str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-niveau-0']);
         }
 
         if ($this->iNumberOfCompanies >= 1 && $this->iNumberOfCompanies <= 19) {
@@ -291,7 +291,7 @@ class syntheseController extends bootstrap
             $aLastIRR = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
             if ($aLastIRR) {
                 $this->sDateValue          = $this->dates->formatDateMysqltoFrTxtMonth($aLastIRR['tri_date']);
-                $this->sDisplayedValue     = ($aLastIRR['tri_value'] > 0) ? '+ ' . $aLastIRR['tri_value'] . '%' : $aLastIRR['tri_value'] . '%';
+                $this->sDisplayedValue     = ($aLastIRR['tri_value'] > 0) ? '+ ' . $this->ficelle->formatNumber($aLastIRR['tri_value']) . '%' : $this->ficelle->formatNumber($aLastIRR['tri_value']) . '%';
                 $this->bIRRIsNegative      = ($aLastIRR['tri_value'] > 0) ? false : true;
                 $this->sTypeMessageTooltip = 'tri';
                 $this->sDisplayedMessage   = $this->lng['preteur-synthese']['tri-' . (($aLastIRR['tri_value'] > 0) ? 'positif-niveau-' : 'negatif-niveau-' ) . $this->iDiversificationLevel];
@@ -300,7 +300,7 @@ class syntheseController extends bootstrap
                 $fLossRate        = $oLenderAccountStats->getLossRate($this->lenders_accounts->id_lender_account, $this->lenders_accounts);
 
                 if ($fLossRate > 0) {
-                    $this->sDisplayedValue     = $fLossRate;
+                    $this->sDisplayedValue     = $this->ficelle->formatNumber($fLossRate) . '%';
                     $this->bHasIRR             = false;
                     $this->sTypeMessageTooltip = 'taux-de-perte';
                     $this->sDisplayedMessage   = str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-non-calculable']);
