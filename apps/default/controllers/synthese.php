@@ -135,7 +135,7 @@ class syntheseController extends bootstrap
         }
 
         // Liste des projets en cours (projets a decouvrir)
-        $this->lProjetEncours = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, $where_not_in, 'p.date_retrait ASC', 0, 30);
+        $this->lProjetEncours = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, '', 'p.date_retrait ASC', 0, 30);
 
         $this->nbLoan = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
 
@@ -152,7 +152,10 @@ class syntheseController extends bootstrap
         // somme remboursé
         $this->sumRembMontant = $this->echeanciers->getSumRemb($this->lenders_accounts->id_lender_account, 'capital');
         // somme retant du (capital) (a rajouter en prod)
-        $this->sumRestanteARemb = $this->echeanciers->getSumARemb($this->lenders_accounts->id_lender_account, 'capital', 'dashboard');
+        $ProblematicProjects    = $this->echeanciers->getProblematicProjects($this->lenders_accounts->id_lender_account);
+        $this->nbProblems       = $ProblematicProjects['projects'];
+        $this->sumProblems      = $ProblematicProjects['capital'];
+        $this->sumRestanteARemb = $this->echeanciers->getSumARemb($this->lenders_accounts->id_lender_account, 'capital') - $this->sumProblems;
 
         // somme retenues fiscales remboursés
         $this->sumRevenuesFiscalesRemb = $this->echeanciers->getSumRevenuesFiscalesRemb($this->lenders_accounts->id_lender_account . ' AND status_ra = 0');
@@ -163,9 +166,10 @@ class syntheseController extends bootstrap
 
         $total = $this->solde + $this->sumBidsEncours + $this->sumPrets; // solde + bids en cours + prets validés
 
-        $this->soldePourcent          = @round(($this->solde / $total) * 100, 1); // solde du compte en pourcentage
-        $this->sumBidsEncoursPourcent = @round(($this->sumBidsEncours / $total) * 100, 1); // bids en pourcentage
-        $this->sumPretsPourcent       = @round(($this->sumPrets / $total) * 100, 1); // pret en pourcentage
+        $this->soldePourcent          = $total > 0 ? round($this->solde / $total * 100, 1) : 0; // solde du compte en pourcentage
+        $this->sumBidsEncoursPourcent = $total > 0 ? round($this->sumBidsEncours / $total * 100, 1) : 0; // bids en pourcentage
+        $this->sumPretsPourcent       = $total > 0 ? round($this->sumPrets / $total * 100, 1) : 0; // pret en pourcentage
+        $this->sumProblemsPourcent    = $total > 0 ? round($this->sumProblems / $total * 100, 1) : 0;
 
         $this->SumDepot = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10,30'); // sommes deposé
 
@@ -202,9 +206,9 @@ class syntheseController extends bootstrap
             for ($i = 1; $i <= 12; $i++) {
                 $a                                            = $i;
                 $a                                            = ($i < 10 ? '0' . $a : $a);
-                $this->sumRembParMois[$annee][$i]             = number_format(($tabSumRembParMois[$annee][$a] != '' ? $tabSumRembParMois[$annee][$a] : 0), 2, '.', ''); // capital remboursé / mois
-                $this->sumIntbParMois[$annee][$i]             = number_format(($tabSumIntbParMois[$annee][$a] != '' ? $tabSumIntbParMois[$annee][$a] - $tabSumRevenuesfiscalesParMois[$annee][$a] : 0), 2, '.', ''); // interets net / mois
-                $this->sumRevenuesfiscalesParMois[$annee][$i] = number_format(($tabSumRevenuesfiscalesParMois[$annee][$a] != '' ? $tabSumRevenuesfiscalesParMois[$annee][$a] : 0), 2, '.', ''); // prelevements fiscaux
+                $this->sumRembParMois[$annee][$i]             = $this->ficelle->formatNumber(isset($tabSumRembParMois[$annee][$a]) ? $tabSumRembParMois[$annee][$a] : 0); // capital remboursé / mois
+                $this->sumIntbParMois[$annee][$i]             = $this->ficelle->formatNumber(isset($tabSumIntbParMois[$annee][$a]) ? $tabSumIntbParMois[$annee][$a] - $tabSumRevenuesfiscalesParMois[$annee][$a] : 0); // interets net / mois
+                $this->sumRevenuesfiscalesParMois[$annee][$i] = $this->ficelle->formatNumber(isset($tabSumRevenuesfiscalesParMois[$annee][$a]) ? $tabSumRevenuesfiscalesParMois[$annee][$a] : 0); // prelevements fiscaux
 
                 // on organise l'affichage
                 if ($d == 3) {
