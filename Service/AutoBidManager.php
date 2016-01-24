@@ -4,13 +4,13 @@ namespace Unilend\Service;
 use Unilend\core\Loader;
 
 /**
- * Class AutoBid
+ * Class AutoBidManager
  * @package Unilend\Service
  */
-class AutoBid
+class AutoBidManager
 {
     /**
-     * Autobid constructor.
+     * AutoBidManager constructor.
      */
     public function __construct()
     {
@@ -239,20 +239,24 @@ class AutoBid
     {
         $iPeriod     = (int)$oProject->period;
         $sEvaluation = $oProject->risk;
-        $iMaxRate  = 10;
+        $iCurrentRate    = 10;
 
         /** @var \autobid_queue $oAutoBidQueue */
         $oAutoBidQueue = Loader::loadData('autobid_queue');
-        /** @var Bid $oBid */
-        $oBid = Loader::loadService('Bid');
+        $oBid = Loader::loadData('bids');
 
         $iOffset = 0;
         $iLimit  = 100;
-        while ($aAutoBidList = $oAutoBidQueue->getAutoBids($iPeriod, $sEvaluation, $iMaxRate, $iOffset, $iLimit)) {
+        while ($aAutoBidList = $oAutoBidQueue->getAutoBids($iPeriod, $sEvaluation, $iCurrentRate, $iOffset, $iLimit)) {
             $iOffset += $iLimit;
 
             foreach ($aAutoBidList as $aAutoBidSettings) {
-                $oBid::bid($oProject->id_project, $aAutoBidSettings['id_lender'], $iMaxRate, $aAutoBidSettings['amount'], $aAutoBidSettings['id_autobid']);
+                $oBid->id_lender_account     = $aAutoBidSettings['id_lender'];
+                $oBid->id_project            = $oProject->id_project;
+                $oBid->id_autobid            = $aAutoBidSettings['id_autobid'];
+                $oBid->amount                = $aAutoBidSettings['amount'] * 100;
+                $oBid->rate                  = $iCurrentRate;
+                BidManager::bid($oBid);
                 $oAutoBidQueue->addToQueue($aAutoBidSettings['id_lender'], \autobid_queue::STATUS_NEW);
             }
         }
@@ -268,9 +272,6 @@ class AutoBid
         /** @var \bids $oBidData */
         $oBidData = Loader::loadData('bids');
         $fCurrentRate = (float) $oBidData->getProjectMaxRate($oProject->id_project) - $fStep;
-
-        /** @var Bid $oBid */
-        $oBid = Loader::loadService('Bid');
 
         /** @var \autobid_queue $oAutoBidQueue */
         $oAutoBidQueue = Loader::loadData('autobid_queue');
@@ -290,7 +291,7 @@ class AutoBid
                     $oBidData->checked = 0;
                     $oBidData->update();
                 } else {
-                    $oBid::rejectBid($oBidData);
+                    BidManager::reject($oBidData);
                     $oAutoBidQueue->addToQueue($aAutobid['id_lender'], \autobid_queue::STATUS_TOP);
                 }
             }

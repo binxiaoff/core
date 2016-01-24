@@ -147,8 +147,6 @@ class cronController extends bootstrap
             $this->projects                = $this->loadData('projects');
             $this->projects_status         = $this->loadData('projects_status');
             $this->projects_status_history = $this->loadData('projects_status_history');
-            /** @var \Unilend\Service\AutoBid $oAutoBid */
-            $oAutoBid = $this->get('AutoBid');
 
             $this->settings->get('Heure debut periode funding', 'type');
             $this->heureDebutFunding = $this->settings->value;
@@ -158,14 +156,14 @@ class cronController extends bootstrap
             foreach ($this->lProjects as $projects) {
                 $tabdatePublication = explode(':', $projects['date_publication_full']);
                 $datePublication    = $tabdatePublication[0] . ':' . $tabdatePublication[1];
-                $today              = '2015-08-14 13:00';
+                $today              = date('Y-m-d H:i');
                 echo 'datePublication : ' . $datePublication . '<br>';
                 echo 'today : ' . $today . '<br><br>';
                 if ($datePublication == $today) {// on lance en fonction de l'heure definie dans le bo
                     $this->projects_status_history->addStatus(\users::USER_ID_CRON, projects_status::AUTO_BID, $projects['id_project']);
 
                     $this->projects->get($projects['id_project']);
-                    $oAutoBid::autoBid($this->projects);
+                    \Unilend\Service\AutoBidManager::autoBid($this->projects);
 
                     $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $projects['id_project']);
 
@@ -4632,9 +4630,8 @@ class cronController extends bootstrap
                             $this->bids->update();
                         }
                     }
-                    /** @var \Unilend\Service\AutoBid $oAutoBid */
-                    $oAutoBid = \Unilend\core\Loader::loadService('AutoBid');
-                    $oAutoBid::autoBid();
+                    $this->projets->get($p['id_project']);
+                    \Unilend\Service\AutoBidManager::autoBid($this->projets);
 
                     $aLogContext['Project ID']    = $p['id_project'];
                     $aLogContext['Balance']       = $soldeBid;

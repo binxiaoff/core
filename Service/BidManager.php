@@ -4,27 +4,29 @@ namespace Unilend\Service;
 use Unilend\core\Loader;
 
 /**
- * Class Bid
+ * Class BidManager
  * @package Unilend\Service
  */
-class Bid
+class BidManager
 {
     //todo: not yet tested
-    public static function bid($iProjectId, $iLenderId, $fRate, $iAmount, $iIdAutoBid = 0)
+    public static function bid(\bids $oBid)
     {
         /** @var \settings $oSetting */
         $oSetting = Loader::loadData('settings');
         $oSetting->get('Pret min', 'type');
         $iAmountMin = (int)$oSetting->value;
 
+        $iAmount     = $oBid->amount / 100;
+        $iAmountX100 = $oBid->amount;
+
         if ($iAmountMin > $iAmount) {
             return false;
         }
-        $iAmountX100 = $iAmount * 100;
 
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = Loader::loadData('lenders_accounts');
-        if (false === $oLenderAccount->get($iLenderId)) {
+        if (false === $oLenderAccount->get($oBid->id_lender)) {
             return false;
         }
         $iClientId = $oLenderAccount->id_client_owner;
@@ -51,33 +53,28 @@ class Bid
         $oTransaction->date_transaction = date('Y-m-d H:i:s');
         $oTransaction->status           = '1';
         $oTransaction->etat             = '1';
-        $oTransaction->id_project       = $iProjectId;
+        $oTransaction->id_project       = $oBid->id_project;
         $oTransaction->transaction      = '2';
         $oTransaction->type_transaction = '2';
         $oTransaction->create();
 
         /** @var \wallets_lines $oWalletsLine */
         $oWalletsLine                           = Loader::loadData('wallets_lines');
-        $oWalletsLine->id_lender                = $iLenderId;
+        $oWalletsLine->id_lender                = $oBid->id_lender;
         $oWalletsLine->type_financial_operation = 20; // enchere
         $oWalletsLine->id_transaction           = $oTransaction->id_transaction;
         $oWalletsLine->status                   = 1;
         $oWalletsLine->type                     = 2; // transaction virtuelle
         $oWalletsLine->amount                   = '-' . ($iAmountX100);
-        $oWalletsLine->id_project               = $iProjectId;
+        $oWalletsLine->id_project               = $oBid->id_project;
         $oWalletsLine->create();
 
         /** @var \bids $oBids */
         $oBids  = Loader::loadData('bids');
-        $iBidNb = $oBids->counter('id_project = ' . $iProjectId);
+        $iBidNb = $oBids->counter('id_project = ' . $oBid->id_project);
         $iBidNb += 1;
 
-        $oBids->id_lender_account     = $iLenderId;
-        $oBids->id_project            = $iProjectId;
-        $oBids->id_autobid            = $iIdAutoBid;
         $oBids->id_lender_wallet_line = $oWalletsLine->id_wallet_line;
-        $oBids->amount                = $iAmountX100;
-        $oBids->rate                  = $fRate;
         $oBids->ordre                 = $iBidNb;
         $oBids->create();
 
@@ -121,8 +118,8 @@ class Bid
         /** @var \notifications $oNotification */
         $oNotification             = Loader::loadData('notifications');
         $oNotification->type       = \clients_gestion_type_notif::TYPE_BID_PLACED; // offre placée
-        $oNotification->id_lender  = $iLenderId;
-        $oNotification->id_project = $iProjectId;
+        $oNotification->id_lender  = $oBid->id_lender;
+        $oNotification->id_project = $oBid->id_project;
         $oNotification->amount     = $iAmountX100;
         $oNotification->id_bid     = $oBids->id_bid;
         $oNotification->create();
@@ -133,14 +130,16 @@ class Bid
         /** @var \clients_gestion_mails_notif $oMailNotification */
         $oMailNotification = Loader::loadData('clients_gestion_mails_notif');
         if ($oNotificationSettings->getNotif($iClientId, \clients_gestion_type_notif::TYPE_BID_PLACED, 'immediatement') == true) {
-            /** @var Client $oClientManager */
-            $oClientManager = Loader::loadService('Client', array('id_client' => $iClientId));
-            $sPurpose       = $oClientManager->getClientTransferPurpose();
+            /** @var \clients $oClient */
+            $oClient = Loader::loadData('clients');
+            $oClient->get($iClientId);
+
+            $sPurpose = ClientManager::getClientTransferPurpose($oClient);
 
             //*********************************//
             //*** ENVOI DU MAIL CONFIRM BID ***//
             //*********************************//
-            //Todo: define the language from client settings
+            //Todo: create the language in client settings in case of multi-language site (project Italy)
             $sLanguage = 'fr';
             /** @var \mails_text $oMailText */
             $oMailText = Loader::loadData('mails_text');
@@ -157,15 +156,11 @@ class Bid
             $oDate = Loader::loadLib('dates');
             $month = $oDate->tableauMois['fr'][date('n', $timeAdd)];
 
-            //TODO: a loader for config ?
+            //TODO: add a loader for config in Loader.php
             /* @var array $config */
             include __DIR__ . '/../config.php';
             $sSUrl = $config['static_url'][$config['env']];
             $sLUrl = $config['url'][$config['env']]['default'] . ($config['multilanguage']['enabled'] ? '/' . $sLanguage : '');
-
-            /** @var \clients $oClient */
-            $oClient = Loader::loadData('clients');
-            $oClient->get($iClientId);
 
             /** @var \tree $oTree */
             $oTree = Loader::loadData('tree');
@@ -183,7 +178,7 @@ class Bid
                 'prenom_p'          => $oClient->prenom,
                 'nom_entreprise'    => $oCompany->name,
                 'valeur_bid'        => $oFicelle->formatNumber($iAmount),
-                'taux_bid'          => $oFicelle->formatNumber($fRate, 1),
+                'taux_bid'          => $oFicelle->formatNumber($oBid->rate, 1),
                 'date_bid'          => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
                 'heure_bid'         => date('H:i:s', strtotime($oBids->added)),
                 'projet-p'          => $sLUrl . '/' . $pageProjets,
@@ -234,7 +229,7 @@ class Bid
     /**
      * @param \bids $oBid
      */
-    public static function rejectBid(\bids $oBid)
+    public static function reject(\bids $oBid)
     {
         //Todo: method not tested
         $oBid->status = \bids::STATUS_BID_REJECTED;
