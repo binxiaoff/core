@@ -59,15 +59,12 @@ foreach($this->lLoans as $k => $l)
         <td><?=$this->ficelle->formatNumber(($SumAremb[0]['montant']/100)-$fiscal)?> <?=$this->lng['profile']['euros-par-mois']?></td>
         <td>
 			<?
-			if($this->projects_status->status >=80)
+			if($this->projects_status->status >= \projects_status::REMBOURSEMENT)
 			{
 				?><a class="tooltip-anchor icon-pdf" href="<?=$this->lurl.'/pdf/contrat/'.$this->clients->hash.'/'.$l['id_loan']?>"></a><?
 			}
 			?>
 		</td>
-
-        <?php /*?><td><a href="<?=$this->lurl?>/projects/detail/<?=$this->projects->slug?>" class="btn btn-info btn-small"><?=$this->lng['profile']['details']?></a></td><?php */?>
-
         <?
 		// smock-it
 		if($this->projects->id_project == 1456){

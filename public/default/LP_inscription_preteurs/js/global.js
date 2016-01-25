@@ -20,8 +20,36 @@ var isMobile = {
     }
 };
 /**********************************************************************/
+/*GESTION FORM*/
+var ff;
+$(window).load(function(){
+    ff = $('#form_inscription').outerHeight();
+    formactif();
+    centerform();
+});
+function formactif(){
+    if ($( window ).width() < 960) {
+        $('#form_header').addClass('formlight');
 
+    } else {
+        $('#form_header').removeClass('formlight');
+        $('#form_header').removeClass('active');
+        $('.form_content.etape1').css({"height":"auto"});
+    }
+}
+function centerform(){
+    if ($( window ).width() >= 960) {
+        var hh = $(window).height();
+        var tt = (hh-ff)/2;
 
+        $('#form').css({bottom:"auto"});
+        $('#form_inscription').css({bottom:"auto", top:tt+"px"});
+    } else {
+        $('#form').css({bottom:"0",top:"auto"});
+        $('#form_inscription').css({bottom:"0", top:"auto"});
+    }
+}
+/*****************************************************************************/
 $(function(){
 
     $('#tooltip1, #tooltip2, #tooltip3').tooltip();
@@ -30,8 +58,15 @@ $(function(){
 
     $('#form_inscription > .form_content.etape2').hide();
 
-    if (isMobile.any()) {
-        $('#form_header').click(function() {
+    /*GESTION FORM*/
+    $( window ).resize(function() {
+        formactif();
+        centerform();
+    });
+
+
+    $('#form_header').click(function() {
+        if($('#form_header').hasClass('formlight')) {
             if($('#form_header').hasClass('active')) {
                 $('.form_content.etape1').stop().animate({height:0});
                 $('#form_header').removeClass('active');
@@ -40,23 +75,9 @@ $(function(){
                 $('.form_content.etape1').stop().animate({height:$('.form_content').prop('scrollHeight') });
                 $('#form_header').addClass('active');
             }
-        })
-    };
-
-    if (!isMobile.any()) {
-        $(window).scroll(function() {
-           if($(window).scrollTop() + $(window).height() == $(document).height()) {
-               $('#form').css({bottom:"0px"});
-               $('#form > section > form').css({bottom:"230px", top:"auto"});
-           }
-           if($(window).scrollTop() == 0) {
-               $('#form').css({bottom:"auto"});
-               $('#form > section > form').css({bottom:"auto", top:"175px"});
-           }
-
-        });
-    };
-
+        }
+    });
+    /************************/
     /**** slider projets ****/
 
     $("#slider_projet > div > div > div").width($("#slider_projet > div > div > div > div").size() * 180);
@@ -85,6 +106,22 @@ $(function(){
     };
 
     $("#slider_projet > div > div").swipe(swipeOptions);
+
+
+    /**** select duree ****/
+
+    $('#dc_slider-step').noUiSlider({
+        start: [ 60 ],
+        connect: "lower",
+        step: 12,
+        range: {
+            'min': [  24 ],
+            'max': [ 60 ]
+        },
+        format: wNumb({
+            decimals: 0
+        })
+    });
 
     /**** calcul interets ****/
 
@@ -189,6 +226,26 @@ $(function(){
                     }
                 }
             }
+        }
+    });
+
+    $('#inscription_utm_source3').change(function (event) {
+        event.preventDefault();
+
+        if ($(this).val() == 5) {
+            $('#inscription_utm_source3_autre').show();
+            // var input = document.createElement("INPUT");
+            // input.type = "text";
+            // input.name = "utm_source3_autre";
+            // input.id = "inscription_utm_source3_autre";
+            // input.placeholder = "Précisez...";
+            // $(input).attr('maxlength','255');
+            // $('#inscription_submit').before(input);
+            // $('#inscription_submit').before('<input type="text" id="inscription_utm_source3_autre" name="utm_source3_autre" placeholder="Précisez..." maxlength="255" value="">');
+        }
+        else {
+            $('#inscription_utm_source3_autre').val('');
+            $('#inscription_utm_source3_autre').hide();
         }
     });
 
