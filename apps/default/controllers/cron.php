@@ -5199,6 +5199,7 @@ class cronController extends bootstrap
                     case projects_status::PROBLEME:
                     case projects_status::REMBOURSEMENT:
                     case projects_status::FUNDE:
+                    case projects_status::PROBLEME_J_X:
                         $sProjectsuccess = "OUI";
                         break ;
                     case projects_status::FUNDING_KO:
