@@ -305,7 +305,7 @@ class syntheseController extends bootstrap
                 $fLossRate        = $oLenderAccountStats->getLossRate($this->lenders_accounts->id_lender_account, $this->lenders_accounts);
 
                 if ($fLossRate > 0) {
-                    $this->sDisplayedValue     = $this->ficelle->formatNumber($fLossRate) . '%';
+                    $this->sDisplayedValue     = $this->ficelle->formatNumber(- $fLossRate) . '%';
                     $this->bHasIRR             = false;
                     $this->sTypeMessageTooltip = 'taux-de-perte';
                     $this->sDisplayedMessage   = str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-non-calculable']);
