@@ -889,9 +889,8 @@ if ($page == 'lexpress') {
     </section>
 </div><!-- projet_analyse -->
 
-<div class="wrapper100">
+<div class="wrapper100" id="dc_slider-step">
     <section class="wrapper">
-        <div id="dc_slider-step"></div>
         <div class="clear"></div>
     </section>
 </div><!-- Slider -->
