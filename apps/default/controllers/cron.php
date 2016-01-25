@@ -7840,7 +7840,7 @@ class cronController extends bootstrap
     /**
      * Function to calculate the IRR (Internal Rate of Return) for each lender on a regular basis
      * Given the amount of lenders and the time and resources needed for calculation
-     * it does one iteration par day on 800 accounts if not specified otherwise
+     * it does four iterations per day on 800 accounts if not specified otherwise
      */
     public function _calculateIRRForAllLenders()
     {
@@ -7871,10 +7871,9 @@ class cronController extends bootstrap
                 } catch (Exception $e) {
                     $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage());
                 }
-
-                $this->oLogger->addRecord(ULogger::INFO, 'Temps calcul TRI : ' . round(microtime(true) - $fTimeStart, 2));
             }
             $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
+            $this->oLogger->addRecord(ULogger::INFO, 'Calculation time for '. count($aLendersAccounts) .' lenders : ' . round(microtime(true) - $fTimeStart, 2));
             $this->stopCron();
         }
     }

@@ -26,8 +26,12 @@
         change_rd(<?= $this->iDiversificationLevel ?>);
     }, 200);
 
-    $(function() {
-        $('[data-toggle="tooltip"]').tooltip({placement : 'left'});
+    // tooltip init
+    $(function(){
+        $('[data-toggle="tooltip"]').tooltip({
+            placement : window.innerWidth > 770 ? 'left' : 'top',
+            trigger : window.innerWidth > 770 ? 'hover' : 'click'
+        });
     })
 </script>
 
@@ -59,7 +63,7 @@
                 <span class="rd-pct"><?= $this->sDisplayedValue ?></span>
             </div>
         </div>
-        <p><?= $this->lng['preteur-synthese']['tri-unilend'] ?></p>
+        <p class="rd-unilend"><?= $this->lng['preteur-synthese']['tri-unilend']?><span><?= $this->sIRRUnilend ?> %</span></p>
         <p class="rd-info"><?= $this->sDisplayedMessage  ?></p>
         <p><?= str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-explication-lien']) ?></p>
     </div>
