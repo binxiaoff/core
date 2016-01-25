@@ -1,3 +1,70 @@
+<style>
+    /* Fix on the tooltip override, to be placed after the line 602 of styles/default/style.css */
+    .tooltip.left .tooltip-arrow {
+        top: 50%;
+        left: 100%;
+        margin-top: -8px;
+        margin-left: 0px;
+        border-width: 8px 0 8px 8px;
+        border-color: transparent;
+        border-left-color: #a1a5a7;
+        border-style:solid;
+    }
+</style>
+
+<script>
+    /**
+     * change_rd - change the rendement chart to a targeted lvl
+     * @param {integer} lvl - level 0 to 5
+     */
+
+    var change_rd = function(lvl) {
+        $('.rd-box').removeClass('lvl0 lvl1 lvl2 lvl3 lvl4 lvl5').addClass('lvl'+lvl);
+    }
+
+    setTimeout(function() {
+        change_rd(<?= $this->iDiversificationLevel ?>);
+    }, 200);
+
+    $(function() {
+        $('[data-toggle="tooltip"]').tooltip({placement : 'left'});
+    })
+</script>
+
+<div class="graphic-box rd-box lvl0">
+    <header>
+        <h2><?= $this->lng['preteur-synthese']['rendement-portefeuille'] ?></h2>
+        <p><?= $this->lng['preteur-synthese']['nombre-entreprises'] ?><strong><?= $this->iNumberOfCompanies ?></strong>
+        </p>
+    </header>
+    <div class="body">
+        <div class="post-box">
+            <p>
+                <small><?= $this->lng['preteur-synthese']['donnees-actualisees'] . $this->sDateValue ?></small>
+            </p>
+        </div>
+        <div class="rd-meter">
+            <div class="rd-data">
+                <div class="rd-lvl">
+                    <span class="rd-fill"></span>
+                </div>
+                <em class="rd-fill-marker"></em>
+                <p class="rd-desc"><?= $this->lng['preteur-synthese']['niveau-diversification'] ?>
+                    <span><?= $this->lng['preteur-synthese']['niveau-' . $this->iDiversificationLevel] ?></span></p>
+            </div>
+            <div class="rd-mask-cnt"
+                 data-toggle="tooltip"
+                 title="<?= $this->lng['preteur-synthese']['info-' . $this->sTypeMessageTooltip] ?>">
+                <img class="rd-mask" alt="" src="<?= $this->surl . '/styles/default/images/round_mask_unilend.png' ?>">
+                <span class="rd-pct"><?= $this->sDisplayedValue ?></span>
+            </div>
+        </div>
+        <p><?= $this->lng['preteur-synthese']['tri-unilend'] ?></p>
+        <p class="rd-info"><?= $this->sDisplayedMessage  ?></p>
+        <p><?= str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-explication-lien']) ?></p>
+    </div>
+</div>
+
 <div class="graphic-box le-bar-chart">
     <header>
         <h2><?= $this->lng['preteur-synthese']['synthese-de-vos-mouvement'] ?></h2>
