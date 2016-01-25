@@ -5163,52 +5163,116 @@ class cronController extends bootstrap
     public function _xmlProjects()
     {
         if (true === $this->startCron('xmlProjects', 5)) {
+            $oProjects  = $this->loadData('projects');
+            $oCompanies = $this->loadData('companies');
+            $oBids      = $this->loadData('bids');
+            $oLoans     = $this->loadData('loans');
 
-            $projects  = $this->loadData('projects');
-            $companies = $this->loadData('companies');
-            $bids      = $this->loadData('bids');
-
-            $lProjets = $projects->selectProjectsByStatus(\projects_status::EN_FUNDING);
+            $aProjectStatuses = array(
+                \projects_status::EN_FUNDING,
+                \projects_status::REMBOURSEMENT,
+                \projects_status::PROBLEME,
+                \projects_status::FUNDE,
+                \projects_status::FUNDING_KO,
+                \projects_status::PROBLEME_J_X
+            );
+            $aProjects = $oProjects->selectProjectsByStatus(implode($aProjectStatuses, ','));
 
             $xml = '<?xml version="1.0" encoding="UTF-8"?>';
             $xml .= '<partenaire>';
 
-            foreach ($lProjets as $p) {
-                $companies->get($p['id_company'], 'id_company');
+            foreach ($aProjects as $aProject) {
+                $oCompanies->get($aProject['id_company'], 'id_company');
 
-                $monantRecolt = $bids->sum('id_project = ' . $p['id_project'] . ' AND status = 0', 'amount');
-                $monantRecolt = ($monantRecolt / 100);
+                if ($aProject['status'] === \projects_status::EN_FUNDING) {
+                    $iTotalbids = $this->ficelle->formatNumber($oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 0', 'amount'));
+                } else {
+                    $iTotalbids = $this->ficelle->formatNumber($oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 1', 'amount'));
+                }
+                $iTotalbids = ($iTotalbids / 100);
+                if ($iTotalbids > $aProject['amount']) {
+                    $iTotalbids = $aProject['amount'];
+                }
 
-                if ($monantRecolt > $p['amount']) {
-                    $monantRecolt = $p['amount'];
+                $iLenders = $oLoans->getNbPreteurs($aProject['id_project']);
+                switch ($aProject['status']) {
+                    case projects_status::EN_FUNDING:
+                    case projects_status::PROBLEME:
+                    case projects_status::REMBOURSEMENT:
+                    case projects_status::FUNDE:
+                    case projects_status::PROBLEME_J_X:
+                        $sProjectsuccess = "OUI";
+                        break ;
+                    case projects_status::FUNDING_KO:
+                        $sProjectsuccess = "NON";
+                        break ;
+                    default:
+                        $sProjectsuccess = "";
+                        break ;
+                }
+
+                switch ($oCompanies->sector) {
+                    case 2:
+                    case 5:
+                    case 7:
+                    case 18:
+                    case 20:
+                    case 29:
+                        $sSector = '23';
+                        break;
+                    case 17:
+                    case 22:
+                    case 23:
+                    case 25:
+                        $sSector = '21';
+                        break;
+                    case 4:
+                        $sSector = '44';
+                        break;
+                    case 15:
+                        $sSector = '63';
+                        break;
+                    case 16:
+                        $sSector = '61';
+                        break;
+                    case 27:
+                        $sSector = '03';
+                        break;
+                    default:
+                        $sSector = '22';
+                        break;
                 }
 
                 $xml .= '<projet>';
                 $xml .= '<reference_partenaire>045</reference_partenaire>';
                 $xml .= '<date_export>' . date('Y-m-d') . '</date_export>';
-                $xml .= '<reference_projet>' . $p['id_project'] . '</reference_projet>';
+                $xml .= '<reference_projet>' . $aProject['id_project'] . '</reference_projet>';
                 $xml .= '<impact_social>NON</impact_social>';
                 $xml .= '<impact_environnemental>NON</impact_environnemental>';
                 $xml .= '<impact_culturel>NON</impact_culturel>';
                 $xml .= '<impact_eco>OUI</impact_eco>';
+                $xml .= '<categorie><categorie1>'. $sSector .'</categorie1></categorie>';
                 $xml .= '<mots_cles_nomenclature_operateur></mots_cles_nomenclature_operateur>';
                 $xml .= '<mode_financement>PRR</mode_financement>';
                 $xml .= '<type_porteur_projet>ENT</type_porteur_projet>';
                 $xml .= '<qualif_ESS>NON</qualif_ESS>';
-                $xml .= '<code_postal>' . $companies->zip . '</code_postal>'; ////////////////////////////////////////
-                $xml .= '<ville><![CDATA["' . utf8_encode($companies->city) . '"]]></ville>';
-                $xml .= '<titre><![CDATA["' . $p['title'] . '"]]></titre>';
-                $xml .= '<description><![CDATA["' . $p['nature_project'] . '"]]></description>';
-                $xml .= '<url><![CDATA["' . $this->lurl . '/projects/detail/' . $p['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent"]]></url>';
-                $xml .= '<url_photo><![CDATA["' . $this->surl . '/images/dyn/projets/169/' . $p['photo_projet'] . '"]]></url_photo>';
-                $xml .= '<date_debut_collecte>' . $p['date_publication'] . '</date_debut_collecte>';
-                $xml .= '<date_fin_collecte>' . $p['date_retrait'] . '</date_fin_collecte>';
-                $xml .= '<montant_recherche>' . $p['amount'] . '</montant_recherche>';
-                $xml .= '<montant_collecte>' . $this->ficelle->formatNumber($monantRecolt, 0) . '</montant_collecte>';
+                $xml .= '<code_postal>' . $oCompanies->zip . '</code_postal>';
+                $xml .= '<ville><![CDATA["' . utf8_encode($oCompanies->city) . '"]]></ville>';
+                $xml .= '<titre><![CDATA["' . $oCompanies->name . '"]]></titre>';
+                $xml .= '<description><![CDATA["' . $aProject['nature_project'] . '"]]></description>';
+                $xml .= '<url><![CDATA["' . $this->lurl . '/projects/detail/' . $aProject['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent"]]></url>';
+                $xml .= '<url_photo><![CDATA["' . $this->surl . '/images/dyn/projets/169/' . $aProject['photo_projet'] . '"]]></url_photo>';
+                $xml .= '<date_debut_collecte>' . $aProject['date_publication'] . '</date_debut_collecte>';
+                $xml .= '<date_fin_collecte>' . $aProject['date_retrait'] . '</date_fin_collecte>';
+                $xml .= '<montant_recherche>' . $aProject['amount'] . '</montant_recherche>';
+                $xml .= '<montant_collecte>' . $iTotalbids . '</montant_collecte>';
+                $xml .= '<nb_contributeurs>'. $iLenders .'</nb_contributeurs>';
+                $xml .= '<succes>'. $sProjectsuccess .'</succes>';
                 $xml .= '</projet>';
             }
             $xml .= '</partenaire>';
             file_put_contents($this->spath . 'fichiers/045.xml', $xml);
+            file_put_contents($this->spath . 'fichiers/045_historique.xml', $xml, FILE_APPEND);
             $this->stopCron();
         }
         die;
