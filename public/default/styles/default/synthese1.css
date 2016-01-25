@@ -212,6 +212,11 @@
     display: block;
 }
 
+.rd-unilend span{
+    font-weight: bold;
+    color: #B20066;
+}
+
 .rd-box.lvl0 .rd-mask{ background: url(images/bar_mask_unilend.png) }
 .rd-box.lvl0 .rd-fill,
 .rd-box.lvl0 .rd-fill-marker,

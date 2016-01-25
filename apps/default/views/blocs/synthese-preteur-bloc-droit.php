@@ -67,7 +67,7 @@
                 <span class="rd-pct"><?= $this->sDisplayedValue ?></span>
             </div>
         </div>
-        <p><?= $this->lng['preteur-synthese']['tri-unilend'] ?></p>
+        <p class="rd-unilend"><?= $this->lng['preteur-synthese']['tri-unilend']?><span><?= $this->sIRRUnilend ?> %</span></p>
         <p class="rd-info"><?= $this->sDisplayedMessage  ?></p>
         <p><?= str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-explication-lien']) ?></p>
     </div>
