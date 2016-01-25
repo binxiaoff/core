@@ -25,7 +25,7 @@
             <span id="sumBidsEncoursPourcent"><?= number_format($this->sumBidsEncoursPourcent, 1, '.', '') ?></span>
             <span id="sumPrets"><b><?= $this->ficelle->formatNumber($this->sumRestanteARemb) ?> € <br /><?= $this->lng['preteur-synthese']['pretes-a'] ?> <?= ($this->nbLoan - $this->nbProblems) ?> <?= $this->lng['preteur-synthese']['entreprise'] ?><?= ($this->nbLoan - $this->nbProblems > 1 ? 's' : '') ?><br />et restant à rembourser</b></span>
             <span id="sumPretsPourcent"><?= number_format($this->sumPretsPourcent, 1, '.', '') ?></span>
-            <span id="sumProblems"><b><?= $this->ficelle->formatNumber($this->sumProblems) ?> € <br /><?= $this->lng['preteur-synthese']['pretes-a'] ?> <?= $this->nbLoan - $this->nbProblems ?> <?= $this->lng['preteur-synthese']['entreprise'] ?><?= ($this->nbProblems > 1 ? 's' : '') ?> en difficulté</b></span>
+            <span id="sumProblems"><b><?= $this->ficelle->formatNumber($this->sumProblems) ?> € <br /><?= $this->lng['preteur-synthese']['pretes-a'] ?> <?= $this->nbProblems ?> <?= $this->lng['preteur-synthese']['entreprise'] ?><?= ($this->nbProblems > 1 ? 's' : '') ?> en difficulté</b></span>
             <span id="sumProblemsPourcent"><?= number_format($this->sumProblemsPourcent, 1, '.', '') ?></span>
             <div id="pie-chart"></div>
             <?php
