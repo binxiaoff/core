@@ -616,7 +616,7 @@ class cronController extends bootstrap
                         $this->email->setHTMLBody($texteMail);
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
 
-                        $aLendersIds      = $this->loans->getPreteurs($this->projects->id_project);
+                        $aLendersIds      = $this->loans->getProjectLoansByLender($this->projects->id_project);
                         $oClient          = $this->loadData('clients');
                         $oLender          = $this->loadData('lenders_accounts');
                         $oCompanies       = $this->loadData('companies');

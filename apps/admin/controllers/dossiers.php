@@ -1057,7 +1057,7 @@ class dossiersController extends bootstrap
                                     $oAcceptedBids    = $this->loadData('accepted_bids');
                                     $oPaymentSchedule = $this->loadData('echeanciers');
 
-                                    $aLendersIds   = $this->loans->getPreteurs($this->projects->id_project);
+                                    $aLendersIds   = $this->loans->getProjectLoansByLender($this->projects->id_project);
                                     $aAcceptedBids = $oAcceptedBids->getDistinctBids($this->projects->id_project);
                                     $aLastLoans    = array();
 
