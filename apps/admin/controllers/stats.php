@@ -341,7 +341,7 @@ class statsController extends bootstrap
             if ($lPorjects != false) {
                 foreach ($lPorjects as $p) {
                     $this->projects_status->getLastStatut($p['id_project']);
-                    if ($this->projects_status->status == 80) {
+                    if ($this->projects_status->status == \projects_status::REMBOURSEMENT) {
                         $statutRemb = true;
                     }
                 }
@@ -1029,7 +1029,7 @@ class statsController extends bootstrap
               SELECT psh.id_project, MIN(psh.added) as first_added
               FROM projects_status_history psh
                 INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-              WHERE ps.status = 80
+              WHERE ps.status = ' . \projects_status::REMBOURSEMENT . '
               GROUP BY psh.id_project
               HAVING YEAR(first_added) = ' . $annee . '
             ) p ON p.id_project = lo.id_project
@@ -1412,6 +1412,7 @@ class statsController extends bootstrap
         header('Expires: 0');
 
         $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
+        $oWriter->setUseBOM(true);
         $oWriter->setDelimiter(';');
         $oWriter->save('php://output');
 
@@ -1442,7 +1443,7 @@ class statsController extends bootstrap
 
                 $sSqlResident = "SELECT id_pays, resident_etranger FROM lenders_imposition_history
                         WHERE id_lender = {$record['id_lender_account']}
-                        AND added <= '{$record['date_echeance_reel']}'
+                        AND DATE(added) <= '{$record['date_echeance_reel']}'
                         ORDER BY added DESC LIMIT 1";
                 $oQueryResident = $this->bdd->query($sSqlResident);
                 $aRow = $this->bdd->fetch_array($oQueryResident);

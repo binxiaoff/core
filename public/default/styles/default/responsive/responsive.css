@@ -803,12 +803,12 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .vos_prets .table-filter .select-box.right select,
     .vos_prets .table-filter .select-box.right .c2-sb-wrap { width: 100%; }
 
-    .vos_prets table.table.detail-ope tr:first-child { display: none; }
+    .vos_prets table.table.detail-ope > tbody > tr:first-child { display: none; }
 
     .vos_prets table.table.detail-ope tr,
     .vos_prets table.table.detail-ope td { display: block; width: 100%; }
 
-    .vos_prets table.table.detail-ope tr + tr { border-top: 2px solid #a1a5a7; }
+    .vos_prets table.table.detail-ope > tbody > tr + tr { border-top: 2px solid #a1a5a7; }
     .vos_prets table.table.detail-ope td { text-align: left; position: relative; padding: 10px 20px 10px 80px; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
     .vos_prets table.table.detail-ope td:after { content: ''; line-height: 0; display: table; clear: both; }
     .vos_prets table.table.detail-ope td .th-wrap { width: 70px; height: 100%; display: block; position: absolute; top: 0; left: 0; bottom: 0; padding: 5px; background-color: #b10366; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box; }
@@ -956,10 +956,8 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
     .section-projects-mobile-title { font-size: 12px; line-height: 15px; text-align: center; padding: 10px 0; margin: 0 -10px 15px; background-color: #f4f4f4; font-weight: bold; }
 
-    .etoile{
-        background: url("images/stars_white.png") no-repeat scroll 0 0 transparent;
-        height:9px;width:691px;position:relative;top:1px;
-    }
+    .etoile { background: url('../images/stars.png') no-repeat scroll 0 0 transparent; height: 9px; width: 691px; position: relative; top: 1px; }
+    .single-project-stats .etoile { background-image: url('images/stars_white.png'); }
 
     .testimonial-thumb{padding: 0;}
     .testimonial-thumb img{max-height: 40px;}

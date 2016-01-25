@@ -40,7 +40,7 @@ class clients_status extends clients_status_crud
 
     public function __construct($bdd,$params='')
     {
-        parent::clients_status($bdd,$params);
+        parent::clients_status($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -68,29 +68,24 @@ class clients_status extends clients_status_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `clients_status` ' . $where;
-
-        $result = $this->bdd->query($sql);
-
-        return (int)($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM `clients_status` ' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_client_status')
     {
-        $sql    = 'SELECT * FROM `clients_status` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
-
+        $result = $this->bdd->query('SELECT * FROM `clients_status` WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
     public function getLastStatut($id_client)
     {
         $sql = 'SELECT id_client_status
-				FROM `clients_status_history`
-				WHERE id_client = ' . $id_client . '
-				ORDER BY added DESC
-				LIMIT 1
-				';
+                FROM `clients_status_history`
+                WHERE id_client = ' . $id_client . '
+                ORDER BY added DESC
+                LIMIT 1
+                ';
 
         $result           = $this->bdd->query($sql);
         $id_client_status = (int)($this->bdd->result($result, 0, 0));
@@ -101,24 +96,23 @@ class clients_status extends clients_status_crud
     public function listCompletudes()
     {
         $sql = '
-		SELECT
-			MAX(csh.added) as added,
-			csh.id_client,
-			(SELECT h.id_client_status FROM clients_status_history h WHERE h.id_client = csh.id_client ORDER BY added DESC LIMIT 1) as id_client_status,
-			(SELECT h.content FROM clients_status_history h WHERE h.id_client = csh.id_client ORDER BY added DESC LIMIT 1) as content
-		FROM clients_status_history csh
-		GROUP BY csh.id_client';
+        SELECT
+            MAX(csh.added) as added,
+            csh.id_client,
+            (SELECT h.id_client_status FROM clients_status_history h WHERE h.id_client = csh.id_client ORDER BY added DESC LIMIT 1) as id_client_status,
+            (SELECT h.content FROM clients_status_history h WHERE h.id_client = csh.id_client ORDER BY added DESC LIMIT 1) as content
+        FROM clients_status_history csh
+        GROUP BY csh.id_client';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
             // On recup que les clients en completude
-            if ($record['id_client_status'] == 6) {
+            if ($record['id_client_status'] == self::COMPLETENESS) {
                 $result[] = $record;
             }
         }
 
         return $result;
     }
-
 }
