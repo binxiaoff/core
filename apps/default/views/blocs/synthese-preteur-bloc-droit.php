@@ -30,7 +30,10 @@
 
     // tooltip init
     $(function(){
-        $('[data-toggle="tooltip"]').tooltip({ placement : 'left' });
+        $('[data-toggle="tooltip"]').tooltip({
+            placement : window.innerWidth > 770 ? 'left' : 'top',
+            trigger : window.innerWidth > 770 ? 'hover' : 'click'
+        });
     })
 </script>
 

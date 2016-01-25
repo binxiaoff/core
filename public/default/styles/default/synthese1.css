@@ -201,7 +201,7 @@
 }
 
 .rd-info{
-    width: 100%;
+    width: 95%;
     border: solid 2px #B20066;
     padding: 10px 10px;
     margin: 10px 0;
@@ -248,3 +248,17 @@
 .rd-box.lvl5 .rd-desc{ bottom: 100px; }
 .rd-box.lvl5 .rd-desc span{ color: #B20066; }
 .rd-box.lvl5 .rd-pct {color: #D0D0D0  }
+
+@media screen and (max-width: 770px)
+{
+    .rd-fill-marker{display: none;}
+    .rd-desc{
+        position: relative;
+        bottom: 0 !important;
+        margin: 10px 0;
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+    }
+    .rd-desc span{ display: inline-block; }
+}
