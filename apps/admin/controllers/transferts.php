@@ -218,7 +218,7 @@ class transfertsController extends bootstrap
         if (isset($_POST['id'], $_POST['nom'], $_POST['prenom'], $_POST['email'], $_POST['raison_sociale'], $_POST['id_reception'])) {
             $_SESSION['controlDoubleAttr'] = md5($_SESSION['user']['id_user']);
 
-            $this->lPreteurs    = $this->clients->searchPreteursV2($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale']);
+            $this->lPreteurs    = $this->clients->searchPreteurs($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale']);
             $this->id_reception = $_POST['id_reception'];
         }
     }
