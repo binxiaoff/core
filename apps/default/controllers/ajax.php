@@ -316,7 +316,16 @@ class ajaxController extends bootstrap
             $restriction = '';
             if (isset($_SESSION['tri']['type']) && $_SESSION['tri']['type'] == 4) {
                 $restriction = ' AND p.date_fin < "'. date('Y-m-d') .'"';
-                $sStatusproject = "60,70,80,90,100,110,130";
+                $aStatusproject = array(
+                    \projects_status::FUNDE,
+                    \projects_status::FUNDING_KO,
+                    \projects_status::REMBOURSEMENT,
+                    \projects_status::REMBOURSE,
+                    \projects_status::PROBLEME,
+                    \projects_status::RECOUVREMENT,
+                    \projects_status::REMBOURSEMENT_ANTICIPE
+                );
+                $sStatusproject = implode(', ', $aStatusproject);
             }
 
             $_SESSION['ordreProject'] = $this->ordreProject;
