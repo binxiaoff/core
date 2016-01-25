@@ -5173,7 +5173,8 @@ class cronController extends bootstrap
                 \projects_status::REMBOURSEMENT,
                 \projects_status::PROBLEME,
                 \projects_status::FUNDE,
-                \projects_status::FUNDING_KO
+                \projects_status::FUNDING_KO,
+                \projects_status::PROBLEME_J_X
             );
             $aProjects = $oProjects->selectProjectsByStatus(implode($aProjectStatuses, ','));
 
