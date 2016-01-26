@@ -65,7 +65,7 @@
                         </span>
 
                         <div style="width:48px;display:inline-block;">
-                            <div class="btn_login" <?= (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && π <= 5 ? 'style="display:none;"' : '') ?>>
+                            <div class="btn_login" <?= (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5 ? 'style="display:none;"' : '') ?>>
                                 <button type="submit" name="connect" class="btn btn-mini btn-warning"><?= $this->lng['header']['ok'] ?></button>
                             </div>
                             <div class="error_wait" <?= (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5 ? 'style="display:block;"' : '') ?>>

@@ -1,5 +1,5 @@
 <script type="text/javascript">
-    $(function () {
+    $(function() {
         jQuery.tablesorter.addParser({id: "fancyNumber", is: function (s) {
                 return /[\-\+]?\s*[0-9]{1,3}(\.[0-9]{3})*,[0-9]+/.test(s);
             }, format: function (s) {
@@ -10,19 +10,17 @@
         <?php if ($this->nb_lignes != '') { ?>
             $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
         <?php } ?>
-    });
 
-    <?php if (isset($_SESSION['freeow'])) { ?>
-        $(document).ready(function () {
-            var title, message, opts, container;
-            title = "<?= $_SESSION['freeow']['title'] ?>";
-            message = "<?= $_SESSION['freeow']['message'] ?>";
-            opts = {};
+        <?php if (isset($_SESSION['freeow'])) { ?>
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {},
+                container;
             opts.classes = ['smokey'];
             $('#freeow-tr').freeow(title, message, opts);
-        });
-    <?php unset($_SESSION['freeow']); ?>
-    <?php }?>
+            <?php unset($_SESSION['freeow']); ?>
+        <?php }?>
+    });
 </script>
 
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
@@ -78,6 +76,7 @@
                     <th>Capital restant</th>
                     <th>Date d'envoi du prélèvement</th>
                     <th>Date echeance Emprunteur</th>
+                    <th>Statut</th>
                 </tr>
             </thead>
             <tbody>
@@ -88,27 +87,52 @@
                     $montantEmprunteur = $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
 
                     $capRestant -= $r['capital'];
-                    if ($capRestant < 0)
+
+                    if ($capRestant < 0) {
                         $capRestant = 0;
+                    }
 
                     //on va récuperer la date d'envoi du prelevement, pour cela on doit lier la table echeancier_emp à prelevements, on utilisera la clé "Ordre + id_projet"
-                    $date_envoi_prelevement = "";
+                    $date_envoi_prelevement = '';
+                    $sStatus                = '';
 
                     if ($this->prelevements->get($r['id_project'], 'num_prelevement = ' . $r['ordre'] . ' AND id_project')) {
                         $date_envoi_prelevement = $this->dates->formatDate($this->prelevements->date_execution_demande_prelevement, 'd/m/Y');
+
+                        switch ($this->prelevements->status) {
+                            case \prelevements::STATUS_PENDING:
+                                $sStatus = 'A venir';
+                                break;
+                            case \prelevements::STATUS_SENT:
+                                $sStatus = 'Envoyé';
+                                break;
+                            case \prelevements::STATUS_VALID:
+                                $sStatus = 'Validé';
+                                break;
+                            case \prelevements::STATUS_TERMINATED:
+                                $sStatus = 'Terminé';
+                                break;
+                            case \prelevements::STATUS_TEMPORARILY_BLOCKED:
+                                $sStatus = 'Bloqué temporairement';
+                                break;
+                            default:
+                                $sStatus = 'Inconnu';
+                                break;
+                        }
                     }
                     ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                         <td><?= $r['ordre'] ?></td>
-                        <td><?= $this->ficelle->formatNumber($r['interets'] / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber($r['capital'] / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber($r['montant'] / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber($r['commission'] / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber($r['tva'] / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber($montantEmprunteur / 100) ?></td>
-                        <td><?= $this->ficelle->formatNumber($capRestant / 100) ?></td>
+                        <td style="text-align:right"><?= $this->ficelle->formatNumber($r['interets'] / 100) ?></td>
+                        <td style="text-align:right"><?= $this->ficelle->formatNumber($r['capital'] / 100) ?></td>
+                        <td style="text-align:right"><?= $this->ficelle->formatNumber($r['montant'] / 100) ?></td>
+                        <td style="text-align:right"><?= $this->ficelle->formatNumber($r['commission'] / 100) ?></td>
+                        <td style="text-align:right"><?= $this->ficelle->formatNumber($r['tva'] / 100) ?></td>
+                        <td style="text-align:right"><?= $this->ficelle->formatNumber($montantEmprunteur / 100) ?></td>
+                        <td style="text-align:right"><?= $this->ficelle->formatNumber($capRestant / 100) ?></td>
                         <td><?= $date_envoi_prelevement ?></td>
                         <td><?= $this->dates->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
+                        <td><?= $sStatus ?></td>
                     </tr>
                         <?php
                         $i++;
@@ -118,14 +142,16 @@
                         ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                         <td><?= $r['ordre'] + 1 ?></td>
-                        <td>0</td>
-                        <td><?= $this->ficelle->formatNumber($this->montant_ra) ?></td>
-                        <td><?= $this->ficelle->formatNumber($this->montant_ra) ?></td>
-                        <td>0</td>
-                        <td>0</td>
-                        <td><?= $this->ficelle->formatNumber($this->montant_ra) ?></td>
-                        <td>0</td>
+                        <td style="text-align:right">0</td>
+                        <td style="text-align:right"><?= $this->ficelle->formatNumber($this->montant_ra) ?></td>
+                        <td style="text-align:right"><?= $this->ficelle->formatNumber($this->montant_ra) ?></td>
+                        <td style="text-align:right">0</td>
+                        <td style="text-align:right">0</td>
+                        <td style="text-align:right"><?= $this->ficelle->formatNumber($this->montant_ra) ?></td>
+                        <td style="text-align:right">0</td>
                         <td><?= $this->dates->formatDate($this->date_ra, 'd/m/Y') ?></td>
+                        <td><?= $this->dates->formatDate($this->date_ra, 'd/m/Y') ?></td>
+                        <td><?= $sStatus ?></td>
                     </tr>
                     <?php } ?>
             </tbody>
@@ -148,4 +174,3 @@
         <?php } ?>
     <?php } ?>
 </div>
-<?php unset($_SESSION['freeow']); ?>

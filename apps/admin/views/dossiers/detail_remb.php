@@ -155,7 +155,7 @@
     </div>
 
     <?php
-    if ($this->projects_status->status == 100) {
+    if ($this->projects_status->status == \projects_status::PROBLEME) {
         echo 'PROBLEME <-------';
     }
     ?>

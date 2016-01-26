@@ -28,16 +28,15 @@
 
 class clients_gestion_type_notif extends clients_gestion_type_notif_crud
 {
-
-    const TYPE_NEW_PROJECT                    = 1;
-    const TYPE_BID_PLACED                     = 2;
-    const TYPE_BID_REJECTED                   = 3;
-    const TYPE_LOAN_ACCEPTED                  = 4;
-    const TYPE_REPAYMENT                      = 5;
-    const TYPE_BANK_TRANSFER_CREDIT           = 6;
-    const TYPE_CREDIT_CARD_CREDIT             = 7;
-    const TYPE_DEBIT                          = 8;
-    const TYPE_PROJECT_PROBLEM                = 9;
+    const TYPE_NEW_PROJECT          = 1;
+    const TYPE_BID_PLACED           = 2;
+    const TYPE_BID_REJECTED         = 3;
+    const TYPE_LOAN_ACCEPTED        = 4;
+    const TYPE_REPAYMENT            = 5;
+    const TYPE_BANK_TRANSFER_CREDIT = 6;
+    const TYPE_CREDIT_CARD_CREDIT   = 7;
+    const TYPE_DEBIT                = 8;
+    const TYPE_PROJECT_PROBLEM      = 9;
 
     public function __construct($bdd, $params = '')
     {
@@ -59,7 +58,6 @@ class clients_gestion_type_notif extends clients_gestion_type_notif_crud
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
-
         return $result;
     }
 
@@ -69,18 +67,13 @@ class clients_gestion_type_notif extends clients_gestion_type_notif_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `clients_gestion_type_notif` ' . $where;
-
-        $result = $this->bdd->query($sql);
-
-        return (int)($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM `clients_gestion_type_notif` ' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_client_gestion_type_notif')
     {
-        $sql    = 'SELECT * FROM `clients_gestion_type_notif` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
-
+        $result = $this->bdd->query('SELECT * FROM `clients_gestion_type_notif` WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 }
