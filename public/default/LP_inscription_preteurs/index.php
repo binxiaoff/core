@@ -1,4 +1,4 @@
-﻿<?php $url_site = 'https://' . $_SERVER['HTTP_HOST']; ?>
+<?php $url_site = 'https://' . $_SERVER['HTTP_HOST']; ?>
 <!DOCTYPE html>
 <!--[if lt IE 7]>
 <html class="lt-ie9 lt-ie8 lt-ie7" lang="fr"> <![endif]-->
@@ -95,9 +95,9 @@ if ($page == 'lexpress') {
             </div>
             <div class="form_content etape1">
                 <select name="civilite" id="inscription_civilite" class="custom-select">
-                        <option value=""><?php if ($civilite == "Mme") { echo "Madame"; } elseif ($civilite == "M.") { echo "Monsieur"; } else { echo "Civilit&eacute;"; } ?></option>
-                        <option <?php if ($civilite == "M.") { echo "selected"; } ?> value="M.">Monsieur</option>
-                        <option <?php if ($civilite == "Mme") { echo "selected"; } ?> value="Mme">Madame</option>
+                    <option value=""><?php if ($civilite == "Mme") { echo "Madame"; } elseif ($civilite == "M.") { echo "Monsieur"; } else { echo "Civilit&eacute;"; } ?></option>
+                    <option <?php if ($civilite == "M.") { echo "selected"; } ?> value="M.">Monsieur</option>
+                    <option <?php if ($civilite == "Mme") { echo "selected"; } ?> value="Mme">Madame</option>
                 </select>
                 <input type="text" id="inscription_nom" name="nom" placeholder="Nom" maxlength="255" value="<?php echo $nom; ?>">
                 <input type="text" id="inscription_prenom" name="prenom" placeholder="Pr&eacute;nom" maxlength="255" value="<?php echo $prenom; ?>">
@@ -1144,9 +1144,18 @@ if ($page == 'lexpress') {
                                     $('#form_header').fadeIn();
                                 });
 
+
                                 $('#form_inscription > .form_content.etape1').fadeOut('fast', function () {
-                                    $('#form').css('position', 'relative');
-                                    $('#form > .wrapper').addClass('etape2');
+                                    if ($(window).width() >= 960) {
+                                        $('#form').css({position: 'relative'});
+                                        $('#form > .wrapper').addClass('etape2');
+                                    }
+                                    else {
+                                        $('#form').css({position: 'relative', bottom: "auto", top: "0"});
+                                        $('#form > .wrapper').addClass('etape2');
+                                        $('#form_inscription.etape2').css({bottom: "auto", top: "0"});
+                                    }
+
                                     $("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=cpca&pid=3&type=15"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');
 
                                     $('#form_inscription > .form_content.etape2').fadeIn();
