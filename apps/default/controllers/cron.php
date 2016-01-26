@@ -7962,7 +7962,7 @@ class cronController extends bootstrap
                     $oTransactions->status                    = '1';
                     $oTransactions->etat                      = '1';
                     $oTransactions->ip_client                 = $_SERVER['REMOTE_ADDR'];
-                    $oTransactions->type_transaction          = 17; // TODO use constant once available
+                    $oTransactions->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION;
                     $oTransactions->transaction               = 2;
                     $oTransactions->create();
 
