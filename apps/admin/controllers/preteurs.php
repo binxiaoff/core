@@ -81,23 +81,19 @@ class preteursController extends bootstrap
 
         if (isset($_POST['form_search_preteur'])) {
             $nonValide       = (isset($_POST['nonValide']) && $_POST['nonValide'] != false) ? 1 : '';
-            $this->lPreteurs = $this->clients->searchPreteursV2($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
-
+            $this->lPreteurs = $this->clients->searchPreteurs($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
             $_SESSION['freeow']['title']   = 'Recherche d\'un prêteur';
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         } else {
-            $nonValide       = (isset($_SESSION['deletePreteur']) && $_SESSION['deletePreteur'] == 1) ? 1 : '';
-            $this->lPreteurs = $this->clients->searchPreteursV2('', '', '', '', '', $nonValide, '', '0', '300');
+            $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', null, '', '0', '300');
         }
 
         $iOriginForUserHistory = 1;
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
             $this->changeClientStatus($this->params[1], $this->params[2], $iOriginForUserHistory);
-
             $oClientsStatusHistory = $this->loadData('clients_status_history');
             $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], ($this->params[2] == \clients::STATUS_OFFLINE) ? \clients_status::CLOSED_BY_UNILEND : \clients_status::VALIDATED, $this->clients->id_client);
-
             header('Location: ' . $this->lurl . '/preteurs/gestion');
             die;
         }
@@ -105,17 +101,22 @@ class preteursController extends bootstrap
         if (isset($this->params[0]) && $this->params[0] == 'deactivate') {
             $this->changeClientStatus($this->params[1], $this->params[2], $iOriginForUserHistory);
             $this->sendEmailClosedAccount();
-
             $oClientsStatusHistory = $this->loadData('clients_status_history');
             $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_LENDER_REQUEST, $this->clients->id_client);
-
             header('Location: ' . $this->lurl . '/preteurs/gestion');
             die;
         }
 
         //preteur sans mouvement
-        $a       = count($this->clients->selectPreteursByStatus('60', 'c.status = 1 AND status_inscription_preteur = 1 AND (SELECT COUNT(t.id_transaction) FROM transactions t WHERE t.type_transaction IN (1,3,4,5,7,8,14) AND t.status = 1 AND t.etat = 1 AND t.id_client = c.id_client) < 1'));
-        $this->z = $a;
+        $aTransactionTypes = array(\transactions_types::TYPE_LENDER_SUBSCRIPTION,
+            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+            \transactions_types::TYPE_LENDER_REPAYMENT,
+            \transactions_types::TYPE_LENDER_WITHDRAWAL,
+            \transactions_types::TYPE_DIRECT_DEBIT,
+            \transactions_types::TYPE_LENDER_REGULATION
+        );
+        $this->z = count($this->clients->selectPreteursByStatus(\clients_status::VALIDATED, 'c.status = 1 AND status_inscription_preteur = 1 AND (SELECT COUNT(t.id_transaction) FROM transactions t WHERE t.type_transaction IN (' . implode(',', $aTransactionTypes) . ') AND t.status = 1 AND t.etat = 1 AND t.id_client = c.id_client) < 1'));
         //preteur "hors ligne"
         $this->y = $this->clients->counter('status = 0 AND status_inscription_preteur = 1 AND status_pre_emp IN(1,3)');
         //preteur "total"
@@ -208,7 +209,7 @@ class preteursController extends bootstrap
 
         $this->transactions = $this->loadData('transactions');
         $this->solde        = $this->transactions->getSolde($this->clients->id_client);
-        $this->soldeRetrait = $this->transactions->sum('status = 1 AND etat = 1 AND transaction = 1 AND type_transaction = 8 AND id_client = ' . $this->clients->id_client, 'montant');
+        $this->soldeRetrait = $this->transactions->sum('status = 1 AND etat = 1 AND transaction = 1 AND type_transaction = '. \transactions_types::TYPE_LENDER_WITHDRAWAL .' AND id_client = ' . $this->clients->id_client, 'montant');
         $this->soldeRetrait = str_replace('-', '', $this->soldeRetrait / 100);
         $this->lTrans       = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17,19,20,22,23) AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $year, 'added DESC');
 
@@ -237,19 +238,17 @@ class preteursController extends bootstrap
     {
         $this->loadJs('default/jquery-ui-1.10.3.custom.min');
 
-        $this->clients_mandats = $this->loadData('clients_mandats');
 
-        $this->nationalites = $this->loadData('nationalites_v2');
-        $this->lNatio       = $this->nationalites->select();
-
-        $this->pays  = $this->loadData('pays_v2');
-        $this->lPays = $this->pays->select('', 'ordre ASC');
+        $this->clients_mandats         = $this->loadData('clients_mandats');
+        $this->nationalites            = $this->loadData('nationalites_v2');
+        $this->lNatio                  = $this->nationalites->select();
+        $this->pays                    = $this->loadData('pays_v2');
+        $this->lPays                   = $this->pays->select('', 'ordre ASC');
         $this->nationalites            = $this->loadData('nationalites_v2');
         $this->pays                    = $this->loadData('pays_v2');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
-
-        $this->lNatio = $this->nationalites->select();
-        $this->lPays  = $this->pays->select('', 'ordre ASC');
+        $this->lNatio                  = $this->nationalites->select();
+        $this->lPays                   = $this->pays->select('', 'ordre ASC');
 
         $lElements = $this->blocs_elements->select('id_bloc = 9 AND id_langue = "' . $this->language . '"');
         foreach ($lElements as $b_elt) {
@@ -331,9 +330,9 @@ class preteursController extends bootstrap
         $this->clients_status = $this->loadData('clients_status');
         $this->clients_status->getLastStatut($this->clients->id_client);
 
-        $this->clients_status_history = $this->loadData('clients_status_history');
-
-        $aLenderStatusForQuery = array(
+        $this->clients_status_history   = $this->loadData('clients_status_history');
+        $this->oClientsStatusForHistory = $this->loadData('clients_status');
+        $aLenderStatusForQuery          = array(
             \clients_status::TO_BE_CHECKED,
             \clients_status::COMPLETENESS,
             \clients_status::COMPLETENESS_REPLY,
@@ -342,7 +341,7 @@ class preteursController extends bootstrap
             \clients_status::CLOSED_LENDER_REQUEST,
             \clients_status::CLOSED_BY_UNILEND
         );
-        $this->lActions        = $this->clients_status_history->select('id_client = ' . $this->clients->id_client . ' AND id_client_status IN ( SELECT cs.id_client_status FROM  clients_status cs WHERE cs.status IN (' . implode(',', $aLenderStatusForQuery) . '))', 'added DESC');
+        $this->lActions                 = $this->clients_status_history->select('id_client = ' . $this->clients->id_client . ' AND id_client_status IN ( SELECT cs.id_client_status FROM  clients_status cs WHERE cs.status IN (' . implode(',', $aLenderStatusForQuery) . '))', 'added DESC');
 
         if ($this->lActions[0]['added'] != false) {
             $this->timeCreate = strtotime($this->lActions[0]['added']);
@@ -551,7 +550,7 @@ class preteursController extends bootstrap
                         $this->lenders_accounts->fin_exoneration   = $fin_exo;
 
                         $this->echeanciers->update_prelevements_obligatoires($this->lenders_accounts->id_lender_account, 1, '', $debut_exo, $fin_exo);
-                    } elseif ($this->lenders_accounts->exonere == 0) { // on ajoute les prelevements sur les futures echeances
+                    } elseif (0 == $this->lenders_accounts->exonere) { // on ajoute les prelevements sur les futures echeances
                         $this->lenders_accounts->debut_exoneration = '0000-00-00';
                         $this->lenders_accounts->fin_exoneration   = '0000-00-00';
 
@@ -579,19 +578,19 @@ class preteursController extends bootstrap
                 $this->users_history->histo(3, 'modif info preteur', $_SESSION['user']['id_user'], $serialize);
                 ////////////////
 
-                if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
+                if (isset($_POST['statut_valider_preteur']) && 1 == $_POST['statut_valider_preteur']) {
 
                     $aExistingClient       = $this->clients->getDuplicates($this->clients->nom, $this->clients->prenom, $this->clients->naissance);
                     $iOriginForUserHistory = 3;
 
-                    if (empty($aExistingClient) === false) {
+                    if (false === empty($aExistingClient)) {
                         $this->changeClientStatus($this->clients->id_client, \clients::STATUS_OFFLINE, $iOriginForUserHistory);
                         $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, $this->clients->id_client, 'Doublon avec client ID : ' . $aExistingClient[0]['id_client']);
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                         die;
                     } else {
                         // On check si on a deja eu le compte validé au moins une fois. si c'est pas le cas on check l'offre
-                        if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')') == 0) {
+                        if (0 == $this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')')) {
                             $this->create_offre_bienvenue($this->clients->id_client);
                         }
 
@@ -605,7 +604,7 @@ class preteursController extends bootstrap
                         $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
                         $this->lNotifs     = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
 
-                    if ($this->lNotifs == false) {
+                    if (false == $this->lNotifs ) {
                         foreach ($this->lTypeNotifs as $n) {
                             $this->clients_gestion_notifications->id_client = $this->clients->id_client;
                             $this->clients_gestion_notifications->id_notif  = $n['id_client_gestion_type_notif'];
@@ -934,10 +933,7 @@ class preteursController extends bootstrap
                     }
 
                     $_SESSION['compte_valide'] = true;
-                }
 
-                header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
-                die;
                         if ($this->Config['env'] === 'prod') {
                             Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                             $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
@@ -1395,7 +1391,7 @@ class preteursController extends bootstrap
 
         $lapage         = (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) ? 'particulier_doc' : 'societe_doc';
         $this->lActions = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
-        $timeCreate     = (empty($this->lActions[0]['added']) === false) ? strtotime($this->lActions[0]['added']) : strtotime($this->clients->added);
+        $timeCreate     = (false === empty($this->lActions[0]['added'])) ? strtotime($this->lActions[0]['added']) : strtotime($this->clients->added);
         $month          = $this->dates->tableauMois['fr'][ date('n', $timeCreate) ];
 
         $varMail = array(
@@ -2211,7 +2207,7 @@ class preteursController extends bootstrap
 
     private function changeClientStatus($iClientId, $iStatus, $iOrigin)
     {
-        if ($this->clients->isBorrower($this->loadData('projects'), $this->loadData('companies'), $iClientId) === false) {
+        if (false === $this->clients->isBorrower($this->loadData('projects'), $this->loadData('companies'), $iClientId)) {
             $this->clients->get($iClientId, 'id_client');
             $this->clients->status = $iStatus;
             $this->clients->update();
@@ -2293,7 +2289,7 @@ class preteursController extends bootstrap
 
         $lapage = (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) ? 'particulier_doc' : 'societe_doc';
 
-        $timeCreate = (empty($this->lActions[0]['added']) === false) ? strtotime($this->lActions[0]['added']) : strtotime($this->clients->added);
+        $timeCreate = (false === empty($this->lActions[0]['added'])) ? strtotime($this->lActions[0]['added']) : strtotime($this->clients->added);
         $month      = $this->dates->tableauMois['fr'][ date('n', $timeCreate) ];
 
         $varMail = array(

@@ -43,7 +43,7 @@ class clients extends clients_crud
     const TYPE_LEGAL_ENTITY_FOREIGNER = 4;
 
     const STATUS_OFFLINE = 0;
-    const STATUS_ONLINE = 1;
+    const STATUS_ONLINE  = 1;
 
 
     public function __construct($bdd, $params = '')
@@ -1016,32 +1016,35 @@ class clients extends clients_crud
         );
     }
 
-    public function getDuplicates($sFirstName, $sLastName, $sBirthdate)
+    public function getDuplicates($sLastName, $sFirstName, $sBirthdate)
     {
         $aCharactersToReplace = array(' ', '-', '_', '*', ',', '^', '`', ':', ';', ',', '.', '!', '&', '"', '\'', '<', '>', '(', ')', '@');
 
         $sFirstName     = str_replace($aCharactersToReplace, '', htmlspecialchars_decode($sFirstName));
         $sLastName      = str_replace($aCharactersToReplace, '', htmlspecialchars_decode($sLastName));
 
-        $sReplaceSQL        = '';
         $sReplaceCharacters = '';
-
-        foreach ($aCharactersToReplace as $character) {
-            $sReplaceSQL .= 'REPLACE(';
-            $sReplaceCharacters .= ',\'' . addslashes($character) . '\', \'\')';
+        foreach ($aCharactersToReplace as $sCharacter) {
+            $sReplaceCharacters .= ',\'' . addslashes($sCharacter) . '\', \'\')';
         }
 
-        $sql = 'SELECT * FROM clients c WHERE ' . $sReplaceSQL . 'nom' . $sReplaceCharacters . ' LIKE \'%' . $sName . '%\'
-            AND ' . $sReplaceSQL . 'prenom' . $sReplaceCharacters . ' LIKE \'%' . $sFirstname . '%\'
-            AND naissance = DATE(\'' . $sBirthdate . '\')
-            AND status = 1
-            AND (SELECT cs.status FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) IN (' . \clients_status::VALIDATED . ')';
+        $sql = 'SELECT *
+                FROM clients c
+                WHERE ' . str_repeat('REPLACE(', count($aCharactersToReplace)) . '`nom`' . $sReplaceCharacters . ' LIKE "%' . $sLastName. '%"
+                            AND ' . str_repeat('REPLACE(', count($aCharactersToReplace)) . '`prenom`' . $sReplaceCharacters . ' LIKE "%' . $sFirstName . '%"
+                            AND naissance = "' . $sBirthdate . '"
+                            AND status = 1
+                            AND
+                                (SELECT cs.status
+                                FROM clients_status cs
+                                    LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status)
+                                WHERE csh.id_client = c.id_client
+                                    ORDER BY csh.added DESC LIMIT 1) IN (' . \clients_status::VALIDATED . ')';
 
-
-        $oQuery = $this->bdd->query($sql);
+        $rQuery = $this->bdd->query($sql);
         $result = array();
 
-        while ($record = $this->bdd->fetch_array($oQuery)) {
+        while ($record = $this->bdd->fetch_array($rQuery)) {
             $result[] = $record;
         }
 

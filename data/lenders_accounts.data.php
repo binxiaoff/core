@@ -282,16 +282,18 @@ class lenders_accounts extends lenders_accounts_crud
 
     public function getLendersWithNoWelcomeOffer($iLenderId = null, $sStartDate = null, $sEndDate = null)
     {
-        if ($sStartDate === null) {
-            $sStartDate = '"2013-01-01 00:00:00"';
+        if (null === $sStartDate) {
+            $sStartDate = '2013-01-01 00:00:00';
         }
 
-        if ($sEndDate === null) {
+        if (null === $sEndDate) {
             $sEndDate = 'NOW()';
+        } else {
+            $sEndDate = str_pad($sEndDate,12,'"', STR_PAD_BOTH);
         }
 
-        if (is_null($iLenderId) === false) {
-            $sWhereID = 'AND la.id_lender_account IN ('.$iLenderId.')';
+        if (false === is_null($iLenderId)) {
+            $sWhereID = 'AND la.id_lender_account IN (' . $iLenderId . ')';
         }
 
         $sql = 'SELECT
@@ -306,8 +308,9 @@ class lenders_accounts extends lenders_accounts_crud
                         FROM
                             clients_status_history csh
                             LEFT JOIN clients ON clients.id_client = csh.id_client
+                            INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
                         WHERE
-                            csh.id_client_status = 6
+                            cs.status = ' . \clients_status::VALIDATED . '
                             AND c.id_client = csh.id_client
                         ORDER BY
                             csh.added DESC
@@ -320,16 +323,16 @@ class lenders_accounts extends lenders_accounts_crud
                     LEFT JOIN companies ON c.id_client = companies.id_client_owner
                 WHERE
                     NOT EXISTS (SELECT * FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
-                    AND NOT EXISTS (SELECT * FROM transactions t WHERE t.id_type = 16)
-                    AND DATE(la.added) >= ' . $sStartDate . '
-                    AND DATE(la.added) <= ' . $sEndDate . ' ' . $sWhereID;
+                    AND NOT EXISTS (SELECT * FROM transactions t WHERE t.id_type = ' . \transactions_types::TYPE_WELCOME_OFFER . ')
+                    AND DATE(la.added) BETWEEN DATE("' . $sStartDate . '") AND DATE(' . $sEndDate . ') ' . $sWhereID;
 
         $resultat = $this->bdd->query($sql);
 
-        $aLenders   = array();
+        $aLenders = array();
         while ($record = $this->bdd->fetch_assoc($resultat)) {
             $aLenders[] = $record;
         }
+
         return $aLenders;
     }
 

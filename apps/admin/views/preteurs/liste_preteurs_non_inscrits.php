@@ -2,7 +2,7 @@
     $(document).ready(function () {
         $(".tablesorter").tablesorter({headers: {7: {sorter: false}}});
         <?php
-        if(empty($this->nb_lignes) === false) : ?>
+        if(false === empty($this->nb_lignes)) : ?>
         $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
         <?php endif; ?>
     });
@@ -55,10 +55,7 @@
         <?php
         $i = 1;
         foreach ($this->lPreteurs as $c) : ?>
-
             <tr class="<?= ($i++ % 2 == 1 ? '' : 'odd') ?> ">
-
-
                 <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['id_client'] ?></td>
                 <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['nom_ou_societe'] ?></td>
                 <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['nom_usage'] ?></td>
@@ -70,10 +67,13 @@
                 </td>
                 <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['bids_encours'] ?></td>
                 <td align="center">
+                    <?php var_dump($c['status']);
+                    var_dump(\clients::STATUS_OFFLINE === (int)$c['status']);
+                    var_dump(\clients::STATUS_OFFLINE === $c['status']);?>
                     <img
-                        onclick="if(confirm('Voulez vous <?= ((int)$c['status'] ===  \clients::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?> ce preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/liste_preteurs_non_inscrits/status/<?= $c['id_client'] ?>/<?= ((int)$c['status'] === \clients::STATUS_ONLINE ? \clients::STATUS_OFFLINE : \clients::STATUS_ONLINE ) ?>';}"
-                        src="<?= $this->surl ?>/images/admin/<?= ((int)$c['status'] === \clients::STATUS_ONLINE ? 'offline' : 'online') ?>.png"
-                        alt="<?= ($c['status'] === \clients::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?>"/>
+                        onclick="if(confirm('Voulez vous <?= (\clients::STATUS_ONLINE === (int)$c['status'] ? 'Passer hors ligne' : 'Passer en ligne') ?> ce preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/liste_preteurs_non_inscrits/status/<?= $c['id_client'] ?>/<?= ( \clients::STATUS_ONLINE === (int)$c['status']  ? \clients::STATUS_OFFLINE : \clients::STATUS_ONLINE ) ?>';}"
+                        src="<?= $this->surl ?>/images/admin/<?= (\clients::STATUS_ONLINE === (int)$c['status'] ? 'offline' : 'online') ?>.png"
+                        alt="<?= (\clients::STATUS_ONLINE === (int)$c['status'] ? 'Passer hors ligne' : 'Passer en ligne') ?>"/>
 
                     <a href="<?= $this->lurl ?>/preteurs/edit/<?= $c['id_lender_account'] ?>">
                         <img src="<?= $this->surl ?>/images/admin/edit.png"
@@ -90,7 +90,7 @@
         endforeach; ?>
         </tbody>
     </table>
-        <?php if (empty($this->nb_lignes) === false) : ?>
+        <?php if (false === empty($this->nb_lignes)) : ?>
             <table>
                 <tr>
                     <td id="pager">
