@@ -317,7 +317,6 @@ class universignController extends bootstrap
         $clients_mandats = $this->loadData('clients_mandats');
 
         if ($clients_mandats->get($this->params[0], 'id_mandat') && $clients_mandats->status != \clients_mandats::STATUS_SIGNED) {
-            var_dump($clients_mandats);
             if ($clients_mandats->url_universign != '' && $clients_mandats->status == \clients_mandats::STATUS_PENDING) {
                 $this->oLogger->addRecord(ULogger::INFO, 'Mandat not signed. Redirection to universign.', array($clients_mandats->id_project));
                 header('Location: ' . $clients_mandats->url_universign);
@@ -333,6 +332,10 @@ class universignController extends bootstrap
                     case \clients_mandats::STATUS_FAILED:
                         $sMandatStatus = 'fail';
                         break;
+                    default:
+                        $this->oLogger->addRecord(ULogger::INFO, 'Mandat status not handled : ' . $clients_mandats->status . '. Cannot create PDF for Universign.', array($clients_mandats->id_project));
+                        header('Location: ' . $this->lurl);
+                        die;
                 }
                 $this->oLogger->addRecord(ULogger::INFO, 'Mandat status : ' . $sMandatStatus . '. Creation of pdf for send to universign.', array($clients_mandats->id_project));
                 $clients->get($clients_mandats->id_client, 'id_client');
