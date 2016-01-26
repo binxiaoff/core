@@ -239,7 +239,7 @@ class collectController extends bootstrap
             }
             // Verif cp fiscale
             $oVilles = $this->loadData('villes');
-            if (false === isset($cp_fiscale) || false === $oVilles->exist($_POST['postal'], 'cp')) {
+            if (false === isset($cp_fiscale) || false === $oVilles->exist($cp_fiscale, 'cp')) {
                 $form_ok = false;
                 $erreur .= 'Code postal fiscale;';
             }
@@ -318,7 +318,7 @@ class collectController extends bootstrap
                 if ('' == $insee_birth) {
                     $oVilles = $this->loadData('villes');
                     //for France, the code insee is empty means that the city is not verified with table "villes", check again here.
-                    if (false === $oVilles->get($_POST['naissance'], 'ville')) {
+                    if (false === $oVilles->get($commune_naissance, 'ville')) {
                         $form_ok = false;
                         $erreur .= 'Code INSEE de naissance;';
                     } else {

@@ -1228,17 +1228,13 @@ class inscription_preteurController extends bootstrap
 
             $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
-            if($this->lenders_accounts->iban != '')
-            {
-                $this->iban1 = substr($this->lenders_accounts->iban,0,4);
-                $this->iban2 = substr($this->lenders_accounts->iban,4,4);
-                $this->iban3 = substr($this->lenders_accounts->iban,8,4);
-                $this->iban4 = substr($this->lenders_accounts->iban,12,4);
-                $this->iban5 = substr($this->lenders_accounts->iban,16,4);
-                $this->iban6 = substr($this->lenders_accounts->iban,20,4);
-                $this->iban7 = substr($this->lenders_accounts->iban,24,3);
-            }
-            else $this->iban1 = 'FR...';
+            $this->iban1 = empty($this->lenders_accounts->iban) ? 'FR...' : substr($this->lenders_accounts->iban, 0, 4);
+            $this->iban2 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 4, 4);
+            $this->iban3 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 8, 4);
+            $this->iban4 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 12, 4);
+            $this->iban5 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 16, 4);
+            $this->iban6 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 20, 4);
+            $this->iban7 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 24, 3);
 
             $this->hash_client = $this->clients->hash;
 
