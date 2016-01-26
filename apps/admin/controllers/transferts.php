@@ -208,9 +208,6 @@ class transfertsController extends bootstrap
         $this->receptions->get($this->params[0], 'id_reception');
     }
 
-        if ($this->receptions->id_project != 0) {
-            header('Location: ' . $this->lurl . '/transferts');
-            die;
     public function _attribution_preteur()
     {
         $this->hideDecoration();
@@ -986,6 +983,9 @@ class transfertsController extends bootstrap
         $oWalletsLines           = $this->loadData('wallets_lines');
         $oBankUnilend            = $this->loadData('bank_unilend');
         $oLendersAccounts        = $this->loadData('lenders_accounts');
+        //load for use of constants
+        $this->loadData('transactions_types');
+        $this->loadData('clients_status');
 
         $oLendersAccounts->get($this->params[0]);
         $this->offres_bienvenues->get(1, 'status = 0 AND id_offre_bienvenue');
@@ -999,18 +999,18 @@ class transfertsController extends bootstrap
         unset($_SESSION['forms']['rattrapage_offre_bienvenue']);
 
         if (isset($_POST['spy_search'])) {
-            if (empty($_POST['dateStart']) === false && empty($_POST['dateEnd']) === false) {
+            if (false === empty($_POST['dateStart']) && false === empty($_POST['dateEnd'])) {
                 $oDateTimeStart                                                   = \DateTime::createFromFormat('d/m/Y', $_POST['dateStart']);
                 $oDateTimeEnd                                                     = \DateTime::createFromFormat('d/m/Y', $_POST['dateEnd']);
-                $sStartDateSQL                                                    = str_pad($oDateTimeStart->format('Y-m-d'),12,'"', STR_PAD_BOTH);
-                $sEndDateSQL                                                      = str_pad($oDateTimeEnd->format('Y-m-d'),12,'"', STR_PAD_BOTH);
+                $sStartDateSQL                                                    = $oDateTimeStart->format('Y-m-d');
+                $sEndDateSQL                                                      = $oDateTimeEnd->format('Y-m-d');
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['sStartDateSQL'] = $sStartDateSQL;
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['sEndDateSQL']   = $sEndDateSQL;
 
-                $this->aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer($iLenderId = null, $sStartDateSQL, $sEndDateSQL);
-            } elseif (empty($_POST['id']) === false) {
-                $this->aLenders          = $oLendersAccounts->getLendersWithNoWelcomeOffer($iLenderId = $_POST['id']);
-                $_SESSION['forms']['id'] = $_POST['id'];
+                $this->aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer(null, $sStartDateSQL, $sEndDateSQL);
+            } elseif (false === empty($_POST['id'])) {
+                $this->aLenders          = $oLendersAccounts->getLendersWithNoWelcomeOffer($_POST['id']);
+                $_SESSION['forms']['rattrapage_offre_bienvenue']['id'] = $_POST['id'];
             } else {
                 $_SESSION['freeow']['title']   = 'Recherche non abouti';
                 $_SESSION['freeow']['message'] = 'Il faut une date de d&eacutebut et de fin ou ID(s)!';
@@ -1020,17 +1020,22 @@ class transfertsController extends bootstrap
         if (isset($_POST['affect_welcome_offer']) && isset($this->params[0]) && isset($this->params[1])) {
             $this->clients->get($this->params[0]);
             $this->offres_bienvenues->get($this->params[1]);
+            $oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
-            $bOfferValid = false;
+            $bOfferValid      = false;
             $bEnoughMoneyLeft = false;
+            $aVirtualWelcomeOfferTransactions = array(
+                \transactions_types::TYPE_WELCOME_OFFER,
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION
+            );
 
             $iSumOfAllWelcomeOffersDistributed      = $oWelcomeOfferDetails->sum('type = 0 AND id_offre_bienvenue = ' . $this->offres_bienvenues->id_offre_bienvenue . ' AND status <> 2', 'montant');
-            $iSumOfPhysicalWelcomeOfferTransactions = $oTransactions->sum('status = 1 AND etat = 1 AND type_transaction = 18', 'montant');
-            $iSumOfVirtualWelcomeOfferTransactions  = $oTransactions->sum('status = 1 AND etat = 1 AND type_transaction IN(16,17)', 'montant');
+            $iSumOfPhysicalWelcomeOfferTransactions = $oTransactions->sum('status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
+            $iSumOfVirtualWelcomeOfferTransactions  = $oTransactions->sum('status = 1 AND etat = 1 AND type_transaction IN(' . implode(',', $aVirtualWelcomeOfferTransactions) . ')', 'montant');
             $iAvailableAmountForWelcomeOffers       = $iSumOfPhysicalWelcomeOfferTransactions - $iSumOfVirtualWelcomeOfferTransactions;
 
-            $oStartWelcomeOffer = \DateTime::createFromFormat('Y-m-d H:i:s', $this->offres_bienvenues->debut);
-            $oEndWelcomeOffer   = \DateTime::createFromFormat('Y-m-d H:i:s', $this->offres_bienvenues->fin);
+            $oStartWelcomeOffer = \DateTime::createFromFormat('Y-m-d', $this->offres_bienvenues->debut);
+            $oEndWelcomeOffer   = \DateTime::createFromFormat('Y-m-d', $this->offres_bienvenues->fin);
             $oToday             = new \DateTime();
 
             if ($oStartWelcomeOffer <= $oToday && $oEndWelcomeOffer >= $oToday) {
@@ -1063,7 +1068,7 @@ class transfertsController extends bootstrap
                 $oTransactions->status                           = '1';
                 $oTransactions->etat                             = '1';
                 $oTransactions->ip_client                        = $_SERVER['REMOTE_ADDR'];
-                $oTransactions->type_transaction                 = 16; // TODO use constant once available
+                $oTransactions->type_transaction                 = \transactions_types::TYPE_WELCOME_OFFER;
                 $oTransactions->transaction                      = 2;
                 $oTransactions->create();
 
@@ -1118,9 +1123,10 @@ class transfertsController extends bootstrap
     public function _csv_rattrapage_offre_bienvenue()
     {
         $oLendersAccounts = $this->loadData('lenders_accounts');
+        $aLenders = array();
 
-        if (isset($_SESSION['forms']['sStartDateSQL']) && isset($_SESSION['forms']['sEndDateSQL'])) {
-            $this->aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer(
+        if (isset($_SESSION['forms']['rattrapage_offre_bienvenue']['sStartDateSQL']) && isset($_SESSION['forms']['rattrapage_offre_bienvenue']['sEndDateSQL'])) {
+            $aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer(
                 null,
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['sStartDateSQL'],
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['sEndDateSQL']
@@ -1128,54 +1134,64 @@ class transfertsController extends bootstrap
         }
 
         if (isset($_SESSION['forms']['rattrapage_offre_bienvenue']['id'])) {
-            $this->aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer($_SESSION['forms']['id']);
+            $aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer($_SESSION['forms']['rattrapage_offre_bienvenue']['id']);
         }
 
-        $sFilename = 'ratrappage_offre_bienvenue';
+        $sFileName      = 'ratrappage_offre_bienvenue';
         $aColumnHeaders = array('ID Lender', 'Nom ou Raison Sociale', 'Prénom', 'Date de création', 'Date de validation');
+        $aData          = array();
 
-        foreach ($this->aLenders as $key =>$aLender) {
+        foreach ($aLenders as $key =>$aLender) {
             $aData[] = array(
                 $aLender['id_lender'],
                 empty($aLender['company']) ? $aLender['nom'] : $aLender['company'],
                 empty($aLender['company']) ? $aLender['prenom'] : '',
                 $this->dates->formatDateMysqltoShortFR($aLender['date_creation']),
-                (empty($aLender['date_validation']) === false) ? $this->dates->formatDateMysqltoShortFR($aLender['date_validation']) : ''
+                (false === empty($aLender['date_validation'])) ? $this->dates->formatDateMysqltoShortFR($aLender['date_validation']) : ''
             );
         }
-        $this->exportCSV($aColumnHeaders, $aData, $sFilename);
+        $this->exportCSV($aColumnHeaders, $aData, $sFileName);
     }
 
-    private function exportCSV($aColumnHeaders, $aData, $sFilename)
+    private function exportCSV($aColumnHeaders, $aData, $sFileName)
     {
-        $sSeparator  = "\t";
-        $sEol = "\n";
-        $sCSV  =  count($aColumnHeaders) ? '"'. implode('"'.$sSeparator.'"', $aColumnHeaders).'"'.$sEol : '';
+        PHPExcel_Settings::setCacheStorageMethod(
+            PHPExcel_CachedObjectStorageFactory::cache_to_phpTemp,
+            array('memoryCacheSize' => '2048MB', 'cacheTime' => 1200)
+        );
 
-        foreach ($aData as $row) {
-            $sCSV .= '"'. implode('"'.$sSeparator.'"', $row).'"'.$sEol;
+        $oDocument    = new PHPExcel();
+        $oActiveSheet = $oDocument->setActiveSheetIndex(0);
+
+        if (count($aColumnHeaders) > 0) {
+            foreach ($aColumnHeaders as $iIndex => $sColumnName) {
+                $oActiveSheet->setCellValueByColumnAndRow($iIndex, 1, $sColumnName);
+            }
         }
 
-        $sEncodedCSV = mb_convert_encoding($sCSV, 'UTF-16LE', 'UTF-8');
+        foreach ($aData as $iRowIndex => $aRow) {
+            $iColIndex = 0;
+            foreach ($aRow as $sCellValue) {
+                $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $sCellValue);
+            }
+        }
 
-        header('Content-Description: File Transfer');
-        header('Content-Type: application/vnd.ms-excel');
-        header('Content-Disposition: attachment; filename="'.$sFilename.'.csv"');
-        header('Content-Transfer-Encoding: binary');
-        header('Expires: 0');
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename=' . $sFileName . '.csv');
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-        header('Pragma: public');
-        header('Content-Length: '. strlen($sEncodedCSV));
-        echo chr(255) . chr(254) . $sEncodedCSV;
-        exit;
+        header('Expires: 0');
+
+        $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
+        $oWriter->setUseBOM(true);
+        $oWriter->setDelimiter(';');
+        $oWriter->save('php://output');
+
+        die;
     }
 
     public function _affect_welcome_offer()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
+        $this->hideDecoration();
 
         $this->offres_bienvenues = $this->loadData('offres_bienvenues');
         $this->clients           = $this->loadData('clients');

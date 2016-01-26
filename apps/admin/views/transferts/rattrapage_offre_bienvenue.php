@@ -101,7 +101,7 @@
         </form>
     </div>
 
-    <?php if (empty($this->aLenders) === false) : ?>
+    <?php if (false === empty($this->aLenders)) : ?>
         <div class="table">
 
             <table class="tablesorter">
@@ -123,9 +123,9 @@
                         <td><?= empty($aLender['company']) ? $aLender['nom'] : $aLender['company'] ?></td>
                         <td><?= empty($aLender['company']) ? $aLender['prenom'] : '' ?></td>
                         <td><?= $this->dates->formatDateMysqltoShortFR($aLender['date_creation']) ?></td>
-                        <td><?= (empty($aLender['date_validation']) === false) ? $this->dates->formatDateMysqltoShortFR($aLender['date_validation']) : '' ?></td>
+                        <td><?= (false === empty($aLender['date_validation'])) ? $this->dates->formatDateMysqltoShortFR($aLender['date_validation']) : '' ?></td>
                         <td>
-                            <?php if (empty($aLender['date_validation']) === false) : ?>
+                            <?php if (false === empty($aLender['date_validation'])) : ?>
                                 <a href="<?= $this->lurl ?>/transferts/affect_welcome_offer/<?= $aLender['id_lender'] ?>"
                                    class="link thickbox"><img alt="Modifier "
                                                               src="https://dev.www.unilend.fr/images/admin/edit.png"></a>

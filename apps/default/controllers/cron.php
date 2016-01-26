@@ -7922,6 +7922,11 @@ class cronController extends bootstrap
         }
     }
 
+    /***
+     * Removes welcome offers not used by lenders
+     * Executed once per night, at 2am
+     *
+     */
     public function _checkWelcomeOfferValidity()
     {
         if (true === $this->startCron('Validité Offre de Bienvenue', 5)) {

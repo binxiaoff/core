@@ -4,7 +4,7 @@
     <div class="row">
     <p>
         Affecter <?= $this->offres_bienvenues->montant/100 ?> € à
-        <?= (empty($this->companies->name) === false) ? $this->companies->name: '' .' '.
+        <?= (false === empty($this->companies->name)) ? $this->companies->name: '' .' '.
                 $this->clients->prenom .' '. $this->clients->nom .' (ID : ' . $this->clients->id_client .')' ?>
     </p>
     </div>
