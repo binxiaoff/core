@@ -73,7 +73,7 @@
             <td>
                 <?php
 
-                if ($this->projects_status->status >= 60) {
+                if ($this->projects_status->status >= \projects_status::FUNDE) {
                     $dateRest = 'Terminé';
                 } else {
                     $tab_date_retrait = explode(' ', $project['date_retrait_full']);

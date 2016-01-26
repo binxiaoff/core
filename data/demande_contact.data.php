@@ -28,7 +28,6 @@
 
 class demande_contact extends demande_contact_crud
 {
-
     public function __construct($bdd, $params = '')
     {
         parent::demande_contact($bdd, $params);
@@ -58,16 +57,13 @@ class demande_contact extends demande_contact_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `demande_contact` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM `demande_contact` ' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_demande_contact')
     {
-        $sql    = 'SELECT * FROM `demande_contact` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT * FROM `demande_contact` WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 }

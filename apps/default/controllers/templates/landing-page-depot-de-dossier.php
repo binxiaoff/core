@@ -75,6 +75,5 @@ if (isset($_POST['spy_inscription_landing_page_depot_dossier'])) {
 $this->ordreProject = 1;
 $this->type         = 0;
 
-// Liste des projets en funding
-$this->lProjetsFunding = $this->projects->selectProjectsByStatus('50, 60, 80', ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 6);
-$this->nbProjects      = $this->projects->countSelectProjectsByStatus('50, 60, 80', ' AND p.status = 0 AND p.display = 0');
+$this->lProjetsFunding = $this->projects->selectProjectsByStatus(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 6);
+$this->nbProjects      = $this->projects->countSelectProjectsByStatus(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), ' AND p.status = 0 AND p.display = 0');

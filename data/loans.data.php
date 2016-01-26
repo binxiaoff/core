@@ -100,9 +100,17 @@ class loans extends loans_crud
         return (int)$this->bdd->result($result, 0, 0);
     }
 
-    public function getPreteurs($id_project)
+    public function getProjectLoansByLender($id_project)
     {
-        $sql = 'SELECT DISTINCT id_lender FROM `loans` WHERE id_project = ' . $id_project . ' AND status = 0';
+        $sql = '
+            SELECT id_lender,
+                SUM(amount) AS amount,
+                COUNT(DISTINCT id_loan) AS cnt,
+                GROUP_CONCAT(id_loan) AS loans
+            FROM `loans`
+            WHERE id_project = ' . $id_project . '
+                AND status = 0
+            GROUP BY id_lender';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -112,7 +120,33 @@ class loans extends loans_crud
         return $result;
     }
 
-    public function getNbPprojet($id_lender)
+    public function getPreteursDetail($id_project, $dateDER)
+    {
+        $sql = '
+            SELECT
+                c.id_client,
+                c.email,
+                l.id_lender,
+                SUM(IF(DATE(e.date_echeance) <= "' . $dateDER . '", capital, 0)) AS capital_echus,
+                SUM(IF(DATE(e.date_echeance) <= "' . $dateDER . '", interets, 0)) AS interets_echus,
+                SUM(IF(DATE(e.date_echeance) > "' . $dateDER . '", capital, 0)) AS capital_restant_du,
+                SUM(IF(DATE(e.date_echeance) > "' . $dateDER . '" AND e.date_echeance < DATE_ADD("' . $dateDER . '", INTERVAL 45 DAY), interets, 0)) AS interets_next
+            FROM loans l
+            LEFT JOIN echeanciers e ON e.id_lender = l.id_lender AND e.id_project = l.id_project
+            LEFT JOIN lenders_accounts la ON l.id_lender = la.id_lender_account
+            LEFT JOIN clients c ON la.id_client_owner = c.id_client
+            WHERE l.id_project = ' . $id_project . ' AND l.status = 0
+            GROUP BY id_lender';
+
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
+
+    public function getProjectsCount($id_lender)
     {
         $sql = 'SELECT count(DISTINCT id_project) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = 0';
 
@@ -226,7 +260,6 @@ class loans extends loans_crud
         return $result;
     }
 
-
     public function getSumPretsByMonths($id_lender, $year)
     {
         $sql = 'SELECT SUM(amount/100) AS montant, LEFT(added,7) AS date FROM loans WHERE YEAR(added) = ' . $year . ' AND id_lender = ' . $id_lender . ' AND status = 0 GROUP BY LEFT(added,7)';
@@ -286,17 +319,10 @@ class loans extends loans_crud
     }
 
     // On recup la liste des loans d'un preteur en les regoupant par projet
-    public function getSumLoansByProject($id_lender, $year = '', $order = '')
+    public function getSumLoansByProject($iLenderAccountId, $sOrder = null, $iYear = null, $iProjectStatus = null)
     {
-        if ($order == '') {
-            $order = 'l.added DESC';
-        }
-
-        if ($year != '') {
-            $year = ' AND YEAR(l.added) = "' . $year . '"';
-        }
-
-        $sql = '
+        $result   = array();
+        $resultat = $this->bdd->query('
             SELECT
                 l.id_project,
                 p.title,
@@ -305,12 +331,14 @@ class loans extends loans_crud
                 c.city,
                 c.zip,
                 p.risk,
-                (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) AS project_status,
-                (SELECT psh.added FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) AS status_change,
+                ps.status AS project_status,
+                psh.added AS status_change,
                 SUM(ROUND(l.amount / 100, 2)) AS amount,
-                ROUND(AVG(rate), 2) AS rate,
+                ROUND(SUM(rate * l.amount) / SUM(l.amount), 2) AS rate,
                 COUNT(l.id_loan) AS nb_loan,
                 l.id_loan AS id_loan_if_one_loan,
+                YEAR(l.added) AS loan_year,
+                l.id_type_contract,
                 DATE((SELECT MIN(e.date_echeance) FROM echeanciers e WHERE e.id_loan = l.id_loan AND e.ordre = 1)) AS debut,
                 DATE((SELECT MAX(e1.date_echeance) FROM echeanciers e1 WHERE e1.id_loan = l.id_loan)) AS fin,
                 DATE((SELECT MIN(e2.date_echeance) FROM echeanciers e2 WHERE e2.id_loan = l.id_loan AND e2.status = 0)) AS next_echeance,
@@ -318,13 +346,17 @@ class loans extends loans_crud
             FROM loans l
             LEFT JOIN projects p ON l.id_project = p.id_project
             LEFT JOIN companies c ON p.id_company = c.id_company
-            WHERE id_lender = ' . $id_lender . ' AND l.status = 0 ' . $year . '
+            LEFT JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
+            LEFT JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
+            LEFT JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+            WHERE id_lender = ' . $iLenderAccountId . '
+                AND l.status = 0
+                ' . (null === $iYear ? '' : 'AND YEAR(l.added) = "' . $iYear . '"') . '
+                ' . (null === $iProjectStatus ? '' : 'AND ps.status = ' . $iProjectStatus) . '
             GROUP BY l.id_project
-            ORDER BY ' . $order;
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+            ORDER BY ' . (null === $sOrder ? 'l.added DESC' : $sOrder)
+        );
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -348,8 +380,6 @@ class loans extends loans_crud
             }
             return $aBids;
         }
-
-
     }
 
     public function getRepaymentSchedule($fCommissionRate, $fVAT, $iLoanId = null)

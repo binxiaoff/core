@@ -156,7 +156,7 @@
                             </td>
                             <td>
                                 <?php if ($this->projects_status->status >= \projects_status::FUNDE) { ?>
-                                    <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
+                                    <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
                                 <?php } else { ?>
                                     <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn btn-info btn-small"><?= $this->lng['preteur-projets']['pretez'] ?></a>
                                 <?php } ?>
@@ -252,7 +252,7 @@
                         </h5>
                         <p>
                             <?php if ($this->projects_status->status >= \projects_status::FUNDE) { ?>
-                                <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise" style="line-height: 14px;padding: 4px 11px;"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
+                                <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise" style="line-height: 14px;padding: 4px 11px;"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
                             <?php } else { ?>
                                 <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn"><?= $this->lng['preteur-projets']['pretez'] ?></a>
                             <?php } ?>
@@ -290,7 +290,7 @@
                 $('.loadmore').show();
 
                 //On lance la fonction ajax
-                var val = {last: last_id, positionStart: $('#positionStart').html(), ordreProject: $('#ordreProject').html(), where: $('#where').html(), type: $('#valType').html()}
+                var val = {last: last_id, positionStart: $('#positionStart').html(), ordreProject: $('#ordreProject').html(), where: $('#where').html(), type: $('#valType').html()};
                 $.post(add_url + '/ajax/load_project', val).done(function (data) {
                     obj = JSON.parse(data);
                     var positionStart = obj.positionStart;

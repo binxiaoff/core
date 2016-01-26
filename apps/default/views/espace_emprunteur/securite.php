@@ -52,27 +52,21 @@ if ($this->bLinkExpired === true) : ?>
             </form>
         </div>
     </div>
-    <script>
-        $(document).ready(function () {
-            $('#pass').keyup(function () {
+    <script type="text/javascript">
+        $(function() {
+            $('#pass').keyup(function() {
                 controleMdp($(this).val(), 'pass');
             });
-            $('#pass2').bind('paste', function (e) {
+
+            $('#pass2').bind('paste', function(e) {
                 e.preventDefault();
             });
-        });
 
-        $("#form_mdp_question_emprunteur").submit(function (event) {
-            var radio = true;
-
-            if (controleMdp($('#pass').val(), 'pass', false) == false) {
-                radio = false;
-            }
-
-            if (radio == false) {
-                event.preventDefault();
-            }
+            $("#form_mdp_question_emprunteur").submit(function(event) {
+                if (controleMdp($('#pass').val(), 'pass', false) == false) {
+                    event.preventDefault();
+                }
+            });
         });
     </script>
 <?php endif; ?>
-

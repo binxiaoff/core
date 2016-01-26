@@ -88,7 +88,7 @@ if ($this->Config['env'] == 'prod') // nmp
 
 
     $("#form_inscription_preteur_particulier_etape_2").submit(function (event) {
-        var form_ok = true
+        var form_ok = true;
 
         // origine
         //if($("#origine_des_fonds").val() == '0'){ $("#origine_des_fonds").next('.c2-sb-wrap').addClass('field-error');form_ok = false; }
@@ -169,7 +169,7 @@ if ($this->Config['env'] == 'prod') // nmp
         // fichiers
         //ci
         if ($('#txt_ci').val() == '<?=$this->lng['etape2']['aucun-fichier-selectionne']?>') {
-            form_ok = false
+            form_ok = false;
             $("#txt_ci").removeClass("LV_valid_field");
             $("#txt_ci").addClass("LV_invalid_field");
         }
@@ -179,7 +179,7 @@ if ($this->Config['env'] == 'prod') // nmp
         }
         // justificatif_de_domicile
         if ($('#txt_justificatif_de_domicile').val() == '<?=$this->lng['etape2']['aucun-fichier-selectionne']?>') {
-            form_ok = false
+            form_ok = false;
             $("#txt_justificatif_de_domicile").removeClass("LV_valid_field");
             $("#txt_justificatif_de_domicile").addClass("LV_invalid_field");
         }
@@ -189,7 +189,7 @@ if ($this->Config['env'] == 'prod') // nmp
         }
         // rib
         if ($('#txt_rib').val() == '<?=$this->lng['etape2']['aucun-fichier-selectionne']?>') {
-            form_ok = false
+            form_ok = false;
             $("#txt_rib").removeClass("LV_valid_field");
             $("#txt_rib").addClass("LV_invalid_field");
         }
@@ -202,7 +202,7 @@ if ($this->Config['env'] == 'prod') // nmp
         if($this->etranger > 0){
             ?>
         if ($('#document_fiscal').val() == '<?=$this->lng['etape2']['aucun-fichier-selectionne']?>') {
-            form_ok = false
+            form_ok = false;
             $("#document_fiscal").removeClass("LV_valid_field");
             $("#document_fiscal").addClass("LV_invalid_field");
         }
@@ -243,7 +243,7 @@ if ($this->Config['env'] == 'prod') // nmp
     });
 
     $("#form_inscription_preteur_societe_etape_2").submit(function (event) {
-        var form_ok = true
+        var form_ok = true;
 
         // origine
         if ($('#origine_des_fonds').val() == 0) {
@@ -330,7 +330,7 @@ if ($this->Config['env'] == 'prod') // nmp
         // fichiers
         // ci_dirigeant
         if ($('#txt_ci_dirigeant').val() == '<?=$this->lng['etape2']['aucun-fichier-selectionne']?>') {
-            form_ok = false
+            form_ok = false;
             $("#txt_ci_dirigeant").removeClass("LV_valid_field");
             $("#txt_ci_dirigeant").addClass("LV_invalid_field");
         }
@@ -346,7 +346,7 @@ if ($this->Config['env'] == 'prod') // nmp
         else {$("#txt_delegation_pouvoir").removeClass("LV_invalid_field");$("#txt_delegation_pouvoir").addClass("LV_valid_field");}<?php */?>
         // rib
         if ($('#txt_rib').val() == '<?=$this->lng['etape2']['aucun-fichier-selectionne']?>') {
-            form_ok = false
+            form_ok = false;
             $("#txt_rib").removeClass("LV_valid_field");
             $("#txt_rib").addClass("LV_invalid_field");
         }
@@ -356,7 +356,7 @@ if ($this->Config['env'] == 'prod') // nmp
         }
         // txt_kbis
         if ($('#txt_kbis').val() == '<?=$this->lng['etape2']['aucun-fichier-selectionne']?>') {
-            form_ok = false
+            form_ok = false;
             $("#txt_kbis").removeClass("LV_valid_field");
             $("#txt_kbis").addClass("LV_invalid_field");
         }

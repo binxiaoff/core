@@ -822,7 +822,7 @@ class rootController extends bootstrap
     {
         // On check si y a un compte
         if (! $this->clients->checkAccess()) {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->lurl);
             die;
         }
 
@@ -830,12 +830,12 @@ class rootController extends bootstrap
             // on redirige sur le compte preteur
             if ($this->params[0] == 1) {
                 $_SESSION['status_pre_emp'] = 1;
-                header('Location:' . $this->lurl . '/synthese');
+                header('Location: ' . $this->lurl . '/synthese');
                 die;
             } // on redirige sur le compte emprunteur
             else {
                 $_SESSION['status_pre_emp'] = 2;
-                header('Location:' . $this->lurl . '/espace_emprunteur');
+                header('Location: ' . $this->lurl . '/espace_emprunteur');
                 die;
             }
         }
@@ -847,17 +847,10 @@ class rootController extends bootstrap
         $companies = $this->loadData('companies');
         $bids      = $this->loadData('bids');
 
-        // Somme à emprunter min
         $this->settings->get('Liste deroulante secteurs', 'type'); // added 19/06/2015
         $this->tabSecteurs = explode(';', $this->settings->value); // added 19/06/2015
 
-        // 50 : En funding
-        // 60 : Fundé
-        // 70 : Funding KO
-        // 75 : Prêt refusé
-        // 80 : Remboursement
-
-        $lProjets = $projects->selectProjectsByStatus('50,60,80');
+        $lProjets = $projects->selectProjectsByStatus(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)));
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>';
         $xml .= '<partenaire>';
@@ -980,7 +973,7 @@ class rootController extends bootstrap
         $this->ordreProject = 1;
         $this->type         = 0;
 
-        $aElementsProjects = $this->projects->getProjectsStatusAndCount('50,60,80', $this->tabOrdreProject[$this->ordreProject], 0, 6);
+        $aElementsProjects = $this->projects->getProjectsStatusAndCount(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), $this->tabOrdreProject[$this->ordreProject], 0, 6);
 
         // Liste des projets en funding and nombre des projets en funding
         $this->lProjetsFunding = $aElementsProjects['lProjetsFunding'];
@@ -1041,7 +1034,7 @@ class rootController extends bootstrap
         $this->ordreProject = 1;
         $this->type         = 0;
 
-        $aElementsProjects = $this->projects->getProjectsStatusAndCount('50,60,80', $this->tabOrdreProject[$this->ordreProject], 0, 6);
+        $aElementsProjects = $this->projects->getProjectsStatusAndCount(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), $this->tabOrdreProject[$this->ordreProject], 0, 6);
 
         // Liste des projets en funding and nombre des projets en funding
         $this->lProjetsFunding = $aElementsProjects['lProjetsFunding'];
@@ -1102,7 +1095,7 @@ class rootController extends bootstrap
         $this->ordreProject = 1;
         $this->type         = 0;
 
-        $aElementsProjects = $this->projects->getProjectsStatusAndCount('50,60,80', $this->tabOrdreProject[$this->ordreProject], 0, 6);
+        $aElementsProjects = $this->projects->getProjectsStatusAndCount(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), $this->tabOrdreProject[$this->ordreProject], 0, 6);
 
         // Liste des projets en funding and nombre des projets en funding
         $this->lProjetsFunding = $aElementsProjects['lProjetsFunding'];

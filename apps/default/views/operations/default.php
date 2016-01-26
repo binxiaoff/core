@@ -23,17 +23,19 @@
     </div>
 </div>
 <script type="text/javascript">
-    $('#operations').click(function () {
-        location.hash = '';
-        history.pushState('', '', location.pathname);
-        $("#operations").scrollTop();
-    });
-    $('#prets').click(function () {
-        location.hash = "vosprets";
-        $("#prets").scrollTop();
-    });
-    $('#docs-fiscaux').click(function () {
-        location.hash = "documentsfiscaux";
-        $("#docs-fiscaux").scrollTop();
+    $(function() {
+        $('#operations').click(function() {
+            location.hash = '';
+            history.pushState('', '', location.pathname);
+            $("#operations").scrollTop();
+        });
+        $('#prets').click(function() {
+            location.hash = "vosprets";
+            $("#prets").scrollTop();
+        });
+        $('#docs-fiscaux').click(function() {
+            location.hash = "documentsfiscaux";
+            $("#docs-fiscaux").scrollTop();
+        });
     });
 </script>
