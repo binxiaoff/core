@@ -31,15 +31,17 @@
             </div>
             <!-- /.toggle-buttons -->
             <?php
-            if ($this->clients->checkAccess()) {
+            if ($this->clients->checkAccess()) :
                 $this->fireView('../blocs/header-account');
-            } else {
-                ?>
+            else : ?>
                 <div class="login-panel" style="width:525px;">
                     <div class="login-toggle"></div>
                     <form action="" method="post" id="form_connect" name="form_connect">
-                        <div style="height:30px;" class="error_login_mobile">
-                        <?php if (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 5 && ! isset($_POST['project_detail'])) { ?>
+                        <div style="height:40px;" class="error_login_mobile">
+                        <?php
+                        if (isset($_SESSION['login']['nb_tentatives_precedentes'])
+                            && $_SESSION['login']['nb_tentatives_precedentes'] > 5
+                            && false === isset($_POST['project_detail'])) :  ?>
                             <input type="text" name="captcha" class="field field-mini input_captcha_login" id="captcha" value="captcha" title="captcha">
                             <div class="content_captcha_login">
                                 <img class="captcha_login" src="<?= $this->surl ?>/images/default/securitecode.php" alt="captcha"/>
@@ -52,18 +54,28 @@
                                     });
                                 });
                             </script>
-                        <?php } elseif (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && ! isset($_POST['project_detail'])) { ?>
-                            <p class="error_login error_wait" style="display:block;"><?= $this->lng['header']['vous-devez-attendre'] ?> <?= $_SESSION['login']['duree_waiting'] ?> <?= $this->lng['header']['secondes-avant-de-pourvoir-vous-connecter'] ?></p>
-                        <?php } elseif (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] <= 1 && ! isset($_POST['project_detail'])) { ?>
+                        <?php
+                        elseif (isset($_SESSION['login']['nb_tentatives_precedentes'])
+                                && $_SESSION['login']['nb_tentatives_precedentes'] > 1
+                                && false === isset($_POST['project_detail'])) : ?>
+                            <p class="error_login error_wait" style="display:block;">
+                                <?= $this->lng['header']['vous-devez-attendre'] ?> <?= $_SESSION['login']['duree_waiting'] ?> <?= $this->lng['header']['secondes-avant-de-pourvoir-vous-connecter'] ?></p>
+                        <?php
+                        elseif (isset($_SESSION['login']['nb_tentatives_precedentes'])
+                                && $_SESSION['login']['nb_tentatives_precedentes'] <= 1
+                                && false === isset($_POST['project_detail'])) : ?>
                             <p class="error_login"><?= $this->error_login ?></p>
-                        <?php } ?>
+                        <?php
+                        elseif($this->bAccountClosed) : ?>
+                            <p class="error_login"><?= $this->error_login ?></p>
+                            <?php
+                        endif; ?>
                         </div>
                         <span class="headConnect"><?= $this->lng['header']['se-connecter'] ?></span>
                         <input type="text" name="login" value="<?= $this->lng['header']['identifiant'] ?>" title="<?= $this->lng['header']['identifiant'] ?>" class="field field-tiny" style="width:129px;">
                         <span class="pass-field-holder">
                             <input type="password" name="password" title="<?= $this->lng['header']['mot-de-passe'] ?>" class="field field-tiny">
                         </span>
-
                         <div style="width:48px;display:inline-block;">
                             <div class="btn_login" <?= (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5 ? 'style="display:none;"' : '') ?>>
                                 <button type="submit" name="connect" class="btn btn-mini btn-warning"><?= $this->lng['header']['ok'] ?></button>
@@ -73,7 +85,10 @@
                             </div>
                         </div>
                     </form>
-                    <?php if (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && $_SESSION['login']['nb_tentatives_precedentes'] <= 5) { ?>
+                    <?php
+                    if (isset($_SESSION['login']['nb_tentatives_precedentes'])
+                        && $_SESSION['login']['nb_tentatives_precedentes'] > 1
+                        && $_SESSION['login']['nb_tentatives_precedentes'] <= 5) : ?>
                         <script type="text/javascript">
                             $("input").keypress(function (event) {
                                 if (event.keyCode == 13) {
@@ -81,13 +96,14 @@
                                 }
                             });
                         </script>
-                    <?php } ?>
+                    <?php
+                    endif; ?>
                     <div style="clear:both;"></div>
                     <a class="popup-link lienHeader" style="margin-right:65px;" href="<?= $this->lurl ?>/thickbox/pop_up_mdp"><?= $this->lng['header']['mot-de-passe-oublie'] ?></a>
                     <a class="lienHeader" style="margin-right:75px;" href="<?= $this->lurl . '/' . $this->tree->getSlug(127, $this->language) ?>"><?= $this->lng['header']['se-creer-un-compte'] ?></a>
                 </div><!-- /.login-panel -->
                 <?php
-            }
+            endif;
             ?>
             <div class="navigation">
                 <div class="shell clearfix">

@@ -242,7 +242,7 @@ class bootstrap extends Controller
         if (isset($_POST['login']) && isset($_POST['password'])) {
             $this->login     = $_POST['login'];
             $this->passsword = $_POST['password'];
-
+            $this->bAccountClosed = false;
 
             // SI on a le captcha d'actif, et qu'il est faux, on bloque avant tout pour ne pas laisser de piste sur le couple login/mdp
             if (isset($bCaptchaOk) && $bCaptchaOk === false) {
@@ -270,7 +270,6 @@ class bootstrap extends Controller
                 if ($bErrorLogin === false) {
                     if ($this->clients->handleLogin('connect', 'login', 'password')) {
                         unset($_SESSION['login']);
-
                         if (isset($_COOKIE['acceptCookies'])) {
                             $this->create_cookies = false;
 
@@ -283,6 +282,8 @@ class bootstrap extends Controller
                         $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
                         $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
                         $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
+                        $this->bDisplayLender       = false;
+                        $this->bDisplayBorrower     = false;
 
                         $this->clients_history->id_client = $_SESSION['client']['id_client'];
                         $this->clients_history->type      = ($this->bIsBorrowerAndLender) ? 3 : ($this->bIsLender) ? 1 : ($this->bIsBorrower) ? 2 : 0;
@@ -295,41 +296,51 @@ class bootstrap extends Controller
                             $this->loginBorrower();
                         }
                     } else {
-                        $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
-                    }
-                } else {
-                    $oDateTime           = new \datetime('NOW - 10 minutes');
-                    $sNowMinusTenMinutes = $oDateTime->format('Y-m-d H:i:s');
-
-                    $this->login_log      = $this->loadData('login_log');
-                    $this->iPreviousTrys  = $this->login_log->counter('IP = "' . $_SERVER["REMOTE_ADDR"] . '" AND date_action >= "' . $sNowMinusTenMinutes . '" AND statut = 0');
-                    $this->iWaitingPeriod = 0;
-                    $iPreviousResult      = 1;
-
-                    if ($this->iPreviousTrys > 0 && $this->iPreviousTrys < 1000) { // 1000 pour ne pas bloquer le site
-                        for ($i = 1; $i <= $this->iPreviousTrys; $i++) {
-                            $this->iWaitingPeriod = $iPreviousResult * 2;
-                            $iPreviousResult      = $this->iWaitingPeriod;
+                        $aOfflineClient = $this->clients->select('email = "' . $this->login . '" AND password = "' . md5($this->passsword) . '" AND status = 0');
+                        if (false === empty($aOfflineClient)) {
+                            $this->error_login = $this->lng['header']['message-login-compte-ferme'];
+                            $this->bAccountClosed = true;
+                        } else {
+                            $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
                         }
                     }
+                } else {
+                    $aOfflineClient = $this->clients->select('email = "' . $this->login . '" AND password = "' . md5($this->passsword) . '" AND status = 0');
+                    if (false === empty($aOfflineClient)) {
+                        $this->error_login = $this->lng['header']['message-login-compte-ferme'];
+                        $this->bAccountClosed = true;
+                    } else {
+                        $oDateTime           = new \datetime('NOW - 10 minutes');
+                        $sNowMinusTenMinutes = $oDateTime->format('Y-m-d H:i:s');
 
-                    $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
+                        $this->login_log      = $this->loadData('login_log');
+                        $this->iPreviousTrys  = $this->login_log->counter('IP = "' . $_SERVER["REMOTE_ADDR"] . '" AND date_action >= "' . $sNowMinusTenMinutes . '" AND statut = 0');
+                        $this->iWaitingPeriod = 0;
+                        $iPreviousResult      = 1;
 
-                    $_SESSION['login']['duree_waiting']             = $this->iWaitingPeriod;
-                    $_SESSION['login']['nb_tentatives_precedentes'] = $this->iPreviousTrys;
-                    $_SESSION['login']['displayCaptchaError']       = $this->displayCaptchaError;
+                        if ($this->iPreviousTrys > 0 && $this->iPreviousTrys < 1000) { // 1000 pour ne pas bloquer le site
+                            for ($i = 1; $i <= $this->iPreviousTrys; $i++) {
+                                $this->iWaitingPeriod = $iPreviousResult * 2;
+                                $iPreviousResult      = $this->iWaitingPeriod;
+                            }
+                        }
+                        $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
 
-                    $this->login_log              = $this->loadData('login_log');
-                    $this->login_log->pseudo      = $_POST['login'];
-                    $this->login_log->IP          = $_SERVER["REMOTE_ADDR"];
-                    $this->login_log->date_action = date('Y-m-d H:i:s');
-                    $this->login_log->statut      = 0;
-                    $this->login_log->retour      = $this->error_login;
-                    $this->login_log->create();
+                        $_SESSION['login']['duree_waiting']             = $this->iWaitingPeriod;
+                        $_SESSION['login']['nb_tentatives_precedentes'] = $this->iPreviousTrys;
+                        $_SESSION['login']['displayCaptchaError']       = $this->displayCaptchaError;
+
+                        $this->login_log              = $this->loadData('login_log');
+                        $this->login_log->pseudo      = $_POST['login'];
+                        $this->login_log->IP          = $_SERVER["REMOTE_ADDR"];
+                        $this->login_log->date_action = date('Y-m-d H:i:s');
+                        $this->login_log->statut      = 0;
+                        $this->login_log->retour      = $this->error_login;
+                        $this->login_log->create();
+                    }
                 }
             }
         }
-
         if ($this->clients->checkAccess()) {
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
@@ -340,6 +351,8 @@ class bootstrap extends Controller
             $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
             $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
             $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
+            $this->bDisplayLender       = false;
+            $this->bDisplayBorrower     = false;
 
             if ($this->bIsBorrower) {
                 $this->getDataBorrower();
