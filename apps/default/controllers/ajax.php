@@ -323,7 +323,12 @@ class ajaxController extends bootstrap
                     \projects_status::REMBOURSE,
                     \projects_status::PROBLEME,
                     \projects_status::RECOUVREMENT,
-                    \projects_status::REMBOURSEMENT_ANTICIPE
+                    \projects_status::PROCEDURE_SAUVEGARDE,
+                    \projects_status::REMBOURSEMENT_ANTICIPE,
+                    \projects_status::PROBLEME,
+                    \projects_status::PROBLEME_J_X,
+                    \projects_status::REDRESSEMENT_JUDICIAIRE,
+                    \projects_status::LIQUIDATION_JUDICIAIRE
                 );
                 $sStatusproject = implode(', ', $aStatusproject);
             }
@@ -357,7 +362,7 @@ class ajaxController extends bootstrap
 
             $this->where           = '';
             $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', 75' . ' AND p.status = 0');
+            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ',' . \projects_status::PRET_REFUSE . ' AND p.status = 0');
         }
     }
 
