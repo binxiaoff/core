@@ -1,9 +1,9 @@
 <?php
 
-use Unilend\librairies\ULogger;
-use PhpXmlRpc\Value;
-use PhpXmlRpc\Request;
 use PhpXmlRpc\Client;
+use PhpXmlRpc\Request;
+use PhpXmlRpc\Value;
+use Unilend\librairies\ULogger;
 
 class universignController extends bootstrap
 {
@@ -35,9 +35,8 @@ class universignController extends bootstrap
         $projects_pouvoir = $this->loadData('projects_pouvoir');
         $projects         = $this->loadData('projects');
 
-
         // Retour pdf Mandat
-        if (isset($this->params[2]) && isset($this->params[1]) && $this->params[1] == 'mandat' && $clients_mandats->get($this->params[2], 'id_mandat') && $clients_mandats->status == 0) {
+        if (isset($this->params[1], $this->params[2]) && $this->params[1] == 'mandat' && $clients_mandats->get($this->params[2], 'id_mandat') && $clients_mandats->status == 0) {
             if ($this->params[0] == 'success') {
                 //used variables
                 $uni_url = $this->uni_url;
@@ -659,6 +658,8 @@ class universignController extends bootstrap
             return;
         }
 
+        $this->autoFireView = false;
+
         $oProjectCgv = $this->loadData('project_cgv');
         $oClients    = $this->loadData('clients');
         $oProjects   = $this->loadData('projects');
@@ -666,7 +667,7 @@ class universignController extends bootstrap
 
         // on check les id et si le pdf n'est pas deja signé
         if ($oProjectCgv->get($this->params[0], 'id') && project_cgv::STATUS_NO_SIGN == $oProjectCgv->status) {
-            if($this->params[1] !== $oProjectCgv->name) {
+            if ($this->params[1] !== $oProjectCgv->name) {
                 header('Location: ' . $this->lurl);
                 return;
             }
@@ -754,7 +755,7 @@ class universignController extends bootstrap
             );
 
             $f = new Request('requester.requestTransaction', array(new Value($request, 'struct')));
-            $r = &$c->send($f);
+            $r = $c->send($f);
 
             if (!$r->faultCode()) {
                 //if the request succeeded
@@ -768,7 +769,10 @@ class universignController extends bootstrap
                 header('Location: ' . $url);
                 die;
             } else {
-                mail(implode(',', $this->Config['DebugMailIt']), 'unilend erreur universign reception', 'id cgv project : ' . $oProjectCgv->id . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: ' . $r->faultString());
+                $sHeadersDebug  = 'MIME-Version: 1.0' . "\r\n";
+                $sHeadersDebug .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
+                $sHeadersDebug .= 'From: ' . key($this->Config['DebugMailFrom']) . ' <' . $this->Config['DebugMailFrom'][key($this->Config['DebugMailFrom'])] . '>' . "\r\n";
+                mail(implode(',', $this->Config['DebugMailIt']), 'unilend erreur universign reception', 'id cgv project : ' . $oProjectCgv->id . "\r\nAn error occurred\r\nCode: " . $r->faultCode() . "\r\nReason: " . $r->faultString(), $sHeadersDebug);
             }
         } else {
             header('Location: ' . $this->lurl);

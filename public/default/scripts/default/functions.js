@@ -100,7 +100,7 @@
                     $(this).find('span').html(percent.toString().replace('.', ',') + "%&nbsp;").css('left', leftP);
                 })
             }
-        })
+        });
 
         // Pass fields
         $('.pass-field-holder').each(function () {
@@ -112,7 +112,7 @@
 
                 $self.append($fake);
                 $fake.on('click', function () {
-                    $fake.hide()
+                    $fake.hide();
                     $input.trigger('focus');
                 });
 
@@ -134,7 +134,7 @@
 
                 $('input.file-field').on('change', function () {
                     var $self = $(this),
-                        val = $self.val()
+                        val = $self.val();
                     if (val.length != 0 || val != '') {
                         $self.closest('.uploader').find('input.field').val(val);
 
@@ -165,6 +165,7 @@
             var leSoldePourcent = parseFloat($('#leSoldePourcent').html());
             var sumBidsEncoursPourcent = parseFloat($('#sumBidsEncoursPourcent').html());
             var sumPretsPourcent = parseFloat($('#sumPretsPourcent').html());
+            var sumProblemsPourcent = parseFloat($('#sumProblemsPourcent').html());
 
             $('#pie-chart').highcharts({
                 chart: {
@@ -174,7 +175,7 @@
                     plotShadow: false,
                     width: 460
                 },
-                colors: ['#b10366', '#f7922b', '#40b34f'],
+                colors: ['#b10366', '#f7922b', '#40b34f', '#bfa913'],
                 title: {
                     text: ''
                 },
@@ -185,7 +186,7 @@
                         cursor: 'pointer',
                         dataLabels: {
                             enabled: true,
-                            colors: ['#a1a5a7', '#a1a5a7', '#a1a5a7'],
+                            colors: ['#a1a5a7', '#a1a5a7', '#a1a5a7', '#a1a5a7'],
                             connectorColor: '#ffffff',
                             format: '{point.name}'
                         }
@@ -197,7 +198,8 @@
                     data: [
                         [$('#sumPrets').html(), sumPretsPourcent],
                         [$('#sumBidsEncours').html(), sumBidsEncoursPourcent],
-                        [$('#leSolde').html(), leSoldePourcent]
+                        [$('#leSolde').html(), leSoldePourcent],
+                        [$('#sumProblems').html(), sumProblemsPourcent]
                     ]
                 }],
                 tooltip: {
@@ -353,7 +355,7 @@
                             if (!$parent.is('.disabled')) {
                                 if ($parent.is('.checked')) {
                                     if (!$input.is('[type="radio"]')) {
-                                        $parent.removeClass('checked')
+                                        $parent.removeClass('checked');
                                         $input.prop('checked', false).trigger('change');
                                     }
                                 } else {
