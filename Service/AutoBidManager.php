@@ -210,7 +210,7 @@ class AutoBidManager
      *
      * @return bool
      */
-    public static function autoBid(\projects $oProject)
+    public static function bid(\projects $oProject)
     {
         if ($oProject->date_fin != '0000-00-00 00:00:00' && time() >= strtotime($oProject->date_fin)) {
             return false;
@@ -219,23 +219,21 @@ class AutoBidManager
         $oProjectStatus = Loader::loadData('projects_status');
         if ($oProjectStatus->getLastStatut($oProject->id_project)) {
             if ($oProjectStatus->status == \projects_status::AUTO_BID) {
-                self::autoBidBeforePublication($oProject);
-            } else {
-                if ($oProjectStatus->status == \projects_status::EN_FUNDING) {
-                    self::autoBidAfterPublication($oProject);
-                } else {
-                    return false;
-                }
+                return self::bidBeforePublication($oProject);
+            } else if ($oProjectStatus->status == \projects_status::EN_FUNDING) {
+                return self::bidAfterPublication($oProject);
             }
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     /**
      * @param \projects $oProject
+     *
+     * @return bool
      */
-    private static function autoBidBeforePublication(\projects $oProject)
+    private static function bidBeforePublication(\projects $oProject)
     {
         $iPeriod     = (int)$oProject->period;
         $sEvaluation = $oProject->risk;
@@ -260,9 +258,11 @@ class AutoBidManager
                 $oAutoBidQueue->addToQueue($aAutoBidSettings['id_lender'], \autobid_queue::STATUS_NEW);
             }
         }
+
+        return true;
     }
 
-    private static function autoBidAfterPublication(\projects $oProject)
+    private static function bidAfterPublication(\projects $oProject)
     {
         /** @var \settings $oSettings */
         $oSettings = Loader::loadData('settings');
@@ -270,11 +270,8 @@ class AutoBidManager
         $fStep = (float) $oSettings->value;
 
         /** @var \bids $oBidData */
-        $oBidData = Loader::loadData('bids');
-        $fCurrentRate = (float) $oBidData->getProjectMaxRate($oProject->id_project) - $fStep;
-
-        /** @var \autobid_queue $oAutoBidQueue */
-        $oAutoBidQueue = Loader::loadData('autobid_queue');
+        $oBid = Loader::loadData('bids');
+        $fCurrentRate = (float) $oBid->getProjectMaxRate($oProject->id_project) - $fStep;
 
         $iOffset = 0;
         $iLimit  = 100;
@@ -282,19 +279,27 @@ class AutoBidManager
             $iOffset += $iLimit;
 
             foreach ($aAutoBidList as $aAutobid) {
-                if (false === $oBidData->get($aAutobid['id_bid'])) {
+                if (false === $oBid->get($aAutobid['id_bid'])) {
                     continue;
                 }
                 if ($aAutobid['rate_min'] <= $fCurrentRate) {
-                    $oBidData->status = \bids::STATUS_BID_PENDING;
-                    $oBidData->rate = $fCurrentRate;
-                    $oBidData->checked = 0;
-                    $oBidData->update();
+                    $oBid->status = \bids::STATUS_BID_PENDING;
+                    $oBid->rate   = $fCurrentRate;
+                    $oBid->update();
                 } else {
-                    BidManager::reject($oBidData);
-                    $oAutoBidQueue->addToQueue($aAutobid['id_lender'], \autobid_queue::STATUS_TOP);
+                    self::rejec($oBid);
                 }
             }
         }
+
+        return true;
+    }
+
+    public static function reject(\bids $oBid)
+    {
+        /** @var \autobid_queue $oAutoBidQueue */
+        $oAutoBidQueue = Loader::loadData('autobid_queue');
+        BidManager::reject($oBid);
+        $oAutoBidQueue->addToQueue($oBid->id_lender, \autobid_queue::STATUS_TOP);
     }
 }

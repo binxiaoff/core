@@ -163,7 +163,7 @@ class cronController extends bootstrap
                     $this->projects_status_history->addStatus(\users::USER_ID_CRON, projects_status::AUTO_BID, $projects['id_project']);
 
                     $this->projects->get($projects['id_project']);
-                    \Unilend\Service\AutoBidManager::autoBid($this->projects);
+                    \Unilend\Service\AutoBidManager::bid($this->projects);
 
                     $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $projects['id_project']);
 
@@ -4631,7 +4631,7 @@ class cronController extends bootstrap
                         }
                     }
                     $this->projets->get($p['id_project']);
-                    \Unilend\Service\AutoBidManager::autoBid($this->projets);
+                    \Unilend\Service\AutoBidManager::bid($this->projets);
 
                     $aLogContext['Project ID']    = $p['id_project'];
                     $aLogContext['Balance']       = $soldeBid;
