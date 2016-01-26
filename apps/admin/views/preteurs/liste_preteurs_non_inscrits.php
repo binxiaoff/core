@@ -29,13 +29,11 @@
     </ul>
     <?php
     if (isset($_POST['form_search_client'])) : ?>
-        <h1>Résultats de la recherche prêteurs non
-            inscrits <?= (count($this->lPreteurs) > 0 ? '(' . count($this->lPreteurs) . ')' : '') ?></h1>
+        <h1>Résultats de la recherche prêteurs non inscrits <?= (count($this->lPreteurs) > 0 ? '(' . count($this->lPreteurs) . ')' : '') ?></h1>
     <?php else : ?>
         <h1>Liste des <?= count($this->lPreteurs) ?> prêteurs non inscrits</h1>
     <?php endif; ?>
-    <div class="btnDroite"><a href="<?= $this->lurl ?>/preteurs/search_non_inscripts" class="btn_link thickbox">Rechercher
-            un prêteur</a></div>
+    <div class="btnDroite"><a href="<?= $this->lurl ?>/preteurs/search_non_inscripts" class="btn_link thickbox">Rechercher un prêteur</a></div>
     <?php  if (count($this->lPreteurs) > 0) : ?>
     <table class="tablesorter">
         <thead>
@@ -67,13 +65,10 @@
                 </td>
                 <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['bids_encours'] ?></td>
                 <td align="center">
-                    <?php var_dump($c['status']);
-                    var_dump(\clients::STATUS_OFFLINE === (int)$c['status']);
-                    var_dump(\clients::STATUS_OFFLINE === $c['status']);?>
                     <img
-                        onclick="if(confirm('Voulez vous <?= (\clients::STATUS_ONLINE === (int)$c['status'] ? 'Passer hors ligne' : 'Passer en ligne') ?> ce preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/liste_preteurs_non_inscrits/status/<?= $c['id_client'] ?>/<?= ( \clients::STATUS_ONLINE === (int)$c['status']  ? \clients::STATUS_OFFLINE : \clients::STATUS_ONLINE ) ?>';}"
-                        src="<?= $this->surl ?>/images/admin/<?= (\clients::STATUS_ONLINE === (int)$c['status'] ? 'offline' : 'online') ?>.png"
-                        alt="<?= (\clients::STATUS_ONLINE === (int)$c['status'] ? 'Passer hors ligne' : 'Passer en ligne') ?>"/>
+                        onclick="if(confirm('Voulez vous <?= (\clients::STATUS_ONLINE == $c['status'] ? 'Passer hors ligne' : 'Passer en ligne') ?> ce preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/liste_preteurs_non_inscrits/status/<?= $c['id_client'] ?>/<?= ( \clients::STATUS_ONLINE == $c['status']  ? \clients::STATUS_OFFLINE : \clients::STATUS_ONLINE ) ?>';}"
+                        src="<?= $this->surl ?>/images/admin/<?= (\clients::STATUS_ONLINE == $c['status'] ? 'offline' : 'online') ?>.png"
+                        alt="<?= (\clients::STATUS_ONLINE == $c['status'] ? 'Passer hors ligne' : 'Passer en ligne') ?>"/>
 
                     <a href="<?= $this->lurl ?>/preteurs/edit/<?= $c['id_lender_account'] ?>">
                         <img src="<?= $this->surl ?>/images/admin/edit.png"
