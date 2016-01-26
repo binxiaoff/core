@@ -1,7 +1,5 @@
 <?php
 
-use Unilend\librairies\ULogger;
-
 class preteursController extends bootstrap
 {
     /**
@@ -551,8 +549,11 @@ class preteursController extends bootstrap
 
                 // Mandat
                 if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
-                    if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) $create = false;
-                    else $create = true;
+                    if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) {
+                        $create = false;
+                    } else {
+                        $create = true;
+                    }
 
                     $this->upload->setUploadDir($this->path, 'protected/pdf/mandat/');
                     if ($this->upload->doUpload('mandat')) {
@@ -561,11 +562,13 @@ class preteursController extends bootstrap
                         $this->clients_mandats->id_client     = $this->clients->id_client;
                         $this->clients_mandats->id_universign = 'no_universign';
                         $this->clients_mandats->url_pdf       = '/pdf/mandat/' . $this->clients->hash . '/';
-                        $this->clients_mandats->status        = 1;
+                        $this->clients_mandats->status        = \clients_mandats::STATUS_SIGNED;
 
-                        if ($create == true) $this->clients_mandats->create();
-                        else $this->clients_mandats->update();
-
+                        if ($create == true) {
+                            $this->clients_mandats->create();
+                        } else {
+                            $this->clients_mandats->update();
+                        }
                     }
                 }
 
@@ -888,8 +891,11 @@ class preteursController extends bootstrap
 
                 // Mandat
                 if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
-                    if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) $create = false;
-                    else $create = true;
+                    if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) {
+                        $create = false;
+                    } else {
+                        $create = true;
+                    }
 
                     $this->upload->setUploadDir($this->path, 'protected/pdf/mandat/');
                     if ($this->upload->doUpload('mandat')) {
@@ -898,11 +904,13 @@ class preteursController extends bootstrap
                         $this->clients_mandats->id_client     = $this->clients->id_client;
                         $this->clients_mandats->id_universign = 'no_universign';
                         $this->clients_mandats->url_pdf       = '/pdf/mandat/' . $this->clients->hash . '/';
-                        $this->clients_mandats->status        = 1;
+                        $this->clients_mandats->status        = \clients_mandats::STATUS_SIGNED;
 
-                        if ($create == true) $this->clients_mandats->create();
-                        else $this->clients_mandats->update();
-
+                        if ($create == true) {
+                            $this->clients_mandats->create();
+                        } else {
+                            $this->clients_mandats->update();
+                        }
                     }
                 }
 

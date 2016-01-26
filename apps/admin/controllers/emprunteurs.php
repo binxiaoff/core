@@ -262,7 +262,7 @@ class emprunteursController extends bootstrap
                 //Log modification de RIP par Unilend
                 $edited_rib = false;
                 if ($this->companies->bic != str_replace(' ', '', strtoupper($_POST['bic'])) || $this->companies->iban != str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7']))) {
-                    $this->clients->history .= "<tr><td><b>RIB modifi&eacute; par Unilend</b> (" . $_SESSION['user']['firstname'] . " " . $_SESSION['user']['name'] . "<!-- User ID: " . $_SESSION['user']['id'] . "-->) le " . date('d/m/Y') . " &agrave; " . date('H:i') . "<br><u>Ancienne valeur:</u> " . $this->companies->iban . " / " . $this->companies->bic . "<br><u>Nouvelle valeur:</u> " . str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7'])) . " / " . str_replace(' ', '', strtoupper($_POST['bic'])) . "</tr></td>";
+                    $this->clients->history .= "<tr><td><b>RIB modifi&eacute; par Unilend</b> (" . $_SESSION['user']['firstname'] . " " . $_SESSION['user']['name'] . "<!-- User ID: " . $_SESSION['user']['id_user'] . "-->) le " . date('d/m/Y') . " &agrave; " . date('H:i') . "<br><u>Ancienne valeur:</u> " . $this->companies->iban . " / " . $this->companies->bic . "<br><u>Nouvelle valeur:</u> " . str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7'])) . " / " . str_replace(' ', '', strtoupper($_POST['bic'])) . "</tr></td>";
                     $edited_rib = true;
                 }
 
@@ -442,9 +442,12 @@ class emprunteursController extends bootstrap
         $this->nextEcheance = $prelevements->select('status = 0 AND id_client = ' . $this->bdd->escape_string($this->params[0]));
         $this->nextEcheance = $this->nextEcheance[0]['date_echeance_emprunteur'];
 
-        $this->sendedEcheance = $prelevements->select('status = 1 AND date_echeance_emprunteur > CURRENT_DATE AND id_client = ' . $this->bdd->escape_string($this->params[0]));
-        $this->alreadySended  = count($this->sendedEcheance);
-        $this->sendedEcheance = $this->sendedEcheance[0]['date_echeance_emprunteur'];
+        $this->sentEcheance = $prelevements->select('status = 1 AND date_echeance_emprunteur > CURRENT_DATE AND id_client = ' . $this->bdd->escape_string($this->params[0]));
+        $this->alreadySent  = count($this->sentEcheance);
+
+        if ($this->alreadySent > 0) {
+            $this->sentEcheance = $this->sentEcheance[0]['date_echeance_emprunteur'];
+        }
     }
 
     public function _RIBlightbox_no_prelev()
