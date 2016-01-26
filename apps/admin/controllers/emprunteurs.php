@@ -229,19 +229,11 @@ class emprunteursController extends bootstrap
         $this->settings->get('Liste deroulante secteurs', 'type');
         $this->lSecteurs = explode(';', $this->settings->value);
 
-        // On recup les infos du client
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->status_pre_emp >= 2) {
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
-            // Companies
             $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-            // liste des projets
             $this->lprojects = $this->projects->select('id_company = "' . $this->companies->id_company . '"');
-
-            // liste des mandat uploadépar le client
-            //$this->lMandats = $this->clients_mandats->select('id_client = '.$this->clients->id_client);
-            //$this->clients_mandats->get($this->clients->id_client,'id_client');
 
             if ($this->clients->telephone != '') {
                 $this->clients->telephone = trim(chunk_split($this->clients->telephone, 2, ' '));
@@ -251,8 +243,6 @@ class emprunteursController extends bootstrap
                 $this->clients->nom    = $this->ficelle->majNom($_POST['nom']);
                 $this->clients->prenom = $this->ficelle->majNom($_POST['prenom']);
 
-
-                //// check doublon mail ////
                 $checkEmailExistant = $this->clients->select('email = "' . $_POST['email'] . '" AND id_client != ' . $this->clients->id_client . ' AND status_pre_emp > 1');
                 if (count($checkEmailExistant) > 0) {
                     $les_id_client_email_exist = '';
@@ -264,8 +254,6 @@ class emprunteursController extends bootstrap
                 } else {
                     $this->clients->email = $_POST['email'];
                 }
-
-                ////////////////////////////
 
                 $this->clients->telephone = str_replace(' ', '', $_POST['telephone']);
 
@@ -284,13 +272,10 @@ class emprunteursController extends bootstrap
 
                 // on verif si le bic est good
                 if ($this->companies->bic != '' && $this->ficelle->swift_validate(trim($this->companies->bic)) == false) {
-                    //if(strlen($this->companies->bic) < 8 || strlen($this->companies->bic) > 11)
                     $_SESSION['erreurBic'] = '';
 
-                    // Mise en session du message
                     $_SESSION['freeow']['title']   = 'Erreur BIC';
                     $_SESSION['freeow']['message'] = 'Le BIC est invalide';
-                    //$_SESSION['freeow']['message'] = 'Le BIC doit contenir entre 8 et 11 caractères';
 
                     header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
                     die;
@@ -299,7 +284,6 @@ class emprunteursController extends bootstrap
                 if ($this->companies->iban != '' && $this->ficelle->isIBAN($this->companies->iban) != 1) {
                     $_SESSION['erreurIban'] = '';
 
-                    // Mise en session du message
                     $_SESSION['freeow']['title']   = 'Erreur IBAN';
                     $_SESSION['freeow']['message'] = 'L\'IBAN est invalide';
 
@@ -312,8 +296,6 @@ class emprunteursController extends bootstrap
                     $prelevements->updateIbanBic($p['id_project'], $this->companies->bic, $this->companies->iban);
                 }
 
-
-                // meme adresse que le siege
                 if ($this->companies->status_adresse_correspondance == 1) {
                     $this->companies->adresse1 = $_POST['adresse'];
                     $this->companies->city     = $_POST['ville'];
@@ -351,80 +333,63 @@ class emprunteursController extends bootstrap
 
                 if ($edited_rib) {
                     $e                      = $this->loadData('clients');
-                    $loan                   = $this->loadData('loans');
                     $project                = $this->loadData('projects');
                     $companie               = $this->loadData('companies');
-                    $echeancier             = $this->loadData('echeanciers');
-                    $clients_mandats        = $this->loadData('clients_mandats');
                     $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
+
                     foreach ($companie->select('id_client_owner = ' . $this->clients->id_client) as $company2) {
                         foreach ($project->select('id_company = ' . $company2['id_company']) as $projects) {
-                            $aMandats = $clients_mandats->select('id_project = ' . $projects['id_project'] . ' AND id_client = ' . $this->clients->id_client . ' AND status <> ' . clients_mandats::STATUS_ARCHIVED);
+                            $aMandats = $this->clients_mandats->select('id_project = ' . $projects['id_project'] . ' AND id_client = ' . $this->clients->id_client . ' AND status != ' . \clients_mandats::STATUS_ARCHIVED);
                             if (false === empty($aMandats)) {
                                 foreach ($aMandats as $aMandatToArchive) {
-                                    $clients_mandats->get($aMandatToArchive['id_mandat']);
-                                    if (clients_mandats::STATUS_SIGNED == $clients_mandats->status) {
-                                        $nouveauNom    = str_replace('mandat', 'mandat-' . $clients_mandats->id_mandat, $clients_mandats->name);
-                                        $chemin        = $this->path . 'protected/pdf/mandat/' . $clients_mandats->name;
+                                    $this->clients_mandats->get($aMandatToArchive['id_mandat']);
+                                    if (\clients_mandats::STATUS_SIGNED == $this->clients_mandats->status) {
+                                        $nouveauNom    = str_replace('mandat', 'mandat-' . $this->clients_mandats->id_mandat, $this->clients_mandats->name);
+                                        $chemin        = $this->path . 'protected/pdf/mandat/' . $this->clients_mandats->name;
                                         $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
 
                                         rename($chemin, $nouveauChemin);
 
-                                        $clients_mandats->name = $nouveauNom;
+                                        $this->clients_mandats->name = $nouveauNom;
                                     }
-                                    $clients_mandats->status = clients_mandats::STATUS_ARCHIVED;
-                                    $clients_mandats->update();
+                                    $this->clients_mandats->status = \clients_mandats::STATUS_ARCHIVED;
+                                    $this->clients_mandats->update();
                                 }
 
-                                //No need to create the new mandat, it will be created in pdf::_mandat()
+                                // No need to create the new mandat, it will be created in pdf::_mandat()
 
                                 //**********************************************//
                                 //*** ENVOI DU MAIL FUNDE EMPRUNTEUR TERMINE ***//
                                 //**********************************************//
-                                // On recup le projet
                                 $project->get($projects['id_project'], 'id_project');
-
-                                // On recup la companie
                                 $companie->get($project->id_company, 'id_company');
-
-                                // Recuperation du modele de mail
-                                $this->mails_text->get('changement-de-rib', 'lang = "' . $this->language . '" AND type');
-
-                                // emprunteur
                                 $e->get($companie->id_client_owner, 'id_client');
 
+                                $this->mails_text->get('changement-de-rib', 'lang = "' . $this->language . '" AND type');
 
                                 $echeanciers_emprunteur->get($project->id_project, 'ordre = 1 AND id_project');
                                 $mensualite = $echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva;
                                 $mensualite = ($mensualite / 100);
 
-                                // FB
                                 $this->settings->get('Facebook', 'type');
                                 $lien_fb = $this->settings->value;
 
-                                // Twitter
                                 $this->settings->get('Twitter', 'type');
                                 $lien_tw = $this->settings->value;
-
-                                $surl         = $this->surl;
-                                $url          = $this->lurl;
-                                $projet       = $project->title;
-                                $link_mandat  = $this->urlfront . '/pdf/mandat/' . $e->hash . '/' . $project->id_project;
-                                $link_pouvoir = $this->urlfront . '/pdf/pouvoir/' . $e->hash . '/' . $project->id_project;
 
                                 $this->nextEcheance = $prelevements->select('status = 0 AND id_project = ' . $projects['id_project']);
 
                                 $varMail = array(
-                                    'surl'                   => $surl,
-                                    'url'                    => $url,
+                                    'surl'                   => $this->surl,
+                                    'url'                    => $this->lurl,
                                     'prenom_e'               => $e->prenom,
                                     'nom_e'                  => $companie->name,
                                     'mensualite'             => $this->ficelle->formatNumber($mensualite),
                                     'montant'                => $this->ficelle->formatNumber($project->amount, 0),
                                     'link_compte_emprunteur' => $this->lurl . '/projects/detail/' . $project->id_project,
-                                    'link_mandat'            => $link_mandat,
-                                    'link_pouvoir'           => $link_pouvoir,
-                                    'projet'                 => $projet,
+                                    'link_mandat'            => $this->urlfront . '/pdf/mandat/' . $e->hash . '/' . $project->id_project,
+                                    'link_pouvoir'           => $this->urlfront . '/pdf/pouvoir/' . $e->hash . '/' . $project->id_project,
+                                    'projet'                 => $project->title,
                                     'lien_fb'                => $lien_fb,
                                     'lien_tw'                => $lien_tw,
                                     'date_echeance'          => date('d/m/Y', strtotime($this->nextEcheance[0]['date_echeance_emprunteur']))
@@ -432,16 +397,12 @@ class emprunteursController extends bootstrap
 
                                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
                                 $this->email = $this->loadLib('email');
-                                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                $this->email->setSubject(stripslashes($sujetMail));
-                                $this->email->setHTMLBody(stripslashes($texteMail));
+                                $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
+                                $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
+                                $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
 
-                                if ($this->Config['env'] == 'prod') {
+                                if ($this->Config['env'] === 'prod') {
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $e->email, $tabFiler);
                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                                 } else {
@@ -452,11 +413,10 @@ class emprunteursController extends bootstrap
                         }
                     }
                 }
-                // Histo user //
+
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
                 $this->users_history->histo(6, 'edit emprunteur', $_SESSION['user']['id_user'], $serialize);
-                ////////////////
-                // Mise en session du message
+
                 $_SESSION['freeow']['title']   = 'emprunteur mis a jour';
                 $_SESSION['freeow']['message'] = 'l\'emprunteur a &eacute;t&eacute; mis a jour !';
 

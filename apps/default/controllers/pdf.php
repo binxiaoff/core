@@ -1,7 +1,7 @@
 <?php
 
-use Unilend\librairies\ULogger;
 use Knp\Snappy\Pdf;
+use Unilend\librairies\ULogger;
 
 class pdfController extends bootstrap
 {
@@ -168,7 +168,7 @@ class pdfController extends bootstrap
             $sNamePdfClient = 'MANDAT-UNILEND-' . $this->clients->id_client;
 
             if (false === file_exists($sFile)) {
-                $this->generateWarrantyHtml($this->clients);
+                $this->GenerateWarrantyHtml();
                 $this->WritePdf($sFile, 'warranty');
             }
 
@@ -187,23 +187,24 @@ class pdfController extends bootstrap
             die;
         }
 
-        $oClients   = $this->loadData('clients');
-        $oProjects  = $this->loadData('projects');
-        $oCompanies = $this->loadData('companies');
+        $this->clients = $this->loadData('clients');
+        $oProjects     = $this->loadData('projects');
+        $oCompanies    = $this->loadData('companies');
 
         $sClientHash = $this->params[0];
         $iProjectId  = $this->params[1];
 
-        if ($oClients->get($sClientHash, 'hash')
+        if (
+            $this->clients->get($sClientHash, 'hash')
             && $oProjects->get($iProjectId, 'id_project')
-            && $oCompanies->get($oClients->id_client, 'id_client_owner')
+            && $oCompanies->get($this->clients->id_client, 'id_client_owner')
             && $oProjects->id_company == $oCompanies->id_company
         ) {
             $sPath           = $this->path . 'protected/pdf/mandat/';
-            $sNamePdfClient  = 'MANDAT-UNILEND-' . $oProjects->slug . '-' . $oClients->id_client;
+            $sNamePdfClient  = 'MANDAT-UNILEND-' . $oProjects->slug . '-' . $this->clients->id_client;
             $oClientsMandats = $this->loadData('clients_mandats');
             $aMandats        = $oClientsMandats->select(
-                'id_project = ' . $iProjectId . ' AND id_client = ' . $oClients->id_client . ' AND status in (' . clients_mandats::STATUS_PENDING . ',' . clients_mandats::STATUS_SIGNED . ')',
+                'id_project = ' . $iProjectId . ' AND id_client = ' . $this->clients->id_client . ' AND status IN (' . \clients_mandats::STATUS_PENDING . ',' . \clients_mandats::STATUS_SIGNED . ')',
                 'id_mandat DESC'
             );
 
@@ -212,41 +213,39 @@ class pdfController extends bootstrap
 
                 foreach ($aMandats as $aMandatToArchive) {
                     $oClientsMandats->get($aMandatToArchive['id_mandat']);
-                    $oClientsMandats->status = clients_mandats::STATUS_ARCHIVED;
+                    $oClientsMandats->status = \clients_mandats::STATUS_ARCHIVED;
                     $oClientsMandats->update();
                 }
 
-                $oClientsMandats->get($aMandat['id_mandat']);
-
-                if (clients_mandats::STATUS_SIGNED == $oClientsMandats->status) {
-                    $this->ReadPdf($oClientsMandats->name, $sNamePdfClient);
-                    return;
+                if (\clients_mandats::STATUS_SIGNED == $aMandat['status']) {
+                    $this->ReadPdf($aMandat['name'], $sNamePdfClient);
+                    die;
                 }
-            } else {
-                $sFileName = 'mandat-' . $sClientHash . '-' . $iProjectId . '.pdf';
 
-                $oClientsMandats->id_client  = $oClients->id_client;
+                $oClientsMandats->get($aMandat['id_mandat']);
+            } else {
+                $oClientsMandats->id_client  = $this->clients->id_client;
                 $oClientsMandats->url_pdf    = '/pdf/mandat/' . $sClientHash . '/' . $iProjectId;
-                $oClientsMandats->name       = $sFileName;
+                $oClientsMandats->name       = 'mandat-' . $sClientHash . '-' . $iProjectId . '.pdf';
                 $oClientsMandats->id_project = $oProjects->id_project;
-                $oClientsMandats->status     = clients_mandats::STATUS_PENDING;
+                $oClientsMandats->status     = \clients_mandats::STATUS_PENDING;
                 $oClientsMandats->create();
             }
 
             if (false === file_exists($sPath . $oClientsMandats->name)) {
-                $this->generateWarrantyHtml($oClients, $oCompanies);
+                $this->GenerateWarrantyHtml();
                 $this->WritePdf($sPath . $oClientsMandats->name, 'warranty');
             }
 
             header('Location: ' . $this->url . '/universign/mandat/' . $oClientsMandats->id_mandat);
-            return;
+            die;
         } else {
             header('Location: ' . $this->lurl);
             die;
         }
     }
 
-    private function generateWarrantyHtml($oClients)
+    private function GenerateWarrantyHtml()
     {
         $this->pays             = $this->loadData('pays');
         $this->oLendersAccounts = $this->loadData('lenders_accounts');
@@ -319,8 +318,6 @@ class pdfController extends bootstrap
 
         $this->settings->get('Adresse retour', 'type');
         $this->adresse_retour = $this->settings->value;
-
-        $this->clients = $oClients;
 
         $this->setDisplay('mandat_html');
     }
@@ -1178,10 +1175,9 @@ class pdfController extends bootstrap
 
             if (date('Y') == $year) {
                 $date_fin_time = mktime(0, 0, 0, date('m'), date('d'), $year);
-            } // date fin
-            else {
+            } else {
                 $date_fin_time = mktime(0, 0, 0, 12, 31, $year);
-            } // date fin
+            }
 
             // On sauvegarde la derniere action
             $_SESSION['id_last_action'] = $post_id_last_action;
