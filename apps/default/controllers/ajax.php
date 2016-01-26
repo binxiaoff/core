@@ -346,7 +346,7 @@ class ajaxController extends bootstrap
                 $this->ordreProject = 3;
 
                 $where .= ' GROUP BY p.id_project';
-                $where .= ' HAVING ROUND(SUM(b.amount * b.rate) / SUM(b.amount), 1) BETWEEN "'. $val[0] .'" AND "'. $val[1] .'"';
+                $where .= ' HAVING avg_rate BETWEEN "'. $val[0] .'" AND "'. $val[1] .'"';
 
                 // where pour le js
                 $this->where = $key;
