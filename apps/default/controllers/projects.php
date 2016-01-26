@@ -63,7 +63,7 @@ class projectsController extends bootstrap
         $aElementsProjects = $this->projects->getProjectsStatusAndCount($this->tabProjectDisplay, $this->tabOrdreProject[$this->ordreProject], 0, 10);
 
         $this->lProjetsFunding = $aElementsProjects['lProjectsFunding'];
-        $this->nbProjects      = $aElementsProjects['nbProjects'];
+        $this->nbProjects = $aElementsProjects['nbProjects'];
     }
 
     public function _detail()
@@ -130,10 +130,6 @@ class projectsController extends bootstrap
             $this->settings->get('Pret min', 'type');
             $this->pretMin = $this->settings->value;
 
-            // Cron fin funding minutes suplémentaires avant traitement
-            $this->settings->get('Cron fin funding minutes suplémentaires avant traitement', 'type');
-            $this->minutesEnPlus = $this->settings->value;
-
             // Liste deroulante secteurs
             $this->settings->get('Liste deroulante secteurs', 'type');
             $lSecteurs = explode(';', $this->settings->value);
@@ -171,7 +167,8 @@ class projectsController extends bootstrap
             $today = date('Y-m-d H:i');
 
             // pour fin projet manuel
-            if ($this->projects->date_fin != '0000-00-00 00:00:00') $dateRetrait = $this->projects->date_fin;
+            if ($this->projects->date_fin != '0000-00-00 00:00:00')
+                $dateRetrait = $this->projects->date_fin;
 
             $today = strtotime($today);
             $dateRetrait = strtotime($dateRetrait);
@@ -231,7 +228,7 @@ class projectsController extends bootstrap
                     $this->form_ok = false;
                 } elseif ($montant_p >= $this->projects->amount) {
                     $this->form_ok = false;
-                } elseif ($this->projects_status->status != 50) {
+                } elseif ($this->projects_status->status != \projects_status::EN_FUNDING) {
                     $this->form_ok = false;
                 }
 
@@ -456,9 +453,8 @@ class projectsController extends bootstrap
                 }
             }
             // FIN INSCRIPTION PRETEUR //
-
             // Nb projets en funding
-            $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', 75', ' AND p.status = 0 AND p.display = 0');
+            $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0');
 
             // dates pour le js
             $this->mois_jour = $this->dates->formatDate($this->projects->date_retrait, 'F d');
@@ -466,11 +462,14 @@ class projectsController extends bootstrap
 
             // intervalle aujourd'hui et retrait
             $inter = $this->dates->intervalDates(date('Y-m-d H:i:s'), $this->projects->date_retrait . ' ' . $this->heureFinFunding . ':00');
-            if ($inter['mois'] > 0) $this->dateRest = $inter['mois'] . ' mois';
-            else $this->dateRest = '';
+            if ($inter['mois'] > 0) {
+                $this->dateRest = $inter['mois'] . ' mois';
+            } else {
+                $this->dateRest = '';
+            }
 
             // Date de retrait complete
-            if ($this->projects_status->status == 50) {
+            if ($this->projects_status->status == \projects_status::EN_FUNDING) {
                 $this->date_retrait = $this->dates->formatDateComplete($this->projects->date_retrait);
                 $this->heure_retrait = substr($this->heureFinFunding, 0, 2);
             } else {
@@ -509,7 +508,6 @@ class projectsController extends bootstrap
                 $i++;
             }
 
-            // Bilans
             $lBilans = $this->companies_bilans->select('id_company = "' . $this->companies->id_company . '" AND date <= ' . $dateDernierBilan, 'date DESC', 0, 3);
             foreach ($lBilans as $b) {
                 $this->lBilans[$b['date']] = $b;
@@ -552,19 +550,17 @@ class projectsController extends bootstrap
                 $this->avgAmount = 0;
             }
 
-            // moyenne pondéré
             $montantHaut = 0;
-            $tauxBas = 0;
-            $montantBas = 0;
-            // funding ko
+            $tauxBas     = 0;
+            $montantBas  = 0;
 
-            if ($this->projects_status->status == 70) {
+            if ($this->projects_status->status == \projects_status::FUNDING_KO) {
                 foreach ($this->bids->select('id_project = ' . $this->projects->id_project) as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
                     $tauxBas += $b['rate'];
                 }
-            } elseif ($this->projects_status->status == 75) {// emprunt refusé
+            } elseif ($this->projects_status->status == \projects_status::PRET_REFUSE) {
                 foreach ($this->bids->select('id_project = ' . $this->projects->id_project . ' AND status = 1') as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
@@ -583,36 +579,35 @@ class projectsController extends bootstrap
                 $this->avgRate = 0;
             }
 
-            // status enchere
             $this->status = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
 
-            if ($this->lenders_accounts->id_lender_account != false) $this->bidsEncours = $this->bids->getBidsEncours($this->projects->id_project, $this->lenders_accounts->id_lender_account);
+            if ($this->lenders_accounts->id_lender_account != false) {
+                $this->bidsEncours = $this->bids->getBidsEncours($this->projects->id_project, $this->lenders_accounts->id_lender_account);
+            }
 
-            // liste des bids du lender pour le projet
-            if ($this->lenders_accounts->id_lender_account != false) $this->lBids = $this->bids->select('id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $this->projects->id_project . ' AND status = 0', 'added ASC');
+            if ($this->lenders_accounts->id_lender_account != false) {
+                $this->lBids = $this->bids->select('id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $this->projects->id_project . ' AND status = 0', 'added ASC');
+            }
 
-            ///////////////////////////////
-            // Si le projet est en fundé // ou remb
-            ///////////////////////////////
-            if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
-                // Retourne un tableau avec le nb d'encheres valides et le solde des encheres validées
-                if ($this->lenders_accounts->id_lender_account != false) $this->bidsvalid = $this->loans->getBidsValid($this->projects->id_project, $this->lenders_accounts->id_lender_account);
+            if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) {
+                if ($this->lenders_accounts->id_lender_account != false) {
+                    $this->bidsvalid = $this->loans->getBidsValid($this->projects->id_project, $this->lenders_accounts->id_lender_account);
+                }
 
-                // Nb preteurs validés
                 $this->NbPreteurs = $this->loans->getNbPreteurs($this->projects->id_project);
 
                 $montantHaut = 0;
-                $montantBas = 0;
+                $montantBas  = 0;
                 foreach ($this->loans->select('id_project = ' . $this->projects->id_project) as $b) {
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
                 }
-                $this->AvgLoans = ($montantHaut / $montantBas);
+                $this->AvgLoans = $montantHaut / $montantBas;
 
-                // Taux moyen des encheres validés du preteur
                 if ($this->lenders_accounts->id_lender_account != false) {
                     $this->AvgLoansPreteur = $this->loans->getAvgLoansPreteur($this->projects->id_project, $this->lenders_accounts->id_lender_account, 'rate');
                 }
+
                 if ($this->projects->date_publication_full != '0000-00-00 00:00:00') {
                     $date1 = strtotime($this->projects->date_publication_full);
                 } else {
@@ -624,14 +619,15 @@ class projectsController extends bootstrap
                 } else {
                     $date2 = strtotime($this->projects->date_fin);
                 }
+
                 $this->interDebutFin = $this->dates->dateDiff($date1, $date2);
 
-                // Si en remboursement
                 if ($this->lenders_accounts->id_lender_account != false) {
-                    $this->sumRemb = $this->echeanciers->sumARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 0');
-                    $this->sumRemb += $this->echeanciers->sumARembByProjectCapital($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 1'); // (add 17/07/2015)
+                    $oProjectsStatusHistory = $this->loadData('projects_status_history');
+                    $this->aStatusHistory   = $oProjectsStatusHistory->getHistoryDetails($this->projects->id_project);
+                    $this->sumRemb          = $this->echeanciers->sumARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 0') + $this->echeanciers->sumARembByProjectCapital($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 1');
                     $this->sumRestanteARemb = $this->echeanciers->getSumRestanteARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project);
-                    $this->nbPeriod = $this->echeanciers->counterPeriodRestantes($this->lenders_accounts->id_lender_account, $this->projects->id_project);
+                    $this->nbPeriod         = $this->echeanciers->counterPeriodRestantes($this->lenders_accounts->id_lender_account, $this->projects->id_project);
                 }
             }
         } else {

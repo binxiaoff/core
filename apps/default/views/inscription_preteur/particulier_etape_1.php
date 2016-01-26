@@ -101,13 +101,6 @@
                 <?php } ?>
             </select>
         </div>
-        <div class="row etranger">
-            <div class="cb-holder">
-                <label style="margin-left:524px;" class="check_etranger" for="check_etranger"><?=$this->lng['etape1']['checkbox-etranger']?></label>
-                <input type="checkbox" class="custom-input" name="check_etranger" id="check_etranger">
-            </div>
-            <p class="message_check_etranger" ><?=$this->lng['etape1']['checkbox-etranger-message']?></p>
-        </div>
         <div class="row small-select">
             <span class="inline-text inline-text-alt"><?=$this->lng['etape1']['date-de-naissance']?> :</span>
             <select name="jour_naissance" id="jour_naissance" class="custom-select required field-tiny">

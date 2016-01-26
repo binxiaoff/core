@@ -341,7 +341,7 @@ class statsController extends bootstrap
             if ($lPorjects != false) {
                 foreach ($lPorjects as $p) {
                     $this->projects_status->getLastStatut($p['id_project']);
-                    if ($this->projects_status->status == 80) {
+                    if ($this->projects_status->status == \projects_status::REMBOURSEMENT) {
                         $statutRemb = true;
                     }
                 }
@@ -1025,7 +1025,7 @@ class statsController extends bootstrap
               SELECT psh.id_project, MIN(psh.added) as first_added
               FROM projects_status_history psh
                 INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-              WHERE ps.status = 80
+              WHERE ps.status = ' . \projects_status::REMBOURSEMENT . '
               GROUP BY psh.id_project
               HAVING YEAR(first_added) = ' . $annee . '
             ) p ON p.id_project = lo.id_project
@@ -1406,6 +1406,7 @@ class statsController extends bootstrap
         header('Expires: 0');
 
         $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
+        $oWriter->setUseBOM(true);
         $oWriter->setDelimiter(';');
         $oWriter->save('php://output');
 
@@ -1430,28 +1431,37 @@ class statsController extends bootstrap
         $resultat = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($resultat)) {
-            if ('1' === $record['type']) {
-                $sql = "SELECT id_pays, resident_etranger FROM lenders_imposition_history
-                    WHERE id_lender = {$record['id_lender_account']}
-                    AND added <= '{$record['date_echeance_reel']}'
-                    ORDER BY added DESC LIMIT 1";
+            if ('1' === $record['type'] || '3' === $record['type']) {
+                $bForeigner = false;
+                $bZoneB040Country = false;
 
-                $oQueryResident = $this->bdd->query($sql);
+                $sSqlResident = "SELECT id_pays, resident_etranger FROM lenders_imposition_history
+                        WHERE id_lender = {$record['id_lender_account']}
+                        AND DATE(added) <= '{$record['date_echeance_reel']}'
+                        ORDER BY added DESC LIMIT 1";
+                $oQueryResident = $this->bdd->query($sSqlResident);
                 $aRow = $this->bdd->fetch_array($oQueryResident);
+
+                if (0 !== $this->bdd->num_rows() && 0 < $aRow['resident_etranger']) {
+                    $bForeigner = true;
+                    if (in_array($aRow['id_pays'], $aZoneB040CountryIds)) {
+                        $bZoneB040Country = true;
+                    }
+                }
+                unset($oQueryResident, $aRow);
+
                 // Exclude "remboursement anticipé" for calculating interests
                 if('0' === $record['status_ra']) {
-                    if(0 === $this->bdd->num_rows() || '0' === $aRow['resident_etranger']) { //code 66
+                    if(false === $bForeigner) { //code 66
                         $iSum66 += $record['interets'];
-
-                    } else if (in_array($aRow['id_pays'], $aZoneB040CountryIds)) {
+                    } else if (true === $bZoneB040Country) {
                         $iSum81 += $record['interets'] - $record['retenues_source']*100;
                     }
                 }
 
-                if (1 === $this->bdd->num_rows() && '0' !== $aRow['resident_etranger'] && in_array($aRow['id_pays'], $aZoneB040CountryIds)) {
+                if (true === $bZoneB040Country) {
                     $iSum82 += $record['capital'];
                 }
-                unset($oQueryResident, $aRow);
             }
             $iSum118 += $record['capital'];
 

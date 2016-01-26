@@ -1,4 +1,5 @@
 <?php
+
 // **************************************************************************************************** //
 // ***************************************    ASPARTAM    ********************************************* //
 // **************************************************************************************************** //
@@ -151,5 +152,38 @@ class projects_status_history extends projects_status_history_crud
         }
 
         return false;
+    }
+
+    public function addStatusAndReturnID($id_user, $status, $id_project)
+    {
+        $result                  = $this->bdd->query('SELECT id_project_status FROM `projects_status` WHERE status = ' . $status);
+        $this->id_project        = $id_project;
+        $this->id_project_status = (int) $this->bdd->result($result, 0, 0);
+        $this->id_user           = $id_user;
+
+        return $this->create();
+    }
+
+    public function getHistoryDetails($id_project)
+    {
+        $sql = '
+            SELECT
+                ps.status,
+                psh.added AS added,
+                IFNULL(pshd.mail_content, "") AS mail_content,
+                IFNULL(pshd.site_content, "") AS site_content,
+                IF (ps.status = ' . \projects_status::DEFAUT . ', 1, 0) AS failure
+            FROM projects_status_history psh
+            LEFT JOIN projects_status_history_details pshd ON psh.id_project_status_history = pshd.id_project_status_history
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            WHERE psh.id_project = ' . $id_project . '
+            ORDER BY psh.added DESC';
+
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
     }
 }

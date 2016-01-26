@@ -30,18 +30,17 @@
     <link rel="stylesheet" href="css/jquery.nouislider.css"/>
 
     <!--[if IE]><script src="http://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
-
-    <!-- Google Tag Manager -->
-    <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-        })(window, document, 'script', 'dataLayer', 'GTM-MB66VL');</script>
-    <!-- End Google Tag Manager -->
 </head>
 <body>
+<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
+                  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window, document, 'script', 'dataLayer', 'GTM-MB66VL');</script>
+<!-- End Google Tag Manager -->
 <?php
 
 if (! empty($_GET["utm_source"])) {
@@ -890,76 +889,11 @@ if ($page == 'lexpress') {
     </section>
 </div><!-- projet_analyse -->
 
-<div id="chiffres" class="wrapper100 bg_gris">
+<div class="wrapper100" id="dc_slider-step">
     <section class="wrapper">
-        <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos int&eacute;r&ecirc;ts se rencontrent" width="252" height="60"></a>
-        <h1>Unilend <span>en chiffres</span></h1>
-        <p>Depuis le lancement d'Unilend jusqu'&agrave; fin octobre 2014</p>
-        <div id="chiffres_left">
-            <ul>
-                <li>
-                    <p>67</p>
-                    <p>Projets<br/>financ&eacute;s</p>
-                </li>
-                <li>
-                    Record de financement<br/>d'un projet :
-                    <p>312 &euro;/min</p>
-                </li>
-                <li>
-                    Record du dossier<br/>100% financ&eacute; :
-                    <p>45 min</p>
-                </li>
-            </ul>
-        </div>
-        <div id="chiffres_right">
-            <ul>
-                <li>
-                    <p id="tooltip1" data-toggle="tooltip" data-placement="top" title="Montants pr&ecirc;t&eacute;s par la communaut&eacute; Unilend aux entreprises fran&ccedil;aises">Montants pr&ecirc;t&eacute;s</p>
-                    <div class="chiffres">
-                        <p class="m5">5</p>
-                        <p>4</p>
-                        <p>7</p>
-                        <p class="m5">0</p>
-                        <p>1</p>
-                        <p>5</p>
-                        <p>0</p>
-                        <div class="clear"></div>
-                    </div>
-                    <div class="clear"></div>
-                </li>
-                <li>
-                    <p id="tooltip2" data-toggle="tooltip" data-placement="top" title="Cumul des versements (capital et int&eacute;r&ecirc;ts bruts) rembours&eacute;s aux pr&ecirc;teurs">Remboursements<br/>aux pr&ecirc;teurs</p>
-                    <div class="chiffres">
-                        <p>4</p>
-                        <p>9</p>
-                        <p class="m5">8</p>
-                        <p>1</p>
-                        <p>8</p>
-                        <p>8</p>
-                        <div class="clear"></div>
-                    </div>
-                    <div class="clear"></div>
-                </li>
-                <li>
-                    <p id="tooltip3" data-toggle="tooltip" data-placement="top" title="Cumul des int&eacute;r&ecirc;ts bruts revers&eacute;s aux pr&ecirc;teurs">Int&eacute;r&ecirc;ts bruts<br/>revers&eacute;s aux pr&ecirc;teurs</p>
-                    <div class="chiffres">
-                        <p>1</p>
-                        <p>4</p>
-                        <p class="m5">9</p>
-                        <p>1</p>
-                        <p>3</p>
-                        <p>1</p>
-                        <div class="clear"></div>
-                    </div>
-                    <div class="clear"></div>
-                </li>
-            </ul>
-        </div>
         <div class="clear"></div>
-        <p class="fleche">Inscrivez-vous et pr&ecirc;tez &agrave; partir de 20&euro; jusqu'&agrave; 1 000 000&euro;</p>
-        <div class="scroll"></div>
     </section>
-</div><!-- chiffres -->
+</div><!-- Slider -->
 
 <div id="presse" class="wrapper100">
     <section class="wrapper">
@@ -1026,7 +960,9 @@ if ($page == 'lexpress') {
             <li>Aux &eacute;pargnants de pr&ecirc;ter de l'argent directement aux entreprises en recevant des int&eacute;r&ecirc;ts.</li>
         </ul>
         <p>
-            Le service de paiement <span>Unilend</span> est distribu&eacute; par la Soci&eacute;t&eacute; fran&ccedil;aise pour le financement des PME - SFF PME SAS, agent prestataire de services de paiement mandat&eacute; par la SFPMEI et d&eacute;clar&eacute; aupr&egrave;s de l'Autorit&eacute; de contr&ocirc;le prudentiel et de r&eacute;solution (ACPR).
+            <span>Unilend</span> est interm&eacute;diaire en financement participatif (IFP) inscrit &agrave; l&apos;ORIAS (www.orias.fr) sous le num&eacute;ro 15006955.<br>
+            Le service de paiement Unilend est distribu&eacute; par la Soci&eacute;t&eacute; fran&ccedil;aise pour le financement des PME - SFF PME SAS, agent prestataire de services de paiement mandat&eacute; par la SFPMEI et enregistr&eacute; aupr&egrave;s de l&apos;Autorit&eacute; de contr&ocirc;le prudentiel et de r&eacute;solution (ACPR) sous le num&eacute;ro 790766034. Les informations d&apos;enregistrement sont disponibles sur le site du registre des agents financiers en cliquant <a href="https://www.regafi.fr/spip.php?rubrique1">ici</a>.<br>
+            Le service de paiement Unilend est fourni par la Soci&eacute;t&eacute; financi&egrave;re du porte-monnaie &eacute;lectronique interbancaire (SFPMEI), soci&eacute;t&eacute; par actions simplifi&eacute;e au capital de 3 732 089 euros, dont le si&egrave;ge social est situ&eacute; 29 rue du Louvre - 75002 Paris, immatricul&eacute;e au registre du commerce et des soci&eacute;t&eacute;s de Paris sous le num&eacute;ro 422 721 274. La SFPMEI est un &eacute;tablissement de cr&eacute;dit (code &eacute;tablissement 14378) agr&eacute;&eacute; en date du 30 d&eacute;cembre 1999 par l’Autorit&eacute; de contr&ocirc;le prudentiel et de r&eacute;solution (ACPR).
         </p>
         <br/>
         <p>
