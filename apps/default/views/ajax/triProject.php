@@ -39,7 +39,7 @@
     <?php
 
     $oLoans = $this->loadData('loans');
-    foreach ($this->lProjetsFunding as $project) {
+    foreach ($this->lProjetsFunding as $project) :
         $this->projects_status->getLastStatut($project['id_project']);
 
         // On recupere les info companies
@@ -56,13 +56,6 @@
         // dates pour le js
         $mois_jour = $this->dates->formatDate($project['date_retrait'], 'F d');
         $annee     = $this->dates->formatDate($project['date_retrait'], 'Y');
-
-        // favori
-        if ($this->favoris->get($this->clients->id_client, 'id_project = ' . $project['id_project'] . ' AND id_client')) {
-            $favori = 'active';
-        } else {
-            $favori = '';
-        }
 
         $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
         $oBids = $this->bids;
@@ -138,12 +131,9 @@
                 <?php } else { ?>
                     <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn btn-info btn-small">PRÊTEZ</a>
                 <?php } ?>
-                <?php if (isset($_SESSION['client'])) { ?>
-                    <a class="fav-btn <?= $favori ?>" id="fav<?= $project['id_project'] ?>" onclick="favori(<?= $project['id_project'] ?>,'fav<?= $project['id_project'] ?>',<?= $this->clients->id_client ?>,0);"><?= $this->lng['preteur-projets']['favori'] ?><i></i></a>
-                <?php } ?>
             </td>
         </tr>
-    <?php } ?>
+    <?php endforeach; ?>
 </table>
 <div id="positionStart" style="display:none;"><?= $this->lProjetsFunding[0]['positionStart'] ?></div>
 <div class="loadmore" style="display:none;"><?= $this->lng['preteur-projets']['chargement-en-cours'] ?></div>
