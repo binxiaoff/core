@@ -146,14 +146,9 @@ class ajaxController extends bootstrap
 
         // filter completed projects
         if (isset($_POST['type']) && $_POST['type'] == 4) {
-            $restriction = ' AND p.date_fin < "'. date('Y-m-d') .'"';
+            $restriction = ' AND p.date_fin < "' . date('Y-m-d') . '"';
         }
 
-        // statut
-        // where
-        // order
-        // start
-        // nb
         $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . $restriction . ' AND p.status = 0 AND p.display = 0', $ordre, '', $_POST['positionStart'], 10);
         $affichage             = '';
 
@@ -174,8 +169,8 @@ class ajaxController extends bootstrap
             $annee     = $this->dates->formatDate($project['date_retrait'], 'Y');
 
             $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
-            $oBids = $this->bids;
-            $avgRate = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $project['id_project'], $this->projects_status->status);
+            $oBids    = $this->bids;
+            $avgRate  = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $project['id_project'], $this->projects_status->status);
 
             $affichage .= "
             <tr class='unProjet' id='project" . $project['id_project'] . "'>
@@ -253,7 +248,6 @@ class ajaxController extends bootstrap
         }
         $table = array('affichage' => $affichage, 'positionStart' => $this->lProjetsFunding[0]['positionStart']);
         echo json_encode($table);
-
     }
 
     public function _triProject()
@@ -304,15 +298,15 @@ class ajaxController extends bootstrap
             // tri temps
             if (isset($_SESSION['tri']['temps'])) {
                 $this->ordreProject = $_SESSION['tri']['temps'];
-                $sStatusproject = \projects_status::EN_FUNDING;
+                $sStatusProject     = \projects_status::EN_FUNDING;
             } else {
                 $this->ordreProject = 1;
-                $sStatusproject = $this->tabProjectDisplay;
+                $sStatusProject     = $this->tabProjectDisplay;
             }
 
             // filter completed projects
             if (isset($_SESSION['tri']['type']) && $_SESSION['tri']['type'] == 4) {
-                $restriction = ' AND p.date_fin < "'. date('Y-m-d') .'"';
+                $restriction    = ' AND p.date_fin < "' . date('Y-m-d') . '"';
                 $aStatusproject = array(
                     \projects_status::FUNDE,
                     \projects_status::FUNDING_KO,
@@ -327,7 +321,7 @@ class ajaxController extends bootstrap
                     \projects_status::REDRESSEMENT_JUDICIAIRE,
                     \projects_status::LIQUIDATION_JUDICIAIRE
                 );
-                $sStatusproject = implode(', ', $aStatusproject);
+                $sStatusProject = implode(', ', $aStatusproject);
             }
 
             $_SESSION['ordreProject'] = $this->ordreProject;
@@ -339,19 +333,20 @@ class ajaxController extends bootstrap
             // tri taux
             $aOrderField = array();
             if (isset($_SESSION['tri']['taux'])) {
-                $key = $_SESSION['tri']['taux'];
-                $aOrderField = explode('-', $this->triPartxInt[$key - 1]);
+                $key                = $_SESSION['tri']['taux'];
+                $aOrderField        = explode('-', $this->triPartxInt[$key - 1]);
                 $this->ordreProject = 3;
 
                 // where pour le js
                 $this->where = $key;
             }
 
-            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusproject, $where , $this->tabOrdreProject[$this->ordreProject], $aOrderField, 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusproject . ',' . \projects_status::PRET_REFUSE, $count . ' AND p.status = 0 AND p.display = 0');
+            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusProject, $where, $this->tabOrdreProject[$this->ordreProject], $aOrderField, 0, 10);
+            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusProject . ',' . \projects_status::PRET_REFUSE, $count . ' AND p.status = 0 AND p.display = 0');
         } else {
             $this->ordreProject = 1;
             $this->type         = 0;
+            $sOrderfield        = '';
 
             $_SESSION['ordreProject'] = $this->ordreProject;
 
