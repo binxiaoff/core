@@ -163,12 +163,6 @@
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="rcs">RCS :</label></th>
-                        <td>
-                            <input type="text" name="rcs" id="rcs" class="input_large" value="<?= $this->companies->rcs ?>"/>
-                        </td>
-                    </tr>
-                    <tr>
                         <th><label for="code_naf">Code NAF :</label></th>
                         <td>
                             <input type="text" name="code_naf" id="code_naf" class="input_large" value="<?= $this->companies->code_naf ?>"/>

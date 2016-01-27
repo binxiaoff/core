@@ -768,7 +768,6 @@ class preteursController extends bootstrap
                 $this->companies->siret   = $_POST['siret']; //(19/11/2014)
                 $this->companies->phone   = str_replace(' ', '', $_POST['phone-societe']);
 
-                $this->companies->rcs          = $_POST['rcs'];
                 $this->companies->tribunal_com = $_POST['tribunal_com'];
 
                 ////////////////////////////////////
@@ -1217,7 +1216,6 @@ class preteursController extends bootstrap
                         $backup_companies->iban                                = $this->companies->iban;
                         $backup_companies->bic                                 = $this->companies->bic;
                         $backup_companies->execices_comptables                 = $this->companies->execices_comptables;
-                        $backup_companies->rcs                                 = $this->companies->rcs;
                         $backup_companies->tribunal_com                        = $this->companies->tribunal_com;
                         $backup_companies->activite                            = $this->companies->activite;
                         $backup_companies->lieu_exploi                         = $this->companies->lieu_exploi;
