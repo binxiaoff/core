@@ -1,35 +1,25 @@
 <script type="text/javascript">
-	$(document).ready(function(){
-		$(".tablesorter").tablesorter();
-		<?
-		if($this->nb_lignes != '')
-		{
-		?>
-			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});
-		<?
-		}
-		?>
+    $(function(){
+        $(".tablesorter").tablesorter();
 
-	});
-	<?
-	if(isset($_SESSION['freeow']))
-	{
-	?>
-		$(document).ready(function(){
-			var title, message, opts, container;
-			title = "<?=$_SESSION['freeow']['title']?>";
-			message = "<?=$_SESSION['freeow']['message']?>";
-			opts = {};
-			opts.classes = ['smokey'];
-			$('#freeow-tr').freeow(title, message, opts);
-		});
-	<?
-	}
-	?>
+        <?php if ($this->nb_lignes != '') : ?>
+            $(".tablesorter").tablesorterPager({
+                container: $("#pager"),
+                positionFixed: false,
+                size: <?= $this->nb_lignes ?>
+            });
+        <?php endif; ?>
 
-
-
-
+        <?php if (isset($_SESSION['freeow'])) : ?>
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {},
+                container;
+            opts.classes = ['smokey'];
+            $('#freeow-tr').freeow(title, message, opts);
+            <?php unset($_SESSION['freeow']); ?>
+        <?php endif; ?>
+    });
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
@@ -38,119 +28,61 @@
         <li>Administrateurs</li>
     </ul>
     <h1>Requete dossiers</h1>
-
-    <div style="margin-bottom:20px; float:right;"><a href="<?= $this->lurl ?>/stats/requete_dossiers_csv"
-                                                     class="btn_link">Recuperation du CSV</a></div>
-    <?php
-    if (count($this->lEmpr) > 0) : ?>
+    <div style="margin-bottom:20px; float:right;">
+        <a href="<?= $this->lurl ?>/stats/requete_dossiers_csv" class="btn_link">Recuperation du CSV</a>
+    </div>
+    <?php if (count($this->lEmpr) > 0) : ?>
         <table class="tablesorter">
             <thead>
-            <tr>
-                <th>Cdos</th>
-                <th>Dénomination</th>
-                <th>Adresse</th>
-                <th>Voie</th>
-                <th>CodeCommune</th>
-                <th>commune</th>
-                <th>CodePostal</th>
-                <th>Ville</th>
-                <th>Activités</th>
-                <th>Siret</th>
-                <th>APE</th>
-                <th>F Juridique</th>
-                <th>Capital</th>
-                <th>CapitalMonnaie</th>
-                <th>Responsable</th>
-                <th>Fonction</th>
-                <th>Téléphone</th>
-                <th>Fax</th>
-                <th>CatJuridique</th>
-                <th>CDéclaration</th>
-                <th>Cbénéficiaire</th>
-            </tr>
+                <tr>
+                    <th>Cdos</th>
+                    <th>Dénomination</th>
+                    <th>Adresse</th>
+                    <th>Voie</th>
+                    <th>CodeCommune</th>
+                    <th>commune</th>
+                    <th>CodePostal</th>
+                    <th>Ville</th>
+                    <th>Activités</th>
+                    <th>Siret</th>
+                    <th>APE</th>
+                    <th>F Juridique</th>
+                    <th>Capital</th>
+                    <th>CapitalMonnaie</th>
+                    <th>Responsable</th>
+                    <th>Fonction</th>
+                    <th>Téléphone</th>
+                    <th>Fax</th>
+                    <th>CatJuridique</th>
+                    <th>CDéclaration</th>
+                    <th>Cbénéficiaire</th>
+                </tr>
             </thead>
             <tbody>
             <?php
             $i = 1;
-            foreach($this->lEmpr as $e)
-            {
             foreach ($this->lEmpr as $e) {
-
-				$this->companies->get($e['id_client'],'id_client_owner');
-
-				$statutRemb = false;
-				$lPorjects = $this->projects->select('id_company = '.$this->companies->id_company);
-				if($lPorjects != false){
-					foreach($lPorjects as $p){
-						$this->projects_status->getLastStatut($p['id_project']);
-						if ($this->projects_status->status == \projects_status::REMBOURSEMENT) {
-							$statutRemb = true;
-						}
-					}
-				}
-
-				if($statutRemb == true){
-
-					$this->clients_adresses->get($e['id_client'],'id_client');
-
-					$this->insee->get(str_replace(' ','-',trim($this->clients_adresses->ville)),'NCCENR');
-
-					// Code commune insee
-					$dep = str_pad($this->insee->DEP,2,'0', STR_PAD_LEFT);
-					$com = str_pad($this->insee->COM,3,'0', STR_PAD_LEFT);
-					$codeCom = $dep.$com;
-
-					?>
-					<tr<?=($i%2 == 1?'':' class="odd"')?>>
-						<td><?=$e['id_client']?></td>
-						<td><?=$this->companies->name?></td>
-						<td></td>
-						<td><?=$this->clients_adresses->adresse1?></td>
-						<td><?=$codeCom?></td>
-						<td></td>
-						<td><?=$this->clients_adresses->cp?></td>
-						<td><?=$this->clients_adresses->ville?></td>
-						<td><?=$this->companies->activite?></td>
-						<td><?=$this->companies->siret?></td>
-						<td></td>
-						<td><?=$this->companies->forme?></td>
-						<td><?=$this->companies->capital?></td>
-						<td>"EUR"</td>
-						<td><?=$e['prenom'].' '.$e['nom']?></td>
-						<td><?=$e['fonction']?></td>
-						<td><?=$e['telephone']?></td>
-						<td></td>
-						<td></td>
-						<td>C</td>
-						<td>B</td>
-					</tr>
-					<?
-					$i++;
-				}
-                $this->companies->get($e['id_client'], 'id_client_owner');
+                $this->companies->get($e['id_client'],'id_client_owner');
 
                 $statutRemb = false;
                 $lPorjects  = $this->projects->select('id_company = ' . $this->companies->id_company);
+
                 if ($lPorjects != false) {
                     foreach ($lPorjects as $p) {
                         $this->projects_status->getLastStatut($p['id_project']);
-                        if ($this->projects_status->status == 80) {
+                        if ($this->projects_status->status == \projects_status::REMBOURSEMENT) {
                             $statutRemb = true;
                         }
                     }
                 }
 
                 if ($statutRemb == true) {
-
                     $this->clients_adresses->get($e['id_client'], 'id_client');
-
                     $this->insee->get(str_replace(' ', '-', trim($this->clients_adresses->ville)), 'NCCENR');
 
-                    // Code commune insee
                     $dep     = str_pad($this->insee->DEP, 2, '0', STR_PAD_LEFT);
                     $com     = str_pad($this->insee->COM, 3, '0', STR_PAD_LEFT);
                     $codeCom = $dep . $com;
-
 
                     ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
@@ -176,16 +108,15 @@
                         <td>C</td>
                         <td>B</td>
                     </tr>
-                    <?
+                    <?php
                     $i++;
                 }
             }
             ?>
             </tbody>
         </table>
-        <?php
-        if ($this->nb_lignes != '') :
-            ?>
+
+        <?php if ($this->nb_lignes != '') : ?>
             <table>
                 <tr>
                     <td id="pager">
@@ -200,10 +131,8 @@
                     </td>
                 </tr>
             </table>
-            <?php endif; ?>
-        <?php
-     else :  ?>
-        <p>Il n'y a aucun dossier pour le moment.</p>
         <?php endif; ?>
+    <?php else : ?>
+        <p>Il n'y a aucun dossier pour le moment.</p>
+    <?php endif; ?>
 </div>
-<?php unset($_SESSION['freeow']); ?>

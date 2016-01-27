@@ -8,18 +8,17 @@
 </head>
 <body>
     <style type="text/css">
-	.pdf-wrapper .shell{padding:0px;}
-	.pdf-wrapper .logo{padding: 0 0 5px;}
-	ul.refUnique{border: 1px solid #000000;padding-left: 1px; width: 416px;}
-	ul.refUnique li{border: 1px solid #000000;display: inline-block; height: 15px; margin-left: -1px;width: 15px;}
-	</style>
+    .pdf-wrapper .shell{padding:0px;}
+    .pdf-wrapper .logo{padding: 0 0 5px;}
+    ul.refUnique{border: 1px solid #000000;padding-left: 1px; width: 416px;}
+    ul.refUnique li{border: 1px solid #000000;display: inline-block; height: 15px; margin-left: -1px;width: 15px;}
+    </style>
 
 <!-- Pdf Wrapper -->
 <div class="pdf-wrapper">
     <!-- Shell -->
     <div class="shell">
-        <div class="logo">
-        </div>
+        <div class="logo"></div>
 
         <h2>MANDAT SEPA</h2>
 
