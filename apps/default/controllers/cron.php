@@ -2902,8 +2902,6 @@ class cronController extends bootstrap
                                             break;
                                         }
                                     }
-
-                                    $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::PROBLEME, $this->projects->id_project);
                                 }
                             }
                         }
@@ -5069,7 +5067,7 @@ class cronController extends bootstrap
                             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                         }
                     }
-                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $this->clients_status_history->content);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $p['id_client'], $this->clients_status_history->content);
                 }
             }
 
@@ -5087,13 +5085,13 @@ class cronController extends bootstrap
                 $timestamp_date              = $this->dates->formatDateMySqlToTimeStamp($p['added_status']);
                 if ($timestamp_date <= $timeMoins8 && $numero_relance == 0 && date('w') == 6) {// Relance J+15 && samedi
                     $op_pour_relance = true;
-                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $data_clients_status_history['content'], 2);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $p['id_client'], $data_clients_status_history['content'], 2);
                 } elseif ($timestamp_date <= $timeMoins8 && $numero_relance == 2 && date('w') == 6) {// Relance J+30
                     $op_pour_relance = true;
-                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $data_clients_status_history['content'], 3);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $p['id_client'], $data_clients_status_history['content'], 3);
                 } elseif ($timestamp_date <= $timeMoins30 && $numero_relance == 3 && date('w') == 6) {// Relance J+60
                     $op_pour_relance = true;
-                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $data_clients_status_history['content'], 4);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $p['id_client'], $data_clients_status_history['content'], 4);
                 }
 
                 if ($op_pour_relance) {

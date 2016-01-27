@@ -1,7 +1,5 @@
 <?php
 
-use Unilend\librairies\ULogger;
-
 class preteursController extends bootstrap
 {
     /**
@@ -439,7 +437,7 @@ class preteursController extends bootstrap
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
 
-            $this->clients_status_history->addStatus($_SESSION['user']['id_user'], '20', $this->clients->id_client, utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]));
+            $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::COMPLETENESS, $this->clients->id_client, utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]));
 
             unset($_SESSION['content_email_completude'][$this->clients->id_client]);
 
@@ -656,7 +654,7 @@ class preteursController extends bootstrap
                         /////////// FIN OFFRE DE BIENVENUE ///////////
                     }
 
-                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], '60', $this->clients->id_client);
+                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
 
                     // gestion alert notification //
                     $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
@@ -917,17 +915,12 @@ class preteursController extends bootstrap
                 // On met a jour l'adresse client
                 $this->clients_adresses->update();
 
-
                 // Histo user //
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
                 $this->users_history->histo(3, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
 
                 if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
-                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], '60', $this->clients->id_client);
-
-                    // Mail au client  societe//
-
-                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], '60', $this->clients->id_client);
+                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
 
                     // modif ou inscription
                     if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) $modif = true;

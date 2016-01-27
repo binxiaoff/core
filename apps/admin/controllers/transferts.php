@@ -966,8 +966,6 @@ class transfertsController extends bootstrap
                 }
             }
 
-            $projects_status_history->addStatus(-1, \projects_status::PROBLEME, $projects->id_project);
-
             echo 'ok';
         }
     }
