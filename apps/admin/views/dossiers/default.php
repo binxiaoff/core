@@ -175,7 +175,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th colspan="9" style="text-align:center;">
+                        <th colspan="10" style="text-align:center;">
                             <input type="hidden" name="form_search_dossier" id="form_search_dossier"/>
                             <input type="submit" value="Valider" title="Valider" name="send_dossier" id="send_dossier" class="btn"/>
                             <input style="border-color: #A1A5A7;background-color:#A1A5A7; color:white;" type="button" value="Reset" title="Reset" name="Reset" id="Reset" class="btn"/>
@@ -191,15 +191,15 @@
                 <tr>
                     <th style="width:4%">ID</th>
                     <th style="width:4%">Siren</th>
-                    <th style="width:20%">Raison sociale</th>
+                    <th style="width:24%">Raison sociale</th>
                     <th style="width:8%">Date demande</th>
                     <th style="width:8%">Date modification</th>
                     <th style="width:10%">Montant</th>
                     <th style="width:6%">Durée</th>
-                    <th style="width:10%">Statut</th>
+                    <th style="width:13%">Statut</th>
                     <th style="width:10%">Commercial</th>
                     <th style="width:10%">Analyste</th>
-                    <th style="width:1%">Presc.</th>
+                    <th style="width:2%">Presc.</th>
                     <th style="width:1%">&nbsp;</th>
                 </tr>
             </thead>
@@ -221,7 +221,7 @@
                     <td><?= $p['label'] ?></td>
                     <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
                     <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
-                    <td><?= empty($p['id_prescripteur']) === false ? '<img src="'. $this->surl .'/images/admin/check.png" alt="a prescripteur"/>' : '' ?></td>
+                    <td><?= ($p['id_prescripteur']) ? '<img src="'. $this->surl .'/images/admin/check.png" alt="a prescripteur"/>' : '' ?></td>
                     <td align="center">
                         <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
                             <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>

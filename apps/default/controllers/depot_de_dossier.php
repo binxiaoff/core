@@ -759,7 +759,7 @@ class depot_de_dossierController extends bootstrap
 
         $this->sAttachmentList  = '';
         $aAttachmentTypes       = $this->attachment_type->getAllTypesForProjects($this->language, false);
-        $this->aAttachmentTypes = $this->attachment_type->changeLabelTaxPackageAddYear($aAttachmentTypes);
+        $this->aAttachmentTypes = $this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes);
 
         $this->sYearLessTwo   = date('Y') - 2;
         $this->sYearLessThree = date('Y') - 3;

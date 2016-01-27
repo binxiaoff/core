@@ -1,5 +1,5 @@
 <div id="popup">
-	<a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?=$this->surl?>/images/admin/delete.png" alt="Fermer" /></a>
+    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer" /></a>
     <div id="popup-content">
     <form name="add_prescripteur" id="add_prescripteur" action="#">
         <h1>Ajouter un prescripteur</h1>
@@ -17,7 +17,7 @@
                     <th></th>
                     <td></td>
                 </tr>
-            	<tr>
+                <tr>
                     <th><label for="nom">Nom :</label></th>
                     <td><input type="text" name="nom" id="nom" class="input_large" value=""/></td>
 
@@ -55,13 +55,12 @@
                     <th><label for="ville">BIC :</label></th>
                     <td><input type="text" name="bic" id="bic" class="input_large" value=""/></td>
                 </tr>
-            	<tr>
-                	<th colspan="4">
-                        <input type="hidden" value="<?= empty($this->params[0]) === false ? $this->params[0] : '' ?>">
-                        <input type="submit" value="Créer prescripteur et lui attacher ce projet" title="Créer prescripteur et lui attacher ce projet" name="send_add_prescripteur" id="send_add_prescripteur" class="btn" />
+                <tr>
+                    <th colspan="4">
+                        <input type="submit" value="Créer prescripteur" name="send_add_prescripteur" class="btn" />
                     </th>
                 </tr>
-        	</table>
+            </table>
         </fieldset>
     </form>
     </div>
@@ -89,7 +88,7 @@
             },
             success: function(data) {
 
-                if(data.result == 'OK') {
+                if(data.result && data.result == 'OK') {
                     $("#popup-content").html('le prescripteur a &eacute;t&eacute; cr&eacute;&eacute; !');
                     $("#id_prescripteur").val(data.id_prescripteur);
                     $("#civilite_prescripteur").html(values.civilite);

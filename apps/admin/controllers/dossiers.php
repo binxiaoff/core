@@ -339,8 +339,8 @@ class dossiersController extends bootstrap
             $oTextes                  = $this->loadData('textes');
             $aTranslations            = $oTextes->selectFront('projet', $this->language);
 
-            foreach ($this->attachment_type->changeLabelTaxPackageAddYear($aAttachmentTypes) as $aAttachment) {
-                if ((int)$aAttachment['id'] === \attachment_type::PHOTOS_ACTIVITE) {
+            foreach ($this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes) as $aAttachment) {
+                if ($aAttachment['id'] == \attachment_type::PHOTOS_ACTIVITE) {
                     $this->completude_wording[] = $aAttachment['label'] . ' ' . $aTranslations['completude-photos'];
                 } else {
                     $this->completude_wording[] = $aAttachment['label'];
