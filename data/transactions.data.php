@@ -639,6 +639,19 @@ class transactions extends transactions_crud
                     } // offre rejeté
                     elseif ($key_offre == 2) {
                         $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant > 0 THEN "' . $offre . '"';
+                    } // offre acceptée
+                    else {
+                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant <= 0 THEN "' . $t[1] . '"';
+                    }
+                }
+            } elseif ($key == 5) {
+                foreach ($t as $key_remb => $remb) {
+                    // remb
+                    if ($key_remb == 1) {
+                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.recouvrement = 0 THEN "' . $remb . '"';
+                    } // recouvrement
+                    else {
+                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.recouvrement = 1 THEN "' . $remb . '"';
                     }
                 }
             } else {

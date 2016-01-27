@@ -80,7 +80,7 @@
 				<td><?=$this->ficelle->formatNumber(($SumAremb[0]['montant']/100)-$fiscal)?> <?=$this->lng['profile']['euros-par-mois']?></td>
 				<td>
                 	<?
-					if($this->projects_status->status >=80)
+					if($this->projects_status->status >= \projects_status::REMBOURSEMENT)
 					{
 						?><a class="tooltip-anchor icon-pdf" href="<?=$this->lurl.'/pdf/contrat/'.$this->clients->hash.'/'.$l['id_loan']?>"></a><?
 					}

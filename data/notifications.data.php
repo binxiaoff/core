@@ -31,16 +31,18 @@ class notifications extends notifications_crud
     const TYPE_BID_REJECTED                   = 1;
     const TYPE_REPAYMENT                      = 2;
     const TYPE_BID_PLACED                     = 3;
-    const TYPE_ACCEPTED_LOAN                  = 4;
+    const TYPE_LOAN_ACCEPTED                  = 4;
     const TYPE_BANK_TRANSFER_CREDIT           = 5;
     const TYPE_CREDIT_CARD_CREDIT             = 6;
     const TYPE_DEBIT                          = 7;
     const TYPE_NEW_PROJECT                    = 8;
     const TYPE_PROJECT_PROBLEM                = 9;
-    const TYPE_PROJECT_RECOVERY               = 10;
-    const TYPE_PROJECT_PRECAUTIONARY_PROCESS  = 11;
-    const TYPE_PROJECT_RECEIVERSHIP           = 12;
-    const TYPE_PROJECT_COMPULSORY_LIQUIDATION = 13;
+    const TYPE_PROJECT_PROBLEM_REMINDER       = 10;
+    const TYPE_PROJECT_RECOVERY               = 11;
+    const TYPE_PROJECT_PRECAUTIONARY_PROCESS  = 12;
+    const TYPE_PROJECT_RECEIVERSHIP           = 13;
+    const TYPE_PROJECT_COMPULSORY_LIQUIDATION = 14;
+    const TYPE_PROJECT_FAILURE                = 15;
 
     public function __construct($bdd, $params = '')
     {

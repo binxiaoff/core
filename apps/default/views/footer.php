@@ -148,6 +148,9 @@
         $('.cookies').hide();
     }
 </script>
+<!--[if lte IE 9]>
+<script type="text/javascript" src="<?= $this->surl ?>/scripts/default/placeholders.jquery.min.js"></script>
+<![endif]-->
 </div><!-- /.wrapper -->
 
 <?php if ($this->lurl == 'http://partenaire.unilend.challenges.fr') { ?>

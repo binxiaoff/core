@@ -139,16 +139,6 @@
 
     });
 
-    // particulier messagge check_etranger
-    $("#check_etranger").change(function () {
-        if ($(this).is(':checked') == true) {
-            $(".message_check_etranger").slideUp();
-        }
-        else {
-            $(".message_check_etranger").slideDown();
-        }
-    });
-
     // Submit formulaire inscription preteur particulier
     $("#form_inscription_preteur_particulier_etape_1").submit(function (event) {
         var radio = true;
@@ -178,17 +168,6 @@
             $('#radio_sex').css('color', '#C84747');
             radio = false;
             $('#female').addClass('LV_invalid_field');
-        }
-
-        //resident etranger
-        var pays1 = $('#pays1').val();
-        var nationalite = $('#nationalite').val();
-        // check_etranger
-        if ($('#check_etranger').is(':checked') == false) {
-            $('.check_etranger').css('color', '#C84747');
-            radio = false;
-        } else {
-            $('.check_etranger').css('color', '#727272');
         }
 
         // cgu

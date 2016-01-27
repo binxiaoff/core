@@ -1,11 +1,11 @@
 <script type="text/javascript">
 	$(document).ready(function(){
-		$(".tablesorter").tablesorter();	
+		$(".tablesorter").tablesorter();
 		<?
 		if($this->nb_lignes != '')
 		{
 		?>
-			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});		
+			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});
 		<?
 		}
 		?>
@@ -26,10 +26,10 @@
 	<?
 	}
 	?>
-	
-	
-	
-	
+
+
+
+
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
@@ -38,7 +38,7 @@
         <li>Administrateurs</li>
     </ul>
 	<h1>Requete dossiers</h1>
-    
+
     <div style="margin-bottom:20px; float:right;"><a href="<?=$this->lurl?>/stats/requete_dossiers_csv" class="btn_link">Recuperation du CSV</a></div>
     <?
 	if(count($this->lEmpr) > 0)
@@ -50,10 +50,10 @@
                 	<th>Cdos</th>
                     <th>Dénomination</th>
                     <th>Adresse</th>
-                    <th>Voie</th>   
-                    <th>CodeCommune</th>                     
+                    <th>Voie</th>
+                    <th>CodeCommune</th>
                     <th>commune</th>
-                    <th>CodePostal</th>   
+                    <th>CodePostal</th>
                     <th>Ville</th>
                     <th>Activités</th>
                     <th>Siret</th>
@@ -68,43 +68,43 @@
                     <th>Fax</th>
                     <th>CatJuridique</th>
                     <th>CDéclaration</th>
-                    <th>Cbénéficiaire</th>    
+                    <th>Cbénéficiaire</th>
                 </tr>
-           	</thead>           	
+           	</thead>
             <tbody>
             <?
             $i = 1;
             foreach($this->lEmpr as $e)
-            {	
+            {
 
 				$this->companies->get($e['id_client'],'id_client_owner');
-				
+
 				$statutRemb = false;
 				$lPorjects = $this->projects->select('id_company = '.$this->companies->id_company);
 				if($lPorjects != false){
 					foreach($lPorjects as $p){
 						$this->projects_status->getLastStatut($p['id_project']);
-						if($this->projects_status->status == 80){
-							$statutRemb = true;	
+						if ($this->projects_status->status == \projects_status::REMBOURSEMENT) {
+							$statutRemb = true;
 						}
 					}
 				}
-				
+
 				if($statutRemb == true){
-				
+
 					$this->clients_adresses->get($e['id_client'],'id_client');
-					
+
 					$this->insee->get(str_replace(' ','-',trim($this->clients_adresses->ville)),'NCCENR');
-					
+
 					// Code commune insee
 					$dep = str_pad($this->insee->DEP,2,'0', STR_PAD_LEFT);
 					$com = str_pad($this->insee->COM,3,'0', STR_PAD_LEFT);
 					$codeCom = $dep.$com;
-	
+
 					$pos = strpos(str_replace('.','',$this->companies->rcs), 'RCS');
 					$pos +=3;
 					$lieuRCS = trim(substr($this->companies->rcs,$pos));
-					
+
 					?>
 					<tr<?=($i%2 == 1?'':' class="odd"')?>>
 						<td><?=$e['id_client']?></td>
@@ -129,8 +129,8 @@
 						<td></td>
 						<td>C</td>
 						<td>B</td>
-					</tr>   
-					<?	
+					</tr>
+					<?
 					$i++;
 				}
             }
