@@ -5267,20 +5267,20 @@ class cronController extends bootstrap
             $emprunteurs = $this->loadData('clients');
 
             $aRepaymentNoInvoice = $factures->selectEcheancesRembAndNoFacture();
-            foreach ($aRepaymentNoInvoice as $r) {
-                $oCommandPdf = new Command('pdf', 'facture_ER', array($r['hash'], $r['id_project'], $r['ordre']), $this->language);
+            foreach ($aRepaymentNoInvoice as $aRepayment) {
+                $oCommandPdf = new Command('pdf', 'facture_ER', array($aRepayment['hash'], $aRepayment['id_project'], $aRepayment['ordre']), $this->language);
                 $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre'], false);
+                $oPdf->_facture_ER($aRepayment['hash'], $aRepayment['id_project'], $aRepayment['ordre'], false);
             }
 
             $aProjectsInRepayment = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
-            foreach ($aProjectsInRepayment as $projet) {
-                if (false === $factures->exist($projet['id_project'], 'type_commission = 1 AND id_project')) {
-                    $companies->get($projet['id_company'], 'id_company');
+            foreach ($aProjectsInRepayment as $aProject) {
+                if (false === $factures->exist($aProject['id_project'], 'type_commission = 1 AND id_project')) {
+                    $companies->get($aProject['id_company'], 'id_company');
                     $emprunteurs->get($companies->id_client_owner, 'id_client');
-                    $oCommandPdf = new Command('pdf', 'facture_EF', array($emprunteurs->hash, $r['id_project']), $this->language);
+                    $oCommandPdf = new Command('pdf', 'facture_EF', array($emprunteurs->hash, $aProject['id_project']), $this->language);
                     $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                    $oPdf->_facture_EF($emprunteurs->hash, $r['id_project'], false);
+                    $oPdf->_facture_EF($emprunteurs->hash, $aProject['id_project'], false);
                 }
             }
             $this->stopCron();
