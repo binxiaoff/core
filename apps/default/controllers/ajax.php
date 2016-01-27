@@ -154,7 +154,7 @@ class ajaxController extends bootstrap
         // order
         // start
         // nb
-        $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . $restriction . ' AND p.status = 0 AND p.display = 0', $ordre, $_POST['positionStart'], 10);
+        $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . $restriction . ' AND p.status = 0 AND p.display = 0', $ordre, '', $_POST['positionStart'], 10);
         $affichage             = '';
 
         foreach ($this->lProjetsFunding as $project) {
@@ -297,6 +297,7 @@ class ajaxController extends bootstrap
         // Si session on execute
         if (isset($_SESSION['tri'])) {
             $where       = '';
+            $restriction = '';
             $this->where = '';
             $count       = '';
 
@@ -310,7 +311,6 @@ class ajaxController extends bootstrap
             }
 
             // filter completed projects
-            $restriction = '';
             if (isset($_SESSION['tri']['type']) && $_SESSION['tri']['type'] == 4) {
                 $restriction = ' AND p.date_fin < "'. date('Y-m-d') .'"';
                 $aStatusproject = array(
@@ -337,20 +337,18 @@ class ajaxController extends bootstrap
             $where .= ' AND p.status = 0 AND p.display = 0';
 
             // tri taux
+            $aOrderField = array();
             if (isset($_SESSION['tri']['taux'])) {
                 $key = $_SESSION['tri']['taux'];
-                $val = explode('-', $this->triPartxInt[$key - 1]);
+                $aOrderField = explode('-', $this->triPartxInt[$key - 1]);
                 $this->ordreProject = 3;
-
-                $where .= ' GROUP BY p.id_project';
-                $where .= ' HAVING avg_rate BETWEEN "'. $val[0] .'" AND "'. $val[1] .'"';
 
                 // where pour le js
                 $this->where = $key;
             }
 
-            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusproject, $where , $this->tabOrdreProject[$this->ordreProject], 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusproject . ', 75', $count . ' AND p.status = 0 AND p.display = 0');
+            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusproject, $where , $this->tabOrdreProject[$this->ordreProject], $aOrderField, 0, 10);
+            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusproject . ',' . \projects_status::PRET_REFUSE, $count . ' AND p.status = 0 AND p.display = 0');
         } else {
             $this->ordreProject = 1;
             $this->type         = 0;
@@ -358,7 +356,7 @@ class ajaxController extends bootstrap
             $_SESSION['ordreProject'] = $this->ordreProject;
 
             $this->where           = '';
-            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], 0, 10);
+            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], $sOrderfield, 0, 10);
             $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ',' . \projects_status::PRET_REFUSE . ' AND p.status = 0');
         }
     }

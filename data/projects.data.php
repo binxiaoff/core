@@ -207,13 +207,8 @@ class projects extends projects_crud
         return $result;
     }
 
-    public function selectProjectsByStatus($status, $where = '', $order = '', $start = '', $nb = '')
+    public function selectProjectsByStatus($status, $where = '', $order = '', $aOrderField = '', $start = '', $nb = '')
     {
-        $iInterestsort = 0;
-        if (0 === strcmp($order, "avg_rate DESC")) { // non
-            $iInterestsort = 1;
-        }
-
         $sWhereClause = 'projects_status.status IN (' . $status . ')';
 
         if ('' !== trim($where)) {
@@ -231,7 +226,7 @@ class projects extends projects_crud
                 ELSE "2"
               END AS lestatut ';
 
-        if (1 === $iInterestsort) {
+        if (2 === count($aOrderField)) {
             $sql .= ', ROUND(SUM(b.amount * b.rate) / SUM(b.amount), 1) AS avg_rate';
         }
 
@@ -240,11 +235,16 @@ class projects extends projects_crud
             INNER JOIN projects_status_history USING (id_project_status_history)
             INNER JOIN projects_status USING (id_project_status) ";
 
-        if (1 === $iInterestsort) {
+        if (2 === count($aOrderField)) {
             $sql .= "LEFT JOIN bids b ON b.id_project = p.id_project AND b.status IN (0 ,1) ";
         }
 
         $sql .= 'WHERE '. $sWhereClause;
+
+        if (2 === count($aOrderField)) {
+            $sql .= ' GROUP BY p.id_project';
+            $sql .= ' HAVING avg_rate BETWEEN "'. $aOrderField[0] .'" AND "'. $aOrderField[1] .'"';
+        }
 
         $sql .= " ORDER BY " . $order .
             ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
@@ -462,7 +462,7 @@ class projects extends projects_crud
         $aElements = $oCache->get($sKey);
 
         if (false === $aElements) {
-            $alProjetsFunding = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $sTabOrderProject, $iStart, $iLimit);
+            $alProjetsFunding = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $sTabOrderProject, '', $iStart, $iLimit);
             $anbProjects      = $this->countSelectProjectsByStatus($sListStatus . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0');
             $aElements = array(
                 'lProjectsFunding' => $alProjetsFunding,
