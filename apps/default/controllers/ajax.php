@@ -128,28 +128,27 @@ class ajaxController extends bootstrap
         $this->lenders_accounts  = $this->loadData('lenders_accounts');
 
         $where       = '';
-        $restriction = '';
         $ordre       = $this->tabOrdreProject[$_POST['ordreProject']];
 
         $_SESSION['ordreProject'] = $_POST['ordreProject'];
 
-        if (false === empty($_POST['where']) && false === empty($_SESSION['tri']['taux'])) {
-            $key = $_SESSION['tri']['taux'];
-            $val = explode('-', $this->triPartxInt[$key - 1]);
+        // sort projects by rate
+        $aOrderField = array();
+        if (isset($_SESSION['tri']['taux'])) {
+            $key                = $_SESSION['tri']['taux'];
+            $aOrderField        = explode('-', $this->triPartxInt[$key - 1]);
+            $this->ordreProject = 3;
 
-            // where pour la requete
-            $where .= ' AND p.target_rate BETWEEN "' . $val[0] . '" AND "' . $val[1] . '" ';
+            // where pour le js
             $this->where = $key;
-        } else {
-            $this->where = '';
         }
 
         // filter completed projects
         if (isset($_POST['type']) && $_POST['type'] == 4) {
-            $restriction = ' AND p.date_fin < "' . date('Y-m-d') . '"';
+            $where = ' AND p.date_fin < "' . date('Y-m-d') . '"';
         }
 
-        $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . $restriction . ' AND p.status = 0 AND p.display = 0', $ordre, '', $_POST['positionStart'], 10);
+        $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . ' AND p.status = 0 AND p.display = 0', $ordre, $aOrderField, $_POST['positionStart'], 10);
         $affichage             = '';
 
         foreach ($this->lProjetsFunding as $project) {
@@ -234,13 +233,9 @@ class ajaxController extends bootstrap
                 <td>";
 
             if ($this->projects_status->status >= \projects_status::FUNDE) {
-                $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $pf['slug'] . "' class='btn btn-info btn-small multi grise1 btn-grise'>" . $this->lng['preteur-projets']['voir-le-projet'] . "</a>";
+                $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small multi grise1 btn-grise'>" . $this->lng['preteur-projets']['voir-le-projet'] . "</a>";
             } else {
                 $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small'>" . $this->lng['preteur-projets']['pretez'] . "</a>";
-            }
-
-            if (isset($_SESSION['client'])) {
-                $affichage .= "<a class='fav-btn " . $favori . "' id='fav" . $project['id_project'] . "' onclick=\"favori(" . $project['id_project'] . ",'fav" . $project['id_project'] . "'," . $this->clients->id_client . ",0);\">" . $this->lng['preteur-projets']['favori'] . " <i></i></a>";
             }
             $affichage .= "</td>
             </tr>
@@ -291,9 +286,7 @@ class ajaxController extends bootstrap
         // Si session on execute
         if (isset($_SESSION['tri'])) {
             $where       = '';
-            $restriction = '';
             $this->where = '';
-            $count       = '';
 
             // tri temps
             if (isset($_SESSION['tri']['temps'])) {
@@ -306,7 +299,7 @@ class ajaxController extends bootstrap
 
             // filter completed projects
             if (isset($_SESSION['tri']['type']) && $_SESSION['tri']['type'] == 4) {
-                $restriction    = ' AND p.date_fin < "' . date('Y-m-d') . '"';
+                $where = ' AND p.date_fin < "' . date('Y-m-d') . '"';
                 $aStatusproject = array(
                     \projects_status::FUNDE,
                     \projects_status::FUNDING_KO,
@@ -326,11 +319,7 @@ class ajaxController extends bootstrap
 
             $_SESSION['ordreProject'] = $this->ordreProject;
 
-            $where .= $restriction;
-            $count .= $restriction;
-            $where .= ' AND p.status = 0 AND p.display = 0';
-
-            // tri taux
+            // sort projects by rate
             $aOrderField = array();
             if (isset($_SESSION['tri']['taux'])) {
                 $key                = $_SESSION['tri']['taux'];
@@ -341,8 +330,8 @@ class ajaxController extends bootstrap
                 $this->where = $key;
             }
 
-            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusProject, $where, $this->tabOrdreProject[$this->ordreProject], $aOrderField, 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusProject . ',' . \projects_status::PRET_REFUSE, $count . ' AND p.status = 0 AND p.display = 0');
+            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusProject, $where . ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], $aOrderField, 0, 10);
+            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusProject . ',' . \projects_status::PRET_REFUSE, $where . ' AND p.status = 0 AND p.display = 0');
         } else {
             $this->ordreProject = 1;
             $this->type         = 0;
