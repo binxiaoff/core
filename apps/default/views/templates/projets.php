@@ -65,7 +65,6 @@
                     </tr>
                     <?php
 
-                    $oLoans = $this->loadData('loans');
                     foreach ($this->lProjetsFunding as $project) {
                         $this->projects_status->getLastStatut($project['id_project']);
 
@@ -88,8 +87,7 @@
 
 
                         $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
-                        $oBids = $this->bids;
-                        $avgRate = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $project['id_project'], $this->projects_status->status);
+                        $avgRate = $this->projects->getAverageInterestRate($project['id_project'], $this->projects_status->status);
 
                         if ($this->favoris->get($this->clients->id_client, 'id_project = ' . $project['id_project'] . ' AND id_client')) {
                             $favori = 'active';
@@ -156,12 +154,9 @@
                             </td>
                             <td>
                                 <?php if ($this->projects_status->status >= \projects_status::FUNDE) { ?>
-                                    <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
+                                    <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
                                 <?php } else { ?>
                                     <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn btn-info btn-small"><?= $this->lng['preteur-projets']['pretez'] ?></a>
-                                <?php } ?>
-                                <?php if (isset($_SESSION['client'])) { ?>
-                                    <a class="fav-btn <?= $favori ?>" id="fav<?= $project['id_project'] ?>" onclick="favori(<?= $project['id_project'] ?>, 'fav<?= $project['id_project'] ?>',<?= $this->clients->id_client ?>, 0);"><?= $this->lng['preteur-projets']['favori'] ?> <i></i></a>
                                 <?php } ?>
                             </td>
                         </tr>
@@ -196,8 +191,7 @@
                     $dateRest = '';
 
                 $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
-                $oBids = $this->bids;
-                $avgRate = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $project['id_project'], $this->projects_status->status);
+                $avgRate  = $this->projects->getAverageInterestRate($project['id_project'], $this->projects_status->status);
 
                 // dates pour le js
                 $mois_jour = $this->dates->formatDate($project['date_retrait'], 'F d');
@@ -252,7 +246,7 @@
                         </h5>
                         <p>
                             <?php if ($this->projects_status->status >= \projects_status::FUNDE) { ?>
-                                <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise" style="line-height: 14px;padding: 4px 11px;"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
+                                <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise" style="line-height: 14px;padding: 4px 11px;"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
                             <?php } else { ?>
                                 <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn"><?= $this->lng['preteur-projets']['pretez'] ?></a>
                             <?php } ?>

@@ -577,7 +577,12 @@ class projects extends projects_crud
         return $aProjects;
     }
 
-    public function calculateAvgInterestRate(bids $oBids, loans $oLoans, $iProjectId = null, $iProjectStatus = null)
+    /**
+     * @param int|null $iProjectId
+     * @param int|null $iProjectStatus
+     * @return float
+     */
+    public function getAverageInterestRate($iProjectId = null, $iProjectStatus = null)
     {
         if ($iProjectId === null) {
             $iProjectId = $this->id_project;
@@ -589,9 +594,6 @@ class projects extends projects_crud
             $iProjectStatus = (int) $oProject_status->status;
         }
 
-        $iUpperValue = 0;
-        $iLowerValue = 0;
-
         switch ($iProjectStatus) {
             case \projects_status::FUNDE:
             case \projects_status::REMBOURSEMENT:
@@ -599,31 +601,35 @@ class projects extends projects_crud
             case \projects_status::PROBLEME:
             case \projects_status::RECOUVREMENT:
             case \projects_status::REMBOURSEMENT_ANTICIPE:
-                foreach ($oLoans->select('id_project = ' . $iProjectId) as $aLoan) {
-                    $iUpperValue += $aLoan['rate'] * $aLoan['amount'];
-                    $iLowerValue += $aLoan['amount'];
-                }
-                break;
+                $rResult = $this->bdd->query('
+                    SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
+                    FROM loans
+                    WHERE id_project = ' . $iProjectId
+                );
+                return round($this->bdd->result($rResult, 0, 0), 2);
             case \projects_status::PRET_REFUSE:
             case \projects_status::DEFAUT:
             case \projects_status::EN_FUNDING:
-                foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status IN (0, 1)') as $aBid) {
-                    $iUpperValue += $aBid['rate'] * $aBid['amount'];
-                    $iLowerValue += $aBid['amount'];
-                }
-                break;
+                $rResult = $this->bdd->query('
+                    SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
+                    FROM bids
+                    WHERE id_project = ' . $iProjectId . '
+                    AND status IN (0, 1)'
+                );
+                return round($this->bdd->result($rResult, 0, 0), 2);
             case \projects_status::FUNDING_KO:
-            foreach ($oBids->select('id_project = ' . $iProjectId) as $aBid) {
-                $iUpperValue += $aBid['rate'] * $aBid['amount'];
-                $iLowerValue += $aBid['amount'];
-            }
-            break;
+                $rResult = $this->bdd->query('
+                    SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
+                    FROM bids
+                    WHERE id_project = ' . $iProjectId
+                );
+                return round($this->bdd->result($rResult, 0, 0), 2);
             default:
                 trigger_error('Unknown project status. Could not calculate amounts', E_USER_WARNING);
                 break;
         }
 
-        return $iUpperValue > 0 && $iLowerValue > 0 ? round(($iUpperValue / $iLowerValue), 2) : 0;
+        return 0.0;
     }
 
     public function getLoansAndLendersForProject($iProjectId = null)

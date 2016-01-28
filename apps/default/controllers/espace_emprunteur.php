@@ -214,18 +214,18 @@ class espace_emprunteurController extends Bootstrap
         $oClientsMandat   = $this->loadData('clients_mandats');
 
         foreach ($this->aClientsProjects as $iKey => $aProject) {
-            $this->aClientsProjects[ $iKey ]['pouvoir'] = $oProjectsPouvoir->select('id_project = ' . $aProject['id_project']);
-            $this->aClientsProjects[ $iKey ]['mandat']  = $oClientsMandat->select('id_project = ' . $aProject['id_project'], 'updated DESC');
+            $this->aClientsProjects[$iKey]['pouvoir'] = $oProjectsPouvoir->select('id_project = ' . $aProject['id_project']);
+            $this->aClientsProjects[$iKey]['mandat']  = $oClientsMandat->select('id_project = ' . $aProject['id_project'], 'updated DESC');
 
-            foreach ($this->aClientsProjects[ $iKey ]['mandat'] as $iMandatKey => $aMandat) {
+            foreach ($this->aClientsProjects[$iKey]['mandat'] as $iMandatKey => $aMandat) {
                 switch ($aMandat['status']) {
                     case clients_mandats::STATUS_EN_COURS:
-                        $this->aClientsProjects[ $iKey ]['mandat'][ $iMandatKey ]['status-trad'] = 'mandat-en-cours';
+                        $this->aClientsProjects[$iKey]['mandat'][ $iMandatKey ]['status-trad'] = 'mandat-en-cours';
                         break;
                     case clients_mandats::STATUS_SIGNE:
                     case clients_mandats::STATUS_ANNULE:
                     case clients_mandats::STATUS_FAIL:
-                        $this->aClientsProjects[ $iKey ]['mandat'][ $iMandatKey ]['status-trad'] = 'void';
+                        $this->aClientsProjects[$iKey]['mandat'][ $iMandatKey ]['status-trad'] = 'void';
                         break;
                 }
             }
@@ -237,10 +237,10 @@ class espace_emprunteurController extends Bootstrap
         foreach ($aClientsInvoices as $iKey => $aInvoice) {
             switch ($aInvoice['type_commission']) {
                 case factures::TYPE_COMMISSION_FINANCEMENT :
-                    $aClientsInvoices[ $iKey ]['url'] = $this->url . '/pdf/facture_EF/' . $this->clients->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
+                    $aClientsInvoices[$iKey]['url'] = $this->url . '/pdf/facture_EF/' . $this->clients->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
                     break;
                 case factures::TYPE_COMMISSION_REMBOURSEMENT:
-                    $aClientsInvoices[ $iKey ]['url'] = $this->url . '/pdf/facture_ER/' . $this->clients->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
+                    $aClientsInvoices[$iKey]['url'] = $this->url . '/pdf/facture_ER/' . $this->clients->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
                     break;
             }
         }
@@ -336,20 +336,20 @@ class espace_emprunteurController extends Bootstrap
             switch ($aProject['project_status']) {
                 case \projects_status::EN_ATTENTE_PIECES:
                 case \projects_status::A_TRAITER:
-                    $aProjectsPreFunding[ $iKey ]['project_status_label'] = 'en-attente-de-pieces';
+                    $aProjectsPreFunding[$iKey]['project_status_label'] = 'en-attente-de-pieces';
                     break;
                 case \projects_status::REVUE_ANALYSTE:
                 case \projects_status::COMITE:
-                    $aProjectsPreFunding[ $iKey ]['project_status_label'] = 'en-cours-d-etude';
+                    $aProjectsPreFunding[$iKey]['project_status_label'] = 'en-cours-d-etude';
                     break;
                 case \projects_status::REJET_ANALYSTE:
                 case \projects_status::REJET_COMITE:
                 case \projects_status::REJETE:
-                    $aProjectsPreFunding[ $iKey ]['project_status_label'] = 'refuse';
+                    $aProjectsPreFunding[$iKey]['project_status_label'] = 'refuse';
                     break;
                 case \projects_status::PREP_FUNDING:
                 case \projects_status::A_FUNDER:
-                    $aProjectsPreFunding[ $iKey ]['project_status_label'] = 'en-attente-de-mise-en-ligne';
+                    $aProjectsPreFunding[$iKey]['project_status_label'] = 'en-attente-de-mise-en-ligne';
                     break;
             }
         }
@@ -360,17 +360,14 @@ class espace_emprunteurController extends Bootstrap
     {
         $aProjectsFunding   = $this->companies->getProjectsForCompany($this->companies->id_company, \projects_status::EN_FUNDING);
         $oBids              = $this->loadData('bids');
-        $oLoans             = $this->loadData('loans');
         $this->oDateTimeNow = new \DateTime('NOW');
 
         foreach ($aProjectsFunding as $iKey => $aProject) {
-            $aProjectsFunding[ $iKey ]['AverageIR']        = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $aProject['id_project'], $aProject['project_status']);
-            $iSumBids                                      = $oBids->getSoldeBid($aProject['id_project']);
-
-            $aProjectsFunding[ $iKey ]['funding-progress'] = ((1 - ($aProject['amount'] - $iSumBids) / $aProject['amount']) * 100);
-
-            $oDateTimeEnd                                  = DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
-            $aProjectsFunding[ $iKey ]['oInterval']        = $oDateTimeEnd->diff($this->oDateTimeNow);
+            $aProjectsFunding[$iKey]['AverageIR']        = $this->projects->getAverageInterestRate($aProject['id_project'], $aProject['project_status']);
+            $iSumBids                                    = $oBids->getSoldeBid($aProject['id_project']);
+            $aProjectsFunding[$iKey]['funding-progress'] = ((1 - ($aProject['amount'] - $iSumBids) / $aProject['amount']) * 100);
+            $oDateTimeEnd                                = DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
+            $aProjectsFunding[$iKey]['oInterval']        = $oDateTimeEnd->diff($this->oDateTimeNow);
         }
         return $aProjectsFunding;
     }
@@ -389,16 +386,14 @@ class espace_emprunteurController extends Bootstrap
 
         $aProjectsPostFunding   = $this->companies->getProjectsForCompany($this->companies->id_company, $aStatusPostFunding);
         $oRepaymentSchedule     = $this->loadData('echeanciers_emprunteur');
-        $oBids                  = $this->loadData('bids');
-        $oLoans                 = $this->loadData('loans');
 
         foreach ($aProjectsPostFunding as $iKey => $aProject) {
-            $aProjectsPostFunding[ $iKey ]['AverageIR']              = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $aProject['id_project'], $aProject['project_status']);
-            $aProjectsPostFunding[ $iKey ]['RemainingDueCapital']    = $this->calculateRemainingDueCapital($aProject['id_project']);
+            $aProjectsPostFunding[$iKey]['AverageIR']              = $this->projects->getAverageInterestRate($aProject['id_project'], $aProject['project_status']);
+            $aProjectsPostFunding[$iKey]['RemainingDueCapital']    = $this->calculateRemainingDueCapital($aProject['id_project']);
 
             $aNextRepayment                                          = $oRepaymentSchedule->select('status_emprunteur = 0 AND id_project = ' . $aProject['id_project'], 'date_echeance_emprunteur ASC', '', 1);
-            $aProjectsPostFunding[ $iKey ]['MonthlyPayment']         = (($aNextRepayment[0]['montant'] + $aNextRepayment[0]['commission'] + $aNextRepayment[0]['tva']) / 100);
-            $aProjectsPostFunding[ $iKey ]['DateNextMonthlyPayment'] = $aNextRepayment[0]['date_echeance_emprunteur'];
+            $aProjectsPostFunding[$iKey]['MonthlyPayment']         = (($aNextRepayment[0]['montant'] + $aNextRepayment[0]['commission'] + $aNextRepayment[0]['tva']) / 100);
+            $aProjectsPostFunding[$iKey]['DateNextMonthlyPayment'] = $aNextRepayment[0]['date_echeance_emprunteur'];
         }
 
         usort($aProjectsPostFunding, function ($aFirstArray, $aSecondArray) {
