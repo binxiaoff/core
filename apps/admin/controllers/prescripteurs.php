@@ -142,6 +142,8 @@ class prescripteursController extends bootstrap
 
             $oPrescripteurs->id_prescripteur = $oPrescripteurs->create();
 
+            $this->addAdvisorToProject($_POST['id_project'], $oPrescripteurs->id_prescripteur);
+
             $serialize = serialize(array('id_prescripteur' => $oPrescripteurs->id_prescripteur, 'post' => $_POST, 'files' => $_FILES));
             $this->users_history->histo(5, 'add prescripteur', $_SESSION['user']['id_user'], $serialize);
 
@@ -151,19 +153,31 @@ class prescripteursController extends bootstrap
 
     public function _search_ajax()
     {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-
+        $this->hideDecoration();
         $this->aClients = array();
 
-        if (isset($this->params[0])) {
-            $sSearch = $this->params[0];
-
+        if (isset($this->params[1])) {
+            $sSearch = $this->params[1];
             $this->clients = $this->loadData('clients');
-
             $this->aClients = $this->clients->searchPrescripteur('', $sSearch, $sSearch, $sSearch, $sSearch, $sSearch, 0, 30, 'OR');
         }
+
+        if ($_POST['valider_search_prescripteur']) {
+            $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
+            $iProjectId = $_POST['project'];
+            $iAdvisorId = $_POST['prescripteur'];
+
+            $this->addAdvisorToProject($iProjectId, $iAdvisorId);
+            echo json_encode(array('result' => 'OK', 'id_prescripteur' => $iAdvisorId));
+            exit;
+        }
+    }
+
+    private function addAdvisorToProject($iProjectId, $iAdvisorId)
+    {
+        $oProject = $this->loadData('projects');
+        $oProject->get($iProjectId);
+        $oProject->id_prescripteur = $iAdvisorId;
+        $oProject->update();
     }
 }

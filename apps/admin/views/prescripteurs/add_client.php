@@ -55,6 +55,7 @@
                     <th><label for="ville">BIC :</label></th>
                     <td><input type="text" name="bic" id="bic" class="input_large" value=""/></td>
                 </tr>
+                <tr><td><input type="hidden" name="id_project" value="<?= $this->params[0] ?>"></td></tr>
                 <tr>
                     <th colspan="4">
                         <input type="submit" value="Créer prescripteur" name="send_add_prescripteur" class="btn" />
