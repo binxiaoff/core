@@ -722,7 +722,7 @@ class pdfController extends bootstrap
                 $sFileName = $this->path . 'protected/pdf/facture/facture_EF-' . $sHash . '-' . $iProjectId . '.pdf';
 
                 if (false === file_exists($sFileName)) {
-                    $this->GenerateInvoiceEFHtml($iProjectId);
+                    $this->GenerateInvoiceEFHtml();
                     $this->WritePdf($sFileName, 'invoice');
                 }
 
@@ -765,58 +765,26 @@ class pdfController extends bootstrap
         $this->setDisplay('footer_facture');
     }
 
-    private function GenerateInvoiceEFHtml($iProjectId)
+    private function GenerateInvoiceEFHtml()
     {
         $this->lng['pdf-facture'] = $this->ln->selectFront('pdf-facture', $this->language, $this->App);
 
-        $this->compteur_factures       = $this->loadData('compteur_factures');
-        $this->transactions            = $this->loadData('transactions');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->factures                = $this->loadData('factures');
-
-        $this->settings->get('TVA', 'type');
-        $this->tva = $this->settings->value;
+        $this->factures = $this->loadData('factures');
 
         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-        if ($this->factures->exist($this->projects->id_project, 'type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project')) {
-            $aInvoices                = $this->factures->select('type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project = ' . $this->projects->id_project);
-            $this->num_facture        = $aInvoices[0]['num_facture'];
-            $this->ht                 = $aInvoices[0]['montant_ht'] / 100;
-            $this->taxes              = $aInvoices[0]['tva'] / 100;
-            $this->ttc                = $aInvoices[0]['montant_ttc'] / 100;
-            $this->date_echeance_reel = $aInvoices[0]['date'];
-        } elseif ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
-            $histoRemb = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added DESC', 0, 1);
+        $aInvoices = $this->factures->select('type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project = ' . $this->projects->id_project);
 
-            if ($histoRemb != false) {
-                $this->transactions->get($this->projects->id_project, 'type_transaction = 9 AND status = 1 AND etat = 1 AND id_project');
-
-                $this->dateRemb    = $histoRemb[0]['added'];
-                $this->num_facture = 'FR-E' . date('Ymd', strtotime($this->dateRemb)) . str_pad($this->compteur_factures->compteurJournalier($this->projects->id_project, $this->dateRemb), 5, "0", STR_PAD_LEFT);
-                $this->ttc         = $this->transactions->montant_unilend / 100;
-                $cm                = $this->tva + 1;
-                $this->ht          = $this->ttc / $cm;
-                $this->taxes       = $this->ttc - $this->ht;
-                $montant           = (abs($this->transactions->montant) + $this->transactions->montant_unilend) / 100;
-                $txCom             = $montant > 0 ? round($this->ht / $montant * 100, 0) : 0;
-
-                $this->factures->num_facture     = $this->num_facture;
-                $this->factures->date            = $this->dateRemb;
-                $this->factures->id_company      = $this->companies->id_company;
-                $this->factures->id_project      = $this->projects->id_project;
-                $this->factures->ordre           = 0;
-                $this->factures->type_commission = 1; // financement
-                $this->factures->commission      = $txCom;
-                $this->factures->montant_ht      = $this->ht * 100;
-                $this->factures->tva             = $this->taxes * 100;
-                $this->factures->montant_ttc     = $this->ttc * 100;
-                $this->factures->create();
-            }
-        } else {
+        if (empty($aInvoices)) {
             header('Location: ' . $this->lurl);
             die;
         }
+
+        $this->num_facture        = $aInvoices[0]['num_facture'];
+        $this->ht                 = $aInvoices[0]['montant_ht'] / 100;
+        $this->taxes              = $aInvoices[0]['tva'] / 100;
+        $this->ttc                = $aInvoices[0]['montant_ttc'] / 100;
+        $this->date_echeance_reel = $aInvoices[0]['date'];
 
         $this->setDisplay('facture_EF_html');
         $sDisplayInvoice = $this->sDisplay;
@@ -841,7 +809,7 @@ class pdfController extends bootstrap
                     $sFileName      = $this->path . 'protected/pdf/facture/facture_ER-' . $sHash . '-' . $iProjectId . '-' . $iOrder . '.pdf';
 
                     if (false === file_exists($sFileName)) {
-                        $this->GenerateInvoiceERHtml($iProjectId, $iOrder);
+                        $this->GenerateInvoiceERHtml($iOrder);
                         $this->WritePdf($sFileName, 'invoice');
                     }
 
@@ -853,57 +821,27 @@ class pdfController extends bootstrap
         }
     }
 
-    private function GenerateInvoiceERHtml($iProjectId, $iOrdre)
+    private function GenerateInvoiceERHtml($iOrdre)
     {
         $this->lng['pdf-facture'] = $this->ln->selectFront('pdf-facture', $this->language, $this->App);
 
-        $this->compteur_factures = $this->loadData('compteur_factures');
-        $this->echeanciers       = $this->loadData('echeanciers');
-        $this->factures          = $this->loadData('factures');
-
-        $this->settings->get('TVA', 'type');
-        $this->tva = $this->settings->value;
-
-        $this->settings->get('Commission remboursement', 'type');
-        $txcom = $this->settings->value;
+        $this->factures = $this->loadData('factures');
 
         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-        if ($this->factures->exist($this->projects->id_project, 'ordre = ' . $iOrdre . ' AND  type_commission = 2 AND id_company = ' . $this->companies->id_company . ' AND id_project' )) {
-            $aInvoices                = $this->factures->select('ordre = ' . $iOrdre . ' AND  type_commission = 2 AND id_company = ' . $this->companies->id_company . ' AND id_project = ' . $this->projects->id_project);
-            $this->num_facture        = $aInvoices[0]['num_facture'];
-            $this->ht                 = $aInvoices[0]['montant_ht'] / 100;
-            $this->taxes              = $aInvoices[0]['tva'] / 100;
-            $this->ttc                = $aInvoices[0]['montant_ttc'] / 100;
-            $this->date_echeance_reel = $aInvoices[0]['date'];
-        } elseif ($this->projects->get($iProjectId, 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
-            $uneEcheancePreteur       = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . $iOrdre, '', 0, 1);
-            $this->date_echeance_reel = $uneEcheancePreteur[0]['date_echeance_reel'];
+        $aInvoices = $this->factures->select('ordre = ' . $iOrdre . ' AND  type_commission = ' . \factures::TYPE_COMMISSION_REMBOURSEMENT . ' AND id_company = ' . $this->companies->id_company . ' AND id_project = ' . $this->projects->id_project);
 
-            if ($this->oEcheanciersEmprunteur->get($this->projects->id_project, 'ordre = ' . $iOrdre . '  AND id_project')) {
-                $compteur = $this->compteur_factures->compteurJournalier($this->projects->id_project, $this->date_echeance_reel);
-
-                $this->num_facture = 'FR-E' . date('Ymd', strtotime($this->date_echeance_reel)) . str_pad($compteur, 5, "0", STR_PAD_LEFT);
-                $this->ht          = $this->oEcheanciersEmprunteur->commission / 100;
-                $this->taxes       = $this->oEcheanciersEmprunteur->tva / 100;
-                $this->ttc         = $this->ht + $this->taxes;
-
-                $this->factures->num_facture     = $this->num_facture;
-                $this->factures->date            = $this->date_echeance_reel;
-                $this->factures->id_company      = $this->companies->id_company;
-                $this->factures->id_project      = $this->projects->id_project;
-                $this->factures->ordre           = $iOrdre;
-                $this->factures->type_commission = 2; // remboursement
-                $this->factures->commission      = $txcom * 100;
-                $this->factures->montant_ht      = $this->ht * 100;
-                $this->factures->tva             = $this->taxes * 100;
-                $this->factures->montant_ttc     = $this->ttc * 100;
-                $this->factures->create();
-            }
-        } else {
+        if (empty($aInvoices)) {
             header('Location: ' . $this->lurl);
             die;
         }
+
+        $this->num_facture        = $aInvoices[0]['num_facture'];
+        $this->ht                 = $aInvoices[0]['montant_ht'] / 100;
+        $this->taxes              = $aInvoices[0]['tva'] / 100;
+        $this->ttc                = $aInvoices[0]['montant_ttc'] / 100;
+        $this->date_echeance_reel = $aInvoices[0]['date'];
+
         $this->setDisplay('facture_ER_html');
         $sDisplayInvoice = $this->sDisplay;
         $this->GenerateFooterInvoice();

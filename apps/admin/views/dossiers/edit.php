@@ -630,7 +630,7 @@
                             <th></th>
                             <td>
                                 <?php if ($this->projects_pouvoir->status_remb == '0' && $this->current_projects_status->status == \projects_status::FUNDE) { ?>
-                                    <select name="satut_pouvoir" id="satut_pouvoir" class="select">
+                                    <select name="statut_pouvoir" id="statut_pouvoir" class="select">
                                         <option <?= ($this->projects_pouvoir->status_remb == '0' ? 'selected' : '') ?> value="0">En attente</option>
                                         <option <?= ($this->projects_pouvoir->status_remb == '1' ? 'selected' : '') ?> value="1">Validé</option>
                                     </select>
