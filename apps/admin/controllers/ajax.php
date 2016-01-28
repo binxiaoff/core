@@ -243,15 +243,6 @@ class ajaxController extends bootstrap
         $this->clients_history         = $this->loadData('clients_history');
 
         if (isset($this->params[0]) && isset($this->params[1])) {
-            // On retourne le statut
-
-            // on verifie
-            // montant
-            // taux cible
-            // niveau de risque
-            // durée
-            // date publication
-            // date retrait
             if ($this->projects->get($this->params[1], 'id_project') &&
                 $this->projects->amount > 0 &&
                 $this->projects->target_rate != '0' &&
@@ -265,23 +256,8 @@ class ajaxController extends bootstrap
                 $this->companies->get($this->projects->id_company, 'id_company') &&
                 $this->params[0] == 30
             ) {
-                // On recup le title du projet
-                $title = $this->projects->title;
-
-                /*$date_publication = $this->params[2];
-
-                $date_publication = str_replace('-','/',$date_publication);
-                $date_publication = $this->dates->formatDateFrToMysql($date_publication);
-
-                $this->projects->date_publication = $date_publication;
-                $this->projects->update();*/
-
-                // on maj le statut (40 ou 30)
                 $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $this->params[0], $this->projects->id_project);
-
-                // On recup le client
                 $this->clients->get($this->companies->id_client_owner, 'id_client');
-
 
                 //*****************************************//
                 //*** ENVOI DU MAIL Validation ou rejet ***//
@@ -412,8 +388,6 @@ class ajaxController extends bootstrap
                             mail($to, $subject, $message, $headers);
                         }
                     }
-
-
                     // si inscription
                     if ($this->clients->status_transition == 1) {
                         $this->clients_history->id_client = $this->clients->id_client;
@@ -432,19 +406,9 @@ class ajaxController extends bootstrap
                     // on retire l'etape de transition
                     $this->clients->status_transition = 0;
 
-                    // Creation du mot de passe client
-                    //$lemotdepasse = $this->ficelle->generatePassword(8);
-                    //$this->clients->password = md5($lemotdepasse);
-
-
                     $this->mails_text->get('emprunteur-dossier-valide', 'lang = "' . $this->language . '" AND type');
-                } // rejeté
-                elseif ($this->params[0] == 30) {
+                } elseif ($this->params[0] == 30) {
                     $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
-
-                    // statut emprunteur offline
-                    $this->clients->status = 0;
-                    //$lemotdepasse = '';
                 }
 
                 // FB
@@ -507,10 +471,8 @@ class ajaxController extends bootstrap
                 } else {
                     $this->lProjects_status = array();
                 }
-
                 // on met a jour le statut de l'emprunteur
                 $this->clients->update();
-
                 $this->bloc_statut = 'ok';
             } else {
                 echo 'nok';
@@ -1629,7 +1591,6 @@ class ajaxController extends bootstrap
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
                     // on passe l'emprunteur en offline
-                    $this->clients->status = 0;
                     $this->clients->update();
                 }
 
@@ -1770,7 +1731,6 @@ class ajaxController extends bootstrap
                     }
 
                     // on passe l'emprunteur en offline
-                    $this->clients->status = 0;
                     $this->clients->update();
                 }
 
@@ -2117,7 +2077,6 @@ class ajaxController extends bootstrap
                     }
 
                     // on passe l'emprunteur en offline
-                    $this->clients->status = 0;
                     $this->clients->update();
                 } elseif ($_POST['status'] == 4) {
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REVUE_ANALYSTE, $this->projects->id_project);
