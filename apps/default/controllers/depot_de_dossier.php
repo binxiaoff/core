@@ -738,7 +738,11 @@ class depot_de_dossierController extends bootstrap
         $this->lng['espace-emprunteur'] = $this->ln->selectFront('depot-de-dossier-espace-emprunteur', $this->language, $this->App);
 
         $this->sAttachmentList  = '';
-        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects($this->language, false);
+        $aAttachmentTypes       = $this->attachment_type->getAllTypesForProjects($this->language, false);
+        $this->aAttachmentTypes = $this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes);
+
+        $this->sYearLessTwo   = date('Y') - 2;
+        $this->sYearLessThree = date('Y') - 3;
 
         $this->projects_last_status_history = $this->loadData('projects_last_status_history');
         $this->projects_last_status_history->get($this->projects->id_project, 'id_project');

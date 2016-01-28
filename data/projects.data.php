@@ -127,7 +127,7 @@ class projects extends projects_crud
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function searchDossiers($date1 = '', $date2 = '', $montant = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $iAdvisorId = null, $start = '', $nb = '')
+    public function searchDossiers($date1 = '', $date2 = '', $montant = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $iAdvisorId = null, $iSalesPersonId = null, $start = '', $nb = '')
     {
         $where = '';
 
@@ -161,6 +161,9 @@ class projects extends projects_crud
         }
         if (false === is_null($iAdvisorId)) {
             $where .= ' AND p.id_prescripteur = ' . $iAdvisorId;
+        }
+        if (false === is_null($iSalesPersonId)) {
+            $where .= ' AND p.id_commercial = ' . $iSalesPersonId;
         }
 
         $sSqlCount = 'SELECT
