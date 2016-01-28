@@ -1693,6 +1693,14 @@ class preteursController extends bootstrap
 
     public function _email_history()
     {
+        if (isset($_POST['send_dates'])) {
+            $_SESSION['FilterMails']['StartDate'] = $_POST['debut'];
+            $_SESSION['FilterMails']['EndDate'] = $_POST['fin'];
+
+            header('Location: ' . $this->lurl . '/preteurs/email_history/' . $this->params[0]);
+            die;
+        }
+
         $this->clients                = $this->loadData('clients');
         $this->clients_status         = $this->loadData('clients_status');
         $this->lenders_accounts       = $this->loadData('lenders_accounts');
@@ -1708,9 +1716,9 @@ class preteursController extends bootstrap
 
         $oMailsFiler                 = $this->loadData('mails_filer');
 
-        if (isset($_SESSION['Filter_Mails'])) {
-            $oDateTimeStart              = \DateTime::createFromFormat('d/m/Y', $_SESSION['Filter_Mails']['StartDate']);
-            $oDateTimeEnd                = \DateTime::createFromFormat('d/m/Y', $_SESSION['Filter_Mails']['EndDate']);
+        if (isset($_SESSION['FilterMails'])) {
+            $oDateTimeStart              = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['StartDate']);
+            $oDateTimeEnd                = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['EndDate']);
         } else {
             $oDateTimeStart              = new \datetime('NOW - 1 year');
             $oDateTimeEnd                = new \datetime('NOW');
@@ -1718,20 +1726,12 @@ class preteursController extends bootstrap
 
         $this->sDisplayDateTimeStart = $oDateTimeStart->format('d/m/Y');
         $this->sDisplayDateTimeEnd   = $oDateTimeEnd->format('d/m/Y');
-        $sStartDate = '"'.$oDateTimeStart->format('Y-m-d').'"';
-        $sEndDate = '"'.$oDateTimeEnd->format('Y-m-d').'"';
+        $sStartDate                  = $oDateTimeStart->format('Y-m-d');
+        $sEndDate                    = $oDateTimeEnd->format('Y-m-d');
 
         $this->aEmailsSentToClient   = $oMailsFiler->getListOfEmails($this->clients->email, $sStartDate, $sEndDate);
 
-        unset($_SESSION['Filter_Mails']);
-
-        if (isset($_POST['form_send_dates'])) {
-            $_SESSION['Filter_Mails']['StartDate'] = $_POST['debut'];
-            $_SESSION['Filter_Mails']['EndDate'] = $_POST['fin'];
-
-            header('Location:' . $this->lurl . '/preteurs/email_history/'.$this->lenders_accounts->id_lender_account);
-            die;
-        }
+        unset($_SESSION['FilterMails']);
     }
 
     public function _portefeuille()
@@ -1831,7 +1831,6 @@ class preteursController extends bootstrap
         $this->oMail->get($this->params[0]);
     }
 
-
     public function _email_history_preview_iframe()
     {
         $this->hideDecoration();
@@ -1841,7 +1840,7 @@ class preteursController extends bootstrap
         $this->oMail->get($this->params[0]);
 
         echo stripslashes($this->oMail->content);
-        die;
+        $this->autoFireView = false;
     }
 
     private function foreignerTax($oClients, $oLendersAccounts, $oClientsAdresses)

@@ -28,8 +28,7 @@
 
 class mails_filer extends mails_filer_crud
 {
-
-    function __construct($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::mails_filer($bdd, $params);
     }
@@ -73,8 +72,17 @@ class mails_filer extends mails_filer_crud
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function getListOfEmails($sEmail, $sStartTime = '"2013-01-01"', $sEndTime = 'NOW()')
+    public function getListOfEmails($sEmail, $sStartDate = null , $sEndDate = null )
     {
+        if (null === $sStartDate) {
+            $sStartDate = '2013-01-01';
+        }
+
+        if (null === $sEndDate) {
+            $sEndDate = 'NOW()';
+        } else {
+            $sEndDate = str_pad($sEndDate,12,'"', STR_PAD_BOTH);
+        }
 
         $sql = 'SELECT
                     mf.id_filermails,
@@ -85,8 +93,9 @@ class mails_filer extends mails_filer_crud
                     mails_filer mf
                     LEFT JOIN mails_text mt ON mf.id_textemail = mt.id_textemail
                 WHERE `email_nmp` LIKE "' . $sEmail . '"
-                AND DATE(mf.added) BETWEEN ' . $sStartTime . ' AND ' . $sEndTime . '
-                ORDER BY mf.added DESC ;';
+                AND DATE(mf.added) BETWEEN "' . $sStartDate . '" AND ' . $sEndDate . '
+                AND (mf.to = "" OR mf.to IS NULL)
+                ORDER BY mf.added DESC';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();

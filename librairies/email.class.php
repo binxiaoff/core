@@ -178,7 +178,7 @@ abstract class Mailer
      * @access public
      * @return boolean
      */
-    public static function send(Email $email, $filer = '', $id_textemail = '')
+    public static function ilsend(Email $email, $filer = '', $id_textemail = '')
     {
         $email->headers->set('X-Mailer', sprintf('Wamailer/%s', self::VERSION));
 
