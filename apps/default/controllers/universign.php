@@ -316,22 +316,26 @@ class universignController extends bootstrap
         $clients         = $this->loadData('clients');
         $clients_mandats = $this->loadData('clients_mandats');
 
-        if ($clients_mandats->get($this->params[0], 'id_mandat') && $clients_mandats->status != 1) {
-            if ($clients_mandats->url_universign != '' && $clients_mandats->status == 0) {
+        if ($clients_mandats->get($this->params[0], 'id_mandat') && $clients_mandats->status != \clients_mandats::STATUS_SIGNED) {
+            if ($clients_mandats->url_universign != '' && $clients_mandats->status == \clients_mandats::STATUS_PENDING) {
                 $this->oLogger->addRecord(ULogger::INFO, 'Mandat not signed. Redirection to universign.', array($clients_mandats->id_project));
                 header('Location: ' . $clients_mandats->url_universign);
                 die;
             } else {
                 switch ($clients_mandats->status) {
-                    case 0:
+                    case \clients_mandats::STATUS_PENDING:
                         $sMandatStatus = 'not signed';
                         break;
-                    case 2:
+                    case \clients_mandats::STATUS_CANCELED:
                         $sMandatStatus = 'cancel';
                         break;
-                    case 3:
+                    case \clients_mandats::STATUS_FAILED:
                         $sMandatStatus = 'fail';
                         break;
+                    default:
+                        $this->oLogger->addRecord(ULogger::INFO, 'Mandat status not handled : ' . $clients_mandats->status . '. Cannot create PDF for Universign.', array($clients_mandats->id_project));
+                        header('Location: ' . $this->lurl);
+                        die;
                 }
                 $this->oLogger->addRecord(ULogger::INFO, 'Mandat status : ' . $sMandatStatus . '. Creation of pdf for send to universign.', array($clients_mandats->id_project));
                 $clients->get($clients_mandats->id_client, 'id_client');
@@ -409,7 +413,7 @@ class universignController extends bootstrap
 
                     $clients_mandats->id_universign  = $id;
                     $clients_mandats->url_universign = $url;
-                    $clients_mandats->status         = 0;
+                    $clients_mandats->status         = \clients_mandats::STATUS_PENDING;
                     $clients_mandats->update();
                     $this->oLogger->addRecord(ULogger::INFO, 'Mandat response generation from universign : OK. Redirection to universign to sign.', array($clients_mandats->id_project));
                     header('Location: ' . $url);
@@ -571,16 +575,15 @@ class universignController extends bootstrap
 
                 $this->lien_pdf = $this->lurl . $clients_mandats->url_pdf;
 
-                // si mandat ok
-                if ($clients_mandats->status == 1) {
+                if ($clients_mandats->status == \clients_mandats::STATUS_SIGNED) {
                     $this->titre   = 'Confirmation mandat';
                     $this->message = 'Votre mandat a bien été signé';
                     $this->oLogger->addRecord(ULogger::INFO, 'Mandat confirmation : signed.', array($clients_mandats->id_project));
-                } elseif ($clients_mandats->status == 2) {// mandat annulé
+                } elseif ($clients_mandats->status == \clients_mandats::STATUS_CANCELED) {
                     $this->titre   = 'Confirmation mandat';
                     $this->message = 'Votre mandat a bien été annulé vous pouvez le signer plus tard.';
                     $this->oLogger->addRecord(ULogger::INFO, 'Mandat confirmation : cancelled.', array($clients_mandats->id_project));
-                } elseif ($clients_mandats->status == 3) {// mandat fail
+                } elseif ($clients_mandats->status == \clients_mandats::STATUS_FAILED) {
                     $this->titre   = 'Confirmation mandat';
                     $this->message = 'Une erreur s\'est produite ressayez plus tard';
                     $this->oLogger->addRecord(ULogger::ERROR, 'Mandat confirmation : error.', array($clients_mandats->id_project));

@@ -1582,13 +1582,11 @@ class cronController extends bootstrap
     public function _prelevements()
     {
         if (true === $this->startCron('prelevements', 5)) {
-
             $this->prelevements            = $this->loadData('prelevements');
             $this->clients                 = $this->loadData('clients');
             $this->lenders_accounts        = $this->loadData('lenders_accounts');
             $this->compteur_transferts     = $this->loadData('compteur_transferts');
             $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
-            $echeanciers                   = $this->loadData('echeanciers');
             $clients_mandats               = $this->loadData('clients_mandats');
 
             // Virement - BIC
@@ -1818,7 +1816,6 @@ class cronController extends bootstrap
                     }
                 }
 
-                //echo date('d/m/Y',$date_execution).'<bR>';
                 // On recup le mandat
                 $clients_mandats->get($p['id_client'], 'id_project = 0 AND id_client');
 
