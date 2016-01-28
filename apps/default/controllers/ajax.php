@@ -168,8 +168,7 @@ class ajaxController extends bootstrap
             $annee     = $this->dates->formatDate($project['date_retrait'], 'Y');
 
             $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
-            $oBids    = $this->bids;
-            $avgRate  = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $project['id_project'], $this->projects_status->status);
+            $avgRate  = $this->projects->getAverageInterestRate($project['id_project'], $this->projects_status->status);
 
             $affichage .= "
             <tr class='unProjet' id='project" . $project['id_project'] . "'>
@@ -267,8 +266,6 @@ class ajaxController extends bootstrap
         $this->companies         = $this->loadData('companies');
         $this->companies_details = $this->loadData('companies_details');
         $this->favoris           = $this->loadData('favoris');
-        $this->bids              = $this->loadData('bids');
-        $this->loans             = $this->loadData('loans');
         $this->lenders_accounts  = $this->loadData('lenders_accounts');
 
         if (isset($_POST['val']) && isset($_POST['id'])) {
@@ -342,6 +339,20 @@ class ajaxController extends bootstrap
             $this->where           = '';
             $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], $sOrderfield, 0, 10);
             $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ',' . \projects_status::PRET_REFUSE . ' AND p.status = 0');
+        }
+        foreach ($this->lProjetsFunding as $iKey => $aProject) {
+            $this->projects_status->getLastStatut($aProject['id_project']);
+            $this->companies->get($aProject['id_company'], 'id_company');
+            $this->companies_details->get($aProject['id_company'], 'id_company');
+
+            $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $aProject['date_retrait_full']);
+            if ($inter['mois'] > 0) {
+                $this->lProjetsFunding[$iKey]['daterest'] = $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'];
+            } else {
+                $this->lProjetsFunding[$iKey]['daterest'] = "Terminé";
+            }
+
+            $this->lProjetsFunding[$iKey]['taux'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project'], $this->projects_status->status), 1);
         }
     }
 

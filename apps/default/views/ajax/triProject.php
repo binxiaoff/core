@@ -37,37 +37,12 @@
         </th>
     </tr>
     <?php
-
-    $oLoans = $this->loadData('loans');
-    foreach ($this->lProjetsFunding as $project) :
-        $this->projects_status->getLastStatut($project['id_project']);
-
-        // On recupere les info companies
-        $this->companies->get($project['id_company'], 'id_company');
-        $this->companies_details->get($project['id_company'], 'id_company');
-
-        $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $project['date_retrait_full']);
-        if ($inter['mois'] > 0) {
-            $dateRest = $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'];
-        } else {
-            $dateRest = '';
-        }
-
-        // dates pour le js
-        $mois_jour = $this->dates->formatDate($project['date_retrait'], 'F d');
-        $annee     = $this->dates->formatDate($project['date_retrait'], 'Y');
-
-        $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
-        $oBids = $this->bids;
-        $avgRate = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $project['id_project'], $this->projects_status->status);
-
-        ?>
+    foreach ($this->lProjetsFunding as $project) : ?>
         <tr class="unProjet" id="project<?= $project['id_project'] ?>">
             <td>
                 <?php
-
                 if ($this->projects_status->status >= \projects_status::FUNDE) {
-                    $dateRest = 'Terminé';
+                    $project['daterest'] = 'Terminé';
                 } else {
                     $tab_date_retrait = explode(' ', $project['date_retrait_full']);
                     $tab_date_retrait = explode(':', $tab_date_retrait[1]);
@@ -75,9 +50,9 @@
 
                     ?>
                     <script>
-                        var cible<?=$project['id_project']?> = new Date('<?=$mois_jour?>, <?=$annee?> <?=$heure_retrait?>');
-                        var letime<?=$project['id_project']?> = parseInt(cible<?=$project['id_project']?>.getTime() / 1000, 10);
-                        setTimeout('decompte(letime<?=$project['id_project']?>,"val<?=$project['id_project']?>")', 500);
+                        var cible<?= $project['id_project'] ?> = new Date('<?= $this->dates->formatDate($project['date_retrait'], 'F d'); ?>, <?= $this->dates->formatDate($project['date_retrait'], 'Y'); ?> <?= $heure_retrait ?>');
+                        var letime<?= $project['id_project'] ?> = parseInt(cible<?=$project['id_project']?>.getTime() / 1000, 10);
+                        setTimeout('decompte(letime <?= $project['id_project'] ?>,"val<?=$project['id_project']?>")', 500);
                     </script>
                     <?php
                 }
@@ -117,12 +92,12 @@
             </td>
             <td>
                 <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>">
-                    <?= $this->ficelle->formatNumber($avgRate, 1) ?>%
+                    <?= $project['taux'] ?>%
                 </a>
             </td>
             <td>
                 <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>">
-                    <strong id="val<?= $project['id_project'] ?>"><?= $dateRest ?></strong>
+                    <strong id="val<?= $project['id_project'] ?>"><?= $project['daterest'] ?></strong>
                 </a>
             </td>
             <td>
