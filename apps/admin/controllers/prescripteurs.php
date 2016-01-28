@@ -158,18 +158,19 @@ class prescripteursController extends bootstrap
 
         if (isset($this->params[1])) {
             $sSearch = $this->params[1];
-            $this->clients = $this->loadData('clients');
+            $this->clients  = $this->loadData('clients');
             $this->aClients = $this->clients->searchPrescripteur('', $sSearch, $sSearch, $sSearch, $sSearch, $sSearch, 0, 30, 'OR');
         }
 
-        if ($_POST['valider_search_prescripteur']) {
+        if (isset($_POST['valider_search_prescripteur'])) {
             $_POST = filter_input_array(INPUT_POST, FILTER_SANITIZE_STRING);
             $iProjectId = $_POST['project'];
             $iAdvisorId = $_POST['prescripteur'];
 
             $this->addAdvisorToProject($iProjectId, $iAdvisorId);
+
+            $this->autoFireView = false;
             echo json_encode(array('result' => 'OK', 'id_prescripteur' => $iAdvisorId));
-            exit;
         }
     }
 
